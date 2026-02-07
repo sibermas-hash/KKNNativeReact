@@ -1,0 +1,139 @@
+export interface User {
+    id: number;
+    username: string;
+    name: string;
+    email: string;
+    roles?: Role[];
+    profile?: UserProfile;
+}
+
+export interface Role {
+  id: number;
+  name: string;
+  guard_name: string;
+}
+
+export interface UserProfile {
+  phone?: string;
+  address?: string;
+  avatar?: string;
+}
+
+export interface Student {
+  id: number;
+  user_id: number;
+  nim: string;
+  name: string;
+  faculty: Faculty;
+  program: Program;
+  batch_year: number;
+  gender: 'L' | 'P';
+}
+
+export interface Lecturer {
+  id: number;
+  user_id: number;
+  nip: string;
+  name: string;
+  faculty: Faculty;
+}
+
+export interface Faculty {
+  id: number;
+  code: string;
+  name: string;
+}
+
+export interface Program {
+  id: number;
+  faculty_id: number;
+  code: string;
+  name: string;
+}
+
+export interface Period {
+  id: number;
+  academic_year: AcademicYear;
+  name: string;
+  start_date: string;
+  end_date: string;
+  registration_start: string;
+  registration_end: string;
+  is_active: boolean;
+}
+
+export interface AcademicYear {
+  id: number;
+  year: string;
+  is_active: boolean;
+}
+
+export interface Group {
+  id: number;
+  period: Period;
+  location: Location;
+  lecturer?: Lecturer;
+  code: string;
+  name: string;
+  token?: string;
+  capacity: number;
+  status: 'draft' | 'active' | 'closed';
+}
+
+export interface Location {
+  id: number;
+  village_name: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  capacity: number;
+}
+
+export interface Registration {
+  id: number;
+  student: Student;
+  period: Period;
+  group?: Group;
+  status: 'pending' | 'document_submitted' | 'approved' | 'rejected' | 'completed';
+  registration_date: string;
+  documents: RegistrationDocument[];
+}
+
+export interface RegistrationDocument {
+  id: number;
+  document_type: string;
+  file_path: string;
+  file_name: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
+export interface DailyReport {
+  id: number;
+  student: Student;
+  group: Group;
+  date: string;
+  title: string;
+  activity: string;
+  output?: string;
+  status: 'draft' | 'submitted' | 'approved' | 'revision';
+  files: DailyReportFile[];
+}
+
+export interface DailyReportFile {
+  id: number;
+  file_path: string;
+  file_name: string;
+}
+
+export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = {
+  auth: {
+    user: User | null;
+  };
+  flash?: {
+    success?: string;
+    error?: string;
+    warning?: string;
+    info?: string;
+  };
+  errors?: Record<string, string>;
+} & T;

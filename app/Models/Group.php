@@ -65,4 +65,9 @@ class Group extends Model
     {
         return $this->hasMany(Evaluation::class);
     }
+
+    public function kknScores(): HasMany
+    {
+        return $this->hasMany(KknScore::class);
+    }
 }

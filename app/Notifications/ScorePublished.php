@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Notifications;
+
+use App\Models\KknScore;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
+
+class ScorePublished extends Notification implements ShouldQueue
+{
+    use Queueable;
+
+    public function __construct(
+        public KknScore $score
+    ) {}
+
+    /**
+     * Get the notification's delivery channels.
+     */
+    public function via(object $notifiable): array
+    {
+        return ['database', 'mail'];
+    }
+
+    /**
+     * Get the mail representation of the notification.
+     */
+    public function toMail(object $notifiable): MailMessage
+    {
+        $letterGrade = $this->score->letter_grade ?? 'N/A';
+        $totalScore = $this->score->final_score ?? $this->score->total_score ?? 0;
+
+        return (new MailMessage)
+            ->subject('Nilai KKN Telah Dirilis - SIM-KKN UIN SAIZU')
+            ->greeting("Assalamu'alaikum " . $notifiable->name)
+            ->line('Nilai KKN Anda telah dirilis dan difinalisasi.')
+            ->line("Nilai Akhir: **{$totalScore}** ({$letterGrade})")
+            ->action('Lihat Nilai', url('/student/evaluations'))
+            ->line('Terima kasih atas partisipasi Anda dalam program KKN.')
+            ->salutation("Wassalamu'alaikum, Tim LPPM UIN SAIZU");
+    }
+
+    /**
+     * Get the array representation for database notification.
+     */
+    public function toArray(object $notifiable): array
+    {
+        return [
+            'title' => 'Nilai KKN Dirilis',
+            'message' => 'Nilai KKN Anda telah difinalisasi. Nilai akhir: ' .
+                ($this->score->final_score ?? $this->score->total_score ?? 0) .
+                ' (' . ($this->score->letter_grade ?? '-') . ')',
+            'url' => '/student/evaluations',
+            'icon' => 'academic-cap',
+            'type' => 'success',
+        ];
+    }
+}

@@ -3,10 +3,16 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "KKN UIN SAIZU - Laravel + Inertia + React",
-    "keywords": ["laravel", "framework", "inertia", "react", "kkn"],
+    "keywords": [
+        "laravel",
+        "framework",
+        "inertia",
+        "react",
+        "kkn"
+    ],
     "license": "MIT",
     "require": {
-        "php": "^8.5",
+        "php": "^8.4",
         "barryvdh/laravel-dompdf": "^3.1",
         "inertiajs/inertia-laravel": "^2.0",
         "intervention/image": "^3.11",
@@ -14,7 +20,8 @@
         "laravel/sanctum": "^4.3",
         "laravel/tinker": "^2.10.1",
         "maatwebsite/excel": "^3.1",
-        "spatie/laravel-permission": "^6.24"
+        "spatie/laravel-permission": "^6.24",
+        "tightenco/ziggy": "^2.6"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^4.0",

@@ -15,6 +15,7 @@ class WorkProgram extends Model
         'group_id',
         'title',
         'description',
+        'sdg_goals',
         'objectives',
         'target_participants',
         'budget',
@@ -26,6 +27,7 @@ class WorkProgram extends Model
     ];
 
     protected $casts = [
+        'sdg_goals' => 'array',
         'target_participants' => 'integer',
         'budget' => 'decimal:2',
         'submitted_at' => 'datetime',

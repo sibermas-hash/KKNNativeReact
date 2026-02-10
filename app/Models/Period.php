@@ -29,6 +29,28 @@ class Period extends Model
         'is_active' => 'boolean',
     ];
 
+    public static function getActivePeriod(): ?self
+    {
+        return \Illuminate\Support\Facades\Cache::remember('active_period', now()->addHours(24), function () {
+            return self::where('is_active', true)->first();
+        });
+    }
+
+    protected static function booted()
+    {
+        static::updated(function () {
+            \Illuminate\Support\Facades\Cache::forget('active_period');
+        });
+
+        static::created(function () {
+            \Illuminate\Support\Facades\Cache::forget('active_period');
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('active_period');
+        });
+    }
+
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);

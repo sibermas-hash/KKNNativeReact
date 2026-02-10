@@ -1,10 +1,11 @@
 export interface User {
-    id: number;
-    username: string;
-    name: string;
-    email: string;
-    roles?: Role[];
-    profile?: UserProfile;
+  id: number;
+  username: string;
+  name: string;
+  email: string;
+  roles?: string[];
+  permissions?: string[];
+  profile?: UserProfile;
 }
 
 export interface Role {
@@ -123,6 +124,53 @@ export interface DailyReportFile {
   id: number;
   file_path: string;
   file_name: string;
+}
+
+export interface WorkProgram {
+  id: number;
+  group: Group;
+  title: string;
+  description?: string;
+  objectives?: string;
+  target_participants?: number;
+  budget: number;
+  status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'completed';
+}
+
+export interface FinalReport {
+  id: number;
+  student: Student;
+  group: Group;
+  title: string;
+  abstract?: string;
+  file_path?: string;
+  file_name?: string;
+  status: 'draft' | 'submitted' | 'reviewed' | 'approved' | 'revision';
+  score?: number;
+}
+
+export interface Evaluation {
+  id: number;
+  student: Student;
+  group: Group;
+  evaluator_type: 'dpl' | 'peer' | 'community';
+  total_score?: number;
+  grade?: string;
+  notes?: string;
+  items: EvaluationItem[];
+}
+
+export interface EvaluationItem {
+  id: number;
+  criterion: string;
+  score: number;
+  weight: number;
+  notes?: string;
+}
+
+// Utility: checks if user has a specific role
+export function hasRole(user: User | null | undefined, role: string): boolean {
+  return user?.roles?.includes(role) ?? false;
 }
 
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = {

@@ -1,0 +1,67 @@
+<?php
+
+namespace App\Repositories;
+
+use App\Models\KknScore;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+
+class KknScoreRepository
+{
+    /**
+     * Ambil semua nilai mahasiswa dalam satu query JOIN,
+     * sudah termasuk kalkulasi nilai akhir dan konversi huruf.
+     * Siap untuk export ke Excel atau tampil di tabel.
+     */
+    public function getRekapNilai(int $periodeId, array $filters = []): Collection
+    {
+        return DB::table('students as s')
+            ->join('users as u', 's.user_id', '=', 'u.id')
+            ->join('registrations as r', 's.id', '=', 'r.student_id')
+            ->join('groups as g', 'r.group_id', '=', 'g.id')
+            ->join('locations as lok', 'g.location_id', '=', 'lok.id')
+            ->leftJoin('lecturers as dpl_l', 'g.lecturer_id', '=', 'dpl_l.id')
+            ->leftJoin('users as dpl_u', 'dpl_l.user_id', '=', 'dpl_u.id')
+            ->leftJoin('faculties as fak', 's.faculty_id', '=', 'fak.id')
+            ->leftJoin('programs as prodi', 's.program_id', '=', 'prodi.id')
+            ->leftJoin('kkn_scores as ks', function ($join) {
+                $join->on('ks.student_id', '=', 'u.id')
+                     ->on('ks.group_id', '=', 'g.id');
+            })
+            ->where('g.period_id', $periodeId)
+            ->when($filters['faculty_id'] ?? null, fn($q, $v) => $q->where('s.faculty_id', $v))
+            ->when($filters['group_id'] ?? null, fn($q, $v) => $q->where('g.id', $v))
+            ->when($filters['huruf'] ?? null, fn($q, $v) => $q->where('ks.letter_grade', $v))
+            ->select([
+                's.id as student_id',
+                'u.id as user_id',
+                'u.name as nama',
+                's.nim',
+                'fak.name as fakultas',
+                'prodi.name as prodi',
+                'g.code as kode_kelompok',
+                'lok.village_name as desa',
+                'dpl_u.name as nama_dpl',
+                // Komponen A
+                'ks.final_report_score as nilai_laporan_akhir',
+                'ks.execution_score as nilai_pelaksanaan',
+                'ks.article_score as nilai_artikel',
+                // Komponen B
+                'ks.attitude_score as nilai_sikap',
+                'ks.discipline_score as nilai_kedisiplinan',
+                // Komponen C
+                'ks.workshop_score as nilai_workshop',
+                'ks.administration_score as nilai_administrasi',
+                // Output
+                'ks.total_score as nilai_akhir',
+                'ks.letter_grade as huruf',
+                'ks.is_finalized',
+                'ks.dpl_graded_at as dpl_submitted_at',
+                'ks.village_graded_at as mitra_submitted_at',
+                'ks.admin_graded_at as admin_submitted_at',
+            ])
+            ->orderBy('g.code')
+            ->orderBy('u.name')
+            ->get();
+    }
+}

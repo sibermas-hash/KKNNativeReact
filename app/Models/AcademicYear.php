@@ -19,6 +19,28 @@ class AcademicYear extends Model
         'is_active' => 'boolean',
     ];
 
+    public static function getActiveYear(): ?self
+    {
+        return \Illuminate\Support\Facades\Cache::remember('active_year', now()->addHours(24), function () {
+            return self::where('is_active', true)->first();
+        });
+    }
+
+    protected static function booted()
+    {
+        static::updated(function () {
+            \Illuminate\Support\Facades\Cache::forget('active_year');
+        });
+
+        static::created(function () {
+            \Illuminate\Support\Facades\Cache::forget('active_year');
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('active_year');
+        });
+    }
+
     public function periods(): HasMany
     {
         return $this->hasMany(Period::class);

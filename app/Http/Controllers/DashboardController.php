@@ -2,24 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DailyReport;
-use App\Models\Group;
-use App\Models\Student;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): RedirectResponse
     {
-        $stats = [
-            'total_students' => Student::count(),
-            'total_groups' => Group::count(),
-            'total_reports' => DailyReport::count(),
-        ];
+        $user = $request->user();
 
-        return Inertia::render('Dashboard', [
-            'stats' => $stats,
-        ]);
+        if ($user->hasRole('admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        if ($user->hasRole('dpl')) {
+            return redirect()->route('dpl.dashboard');
+        }
+
+        return redirect()->route('student.dashboard');
     }
 }

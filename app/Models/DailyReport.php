@@ -17,6 +17,7 @@ class DailyReport extends Model
         'date',
         'title',
         'activity',
+        'reflection',
         'output',
         'status',
         'reviewed_at',

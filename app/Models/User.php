@@ -27,6 +27,9 @@ class User extends Authenticatable
         'email',
         'is_active',
         'password',
+        'avatar',
+        'phone',
+        'address',
     ];
 
     /**
@@ -91,5 +94,15 @@ class User extends Authenticatable
     public function evaluations(): HasMany
     {
         return $this->hasMany(Evaluation::class, 'evaluator_id');
+    }
+
+    public function workshopParticipations(): HasMany
+    {
+        return $this->hasMany(WorkshopParticipant::class);
+    }
+
+    public function kknScores(): HasMany
+    {
+        return $this->hasMany(KknScore::class, 'student_id');
     }
 }

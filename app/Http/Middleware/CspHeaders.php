@@ -22,20 +22,22 @@ class CspHeaders
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)');
 
-        // CSP - permissive enough for Inertia/Vite but still protective
-        $csp = implode('; ', [
-            "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",  // Needed for Vite HMR & Inertia
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-            "font-src 'self' https://fonts.gstatic.com",
-            "img-src 'self' data: blob: https://*.tile.openstreetmap.org",
-            "connect-src 'self' ws: wss:",
-            "frame-ancestors 'self'",
-            "base-uri 'self'",
-            "form-action 'self'",
-        ]);
+        // Only apply CSP in non-local environments to avoid Vite dev server friction
+        if (config('app.env') !== 'local') {
+            $csp = implode('; ', [
+                "default-src 'self'",
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+                "font-src 'self' https://fonts.gstatic.com",
+                "img-src 'self' data: blob: https://*.tile.openstreetmap.org",
+                "connect-src 'self' ws: wss:",
+                "frame-ancestors 'self'",
+                "base-uri 'self'",
+                "form-action 'self'",
+            ]);
 
-        $response->headers->set('Content-Security-Policy', $csp);
+            $response->headers->set('Content-Security-Policy', $csp);
+        }
 
         return $response;
     }

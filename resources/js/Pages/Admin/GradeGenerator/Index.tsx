@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Button, FormInput } from '@/Components/ui';
-import { ArrowsRightLeftIcon, CalculatorIcon, ClipboardDocumentIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { ArrowsRightLeftIcon, CalculatorIcon, ClipboardDocumentIcon, SparklesIcon, ArchiveBoxArrowDownIcon } from '@heroicons/react/24/outline';
 
 type Criterion = {
     id: string;
@@ -52,6 +52,7 @@ export default function GradeGenerator() {
     const [criteria, setCriteria] = useState<Criterion[]>(defaultCriteria);
     const [newName, setNewName] = useState('');
     const [newWeight, setNewWeight] = useState<number | ''>('');
+    const [exporting, setExporting] = useState(false);
 
     const totals = useMemo(() => {
         const totalWeight = criteria.reduce((sum, item) => sum + (Number(item.weight) || 0), 0);
@@ -122,6 +123,120 @@ export default function GradeGenerator() {
         }
     };
 
+    const buildDocxBlob = async () => {
+        const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell } = await import('docx');
+
+        const tableRows = criteria.map(
+            (item) =>
+                new TableRow({
+                    children: [
+                        new TableCell({ children: [new Paragraph(item.name)] }),
+                        new TableCell({ children: [new Paragraph(`${item.weight}%`)] }),
+                        new TableCell({ children: [new Paragraph(`${item.score}`)] }),
+                        new TableCell({
+                            children: [new Paragraph(((item.weight * item.score) / 100).toFixed(2))],
+                        }),
+                    ],
+                }),
+        );
+
+        const doc = new Document({
+            sections: [
+                {
+                    children: [
+                        new Paragraph({
+                            children: [new TextRun({ text: 'Generator Nilai (Standalone)', bold: true, size: 28 })],
+                        }),
+                        new Paragraph({ text: 'Semua perhitungan berasal dari input manual di dashboard.' }),
+                        new Paragraph({ text: ' ' }),
+                        new Table({
+                            rows: [
+                                new TableRow({
+                                    children: [
+                                        new TableCell({ children: [new Paragraph({ text: 'Komponen', bold: true })] }),
+                                        new TableCell({ children: [new Paragraph({ text: 'Bobot', bold: true })] }),
+                                        new TableCell({ children: [new Paragraph({ text: 'Nilai', bold: true })] }),
+                                        new TableCell({
+                                            children: [new Paragraph({ text: 'Skor Tertimbang', bold: true })],
+                                        }),
+                                    ],
+                                }),
+                                ...tableRows,
+                            ],
+                        }),
+                        new Paragraph({ text: ' ' }),
+                        new Paragraph({ text: `Total Bobot: ${totals.totalWeight}%` }),
+                        new Paragraph({ text: `Skor Akhir: ${totals.weightedScore}` }),
+                        new Paragraph({ text: `Nilai Huruf: ${totals.grade}` }),
+                    ],
+                },
+            ],
+        });
+
+        return Packer.toBlob(doc);
+    };
+
+    const buildPdfBlob = async () => {
+        const { jsPDF } = await import('jspdf');
+        const doc = new jsPDF();
+
+        doc.setFontSize(16);
+        doc.text('Generator Nilai (Standalone)', 14, 18);
+        doc.setFontSize(11);
+        doc.text('Semua data diisi manual; tidak terhubung DB.', 14, 26);
+
+        let y = 36;
+        doc.setFont(undefined, 'bold');
+        doc.text('Komponen', 14, y);
+        doc.text('Bobot', 90, y);
+        doc.text('Nilai', 120, y);
+        doc.text('Skor', 150, y);
+        doc.setFont(undefined, 'normal');
+        y += 8;
+
+        criteria.forEach((item) => {
+            doc.text(item.name, 14, y);
+            doc.text(`${item.weight}%`, 90, y);
+            doc.text(`${item.score}`, 120, y);
+            doc.text(((item.weight * item.score) / 100).toFixed(2), 150, y);
+            y += 8;
+            if (y > 270) {
+                doc.addPage();
+                y = 20;
+            }
+        });
+
+        y += 4;
+        doc.setFont(undefined, 'bold');
+        doc.text(`Total Bobot: ${totals.totalWeight}%`, 14, y);
+        y += 7;
+        doc.text(`Skor Akhir: ${totals.weightedScore}`, 14, y);
+        y += 7;
+        doc.text(`Nilai Huruf: ${totals.grade}`, 14, y);
+
+        return doc.output('blob');
+    };
+
+    const exportZip = async () => {
+        setExporting(true);
+        try {
+            const [{ default: JSZip }, { saveAs }] = await Promise.all([import('jszip'), import('file-saver')]);
+            const [docxBlob, pdfBlob] = await Promise.all([buildDocxBlob(), buildPdfBlob()]);
+
+            const zip = new JSZip();
+            zip.file('grade-report.docx', docxBlob);
+            zip.file('grade-report.pdf', pdfBlob);
+
+            const zipBlob = await zip.generateAsync({ type: 'blob' });
+            saveAs(zipBlob, 'grade-report.zip');
+        } catch (err) {
+            console.error(err);
+            alert('Gagal membuat ZIP. Coba ulang.');
+        } finally {
+            setExporting(false);
+        }
+    };
+
     return (
         <AppLayout title="Generator Nilai">
             <div className="space-y-6">
@@ -171,6 +286,10 @@ export default function GradeGenerator() {
                     <Button variant="ghost" onClick={copyResult}>
                         <ClipboardDocumentIcon className="h-4 w-4" />
                         Salin Hasil
+                    </Button>
+                    <Button variant="primary" onClick={exportZip} loading={exporting}>
+                        <ArchiveBoxArrowDownIcon className="h-4 w-4" />
+                        Export DOC+PDF (ZIP)
                     </Button>
                 </div>
 

@@ -18,7 +18,7 @@ class ImportKknRoster extends Command
 {
     protected $signature = 'kkn:import-roster 
         {file : Path to Excel file (Database Nilai KKN *.xlsx)}
-        {--period= : Period ID (default: active period)}
+        {--period= : Period ID (wajib diisi)}
         {--faculty= : Default faculty_id (fallback)}
         {--program= : Default program_id (fallback)}
         {--password= : Default password for new users (default: random 12 chars)}';
@@ -50,10 +50,9 @@ class ImportKknRoster extends Command
             $roleStudent = Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
             $roleDpl = Role::firstOrCreate(['name' => 'dpl', 'guard_name' => 'web']);
 
-            $activePeriod = Period::where('is_active', true)->first();
-            $periodId = $this->option('period') ?: ($activePeriod?->id ?? null);
+            $periodId = $this->option('period');
             if (! $periodId) {
-                throw new \RuntimeException('Period tidak ditemukan. Beri opsi --period=ID atau set periode aktif.');
+                throw new \RuntimeException('Opsi --period=ID wajib diisi.');
             }
 
             $defaultFaculty = (int) ($this->option('faculty') ?: 1);

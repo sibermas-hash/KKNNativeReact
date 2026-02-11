@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'master_api' => [
+        'url' => env('MASTER_API_URL'),
+        'client_id' => env('MASTER_API_CLIENT_ID'),
+        'client_secret' => env('MASTER_API_CLIENT_SECRET'),
+        'cache_minutes' => env('MASTER_API_CACHE_MINUTES', 60),
+    ],
+
 ];

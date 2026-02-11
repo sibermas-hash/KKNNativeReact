@@ -13,6 +13,8 @@ class Faculty extends Model
     protected $fillable = [
         'code',
         'name',
+        'master_id',
+        'master_synced_at',
     ];
 
     public function programs(): HasMany

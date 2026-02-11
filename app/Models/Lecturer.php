@@ -18,6 +18,8 @@ class Lecturer extends Model
         'name',
         'faculty_id',
         'phone',
+        'master_id',
+        'master_synced_at',
     ];
 
     public function user(): BelongsTo

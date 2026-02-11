@@ -22,6 +22,8 @@ class Student extends Model
         'gender',
         'birth_place',
         'birth_date',
+        'master_id',
+        'master_synced_at',
     ];
 
     protected $casts = [

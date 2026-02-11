@@ -46,5 +46,10 @@ class AppServiceProvider extends ServiceProvider
         \App\Models\KknScore::observe(\App\Observers\AuditObserver::class);
         \App\Models\Report::observe(\App\Observers\AuditObserver::class);
         \App\Models\DailyReport::observe(\App\Observers\AuditObserver::class);
+
+        // Force HTTPS when behind Cloudflare tunnel
+        if ($this->app->environment('production')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
     }
 }

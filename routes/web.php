@@ -38,6 +38,11 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
     Route::prefix('admin')->middleware('role:admin')->name('admin.')->group(function () {
         Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
 
+        // Grades manual input
+        Route::get('grades', [Admin\GradeController::class, 'index'])->name('grades.index');
+        Route::post('grades', [Admin\GradeController::class, 'store'])->name('grades.store');
+        Route::get('groups/{group}/students', [Admin\GradeController::class, 'students'])->name('groups.students');
+
         // Master Data
         Route::resource('academic-years', Admin\AcademicYearController::class)
             ->only(['index', 'store', 'update', 'destroy'])

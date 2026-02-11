@@ -5,16 +5,23 @@ namespace App\Console\Commands;
 use App\Models\Group;
 use App\Models\Lecturer;
 use App\Models\Location;
+use App\Models\Period;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Spatie\Permission\Models\Role;
 
 class ImportKknRoster extends Command
 {
-    protected $signature = 'kkn:import-roster {file : Path to Excel file (Database Nilai KKN *.xlsx)}';
+    protected $signature = 'kkn:import-roster 
+        {file : Path to Excel file (Database Nilai KKN *.xlsx)}
+        {--period= : Period ID (default: active period)}
+        {--faculty= : Default faculty_id (fallback)}
+        {--program= : Default program_id (fallback)}
+        {--password= : Default password for new users (default: random 12 chars)}';
 
     protected $description = 'Import roster KKN (kelompok, lokasi, DPL, mahasiswa) dari Excel';
 
@@ -42,6 +49,16 @@ class ImportKknRoster extends Command
         try {
             $roleStudent = Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
             $roleDpl = Role::firstOrCreate(['name' => 'dpl', 'guard_name' => 'web']);
+
+            $activePeriod = Period::where('is_active', true)->first();
+            $periodId = $this->option('period') ?: ($activePeriod?->id ?? null);
+            if (! $periodId) {
+                throw new \RuntimeException('Period tidak ditemukan. Beri opsi --period=ID atau set periode aktif.');
+            }
+
+            $defaultFaculty = (int) ($this->option('faculty') ?: 1);
+            $defaultProgram = (int) ($this->option('program') ?: 1);
+            $defaultPassword = $this->option('password') ?: Str::random(12);
 
             for ($i = 2; $i <= count($rows); $i++) {
                 $row = $rows[$i];
@@ -71,7 +88,7 @@ class ImportKknRoster extends Command
                     ['code' => 'G'.$kelompok],
                     [
                         'name' => 'Kelompok '.$kelompok,
-                        'period_id' => 1, // asumsi periode aktif id=1, ubah sesuai kebutuhan
+                        'period_id' => $periodId,
                         'location_id' => $location->id,
                         'status' => 'draft',
                     ]
@@ -83,7 +100,7 @@ class ImportKknRoster extends Command
                     [
                         'username' => strtolower(preg_replace('/\s+/', '', $dplName)),
                         'name' => $dplName,
-                        'password' => bcrypt('password'),
+                        'password' => bcrypt($defaultPassword),
                         'is_active' => true,
                     ]
                 );
@@ -94,7 +111,7 @@ class ImportKknRoster extends Command
                     [
                         'nip' => 'DPL'.$dplUser->id,
                         'name' => $dplName,
-                        'faculty_id' => 1, // placeholder
+                        'faculty_id' => $defaultFaculty,
                     ]
                 );
 
@@ -110,7 +127,7 @@ class ImportKknRoster extends Command
                     [
                         'username' => $nim,
                         'name' => $nama,
-                        'password' => bcrypt('password'),
+                        'password' => bcrypt($defaultPassword),
                         'is_active' => true,
                     ]
                 );
@@ -121,8 +138,8 @@ class ImportKknRoster extends Command
                     [
                         'nim' => $nim,
                         'name' => $nama,
-                        'faculty_id' => 1, // placeholder
-                        'program_id' => 1, // placeholder
+                        'faculty_id' => $defaultFaculty,
+                        'program_id' => $defaultProgram,
                         'batch_year' => 2026,
                         'gender' => $gender,
                         'university' => $pt,
@@ -139,7 +156,7 @@ class ImportKknRoster extends Command
             }
 
             DB::commit();
-            $this->info('Import roster selesai.');
+            $this->info('Import roster selesai. Password default: '.$defaultPassword);
             return self::SUCCESS;
         } catch (\Throwable $e) {
             DB::rollBack();

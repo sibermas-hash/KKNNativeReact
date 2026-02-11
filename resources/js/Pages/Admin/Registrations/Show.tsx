@@ -1,6 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Button, StatusBadge, FormTextarea } from '@/Components/UI';
+import { Button, StatusBadge, FormTextarea } from '@/Components/ui';
 import type { PageProps } from '@/types';
 import { useState } from 'react';
 

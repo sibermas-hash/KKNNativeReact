@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Button, FormInput, ConfirmDialog } from '@/Components/UI';
+import { Button, FormInput, ConfirmDialog } from '@/Components/ui';
 import type { PageProps, Faculty } from '@/types';
 
 interface FacultyWithCount extends Faculty {

@@ -7,10 +7,23 @@ use App\Models\Program;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Spatie\Permission\Models\Role;
 
 class StudentFactory extends Factory
 {
     protected $model = Student::class;
+
+    public function configure(): static
+    {
+        return $this->afterCreating(function (Student $student) {
+            $role = Role::firstOrCreate([
+                'name' => 'student',
+                'guard_name' => 'web',
+            ]);
+
+            $student->user->assignRole($role);
+        });
+    }
 
     public function definition(): array
     {

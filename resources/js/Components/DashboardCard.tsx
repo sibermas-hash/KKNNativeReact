@@ -1,4 +1,4 @@
-﻿interface DashboardCardProps {
+interface DashboardCardProps {
   title: string;
   value: number | string;
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useForm, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Button, FormInput, FormSelect, StatusBadge, ConfirmDialog } from '@/Components/UI';
+import { Button, FormInput, FormSelect, StatusBadge, ConfirmDialog } from '@/Components/ui';
 import type { PageProps } from '@/types';
 
 interface GroupData {

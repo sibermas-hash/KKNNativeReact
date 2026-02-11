@@ -1,5 +1,5 @@
 import AppLayout from '@/Layouts/AppLayout';
-import { StatusBadge } from '@/Components/UI';
+import { StatusBadge } from '@/Components/ui';
 import { Link } from '@inertiajs/react';
 import { MapPinIcon } from '@heroicons/react/24/outline';
 import type { PageProps } from '@/types';

@@ -12,7 +12,7 @@ import {
     CalculatorIcon
 } from '@heroicons/react/24/outline';
 import { route } from 'ziggy-js';
-import { Modal, Button, FormInput } from '@/Components/UI';
+import { Modal, Button, FormInput } from '@/Components/ui';
 
 interface StudentGrade {
     id: number;

@@ -1,6 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { FormInput, FormTextarea } from '@/Components/UI';
+import { FormInput, FormTextarea } from '@/Components/ui';
 import type { PageProps } from '@/types';
 import React from 'react';
 

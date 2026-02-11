@@ -1,5 +1,5 @@
 import AppLayout from '@/Layouts/AppLayout';
-import { Badge } from '@/Components/UI';
+import { Badge } from '@/Components/ui';
 import type { PageProps } from '@/types';
 
 interface EvalItem {

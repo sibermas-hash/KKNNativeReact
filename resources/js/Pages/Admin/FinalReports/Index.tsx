@@ -1,5 +1,5 @@
 import AppLayout from '@/Layouts/AppLayout';
-import { StatusBadge, FormSelect } from '@/Components/UI';
+import { StatusBadge, FormSelect } from '@/Components/ui';
 import type { PageProps } from '@/types';
 
 interface FinalReportData {

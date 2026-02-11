@@ -1,5 +1,5 @@
 import AppLayout from '@/Layouts/AppLayout';
-import { StatusBadge } from '@/Components/UI';
+import { StatusBadge } from '@/Components/ui';
 import type { PageProps } from '@/types';
 
 interface Props extends PageProps {

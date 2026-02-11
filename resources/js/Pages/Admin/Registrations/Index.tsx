@@ -1,6 +1,6 @@
 import { Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Button, StatusBadge, FormSelect } from '@/Components/UI';
+import { Button, StatusBadge, FormSelect } from '@/Components/ui';
 import type { PageProps } from '@/types';
 
 interface RegData {

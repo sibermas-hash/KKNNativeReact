@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Button, FormInput, ConfirmDialog, Badge } from '@/Components/UI';
+import { Button, FormInput, ConfirmDialog, Badge } from '@/Components/ui';
 import type { PageProps } from '@/types';
 
 interface AcademicYear {

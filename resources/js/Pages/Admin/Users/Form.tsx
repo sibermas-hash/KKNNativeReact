@@ -1,6 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Button, FormInput, FormSelect } from '@/Components/UI';
+import { Button, FormInput, FormSelect } from '@/Components/ui';
 import type { PageProps, Faculty, Program } from '@/types';
 
 interface Props extends PageProps {

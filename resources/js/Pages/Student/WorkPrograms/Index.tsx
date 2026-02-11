@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Button, StatusBadge } from '@/Components/UI';
+import { Button, StatusBadge } from '@/Components/ui';
 import type { PageProps } from '@/types';
 
 interface Props extends PageProps {

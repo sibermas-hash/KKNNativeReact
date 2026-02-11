@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Button, FormInput, FormSelect, ConfirmDialog } from '@/Components/UI';
+import { Button, FormInput, FormSelect, ConfirmDialog } from '@/Components/ui';
 import type { PageProps, Faculty, Program } from '@/types';
 
 interface ProgramWithFaculty extends Program {

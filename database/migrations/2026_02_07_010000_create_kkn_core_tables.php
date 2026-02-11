@@ -61,6 +61,7 @@ return new class extends Migration
             $table->foreignId('program_id')->constrained()->cascadeOnDelete();
             $table->year('batch_year');
             $table->enum('gender', ['L', 'P']);
+            $table->string('university', 100)->nullable();
             $table->string('birth_place', 100)->nullable();
             $table->date('birth_date')->nullable();
             $table->timestamps();

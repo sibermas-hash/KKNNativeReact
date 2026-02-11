@@ -1,173 +1,146 @@
 import { useMemo, useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Button, FormInput } from '@/Components/ui';
-import { ArrowsRightLeftIcon, CalculatorIcon, ClipboardDocumentIcon, SparklesIcon, ArchiveBoxArrowDownIcon } from '@heroicons/react/24/outline';
+import {
+    ArchiveBoxArrowDownIcon,
+    CalculatorIcon,
+    PlusIcon,
+    TrashIcon,
+} from '@heroicons/react/24/outline';
 
-type Criterion = {
+type Meta = {
+    angkatan: string;
+    tahun: string;
+    kelompok: string;
+    desa: string;
+    kecamatan: string;
+    kabupaten: string;
+    dpl: string;
+};
+
+type StudentRow = {
     id: string;
     name: string;
-    weight: number;
-    score: number;
+    nim: string;
+    discipline: number;
+    attitude: number;
 };
 
-type Preset = {
-    label: string;
-    items: Omit<Criterion, 'id'>[];
+const makeId = () => `row-${Math.random().toString(36).slice(2, 9)}`;
+
+const defaultMeta: Meta = {
+    angkatan: '57',
+    tahun: '2026',
+    kelompok: '1',
+    desa: 'Jompo',
+    kecamatan: 'Kalimanah',
+    kabupaten: 'Purbalingga',
+    dpl: 'Rahman Afandi',
 };
 
-const presets: Preset[] = [
-    {
-        label: 'Template KKN (berdasar praktik umum)',
-        items: [
-            { name: 'Laporan Harian', weight: 20, score: 85 },
-            { name: 'Program Kerja', weight: 25, score: 82 },
-            { name: 'Laporan Akhir', weight: 25, score: 84 },
-            { name: 'Evaluasi DPL', weight: 15, score: 88 },
-            { name: 'Kehadiran & Etika', weight: 15, score: 90 },
-        ],
-    },
-    {
-        label: 'Preset Ringan (3 komponen)',
-        items: [
-            { name: 'Output Utama', weight: 50, score: 80 },
-            { name: 'Aktivitas Harian', weight: 30, score: 78 },
-            { name: 'Kedisiplinan', weight: 20, score: 92 },
-        ],
-    },
+const defaultStudents: StudentRow[] = [
+    { id: makeId(), name: 'Mochammad Ihza Al Ghifari Sri Hernando', nim: '2017101133', discipline: 90, attitude: 90 },
+    { id: makeId(), name: 'Izzah Rohmatun Nissa', nim: '224110101238', discipline: 80, attitude: 80 },
+    { id: makeId(), name: 'Elis Rahadewi', nim: '224110102140', discipline: 90, attitude: 90 },
 ];
 
-const makeId = () => `crit-${Math.random().toString(36).slice(2, 9)}`;
-
-const defaultCriteria: Criterion[] = presets[0].items.map((item) => ({ ...item, id: makeId() }));
-
-function letterGrade(value: number): string {
-    if (value >= 85) return 'A';
-    if (value >= 75) return 'B';
-    if (value >= 65) return 'C';
-    if (value >= 55) return 'D';
-    return 'E';
+function computeTotal({ discipline, attitude }: StudentRow): number {
+    const d = Number(discipline) || 0;
+    const a = Number(attitude) || 0;
+    return Math.round((d + a) / 2);
 }
 
 export default function GradeGenerator() {
-    const [criteria, setCriteria] = useState<Criterion[]>(defaultCriteria);
-    const [newName, setNewName] = useState('');
-    const [newWeight, setNewWeight] = useState<number | ''>('');
+    const [meta, setMeta] = useState<Meta>(defaultMeta);
+    const [students, setStudents] = useState<StudentRow[]>(defaultStudents);
     const [exporting, setExporting] = useState(false);
 
-    const totals = useMemo(() => {
-        const totalWeight = criteria.reduce((sum, item) => sum + (Number(item.weight) || 0), 0);
-        const weightedScore =
-            totalWeight === 0
-                ? 0
-                : criteria.reduce((sum, item) => sum + (Number(item.weight) || 0) * (Number(item.score) || 0), 0) /
-                  totalWeight;
+    const summary = useMemo(() => {
+        if (!students.length) return { avg: 0, count: 0 };
+        const avg = students.reduce((sum, s) => sum + computeTotal(s), 0) / students.length;
+        return { avg: Number(avg.toFixed(2)), count: students.length };
+    }, [students]);
 
-        return {
-            totalWeight,
-            weightedScore: Number(weightedScore.toFixed(2)),
-            grade: letterGrade(weightedScore),
-        };
-    }, [criteria]);
-
-    const applyPreset = (preset: Preset) => {
-        setCriteria(preset.items.map((item) => ({ ...item, id: makeId() })));
+    const addStudent = () => {
+        setStudents((prev) => [
+            ...prev,
+            { id: makeId(), name: '', nim: '', discipline: 80, attitude: 80 },
+        ]);
     };
 
-    const randomizeScores = () => {
-        setCriteria((prev) =>
-            prev.map((item) => ({
-                ...item,
-                score: Math.round(70 + Math.random() * 25),
-            })),
-        );
+    const removeStudent = (id: string) => {
+        setStudents((prev) => prev.filter((s) => s.id !== id));
     };
 
-    const updateCriterion = (id: string, field: keyof Pick<Criterion, 'name' | 'weight' | 'score'>, value: string) => {
-        setCriteria((prev) =>
-            prev.map((item) =>
-                item.id === id
+    const updateStudent = (id: string, field: keyof Omit<StudentRow, 'id'>, value: string) => {
+        setStudents((prev) =>
+            prev.map((s) =>
+                s.id === id
                     ? {
-                          ...item,
-                          [field]: field === 'name' ? value : Number(value) || 0,
+                          ...s,
+                          [field]: ['discipline', 'attitude'].includes(field)
+                              ? Math.max(0, Math.min(100, Number(value) || 0))
+                              : value,
                       }
-                    : item,
+                    : s,
             ),
         );
     };
 
-    const addCriterion = () => {
-        if (!newName.trim() || newWeight === '' || Number(newWeight) <= 0) return;
-        setCriteria((prev) => [...prev, { id: makeId(), name: newName.trim(), weight: Number(newWeight), score: 80 }]);
-        setNewName('');
-        setNewWeight('');
-    };
-
-    const removeCriterion = (id: string) => {
-        setCriteria((prev) => prev.filter((item) => item.id !== id));
-    };
-
-    const copyResult = async () => {
-        const lines = [
-            'Generator Nilai (Standalone)',
-            ...criteria.map(
-                (item) => `${item.name}: bobot ${item.weight}%, nilai ${item.score} → ${((item.weight * item.score) / 100).toFixed(2)}`,
-            ),
-            `Total bobot: ${totals.totalWeight}%`,
-            `Skor akhir: ${totals.weightedScore}`,
-            `Nilai huruf: ${totals.grade}`,
-        ];
-        try {
-            await navigator.clipboard.writeText(lines.join('\n'));
-        } catch {
-            // ignore copy failure silently
-        }
+    const handleMetaChange = (field: keyof Meta, value: string) => {
+        setMeta((m) => ({ ...m, [field]: value }));
     };
 
     const buildDocxBlob = async () => {
-        const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell } = await import('docx');
+        const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType } = await import('docx');
 
-        const tableRows = criteria.map(
-            (item) =>
+        const header = [
+            new Paragraph({
+                children: [new TextRun({ text: 'BLANKO PENILAIAN PESERTA KKN', bold: true, size: 28 })],
+                spacing: { after: 100 },
+            }),
+            new Paragraph({
+                children: [new TextRun({ text: `ANGKATAN ${meta.angkatan} TAHUN ${meta.tahun}`, bold: true, size: 24 })],
+                spacing: { after: 200 },
+            }),
+        ];
+
+        const metaRows = [
+            `KELOMPOK\t${meta.kelompok}`,
+            `DESA\t${meta.desa}`,
+            `KECAMATAN\t${meta.kecamatan}`,
+            `KABUPATEN\t${meta.kabupaten}`,
+            `DPL\t${meta.dpl}`,
+        ].map((line) => new Paragraph({ children: [new TextRun({ text: line })] }));
+
+        const tableRows = [
+            new TableRow({
+                children: ['NO', 'NAMA MAHASISWA', 'NIM', 'KEDISIPLINAN', 'SIKAP', 'NILAI TOTAL'].map(
+                    (t) => new TableCell({ children: [new Paragraph({ text: t, bold: true })] }),
+                ),
+            }),
+            ...students.map((s, idx) =>
                 new TableRow({
                     children: [
-                        new TableCell({ children: [new Paragraph(item.name)] }),
-                        new TableCell({ children: [new Paragraph(`${item.weight}%`)] }),
-                        new TableCell({ children: [new Paragraph(`${item.score}`)] }),
-                        new TableCell({
-                            children: [new Paragraph(((item.weight * item.score) / 100).toFixed(2))],
-                        }),
+                        new TableCell({ children: [new Paragraph(String(idx + 1))] }),
+                        new TableCell({ children: [new Paragraph(s.name || '-')], width: { size: 4000, type: WidthType.DXA } }),
+                        new TableCell({ children: [new Paragraph(s.nim || '-')] }),
+                        new TableCell({ children: [new Paragraph(String(s.discipline))] }),
+                        new TableCell({ children: [new Paragraph(String(s.attitude))] }),
+                        new TableCell({ children: [new Paragraph(String(computeTotal(s)))] }),
                     ],
                 }),
-        );
+            ),
+        ];
 
         const doc = new Document({
             sections: [
                 {
                     children: [
-                        new Paragraph({
-                            children: [new TextRun({ text: 'Generator Nilai (Standalone)', bold: true, size: 28 })],
-                        }),
-                        new Paragraph({ text: 'Semua perhitungan berasal dari input manual di dashboard.' }),
+                        ...header,
+                        ...metaRows,
                         new Paragraph({ text: ' ' }),
-                        new Table({
-                            rows: [
-                                new TableRow({
-                                    children: [
-                                        new TableCell({ children: [new Paragraph({ text: 'Komponen', bold: true })] }),
-                                        new TableCell({ children: [new Paragraph({ text: 'Bobot', bold: true })] }),
-                                        new TableCell({ children: [new Paragraph({ text: 'Nilai', bold: true })] }),
-                                        new TableCell({
-                                            children: [new Paragraph({ text: 'Skor Tertimbang', bold: true })],
-                                        }),
-                                    ],
-                                }),
-                                ...tableRows,
-                            ],
-                        }),
-                        new Paragraph({ text: ' ' }),
-                        new Paragraph({ text: `Total Bobot: ${totals.totalWeight}%` }),
-                        new Paragraph({ text: `Skor Akhir: ${totals.weightedScore}` }),
-                        new Paragraph({ text: `Nilai Huruf: ${totals.grade}` }),
+                        new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows }),
                     ],
                 },
             ],
@@ -181,38 +154,48 @@ export default function GradeGenerator() {
         const doc = new jsPDF();
 
         doc.setFontSize(16);
-        doc.text('Generator Nilai (Standalone)', 14, 18);
-        doc.setFontSize(11);
-        doc.text('Semua data diisi manual; tidak terhubung DB.', 14, 26);
+        doc.text('BLANKO PENILAIAN PESERTA KKN', 14, 18);
+        doc.setFontSize(14);
+        doc.text(`ANGKATAN ${meta.angkatan} TAHUN ${meta.tahun}`, 14, 26);
 
+        doc.setFontSize(11);
+        const metaLines = [
+            `KELOMPOK: ${meta.kelompok}`,
+            `DESA: ${meta.desa}`,
+            `KECAMATAN: ${meta.kecamatan}`,
+            `KABUPATEN: ${meta.kabupaten}`,
+            `DPL: ${meta.dpl}`,
+        ];
         let y = 36;
+        metaLines.forEach((line) => {
+            doc.text(line, 14, y);
+            y += 6;
+        });
+
+        y += 2;
         doc.setFont(undefined, 'bold');
-        doc.text('Komponen', 14, y);
-        doc.text('Bobot', 90, y);
-        doc.text('Nilai', 120, y);
-        doc.text('Skor', 150, y);
+        doc.text('NO', 14, y);
+        doc.text('NAMA MAHASISWA', 28, y);
+        doc.text('NIM', 110, y);
+        doc.text('KEDISIPLINAN', 150, y);
+        doc.text('SIKAP', 175, y);
+        doc.text('NILAI TOTAL', 195, y, { align: 'right' });
         doc.setFont(undefined, 'normal');
         y += 8;
 
-        criteria.forEach((item) => {
-            doc.text(item.name, 14, y);
-            doc.text(`${item.weight}%`, 90, y);
-            doc.text(`${item.score}`, 120, y);
-            doc.text(((item.weight * item.score) / 100).toFixed(2), 150, y);
+        students.forEach((s, idx) => {
+            doc.text(String(idx + 1), 14, y);
+            doc.text(s.name || '-', 28, y);
+            doc.text(s.nim || '-', 110, y);
+            doc.text(String(s.discipline), 150, y);
+            doc.text(String(s.attitude), 175, y);
+            doc.text(String(computeTotal(s)), 195, y, { align: 'right' });
             y += 8;
             if (y > 270) {
                 doc.addPage();
                 y = 20;
             }
         });
-
-        y += 4;
-        doc.setFont(undefined, 'bold');
-        doc.text(`Total Bobot: ${totals.totalWeight}%`, 14, y);
-        y += 7;
-        doc.text(`Skor Akhir: ${totals.weightedScore}`, 14, y);
-        y += 7;
-        doc.text(`Nilai Huruf: ${totals.grade}`, 14, y);
 
         return doc.output('blob');
     };
@@ -222,13 +205,11 @@ export default function GradeGenerator() {
         try {
             const [{ default: JSZip }, { saveAs }] = await Promise.all([import('jszip'), import('file-saver')]);
             const [docxBlob, pdfBlob] = await Promise.all([buildDocxBlob(), buildPdfBlob()]);
-
             const zip = new JSZip();
-            zip.file('grade-report.docx', docxBlob);
-            zip.file('grade-report.pdf', pdfBlob);
-
+            zip.file('blanko-penilaian.docx', docxBlob);
+            zip.file('blanko-penilaian.pdf', pdfBlob);
             const zipBlob = await zip.generateAsync({ type: 'blob' });
-            saveAs(zipBlob, 'grade-report.zip');
+            saveAs(zipBlob, 'blanko-penilaian.zip');
         } catch (err) {
             console.error(err);
             alert('Gagal membuat ZIP. Coba ulang.');
@@ -240,150 +221,99 @@ export default function GradeGenerator() {
     return (
         <AppLayout title="Generator Nilai">
             <div className="space-y-6">
-                <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                        <CalculatorIcon className="h-6 w-6 text-primary" />
-                        <h1 className="text-2xl font-bold text-slate-900">Generator Nilai (Standalone)</h1>
-                    </div>
-                    <p className="text-sm text-slate-600">
-                        Alat cepat untuk menghitung komposit nilai tanpa menarik data sistem. Semua perhitungan berjalan di browser.
-                    </p>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-3">
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                        <p className="text-xs font-semibold text-slate-500 uppercase">Skor Akhir</p>
-                        <p className="mt-2 text-4xl font-black text-slate-900">{totals.weightedScore}</p>
-                        <p className="text-xs text-slate-500">Tertimbang terhadap bobot</p>
-                    </div>
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                        <p className="text-xs font-semibold text-slate-500 uppercase">Nilai Huruf</p>
-                        <p className="mt-2 text-4xl font-black text-primary">{totals.grade}</p>
-                        <p className="text-xs text-slate-500">Konversi standar sederhana</p>
-                    </div>
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                        <p className="text-xs font-semibold text-slate-500 uppercase">Total Bobot</p>
-                        <p className="mt-2 text-4xl font-black text-slate-900">{totals.totalWeight}%</p>
-                        <p className={`text-xs ${totals.totalWeight === 100 ? 'text-emerald-600' : 'text-amber-600'}`}>
-                            {totals.totalWeight === 100
-                                ? 'Ideal: 100%'
-                                : 'Sebaiknya 100% supaya konsisten'}
+                <div className="flex items-center gap-2">
+                    <CalculatorIcon className="h-6 w-6 text-primary" />
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900">Generator Blanko Nilai</h1>
+                        <p className="text-sm text-slate-600">
+                            Cetak blanko penilaian (DOCX + PDF) tanpa koneksi database; cocok dipakai sebelum data terintegrasi.
                         </p>
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                    <Button variant="secondary" onClick={() => applyPreset(presets[0])}>
-                        Template KKN
-                    </Button>
-                    <Button variant="secondary" onClick={() => applyPreset(presets[1])}>
-                        Preset Ringan
-                    </Button>
-                    <Button variant="ghost" onClick={randomizeScores}>
-                        <SparklesIcon className="h-4 w-4" />
-                        Randomkan Nilai
-                    </Button>
-                    <Button variant="ghost" onClick={copyResult}>
-                        <ClipboardDocumentIcon className="h-4 w-4" />
-                        Salin Hasil
-                    </Button>
-                    <Button variant="primary" onClick={exportZip} loading={exporting}>
-                        <ArchiveBoxArrowDownIcon className="h-4 w-4" />
-                        Export DOC+PDF (ZIP)
-                    </Button>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <FormInput label="Angkatan" value={meta.angkatan} onChange={(e) => handleMetaChange('angkatan', e.target.value)} />
+                    <FormInput label="Tahun" value={meta.tahun} onChange={(e) => handleMetaChange('tahun', e.target.value)} />
+                    <FormInput label="Kelompok" value={meta.kelompok} onChange={(e) => handleMetaChange('kelompok', e.target.value)} />
+                    <FormInput label="Desa" value={meta.desa} onChange={(e) => handleMetaChange('desa', e.target.value)} />
+                    <FormInput label="Kecamatan" value={meta.kecamatan} onChange={(e) => handleMetaChange('kecamatan', e.target.value)} />
+                    <FormInput label="Kabupaten" value={meta.kabupaten} onChange={(e) => handleMetaChange('kabupaten', e.target.value)} />
+                    <FormInput className="sm:col-span-2 lg:col-span-3" label="DPL" value={meta.dpl} onChange={(e) => handleMetaChange('dpl', e.target.value)} />
                 </div>
 
-                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                         <div>
-                            <p className="text-sm font-semibold text-slate-800">Komponen Penilaian</p>
-                            <p className="text-xs text-slate-500">Ubah nama, bobot, atau nilai secara langsung.</p>
+                            <p className="text-sm font-semibold text-slate-800">Daftar Mahasiswa</p>
+                            <p className="text-xs text-slate-500">Isi nama, NIM, kedisiplinan, sikap. Nilai total otomatis rata-rata.</p>
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => applyPreset({ label: 'Kosong', items: [] })}>
-                            <ArrowsRightLeftIcon className="h-4 w-4" />
-                            Reset Kosong
+                        <Button variant="primary" size="sm" onClick={addStudent}>
+                            <PlusIcon className="h-4 w-4" />
+                            Tambah Baris
                         </Button>
                     </div>
 
                     <div className="divide-y divide-slate-100">
-                        {criteria.length === 0 && (
-                            <div className="px-4 py-6 text-center text-sm text-slate-500">
-                                Belum ada komponen. Tambahkan di bawah ini.
-                            </div>
-                        )}
+                        <div className="grid grid-cols-12 gap-3 px-4 py-2 text-xs font-semibold uppercase text-slate-500">
+                            <div className="col-span-1">No</div>
+                            <div className="col-span-4">Nama Mahasiswa</div>
+                            <div className="col-span-3">NIM</div>
+                            <div className="col-span-2">Kedisiplinan</div>
+                            <div className="col-span-1">Sikap</div>
+                            <div className="col-span-1 text-right">Total</div>
+                        </div>
 
-                        {criteria.map((item) => (
-                            <div key={item.id} className="grid gap-3 px-4 py-3 sm:grid-cols-12 sm:items-center">
-                                <div className="sm:col-span-5">
-                                    <FormInput
-                                        value={item.name}
-                                        onChange={(e) => updateCriterion(item.id, 'name', e.target.value)}
-                                        label="Nama Komponen"
-                                        className="sm:mt-0"
-                                    />
+                        {students.map((s, idx) => (
+                            <div key={s.id} className="grid grid-cols-12 gap-3 px-4 py-3 sm:items-center">
+                                <div className="col-span-1 text-sm text-slate-700">{idx + 1}</div>
+                                <div className="col-span-4">
+                                    <FormInput value={s.name} onChange={(e) => updateStudent(s.id, 'name', e.target.value)} />
                                 </div>
-                                <div className="sm:col-span-3">
-                                    <FormInput
-                                        type="number"
-                                        min={0}
-                                    max={200}
-                                        value={item.weight}
-                                        onChange={(e) => updateCriterion(item.id, 'weight', e.target.value)}
-                                        label="Bobot (%)"
-                                    />
+                                <div className="col-span-3">
+                                    <FormInput value={s.nim} onChange={(e) => updateStudent(s.id, 'nim', e.target.value)} />
                                 </div>
-                                <div className="sm:col-span-3">
+                                <div className="col-span-2">
                                     <FormInput
                                         type="number"
                                         min={0}
                                         max={100}
-                                        value={item.score}
-                                        onChange={(e) => updateCriterion(item.id, 'score', e.target.value)}
-                                        label="Nilai (0-100)"
+                                        value={s.discipline}
+                                        onChange={(e) => updateStudent(s.id, 'discipline', e.target.value)}
                                     />
                                 </div>
-                                <div className="sm:col-span-1 flex items-end">
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-red-500 hover:text-red-600"
-                                        onClick={() => removeCriterion(item.id)}
-                                    >
-                                        Hapus
+                                <div className="col-span-1">
+                                    <FormInput
+                                        type="number"
+                                        min={0}
+                                        max={100}
+                                        value={s.attitude}
+                                        onChange={(e) => updateStudent(s.id, 'attitude', e.target.value)}
+                                    />
+                                </div>
+                                <div className="col-span-1 flex items-center justify-end gap-2">
+                                    <span className="text-sm font-semibold text-slate-800">{computeTotal(s)}</span>
+                                    <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600" onClick={() => removeStudent(s.id)}>
+                                        <TrashIcon className="h-4 w-4" />
                                     </Button>
                                 </div>
                             </div>
                         ))}
+
+                        {students.length === 0 && (
+                            <div className="px-4 py-6 text-center text-sm text-slate-500">Belum ada baris. Tambahkan mahasiswa.</div>
+                        )}
                     </div>
                 </div>
 
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-4 shadow-sm">
-                    <p className="text-sm font-semibold text-slate-800 mb-3">Tambah Komponen</p>
-                    <div className="grid gap-3 sm:grid-cols-3">
-                        <FormInput
-                            label="Nama"
-                            placeholder="Contoh: Partisipasi Forum"
-                            value={newName}
-                            onChange={(e) => setNewName(e.target.value)}
-                        />
-                        <FormInput
-                            label="Bobot (%)"
-                            type="number"
-                            min={1}
-                            max={200}
-                            value={newWeight}
-                            onChange={(e) => setNewWeight(Number(e.target.value) || '')}
-                        />
-                        <div className="flex items-end">
-                            <Button type="button" onClick={addCriterion} className="w-full">
-                                Tambah
-                            </Button>
-                        </div>
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="text-sm text-slate-600">
+                        Total mahasiswa: <span className="font-semibold text-slate-900">{summary.count}</span> ·
+                        Rata-rata nilai total: <span className="font-semibold text-slate-900">{summary.avg}</span>
                     </div>
-                    <p className="mt-2 text-xs text-slate-500">
-                        Alat ini tidak tersambung ke database; aman untuk eksperimen skenario penilaian apa pun.
-                    </p>
+                    <Button variant="primary" onClick={exportZip} loading={exporting}>
+                        <ArchiveBoxArrowDownIcon className="h-4 w-4" />
+                        Export DOCX+PDF (ZIP)
+                    </Button>
                 </div>
             </div>
         </AppLayout>

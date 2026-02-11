@@ -18,7 +18,7 @@ class ProposalController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $groupId = $user->student?->registrations()->where('status', 'approved')->first()?->group_id;
+        $groupId = $user->getActiveGroupId();
 
         if (!$groupId && !$user->hasRole('admin') && !$user->hasRole('dpl')) {
              return redirect()->route('dashboard')->with('error', 'Belum memiliki kelompok.');
@@ -51,7 +51,7 @@ class ProposalController extends Controller
         ]);
 
         $user = $request->user();
-        $groupId = $user->student?->registrations()->where('status', 'approved')->first()?->group_id;
+        $groupId = $user->getActiveGroupId();
 
         if (!$groupId) {
              return back()->with('error', 'Kelompok tidak ditemukan.');
@@ -64,6 +64,9 @@ class ProposalController extends Controller
 
     public function review(Request $request, int $id)
     {
+        $proposal = \App\Models\Proposal::findOrFail($id);
+        $this->authorize('review', $proposal);
+
         $validated = $request->validate([
             'status' => 'required|in:approved,rejected,revision_required',
             'feedback' => 'nullable|string',

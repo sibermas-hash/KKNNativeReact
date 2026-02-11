@@ -39,31 +39,33 @@ class WorkshopService
      */
     public function registerParticipant(int $workshopId, int $userId): WorkshopParticipant
     {
-        $workshop = Workshop::findOrFail($workshopId);
+        return DB::transaction(function () use ($workshopId, $userId) {
+            $workshop = Workshop::lockForUpdate()->findOrFail($workshopId);
 
-        // Check if workshop is full
-        if ($workshop->max_participants) {
-            $currentParticipants = WorkshopParticipant::where('workshop_id', $workshopId)->count();
-            
-            if ($currentParticipants >= $workshop->max_participants) {
-                throw new \InvalidArgumentException("Workshop is full");
+            // Check if already registered
+            $existing = WorkshopParticipant::where('workshop_id', $workshopId)
+                ->where('user_id', $userId)
+                ->first();
+
+            if ($existing) {
+                throw new \InvalidArgumentException("Already registered for this workshop");
             }
-        }
 
-        // Check if already registered
-        $existing = WorkshopParticipant::where('workshop_id', $workshopId)
-            ->where('user_id', $userId)
-            ->first();
+            // Check if workshop is full (inside transaction with lock)
+            if ($workshop->max_participants) {
+                $currentParticipants = WorkshopParticipant::where('workshop_id', $workshopId)->count();
+                
+                if ($currentParticipants >= $workshop->max_participants) {
+                    throw new \InvalidArgumentException("Workshop is full");
+                }
+            }
 
-        if ($existing) {
-            throw new \InvalidArgumentException("Already registered for this workshop");
-        }
-
-        return WorkshopParticipant::create([
-            'workshop_id' => $workshopId,
-            'user_id' => $userId,
-            'attendance_status' => 'registered',
-        ]);
+            return WorkshopParticipant::create([
+                'workshop_id' => $workshopId,
+                'user_id' => $userId,
+                'attendance_status' => 'registered',
+            ]);
+        });
     }
 
     /**
@@ -95,15 +97,19 @@ class WorkshopService
     protected function syncWorkshopScore(WorkshopParticipant $participant): void
     {
         $user = $participant->user;
-        $groupId = $user->student?->registrations()->where('status', 'approved')->first()?->group_id;
+        $groupId = $user->getActiveGroupId();
 
         if ($groupId) {
+             // A4: Use configurable workshop score
+             $workshopScore = \App\Models\GradingConfig::where('config_key', 'workshop_attendance_score')
+                ->first()?->percentage ?? 100;
+
              $this->gradingService->submitAdminScores(
                  $user->id,
                  $groupId,
-                 100, // Workshop score = 100 if attended
+                 (float) $workshopScore,
                  $participant->user->kknScores()->where('group_id', $groupId)->first()?->administration_score ?? 0,
-                 auth()->id() ?? 1 // Usually Admin ID
+                 auth()->id() ?? \App\Models\User::role('admin')->first()?->id ?? 1
              );
         }
     }
@@ -194,12 +200,11 @@ class WorkshopService
     {
         $workshops = Workshop::where('workshop_date', '>=', now()->toDateString())
             ->where('status', 'scheduled')
+            ->withCount('participants')
             ->orderBy('workshop_date')
             ->get();
 
         return $workshops->map(function ($workshop) {
-            $participantsCount = WorkshopParticipant::where('workshop_id', $workshop->id)->count();
-            
             return [
                 'id' => $workshop->id,
                 'title' => $workshop->title,
@@ -208,10 +213,10 @@ class WorkshopService
                 'date' => $workshop->workshop_date->format('d-m-Y'),
                 'time' => $workshop->start_time . ' - ' . $workshop->end_time,
                 'location' => $workshop->location,
-                'registered' => $participantsCount,
+                'registered' => $workshop->participants_count,
                 'max_participants' => $workshop->max_participants,
                 'is_full' => $workshop->max_participants 
-                    ? $participantsCount >= $workshop->max_participants 
+                    ? $workshop->participants_count >= $workshop->max_participants 
                     : false,
             ];
         })->toArray();

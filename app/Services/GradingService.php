@@ -161,6 +161,7 @@ class GradingService
         $score->update([
             'dpl_weighted_score' => round($aWeighted, 2),
             'village_weighted_score' => round($bWeighted, 2),
+            'lppm_weighted_score' => round($cWeighted, 2),
             'total_score' => round($totalScore, 2),
             'letter_grade' => $letterGrade,
         ]);
@@ -215,42 +216,42 @@ class GradingService
      */
     public function finalizeAll(int $periodId): int
     {
-        $scoresToFinalize = KknScore::whereHas('group', function ($query) use ($periodId) {
+        $count = 0;
+        $failed = 0;
+
+        KknScore::whereHas('group', function ($query) use ($periodId) {
             $query->where('period_id', $periodId);
         })
         ->where('is_finalized', false)
         ->whereNotNull('total_score')
-        ->get();
+        ->chunkById(50, function ($scores) use (&$count, &$failed) {
+            foreach ($scores as $score) {
+                // Anti-Halu Logic: Cek Laporan Akhir
+                $report = \App\Models\FinalReport::where('student_id', $score->student_id)
+                    ->where('group_id', $score->group_id)
+                    ->first();
 
-        $count = 0;
-        $failed = 0;
-        
-        foreach ($scoresToFinalize as $score) {
-            // Anti-Halu Logic: Cek Laporan Akhir
-            $report = \App\Models\FinalReport::where('student_id', $score->student_id)
-                ->where('group_id', $score->group_id)
-                ->first();
+                if (!$report || $report->status !== 'approved') {
+                    $failed++;
+                    continue;
+                }
 
-            if (!$report || $report->status !== 'approved') {
-                $failed++;
-                continue;
+                $score->update(['is_finalized' => true]);
+                $count++;
+
+                // Notify student
+                $studentUser = \App\Models\User::find($score->student_id);
+                if ($studentUser) {
+                    $studentUser->notify(new \App\Notifications\KknActivityNotification([
+                        'type' => 'success',
+                        'title' => 'Nilai KKN Difinalisasi',
+                        'message' => 'Nilai KKN Anda telah difinalisasi oleh Admin LPPM. Silakan unduh sertifikat.',
+                        'icon' => 'academic-cap',
+                        'url' => route('student.dashboard'),
+                    ]));
+                }
             }
-
-            $score->update(['is_finalized' => true]);
-            $count++;
-
-            // Notify student
-            $studentUser = \App\Models\User::find($score->student_id);
-            if ($studentUser) {
-                $studentUser->notify(new \App\Notifications\KknActivityNotification([
-                    'type' => 'success',
-                    'title' => 'Nilai KKN Difinalisasi',
-                    'message' => 'Nilai KKN Anda telah difinalisasi oleh Admin LPPM. Silakan unduh sertifikat.',
-                    'icon' => 'academic-cap',
-                    'url' => route('student.dashboard'),
-                ]));
-            }
-        }
+        });
 
         \App\Services\AuditService::log(
             'MASS_FINALIZE',

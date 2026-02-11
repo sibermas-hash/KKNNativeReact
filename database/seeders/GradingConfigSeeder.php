@@ -35,6 +35,13 @@ class GradingConfigSeeder extends Seeder
                 'group' => 'main',
                 'description' => 'Persentase total nilai dari LPPM (Workshop & Administrasi)'
             ],
+            [
+                'config_key' => 'workshop_attendance_score',
+                'label' => 'Nilai Kehadiran Workshop',
+                'percentage' => 100.00, // Assuming this is a direct score, not a weight component
+                'group' => 'lppm', // Placing it under lppm group as it's related to workshop
+                'description' => 'Nilai default untuk kehadiran workshop'
+            ],
 
             // DPL Sub-weights
             [

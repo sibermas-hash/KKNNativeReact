@@ -36,7 +36,7 @@ class ReportController extends Controller
         }
 
         // For Student, show their progress
-        $groupId = $user->student?->registrations()->where('status', 'approved')->first()?->group_id;
+        $groupId = $user->getActiveGroupId();
         
         if ($groupId) {
             $progress = $this->reportService->getStudentReportProgress($user->id, $groupId);
@@ -56,11 +56,11 @@ class ReportController extends Controller
         $validated = $request->validate([
             'type' => 'required|string',
             'title' => 'required|string|max:255',
-            'file' => 'required|file|max:10240', // 10MB
+            'file' => 'required|file|max:512000|mimes:pdf,docx,png,jpg,jpeg,mp4,avi,mov,xlsx', // 500MB max, restricted MIME types
         ]);
 
         $user = $request->user();
-        $groupId = $user->student?->registrations()->where('status', 'approved')->first()?->group_id;
+        $groupId = $user->getActiveGroupId();
 
         if (!$groupId) {
              return back()->with('error', 'Kelompok tidak ditemukan.');

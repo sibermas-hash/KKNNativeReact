@@ -105,4 +105,16 @@ class User extends Authenticatable
     {
         return $this->hasMany(KknScore::class, 'student_id');
     }
+
+    /**
+     * Get the active KKN group ID for this user (if student).
+     */
+    public function getActiveGroupId(): ?int
+    {
+        return $this->student
+            ?->registrations()
+            ->where('status', 'approved')
+            ->first()
+            ?->group_id;
+    }
 }

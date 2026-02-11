@@ -12,19 +12,15 @@ class MasterApiService
     protected string $clientId;
     protected string $clientSecret;
     protected int $cacheMinutes;
+    protected bool $verifySsl;
 
     public function __construct()
     {
-        $this->baseUrl = rtrim(
-            config('services.master_api.url')
-                ?? env('MASTER_API_BASE_URL')
-                ?? env('MASTER_API_BASE')
-                ?? env('MASTER_API_URL', ''),
-            '/'
-        );
-        $this->clientId = config('services.master_api.client_id', env('MASTER_API_CLIENT_ID'));
-        $this->clientSecret = config('services.master_api.client_secret', env('MASTER_API_CLIENT_SECRET'));
-        $this->cacheMinutes = (int) config('services.master_api.cache_minutes', env('MASTER_API_CACHE_MINUTES', 60));
+        $this->baseUrl = rtrim((string) config('services.master_api.url', ''), '/');
+        $this->clientId = (string) config('services.master_api.client_id', '');
+        $this->clientSecret = (string) config('services.master_api.client_secret', '');
+        $this->cacheMinutes = (int) config('services.master_api.cache_minutes', 60);
+        $this->verifySsl = config('app.env') !== 'local';
     }
 
     /**
@@ -36,7 +32,7 @@ class MasterApiService
 
         return Cache::remember($cacheKey, now()->addMinutes($this->cacheMinutes - 5), function () {
             try {
-                $response = Http::withOptions(['verify' => false])->post($this->baseUrl . '/auth/token', [
+                $response = Http::withOptions(['verify' => $this->verifySsl])->post($this->baseUrl . '/auth/token', [
                     'client_id' => $this->clientId,
                     'client_secret' => $this->clientSecret,
                 ]);
@@ -71,7 +67,7 @@ class MasterApiService
 
         try {
             $response = Http::withToken($token)
-                ->withOptions(['verify' => false])
+                ->withOptions(['verify' => $this->verifySsl])
                 ->get($this->baseUrl . $endpoint, $params);
 
             Log::debug("Master API: GET {$endpoint} response", [
@@ -124,7 +120,7 @@ class MasterApiService
     public function healthCheck(): array
     {
         try {
-            $response = Http::withOptions(['verify' => false])->get($this->baseUrl . '/health');
+            $response = Http::withOptions(['verify' => $this->verifySsl])->get($this->baseUrl . '/health');
             return $response->json() ?? ['status' => 'DOWN'];
         } catch (\Exception $e) {
             return ['status' => 'DOWN', 'error' => $e->getMessage()];

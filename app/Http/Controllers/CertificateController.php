@@ -49,7 +49,11 @@ class CertificateController extends Controller
 
         $zip = new ZipArchive;
         $fileName = "Mass_Certificates_Period_{$periodId}.zip";
-        $tempPath = storage_path("app/public/{$fileName}");
+        $tempDir = storage_path('app/temp');
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+        $tempPath = $tempDir . "/{$fileName}";
 
         if ($zip->open($tempPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
             foreach ($scores as $score) {

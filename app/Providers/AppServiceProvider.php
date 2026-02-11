@@ -22,23 +22,26 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
-            if ($user->hasRole('admin')) {
-                // Only log bypass for sensitive/mutation abilities to reduce noise
-                $sensitiveAbilities = ['create', 'update', 'delete', 'finalize', 'bulkFinalize', 'export'];
-                
-                if (in_array($ability, $sensitiveAbilities)) {
-                    \App\Models\AuditLog::create([
-                        'user_id' => $user->id,
-                        'action' => 'GATE_BYPASS',
-                        'ability' => $ability,
-                        'description' => "Admin bypassed policy for ability: {$ability}",
-                        'ip_address' => request()->ip(),
-                        'user_agent' => request()->userAgent(),
-                    ]);
-                }
-                
+            // Superadmin bypasses everything (with audit logging)
+            if ($user->hasRole('superadmin')) {
+                \App\Services\AuditService::logGodModeAccess($user, $ability);
                 return true;
             }
+
+            // Admin: only auto-bypass for read/view abilities
+            // Mutation abilities (create, update, delete, finalize, etc.) must pass through policies
+            if ($user->hasRole('admin')) {
+                $readOnlyAbilities = ['viewAny', 'view', 'export'];
+                
+                if (in_array($ability, $readOnlyAbilities)) {
+                    return true;
+                }
+                
+                // For mutation abilities, let the policy decide
+                // Return null so the policy is evaluated normally
+                return null;
+            }
+
             return null;
         });
 

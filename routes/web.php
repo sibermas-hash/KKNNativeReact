@@ -65,6 +65,9 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
 
         // Advanced Activity Management (God Mode Global)
         Route::get('reports', [App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/daily', [Admin\DailyReportController::class, 'index'])->name('reports.daily.index');
+        Route::get('reports/work-programs', [Admin\WorkProgramController::class, 'index'])->name('reports.work-programs.index');
+        Route::get('reports/final', [Admin\FinalReportController::class, 'index'])->name('reports.final.index');
         Route::get('evaluations', [App\Http\Controllers\GradingController::class, 'index'])->name('evaluations.index');
         Route::post('evaluations/dpl', [App\Http\Controllers\GradingController::class, 'submitDPLScores'])->name('evaluations.submit-dpl');
         Route::post('evaluations/village', [App\Http\Controllers\GradingController::class, 'submitVillageScores'])->name('evaluations.submit-village');

@@ -10,6 +10,7 @@ use App\Models\Student;
 use App\Models\Period;
 use App\Models\WorkProgram;
 use App\Models\FinalReport;
+use App\Services\MasterApi;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -20,6 +21,9 @@ class DashboardController extends Controller
         $activePeriod = Period::getActivePeriod();
 
         return Inertia::render('Admin/Dashboard', [
+            'masterGroups' => Inertia::defer(function (MasterApi $api) {
+                return $api->getGroups();
+            }),
             'stats' => Inertia::defer(function () use ($activePeriod) {
                 return [
                     'total_students' => \App\Models\Student::count(),

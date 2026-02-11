@@ -11,9 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('audit_logs', function (Blueprint $table) {
-            $table->string('ability')->nullable()->after('action');
-            $table->text('description')->nullable()->after('ability');
+        $hasAbility = Schema::hasColumn('audit_logs', 'ability');
+        $hasDescription = Schema::hasColumn('audit_logs', 'description');
+
+        if ($hasAbility && $hasDescription) {
+            return;
+        }
+
+        Schema::table('audit_logs', function (Blueprint $table) use ($hasAbility, $hasDescription) {
+            if (! $hasAbility) {
+                $table->string('ability')->nullable();
+            }
+            if (! $hasDescription) {
+                $table->text('description')->nullable();
+            }
         });
     }
 
@@ -22,8 +33,20 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('audit_logs', function (Blueprint $table) {
-            $table->dropColumn(['ability', 'description']);
+        $hasAbility = Schema::hasColumn('audit_logs', 'ability');
+        $hasDescription = Schema::hasColumn('audit_logs', 'description');
+
+        if (! $hasAbility && ! $hasDescription) {
+            return;
+        }
+
+        Schema::table('audit_logs', function (Blueprint $table) use ($hasAbility, $hasDescription) {
+            if ($hasAbility) {
+                $table->dropColumn('ability');
+            }
+            if ($hasDescription) {
+                $table->dropColumn('description');
+            }
         });
     }
 };

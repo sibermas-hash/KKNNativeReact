@@ -82,6 +82,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         // Grading Configuration
         Route::get('grading-settings', [Admin\GradingConfigController::class, 'index'])->name('grading-settings.index');
         Route::post('grading-settings', [Admin\GradingConfigController::class, 'update'])->name('grading-settings.update');
+        Route::get('grade-generator', [Admin\GradeGeneratorController::class, 'index'])->name('grade-generator.index');
 
         // Rekap Nilai
         Route::get('rekap-nilai', [Admin\RekapNilaiController::class, 'index'])->name('rekap-nilai.index');

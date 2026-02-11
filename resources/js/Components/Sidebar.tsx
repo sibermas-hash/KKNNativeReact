@@ -64,6 +64,7 @@ const adminNav: NavGroup[] = [
             { label: 'Evaluasi & Nilai', href: '/admin/evaluations', icon: ChartBarIcon },
             { label: 'Workshop', href: '/admin/workshops', icon: CalendarDaysIcon },
             { label: 'Proposal', href: '/admin/proposals', icon: DocumentMagnifyingGlassIcon },
+            { label: 'Generator Nilai', href: '/admin/grade-generator', icon: AdjustmentsVerticalIcon },
             { label: 'Rekap Nilai', href: '/admin/rekap-nilai', icon: DocumentChartBarIcon },
             { label: 'Log Audit', href: '/admin/audit-log', icon: ShieldExclamationIcon },
             { label: 'Pengaturan Nilai', href: '/admin/grading-settings', icon: AdjustmentsVerticalIcon },

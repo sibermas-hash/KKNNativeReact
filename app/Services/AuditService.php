@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\AuditLog;
+use App\Models\KKN\LogAudit;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 
@@ -13,7 +13,7 @@ class AuditService
      */
     public static function log(string $action, string $description, $model = null, array $oldValues = null, array $newValues = null)
     {
-        return \App\Models\AuditLog::create([
+        return LogAudit::create([
             'user_id' => Auth::id(),
             'action' => $action,
             'description' => $description,

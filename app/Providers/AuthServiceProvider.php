@@ -13,9 +13,9 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        \App\Models\KknScore::class => \App\Policies\KknScorePolicy::class,
-        \App\Models\AuditLog::class => \App\Policies\AuditLogPolicy::class,
-        \App\Models\Proposal::class => \App\Policies\ProposalPolicy::class,
+        \App\Models\KKN\NilaiKkn::class => \App\Policies\KknScorePolicy::class,
+        \App\Models\KKN\LogAudit::class => \App\Policies\AuditLogPolicy::class,
+        \App\Models\KKN\Proposal::class => \App\Policies\ProposalPolicy::class,
     ];
 
     /**

@@ -46,9 +46,9 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Register Observers for critical models
-        \App\Models\KknScore::observe(\App\Observers\AuditObserver::class);
-        \App\Models\Report::observe(\App\Observers\AuditObserver::class);
-        \App\Models\DailyReport::observe(\App\Observers\AuditObserver::class);
+        \App\Models\KKN\NilaiKkn::observe(\App\Observers\AuditObserver::class);
+        \App\Models\KKN\Laporan::observe(\App\Observers\AuditObserver::class);
+        \App\Models\KKN\KegiatanKkn::observe(\App\Observers\AuditObserver::class);
 
         // Force HTTPS when behind Cloudflare tunnel
         if ($this->app->environment('production')) {

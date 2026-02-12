@@ -2,7 +2,7 @@
 
 namespace App\Observers;
 
-use App\Models\AuditLog;
+use App\Models\KKN\LogAudit;
 use Illuminate\Database\Eloquent\Model;
 
 class AuditObserver
@@ -38,7 +38,7 @@ class AuditObserver
             ? collect($model->getAttributes())->except($sensitiveKeys)->toArray()
             : null;
 
-        AuditLog::create([
+        LogAudit::create([
             'user_id' => auth()->id(),
             'action' => $action,
             'model_type' => get_class($model),

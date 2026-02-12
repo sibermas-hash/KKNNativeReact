@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Faculty;
-use App\Models\Lecturer;
-use App\Models\Program;
-use App\Models\Student;
+use App\Models\KKN\Fakultas;
+use App\Models\KKN\Dosen;
+use App\Models\KKN\Prodi;
+use App\Models\KKN\Mahasiswa;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -39,8 +39,8 @@ class UserController extends Controller
 
     public function create(): Response
     {
-        $faculties = Faculty::orderBy('name')->get();
-        $programs = Program::orderBy('name')->get();
+        $faculties = Fakultas::orderBy('nama')->get();
+        $programs = Prodi::orderBy('nama')->get();
 
         return Inertia::render('Admin/Users/Form', [
             'faculties' => $faculties,
@@ -58,8 +58,8 @@ class UserController extends Controller
             'role' => ['required', 'in:admin,dpl,student'],
             // Student fields
             'nim' => ['required_if:role,student', 'nullable', 'string', 'max:20'],
-            'faculty_id' => ['required_if:role,student', 'nullable', 'exists:faculties,id'],
-            'program_id' => ['required_if:role,student', 'nullable', 'exists:programs,id'],
+            'faculty_id' => ['required_if:role,student', 'nullable', 'exists:fakultas,id'],
+            'program_id' => ['required_if:role,student', 'nullable', 'exists:prodi,id'],
             'batch_year' => ['required_if:role,student', 'nullable', 'integer'],
             'gender' => ['required_if:role,student', 'nullable', 'in:L,P'],
             // Lecturer fields
@@ -77,10 +77,10 @@ class UserController extends Controller
         $user->assignRole($validated['role']);
 
         if ($validated['role'] === 'student' && !empty($validated['nim'])) {
-            Student::create([
+            Mahasiswa::create([
                 'user_id' => $user->id,
                 'nim' => $validated['nim'],
-                'name' => $validated['name'],
+                'nama' => $validated['name'],
                 'faculty_id' => $validated['faculty_id'],
                 'program_id' => $validated['program_id'],
                 'batch_year' => $validated['batch_year'],
@@ -89,11 +89,11 @@ class UserController extends Controller
         }
 
         if ($validated['role'] === 'dpl' && !empty($validated['nip'])) {
-            Lecturer::create([
+            Dosen::create([
                 'user_id' => $user->id,
                 'nip' => $validated['nip'],
-                'name' => $validated['name'],
-                'faculty_id' => $validated['faculty_id'] ?? Faculty::first()?->id,
+                'nama' => $validated['name'],
+                'faculty_id' => $validated['faculty_id'] ?? Fakultas::first()?->id,
             ]);
         }
 

@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\KknScore;
+use App\Models\KKN\NilaiKkn;
 
 class KknScorePolicy extends BasePolicy
 {
@@ -13,19 +13,19 @@ class KknScorePolicy extends BasePolicy
                $user->hasAnyRole(['superadmin', 'admin', 'dpl']);
     }
 
-    public function view(User $user, KknScore $score): bool
+    public function view(User $user, NilaiKkn $score): bool
     {
         if ($bypass = $this->superAdminBypass($user, 'view')) return true;
         
         // DPL only views scores of their assigned group
         if ($user->hasRole('dpl')) {
             // Check via relationship chain: Score -> Group -> Lecturer -> User
-            return $score->group?->lecturer?->user_id === $user->id;
+            return $score->kelompok?->dosen?->user_id === $user->id;
         }
         
         // Student only views their own score
         if ($user->hasRole('student')) {
-            return $score->student_id === $user->id;
+            return $score->mahasiswa_id === $user->id;
         }
         
         return $user->hasRole('admin');
@@ -37,7 +37,7 @@ class KknScorePolicy extends BasePolicy
                $user->hasAnyRole(['superadmin', 'admin', 'dpl']);
     }
 
-    public function update(User $user, KknScore $score): bool
+    public function update(User $user, NilaiKkn $score): bool
     {
         if ($bypass = $this->superAdminBypass($user, 'update')) return true;
         
@@ -53,19 +53,19 @@ class KknScorePolicy extends BasePolicy
         
         // DPL can update scores for their group
         if ($user->hasRole('dpl')) {
-            return $score->group?->lecturer?->user_id === $user->id;
+            return $score->kelompok?->dosen?->user_id === $user->id;
         }
         
         return false;
     }
 
-    public function delete(User $user, KknScore $score): bool
+    public function delete(User $user, NilaiKkn $score): bool
     {
         return $this->superAdminBypass($user, 'delete') ?? 
                ($user->hasRole('superadmin') && !$score->is_finalized);
     }
 
-    public function finalize(User $user, KknScore $score): bool
+    public function finalize(User $user, NilaiKkn $score): bool
     {
         return $this->superAdminBypass($user, 'finalize') ?? 
                $user->hasAnyRole(['superadmin', 'admin']);

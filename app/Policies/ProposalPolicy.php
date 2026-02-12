@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\Proposal;
+use App\Models\KKN\Proposal;
 
 class ProposalPolicy extends BasePolicy
 {
@@ -18,13 +18,13 @@ class ProposalPolicy extends BasePolicy
         
         if ($user->hasRole('student')) {
             // Check if student belongs to the proposal's group via active registration
-            return $user->student?->registrations()
-                ->where('group_id', $proposal->group_id)
+            return $user->mahasiswa?->peserta()
+                ->where('kelompok_id', $proposal->kelompok_id)
                 ->exists();
         }
         
         if ($user->hasRole('dpl')) {
-            return $proposal->reviewer_id === $user->lecturer?->id;
+            return $proposal->reviewer_id === $user->dosen?->id;
         }
         
         return true;
@@ -34,9 +34,9 @@ class ProposalPolicy extends BasePolicy
     {
         // Only approved students who have joined a group can create proposals
         if ($user->hasRole('student')) {
-            return $user->student?->registrations()
+            return $user->mahasiswa?->peserta()
                 ->where('status', 'approved')
-                ->whereNotNull('group_id')
+                ->whereNotNull('kelompok_id')
                 ->exists();
         }
         
@@ -49,8 +49,8 @@ class ProposalPolicy extends BasePolicy
         
         if ($user->hasRole('student')) {
             // Must be member of the group
-            $isMember = $user->student?->registrations()
-                ->where('group_id', $proposal->group_id)
+            $isMember = $user->mahasiswa?->peserta()
+                ->where('kelompok_id', $proposal->kelompok_id)
                 ->exists();
                 
             // Can only edit draft or rejected proposals
@@ -60,7 +60,7 @@ class ProposalPolicy extends BasePolicy
         }
         
         if ($user->hasRole('dpl')) {
-            return $proposal->reviewer_id === $user->lecturer?->id;
+            return $proposal->reviewer_id === $user->dosen?->id;
         }
         
         return $user->hasRole('admin');
@@ -70,7 +70,7 @@ class ProposalPolicy extends BasePolicy
     {
         if ($bypass = $this->superAdminBypass($user, 'review')) return true;
         
-        return ($user->hasRole('dpl') && $proposal->reviewer_id === $user->lecturer?->id) ||
+        return ($user->hasRole('dpl') && $proposal->reviewer_id === $user->dosen?->id) ||
                $user->hasAnyRole(['admin', 'superadmin']);
     }
 }

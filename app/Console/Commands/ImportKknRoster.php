@@ -2,11 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Group;
-use App\Models\Lecturer;
-use App\Models\Location;
-use App\Models\Period;
-use App\Models\Student;
+use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\Dosen;
+use App\Models\KKN\Lokasi;
+use App\Models\KKN\Mahasiswa;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -78,23 +77,23 @@ class ImportKknRoster extends Command
                 $pt = trim((string) $row['K']);
 
                 // Location
-                $location = Location::firstOrCreate(
+                $location = Lokasi::firstOrCreate(
                     ['village_name' => $desa, 'district_id' => null, 'regency_id' => null, 'province_id' => null],
                     ['address' => implode(', ', array_filter([$desa, $kec, $kab]))]
                 );
 
                 // Group
-                $group = Group::firstOrCreate(
+                $group = KelompokKkn::firstOrCreate(
                     ['code' => 'G'.$kelompok],
                     [
-                        'name' => 'Kelompok '.$kelompok,
+                        'nama_kelompok' => 'Kelompok '.$kelompok,
                         'period_id' => $periodId,
                         'location_id' => $location->id,
                         'status' => 'draft',
                     ]
                 );
 
-                // DPL user+lecturer
+                // DPL user+dosen
                 $dplUsername = strtolower(preg_replace('/\s+/', '', $dplName));
                 $dplUser = User::updateOrCreate(
                     ['username' => $dplUsername],
@@ -107,22 +106,22 @@ class ImportKknRoster extends Command
                 );
                 $dplUser->assignRole($roleDpl);
 
-                $lecturer = Lecturer::updateOrCreate(
+                $lecturer = Dosen::updateOrCreate(
                     ['user_id' => $dplUser->id],
                     [
                         'nip' => 'DPL'.$dplUser->id,
-                        'name' => $dplName,
+                        'nama' => $dplName,
                         'faculty_id' => $defaultFaculty,
                     ]
                 );
 
                 // attach dpl to group if empty
-                if (! $group->lecturer_id) {
-                    $group->lecturer_id = $lecturer->id;
+                if (! $group->dpl_id) {
+                    $group->dpl_id = $lecturer->id;
                     $group->save();
                 }
 
-                // Student user+student
+                // Mahasiswa user+mahasiswa
                 $studentUser = User::updateOrCreate(
                     ['username' => $nim],
                     [
@@ -134,11 +133,11 @@ class ImportKknRoster extends Command
                 );
                 $studentUser->assignRole($roleStudent);
 
-                $student = Student::updateOrCreate(
+                $mahasiswa = Mahasiswa::updateOrCreate(
                     ['nim' => $nim],
                     [
                         'user_id' => $studentUser->id,
-                        'name' => $nama,
+                        'nama' => $nama,
                         'faculty_id' => $defaultFaculty,
                         'program_id' => $defaultProgram,
                         'batch_year' => 2026,
@@ -150,7 +149,7 @@ class ImportKknRoster extends Command
                 // Group membership (if table exists)
                 if (Schema::hasTable('group_members')) {
                     DB::table('group_members')->updateOrInsert(
-                        ['group_id' => $group->id, 'student_id' => $student->id],
+                        ['group_id' => $group->id, 'student_id' => $mahasiswa->id],
                         ['role_in_group' => 'member', 'joined_at' => now()]
                     );
                 }

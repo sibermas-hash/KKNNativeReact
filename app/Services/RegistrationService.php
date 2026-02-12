@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Registration;
-use App\Models\Student;
+use App\Models\KKN\PesertaKkn;
+use App\Models\KKN\Mahasiswa;
 use App\Repositories\Contracts\RegistrationRepositoryInterface;
 use Illuminate\Validation\ValidationException;
 
@@ -14,9 +14,9 @@ class RegistrationService
     ) {
     }
 
-    public function register(Student $student, int $periodId, ?string $notes): Registration
+    public function register(Mahasiswa $mahasiswa, int $periodeId, ?string $notes): PesertaKkn
     {
-        $existing = $this->registrations->findForStudentPeriod($student->id, $periodId);
+        $existing = $this->registrations->findForMahasiswaPeriode($mahasiswa->id, $periodeId);
 
         if ($existing) {
             throw ValidationException::withMessages([
@@ -25,8 +25,8 @@ class RegistrationService
         }
 
         return $this->registrations->create([
-            'student_id' => $student->id,
-            'period_id' => $periodId,
+            'mahasiswa_id' => $mahasiswa->id,
+            'period_id' => $periodeId,
             'notes' => $notes,
             'status' => 'pending',
         ]);

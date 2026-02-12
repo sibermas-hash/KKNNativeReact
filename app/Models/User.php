@@ -61,49 +61,49 @@ class User extends Authenticatable
         return $this->hasOne(UserProfile::class);
     }
 
-    public function student(): HasOne
+    public function mahasiswa(): HasOne
     {
-        return $this->hasOne(Student::class);
+        return $this->hasOne(\App\Models\KKN\Mahasiswa::class);
     }
 
-    public function lecturer(): HasOne
+    public function dosen(): HasOne
     {
-        return $this->hasOne(Lecturer::class);
+        return $this->hasOne(\App\Models\KKN\Dosen::class);
     }
 
-    public function approvedRegistrations(): HasMany
+    public function approvedPeserta(): HasMany
     {
-        return $this->hasMany(Registration::class, 'approved_by');
+        return $this->hasMany(\App\Models\KKN\PesertaKkn::class, 'approved_by');
     }
 
-    public function reviewedDailyReports(): HasMany
+    public function reviewedKegiatan(): HasMany
     {
-        return $this->hasMany(DailyReport::class, 'reviewed_by');
+        return $this->hasMany(\App\Models\KKN\KegiatanKkn::class, 'reviewed_by');
     }
 
-    public function approvedWorkPrograms(): HasMany
+    public function approvedProgramKerja(): HasMany
     {
-        return $this->hasMany(WorkProgram::class, 'approved_by');
+        return $this->hasMany(\App\Models\KKN\ProgramKerja::class, 'approved_by');
     }
 
-    public function reviewedFinalReports(): HasMany
+    public function reviewedLaporanAkhir(): HasMany
     {
-        return $this->hasMany(FinalReport::class, 'reviewed_by');
+        return $this->hasMany(\App\Models\KKN\LaporanAkhir::class, 'reviewed_by');
     }
 
     public function evaluations(): HasMany
     {
-        return $this->hasMany(Evaluation::class, 'evaluator_id');
+        return $this->hasMany(\App\Models\KKN\Evaluasi::class, 'evaluator_id');
     }
 
     public function workshopParticipations(): HasMany
     {
-        return $this->hasMany(WorkshopParticipant::class);
+        return $this->hasMany(\App\Models\KKN\PesertaWorkshop::class);
     }
 
-    public function kknScores(): HasMany
+    public function nilaiKkn(): HasMany
     {
-        return $this->hasMany(KknScore::class, 'student_id');
+        return $this->hasMany(\App\Models\KKN\NilaiKkn::class, 'mahasiswa_id');
     }
 
     /**
@@ -111,10 +111,10 @@ class User extends Authenticatable
      */
     public function getActiveGroupId(): ?int
     {
-        return $this->student
-            ?->registrations()
+        return $this->mahasiswa
+            ?->peserta()
             ->where('status', 'approved')
             ->first()
-            ?->group_id;
+            ?->kelompok_id;
     }
 }

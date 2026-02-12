@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Models\KknScore;
+use App\Models\KKN\NilaiKkn;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -13,7 +13,7 @@ class ScorePublished extends Notification implements ShouldQueue
     use Queueable;
 
     public function __construct(
-        public KknScore $score
+        public NilaiKkn $score
     ) {}
 
     /**
@@ -30,7 +30,7 @@ class ScorePublished extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $letterGrade = $this->score->letter_grade ?? 'N/A';
-        $totalScore = $this->score->final_score ?? $this->score->total_score ?? 0;
+        $totalScore = $this->score->total_score ?? 0;
 
         return (new MailMessage)
             ->subject('Nilai KKN Telah Dirilis - SIM-KKN UIN SAIZU')
@@ -50,7 +50,7 @@ class ScorePublished extends Notification implements ShouldQueue
         return [
             'title' => 'Nilai KKN Dirilis',
             'message' => 'Nilai KKN Anda telah difinalisasi. Nilai akhir: ' .
-                ($this->score->final_score ?? $this->score->total_score ?? 0) .
+                ($this->score->total_score ?? 0) .
                 ' (' . ($this->score->letter_grade ?? '-') . ')',
             'url' => '/student/evaluations',
             'icon' => 'academic-cap',

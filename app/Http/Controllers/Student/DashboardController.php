@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
-use App\Models\Registration;
+use App\Models\KKN\PesertaKkn;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -12,25 +12,25 @@ class DashboardController extends Controller
     public function index(): Response
     {
         $user = auth()->user();
-        $student = $user->student;
+        $mahasiswa = $user->mahasiswa;
 
-        $registration = $student
-            ? Registration::where('student_id', $student->id)
-                ->with('period', 'group.location', 'group.lecturer')
+        $registration = $mahasiswa
+            ? PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
+                ->with('periode', 'kelompok.lokasi', 'kelompok.dpl')
                 ->latest()
                 ->first()
             : null;
 
-        $dailyReportCount = $student
-            ? $student->dailyReports()->count()
+        $dailyReportCount = $mahasiswa
+            ? $mahasiswa->kegiatan()->count()
             : 0;
 
-        $finalReport = $student
-            ? $student->finalReports()->latest()->first()
+        $finalReport = $mahasiswa
+            ? $mahasiswa->laporanAkhir()->latest()->first()
             : null;
 
         return Inertia::render('Student/Dashboard', [
-            'student' => $student,
+            'student' => $mahasiswa,
             'registration' => $registration,
             'dailyReportCount' => $dailyReportCount,
             'finalReport' => $finalReport,

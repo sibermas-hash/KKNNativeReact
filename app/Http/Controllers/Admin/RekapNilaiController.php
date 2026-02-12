@@ -7,8 +7,10 @@ use App\Repositories\KknScoreRepository;
 use App\Services\GradingService;
 use App\Services\CertificateService;
 use App\Exports\RekapNilaiExport;
-use App\Models\KknScore;
-use App\Models\Period;
+use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\Periode;
+use App\Models\KKN\Fakultas;
+use App\Models\KKN\KelompokKkn;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
@@ -23,9 +25,9 @@ class RekapNilaiController extends Controller
 
     public function index(Request $request)
     {
-        $this->authorize('viewAny', KknScore::class);
+        $this->authorize('viewAny', NilaiKkn::class);
 
-        $activePeriod = Period::getActivePeriod();
+        $activePeriod = Periode::getActivePeriod();
         $periodeId = $request->integer('period_id', $activePeriod?->id);
         $filters = $request->only(['faculty_id', 'group_id', 'huruf']);
 
@@ -35,7 +37,7 @@ class RekapNilaiController extends Controller
                 'stats' => Inertia::defer(fn () => null),
                 'filters' => $filters,
                 'periodeId' => null,
-                'periods' => Period::all(),
+                'periods' => Periode::all(),
                 'faculties' => [],
                 'groups' => [],
             ]);
@@ -56,20 +58,20 @@ class RekapNilaiController extends Controller
             }),
             'filters' => $filters,
             'periodeId' => $periodeId,
-            'periods' => Period::all(),
-            'faculties' => \App\Models\Faculty::select('id', 'name')->get(),
-            'groups' => Inertia::defer(fn () => \App\Models\Group::where('period_id', $periodeId)
+            'periods' => Periode::all(),
+            'faculties' => Fakultas::select('id', 'nama as name')->get(),
+            'groups' => Inertia::defer(fn () => KelompokKkn::where('period_id', $periodeId)
                 ->select('id', 'code as kode_kelompok')->orderBy('code')->get()),
         ]);
     }
 
     public function export(Request $request)
     {
-        $this->authorize('export', KknScore::class);
+        $this->authorize('export', NilaiKkn::class);
 
         $periodeId = $request->integer('period_id');
         $rows = $this->repo->getRekapNilai($periodeId, $request->only(['faculty_id', 'group_id']));
-        $periode = Period::findOrFail($periodeId);
+        $periode = Periode::findOrFail($periodeId);
 
         return Excel::download(
             new RekapNilaiExport($rows, $periode),
@@ -79,14 +81,14 @@ class RekapNilaiController extends Controller
 
     public function finalizeMass(Request $request)
     {
-        $this->authorize('bulkFinalize', KknScore::class);
+        $this->authorize('bulkFinalize', NilaiKkn::class);
 
         $this->grading->dispatchMassFinalization($request->integer('period_id'));
 
         return back()->with('success', "Proses finalisasi massal telah dimulai di latar belakang.");
     }
 
-    public function downloadCertificate(KknScore $score)
+    public function downloadCertificate(NilaiKkn $score)
     {
         $this->authorize('view', $score);
 
@@ -95,15 +97,15 @@ class RekapNilaiController extends Controller
         }
 
         $pdf = $this->certificate->generateForStudent($score);
-        $nim = $score->student->student->nim ?? '';
-        $filename = "Sertifikat_KKN_{$score->student->name}_{$nim}.pdf";
+        $nim = $score->mahasiswa->student->nim ?? '';
+        $filename = "Sertifikat_KKN_{$score->mahasiswa->name}_{$nim}.pdf";
         
         return $pdf->download($filename);
     }
 
     public function bulkCertificates(Request $request)
     {
-        $this->authorize('export', KknScore::class);
+        $this->authorize('export', NilaiKkn::class);
 
         $periodeId = $request->integer('period_id');
         $rows = $this->repo->getRekapNilai($periodeId, $request->only(['faculty_id', 'group_id']));
@@ -119,14 +121,14 @@ class RekapNilaiController extends Controller
 
         if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
             foreach ($finalized as $row) {
-                $score = KknScore::where('student_id', $row->user_id)
-                    ->whereHas('group', fn($q) => $q->where('code', $row->kode_kelompok))
+                $score = NilaiKkn::where('mahasiswa_id', $row->user_id)
+                    ->whereHas('kelompok', fn($q) => $q->where('code', $row->kode_kelompok))
                     ->first();
                 
                 if ($score) {
                     $pdf = $this->certificate->generateForStudent($score);
-                    $nim = $score->student->student->nim ?? '';
-                    $pdfName = "Sertifikat_{$score->student->name}_{$nim}.pdf";
+                    $nim = $score->mahasiswa->student->nim ?? '';
+                    $pdfName = "Sertifikat_{$score->mahasiswa->name}_{$nim}.pdf";
                     $zip->addFromString($pdfName, $pdf->output());
                 }
             }

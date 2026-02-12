@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
-use App\Models\WorkProgram;
+use App\Models\KKN\ProgramKerja;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,18 +13,18 @@ class WorkProgramController extends Controller
 {
     public function index(): Response
     {
-        $student = auth()->user()->student;
-        $registration = $student?->registrations()->where('status', 'approved')->first();
+        $mahasiswa = auth()->user()->mahasiswa;
+        $pendaftaran = $mahasiswa?->peserta()->where('status', 'approved')->first();
 
-        $workPrograms = $registration && $registration->group_id
-            ? WorkProgram::where('group_id', $registration->group_id)
+        $programKerja = $pendaftaran && $pendaftaran->kelompok_id
+            ? ProgramKerja::where('kelompok_id', $pendaftaran->kelompok_id)
                 ->orderByDesc('created_at')
                 ->get()
             : collect();
 
         return Inertia::render('Student/WorkPrograms/Index', [
-            'workPrograms' => $workPrograms,
-            'canCreate' => $registration && $registration->group_id,
+            'workPrograms' => $programKerja,
+            'canCreate' => $pendaftaran && $pendaftaran->kelompok_id,
         ]);
     }
 
@@ -35,9 +35,9 @@ class WorkProgramController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $student = auth()->user()->student;
-        $registration = $student->registrations()->where('status', 'approved')->first();
-        abort_if(!$registration || !$registration->group_id, 403);
+        $mahasiswa = auth()->user()->mahasiswa;
+        $pendaftaran = $mahasiswa->peserta()->where('status', 'approved')->first();
+        abort_if(!$pendaftaran || !$pendaftaran->kelompok_id, 403);
 
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:200'],
@@ -47,8 +47,8 @@ class WorkProgramController extends Controller
             'budget' => ['required', 'numeric', 'min:0'],
         ]);
 
-        WorkProgram::create([
-            'group_id' => $registration->group_id,
+        ProgramKerja::create([
+            'kelompok_id' => $pendaftaran->kelompok_id,
             ...$validated,
             'status' => 'submitted',
             'submitted_at' => now(),

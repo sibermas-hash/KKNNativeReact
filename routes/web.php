@@ -1,5 +1,4 @@
 <?php
-// die("LARAVEL WEB REACHED");
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\PasswordResetController;
@@ -35,14 +34,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
     // Root redirect based on role
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/db-debug', function() {
-        try {
-            \Illuminate\Support\Facades\DB::connection()->getPdo();
-            return "Web DB Connection: SUCCESS";
-        } catch (\Exception $e) {
-            return "Web DB Connection: FAILED. Error: " . $e->getMessage();
-        }
-    });
+
 
     Route::prefix('admin')->middleware('role:admin|superadmin')->name('admin.')->group(function () {
         Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
@@ -53,16 +45,26 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::get('groups/{group}/students', [Admin\GradeController::class, 'students'])->name('groups.students');
 
         // Master Data
-        Route::resource('academic-years', Admin\AcademicYearController::class)
+        Route::resource('academic-years', Admin\TahunAkademikController::class)
             ->only(['index', 'store', 'update', 'destroy'])
-            ->parameters(['academic-years' => 'academicYear']);
-        Route::resource('periods', Admin\PeriodController::class)->only(['index', 'store', 'update', 'destroy']);
-        Route::resource('faculties', Admin\FacultyController::class)->only(['index', 'store', 'update', 'destroy']);
-        Route::resource('programs', Admin\ProgramController::class)->only(['index', 'store', 'update', 'destroy']);
-        Route::resource('locations', Admin\LocationController::class)->only(['index', 'store', 'update', 'destroy']);
+            ->parameters(['academic-years' => 'tahunAkademik']);
+        Route::resource('periods', Admin\PeriodeController::class)
+            ->only(['index', 'store', 'update', 'destroy'])
+            ->parameters(['periods' => 'periode']);
+        Route::resource('faculties', Admin\FakultasController::class)
+            ->only(['index', 'store', 'update', 'destroy'])
+            ->parameters(['faculties' => 'fakultas']);
+        Route::resource('programs', Admin\ProdiController::class)
+            ->only(['index', 'store', 'update', 'destroy'])
+            ->parameters(['programs' => 'prodi']);
+        Route::resource('locations', Admin\LokasiController::class)
+            ->only(['index', 'store', 'update', 'destroy'])
+            ->parameters(['locations' => 'lokasi']);
 
         // Groups
-        Route::resource('groups', Admin\GroupController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+        Route::resource('groups', Admin\KelompokKknController::class)
+            ->only(['index', 'show', 'store', 'update', 'destroy'])
+            ->parameters(['groups' => 'kelompokKkn']);
 
         // Users
         Route::get('users', [Admin\UserController::class, 'index'])->name('users.index');
@@ -71,35 +73,25 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::patch('users/{user}/toggle-active', [Admin\UserController::class, 'toggleActive'])->name('users.toggle-active');
 
         // Registrations
-        Route::get('registrations', [Admin\RegistrationController::class, 'index'])->name('registrations.index');
-        Route::get('registrations/{registration}', [Admin\RegistrationController::class, 'show'])->name('registrations.show');
-        Route::patch('registrations/{registration}/approve', [Admin\RegistrationController::class, 'approve'])->name('registrations.approve');
-        Route::patch('registrations/{registration}/reject', [Admin\RegistrationController::class, 'reject'])->name('registrations.reject');
-        Route::patch('registrations/{registration}/assign-group', [Admin\RegistrationController::class, 'assignGroup'])->name('registrations.assign-group');
+        Route::get('registrations', [Admin\PesertaKknController::class, 'index'])->name('registrations.index');
+        Route::get('registrations/{pesertaKkn}', [Admin\PesertaKknController::class, 'show'])->name('registrations.show');
+        Route::patch('registrations/{pesertaKkn}/approve', [Admin\PesertaKknController::class, 'approve'])->name('registrations.approve');
+        Route::patch('registrations/{pesertaKkn}/reject', [Admin\PesertaKknController::class, 'reject'])->name('registrations.reject');
+        Route::patch('registrations/{pesertaKkn}/assign-group', [Admin\PesertaKknController::class, 'assignGroup'])->name('registrations.assign-group');
 
         // Advanced Activity Management (God Mode Global)
         Route::get('reports', [App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
-        Route::get('reports/daily', [Admin\DailyReportController::class, 'index'])->name('reports.daily.index');
-        Route::get('reports/work-programs', [Admin\WorkProgramController::class, 'index'])->name('reports.work-programs.index');
-        Route::get('reports/final', [Admin\FinalReportController::class, 'index'])->name('reports.final.index');
-        Route::get('evaluations', [App\Http\Controllers\GradingController::class, 'index'])->name('evaluations.index');
-        Route::post('evaluations/dpl', [App\Http\Controllers\GradingController::class, 'submitDPLScores'])->name('evaluations.submit-dpl');
-        Route::post('evaluations/village', [App\Http\Controllers\GradingController::class, 'submitVillageScores'])->name('evaluations.submit-village');
-        Route::post('evaluations/admin', [App\Http\Controllers\GradingController::class, 'submitAdminScores'])->name('evaluations.submit-admin');
-        Route::get('workshops', [App\Http\Controllers\WorkshopController::class, 'index'])->name('workshops.index');
-        Route::post('workshops', [App\Http\Controllers\WorkshopController::class, 'store'])->name('workshops.store');
-        
-        // Proposals
-        Route::get('proposals', [App\Http\Controllers\ProposalController::class, 'index'])->name('proposals.index');
-        Route::post('proposals/{proposal}/review', [App\Http\Controllers\ProposalController::class, 'review'])->name('proposals.review');
+        Route::get('reports/daily', [Admin\KegiatanKknController::class, 'index'])->name('reports.daily.index');
+        Route::get('reports/work-programs', [Admin\ProgramKerjaController::class, 'index'])->name('reports.work-programs.index');
+        Route::get('reports/final', [Admin\LaporanAkhirController::class, 'index'])->name('reports.final.index');
         
         // Grading Configuration
-        Route::get('grading-settings', [Admin\GradingConfigController::class, 'index'])->name('grading-settings.index');
-        Route::post('grading-settings', [Admin\GradingConfigController::class, 'update'])->name('grading-settings.update');
-        Route::get('grade-generator', [Admin\GradeGeneratorController::class, 'index'])->name('grade-generator.index');
-        Route::get('grade-generator/groups/{group}/students', [Admin\GradeGeneratorController::class, 'students'])->name('grade-generator.students');
-        Route::post('grade-generator/scores', [Admin\GradeGeneratorController::class, 'saveScores'])->name('grade-generator.save-scores');
-        Route::get('grade-generator/export/{group}', [Admin\GradeGeneratorController::class, 'exportExcel'])->name('grade-generator.export');
+        Route::get('grading-settings', [Admin\KonfigurasiPenilaianController::class, 'index'])->name('grading-settings.index');
+        Route::post('grading-settings', [Admin\KonfigurasiPenilaianController::class, 'update'])->name('grading-settings.update');
+        Route::get('grade-generator', [Admin\GeneratorNilaiController::class, 'index'])->name('grade-generator.index');
+        Route::get('grade-generator/groups/{kelompokKkn}/students', [Admin\GeneratorNilaiController::class, 'students'])->name('grade-generator.students');
+        Route::post('grade-generator/scores', [Admin\GeneratorNilaiController::class, 'saveScores'])->name('grade-generator.save-scores');
+        Route::get('grade-generator/export/{kelompokKkn}', [Admin\GeneratorNilaiController::class, 'exportExcel'])->name('grade-generator.export');
 
         // Rekap Nilai
         Route::get('rekap-nilai', [Admin\RekapNilaiController::class, 'index'])->name('rekap-nilai.index');
@@ -109,8 +101,8 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::get('rekap-nilai/{score}/certificate', [Admin\RekapNilaiController::class, 'downloadCertificate'])->name('rekap-nilai.certificate');
 
         // Audit Log
-        Route::get('audit-log', [Admin\AuditLogController::class, 'index'])->name('audit-log.index');
-        Route::get('audit-log/{auditLog}', [Admin\AuditLogController::class, 'show'])->name('audit-log.show');
+        Route::get('audit-log', [Admin\LogAuditController::class, 'index'])->name('audit-log.index');
+        Route::get('audit-log/{logAudit}', [Admin\LogAuditController::class, 'show'])->name('audit-log.show');
 
         // Report Exports
         Route::get('export/daily-reports/group/{groupId}', [App\Http\Controllers\ReportExportController::class, 'downloadGroupDailyReports'])->name('export.daily-reports.group');

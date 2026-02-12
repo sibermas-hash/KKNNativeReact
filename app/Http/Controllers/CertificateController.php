@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\KknScore;
+use App\Models\KKN\NilaiKkn;
 use App\Services\CertificateService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,7 +18,7 @@ class CertificateController extends Controller
     /**
      * Download individual certificate
      */
-    public function download(KknScore $score)
+    public function download(NilaiKkn $score)
     {
         $this->authorize('view', $score);
 
@@ -26,7 +26,7 @@ class CertificateController extends Controller
             return back()->with('error', 'Nilai belum difinalisasi oleh Admin.');
         }
 
-        return $this->service->generateForStudent($score)->download("Sertifikat_KKN_{$score->student_id}.pdf");
+        return $this->service->generateForStudent($score)->download("Sertifikat_KKN_{$score->mahasiswa_id}.pdf");
     }
 
     /**
@@ -34,13 +34,13 @@ class CertificateController extends Controller
      */
     public function downloadMass(Request $request)
     {
-        $this->authorize('bulkFinalize', KknScore::class);
+        $this->authorize('bulkFinalize', NilaiKkn::class);
 
         $periodId = $request->integer('period_id');
-        $scores = KknScore::whereHas('group', fn($q) => $q->where('period_id', $periodId))
+        $scores = NilaiKkn::whereHas('kelompok', fn($q) => $q->where('period_id', $periodId))
             ->where('is_finalized', true)
             ->where('total_score', '>=', 70)
-            ->with('student')
+            ->with('mahasiswa')
             ->get();
 
         if ($scores->isEmpty()) {
@@ -58,7 +58,7 @@ class CertificateController extends Controller
         if ($zip->open($tempPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
             foreach ($scores as $score) {
                 $pdf = $this->service->generateForStudent($score)->output();
-                $pdfFileName = "Sertifikat_" . str_replace(' ', '_', $score->student->name) . "_" . $score->student_id . ".pdf";
+                $pdfFileName = "Sertifikat_" . str_replace(' ', '_', $score->mahasiswa->nama) . "_" . $score->mahasiswa_id . ".pdf";
                 $zip->addFromString($pdfFileName, $pdf);
             }
             $zip->close();

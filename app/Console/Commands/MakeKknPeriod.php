@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\AcademicYear;
-use App\Models\Period;
+use App\Models\KKN\TahunAkademik;
+use App\Models\KKN\Periode;
 use Illuminate\Console\Command;
 
 class MakeKknPeriod extends Command
@@ -35,18 +35,18 @@ class MakeKknPeriod extends Command
             }
         }
 
-        $ay = AcademicYear::firstOrCreate(
+        $ay = TahunAkademik::firstOrCreate(
             ['year' => $yearName],
             ['is_active' => false],
         );
 
         if ($this->option('active')) {
-            AcademicYear::where('id', '!=', $ay->id)->update(['is_active' => false]);
+            TahunAkademik::where('id', '!=', $ay->id)->update(['is_active' => false]);
             $ay->is_active = true;
             $ay->save();
         }
 
-        $period = Period::create([
+        $period = Periode::create([
             'academic_year_id' => $ay->id,
             'name' => $name,
             'start_date' => $start,
@@ -57,7 +57,7 @@ class MakeKknPeriod extends Command
         ]);
 
         if ($period->is_active) {
-            Period::where('id', '!=', $period->id)->update(['is_active' => false]);
+            Periode::where('id', '!=', $period->id)->update(['is_active' => false]);
         }
 
         $this->info("Periode dibuat: ID={$period->id}, AcademicYear={$ay->year}");

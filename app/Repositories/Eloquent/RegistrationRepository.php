@@ -2,21 +2,21 @@
 
 namespace App\Repositories\Eloquent;
 
-use App\Models\Registration;
+use App\Models\KKN\PesertaKkn;
 use App\Repositories\Contracts\RegistrationRepositoryInterface;
 
 class RegistrationRepository implements RegistrationRepositoryInterface
 {
-    public function findForStudentPeriod(int $studentId, int $periodId): ?Registration
+    public function findForMahasiswaPeriode(int $mahasiswaId, int $periodeId): ?PesertaKkn
     {
-        return Registration::query()
-            ->where('student_id', $studentId)
-            ->where('period_id', $periodId)
+        return PesertaKkn::query()
+            ->where('mahasiswa_id', $mahasiswaId)
+            ->where('period_id', $periodeId)
             ->first();
     }
 
-    public function create(array $data): Registration
+    public function create(array $data): PesertaKkn
     {
-        return Registration::create($data);
+        return PesertaKkn::create($data);
     }
 }

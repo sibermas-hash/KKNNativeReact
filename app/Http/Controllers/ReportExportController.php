@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Group;
-use App\Models\Registration;
-use App\Models\Student;
+use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\Mahasiswa;
 use App\Services\DailyReportCompilationService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -34,11 +33,10 @@ class ReportExportController extends Controller
      */
     public function downloadStudentDailyReports(int $studentId): Response
     {
-        // Add authorization check here if needed, or rely on route middleware
-        $student = Student::with('user')->findOrFail($studentId);
+        $mahasiswa = Mahasiswa::with('user')->findOrFail($studentId);
         
-        $pdf = $this->compilationService->generateForStudent($student->user_id);
-        $filename = "Laporan_Harian_KKN_{$student->user->name}.pdf";
+        $pdf = $this->compilationService->generateForStudent($mahasiswa->user_id);
+        $filename = "Laporan_Harian_KKN_{$mahasiswa->user->name}.pdf";
         
         return $pdf->download($filename);
     }
@@ -48,10 +46,10 @@ class ReportExportController extends Controller
      */
     public function downloadGroupDailyReports(int $groupId): Response
     {
-        $group = Group::findOrFail($groupId);
+        $kelompok = KelompokKkn::findOrFail($groupId);
         
         $pdf = $this->compilationService->generateForGroup($groupId);
-        $filename = "Ringkasan_Laporan_Kelompok_{$group->code}.pdf";
+        $filename = "Ringkasan_Laporan_Kelompok_{$kelompok->code}.pdf";
         
         return $pdf->download($filename);
     }

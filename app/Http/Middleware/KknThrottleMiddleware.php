@@ -38,6 +38,11 @@ class KknThrottleMiddleware extends ThrottleRequests
 
         $routeName = $request->route()->getName();
         
+        // Bypass strict limits for local environment
+        if (config('app.env') === 'local') {
+            return parent::handle($request, $next, $maxAttempts, $decayMinutes, $prefix);
+        }
+
         // Strict limit for critical endpoints: 10 attempts per 5 minutes
         if (in_array($routeName, $criticalEndpoints)) {
             $maxAttempts = 10;

@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\DailyReport;
-use App\Models\Group;
-use App\Models\Registration;
+use App\Models\KKN\KegiatanKkn;
+use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\PesertaKkn;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -15,16 +15,16 @@ class DailyReportCompilationService
      */
     public function generateForStudent(int $userId): \Barryvdh\DomPDF\PDF
     {
-        $user = User::with(['student.program.faculty'])->findOrFail($userId);
+        $user = User::with(['mahasiswa.prodi.fakultas'])->findOrFail($userId);
 
         // Get student's registration and group
-        $registration = Registration::with(['group.location', 'group.lecturer.user'])
-            ->where('user_id', $userId)
+        $registration = PesertaKkn::with(['kelompok.lokasi', 'kelompok.dosen.user'])
+            ->where('mahasiswa_id', $user->mahasiswa->id)
             ->latest()
             ->first();
 
         // Get daily reports
-        $reports = DailyReport::where('student_id', $user->student->id)
+        $reports = KegiatanKkn::where('mahasiswa_id', $user->mahasiswa->id)
             ->orderBy('date')
             ->get();
 
@@ -40,7 +40,7 @@ class DailyReportCompilationService
                 : 0,
         ];
 
-        $pdf = PDF::loadView('pdf.daily-report-compilation', [
+        $pdf = Pdf::loadView('pdf.daily-report-compilation', [
             'user' => $user,
             'registration' => $registration,
             'reports' => $reports,
@@ -58,16 +58,16 @@ class DailyReportCompilationService
      */
     public function generateForGroup(int $groupId): \Barryvdh\DomPDF\PDF
     {
-        $group = Group::with(['location', 'lecturer.user', 'registrations.user'])->findOrFail($groupId);
+        $group = KelompokKkn::with(['lokasi', 'dosen.user', 'peserta.mahasiswa.user'])->findOrFail($groupId);
 
-        $studentIds = $group->registrations->pluck('student_id');
+        $mahasiswaIds = $group->peserta->pluck('mahasiswa_id');
 
-        $reports = DailyReport::whereIn('student_id', $studentIds)
-            ->with('user')
+        $reports = KegiatanKkn::whereIn('mahasiswa_id', $mahasiswaIds)
+            ->with('mahasiswa.user')
             ->orderBy('date')
             ->get();
 
-        $pdf = PDF::loadView('pdf.group-report-summary', [
+        $pdf = Pdf::loadView('pdf.group-report-summary', [
             'group' => $group,
             'reports' => $reports,
             'generatedAt' => now()->format('d F Y H:i'),

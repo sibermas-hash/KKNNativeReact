@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Workshop;
-use App\Models\WorkshopParticipant;
+use App\Models\KKN\Workshop;
+use App\Models\KKN\PesertaWorkshop;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -37,13 +37,13 @@ class WorkshopService
     /**
      * Register participant for workshop
      */
-    public function registerParticipant(int $workshopId, int $userId): WorkshopParticipant
+    public function registerParticipant(int $workshopId, int $userId): PesertaWorkshop
     {
         return DB::transaction(function () use ($workshopId, $userId) {
             $workshop = Workshop::lockForUpdate()->findOrFail($workshopId);
 
             // Check if already registered
-            $existing = WorkshopParticipant::where('workshop_id', $workshopId)
+            $existing = PesertaWorkshop::where('workshop_id', $workshopId)
                 ->where('user_id', $userId)
                 ->first();
 
@@ -53,14 +53,14 @@ class WorkshopService
 
             // Check if workshop is full (inside transaction with lock)
             if ($workshop->max_participants) {
-                $currentParticipants = WorkshopParticipant::where('workshop_id', $workshopId)->count();
+                $currentParticipants = PesertaWorkshop::where('workshop_id', $workshopId)->count();
                 
                 if ($currentParticipants >= $workshop->max_participants) {
                     throw new \InvalidArgumentException("Workshop is full");
                 }
             }
 
-            return WorkshopParticipant::create([
+            return PesertaWorkshop::create([
                 'workshop_id' => $workshopId,
                 'user_id' => $userId,
                 'attendance_status' => 'registered',
@@ -71,10 +71,10 @@ class WorkshopService
     /**
      * Mark participant as attended
      */
-    public function markAttendance(int $participantId, bool $attended = true): WorkshopParticipant
+    public function markAttendance(int $participantId, bool $attended = true): PesertaWorkshop
     {
         return DB::transaction(function () use ($participantId, $attended) {
-            $participant = WorkshopParticipant::findOrFail($participantId);
+            $participant = PesertaWorkshop::findOrFail($participantId);
 
             $participant->update([
                 'attendance_status' => $attended ? 'attended' : 'absent',
@@ -94,21 +94,21 @@ class WorkshopService
     /**
      * Sync workshop attendance to student's KKN grade
      */
-    protected function syncWorkshopScore(WorkshopParticipant $participant): void
+    protected function syncWorkshopScore(PesertaWorkshop $participant): void
     {
         $user = $participant->user;
         $groupId = $user->getActiveGroupId();
 
         if ($groupId) {
              // A4: Use configurable workshop score
-             $workshopScore = \App\Models\GradingConfig::where('config_key', 'workshop_attendance_score')
+             $workshopScore = \App\Models\KKN\KonfigurasiPenilaian::where('config_key', 'workshop_attendance_score')
                 ->first()?->percentage ?? 100;
 
              $this->gradingService->submitAdminScores(
                  $user->id,
                  $groupId,
                  (float) $workshopScore,
-                 $participant->user->kknScores()->where('group_id', $groupId)->first()?->administration_score ?? 0,
+                 $participant->user->nilaiKkn()->where('kelompok_id', $groupId)->first()?->administration_score ?? 0,
                  auth()->id() ?? \App\Models\User::role('admin')->first()?->id ?? 1
              );
         }
@@ -122,7 +122,7 @@ class WorkshopService
         return DB::transaction(function () use ($workshopId, $attendedUserIds) {
             $results = [];
 
-            $participants = WorkshopParticipant::where('workshop_id', $workshopId)->get();
+            $participants = PesertaWorkshop::where('workshop_id', $workshopId)->get();
 
             foreach ($participants as $participant) {
                 $attended = in_array($participant->user_id, $attendedUserIds);
@@ -146,14 +146,14 @@ class WorkshopService
     /**
      * Generate PDF certificate for participant
      */
-    public function generateCertificate(WorkshopParticipant $participant): string
+    public function generateCertificate(PesertaWorkshop $participant): string
     {
         $workshop = $participant->workshop;
         $user = $participant->user;
 
         $certificateData = [
             'participant_name' => $user->name,
-            'nim' => $user->student?->nim ?? '-',
+            'nim' => $user->mahasiswa?->nim ?? '-',
             'workshop_title' => $workshop->title,
             'workshop_date' => $workshop->workshop_date->format('d F Y'),
             'methodology' => $workshop->methodology,
@@ -167,7 +167,7 @@ class WorkshopService
             ->setPaper('a4', 'landscape');
 
         // Save to storage
-        $filename = "certificate_" . ($user->student?->nim ?? $user->id) . "_{$workshop->id}_" . time() . ".pdf";
+        $filename = "certificate_" . ($user->mahasiswa?->nim ?? $user->id) . "_{$workshop->id}_" . time() . ".pdf";
         $path = "certificates/workshops/{$workshop->id}/{$filename}";
         
         Storage::disk('public')->put($path, $pdf->output());
@@ -185,7 +185,7 @@ class WorkshopService
     /**
      * Generate unique certificate number
      */
-    private function generateCertificateNumber(WorkshopParticipant $participant): string
+    private function generateCertificateNumber(PesertaWorkshop $participant): string
     {
         $workshop = $participant->workshop;
         $date = now()->format('Ymd');

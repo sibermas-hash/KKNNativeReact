@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\KknScore;
+use App\Models\KKN\NilaiKkn;
 use App\Models\User;
-use App\Models\Group;
-use App\Models\GradingConfig;
+use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\KonfigurasiPenilaian;
 use App\Notifications\KknActivityNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -37,12 +37,12 @@ class GradingService
         float $executionScore,
         float $articleScore,
         int $dplId
-    ): KknScore {
+    ): NilaiKkn {
         return DB::transaction(function () use ($userId, $groupId, $reportScore, $executionScore, $articleScore, $dplId) {
-            $score = KknScore::updateOrCreate(
+            $score = NilaiKkn::updateOrCreate(
                 [
-                    'student_id' => $userId,
-                    'group_id' => $groupId,
+                    'mahasiswa_id' => $userId,
+                    'kelompok_id' => $groupId,
                 ],
                 [
                     'final_report_score' => $reportScore,
@@ -68,12 +68,12 @@ class GradingService
         float $disciplineScore,
         float $attitudeScore,
         int $villageHeadId
-    ): KknScore {
+    ): NilaiKkn {
         return DB::transaction(function () use ($userId, $groupId, $disciplineScore, $attitudeScore, $villageHeadId) {
-            $score = KknScore::updateOrCreate(
+            $score = NilaiKkn::updateOrCreate(
                 [
-                    'student_id' => $userId,
-                    'group_id' => $groupId,
+                    'mahasiswa_id' => $userId,
+                    'kelompok_id' => $groupId,
                 ],
                 [
                     'discipline_score' => $disciplineScore,
@@ -98,12 +98,12 @@ class GradingService
         float $workshopScore,
         float $adminScore,
         int $adminId
-    ): KknScore {
+    ): NilaiKkn {
         return DB::transaction(function () use ($userId, $groupId, $workshopScore, $adminScore, $adminId) {
-            $score = KknScore::updateOrCreate(
+            $score = NilaiKkn::updateOrCreate(
                 [
-                    'student_id' => $userId,
-                    'group_id' => $groupId,
+                    'mahasiswa_id' => $userId,
+                    'kelompok_id' => $groupId,
                 ],
                 [
                     'workshop_score' => $workshopScore,
@@ -122,10 +122,10 @@ class GradingService
     /**
      * Calculate weighted scores and final grade
      */
-    public function calculateFinalGrade(KknScore $score): void
+    public function calculateFinalGrade(NilaiKkn $score): void
     {
         $configs = Cache::remember('grading_configs', 3600, function () {
-            return GradingConfig::all()->pluck('percentage', 'config_key');
+            return KonfigurasiPenilaian::all()->pluck('percentage', 'config_key');
         });
 
         // 1. Calculate Komponen A (DPL)
@@ -186,8 +186,8 @@ class GradingService
      */
     public function getGroupGradingSummary(int $groupId): array
     {
-        $scores = KknScore::where('group_id', $groupId)
-            ->with(['student:id,name', 'dplGradedBy:id,name', 'villageGradedBy:id,name', 'adminGradedBy:id,name'])
+        $scores = NilaiKkn::where('kelompok_id', $groupId)
+            ->with(['mahasiswa:id,name', 'kelompok'])
             ->get();
 
         return [
@@ -197,7 +197,7 @@ class GradingService
             'students' => $scores->map(function ($score) {
                 return [
                     'id' => $score->id,
-                    'user' => $score->student,
+                    'user' => $score->mahasiswa,
                     'final_report_score' => $score->final_report_score,
                     'execution_score' => $score->execution_score,
                     'article_score' => $score->article_score,
@@ -219,16 +219,16 @@ class GradingService
         $count = 0;
         $failed = 0;
 
-        KknScore::whereHas('group', function ($query) use ($periodId) {
-            $query->where('period_id', $periodId);
+        NilaiKkn::whereHas('kelompok', function ($query) use ($periodId) {
+            $query->where('periode_id', $periodId);
         })
         ->where('is_finalized', false)
         ->whereNotNull('total_score')
         ->chunkById(50, function ($scores) use (&$count, &$failed) {
             foreach ($scores as $score) {
                 // Anti-Halu Logic: Cek Laporan Akhir
-                $report = \App\Models\FinalReport::where('student_id', $score->student_id)
-                    ->where('group_id', $score->group_id)
+                $report = \App\Models\KKN\LaporanAkhir::where('mahasiswa_id', $score->mahasiswa_id)
+                    ->where('kelompok_id', $score->kelompok_id)
                     ->first();
 
                 if (!$report || $report->status !== 'approved') {
@@ -240,7 +240,7 @@ class GradingService
                 $count++;
 
                 // Notify student
-                $studentUser = \App\Models\User::find($score->student_id);
+                $studentUser = \App\Models\User::find($score->mahasiswa_id);
                 if ($studentUser) {
                     $studentUser->notify(new \App\Notifications\KknActivityNotification([
                         'type' => 'success',

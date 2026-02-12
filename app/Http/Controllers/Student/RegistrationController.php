@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\StoreRegistrationRequest;
-use App\Models\Period;
+use App\Models\KKN\Periode;
 use App\Services\RegistrationService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -16,8 +16,8 @@ class RegistrationController extends Controller
     {
         $today = now()->toDateString();
 
-        $periods = Period::query()
-            ->select(['id', 'name', 'registration_start', 'registration_end'])
+        $periode = Periode::query()
+            ->select(['id', 'nama', 'registration_start', 'registration_end'])
             ->where('is_active', true)
             ->whereDate('registration_start', '<=', $today)
             ->whereDate('registration_end', '>=', $today)
@@ -25,7 +25,7 @@ class RegistrationController extends Controller
             ->get();
 
         return Inertia::render('Student/Register', [
-            'periods' => $periods,
+            'periods' => $periode,
         ]);
     }
 
@@ -36,12 +36,12 @@ class RegistrationController extends Controller
     {
         $user = $request->user();
 
-        if (! $user?->student) {
+        if (! $user?->mahasiswa) {
             return redirect()->back()->with('error', 'Profil mahasiswa belum ditemukan.');
         }
 
         $registrationService->register(
-            $user->student,
+            $user->mahasiswa,
             (int) $request->input('period_id'),
             $request->input('notes')
         );

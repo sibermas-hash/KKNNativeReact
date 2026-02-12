@@ -2,7 +2,7 @@
 
 namespace App\Repositories;
 
-use App\Models\KknScore;
+use App\Models\KKN\NilaiKkn;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -15,25 +15,25 @@ class KknScoreRepository
      */
     public function getRekapNilai(int $periodeId, array $filters = []): Collection
     {
-        return DB::table('students as s')
+        return DB::table('mahasiswa as s')
             ->join('users as u', 's.user_id', '=', 'u.id')
-            ->join('registrations as r', 's.id', '=', 'r.student_id')
-            ->join('groups as g', 'r.group_id', '=', 'g.id')
-            ->join('locations as lok', 'g.location_id', '=', 'lok.id')
-            ->leftJoin('lecturers as dpl_l', 'g.lecturer_id', '=', 'dpl_l.id')
+            ->join('peserta_kkn as r', 's.id', '=', 'r.mahasiswa_id')
+            ->join('kelompok_kkn as g', 'r.kelompok_id', '=', 'g.id')
+            ->join('lokasi as lok', 'g.location_id', '=', 'lok.id')
+            ->leftJoin('dosen as dpl_l', 'g.lecturer_id', '=', 'dpl_l.id')
             ->leftJoin('users as dpl_u', 'dpl_l.user_id', '=', 'dpl_u.id')
-            ->leftJoin('faculties as fak', 's.faculty_id', '=', 'fak.id')
-            ->leftJoin('programs as prodi', 's.program_id', '=', 'prodi.id')
-            ->leftJoin('kkn_scores as ks', function ($join) {
-                $join->on('ks.student_id', '=', 'u.id')
-                     ->on('ks.group_id', '=', 'g.id');
+            ->leftJoin('fakultas as fak', 's.faculty_id', '=', 'fak.id')
+            ->leftJoin('prodi as prodi', 's.program_id', '=', 'prodi.id')
+            ->leftJoin('nilai_kkn as ks', function ($join) {
+                $join->on('ks.mahasiswa_id', '=', 's.id')
+                     ->on('ks.kelompok_id', '=', 'g.id');
             })
             ->where('g.period_id', $periodeId)
             ->when($filters['faculty_id'] ?? null, fn($q, $v) => $q->where('s.faculty_id', $v))
             ->when($filters['group_id'] ?? null, fn($q, $v) => $q->where('g.id', $v))
             ->when($filters['huruf'] ?? null, fn($q, $v) => $q->where('ks.letter_grade', $v))
             ->select([
-                's.id as student_id',
+                's.id as mahasiswa_id',
                 'u.id as user_id',
                 'u.name as nama',
                 's.nim',

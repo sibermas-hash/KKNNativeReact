@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Dpl;
 
 use App\Http\Controllers\Controller;
-use App\Models\DailyReport;
+use App\Models\KKN\KegiatanKkn;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,34 +13,34 @@ class DailyReportController extends Controller
 {
     public function index(Request $request): Response
     {
-        $lecturer = auth()->user()->lecturer;
-        $groupIds = $lecturer
-            ? $lecturer->groups()->pluck('id')
+        $dosen = auth()->user()->dosen;
+        $groupIds = $dosen
+            ? $dosen->kelompokKkn()->pluck('id')
             : collect();
 
-        $reports = DailyReport::whereIn('group_id', $groupIds)
-            ->with('student', 'group')
+        $kegiatan = KegiatanKkn::whereIn('kelompok_id', $groupIds)
+            ->with(['mahasiswa', 'kelompok'])
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
             ->orderByDesc('date')
             ->paginate(15)
             ->withQueryString();
 
         return Inertia::render('Dpl/DailyReports/Index', [
-            'reports' => $reports,
+            'reports' => $kegiatan,
             'filters' => $request->only('status'),
         ]);
     }
 
-    public function show(DailyReport $dailyReport): Response
+    public function show(KegiatanKkn $dailyReport): Response
     {
-        $dailyReport->load('student', 'group.location', 'files', 'reviewer');
+        $dailyReport->load(['mahasiswa', 'kelompok.lokasi', 'fileKegiatan', 'reviewer']);
 
         return Inertia::render('Dpl/DailyReports/Show', [
             'report' => $dailyReport,
         ]);
     }
 
-    public function approve(DailyReport $dailyReport): RedirectResponse
+    public function approve(KegiatanKkn $dailyReport): RedirectResponse
     {
         $dailyReport->update([
             'status' => 'approved',
@@ -49,7 +49,7 @@ class DailyReportController extends Controller
         ]);
 
         // Notify student
-        $dailyReport->student->user->notify(new \App\Notifications\KknActivityNotification([
+        $dailyReport->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
             'type' => 'success',
             'title' => 'Laporan Harian Disetujui',
             'message' => "Laporan harian Anda tanggal " . $dailyReport->date->format('d/m/Y') . " telah disetujui.",
@@ -60,7 +60,7 @@ class DailyReportController extends Controller
         return redirect()->back()->with('success', 'Laporan harian disetujui.');
     }
 
-    public function revision(Request $request, DailyReport $dailyReport): RedirectResponse
+    public function revision(Request $request, KegiatanKkn $dailyReport): RedirectResponse
     {
         $validated = $request->validate([
             'revision_notes' => ['required', 'string', 'max:1000'],
@@ -72,7 +72,7 @@ class DailyReportController extends Controller
         ]);
 
         // Notify student
-        $dailyReport->student->user->notify(new \App\Notifications\KknActivityNotification([
+        $dailyReport->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
             'type' => 'warning',
             'title' => 'Revisi Laporan Harian',
             'message' => "Laporan harian Anda tanggal " . $dailyReport->date->format('d/m/Y') . " memerlukan revisi.",

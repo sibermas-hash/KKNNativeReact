@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Group;
-use App\Models\KknScore;
-use App\Models\Registration;
+use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\PesertaKkn;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -14,26 +14,26 @@ class GradeController extends Controller
 {
     public function index()
     {
-        $groups = Group::with(['lecturer.user:id,name'])->orderBy('code')->get(['id','code','name','lecturer_id']);
+        $groups = KelompokKkn::with(['dpl.user:id,name'])->orderBy('code')->get(['id','code','nama_kelompok','dpl_id']);
         return Inertia::render('Admin/Grades/Index', [
             'groups' => $groups,
         ]);
     }
 
-    public function students(Group $group)
+    public function students(KelompokKkn $group)
     {
-        $students = Registration::with(['student:id,user_id,nim,name', 'student.user:id,username,email,name'])
-            ->where('group_id', $group->id)
+        $students = PesertaKkn::with(['mahasiswa:id,user_id,nim,nama', 'mahasiswa.user:id,username,email,name'])
+            ->where('kelompok_id', $group->id)
             ->where('status', 'approved')
             ->get()
             ->map(function ($reg) use ($group) {
-                $user = $reg->student->user;
+                $user = $reg->mahasiswa->user;
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
                     'username' => $user->username,
-                    'nim' => $reg->student->nim,
+                    'nim' => $reg->mahasiswa->nim,
                     'group_id' => $group->id,
                 ];
             });
@@ -44,8 +44,8 @@ class GradeController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'group_id' => ['required','exists:groups,id'],
-            'student_id' => ['required','exists:users,id'],
+            'kelompok_id' => ['required','exists:kelompok_kkn,id'],
+            'mahasiswa_id' => ['required','exists:users,id'],
             'execution_score' => ['nullable','numeric','between:0,100'],
             'article_score' => ['nullable','numeric','between:0,100'],
             'discipline_score' => ['nullable','numeric','between:0,100'],
@@ -77,10 +77,10 @@ class GradeController extends Controller
         }
 
         DB::transaction(function () use ($data, $dplWeighted, $villageWeighted, $total, $letter) {
-            KknScore::updateOrCreate(
+            NilaiKkn::updateOrCreate(
                 [
-                    'student_id' => $data['student_id'],
-                    'group_id' => $data['group_id'],
+                    'mahasiswa_id' => $data['mahasiswa_id'],
+                    'kelompok_id' => $data['kelompok_id'],
                 ],
                 [
                     'execution_score' => $data['execution_score'],

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
-use App\Models\Evaluation;
+use App\Models\KKN\Evaluasi;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -11,11 +11,11 @@ class EvaluationController extends Controller
 {
     public function index(): Response
     {
-        $student = auth()->user()->student;
+        $mahasiswa = auth()->user()->mahasiswa;
 
-        $evaluations = $student
-            ? Evaluation::where('student_id', $student->id)
-                ->with('items', 'group')
+        $evaluations = $mahasiswa
+            ? Evaluasi::where('mahasiswa_id', $mahasiswa->id)
+                ->with('itemEvaluasi', 'kelompok')
                 ->get()
             : collect();
 

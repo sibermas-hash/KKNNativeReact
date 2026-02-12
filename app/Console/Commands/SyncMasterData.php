@@ -2,11 +2,13 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Faculty;
-use App\Models\Lecturer;
-use App\Models\Student;
+use App\Models\KKN\Fakultas;
+use App\Models\KKN\Dosen;
+use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\Prodi;
+use App\Models\Master\Dosen as MasterLecturer;
+use App\Models\Master\Mahasiswa as MasterStudent;
 use App\Models\User;
-use App\Models\Program;
 use App\Services\MasterApiService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -15,8 +17,9 @@ use Illuminate\Support\Facades\Hash;
 
 class SyncMasterData extends Command
 {
-    protected $signature = 'master:sync
-        {--type=all : Type of data to sync (all, students, lecturers, faculties)}
+    protected $signature = 'sync:master-data
+        {--type=all : Type of data to sync (all, mahasiswa, dosen, fakultas)}
+        {--source=api : Source of data (api or db)}
         {--force : Force sync even if cache is fresh}';
 
     protected $description = 'Sync identity data from Master API Service to KKN local database';
@@ -38,26 +41,37 @@ class SyncMasterData extends Command
             $this->info('Cache cleared.');
         }
 
-        // Health check first
-        $health = $this->masterApi->healthCheck();
-        if (($health['status'] ?? 'DOWN') !== 'UP') {
-            $this->error('Master API is DOWN: ' . ($health['error'] ?? 'Unknown error'));
-            return 1;
+        if ($this->option('source') === 'api') {
+            // Health check first
+            $health = $this->masterApi->healthCheck();
+            if (($health['status'] ?? 'DOWN') !== 'UP') {
+                $this->error('Master API is DOWN: ' . ($health['error'] ?? 'Unknown error'));
+                return 1;
+            }
+            $this->info('Master API is UP');
+        } else {
+            $this->info('Syncing directly from Master Database');
+            try {
+                DB::connection('master')->getPdo();
+                $this->info('Master DB connection is UP');
+            } catch (\Exception $e) {
+                $this->error('Master DB connection failed: ' . $e->getMessage());
+                return 1;
+            }
         }
-        $this->info('Master API is UP');
 
         DB::beginTransaction();
 
         try {
-            if (in_array($type, ['all', 'faculties'])) {
+            if (in_array($type, ['all', 'fakultas'])) {
                 $this->syncFaculties();
             }
 
-            if (in_array($type, ['all', 'lecturers'])) {
+            if (in_array($type, ['all', 'dosen'])) {
                 $this->syncLecturers();
             }
 
-            if (in_array($type, ['all', 'students'])) {
+            if (in_array($type, ['all', 'mahasiswa'])) {
                 $this->syncStudents();
             }
 
@@ -79,10 +93,11 @@ class SyncMasterData extends Command
     protected function syncFaculties(): void
     {
         $this->info('Syncing faculties...');
-        $orgs = $this->masterApi->getAllOrganizations();
-
-        if (empty($orgs)) {
-            $this->warn('  No organizations found from Master API');
+        
+        if ($this->option('source') === 'api') {
+            $orgs = $this->masterApi->getAllOrganizations();
+        } else {
+            $this->warn('  Direct DB sync for faculties not fully implemented (skipping). Use API source.');
             return;
         }
 
@@ -91,11 +106,11 @@ class SyncMasterData extends Command
         foreach ($orgs as $orgData) {
             // Only sync faculties (check if name contains 'Fakultas')
             if (str_contains($orgData['name'], 'Fakultas') || $orgData['level'] == 2) {
-                Faculty::updateOrCreate(
-                    ['code' => $orgData['code']],
+                Fakultas::on('kkn')->updateOrCreate(
+                    ['master_id' => $orgData['id']],
                     [
-                        'name' => $orgData['name'],
-                        'master_id' => $orgData['id'],
+                        'code' => $orgData['code'],
+                        'nama' => $orgData['name'],
                         'master_synced_at' => $now,
                     ]
                 );
@@ -109,10 +124,27 @@ class SyncMasterData extends Command
     protected function syncLecturers(): void
     {
         $this->info('Syncing lecturers (DPL)...');
-        $employees = $this->masterApi->getAllEmployees();
+        
+        $employees = [];
+        if ($this->option('source') === 'api') {
+            $employees = $this->masterApi->getAllEmployees();
+        } else {
+            // Direct DB Pull from 'master' connection
+            $masterLecturers = MasterLecturer::all();
+            foreach ($masterLecturers as $ml) {
+                $employees[] = [
+                    'id' => $ml->id,
+                    'nip' => $ml->nip,
+                    'name' => $ml->name,
+                    'email' => $ml->email,
+                    'phone' => $ml->phone,
+                    'organization' => ['code' => 'FTIK'], // Default or logic to find
+                ];
+            }
+        }
 
         if (empty($employees)) {
-            $this->warn('  No employees found from Master API');
+            $this->warn('  No lecturers found');
             return;
         }
 
@@ -121,12 +153,12 @@ class SyncMasterData extends Command
         foreach ($employees as $empData) {
             // Find Faculty
             $orgCode = $empData['organization']['code'] ?? null;
-            $faculty = $orgCode ? Faculty::where('code', $orgCode)->first() : null;
+            $faculty = $orgCode ? Fakultas::on('kkn')->where('code', $orgCode)->first() : null;
 
             if (!$faculty) continue;
 
             // 1. Ensure User account exists
-            $user = User::updateOrCreate(
+            $user = User::on('kkn')->updateOrCreate(
                 ['email' => $empData['email'] ?? ($empData['nip'] . '@kkn.local')],
                 [
                     'username' => $empData['nip'],
@@ -135,15 +167,15 @@ class SyncMasterData extends Command
                 ]
             );
 
-            // 2. Ensure Lecturer record exists
-            Lecturer::updateOrCreate(
-                ['nip' => $empData['nip']],
+            // 2. Ensure Lecturer record exists (Local KKN)
+            Dosen::updateOrCreate(
+                ['master_id' => $empData['id']],
                 [
                     'user_id' => $user->id,
-                    'name' => $empData['name'],
+                    'nip' => $empData['nip'],
+                    'nama' => $empData['name'],
                     'faculty_id' => $faculty->id,
                     'phone' => $empData['phone'] ?? null,
-                    'master_id' => $empData['id'],
                     'master_synced_at' => $now,
                 ]
             );
@@ -156,10 +188,31 @@ class SyncMasterData extends Command
     protected function syncStudents(): void
     {
         $this->info('Syncing students...');
-        $students = $this->masterApi->getAllStudents();
+        
+        $students = [];
+        if ($this->option('source') === 'api') {
+            $students = $this->masterApi->getAllStudents();
+        } else {
+            // Direct DB Pull from 'master' connection
+            $masterStudents = MasterStudent::all();
+            foreach ($masterStudents as $ms) {
+                $students[] = [
+                    'id' => $ms->id,
+                    'nim' => $ms->nim,
+                    'name' => $ms->name,
+                    'email' => $ms->email,
+                    'faculty_code' => $ms->faculty_code ?? 'FTIK',
+                    'program_code' => $ms->program_code ?? 'UNKNOWN',
+                    'batch_year' => $ms->batch_year ?? date('Y'),
+                    'gender' => $ms->gender ?? 'L',
+                    'birth_place' => $ms->birth_place,
+                    'birth_date' => $ms->birth_date?->format('Y-m-d'),
+                ];
+            }
+        }
 
         if (empty($students)) {
-            $this->warn('  No students found from Master API');
+            $this->warn('  No students found');
             return;
         }
 
@@ -167,21 +220,21 @@ class SyncMasterData extends Command
         $now = now();
         foreach ($students as $studData) {
             // Find Faculty & Program
-            $faculty = Faculty::where('code', $studData['faculty_code'] ?? 'FTIK')->first();
+            $faculty = Fakultas::on('kkn')->where('code', $studData['faculty_code'] ?? 'FTIK')->first();
             
             // Program is a bit tricky, let's auto-create if missing or use default
-            $program = Program::firstOrCreate(
+            $program = Prodi::on('kkn')->firstOrCreate(
                 ['code' => $studData['program_code'] ?? 'UNKNOWN'],
                 [
-                    'name' => $studData['program_name'] ?? 'Unknown Program',
-                    'faculty_id' => $faculty?->id ?? Faculty::first()?->id,
+                    'nama' => $studData['program_name'] ?? 'Unknown Program',
+                    'faculty_id' => $faculty?->id ?? Fakultas::on('kkn')->first()?->id,
                 ]
             );
 
             if (!$faculty) continue;
 
             // 1. Ensure User account exists
-            $user = User::updateOrCreate(
+            $user = User::on('kkn')->updateOrCreate(
                 ['email' => $studData['email'] ?? ($studData['nim'] . '@kkn.local')],
                 [
                     'username' => $studData['nim'],
@@ -190,19 +243,19 @@ class SyncMasterData extends Command
                 ]
             );
 
-            // 2. Ensure Student record exists
-            Student::updateOrCreate(
-                ['nim' => $studData['nim']],
+            // 2. Ensure Student record exists (Local KKN)
+            Mahasiswa::updateOrCreate(
+                ['master_id' => $studData['id']],
                 [
                     'user_id' => $user->id,
-                    'name' => $studData['name'],
+                    'nim' => $studData['nim'],
+                    'nama' => $studData['name'],
                     'faculty_id' => $faculty->id,
                     'program_id' => $program->id,
                     'batch_year' => $studData['batch_year'] ?? date('Y'),
                     'gender' => $studData['gender'] ?? 'L',
                     'birth_place' => $studData['birth_place'] ?? null,
                     'birth_date' => $studData['birth_date'] ?? null,
-                    'master_id' => $studData['id'],
                     'master_synced_at' => $now,
                 ]
             );

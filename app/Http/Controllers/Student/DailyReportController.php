@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
-use App\Models\DailyReport;
-use App\Models\DailyReportFile;
+use App\Models\KKN\KegiatanKkn;
+use App\Models\KKN\FileKegiatanKkn;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -15,35 +15,35 @@ class DailyReportController extends Controller
 {
     public function index(): Response
     {
-        $student = auth()->user()->student;
+        $mahasiswa = auth()->user()->mahasiswa;
 
-        $reports = $student
-            ? DailyReport::where('student_id', $student->id)
-                ->with('group', 'files')
+        $kegiatan = $mahasiswa
+            ? KegiatanKkn::where('mahasiswa_id', $mahasiswa->id)
+                ->with(['kelompok', 'fileKegiatan'])
                 ->orderByDesc('date')
                 ->paginate(10)
             : collect();
 
         return Inertia::render('Student/DailyReports/Index', [
-            'reports' => $reports,
+            'reports' => $kegiatan,
         ]);
     }
 
     public function create(): Response
     {
-        $student = auth()->user()->student;
-        $registration = $student?->registrations()->where('status', 'approved')->with('group')->first();
+        $mahasiswa = auth()->user()->mahasiswa;
+        $pendaftaran = $mahasiswa?->peserta()->where('status', 'approved')->with('kelompok')->first();
 
         return Inertia::render('Student/DailyReports/Create', [
-            'group' => $registration?->group,
+            'group' => $pendaftaran?->kelompok,
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $student = auth()->user()->student;
-        $registration = $student->registrations()->where('status', 'approved')->first();
-        abort_if(!$registration || !$registration->group_id, 403, 'Anda belum ditempatkan di kelompok.');
+        $mahasiswa = auth()->user()->mahasiswa;
+        $pendaftaran = $mahasiswa->peserta()->where('status', 'approved')->first();
+        abort_if(!$pendaftaran || !$pendaftaran->kelompok_id, 403, 'Anda belum ditempatkan di kelompok.');
 
         $validated = $request->validate([
             'date' => ['required', 'date'],
@@ -54,9 +54,9 @@ class DailyReportController extends Controller
             'files.*' => ['nullable', 'file', 'max:5120'],
         ]);
 
-        $report = DailyReport::create([
-            'student_id' => $student->id,
-            'group_id' => $registration->group_id,
+        $kegiatan = KegiatanKkn::create([
+            'mahasiswa_id' => $mahasiswa->id,
+            'kelompok_id' => $pendaftaran->kelompok_id,
             'date' => $validated['date'],
             'title' => $validated['title'],
             'activity' => $validated['activity'],
@@ -68,8 +68,8 @@ class DailyReportController extends Controller
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
                 $path = $file->store('daily-reports', 'public');
-                DailyReportFile::create([
-                    'daily_report_id' => $report->id,
+                FileKegiatanKkn::create([
+                    'kegiatan_id' => $kegiatan->id,
                     'file_path' => $path,
                     'file_name' => $file->getClientOriginalName(),
                 ]);
@@ -77,12 +77,12 @@ class DailyReportController extends Controller
         }
 
         // Notify DPL
-        $dpl = $report->group->lecturer->user;
+        $dpl = $kegiatan->kelompok->dosen->user;
         if ($dpl) {
             $dpl->notify(new \App\Notifications\KknActivityNotification([
                 'type' => 'info',
                 'title' => 'Laporan Harian Baru',
-                'message' => "{$student->user->name} telah mengirim laporan harian untuk tanggal " . $report->date->format('d/m/Y'),
+                'message' => "{$mahasiswa->user->name} telah mengirim laporan harian untuk tanggal " . $kegiatan->date->format('d/m/Y'),
                 'icon' => 'document-text',
                 'url' => route('dpl.daily-reports.index', ['status' => 'submitted']),
             ]));
@@ -92,21 +92,21 @@ class DailyReportController extends Controller
             ->with('success', 'Laporan harian berhasil dikirim.');
     }
 
-    public function edit(DailyReport $dailyReport): Response
+    public function edit(KegiatanKkn $dailyReport): Response
     {
-        $student = auth()->user()->student;
-        abort_if($dailyReport->student_id !== $student->id, 403);
-        $dailyReport->load('files');
+        $mahasiswa = auth()->user()->mahasiswa;
+        abort_if($dailyReport->mahasiswa_id !== $mahasiswa->id, 403);
+        $dailyReport->load('fileKegiatan');
 
         return Inertia::render('Student/DailyReports/Edit', [
             'report' => $dailyReport,
         ]);
     }
 
-    public function update(Request $request, DailyReport $dailyReport): RedirectResponse
+    public function update(Request $request, KegiatanKkn $dailyReport): RedirectResponse
     {
-        $student = auth()->user()->student;
-        abort_if($dailyReport->student_id !== $student->id, 403);
+        $mahasiswa = auth()->user()->mahasiswa;
+        abort_if($dailyReport->mahasiswa_id !== $mahasiswa->id, 403);
 
         $validated = $request->validate([
             'date' => ['required', 'date'],
@@ -125,12 +125,12 @@ class DailyReportController extends Controller
             ->with('success', 'Laporan harian berhasil diperbarui.');
     }
 
-    public function destroy(DailyReport $dailyReport): RedirectResponse
+    public function destroy(KegiatanKkn $dailyReport): RedirectResponse
     {
-        $student = auth()->user()->student;
-        abort_if($dailyReport->student_id !== $student->id, 403);
+        $mahasiswa = auth()->user()->mahasiswa;
+        abort_if($dailyReport->mahasiswa_id !== $mahasiswa->id, 403);
 
-        foreach ($dailyReport->files as $file) {
+        foreach ($dailyReport->fileKegiatan as $file) {
             Storage::disk('public')->delete($file->file_path);
         }
 

@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\KknScore;
+use App\Models\KKN\NilaiKkn;
 use App\Notifications\ScorePublished;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -37,19 +37,19 @@ class FinalizeMassScoresJob implements ShouldQueue
     {
         Log::info("Starting mass finalization for period ID: {$this->periodId}");
 
-        KknScore::whereHas('group', function ($query) {
-            $query->where('period_id', $this->periodId);
+        NilaiKkn::whereHas('kelompok', function ($query) {
+            $query->where('periode_id', $this->periodId);
         })
         ->where('is_finalized', false)
         ->whereNotNull('total_score')
-        ->with('student.user')
+        ->with('mahasiswa.user')
         ->chunk(100, function ($scores) {
             foreach ($scores as $score) {
                 try {
                     $score->update(['is_finalized' => true]);
                     
                     // Notify student
-                    $score->student->user->notify(new ScorePublished($score));
+                    $score->mahasiswa->user->notify(new ScorePublished($score));
                 } catch (\Exception $e) {
                     Log::error("Failed to finalize score ID {$score->id}: " . $e->getMessage());
                 }

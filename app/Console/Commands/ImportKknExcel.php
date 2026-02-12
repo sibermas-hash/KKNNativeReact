@@ -2,15 +2,15 @@
 
 namespace App\Console\Commands;
 
-use App\Models\AcademicYear;
-use App\Models\Faculty;
-use App\Models\Group;
-use App\Models\Lecturer;
-use App\Models\Location;
-use App\Models\Period;
-use App\Models\Program;
-use App\Models\Registration;
-use App\Models\Student;
+use App\Models\KKN\TahunAkademik;
+use App\Models\KKN\Fakultas;
+use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\Dosen;
+use App\Models\KKN\Lokasi;
+use App\Models\KKN\Periode;
+use App\Models\KKN\Prodi;
+use App\Models\KKN\PesertaKkn;
+use App\Models\KKN\Mahasiswa;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -52,14 +52,14 @@ class ImportKknExcel extends Command
             $bar = $this->output->createProgressBar(count($rows));
             $bar->start();
 
-            $period = Period::where('is_active', true)->first();
+            $period = Periode::where('is_active', true)->first();
             if (!$period) {
-                $academicYear = AcademicYear::firstOrCreate(
+                $academicYear = TahunAkademik::firstOrCreate(
                     ['year' => '2024/2025'],
                     ['is_active' => true]
                 );
 
-                $period = Period::create([
+                $period = Periode::create([
                     'academic_year_id' => $academicYear->id,
                     'name' => 'KKN Angkatan 57',
                     'start_date' => now(),
@@ -86,14 +86,14 @@ class ImportKknExcel extends Command
                 $pt = $row[10] ?? 'UIN SAIZU';
 
                 // 1. Faculty & Program (Defaults)
-                $faculty = Faculty::firstOrCreate(['code' => 'FTIK'], ['name' => 'Fakultas Tarbiyah dan Ilmu Keguruan']);
-                $program = Program::firstOrCreate(
+                $faculty = Fakultas::firstOrCreate(['code' => 'FTIK'], ['nama' => 'Fakultas Tarbiyah dan Ilmu Keguruan']);
+                $program = Prodi::firstOrCreate(
                     ['code' => 'PBA'], 
-                    ['name' => 'Pendidikan Bahasa Arab', 'faculty_id' => $faculty->id]
+                    ['nama' => 'Pendidikan Bahasa Arab', 'faculty_id' => $faculty->id]
                 );
 
                 // 2. Location
-                $location = Location::firstOrCreate(
+                $location = Lokasi::firstOrCreate(
                     ['village_name' => $desa],
                     [
                         'address' => "{$kecamatan}, {$kabupaten}",
@@ -116,8 +116,8 @@ class ImportKknExcel extends Command
                     $lecturerUser->assignRole('dpl');
                 }
 
-                $lecturer = Lecturer::firstOrCreate(
-                    ['name' => $dplName],
+                $lecturer = Dosen::firstOrCreate(
+                    ['nama' => $dplName],
                     [
                         'user_id' => $lecturerUser->id,
                         'nip' => $lecturerUser->username,
@@ -126,19 +126,19 @@ class ImportKknExcel extends Command
                 );
 
                 // 4. Group
-                $group = Group::firstOrCreate(
+                $group = KelompokKkn::firstOrCreate(
                     ['code' => 'K' . $kelompokCode],
                     [
                         'period_id' => $period->id,
                         'location_id' => $location->id,
-                        'lecturer_id' => $lecturer->id,
-                        'name' => "Kelompok {$kelompokCode}",
+                        'dpl_id' => $lecturer->id,
+                        'nama_kelompok' => "Kelompok {$kelompokCode}",
                         'capacity' => 15,
                         'status' => 'active'
                     ]
                 );
 
-                // 5. User & Student
+                // 5. User & Mahasiswa
                 $user = User::updateOrCreate(
                     ['username' => $nim],
                     [
@@ -153,11 +153,11 @@ class ImportKknExcel extends Command
                     $user->assignRole('student');
                 }
 
-                $student = Student::updateOrCreate(
+                $mahasiswa = Mahasiswa::updateOrCreate(
                     ['nim' => $nim],
                     [
                         'user_id' => $user->id,
-                        'name' => $nama,
+                        'nama' => $nama,
                         'faculty_id' => $faculty->id,
                         'program_id' => $program->id,
                         'gender' => $gender,
@@ -165,18 +165,18 @@ class ImportKknExcel extends Command
                     ]
                 );
 
-                // 6. Registration & Group Member
-                Registration::updateOrCreate(
-                    ['student_id' => $student->id, 'period_id' => $period->id],
+                // 6. Registration (Peserta KKN)
+                PesertaKkn::updateOrCreate(
+                    ['mahasiswa_id' => $mahasiswa->id, 'period_id' => $period->id],
                     [
-                        'group_id' => $group->id,
+                        'kelompok_id' => $group->id,
                         'status' => 'approved',
                         'registration_date' => now(),
                     ]
                 );
 
                 DB::table('group_members')->updateOrInsert(
-                    ['group_id' => $group->id, 'student_id' => $student->id],
+                    ['group_id' => $group->id, 'student_id' => $mahasiswa->id],
                     ['joined_at' => now()]
                 );
 
@@ -202,23 +202,23 @@ class ImportKknExcel extends Command
         // Disable foreign key checks
         DB::statement('SET CONSTRAINTS ALL DEFERRED'); 
 
-        // Tables to truncate
+        // Tables to truncate (Indonesian names)
         $tables = [
-            'evaluations',
-            'evaluation_items',
-            'kkn_scores',
-            'final_reports',
-            'work_programs',
-            'daily_reports',
-            'daily_report_files',
-            'proposals',
-            'registration_documents',
-            'registrations',
+            'evaluasi',
+            'item_evaluasi',
+            'nilai_kkn',
+            'laporan_akhir',
+            'program_kerja',
+            'kegiatan_kkn',
+            'file_kegiatan_kkn',
+            'proposal',
+            'dokumen_peserta_kkn',
+            'peserta_kkn',
             'group_members',
-            'groups',
-            'locations',
-            'students',
-            'lecturers',
+            'kelompok_kkn',
+            'lokasi',
+            'mahasiswa',
+            'dosen',
         ];
 
         foreach ($tables as $table) {

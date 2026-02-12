@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Report;
+use App\Models\KKN\Laporan;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -62,7 +62,7 @@ class ReportManagementService
         UploadedFile $file,
         string $title,
         ?string $description = null
-    ): Report {
+    ): Laporan {
         if (!isset(self::REPORT_TYPES[$type])) {
             throw new \InvalidArgumentException("Invalid report type: {$type}");
         }
@@ -89,9 +89,9 @@ class ReportManagementService
                 'public'
             );
 
-            return Report::create([
+            return Laporan::create([
                 'user_id' => $userId,
-                'group_id' => $groupId,
+                'kelompok_id' => $groupId,
                 'type' => $type,
                 'title' => $title,
                 'description' => $description,
@@ -113,7 +113,7 @@ class ReportManagementService
         int $reviewerId,
         string $action,
         ?string $feedback = null
-    ): Report {
+    ): Laporan {
         $allowedActions = ['approved', 'rejected', 'revision_required'];
         
         if (!in_array($action, $allowedActions)) {
@@ -121,7 +121,7 @@ class ReportManagementService
         }
 
         return DB::transaction(function () use ($reportId, $reviewerId, $action, $feedback) {
-            $report = Report::findOrFail($reportId);
+            $report = Laporan::findOrFail($reportId);
 
             $report->update([
                 'status' => $action,
@@ -139,8 +139,8 @@ class ReportManagementService
      */
     public function getStudentReportProgress(int $userId, int $groupId): array
     {
-        $reports = Report::where('user_id', $userId)
-            ->where('group_id', $groupId)
+        $reports = Laporan::where('user_id', $userId)
+            ->where('kelompok_id', $groupId)
             ->get()
             ->keyBy('type');
 

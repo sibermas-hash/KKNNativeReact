@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Dpl;
 
 use App\Http\Controllers\Controller;
 use App\Imports\EvaluationImport;
-use App\Models\Evaluation;
-use App\Models\EvaluationItem;
-use App\Models\Group;
-use App\Models\Registration;
-use App\Models\Student;
+use App\Models\KKN\Evaluasi;
+use App\Models\KKN\ItemEvaluasi;
+use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\PesertaKkn;
+use App\Models\KKN\Mahasiswa;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,16 +19,16 @@ class EvaluationController extends Controller
 {
     public function index(): Response
     {
-        $lecturer = auth()->user()->lecturer;
-        $groupIds = $lecturer ? $lecturer->groups()->pluck('id') : collect();
+        $dosen = auth()->user()->dosen;
+        $groupIds = $dosen ? $dosen->kelompokKkn()->pluck('id') : collect();
 
-        $evaluations = Evaluation::whereIn('group_id', $groupIds)
-            ->with(['student', 'group', 'items'])
+        $evaluations = Evaluasi::whereIn('kelompok_id', $groupIds)
+            ->with(['mahasiswa', 'kelompok', 'itemEvaluasi'])
             ->orderByDesc('evaluated_at')
             ->get();
 
-        $groups = Group::whereIn('id', $groupIds)
-            ->with(['registrations' => fn($q) => $q->where('status', 'approved')->with('student')])
+        $groups = KelompokKkn::whereIn('id', $groupIds)
+            ->with(['registrations' => fn($q) => $q->where('status', 'approved')->with('mahasiswa')])
             ->get();
 
         return Inertia::render('Dpl/Evaluations/Index', [
@@ -40,7 +40,7 @@ class EvaluationController extends Controller
     public function import(Request $request): RedirectResponse
     {
         $request->validate([
-            'group_id' => ['required', 'exists:groups,id'],
+            'group_id' => ['required', 'exists:kelompok_kkn,id'],
             'file' => ['required', 'file', 'mimes:xlsx,xls'],
         ]);
 
@@ -51,9 +51,9 @@ class EvaluationController extends Controller
 
     public function create(Request $request): Response
     {
-        $lecturer = auth()->user()->lecturer;
-        $groups = $lecturer
-            ? Group::where('lecturer_id', $lecturer->id)->with('registrations.student')->get()
+        $dosen = auth()->user()->dosen;
+        $groups = $dosen
+            ? KelompokKkn::where('dpl_id', $dosen->id)->with('registrations.mahasiswa')->get()
             : collect();
 
         return Inertia::render('Dpl/Evaluations/Form', [
@@ -66,8 +66,8 @@ class EvaluationController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'student_id' => ['required', 'exists:students,id'],
-            'group_id' => ['required', 'exists:groups,id'],
+            'student_id' => ['required', 'exists:mahasiswa,id'],
+            'group_id' => ['required', 'exists:kelompok_kkn,id'],
             'evaluator_type' => ['required', 'in:dpl,peer,community'],
             'notes' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
@@ -76,9 +76,9 @@ class EvaluationController extends Controller
             'items.*.weight' => ['required', 'numeric', 'min:0', 'max:100'],
         ]);
 
-        $evaluation = Evaluation::create([
-            'student_id' => $validated['student_id'],
-            'group_id' => $validated['group_id'],
+        $evaluation = Evaluasi::create([
+            'mahasiswa_id' => $validated['student_id'],
+            'kelompok_id' => $validated['group_id'],
             'evaluator_id' => auth()->id(),
             'evaluator_type' => $validated['evaluator_type'],
             'notes' => $validated['notes'] ?? null,
@@ -89,8 +89,8 @@ class EvaluationController extends Controller
         $totalWeight = 0;
 
         foreach ($validated['items'] as $item) {
-            EvaluationItem::create([
-                'evaluation_id' => $evaluation->id,
+            ItemEvaluasi::create([
+                'evaluasi_id' => $evaluation->id,
                 'criterion' => $item['criterion'],
                 'score' => $item['score'],
                 'weight' => $item['weight'],

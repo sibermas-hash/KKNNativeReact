@@ -2,11 +2,11 @@
 
 namespace App\Repositories\Contracts;
 
-use App\Models\Registration;
+use App\Models\KKN\PesertaKkn;
 
 interface RegistrationRepositoryInterface
 {
-    public function findForStudentPeriod(int $studentId, int $periodId): ?Registration;
+    public function findForMahasiswaPeriode(int $mahasiswaId, int $periodeId): ?PesertaKkn;
 
-    public function create(array $data): Registration;
+    public function create(array $data): PesertaKkn;
 }

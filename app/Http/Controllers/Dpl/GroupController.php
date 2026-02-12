@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Dpl;
 
 use App\Http\Controllers\Controller;
-use App\Models\Group;
+use App\Models\KKN\KelompokKkn;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -11,29 +11,29 @@ class GroupController extends Controller
 {
     public function index(): Response
     {
-        $lecturer = auth()->user()->lecturer;
+        $dosen = auth()->user()->dosen;
 
-        $groups = $lecturer
-            ? Group::where('lecturer_id', $lecturer->id)
-                ->with('period', 'location')
-                ->withCount('registrations', 'dailyReports', 'workPrograms')
+        $kelompok = $dosen
+            ? KelompokKkn::where('dpl_id', $dosen->id)
+                ->with(['periode', 'lokasi'])
+                ->withCount(['registrations', 'dailyReports', 'workPrograms'])
                 ->get()
             : collect();
 
         return Inertia::render('Dpl/Groups/Index', [
-            'groups' => $groups,
+            'groups' => $kelompok,
         ]);
     }
 
-    public function show(Group $group): Response
+    public function show(KelompokKkn $group): Response
     {
-        $lecturer = auth()->user()->lecturer;
-        abort_if(!$lecturer || $group->lecturer_id !== $lecturer->id, 403);
+        $dosen = auth()->user()->dosen;
+        abort_if(!$dosen || $group->dpl_id !== $dosen->id, 403);
 
         $group->load([
-            'period', 'location',
-            'registrations.student.faculty',
-            'registrations.student.program',
+            'periode', 'lokasi',
+            'registrations.mahasiswa.faculty',
+            'registrations.mahasiswa.prodi',
             'workPrograms',
         ]);
 

@@ -2,33 +2,28 @@
 
 namespace App\Imports;
 
-use App\Models\Evaluation;
-use App\Models\EvaluationItem;
-use App\Models\Student;
-use App\Models\Group;
+use App\Models\KKN\Evaluasi;
+use App\Models\KKN\ItemEvaluasi;
+use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\KelompokKkn;
 use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\ToCollection;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Concerns\ToCollection;
 
 class EvaluationImport implements ToCollection
 {
-    protected $groupId;
+    protected $kelompokId;
     protected $lecturerId;
 
-    public function __construct($groupId, $lecturerId)
+    public function __construct($kelompokId, $lecturerId)
     {
-        $this->groupId = $groupId;
+        $this->kelompokId = $kelompokId;
         $this->lecturerId = $lecturerId;
     }
 
     public function collection(Collection $rows)
     {
         // Skip header rows (start from row 8 as per template.xlsx structure)
-        // Row 1: Kelompok
-        // Row 2-5: Detail Lokasi/DPL
-        // Row 7: Table Headers
-        // Row 8: First Student Data
-        
         $dataRows = $rows->slice(7);
 
         foreach ($dataRows as $row) {
@@ -38,21 +33,21 @@ class EvaluationImport implements ToCollection
 
             if (!$nim) continue;
 
-            $student = Student::where('nim', $nim)->first();
-            if (!$student) continue;
+            $mahasiswa = Mahasiswa::where('nim', $nim)->first();
+            if (!$mahasiswa) continue;
 
-            DB::transaction(function () use ($student, $scoreDiscipline, $scoreAttitude) {
+            DB::transaction(function () use ($mahasiswa, $scoreDiscipline, $scoreAttitude) {
                 // Delete existing evaluation for this student/group/evaluator if exists
-                Evaluation::where([
-                    'student_id' => $student->id,
-                    'group_id' => $this->groupId,
+                Evaluasi::where([
+                    'mahasiswa_id' => $mahasiswa->id,
+                    'kelompok_id' => $this->kelompokId,
                     'evaluator_id' => $this->lecturerId,
                     'evaluator_type' => 'dpl'
                 ])->delete();
 
-                $evaluation = Evaluation::create([
-                    'student_id' => $student->id,
-                    'group_id' => $this->groupId,
+                $evaluasi = Evaluasi::create([
+                    'mahasiswa_id' => $mahasiswa->id,
+                    'kelompok_id' => $this->kelompokId,
                     'evaluator_id' => $this->lecturerId,
                     'evaluator_type' => 'dpl',
                     'evaluated_at' => now(),
@@ -62,8 +57,8 @@ class EvaluationImport implements ToCollection
 
                 // Criterion 1: Kedisiplinan (50%)
                 if ($scoreDiscipline !== null) {
-                    EvaluationItem::create([
-                        'evaluation_id' => $evaluation->id,
+                    ItemEvaluasi::create([
+                        'evaluation_id' => $evaluasi->id,
                         'criterion' => 'Kedisiplinan',
                         'score' => $scoreDiscipline,
                         'weight' => 50,
@@ -73,8 +68,8 @@ class EvaluationImport implements ToCollection
 
                 // Criterion 2: Sikap (50%)
                 if ($scoreAttitude !== null) {
-                    EvaluationItem::create([
-                        'evaluation_id' => $evaluation->id,
+                    ItemEvaluasi::create([
+                        'evaluation_id' => $evaluasi->id,
                         'criterion' => 'Sikap',
                         'score' => $scoreAttitude,
                         'weight' => 50,
@@ -84,7 +79,7 @@ class EvaluationImport implements ToCollection
 
                 $grade = $this->calculateGrade($totalScore);
 
-                $evaluation->update([
+                $evaluasi->update([
                     'total_score' => $totalScore,
                     'grade' => $grade,
                 ]);

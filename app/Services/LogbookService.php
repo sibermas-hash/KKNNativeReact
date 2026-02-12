@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\DailyReport;
-use App\Models\Group;
+use App\Models\KKN\KegiatanKkn;
+use App\Models\KKN\KelompokKkn;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -11,38 +11,37 @@ use Illuminate\Support\Facades\Storage;
 class LogbookService
 {
     /**
-     * Create a new logbook entry using DailyReport model
+     * Create a new logbook entry using KegiatanKkn model
      */
     public function createEntry(
-        int $studentId,
-        int $groupId,
+        int $mahasiswaId,
+        int $kelompokId,
         string $date,
         string $location,
         string $content,
         array $documentationFiles = []
-    ): DailyReport {
-        return DB::transaction(function () use ($studentId, $groupId, $date, $location, $content, $documentationFiles) {
-            $report = DailyReport::create([
-                'student_id' => $studentId,
-                'group_id' => $groupId,
+    ): KegiatanKkn {
+        return DB::transaction(function () use ($mahasiswaId, $kelompokId, $date, $location, $content, $documentationFiles) {
+            $kegiatan = KegiatanKkn::create([
+                'mahasiswa_id' => $mahasiswaId,
+                'kelompok_id' => $kelompokId,
                 'date' => $date,
                 'location' => $location,
                 'content' => $content,
                 'status' => 'submitted',
             ]);
 
-            // If there are files, we can handle them (assuming a DailyReportFile model exists or we handle it here)
+            // If there are files, we can handle them
             foreach ($documentationFiles as $file) {
-                $filename = time() . '_' . $studentId . '_' . $file->getClientOriginalName();
-                $path = $file->storeAs("daily_reports/{$groupId}", $filename, 'public');
+                $filename = time() . '_' . $mahasiswaId . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs("daily_reports/{$kelompokId}", $filename, 'public');
                 
-                // Assuming DailyReport handles files - check model relationships later
-                if (method_exists($report, 'files')) {
-                    $report->files()->create(['file_path' => $path]);
+                if (method_exists($kegiatan, 'fileKegiatan')) {
+                    $kegiatan->fileKegiatan()->create(['file_path' => $path]);
                 }
             }
 
-            return $report;
+            return $kegiatan;
         });
     }
 
@@ -50,40 +49,40 @@ class LogbookService
      * Review logbook entry
      */
     public function reviewEntry(
-        int $reportId,
+        int $kegiatanId,
         int $reviewerId,
         string $status,
         ?string $reviewNotes = null
-    ): DailyReport {
-        $report = DailyReport::findOrFail($reportId);
+    ): KegiatanKkn {
+        $kegiatan = KegiatanKkn::findOrFail($kegiatanId);
 
-        $report->update([
+        $kegiatan->update([
             'status' => $status,
             'review_notes' => $reviewNotes,
             'reviewed_by' => $reviewerId,
             'reviewed_at' => now(),
         ]);
 
-        return $report->fresh();
+        return $kegiatan->fresh();
     }
 
     /**
      * Get student's logbook summary
      */
-    public function getStudentLogbooks(int $studentId, int $groupId): array
+    public function getStudentLogbooks(int $mahasiswaId, int $kelompokId): array
     {
-        $reports = DailyReport::where('student_id', $studentId)
-            ->where('group_id', $groupId)
+        $kegiatan = KegiatanKkn::where('mahasiswa_id', $mahasiswaId)
+            ->where('kelompok_id', $kelompokId)
             ->orderBy('date', 'desc')
             ->get();
 
         return [
-            'entries' => $reports,
+            'entries' => $kegiatan,
             'statistics' => [
-                'total' => $reports->count(),
-                'approved' => $reports->where('status', 'approved')->count(),
-                'pending' => $reports->where('status', 'submitted')->count(),
-                'rejected' => $reports->where('status', 'rejected')->count(),
+                'total' => $kegiatan->count(),
+                'approved' => $kegiatan->where('status', 'approved')->count(),
+                'pending' => $kegiatan->where('status', 'submitted')->count(),
+                'rejected' => $kegiatan->where('status', 'rejected')->count(),
             ],
         ];
     }

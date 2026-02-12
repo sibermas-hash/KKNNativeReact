@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
-use App\Models\FinalReport;
+use App\Models\KKN\LaporanAkhir;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,23 +13,23 @@ class FinalReportController extends Controller
 {
     public function create(): Response
     {
-        $student = auth()->user()->student;
-        $registration = $student?->registrations()->where('status', 'approved')->first();
-        $existingReport = $student
-            ? FinalReport::where('student_id', $student->id)->latest()->first()
+        $mahasiswa = auth()->user()->mahasiswa;
+        $pendaftaran = $mahasiswa?->peserta()->where('status', 'approved')->first();
+        $laporanAda = $mahasiswa
+            ? LaporanAkhir::where('mahasiswa_id', $mahasiswa->id)->latest()->first()
             : null;
 
         return Inertia::render('Student/FinalReport/Create', [
-            'group' => $registration?->group,
-            'existingReport' => $existingReport,
+            'group' => $pendaftaran?->kelompok,
+            'existingReport' => $laporanAda,
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $student = auth()->user()->student;
-        $registration = $student->registrations()->where('status', 'approved')->first();
-        abort_if(!$registration || !$registration->group_id, 403);
+        $mahasiswa = auth()->user()->mahasiswa;
+        $pendaftaran = $mahasiswa->peserta()->where('status', 'approved')->first();
+        abort_if(!$pendaftaran || !$pendaftaran->kelompok_id, 403);
 
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:300'],
@@ -40,8 +40,8 @@ class FinalReportController extends Controller
         $file = $request->file('file');
         $path = $file->store('final-reports', 'public');
 
-        FinalReport::updateOrCreate(
-            ['student_id' => $student->id, 'group_id' => $registration->group_id],
+        LaporanAkhir::updateOrCreate(
+            ['mahasiswa_id' => $mahasiswa->id, 'kelompok_id' => $pendaftaran->kelompok_id],
             [
                 'title' => $validated['title'],
                 'abstract' => $validated['abstract'] ?? null,

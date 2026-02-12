@@ -204,6 +204,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                         <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-medium text-white">{auth.user?.name}</p>
                             <p className="truncate text-xs text-slate-400 capitalize">{roles[0] ?? 'user'}</p>
+                            <p className="text-[10px] text-emerald-400 font-mono">DEBUG: {JSON.stringify(roles)}</p>
                         </div>
                     </div>
                 </div>

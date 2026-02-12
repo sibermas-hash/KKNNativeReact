@@ -58,11 +58,20 @@ class MasterApiService
      */
     protected function get(string $endpoint, array $params = []): array
     {
+        $payload = $this->request($endpoint, $params);
+        return is_array($payload) ? ($payload['data'] ?? []) : [];
+    }
+
+    /**
+     * Authenticated GET request (raw JSON payload).
+     */
+    protected function request(string $endpoint, array $params = []): ?array
+    {
         $token = $this->getToken();
 
         if (!$token) {
             Log::error("Master API: No token available for GET {$endpoint}");
-            return [];
+            return null;
         }
 
         try {
@@ -73,10 +82,12 @@ class MasterApiService
             Log::debug("Master API: GET {$endpoint} response", [
                 'status' => $response->status(),
                 'data_count' => count($response->json('data') ?? []),
+                'page' => $params['page'] ?? null,
+                'per_page' => $params['per_page'] ?? null,
             ]);
 
             if ($response->successful()) {
-                return $response->json('data') ?? [];
+                return $response->json() ?? [];
             }
 
             Log::error("Master API: GET {$endpoint} failed", [
@@ -87,7 +98,68 @@ class MasterApiService
             Log::error("Master API: GET {$endpoint} exception", ['error' => $e->getMessage()]);
         }
 
-        return [];
+        return null;
+    }
+
+    /**
+     * Fetch all pages for a paginated Master API endpoint.
+     *
+     * Master API caps per_page to 100, so clients must paginate.
+     */
+    protected function getAllPages(string $endpoint, array $params = [], int $perPage = 100, int $maxPages = 500): array
+    {
+        $perPage = min(max($perPage, 1), 100);
+
+        $results = [];
+        $page = 1;
+
+        while (true) {
+            $payload = $this->request($endpoint, array_merge($params, [
+                'page' => $page,
+                'per_page' => $perPage,
+            ]));
+
+            if (!is_array($payload) || !isset($payload['data']) || !is_array($payload['data'])) {
+                Log::error('Master API: Pagination failed', [
+                    'endpoint' => $endpoint,
+                    'page' => $page,
+                ]);
+                return [];
+            }
+
+            $results = array_merge($results, $payload['data']);
+
+            $pagination = $payload['meta']['pagination'] ?? null;
+            $totalPages = is_array($pagination) ? ($pagination['total_pages'] ?? null) : null;
+
+            if ($totalPages !== null) {
+                $totalPages = (int) $totalPages;
+                if ($totalPages <= 0) {
+                    $totalPages = 1;
+                }
+
+                if ($page >= $totalPages) {
+                    break;
+                }
+            } else {
+                $next = (is_array($pagination) && isset($pagination['links']['next'])) ? $pagination['links']['next'] : null;
+                if (empty($next)) {
+                    // If API doesn't provide pagination meta, treat as single page.
+                    break;
+                }
+            }
+
+            $page++;
+            if ($page > $maxPages) {
+                Log::error('Master API: Pagination aborted (max pages exceeded)', [
+                    'endpoint' => $endpoint,
+                    'max_pages' => $maxPages,
+                ]);
+                break;
+            }
+        }
+
+        return $results;
     }
 
     /**
@@ -95,7 +167,7 @@ class MasterApiService
      */
     public function getAllOrganizations(): array
     {
-        return $this->get('/organizations', ['per_page' => 100]);
+        return $this->getAllPages('/organizations', [], 100);
     }
 
     /**
@@ -103,7 +175,7 @@ class MasterApiService
      */
     public function getAllEmployees(): array
     {
-        return $this->get('/employees', ['per_page' => 500]);
+        return $this->getAllPages('/employees', [], 100);
     }
 
     /**
@@ -111,7 +183,7 @@ class MasterApiService
      */
     public function getAllStudents(): array
     {
-        return $this->get('/students', ['per_page' => 500]);
+        return $this->getAllPages('/students', [], 100);
     }
 
     /**

@@ -80,14 +80,14 @@ class GeneratorNilaiController extends Controller
         }
 
         // Fallback to group_members join
-        $students = DB::table('group_members')
-            ->join('mahasiswa', 'group_members.student_id', '=', 'mahasiswa.id') // This might be correct if table columns weren't renamed, but I'll assume they were renamed for consistency if I check them.
+        $students = DB::table('anggota_kelompok')
+            ->join('mahasiswa', 'anggota_kelompok.mahasiswa_id', '=', 'mahasiswa.id')
             ->join('users', 'mahasiswa.user_id', '=', 'users.id')
             ->leftJoin('nilai_kkn', function($join) use ($group) {
                 $join->on('users.id', '=', 'nilai_kkn.mahasiswa_id')
                      ->where('nilai_kkn.kelompok_id', '=', $group->id);
             })
-            ->where('group_members.kelompok_id', $group->id)
+            ->where('anggota_kelompok.kelompok_id', $group->id)
             ->select([
                 'users.id as user_id',
                 'mahasiswa.nama',
@@ -295,11 +295,11 @@ class GeneratorNilaiController extends Controller
             ->where('status', 'approved')
             ->get();
 
-        if ($registrations->isEmpty() && \Illuminate\Support\Facades\Schema::hasTable('group_members')) {
-            $members = DB::table('group_members')
-                ->join('mahasiswa', 'group_members.student_id', '=', 'mahasiswa.id')
+        if ($registrations->isEmpty() && \Illuminate\Support\Facades\Schema::hasTable('anggota_kelompok')) {
+            $members = DB::table('anggota_kelompok')
+                ->join('mahasiswa', 'anggota_kelompok.mahasiswa_id', '=', 'mahasiswa.id')
                 ->join('users', 'mahasiswa.user_id', '=', 'users.id')
-                ->where('group_members.group_id', $group->id)
+                ->where('anggota_kelompok.kelompok_id', $group->id)
                 ->select('mahasiswa.id', 'users.id as user_id', 'mahasiswa.nim', 'mahasiswa.nama', 'users.name as user_name')
                 ->get();
 

@@ -17,7 +17,7 @@ class DashboardController extends Controller
 
         $kelompok = $dosen
             ? KelompokKkn::where('dpl_id', $dosen->id)
-                ->withCount(['registrations', 'dailyReports'])
+                ->withCount(['peserta', 'kegiatan'])
                 ->with(['lokasi', 'periode'])
                 ->get()
             : collect();

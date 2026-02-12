@@ -69,7 +69,7 @@ class DailyReportController extends Controller
             foreach ($request->file('files') as $file) {
                 $path = $file->store('daily-reports', 'public');
                 FileKegiatanKkn::create([
-                    'kegiatan_id' => $kegiatan->id,
+                    'kegiatan_kkn_id' => $kegiatan->id,
                     'file_path' => $path,
                     'file_name' => $file->getClientOriginalName(),
                 ]);

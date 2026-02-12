@@ -13,7 +13,7 @@ class PesertaKknController extends Controller
 {
     public function index(Request $request): Response
     {
-        $registrations = PesertaKkn::with('mahasiswa.fakultas', 'mahasiswa.prodi', 'period', 'kelompok')
+        $registrations = PesertaKkn::with('mahasiswa.fakultas', 'mahasiswa.prodi', 'periode', 'kelompok')
             ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status))
             ->orderByDesc('created_at')
             ->paginate(15)
@@ -27,7 +27,7 @@ class PesertaKknController extends Controller
 
     public function show(PesertaKkn $registration): Response
     {
-        $registration->load('mahasiswa.fakultas', 'mahasiswa.prodi', 'period', 'kelompok', 'documents');
+        $registration->load('mahasiswa.fakultas', 'mahasiswa.prodi', 'periode', 'kelompok', 'documents');
 
         return Inertia::render('Admin/Registrations/Show', [
             'registration' => $registration,

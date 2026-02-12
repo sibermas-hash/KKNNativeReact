@@ -51,6 +51,6 @@ class KegiatanKkn extends Model
 
     public function fileKegiatan(): HasMany
     {
-        return $this->hasMany(FileKegiatanKkn::class, 'kegiatan_id');
+        return $this->hasMany(FileKegiatanKkn::class, 'kegiatan_kkn_id');
     }
 }

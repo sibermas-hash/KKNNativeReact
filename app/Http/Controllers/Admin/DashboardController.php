@@ -48,7 +48,7 @@ class DashboardController extends Controller
                     ];
                 })->values();
             }),
-            'recentRegistrations' => Inertia::defer(fn() => PesertaKkn::with(['mahasiswa.user', 'period'])
+            'recentRegistrations' => Inertia::defer(fn() => PesertaKkn::with(['mahasiswa.user', 'periode'])
                 ->latest()
                 ->take(5)
                 ->get()),

@@ -25,7 +25,7 @@ class ProposalController extends Controller
         }
 
         if ($user->hasRole('admin') || $user->hasRole('superadmin') || $user->hasRole('dpl')) {
-            $proposals = \App\Models\Proposal::with(['group', 'user'])->latest()->paginate(10);
+            $proposals = \App\Models\KKN\Proposal::with(['kelompok', 'user'])->latest()->paginate(10);
             return Inertia::render('Admin/Proposals/Index', [
                 'proposals' => $proposals
             ]);
@@ -64,7 +64,7 @@ class ProposalController extends Controller
 
     public function review(Request $request, int $id)
     {
-        $proposal = \App\Models\Proposal::findOrFail($id);
+        $proposal = \App\Models\KKN\Proposal::findOrFail($id);
         $this->authorize('review', $proposal);
 
         $validated = $request->validate([

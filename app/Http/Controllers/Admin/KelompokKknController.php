@@ -17,7 +17,7 @@ class KelompokKknController extends Controller
 {
     public function index(): Response
     {
-        $groups = KelompokKkn::with('period', 'location', 'dpl')
+        $groups = KelompokKkn::with('periode', 'lokasi', 'dpl')
             ->withCount('peserta')
             ->orderByDesc('created_at')
             ->get();
@@ -37,11 +37,11 @@ class KelompokKknController extends Controller
     public function show(KelompokKkn $group): Response
     {
         $group->load([
-            'period',
-            'location',
+            'periode',
+            'lokasi',
             'dpl',
-            'registrations.mahasiswa',
-            'workPrograms',
+            'peserta.mahasiswa',
+            'programKerja',
         ]);
 
         return Inertia::render('Admin/Groups/Show', [

@@ -25,13 +25,13 @@ class ReportController extends Controller
         // For Admin, show global reports summary
         if ($user->hasRole('admin') || $user->hasRole('superadmin')) {
             $summary = [
-                'total_reports' => \App\Models\Report::count(),
-                'pending_review' => \App\Models\Report::where('status', 'submitted')->count(),
+                'total_reports' => \App\Models\KKN\Laporan::count(),
+                'pending_review' => \App\Models\KKN\Laporan::where('status', 'submitted')->count(),
             ];
             
             return Inertia::render('Admin/Reports/Index', [
                 'summary' => $summary,
-                'reports' => \App\Models\Report::with(['user', 'group'])->latest()->paginate(10),
+                'reports' => \App\Models\KKN\Laporan::with(['user', 'kelompok'])->latest()->paginate(10),
             ]);
         }
 

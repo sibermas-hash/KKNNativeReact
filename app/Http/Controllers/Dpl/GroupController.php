@@ -16,7 +16,7 @@ class GroupController extends Controller
         $kelompok = $dosen
             ? KelompokKkn::where('dpl_id', $dosen->id)
                 ->with(['periode', 'lokasi'])
-                ->withCount(['registrations', 'dailyReports', 'workPrograms'])
+                ->withCount(['peserta', 'kegiatan', 'programKerja'])
                 ->get()
             : collect();
 
@@ -32,9 +32,9 @@ class GroupController extends Controller
 
         $group->load([
             'periode', 'lokasi',
-            'registrations.mahasiswa.faculty',
-            'registrations.mahasiswa.prodi',
-            'workPrograms',
+            'peserta.mahasiswa.faculty',
+            'peserta.mahasiswa.prodi',
+            'programKerja',
         ]);
 
         return Inertia::render('Dpl/Groups/Show', [

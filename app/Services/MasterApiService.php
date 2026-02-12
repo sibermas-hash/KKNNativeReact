@@ -121,7 +121,20 @@ class MasterApiService
     {
         try {
             $response = Http::withOptions(['verify' => $this->verifySsl])->get($this->baseUrl . '/health');
-            return $response->json() ?? ['status' => 'DOWN'];
+            $payload = $response->json() ?? [];
+
+            // Backward compatible:
+            // - old format: { "status": "UP", ... }
+            // - new format: { "success": true, "data": { "status": "UP", ... }, ... }
+            if (isset($payload['status'])) {
+                return $payload;
+            }
+
+            if (isset($payload['data']) && is_array($payload['data']) && isset($payload['data']['status'])) {
+                return $payload['data'];
+            }
+
+            return ['status' => $response->successful() ? 'UP' : 'DOWN'];
         } catch (\Exception $e) {
             return ['status' => 'DOWN', 'error' => $e->getMessage()];
         }

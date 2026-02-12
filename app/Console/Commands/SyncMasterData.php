@@ -178,8 +178,9 @@ class SyncMasterData extends Command
 
             // 2. Ensure Lecturer record exists (Local KKN)
             Dosen::updateOrCreate(
-                ['master_id' => $empData['id']],
+                ['nip' => $empData['nip']],
                 [
+                    'master_id' => $empData['id'],
                     'user_id' => $user->id,
                     'nip' => $empData['nip'],
                     'nama' => $empData['name'],
@@ -263,8 +264,9 @@ class SyncMasterData extends Command
 
             // 2. Ensure Student record exists (Local KKN)
             Mahasiswa::updateOrCreate(
-                ['master_id' => $studData['id']],
+                ['nim' => $studData['nim']],
                 [
+                    'master_id' => $studData['id'],
                     'user_id' => $user->id,
                     'nim' => $studData['nim'],
                     'nama' => $studData['name'],

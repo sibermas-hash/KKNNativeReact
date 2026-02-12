@@ -19,7 +19,7 @@ class ProposalService
         return DB::transaction(function () use ($userId, $groupId, $data) {
             $proposal = Proposal::updateOrCreate(
                 [
-                    'group_id' => $groupId,
+                    'kelompok_id' => $groupId,
                 ],
                 [
                     'user_id' => $userId, // Representative (Coordinator)
@@ -65,6 +65,6 @@ class ProposalService
      */
     public function getGroupProposal(int $groupId): ?Proposal
     {
-        return Proposal::where('group_id', $groupId)->first();
+        return Proposal::where('kelompok_id', $groupId)->first();
     }
 }

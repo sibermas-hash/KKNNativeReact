@@ -29,7 +29,7 @@ class RekapNilaiController extends Controller
 
         $activePeriod = Periode::getActivePeriod();
         $periodeId = $request->integer('period_id', $activePeriod?->id);
-        $filters = $request->only(['faculty_id', 'group_id', 'huruf']);
+        $filters = $request->only(['faculty_id', 'kelompok_id', 'huruf']);
 
         if (!$periodeId) {
             return Inertia::render('Admin/RekapNilai/Index', [
@@ -70,7 +70,7 @@ class RekapNilaiController extends Controller
         $this->authorize('export', NilaiKkn::class);
 
         $periodeId = $request->integer('period_id');
-        $rows = $this->repo->getRekapNilai($periodeId, $request->only(['faculty_id', 'group_id']));
+        $rows = $this->repo->getRekapNilai($periodeId, $request->only(['faculty_id', 'kelompok_id']));
         $periode = Periode::findOrFail($periodeId);
 
         return Excel::download(
@@ -97,8 +97,8 @@ class RekapNilaiController extends Controller
         }
 
         $pdf = $this->certificate->generateForStudent($score);
-        $nim = $score->mahasiswa->student->nim ?? '';
-        $filename = "Sertifikat_KKN_{$score->mahasiswa->name}_{$nim}.pdf";
+        $nim = $score->mahasiswa->nim ?? '';
+        $filename = "Sertifikat_KKN_{$score->mahasiswa->nama}_{$nim}.pdf";
         
         return $pdf->download($filename);
     }
@@ -108,7 +108,7 @@ class RekapNilaiController extends Controller
         $this->authorize('export', NilaiKkn::class);
 
         $periodeId = $request->integer('period_id');
-        $rows = $this->repo->getRekapNilai($periodeId, $request->only(['faculty_id', 'group_id']));
+        $rows = $this->repo->getRekapNilai($periodeId, $request->only(['faculty_id', 'kelompok_id']));
         $finalized = $rows->where('is_finalized', true);
 
         if ($finalized->isEmpty()) {
@@ -127,8 +127,8 @@ class RekapNilaiController extends Controller
                 
                 if ($score) {
                     $pdf = $this->certificate->generateForStudent($score);
-                    $nim = $score->mahasiswa->student->nim ?? '';
-                    $pdfName = "Sertifikat_{$score->mahasiswa->name}_{$nim}.pdf";
+                    $nim = $score->mahasiswa->nim ?? '';
+                    $pdfName = "Sertifikat_{$score->mahasiswa->nama}_{$nim}.pdf";
                     $zip->addFromString($pdfName, $pdf->output());
                 }
             }

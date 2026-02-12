@@ -176,7 +176,7 @@ class ImportKknExcel extends Command
                 );
 
                 DB::table('group_members')->updateOrInsert(
-                    ['group_id' => $group->id, 'student_id' => $mahasiswa->id],
+                    ['kelompok_id' => $group->id, 'mahasiswa_id' => $mahasiswa->id],
                     ['joined_at' => now()]
                 );
 

@@ -34,7 +34,7 @@ class GradeController extends Controller
                     'email' => $user->email,
                     'username' => $user->username,
                     'nim' => $reg->mahasiswa->nim,
-                    'group_id' => $group->id,
+                    'kelompok_id' => $group->id,
                 ];
             });
 
@@ -45,7 +45,7 @@ class GradeController extends Controller
     {
         $data = $request->validate([
             'kelompok_id' => ['required','exists:kelompok_kkn,id'],
-            'mahasiswa_id' => ['required','exists:users,id'],
+            'mahasiswa_id' => ['required','exists:mahasiswa,id'],
             'execution_score' => ['nullable','numeric','between:0,100'],
             'article_score' => ['nullable','numeric','between:0,100'],
             'discipline_score' => ['nullable','numeric','between:0,100'],

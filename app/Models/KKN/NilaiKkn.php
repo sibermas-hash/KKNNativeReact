@@ -47,7 +47,7 @@ class NilaiKkn extends Model
 
     public function mahasiswa(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'mahasiswa_id');
+        return $this->belongsTo(Mahasiswa::class, 'mahasiswa_id');
     }
 
     public function kelompok(): BelongsTo

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Services\GradingService;
+use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\KelompokKkn;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -20,20 +22,21 @@ class GradingController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', \App\Models\KknScore::class);
+        $this->authorize('viewAny', NilaiKkn::class);
         
         $user = $request->user();
         $groupId = $request->input('group_id');
         
         $groups = [];
         if ($user->hasRole('admin') || $user->hasRole('superadmin')) {
-             $groups = \App\Models\Group::orderBy('code')->get();
+             $groups = KelompokKkn::orderBy('code')->get();
              if (!$groupId && $groups->isNotEmpty()) {
                  $groupId = $groups->first()->id;
              }
         } else {
-             $groupId = $groupId ?: ($user->lecturer?->groups()->first()?->id ?? null);
-             $groups = $user->lecturer?->groups ?? [];
+             $dosen = $user->dosen;
+             $groupId = $groupId ?: ($dosen?->kelompokKkn()->first()?->id ?? null);
+             $groups = $dosen?->kelompokKkn ?? [];
         }
         
         if (!$groupId) {
@@ -61,9 +64,9 @@ class GradingController extends Controller
     {
         $validated = $request->validated();
 
-        $score = \App\Models\KknScore::firstOrNew([
-            'student_id' => $validated['student_id'],
-            'group_id' => $validated['group_id'],
+        $score = NilaiKkn::firstOrNew([
+            'mahasiswa_id' => $validated['student_id'],
+            'kelompok_id' => $validated['group_id'],
         ]);
 
         $this->authorize('update', $score);
@@ -87,9 +90,9 @@ class GradingController extends Controller
     {
         $validated = $request->validated();
 
-        $score = \App\Models\KknScore::firstOrNew([
-            'student_id' => $validated['student_id'],
-            'group_id' => $validated['group_id'],
+        $score = NilaiKkn::firstOrNew([
+            'mahasiswa_id' => $validated['student_id'],
+            'kelompok_id' => $validated['group_id'],
         ]);
 
         $this->authorize('update', $score);
@@ -112,9 +115,9 @@ class GradingController extends Controller
     {
         $validated = $request->validated();
 
-        $score = \App\Models\KknScore::firstOrNew([
-            'student_id' => $validated['student_id'],
-            'group_id' => $validated['group_id'],
+        $score = NilaiKkn::firstOrNew([
+            'mahasiswa_id' => $validated['student_id'],
+            'kelompok_id' => $validated['group_id'],
         ]);
 
         $this->authorize('update', $score);

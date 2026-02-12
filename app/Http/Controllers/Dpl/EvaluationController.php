@@ -23,12 +23,12 @@ class EvaluationController extends Controller
         $groupIds = $dosen ? $dosen->kelompokKkn()->pluck('id') : collect();
 
         $evaluations = Evaluasi::whereIn('kelompok_id', $groupIds)
-            ->with(['mahasiswa', 'kelompok', 'itemEvaluasi'])
+            ->with(['mahasiswa', 'kelompok', 'item'])
             ->orderByDesc('evaluated_at')
             ->get();
 
         $groups = KelompokKkn::whereIn('id', $groupIds)
-            ->with(['registrations' => fn($q) => $q->where('status', 'approved')->with('mahasiswa')])
+            ->with(['peserta' => fn($q) => $q->where('status', 'approved')->with('mahasiswa')])
             ->get();
 
         return Inertia::render('Dpl/Evaluations/Index', [
@@ -53,7 +53,7 @@ class EvaluationController extends Controller
     {
         $dosen = auth()->user()->dosen;
         $groups = $dosen
-            ? KelompokKkn::where('dpl_id', $dosen->id)->with('registrations.mahasiswa')->get()
+            ? KelompokKkn::where('dpl_id', $dosen->id)->with('peserta.mahasiswa')->get()
             : collect();
 
         return Inertia::render('Dpl/Evaluations/Form', [

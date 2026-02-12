@@ -149,7 +149,7 @@ class ImportKknRoster extends Command
                 // Group membership (if table exists)
                 if (Schema::hasTable('group_members')) {
                     DB::table('group_members')->updateOrInsert(
-                        ['group_id' => $group->id, 'student_id' => $mahasiswa->id],
+                        ['kelompok_id' => $group->id, 'mahasiswa_id' => $mahasiswa->id],
                         ['role_in_group' => 'member', 'joined_at' => now()]
                     );
                 }

@@ -20,7 +20,7 @@ class KknScoreRepository
             ->join('peserta_kkn as r', 's.id', '=', 'r.mahasiswa_id')
             ->join('kelompok_kkn as g', 'r.kelompok_id', '=', 'g.id')
             ->join('lokasi as lok', 'g.location_id', '=', 'lok.id')
-            ->leftJoin('dosen as dpl_l', 'g.lecturer_id', '=', 'dpl_l.id')
+            ->leftJoin('dosen as dpl_l', 'g.dpl_id', '=', 'dpl_l.id')
             ->leftJoin('users as dpl_u', 'dpl_l.user_id', '=', 'dpl_u.id')
             ->leftJoin('fakultas as fak', 's.faculty_id', '=', 'fak.id')
             ->leftJoin('prodi as prodi', 's.program_id', '=', 'prodi.id')
@@ -30,7 +30,7 @@ class KknScoreRepository
             })
             ->where('g.period_id', $periodeId)
             ->when($filters['faculty_id'] ?? null, fn($q, $v) => $q->where('s.faculty_id', $v))
-            ->when($filters['group_id'] ?? null, fn($q, $v) => $q->where('g.id', $v))
+            ->when($filters['kelompok_id'] ?? null, fn($q, $v) => $q->where('g.id', $v))
             ->when($filters['huruf'] ?? null, fn($q, $v) => $q->where('ks.letter_grade', $v))
             ->select([
                 's.id as mahasiswa_id',

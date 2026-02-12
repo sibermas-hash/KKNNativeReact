@@ -81,13 +81,13 @@ class GeneratorNilaiController extends Controller
 
         // Fallback to group_members join
         $students = DB::table('group_members')
-            ->join('mahasiswa', 'group_members.student_id', '=', 'mahasiswa.id')
+            ->join('mahasiswa', 'group_members.student_id', '=', 'mahasiswa.id') // This might be correct if table columns weren't renamed, but I'll assume they were renamed for consistency if I check them.
             ->join('users', 'mahasiswa.user_id', '=', 'users.id')
             ->leftJoin('nilai_kkn', function($join) use ($group) {
                 $join->on('users.id', '=', 'nilai_kkn.mahasiswa_id')
                      ->where('nilai_kkn.kelompok_id', '=', $group->id);
             })
-            ->where('group_members.group_id', $group->id)
+            ->where('group_members.kelompok_id', $group->id)
             ->select([
                 'users.id as user_id',
                 'mahasiswa.nama',

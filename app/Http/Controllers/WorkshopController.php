@@ -22,7 +22,7 @@ class WorkshopController extends Controller
     {
         $workshops = $this->workshopService->getUpcomingWorkshops();
 
-        if ($request->user()->hasRole('admin')) {
+        if ($request->user()->hasRole('admin') || $request->user()->hasRole('superadmin')) {
             return Inertia::render('Admin/Workshops/Index', [
                 'workshops' => $workshops,
             ]);

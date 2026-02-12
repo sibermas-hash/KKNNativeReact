@@ -23,7 +23,7 @@ class ReportController extends Controller
         $user = $request->user();
         
         // For Admin, show global reports summary
-        if ($user->hasRole('admin')) {
+        if ($user->hasRole('admin') || $user->hasRole('superadmin')) {
             $summary = [
                 'total_reports' => \App\Models\Report::count(),
                 'pending_review' => \App\Models\Report::where('status', 'submitted')->count(),

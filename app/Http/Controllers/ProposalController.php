@@ -20,11 +20,11 @@ class ProposalController extends Controller
         $user = $request->user();
         $groupId = $user->getActiveGroupId();
 
-        if (!$groupId && !$user->hasRole('admin') && !$user->hasRole('dpl')) {
+        if (!$groupId && !$user->hasRole('admin') && !$user->hasRole('superadmin') && !$user->hasRole('dpl')) {
              return redirect()->route('dashboard')->with('error', 'Belum memiliki kelompok.');
         }
 
-        if ($user->hasRole('admin') || $user->hasRole('dpl')) {
+        if ($user->hasRole('admin') || $user->hasRole('superadmin') || $user->hasRole('dpl')) {
             $proposals = \App\Models\Proposal::with(['group', 'user'])->latest()->paginate(10);
             return Inertia::render('Admin/Proposals/Index', [
                 'proposals' => $proposals

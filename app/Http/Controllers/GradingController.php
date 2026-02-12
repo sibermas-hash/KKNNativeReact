@@ -26,7 +26,7 @@ class GradingController extends Controller
         $groupId = $request->input('group_id');
         
         $groups = [];
-        if ($user->hasRole('admin')) {
+        if ($user->hasRole('admin') || $user->hasRole('superadmin')) {
              $groups = \App\Models\Group::orderBy('code')->get();
              if (!$groupId && $groups->isNotEmpty()) {
                  $groupId = $groups->first()->id;

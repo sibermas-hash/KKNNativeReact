@@ -111,7 +111,7 @@ const studentNav: NavGroup[] = [
 ];
 
 function getNavForRole(roles: string[]): NavGroup[] {
-    if (roles.includes('admin')) return adminNav;
+    if (roles.includes('admin') || roles.includes('superadmin')) return adminNav;
     if (roles.includes('dpl')) return dplNav;
     return studentNav;
 }

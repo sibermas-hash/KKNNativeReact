@@ -115,6 +115,7 @@ return new class extends Migration
             $table->renameColumn('work_program_id', 'program_kerja_id');
         });
 
+        Schema::rename('proposals', 'proposal');
         Schema::table('proposal', function (Blueprint $table) {
             $table->renameColumn('group_id', 'kelompok_id');
         });
@@ -125,6 +126,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('proposal', function (Blueprint $table) {
+            $table->renameColumn('kelompok_id', 'group_id');
+        });
+        Schema::rename('proposal', 'proposals');
         Schema::table('proposal', function (Blueprint $table) {
             $table->renameColumn('kelompok_id', 'group_id');
         });

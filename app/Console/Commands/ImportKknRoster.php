@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Schema;
 
 class ImportKknRoster extends Command
 {
@@ -94,10 +95,11 @@ class ImportKknRoster extends Command
                 );
 
                 // DPL user+lecturer
-                $dplUser = User::firstOrCreate(
-                    ['email' => strtolower(str_replace(' ', '.', $dplName)).'@dpl.local'],
+                $dplUsername = strtolower(preg_replace('/\s+/', '', $dplName));
+                $dplUser = User::updateOrCreate(
+                    ['username' => $dplUsername],
                     [
-                        'username' => strtolower(preg_replace('/\s+/', '', $dplName)),
+                        'email' => strtolower(str_replace(' ', '.', $dplName)).'@dpl.local',
                         'name' => $dplName,
                         'password' => bcrypt($defaultPassword),
                         'is_active' => true,
@@ -105,7 +107,7 @@ class ImportKknRoster extends Command
                 );
                 $dplUser->assignRole($roleDpl);
 
-                $lecturer = Lecturer::firstOrCreate(
+                $lecturer = Lecturer::updateOrCreate(
                     ['user_id' => $dplUser->id],
                     [
                         'nip' => 'DPL'.$dplUser->id,
@@ -121,10 +123,10 @@ class ImportKknRoster extends Command
                 }
 
                 // Student user+student
-                $studentUser = User::firstOrCreate(
-                    ['email' => $nim.'@student.local'],
+                $studentUser = User::updateOrCreate(
+                    ['username' => $nim],
                     [
-                        'username' => $nim,
+                        'email' => $nim.'@student.local',
                         'name' => $nama,
                         'password' => bcrypt($defaultPassword),
                         'is_active' => true,
@@ -132,10 +134,10 @@ class ImportKknRoster extends Command
                 );
                 $studentUser->assignRole($roleStudent);
 
-                $student = Student::firstOrCreate(
-                    ['user_id' => $studentUser->id],
+                $student = Student::updateOrCreate(
+                    ['nim' => $nim],
                     [
-                        'nim' => $nim,
+                        'user_id' => $studentUser->id,
                         'name' => $nama,
                         'faculty_id' => $defaultFaculty,
                         'program_id' => $defaultProgram,
@@ -146,7 +148,7 @@ class ImportKknRoster extends Command
                 );
 
                 // Group membership (if table exists)
-                if (Schema()->hasTable('group_members')) {
+                if (Schema::hasTable('group_members')) {
                     DB::table('group_members')->updateOrInsert(
                         ['group_id' => $group->id, 'student_id' => $student->id],
                         ['role_in_group' => 'member', 'joined_at' => now()]

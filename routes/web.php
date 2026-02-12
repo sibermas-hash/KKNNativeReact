@@ -1,4 +1,5 @@
 <?php
+// die("LARAVEL WEB REACHED");
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\PasswordResetController;
@@ -34,7 +35,15 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
     // Root redirect based on role
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    // ─── Admin ──────────────────────────────────────────────────────
+    Route::get('/db-debug', function() {
+        try {
+            \Illuminate\Support\Facades\DB::connection()->getPdo();
+            return "Web DB Connection: SUCCESS";
+        } catch (\Exception $e) {
+            return "Web DB Connection: FAILED. Error: " . $e->getMessage();
+        }
+    });
+
     Route::prefix('admin')->middleware('role:admin')->name('admin.')->group(function () {
         Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
 
@@ -88,6 +97,9 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::get('grading-settings', [Admin\GradingConfigController::class, 'index'])->name('grading-settings.index');
         Route::post('grading-settings', [Admin\GradingConfigController::class, 'update'])->name('grading-settings.update');
         Route::get('grade-generator', [Admin\GradeGeneratorController::class, 'index'])->name('grade-generator.index');
+        Route::get('grade-generator/groups/{group}/students', [Admin\GradeGeneratorController::class, 'students'])->name('grade-generator.students');
+        Route::post('grade-generator/scores', [Admin\GradeGeneratorController::class, 'saveScores'])->name('grade-generator.save-scores');
+        Route::get('grade-generator/export/{group}', [Admin\GradeGeneratorController::class, 'exportExcel'])->name('grade-generator.export');
 
         // Rekap Nilai
         Route::get('rekap-nilai', [Admin\RekapNilaiController::class, 'index'])->name('rekap-nilai.index');

@@ -1,12 +1,25 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Button, FormInput } from '@/Components/ui';
+import { Button, FormSelect } from '@/Components/ui';
 import {
     ArchiveBoxArrowDownIcon,
     CalculatorIcon,
-    PlusIcon,
-    TrashIcon,
+    ArrowPathIcon,
+    CheckCircleIcon,
+    CloudArrowUpIcon
 } from '@heroicons/react/24/outline';
+import { router } from '@inertiajs/react';
+import axios from 'axios';
+
+type Group = {
+    id: number;
+    code: string;
+    name: string;
+    desa: string;
+    kecamatan: string;
+    kabupaten: string;
+    dpl: string;
+};
 
 type Meta = {
     angkatan: string;
@@ -19,203 +32,122 @@ type Meta = {
 };
 
 type StudentRow = {
-    id: string;
+    user_id: string | number;
     name: string;
     nim: string;
-    discipline: number;
-    attitude: number;
+    discipline: number | null;
+    attitude: number | null;
 };
-
-const makeId = () => `row-${Math.random().toString(36).slice(2, 9)}`;
 
 const defaultMeta: Meta = {
     angkatan: '57',
     tahun: '2026',
-    kelompok: '1',
-    desa: 'Jompo',
-    kecamatan: 'Kalimanah',
-    kabupaten: 'Purbalingga',
-    dpl: 'Rahman Afandi',
+    kelompok: '',
+    desa: '',
+    kecamatan: '',
+    kabupaten: '',
+    dpl: '',
 };
 
-const defaultStudents: StudentRow[] = [
-    { id: makeId(), name: 'Mochammad Ihza Al Ghifari Sri Hernando', nim: '2017101133', discipline: 90, attitude: 90 },
-    { id: makeId(), name: 'Izzah Rohmatun Nissa', nim: '224110101238', discipline: 80, attitude: 80 },
-    { id: makeId(), name: 'Elis Rahadewi', nim: '224110102140', discipline: 90, attitude: 90 },
-];
+interface Props {
+    groups: Group[];
+}
 
 function computeTotal({ discipline, attitude }: StudentRow): number {
     const d = Number(discipline) || 0;
     const a = Number(attitude) || 0;
+    if (discipline === null || attitude === null) return 0;
     return Math.round((d + a) / 2);
 }
 
-export default function GradeGenerator() {
+export default function GradeGenerator({ groups }: Props) {
+    const [selectedGroupId, setSelectedGroupId] = useState<number | ''>('');
     const [meta, setMeta] = useState<Meta>(defaultMeta);
-    const [students, setStudents] = useState<StudentRow[]>(defaultStudents);
-    const [exporting, setExporting] = useState(false);
+    const [students, setStudents] = useState<StudentRow[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
+
+    // Fetch students when group changes
+    useEffect(() => {
+        if (!selectedGroupId) {
+            setStudents([]);
+            setMeta(defaultMeta);
+            return;
+        }
+
+        const group = groups.find(g => g.id === selectedGroupId);
+        if (group) {
+            setMeta({
+                ...defaultMeta,
+                kelompok: group.code,
+                desa: group.desa,
+                kecamatan: group.kecamatan,
+                kabupaten: group.name, // In the controller, kabupaten is mapped to group name
+                dpl: group.dpl
+            });
+        }
+
+        setLoading(true);
+        axios.get(`/admin/grade-generator/groups/${selectedGroupId}/students`)
+            .then(res => {
+                setStudents(res.data);
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Gagal mengambil data mahasiswa');
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    }, [selectedGroupId, groups]);
 
     const summary = useMemo(() => {
         if (!students.length) return { avg: 0, count: 0 };
-        const avg = students.reduce((sum, s) => sum + computeTotal(s), 0) / students.length;
+        const scoredStudents = students.filter(s => s.discipline !== null && s.attitude !== null);
+        if (!scoredStudents.length) return { avg: 0, count: students.length };
+
+        const avg = scoredStudents.reduce((sum, s) => sum + computeTotal(s), 0) / scoredStudents.length;
         return { avg: Number(avg.toFixed(2)), count: students.length };
     }, [students]);
 
-    const addStudent = () => {
-        setStudents((prev) => [
-            ...prev,
-            { id: makeId(), name: '', nim: '', discipline: 80, attitude: 80 },
-        ]);
-    };
-
-    const removeStudent = (id: string) => {
-        setStudents((prev) => prev.filter((s) => s.id !== id));
-    };
-
-    const updateStudent = (id: string, field: keyof Omit<StudentRow, 'id'>, value: string) => {
+    const updateStudent = (id: string | number, field: keyof Omit<StudentRow, 'user_id' | 'name' | 'nim'>, value: string) => {
         setStudents((prev) =>
             prev.map((s) =>
-                s.id === id
+                s.user_id === id
                     ? {
-                          ...s,
-                          [field]: ['discipline', 'attitude'].includes(field)
-                              ? Math.max(0, Math.min(100, Number(value) || 0))
-                              : value,
-                      }
+                        ...s,
+                        [field]: value === '' ? null : Math.max(0, Math.min(100, Number(value) || 0)),
+                    }
                     : s,
             ),
         );
     };
 
-    const handleMetaChange = (field: keyof Meta, value: string) => {
-        setMeta((m) => ({ ...m, [field]: value }));
-    };
+    const handleSave = () => {
+        if (!selectedGroupId) return;
 
-    const buildDocxBlob = async () => {
-        const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType } = await import('docx');
-
-        const header = [
-            new Paragraph({
-                children: [new TextRun({ text: 'BLANKO PENILAIAN PESERTA KKN', bold: true, size: 28 })],
-                spacing: { after: 100 },
-            }),
-            new Paragraph({
-                children: [new TextRun({ text: `ANGKATAN ${meta.angkatan} TAHUN ${meta.tahun}`, bold: true, size: 24 })],
-                spacing: { after: 200 },
-            }),
-        ];
-
-        const metaRows = [
-            `KELOMPOK\t${meta.kelompok}`,
-            `DESA\t${meta.desa}`,
-            `KECAMATAN\t${meta.kecamatan}`,
-            `KABUPATEN\t${meta.kabupaten}`,
-            `DPL\t${meta.dpl}`,
-        ].map((line) => new Paragraph({ children: [new TextRun({ text: line })] }));
-
-        const tableRows = [
-            new TableRow({
-                children: ['NO', 'NAMA MAHASISWA', 'NIM', 'KEDISIPLINAN', 'SIKAP', 'NILAI TOTAL'].map(
-                    (t) => new TableCell({ children: [new Paragraph({ text: t, bold: true })] }),
-                ),
-            }),
-            ...students.map((s, idx) =>
-                new TableRow({
-                    children: [
-                        new TableCell({ children: [new Paragraph(String(idx + 1))] }),
-                        new TableCell({ children: [new Paragraph(s.name || '-')], width: { size: 4000, type: WidthType.DXA } }),
-                        new TableCell({ children: [new Paragraph(s.nim || '-')] }),
-                        new TableCell({ children: [new Paragraph(String(s.discipline))] }),
-                        new TableCell({ children: [new Paragraph(String(s.attitude))] }),
-                        new TableCell({ children: [new Paragraph(String(computeTotal(s)))] }),
-                    ],
-                }),
-            ),
-        ];
-
-        const doc = new Document({
-            sections: [
-                {
-                    children: [
-                        ...header,
-                        ...metaRows,
-                        new Paragraph({ text: ' ' }),
-                        new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows }),
-                    ],
-                },
-            ],
-        });
-
-        return Packer.toBlob(doc);
-    };
-
-    const buildPdfBlob = async () => {
-        const { jsPDF } = await import('jspdf');
-        const doc = new jsPDF();
-
-        doc.setFontSize(16);
-        doc.text('BLANKO PENILAIAN PESERTA KKN', 14, 18);
-        doc.setFontSize(14);
-        doc.text(`ANGKATAN ${meta.angkatan} TAHUN ${meta.tahun}`, 14, 26);
-
-        doc.setFontSize(11);
-        const metaLines = [
-            `KELOMPOK: ${meta.kelompok}`,
-            `DESA: ${meta.desa}`,
-            `KECAMATAN: ${meta.kecamatan}`,
-            `KABUPATEN: ${meta.kabupaten}`,
-            `DPL: ${meta.dpl}`,
-        ];
-        let y = 36;
-        metaLines.forEach((line) => {
-            doc.text(line, 14, y);
-            y += 6;
-        });
-
-        y += 2;
-        doc.setFont(undefined, 'bold');
-        doc.text('NO', 14, y);
-        doc.text('NAMA MAHASISWA', 28, y);
-        doc.text('NIM', 110, y);
-        doc.text('KEDISIPLINAN', 150, y);
-        doc.text('SIKAP', 175, y);
-        doc.text('NILAI TOTAL', 195, y, { align: 'right' });
-        doc.setFont(undefined, 'normal');
-        y += 8;
-
-        students.forEach((s, idx) => {
-            doc.text(String(idx + 1), 14, y);
-            doc.text(s.name || '-', 28, y);
-            doc.text(s.nim || '-', 110, y);
-            doc.text(String(s.discipline), 150, y);
-            doc.text(String(s.attitude), 175, y);
-            doc.text(String(computeTotal(s)), 195, y, { align: 'right' });
-            y += 8;
-            if (y > 270) {
-                doc.addPage();
-                y = 20;
+        setSaving(true);
+        router.post('/admin/grade-generator/scores', {
+            group_id: selectedGroupId,
+            scores: students.map(s => ({
+                user_id: s.user_id,
+                discipline: s.discipline,
+                attitude: s.attitude
+            }))
+        }, {
+            onSuccess: () => {
+                setSaving(false);
+            },
+            onError: () => {
+                setSaving(false);
+                alert('Gagal menyimpan nilai');
             }
         });
-
-        return doc.output('blob');
     };
 
-    const exportZip = async () => {
-        setExporting(true);
-        try {
-            const [{ default: JSZip }, { saveAs }] = await Promise.all([import('jszip'), import('file-saver')]);
-            const [docxBlob, pdfBlob] = await Promise.all([buildDocxBlob(), buildPdfBlob()]);
-            const zip = new JSZip();
-            zip.file('blanko-penilaian.docx', docxBlob);
-            zip.file('blanko-penilaian.pdf', pdfBlob);
-            const zipBlob = await zip.generateAsync({ type: 'blob' });
-            saveAs(zipBlob, 'blanko-penilaian.zip');
-        } catch (err) {
-            console.error(err);
-            alert('Gagal membuat ZIP. Coba ulang.');
-        } finally {
-            setExporting(false);
-        }
+    const handleExport = () => {
+        if (!selectedGroupId) return;
+        window.location.href = `/admin/grade-generator/export/${selectedGroupId}`;
     };
 
     return (
@@ -224,96 +156,139 @@ export default function GradeGenerator() {
                 <div className="flex items-center gap-2">
                     <CalculatorIcon className="h-6 w-6 text-primary" />
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Generator Blanko Nilai</h1>
+                        <h1 className="text-2xl font-bold text-slate-900">Blanko Penilaian & Generator Nilai</h1>
                         <p className="text-sm text-slate-600">
-                            Cetak blanko penilaian (DOCX + PDF) tanpa koneksi database; cocok dipakai sebelum data terintegrasi.
+                            Pilih kelompok untuk mengisi nilai kedisiplinan dan sikap, lalu cetak blanko resmi.
                         </p>
                     </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    <FormInput label="Angkatan" value={meta.angkatan} onChange={(e) => handleMetaChange('angkatan', e.target.value)} />
-                    <FormInput label="Tahun" value={meta.tahun} onChange={(e) => handleMetaChange('tahun', e.target.value)} />
-                    <FormInput label="Kelompok" value={meta.kelompok} onChange={(e) => handleMetaChange('kelompok', e.target.value)} />
-                    <FormInput label="Desa" value={meta.desa} onChange={(e) => handleMetaChange('desa', e.target.value)} />
-                    <FormInput label="Kecamatan" value={meta.kecamatan} onChange={(e) => handleMetaChange('kecamatan', e.target.value)} />
-                    <FormInput label="Kabupaten" value={meta.kabupaten} onChange={(e) => handleMetaChange('kabupaten', e.target.value)} />
-                    <FormInput className="sm:col-span-2 lg:col-span-3" label="DPL" value={meta.dpl} onChange={(e) => handleMetaChange('dpl', e.target.value)} />
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                    <div className="max-w-md">
+                        <FormSelect
+                            label="Pilih Kelompok"
+                            placeholder="-- Pilih Kelompok --"
+                            value={selectedGroupId}
+                            onChange={(e) => setSelectedGroupId(Number(e.target.value))}
+                            options={groups.map(g => ({
+                                value: g.id,
+                                label: `${g.code} - ${g.name}`
+                            }))}
+                        />
+                    </div>
+
+                    {selectedGroupId && (
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 bg-slate-50 p-4 rounded-lg border border-slate-100 italic">
+                            <div><span className="font-bold not-italic">Angkatan:</span> {meta.angkatan}</div>
+                            <div><span className="font-bold not-italic">Tahun:</span> {meta.tahun}</div>
+                            <div><span className="font-bold not-italic">Kelompok:</span> {meta.kelompok}</div>
+                            <div><span className="font-bold not-italic">Desa:</span> {meta.desa}</div>
+                            <div><span className="font-bold not-italic">Kecamatan:</span> {meta.kecamatan}</div>
+                            <div><span className="font-bold not-italic">Kabupaten/Mitra:</span> {meta.kabupaten}</div>
+                            <div className="sm:col-span-2 lg:col-span-3"><span className="font-bold not-italic">DPL:</span> {meta.dpl}</div>
+                        </div>
+                    )}
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                     <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                         <div>
                             <p className="text-sm font-semibold text-slate-800">Daftar Mahasiswa</p>
-                            <p className="text-xs text-slate-500">Isi nama, NIM, kedisiplinan, sikap. Nilai total otomatis rata-rata.</p>
+                            <p className="text-xs text-slate-500">Isi nilai kedisiplinan dan sikap (Rentang 60-100).</p>
                         </div>
-                        <Button variant="primary" size="sm" onClick={addStudent}>
-                            <PlusIcon className="h-4 w-4" />
-                            Tambah Baris
-                        </Button>
+                        <div className="flex gap-2">
+                            {selectedGroupId && (
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={handleExport}
+                                >
+                                    <ArchiveBoxArrowDownIcon className="h-4 w-4" />
+                                    Export Excel
+                                </Button>
+                            )}
+                            <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={handleSave}
+                                loading={saving}
+                                disabled={!selectedGroupId || students.length === 0}
+                            >
+                                <CloudArrowUpIcon className="h-4 w-4" />
+                                Simpan Nilai
+                            </Button>
+                        </div>
                     </div>
 
-                    <div className="divide-y divide-slate-100">
-                        <div className="grid grid-cols-12 gap-3 px-4 py-2 text-xs font-semibold uppercase text-slate-500">
-                            <div className="col-span-1">No</div>
-                            <div className="col-span-4">Nama Mahasiswa</div>
-                            <div className="col-span-3">NIM</div>
-                            <div className="col-span-2">Kedisiplinan</div>
-                            <div className="col-span-1">Sikap</div>
-                            <div className="col-span-1 text-right">Total</div>
-                        </div>
-
-                        {students.map((s, idx) => (
-                            <div key={s.id} className="grid grid-cols-12 gap-3 px-4 py-3 sm:items-center">
-                                <div className="col-span-1 text-sm text-slate-700">{idx + 1}</div>
-                                <div className="col-span-4">
-                                    <FormInput value={s.name} onChange={(e) => updateStudent(s.id, 'name', e.target.value)} />
-                                </div>
-                                <div className="col-span-3">
-                                    <FormInput value={s.nim} onChange={(e) => updateStudent(s.id, 'nim', e.target.value)} />
-                                </div>
-                                <div className="col-span-2">
-                                    <FormInput
-                                        type="number"
-                                        min={0}
-                                        max={100}
-                                        value={s.discipline}
-                                        onChange={(e) => updateStudent(s.id, 'discipline', e.target.value)}
-                                    />
-                                </div>
-                                <div className="col-span-1">
-                                    <FormInput
-                                        type="number"
-                                        min={0}
-                                        max={100}
-                                        value={s.attitude}
-                                        onChange={(e) => updateStudent(s.id, 'attitude', e.target.value)}
-                                    />
-                                </div>
-                                <div className="col-span-1 flex items-center justify-end gap-2">
-                                    <span className="text-sm font-semibold text-slate-800">{computeTotal(s)}</span>
-                                    <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600" onClick={() => removeStudent(s.id)}>
-                                        <TrashIcon className="h-4 w-4" />
-                                    </Button>
-                                </div>
+                    <div className="overflow-x-auto">
+                        <div className="min-w-[800px] divide-y divide-slate-100">
+                            <div className="grid grid-cols-12 gap-3 px-4 py-2 text-xs font-semibold uppercase text-slate-500 bg-slate-50">
+                                <div className="col-span-1">No</div>
+                                <div className="col-span-4">Nama Mahasiswa</div>
+                                <div className="col-span-3">NIM</div>
+                                <div className="col-span-1">Disiplin</div>
+                                <div className="col-span-1">Sikap</div>
+                                <div className="col-span-2 text-right">Total (B)</div>
                             </div>
-                        ))}
 
-                        {students.length === 0 && (
-                            <div className="px-4 py-6 text-center text-sm text-slate-500">Belum ada baris. Tambahkan mahasiswa.</div>
-                        )}
+                            {loading ? (
+                                <div className="p-8 text-center text-slate-500 flex justify-center items-center gap-2">
+                                    <ArrowPathIcon className="h-5 w-5 animate-spin" />
+                                    Memuat data mahasiswa...
+                                </div>
+                            ) : students.map((s, idx) => (
+                                <div key={String(s.user_id)} className="grid grid-cols-12 gap-3 px-4 py-3 items-center hover:bg-slate-50 transition-colors">
+                                    <div className="col-span-1 text-sm text-slate-700">{idx + 1}</div>
+                                    <div className="col-span-4 text-sm font-medium text-slate-900">{s.name}</div>
+                                    <div className="col-span-3 text-sm text-slate-600">{s.nim}</div>
+                                    <div className="col-span-1">
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            max={100}
+                                            className="w-full text-center px-1 py-1 text-sm rounded border-slate-200 focus:ring-primary focus:border-primary"
+                                            value={s.discipline ?? ''}
+                                            onChange={(e) => updateStudent(s.user_id, 'discipline', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="col-span-1">
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            max={100}
+                                            className="w-full text-center px-1 py-1 text-sm rounded border-slate-200 focus:ring-primary focus:border-primary"
+                                            value={s.attitude ?? ''}
+                                            onChange={(e) => updateStudent(s.user_id, 'attitude', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="col-span-2 text-right">
+                                        <span className={`text-sm font-bold ${computeTotal(s) > 0 ? 'text-primary' : 'text-slate-300'}`}>
+                                            {computeTotal(s) || '-'}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+
+                            {!loading && students.length === 0 && (
+                                <div className="px-4 py-12 text-center text-sm text-slate-500">
+                                    {selectedGroupId ? 'Tidak ada mahasiswa di kelompok ini.' : 'Pilih kelompok terlebih dahulu.'}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-primary/5 rounded-2xl border border-primary/10">
                     <div className="text-sm text-slate-600">
                         Total mahasiswa: <span className="font-semibold text-slate-900">{summary.count}</span> ·
                         Rata-rata nilai total: <span className="font-semibold text-slate-900">{summary.avg}</span>
                     </div>
-                    <Button variant="primary" onClick={exportZip} loading={exporting}>
-                        <ArchiveBoxArrowDownIcon className="h-4 w-4" />
-                        Export DOCX+PDF (ZIP)
-                    </Button>
+                    {selectedGroupId && students.length > 0 && (
+                        <div className="flex items-center gap-2 text-xs text-primary font-medium">
+                            <CheckCircleIcon className="h-4 w-4" />
+                            Data siap untuk disimpan atau di-export
+                        </div>
+                    )}
                 </div>
             </div>
         </AppLayout>

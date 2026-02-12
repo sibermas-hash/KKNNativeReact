@@ -32,7 +32,7 @@ class GroupController extends Controller
 
         $group->load([
             'periode', 'lokasi',
-            'peserta.mahasiswa.faculty',
+            'peserta.mahasiswa.fakultas',
             'peserta.mahasiswa.prodi',
             'programKerja',
         ]);

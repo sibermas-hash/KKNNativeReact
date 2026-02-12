@@ -77,7 +77,7 @@ class DailyReportController extends Controller
         }
 
         // Notify DPL
-        $dpl = $kegiatan->kelompok->dosen->user;
+        $dpl = $kegiatan->kelompok->dpl->user;
         if ($dpl) {
             $dpl->notify(new \App\Notifications\KknActivityNotification([
                 'type' => 'info',

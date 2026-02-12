@@ -91,12 +91,12 @@ class User extends Authenticatable
         return $this->hasMany(\App\Models\KKN\LaporanAkhir::class, 'reviewed_by');
     }
 
-    public function evaluations(): HasMany
+    public function evaluasi(): HasMany
     {
         return $this->hasMany(\App\Models\KKN\Evaluasi::class, 'evaluator_id');
     }
 
-    public function workshopParticipations(): HasMany
+    public function pesertaWorkshop(): HasMany
     {
         return $this->hasMany(\App\Models\KKN\PesertaWorkshop::class);
     }

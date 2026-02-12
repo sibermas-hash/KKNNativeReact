@@ -32,9 +32,9 @@ class Dosen extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function faculty(): BelongsTo
+    public function fakultas(): BelongsTo
     {
-        return $this->belongsTo(Fakultas::class);
+        return $this->belongsTo(Fakultas::class, 'faculty_id');
     }
 
     public function kelompokKkn(): HasMany

@@ -111,8 +111,9 @@ const studentNav: NavGroup[] = [
 ];
 
 function getNavForRole(roles: string[]): NavGroup[] {
-    if (roles.includes('admin') || roles.includes('superadmin')) return adminNav;
-    if (roles.includes('dpl')) return dplNav;
+    const normalizedRoles = (roles || []).map(r => String(r).toLowerCase());
+    if (normalizedRoles.includes('admin') || normalizedRoles.includes('superadmin')) return adminNav;
+    if (normalizedRoles.includes('dpl')) return dplNav;
     return studentNav;
 }
 
@@ -149,7 +150,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     </div>
                     <div>
                         <p className="text-sm font-bold text-white">KKN UIN SAIZU</p>
-                        <p className="text-[10px] uppercase tracking-wider text-slate-400">Sistem Informasi</p>
+                        <p className="text-[10px] uppercase tracking-wider text-emerald-400 font-bold italic">Sistem Informasi v2.1</p>
                     </div>
                 </div>
 

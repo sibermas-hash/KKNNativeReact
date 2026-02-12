@@ -158,14 +158,23 @@ class SyncMasterData extends Command
             if (!$faculty) continue;
 
             // 1. Ensure User account exists
-            $user = User::on('kkn')->updateOrCreate(
-                ['email' => $empData['email'] ?? ($empData['nip'] . '@kkn.local')],
-                [
-                    'username' => $empData['nip'],
-                    'name' => $empData['name'],
-                    'password' => Hash::make($empData['nip']),
-                ]
-            );
+            // username is unique, so use it as the identity key to avoid duplicate inserts
+            $username = (string) ($empData['nip'] ?? '');
+            $incomingEmail = $empData['email'] ?? null;
+            $fallbackEmail = $username . '@kkn.local';
+
+            $user = User::on('kkn')->firstOrNew(['username' => $username]);
+
+            if (!$user->exists) {
+                $user->email = !empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
+            } elseif (empty($user->email)) {
+                $user->email = !empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
+            }
+
+            $user->username = $username;
+            $user->name = $empData['name'];
+            $user->password = Hash::make($username);
+            $user->save();
 
             // 2. Ensure Lecturer record exists (Local KKN)
             Dosen::updateOrCreate(
@@ -234,14 +243,23 @@ class SyncMasterData extends Command
             if (!$faculty) continue;
 
             // 1. Ensure User account exists
-            $user = User::on('kkn')->updateOrCreate(
-                ['email' => $studData['email'] ?? ($studData['nim'] . '@kkn.local')],
-                [
-                    'username' => $studData['nim'],
-                    'name' => $studData['name'],
-                    'password' => Hash::make($studData['nim']),
-                ]
-            );
+            // username is unique, so use it as the identity key to avoid duplicate inserts
+            $username = (string) ($studData['nim'] ?? '');
+            $incomingEmail = $studData['email'] ?? null;
+            $fallbackEmail = $username . '@kkn.local';
+
+            $user = User::on('kkn')->firstOrNew(['username' => $username]);
+
+            if (!$user->exists) {
+                $user->email = !empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
+            } elseif (empty($user->email)) {
+                $user->email = $fallbackEmail;
+            }
+
+            $user->username = $username;
+            $user->name = $studData['name'];
+            $user->password = Hash::make($username);
+            $user->save();
 
             // 2. Ensure Student record exists (Local KKN)
             Mahasiswa::updateOrCreate(

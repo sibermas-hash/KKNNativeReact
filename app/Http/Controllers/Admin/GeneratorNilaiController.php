@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\Periode;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Mahasiswa;

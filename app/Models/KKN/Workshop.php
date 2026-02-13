@@ -33,4 +33,9 @@ class Workshop extends Model
     {
         return $this->hasMany(PesertaWorkshop::class, 'workshop_id');
     }
+
+    public function participants(): HasMany
+    {
+        return $this->peserta();
+    }
 }

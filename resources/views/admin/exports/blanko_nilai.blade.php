@@ -95,21 +95,6 @@
                         @endif
                     </td>
                 </tr>
-                @endforeach
-                
-                @php $fill = max(0, 15 - count($students)); @endphp
-                @for($i = 1; $i <= $fill; $i++)
-                <tr>
-                    <td class="center">{{ count($students) + $i }}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                @endfor
-            </tbody>
-        </table>
 
         <div class="footer">
             <div class="signature-block">

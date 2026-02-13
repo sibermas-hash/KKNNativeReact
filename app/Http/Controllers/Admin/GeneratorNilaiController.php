@@ -212,42 +212,34 @@ class GeneratorNilaiController extends Controller
             $sheet->setCellValue("{$col}{$headerRow}", $h);
             $sheet->getStyle("{$col}{$headerRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $sheet->getStyle("{$col}{$headerRow}")->getFont()->setBold(true);
+            $sheet->getStyle("{$col}{$headerRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
         }
 
         // === DATA ROWS ===
-        $startRow = 11;
-        $currentRow = $startRow;
-        
-        // Ensure 15 rows
-        for ($i = 0; $i < 15; $i++) {
-            $student = $students[$i] ?? null;
-            $sheet->setCellValue("A{$currentRow}", $i + 1);
+        $currentRow = 11;
+        foreach ($students as $idx => $student) {
+            $sheet->setCellValue("A{$currentRow}", $idx + 1);
             $sheet->getStyle("A{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             
-            if ($student) {
-                $sheet->setCellValue("B{$currentRow}", $student['name']);
-                
-                // Force NIM as string to prevent scientific notation
-                $sheet->setCellValueExplicit("C{$currentRow}", $student['nim'], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-                $sheet->getStyle("C{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                
-                if ($student['discipline'] !== null) $sheet->setCellValue("D{$currentRow}", $student['discipline']);
-                if ($student['attitude'] !== null) $sheet->setCellValue("E{$currentRow}", $student['attitude']);
-                
-                if ($student['discipline'] !== null && $student['attitude'] !== null) {
-                    $total = round(($student['discipline'] + $student['attitude']) / 2);
-                    $sheet->setCellValue("F{$currentRow}", $total);
-                }
-                $sheet->getStyle("D{$currentRow}:F{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->setCellValue("B{$currentRow}", $student['name']);
+            
+            // Force NIM as string to prevent scientific notation
+            $sheet->setCellValueExplicit("C{$currentRow}", $student['nim'], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->getStyle("C{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            
+            if ($student['discipline'] !== null) $sheet->setCellValue("D{$currentRow}", $student['discipline']);
+            if ($student['attitude'] !== null) $sheet->setCellValue("E{$currentRow}", $student['attitude']);
+            
+            if ($student['discipline'] !== null && $student['attitude'] !== null) {
+                $total = round(($student['discipline'] + $student['attitude']) / 2);
+                $sheet->setCellValue("F{$currentRow}", $total);
             }
+            $sheet->getStyle("D{$currentRow}:F{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             
             // Borders for the whole row (A-F)
             $sheet->getStyle("A{$currentRow}:F{$currentRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
             $currentRow++;
         }
-        
-        // Border for header
-        $sheet->getStyle("A10:F10")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
         // === FOOTER ===
         $footerStartRow = $currentRow + 1;

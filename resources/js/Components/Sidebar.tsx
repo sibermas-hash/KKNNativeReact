@@ -45,6 +45,8 @@ const adminNav: NavGroup[] = [
             { label: 'Fakultas', href: '/admin/faculties', icon: BuildingLibraryIcon },
             { label: 'Program Studi', href: '/admin/programs', icon: AcademicCapIcon },
             { label: 'Lokasi KKN', href: '/admin/locations', icon: MapPinIcon },
+            { label: 'Dosen (DPL)', href: '/admin/users?role=dpl', icon: UsersIcon },
+            { label: 'Mahasiswa', href: '/admin/users?role=student', icon: AcademicCapIcon },
         ],
     },
     {

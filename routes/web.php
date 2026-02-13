@@ -93,6 +93,8 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::get('grade-generator/groups/{kelompokKkn}/students', [Admin\GeneratorNilaiController::class, 'students'])->name('grade-generator.students');
         Route::post('grade-generator/scores', [Admin\GeneratorNilaiController::class, 'saveScores'])->name('grade-generator.save-scores');
         Route::get('grade-generator/export/{kelompokKkn}', [Admin\GeneratorNilaiController::class, 'exportExcel'])->name('grade-generator.export');
+        Route::get('grade-generator/export-pdf/{kelompokKkn}', [Admin\GeneratorNilaiController::class, 'exportPdf'])->name('grade-generator.export-pdf');
+
 
         // Rekap Nilai
         Route::get('rekap-nilai', [Admin\RekapNilaiController::class, 'index'])->name('rekap-nilai.index');

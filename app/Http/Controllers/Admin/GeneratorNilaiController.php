@@ -130,121 +130,47 @@ class GeneratorNilaiController extends Controller
     /**
      * Export blanko penilaian as Excel (.xlsx) matching official template.
      */
-    public function exportExcel(KelompokKkn $group): StreamedResponse
+    public function exportExcel(KelompokKkn $kelompokKkn)
     {
-        $group->load(['lokasi', 'dpl.user:id,name']);
+        $students = $this->getStudentsForGroup($kelompokKkn);
+        $filename = "Blanko_Penilaian_Kelompok_{$kelompokKkn->code}.xlsx";
 
-        // Get students
-        $studentsData = $this->getStudentsForGroup($group);
+        return \Maatwebsite\Excel\Facades\Excel::download(new class($kelompokKkn, $students) implements \Maatwebsite\Excel\Concerns\FromView, \Maatwebsite\Excel\Concerns\ShouldAutoSize {
+            private $group;
+            private $students;
 
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Lembar1');
-
-        // === HEADER ===
-        $sheet->mergeCells('A1:F1');
-        $sheet->setCellValue('A1', 'BLANKO PENILAIAN PESERTA KKN');
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
-        $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-        $sheet->mergeCells('A2:F2');
-        $sheet->setCellValue('A2', 'ANGKATAN 57 TAHUN 2026');
-        $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(12);
-        $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-        // === META ===
-        $sheet->mergeCells('A4:B4');
-        $sheet->setCellValue('A4', 'KELOMPOK');
-        $sheet->setCellValue('C4', ': ' . $group->code);
-
-        $sheet->mergeCells('A5:B5');
-        $sheet->setCellValue('A5', 'DESA');
-        $sheet->setCellValue('C5', ': ' . ($group->lokasi?->village_name ?? '-'));
-
-        $sheet->mergeCells('A6:B6');
-        $sheet->setCellValue('A6', 'KECAMATAN');
-        $sheet->setCellValue('C6', ': ' . ($group->lokasi?->address ?? '-'));
-
-        $sheet->mergeCells('A7:B7');
-        $sheet->setCellValue('A7', 'KABUPATEN');
-        $sheet->setCellValue('C7', ': ' . ($group->nama_kelompok ?? '-'));
-
-        $sheet->mergeCells('A8:B8');
-        $sheet->setCellValue('A8', 'DPL');
-        $sheet->setCellValue('C8', ': ' . ($group->dpl?->user?->name ?? '-'));
-
-        // === TABLE HEADER (Row 10) ===
-        $headers = ['NO', 'NAMA MAHASISWA', 'NIM', 'KEDISIPLINAN', 'SIKAP', 'NILAI TOTAL'];
-        foreach ($headers as $i => $h) {
-            $col = chr(65 + $i); // A, B, C, ...
-            $sheet->setCellValue("{$col}10", $h);
-        }
-        $sheet->getStyle('A10:F10')->getFont()->setBold(true);
-        $sheet->getStyle('A10:F10')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A10:F10')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-
-        // === STUDENT DATA (Row 11+) ===
-        $row = 11;
-        foreach ($studentsData as $idx => $student) {
-            $sheet->setCellValue("A{$row}", $idx + 1);
-            $sheet->setCellValue("B{$row}", $student['name']);
-            $sheet->setCellValue("C{$row}", $student['nim']);
-
-            if ($student['discipline'] !== null) {
-                $sheet->setCellValue("D{$row}", $student['discipline']);
-            }
-            if ($student['attitude'] !== null) {
-                $sheet->setCellValue("E{$row}", $student['attitude']);
-            }
-            if ($student['discipline'] !== null && $student['attitude'] !== null) {
-                $total = round(($student['discipline'] + $student['attitude']) / 2);
-                $sheet->setCellValue("F{$row}", $total);
+            public function __construct($group, $students)
+            {
+                $this->group = $group;
+                $this->students = $students;
             }
 
-            $sheet->getStyle("A{$row}:F{$row}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-            $row++;
-        }
-
-        // Fill remaining empty rows up to 15 students
-        $maxRows = max(15, count($studentsData));
-        while ($row <= 10 + $maxRows) {
-            $sheet->setCellValue("A{$row}", $row - 10);
-            $sheet->getStyle("A{$row}:F{$row}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-            $row++;
-        }
-
-        // === FOOTER ===
-        $footerRow = $row + 1;
-        $sheet->setCellValue("B{$footerRow}", '*Keterangan');
-        $sheet->setCellValue("D{$footerRow}", '…........................., …..............................2026');
-
-        $footerRow2 = $footerRow + 1;
-        $sheet->setCellValue("B{$footerRow2}", 'Rentang Nilai 60-100');
-        $sheet->setCellValue("D{$footerRow2}", 'Kepala Desa/Lurah,');
-
-        $signRow = $footerRow2 + 5;
-        $sheet->setCellValue("D{$signRow}", '…........................................................');
-        $signRow2 = $signRow + 1;
-        $sheet->setCellValue("D{$signRow2}", 'NIP');
-
-        // === COLUMN WIDTHS ===
-        $sheet->getColumnDimension('A')->setWidth(5);
-        $sheet->getColumnDimension('B')->setWidth(35);
-        $sheet->getColumnDimension('C')->setWidth(18);
-        $sheet->getColumnDimension('D')->setWidth(16);
-        $sheet->getColumnDimension('E')->setWidth(12);
-        $sheet->getColumnDimension('F')->setWidth(14);
-
-        // Stream response
-        $filename = "Blanko_Penilaian_Kelompok_{$group->code}.xlsx";
-
-        return response()->streamDownload(function () use ($spreadsheet) {
-            $writer = new Xlsx($spreadsheet);
-            $writer->save('php://output');
-        }, $filename, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ]);
+            public function view(): \Illuminate\Contracts\View\View
+            {
+                return view('admin.exports.blanko_nilai', [
+                    'group' => $this->group,
+                    'students' => $this->students,
+                    'angkatan' => '57', // Fallback or dynamic
+                    'tahun' => '2026'
+                ]);
+            }
+        }, $filename);
     }
+
+    public function exportPdf(KelompokKkn $kelompokKkn)
+    {
+        $students = $this->getStudentsForGroup($kelompokKkn);
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.blanko_nilai', [
+            'group' => $kelompokKkn,
+            'students' => $students,
+            'angkatan' => '57',
+            'tahun' => '2026'
+        ]);
+
+        return $pdf->download("Blanko_Penilaian_Kelompok_{$kelompokKkn->code}.pdf");
+    }
+
 
     /**
      * Helper: get students for a group (from registrations or group_members).

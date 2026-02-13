@@ -6,7 +6,8 @@ import {
     CalculatorIcon,
     ArrowPathIcon,
     CheckCircleIcon,
-    CloudArrowUpIcon
+    CloudArrowUpIcon,
+    DocumentArrowDownIcon
 } from '@heroicons/react/24/outline';
 import { router } from '@inertiajs/react';
 import axios from 'axios';
@@ -162,6 +163,11 @@ export default function GradeGenerator({ groups }: Props) {
         window.location.href = `/admin/grade-generator/export/${selectedGroupId}`;
     };
 
+    const handleExportPdf = () => {
+        if (!selectedGroupId || isAllGroups) return;
+        window.location.href = `/admin/grade-generator/export-pdf/${selectedGroupId}`;
+    };
+
     const dropdownOptions = [
         { value: 'all', label: '📋 Semua Kelompok' },
         ...groups.map(g => ({
@@ -224,14 +230,24 @@ export default function GradeGenerator({ groups }: Props) {
                         </div>
                         <div className="flex gap-2">
                             {selectedGroupId && !isAllGroups && (
-                                <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={handleExport}
-                                >
-                                    <ArchiveBoxArrowDownIcon className="h-4 w-4" />
-                                    Export Excel
-                                </Button>
+                                <>
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={handleExport}
+                                    >
+                                        <ArchiveBoxArrowDownIcon className="h-4 w-4" />
+                                        Excel
+                                    </Button>
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={handleExportPdf}
+                                    >
+                                        <DocumentArrowDownIcon className="h-4 w-4" />
+                                        PDF
+                                    </Button>
+                                </>
                             )}
                             <Button
                                 variant="primary"

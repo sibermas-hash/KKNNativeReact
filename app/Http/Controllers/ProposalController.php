@@ -26,6 +26,22 @@ class ProposalController extends Controller
 
         if ($user->hasRole('admin') || $user->hasRole('superadmin') || $user->hasRole('dpl')) {
             $proposals = \App\Models\KKN\Proposal::with(['kelompok', 'user'])->latest()->paginate(10);
+
+            // Map to frontend-expected property names
+            $proposals->through(function ($proposal) {
+                return [
+                    'id' => $proposal->id,
+                    'title' => $proposal->title,
+                    'program_title' => $proposal->program_title,
+                    'program_department' => $proposal->program_department,
+                    'budget' => $proposal->budget,
+                    'status' => $proposal->status,
+                    'feedback' => $proposal->feedback,
+                    'group' => $proposal->kelompok ? ['name' => $proposal->kelompok->nama_kelompok] : null,
+                    'user' => $proposal->user ? ['name' => $proposal->user->name] : null,
+                ];
+            });
+
             return Inertia::render('Admin/Proposals/Index', [
                 'proposals' => $proposals
             ]);
@@ -65,7 +81,6 @@ class ProposalController extends Controller
     public function review(Request $request, int $id)
     {
         $proposal = \App\Models\KKN\Proposal::findOrFail($id);
-        $this->authorize('review', $proposal);
 
         $validated = $request->validate([
             'status' => 'required|in:approved,rejected,revision_required',

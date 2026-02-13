@@ -20,11 +20,25 @@ class KelompokKknController extends Controller
         $groups = KelompokKkn::with('periode', 'lokasi', 'dpl')
             ->withCount('peserta')
             ->orderByDesc('created_at')
-            ->get();
+            ->get()
+            ->map(fn ($g) => [
+                'id' => $g->id,
+                'code' => $g->code,
+                'name' => $g->nama_kelompok,
+                'capacity' => $g->capacity,
+                'status' => $g->status,
+                'registrations_count' => $g->peserta_count,
+                'period' => $g->periode ? ['id' => $g->periode->id, 'name' => $g->periode->name] : null,
+                'location' => $g->lokasi ? ['id' => $g->lokasi->id, 'village_name' => $g->lokasi->village_name] : null,
+                'lecturer' => $g->dpl ? ['id' => $g->dpl->id, 'name' => $g->dpl->nama] : null,
+            ]);
 
-        $periods = Periode::where('is_active', true)->orderByDesc('start_date')->get();
-        $locations = Lokasi::orderBy('village_name')->get();
-        $lecturers = Dosen::orderBy('nama')->get();
+        $periods = Periode::where('is_active', true)->orderByDesc('start_date')->get()
+            ->map(fn ($p) => ['id' => $p->id, 'name' => $p->name]);
+        $locations = Lokasi::orderBy('village_name')->get()
+            ->map(fn ($l) => ['id' => $l->id, 'village_name' => $l->village_name]);
+        $lecturers = Dosen::orderBy('nama')->get()
+            ->map(fn ($d) => ['id' => $d->id, 'name' => $d->nama]);
 
         return Inertia::render('Admin/Groups/Index', [
             'groups' => $groups,
@@ -54,16 +68,22 @@ class KelompokKknController extends Controller
         $validated = $request->validate([
             'period_id' => ['required', 'exists:periode,id'],
             'location_id' => ['required', 'exists:lokasi,id'],
-            'dpl_id' => ['nullable', 'exists:dosen,id'],
-            'nama_kelompok' => ['required', 'string', 'max:100'],
+            'lecturer_id' => ['nullable', 'exists:dosen,id'],
+            'name' => ['required', 'string', 'max:100'],
             'capacity' => ['required', 'integer', 'min:1', 'max:50'],
             'status' => ['required', 'in:draft,active,closed'],
         ]);
 
-        $validated['code'] = 'KKN-' . strtoupper(Str::random(6));
-        $validated['token'] = strtoupper(Str::random(8));
-
-        KelompokKkn::create($validated);
+        KelompokKkn::create([
+            'period_id' => $validated['period_id'],
+            'location_id' => $validated['location_id'],
+            'dpl_id' => $validated['lecturer_id'] ?? null,
+            'nama_kelompok' => $validated['name'],
+            'capacity' => $validated['capacity'],
+            'status' => $validated['status'],
+            'code' => 'KKN-' . strtoupper(Str::random(6)),
+            'token' => strtoupper(Str::random(8)),
+        ]);
 
         return redirect()->back()->with('success', 'Kelompok berhasil ditambahkan.');
     }
@@ -73,13 +93,20 @@ class KelompokKknController extends Controller
         $validated = $request->validate([
             'period_id' => ['required', 'exists:periode,id'],
             'location_id' => ['required', 'exists:lokasi,id'],
-            'dpl_id' => ['nullable', 'exists:dosen,id'],
-            'nama_kelompok' => ['required', 'string', 'max:100'],
+            'lecturer_id' => ['nullable', 'exists:dosen,id'],
+            'name' => ['required', 'string', 'max:100'],
             'capacity' => ['required', 'integer', 'min:1', 'max:50'],
             'status' => ['required', 'in:draft,active,closed'],
         ]);
 
-        $group->update($validated);
+        $group->update([
+            'period_id' => $validated['period_id'],
+            'location_id' => $validated['location_id'],
+            'dpl_id' => $validated['lecturer_id'] ?? null,
+            'nama_kelompok' => $validated['name'],
+            'capacity' => $validated['capacity'],
+            'status' => $validated['status'],
+        ]);
 
         return redirect()->back()->with('success', 'Kelompok berhasil diperbarui.');
     }

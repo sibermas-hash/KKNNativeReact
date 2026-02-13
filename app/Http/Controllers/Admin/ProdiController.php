@@ -14,8 +14,15 @@ class ProdiController extends Controller
 {
     public function index(): Response
     {
-        $programs = Prodi::with('fakultas')->orderBy('nama')->get();
-        $faculties = Fakultas::orderBy('nama')->get();
+        $programs = Prodi::with('fakultas')->orderBy('nama')->get()
+            ->map(fn ($p) => [
+                'id' => $p->id,
+                'code' => $p->code,
+                'name' => $p->nama,
+                'faculty' => $p->fakultas ? ['id' => $p->fakultas->id, 'name' => $p->fakultas->nama] : null,
+            ]);
+        $faculties = Fakultas::orderBy('nama')->get()
+            ->map(fn ($f) => ['id' => $f->id, 'name' => $f->nama]);
 
         return Inertia::render('Admin/Programs/Index', [
             'programs' => $programs,

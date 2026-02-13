@@ -19,6 +19,23 @@ class PesertaKknController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        // Map data to match React frontend expectations
+        $registrations->through(function ($reg) {
+            return [
+                'id' => $reg->id,
+                'status' => $reg->status,
+                'registration_date' => $reg->registration_date,
+                'student' => [
+                    'nim' => $reg->mahasiswa?->nim,
+                    'name' => $reg->mahasiswa?->nama ?? $reg->mahasiswa?->user?->name ?? '-',
+                    'faculty' => $reg->mahasiswa?->fakultas ? ['name' => $reg->mahasiswa->fakultas->nama] : null,
+                    'program' => $reg->mahasiswa?->prodi ? ['name' => $reg->mahasiswa->prodi->nama] : null,
+                ],
+                'period' => $reg->periode ? ['name' => $reg->periode->name] : ['name' => '-'],
+                'group' => $reg->kelompok ? ['name' => $reg->kelompok->nama_kelompok] : null,
+            ];
+        });
+
         return Inertia::render('Admin/Registrations/Index', [
             'registrations' => $registrations,
             'filters' => $request->only('status'),

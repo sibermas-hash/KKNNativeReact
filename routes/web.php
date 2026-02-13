@@ -107,6 +107,17 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         // Report Exports
         Route::get('export/daily-reports/group/{groupId}', [App\Http\Controllers\ReportExportController::class, 'downloadGroupDailyReports'])->name('export.daily-reports.group');
         Route::get('export/daily-reports/student/{studentId}', [App\Http\Controllers\ReportExportController::class, 'downloadStudentDailyReports'])->name('export.daily-reports.student');
+
+        // Evaluations
+        Route::get('evaluations', [Admin\EvaluasiController::class, 'index'])->name('evaluations.index');
+
+        // Workshops
+        Route::get('workshops', [App\Http\Controllers\WorkshopController::class, 'index'])->name('workshops.index');
+        Route::post('workshops', [App\Http\Controllers\WorkshopController::class, 'store'])->name('workshops.store');
+
+        // Proposals
+        Route::get('proposals', [App\Http\Controllers\ProposalController::class, 'index'])->name('proposals.index');
+        Route::post('proposals/{id}/review', [App\Http\Controllers\ProposalController::class, 'review'])->name('proposals.review');
     });
 
     // ─── DPL (Dosen Pembimbing Lapangan) ────────────────────────────

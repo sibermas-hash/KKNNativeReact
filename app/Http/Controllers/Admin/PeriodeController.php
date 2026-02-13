@@ -14,8 +14,19 @@ class PeriodeController extends Controller
 {
     public function index(): Response
     {
-        $periods = Periode::with('tahunAkademik')->orderByDesc('start_date')->get();
-        $academicYears = TahunAkademik::orderByDesc('year')->get();
+        $periods = Periode::with('tahunAkademik')->orderByDesc('start_date')->get()
+            ->map(fn ($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'start_date' => $p->start_date?->format('Y-m-d'),
+                'end_date' => $p->end_date?->format('Y-m-d'),
+                'registration_start' => $p->registration_start?->format('Y-m-d'),
+                'registration_end' => $p->registration_end?->format('Y-m-d'),
+                'is_active' => $p->is_active,
+                'academic_year' => $p->tahunAkademik ? ['id' => $p->tahunAkademik->id, 'year' => $p->tahunAkademik->year] : null,
+            ]);
+        $academicYears = TahunAkademik::orderByDesc('year')->get()
+            ->map(fn ($ay) => ['id' => $ay->id, 'year' => $ay->year]);
 
         return Inertia::render('Admin/Periods/Index', [
             'periods' => $periods,

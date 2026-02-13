@@ -174,11 +174,15 @@ class GeneratorNilaiController extends Controller
     private function populateSheet($sheet, $kelompokKkn, $students)
     {
         // === HEADER ===
+        $sheet->mergeCells('A1:F1');
         $sheet->setCellValue('A1', 'Blanko Penilaian Peserta KKN');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         
+        $sheet->mergeCells('A2:F2');
         $sheet->setCellValue('A2', 'Angkatan 57 Tahun 2026');
         $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(12);
+        $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         // === META DATA ===
         $addressParts = explode(',', $kelompokKkn->lokasi?->address ?? '');
@@ -192,9 +196,9 @@ class GeneratorNilaiController extends Controller
 
         $row = 4;
         foreach ($meta as $label => $value) {
+            $sheet->mergeCells("A{$row}:B{$row}");
             $sheet->setCellValue("A{$row}", $label);
-            $sheet->setCellValue("B{$row}", ':');
-            $sheet->setCellValue("C{$row}", $value);
+            $sheet->setCellValue("C{$row}", ': ' . $value);
             $row++;
         }
 
@@ -222,7 +226,9 @@ class GeneratorNilaiController extends Controller
             
             if ($student) {
                 $sheet->setCellValue("B{$currentRow}", $student['name']);
-                $sheet->setCellValue("C{$currentRow}", $student['nim']);
+                
+                // Force NIM as string to prevent scientific notation
+                $sheet->setCellValueExplicit("C{$currentRow}", $student['nim'], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
                 $sheet->getStyle("C{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 
                 if ($student['discipline'] !== null) $sheet->setCellValue("D{$currentRow}", $student['discipline']);
@@ -420,11 +426,15 @@ class GeneratorNilaiController extends Controller
     private function populateSheetBulk($sheet, $students, $periodId)
     {
         // === HEADER ===
+        $sheet->mergeCells('A1:G1');
         $sheet->setCellValue('A1', 'DATABASE NILAI KKN');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         
+        $sheet->mergeCells('A2:G2');
         $sheet->setCellValue('A2', 'Angkatan ' . ($periodId ?? '57') . ' Tahun 2026');
         $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(12);
+        $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         // === TABLE HEADER ===
         $headerRow = 5;
@@ -445,7 +455,10 @@ class GeneratorNilaiController extends Controller
             $sheet->setCellValue("A{$currentRow}", $idx + 1);
             $sheet->setCellValue("B{$currentRow}", $student['group_code']);
             $sheet->setCellValue("C{$currentRow}", $student['name']);
-            $sheet->setCellValue("D{$currentRow}", $student['nim']);
+            
+            // Force NIM as string
+            $sheet->setCellValueExplicit("D{$currentRow}", $student['nim'], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            
             $sheet->setCellValue("E{$currentRow}", $student['discipline']);
             $sheet->setCellValue("F{$currentRow}", $student['attitude']);
             

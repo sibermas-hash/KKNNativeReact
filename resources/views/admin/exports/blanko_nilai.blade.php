@@ -78,7 +78,7 @@
                     <th width="90">NIM</th>
                     <th width="70">DISIPLIN</th>
                     <th width="70">SIKAP</th>
-                    <th width="70">Total Nilai</th>
+                    <th width="70">TOTAL NILAI</th>
                 </tr>
             </thead>
             <tbody>

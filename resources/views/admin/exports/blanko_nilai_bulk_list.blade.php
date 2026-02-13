@@ -35,7 +35,7 @@
                     <th width="90">NIM</th>
                     <th width="60">DISIPLIN</th>
                     <th width="60">SIKAP</th>
-                    <th width="80">Total Nilai</th>
+                    <th width="80">TOTAL NILAI</th>
                 </tr>
             </thead>
             <tbody>

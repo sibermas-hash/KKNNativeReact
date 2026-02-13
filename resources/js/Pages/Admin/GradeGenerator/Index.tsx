@@ -258,7 +258,7 @@ export default function GradeGenerator({ periods, groups }: Props) {
 
                     {isAllGroups && (
                         <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 text-sm text-blue-700">
-                            Menampilkan semua mahasiswa dari seluruh kelompok di angkatan ini.
+                            Menampilkan semua mahasiswa dari seluruh kelompok. Untuk menyimpan nilai, pilih kelompok tertentu.
                         </div>
                     )}
                 </div>
@@ -270,7 +270,7 @@ export default function GradeGenerator({ periods, groups }: Props) {
                             <p className="text-xs text-slate-500">Isi nilai kedisiplinan dan sikap (Rentang 60-100).</p>
                         </div>
                         <div className="flex gap-2">
-                            {selectedGroupId && (
+                            {(selectedGroupId || isAllGroups) && (
                                 <>
                                     <Button
                                         variant="secondary"
@@ -395,4 +395,3 @@ export default function GradeGenerator({ periods, groups }: Props) {
         </AppLayout>
     );
 }
-

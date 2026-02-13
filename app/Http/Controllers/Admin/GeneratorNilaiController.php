@@ -200,7 +200,7 @@ class GeneratorNilaiController extends Controller
 
         // === TABLE HEADER ===
         $headerRow = 10;
-        $headers = ['NO', 'NAMA MAHASISWA', 'NIM', 'DISIPLIN', 'SIKAP', 'TOTAL (B)'];
+        $headers = ['NO', 'NAMA MAHASISWA', 'NIM', 'DISIPLIN', 'SIKAP', 'Total Nilai'];
         $cols = ['A', 'B', 'C', 'D', 'E', 'F'];
         
         foreach ($headers as $i => $h) {
@@ -428,7 +428,7 @@ class GeneratorNilaiController extends Controller
 
         // === TABLE HEADER ===
         $headerRow = 5;
-        $headers = ['NO', 'KELOMPOK', 'NAMA MAHASISWA', 'NIM', 'DISIPLIN', 'SIKAP', 'TOTAL (B)'];
+        $headers = ['NO', 'KELOMPOK', 'NAMA MAHASISWA', 'NIM', 'DISIPLIN', 'SIKAP', 'Total Nilai'];
         $cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
         
         foreach ($headers as $i => $h) {

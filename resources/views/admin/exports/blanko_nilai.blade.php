@@ -6,7 +6,7 @@
     <style>
         body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 10pt; line-height: 1.2; color: #000; margin: 0; padding: 0; }
         .container { padding: 20px; }
-        .header { margin-bottom: 25px; }
+        .header { margin-bottom: 25px; text-align: center; }
         .header h1 { margin: 0; font-size: 14pt; font-weight: bold; }
         .header h2 { margin: 2px 0; font-size: 12pt; font-weight: bold; }
         
@@ -78,7 +78,7 @@
                     <th width="90">NIM</th>
                     <th width="70">DISIPLIN</th>
                     <th width="70">SIKAP</th>
-                    <th width="70">TOTAL (B)</th>
+                    <th width="70">Total Nilai</th>
                 </tr>
             </thead>
             <tbody>

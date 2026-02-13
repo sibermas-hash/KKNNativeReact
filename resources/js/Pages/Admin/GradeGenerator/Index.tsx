@@ -7,7 +7,8 @@ import {
     ArrowPathIcon,
     CheckCircleIcon,
     CloudArrowUpIcon,
-    DocumentArrowDownIcon
+    DocumentArrowDownIcon,
+    FolderArrowDownIcon
 } from '@heroicons/react/24/outline';
 import { router } from '@inertiajs/react';
 import axios from 'axios';
@@ -190,13 +191,18 @@ export default function GradeGenerator({ periods, groups }: Props) {
     };
 
     const handleExport = () => {
-        if (!selectedGroupId || isAllGroups) return;
-        window.location.href = `/admin/grade-generator/export/${selectedGroupId}`;
+        if (!selectedGroupId || !selectedPeriodId) return;
+        window.location.href = `/admin/grade-generator/export/${selectedGroupId}?period_id=${selectedPeriodId}`;
     };
 
     const handleExportPdf = () => {
-        if (!selectedGroupId || isAllGroups) return;
-        window.location.href = `/admin/grade-generator/export-pdf/${selectedGroupId}`;
+        if (!selectedGroupId || !selectedPeriodId) return;
+        window.location.href = `/admin/grade-generator/export-pdf/${selectedGroupId}?period_id=${selectedPeriodId}`;
+    };
+
+    const handleExportZip = () => {
+        if (!selectedPeriodId) return;
+        window.location.href = `/admin/grade-generator/export-zip?period_id=${selectedPeriodId}`;
     };
 
 
@@ -264,7 +270,7 @@ export default function GradeGenerator({ periods, groups }: Props) {
                             <p className="text-xs text-slate-500">Isi nilai kedisiplinan dan sikap (Rentang 60-100).</p>
                         </div>
                         <div className="flex gap-2">
-                            {selectedGroupId && !isAllGroups && (
+                            {selectedGroupId && (
                                 <>
                                     <Button
                                         variant="secondary"
@@ -272,7 +278,7 @@ export default function GradeGenerator({ periods, groups }: Props) {
                                         onClick={handleExport}
                                     >
                                         <ArchiveBoxArrowDownIcon className="h-4 w-4" />
-                                        Excel
+                                        Excel {isAllGroups ? '(Gabung)' : ''}
                                     </Button>
                                     <Button
                                         variant="secondary"
@@ -280,8 +286,18 @@ export default function GradeGenerator({ periods, groups }: Props) {
                                         onClick={handleExportPdf}
                                     >
                                         <DocumentArrowDownIcon className="h-4 w-4" />
-                                        PDF
+                                        PDF {isAllGroups ? '(Gabung)' : ''}
                                     </Button>
+                                    {isAllGroups && (
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={handleExportZip}
+                                        >
+                                            <FolderArrowDownIcon className="h-4 w-4" />
+                                            ZIP (Satuan)
+                                        </Button>
+                                    )}
                                 </>
                             )}
                             <Button

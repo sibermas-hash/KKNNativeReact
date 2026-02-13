@@ -2,10 +2,11 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Blanko Penilaian KKN</title>
+    <title>Bulk Blanko Penilaian KKN</title>
     <style>
         body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 10pt; line-height: 1.2; color: #000; margin: 0; padding: 0; }
-        .container { padding: 20px; }
+        .page { padding: 20px; page-break-after: always; }
+        .page:last-child { page-break-after: avoid; }
         .header { margin-bottom: 25px; }
         .header h1 { margin: 0; font-size: 14pt; font-weight: bold; }
         .header h2 { margin: 2px 0; font-size: 12pt; font-weight: bold; }
@@ -30,7 +31,12 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    @foreach($dataGroups as $data)
+    @php 
+        $group = $data['group'];
+        $students = $data['students'];
+    @endphp
+    <div class="page">
         <div class="header">
             <h1>Blanko Penilaian Peserta KKN</h1>
             <h2>Angkatan {{ $angkatan ?? '57' }} Tahun {{ $tahun ?? '2026' }}</h2>
@@ -127,6 +133,6 @@
             </div>
         </div>
     </div>
+    @endforeach
 </body>
-
 </html>

@@ -139,15 +139,40 @@ class GeneratorNilaiController extends Controller
     /**
      * Export blanko penilaian as Excel (.xlsx) matching official template.
      */
-    public function exportExcel(KelompokKkn $kelompokKkn)
+    public function exportExcel(Request $request, $id)
     {
-        $kelompokKkn->load(['lokasi', 'dpl.user:id,name']);
-        $students = $this->getStudentsForGroup($kelompokKkn);
+        $periodId = $request->query('period_id');
+        
+        if ($id === 'all' && $periodId) {
+            $students = $this->getStudentsForPeriod($periodId);
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle("Database Nilai KKN");
+            $this->populateSheetBulk($sheet, $students, $periodId);
+            
+            $filename = "Database_Nilai_KKN_Angkatan_{$periodId}.xlsx";
+        } else {
+            $kelompokKkn = KelompokKkn::with(['lokasi', 'dpl.user:id,name'])->findOrFail($id);
+            $students = $this->getStudentsForGroup($kelompokKkn);
+            
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $this->populateSheet($sheet, $kelompokKkn, $students);
+            
+            $filename = "Blanko_Penilaian_Kelompok_{$kelompokKkn->code}.xlsx";
+        }
 
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Sheet1');
+        $writer = new Xlsx($spreadsheet);
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Cache-Control' => 'max-age=0',
+        ]);
+    }
 
+    private function populateSheet($sheet, $kelompokKkn, $students)
+    {
         // === HEADER ===
         $sheet->setCellValue('A1', 'Blanko Penilaian Peserta KKN');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
@@ -242,40 +267,74 @@ class GeneratorNilaiController extends Controller
         $sheet->getColumnDimension('D')->setWidth(15);
         $sheet->getColumnDimension('E')->setWidth(15);
         $sheet->getColumnDimension('F')->setWidth(15);
-
-        // Response
-        $filename = "Blanko_Penilaian_Kelompok_{$kelompokKkn->code}.xlsx";
-        $writer = new Xlsx($spreadsheet);
-
-        return response()->streamDownload(function () use ($writer) {
-            $writer->save('php://output');
-        }, $filename, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Cache-Control' => 'max-age=0',
-        ]);
     }
 
-    public function exportPdf(KelompokKkn $kelompokKkn)
+    public function exportPdf(Request $request, $id)
     {
-        $kelompokKkn->load(['lokasi', 'dpl.user:id,name']);
-        $students = $this->getStudentsForGroup($kelompokKkn);
-        
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.blanko_nilai', [
-            'group'    => $kelompokKkn,
-            'students' => $students,
-            'angkatan' => '57',
-            'tahun'    => '2026'
-        ]);
+        $periodId = $request->query('period_id');
 
-        return $pdf->download("Blanko_Penilaian_Kelompok_{$kelompokKkn->code}.pdf");
+        if ($id === 'all' && $periodId) {
+            $students = $this->getStudentsForPeriod($periodId);
+            
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.blanko_nilai_bulk_list', [
+                'students' => $students,
+                'period_id' => $periodId,
+                'angkatan'   => '57',
+                'tahun'      => '2026'
+            ]);
+
+            return $pdf->download("Database_Nilai_KKN_Angkatan_{$periodId}.pdf");
+        } else {
+            $kelompokKkn = KelompokKkn::with(['lokasi', 'dpl.user:id,name'])->findOrFail($id);
+            $students = $this->getStudentsForGroup($kelompokKkn);
+            
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.blanko_nilai', [
+                'group'    => $kelompokKkn,
+                'students' => $students,
+                'angkatan' => '57',
+                'tahun'    => '2026'
+            ]);
+
+            return $pdf->download("Blanko_Penilaian_Kelompok_{$kelompokKkn->code}.pdf");
+        }
+    }
+
+    public function exportZip(Request $request)
+    {
+        $periodId = $request->query('period_id');
+        if (!$periodId) abort(400, 'Missing period_id');
+
+        $groups = KelompokKkn::with(['lokasi', 'dpl.user:id,name'])
+            ->where('period_id', $periodId)
+            ->orderBy('code')
+            ->get();
+
+        $zip = new \ZipArchive();
+        $zipFileName = "Separated_Blanko_Penilaian_Periode_{$periodId}.zip";
+        $zipPath = storage_path("app/public/{$zipFileName}");
+
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
+            foreach ($groups as $group) {
+                $students = $this->getStudentsForGroup($group);
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.blanko_nilai', [
+                    'group'    => $group,
+                    'students' => $students,
+                    'angkatan' => '57',
+                    'tahun'    => '2026'
+                ]);
+                
+                $pdfName = "Blanko_Penilaian_Kelompok_{$group->code}.pdf";
+                $zip->addFromString($pdfName, $pdf->output());
+            }
+            $zip->close();
+        }
+
+        return response()->download($zipPath)->deleteFileAfterSend(true);
     }
 
 
 
-    /**
-     * Helper: get students for a group (from registrations or group_members).
-     */
-    private function getStudentsForGroup(KelompokKkn $group): array
+    private function getStudentsForGroup($group): array
     {
         // Fetch all registrations for this group (no status filter)
         $registrations = PesertaKkn::with(['mahasiswa:id,user_id,nim,nama'])
@@ -320,5 +379,94 @@ class GeneratorNilaiController extends Controller
         }
 
         return [];
+    }
+
+    /**
+     * Helper: get all students for a period.
+     */
+    private function getStudentsForPeriod($periodId): array
+    {
+        return DB::table('mahasiswa as s')
+            ->join('users as u', 's.user_id', '=', 'u.id')
+            ->join('peserta_kkn as r', 's.id', '=', 'r.mahasiswa_id')
+            ->join('kelompok_kkn as g', 'r.kelompok_id', '=', 'g.id')
+            ->leftJoin('nilai_kkn as ks', function ($join) {
+                $join->on('ks.mahasiswa_id', '=', 'u.id')
+                     ->on('ks.kelompok_id', '=', 'g.id');
+            })
+            ->where('g.period_id', $periodId)
+            ->select([
+                'u.id as user_id',
+                'u.name',
+                's.nim',
+                'g.code as group_code',
+                'ks.discipline_score as discipline',
+                'ks.attitude_score as attitude',
+            ])
+            ->orderBy('g.code')
+            ->orderBy('u.name')
+            ->get()
+            ->map(fn($s) => [
+                'user_id'    => $s->user_id,
+                'name'       => $s->name,
+                'nim'        => $s->nim,
+                'group_code' => $s->group_code,
+                'discipline' => $s->discipline ? (int)$s->discipline : null,
+                'attitude'   => $s->attitude ? (int)$s->attitude : null,
+            ])
+            ->toArray();
+    }
+
+    private function populateSheetBulk($sheet, $students, $periodId)
+    {
+        // === HEADER ===
+        $sheet->setCellValue('A1', 'DATABASE NILAI KKN');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        
+        $sheet->setCellValue('A2', 'Angkatan ' . ($periodId ?? '57') . ' Tahun 2026');
+        $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(12);
+
+        // === TABLE HEADER ===
+        $headerRow = 5;
+        $headers = ['NO', 'KELOMPOK', 'NAMA MAHASISWA', 'NIM', 'DISIPLIN', 'SIKAP', 'TOTAL (B)'];
+        $cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+        
+        foreach ($headers as $i => $h) {
+            $col = $cols[$i];
+            $sheet->setCellValue("{$col}{$headerRow}", $h);
+            $sheet->getStyle("{$col}{$headerRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("{$col}{$headerRow}")->getFont()->setBold(true);
+            $sheet->getStyle("{$col}{$headerRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        }
+
+        // === DATA ROWS ===
+        $currentRow = 6;
+        foreach ($students as $idx => $student) {
+            $sheet->setCellValue("A{$currentRow}", $idx + 1);
+            $sheet->setCellValue("B{$currentRow}", $student['group_code']);
+            $sheet->setCellValue("C{$currentRow}", $student['name']);
+            $sheet->setCellValue("D{$currentRow}", $student['nim']);
+            $sheet->setCellValue("E{$currentRow}", $student['discipline']);
+            $sheet->setCellValue("F{$currentRow}", $student['attitude']);
+            
+            if ($student['discipline'] !== null && $student['attitude'] !== null) {
+                $total = round(($student['discipline'] + $student['attitude']) / 2);
+                $sheet->setCellValue("G{$currentRow}", $total);
+            }
+
+            $sheet->getStyle("A{$currentRow}:G{$currentRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+            $sheet->getStyle("A{$currentRow}:B{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("D{$currentRow}:G{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $currentRow++;
+        }
+
+        // === COLUMN WIDTHS ===
+        $sheet->getColumnDimension('A')->setWidth(5);
+        $sheet->getColumnDimension('B')->setWidth(15);
+        $sheet->getColumnDimension('C')->setWidth(40);
+        $sheet->getColumnDimension('D')->setWidth(20);
+        $sheet->getColumnDimension('E')->setWidth(12);
+        $sheet->getColumnDimension('F')->setWidth(12);
+        $sheet->getColumnDimension('G')->setWidth(12);
     }
 }

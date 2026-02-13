@@ -95,6 +95,9 @@
                         @endif
                     </td>
                 </tr>
+                @endforeach
+            </tbody>
+        </table>
 
         <div class="footer">
             <div class="signature-block">
@@ -113,5 +116,4 @@
         </div>
     </div>
 </body>
-
 </html>

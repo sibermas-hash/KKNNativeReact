@@ -1,8 +1,8 @@
 Internal Server Error
 
-Error
-app/Http/Controllers/Admin/GeneratorNilaiController.php:25
-Class "App\Http\Controllers\Admin\Periode" not found
+ParseError
+resources/views/admin/exports/blanko_nilai.blade.php:1
+syntax error, unexpected end of file
 
 LARAVEL
 12.51.0
@@ -12,30 +12,69 @@ UNHANDLED
 CODE 0
 500
 GET
-https://kkn.infiatin.cloud/admin/grade-generator
+https://kkn.infiatin.cloud/admin/grade-generator/export-pdf/1?period_id=1
 
 Exception trace
-App\Http\Controllers\Admin\GeneratorNilaiController->index()
-app/Http/Controllers/Admin/GeneratorNilaiController.php:25
+resources/views/admin/exports/blanko_nilai.blade.php
+resources/views/admin/exports/blanko_nilai.blade.php:1
 
-20
-21class GeneratorNilaiController extends Controller
-22{
-23    public function index(): Response
-24    {
-25        $periods = Periode::with('tahunAkademik')->orderByDesc('id')->get()->map(fn($p) => [
-26            'id' => $p->id,
-27            'name' => "Angkatan " . ($p->name ?? '-') . " (" . ($p->tahunAkademik?->year ?? '-') . ")",
-28        ]);
-29
-30        $groups = KelompokKkn::with(['lokasi', 'dpl.user:id,name'])
-31            ->orderBy('code')
-32            ->get()
-33            ->map(function (KelompokKkn $g) {
-34                $addressParts = explode(',', $g->lokasi?->address ?? '');
-35                $kelompokNum = preg_replace('/[^0-9]/', '', $g->code);
-36                return [
-37
+1<!DOCTYPE html>
+2<html>
+3<head>
+4    <meta charset="utf-8">
+5    <title>Blanko Penilaian KKN</title>
+6    <style>
+7        body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 10pt; line-height: 1.2; color: #000; margin: 0; padding: 0; }
+8        .container { padding: 20px; }
+9        .header { margin-bottom: 25px; text-align: center; }
+10        .header h1 { margin: 0; font-size: 14pt; font-weight: bold; }
+11        .header h2 { margin: 2px 0; font-size: 12pt; font-weight: bold; }
+12        
+13        .meta { margin-bottom: 20px; width: 100%; border-collapse: collapse; }
+14        .meta td { padding: 1px 0; vertical-align: top; }
+15        .meta td.label { width: 100px; }
+16        .meta td.colon { width: 15px; text-align: center; }
+17        .meta td.value { font-weight: normal; }
+18
+8 vendor frames
+
+Illuminate\Filesystem\Filesystem->getRequire()
+vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php:124
+Illuminate\View\Engines\PhpEngine->evaluatePath()
+vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php:57
+Illuminate\View\Engines\CompilerEngine->get()
+vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php:76
+Illuminate\View\View->getContents()
+vendor/laravel/framework/src/Illuminate/View/View.php:208
+Illuminate\View\View->renderContents()
+vendor/laravel/framework/src/Illuminate/View/View.php:191
+Illuminate\View\View->render()
+vendor/laravel/framework/src/Illuminate/View/View.php:160
+Barryvdh\DomPDF\PDF->loadView()
+vendor/barryvdh/laravel-dompdf/src/PDF.php:142
+Barryvdh\DomPDF\Facade\Pdf::__callStatic()
+vendor/barryvdh/laravel-dompdf/src/Facade/Pdf.php:66
+App\Http\Controllers\Admin\GeneratorNilaiController->exportPdf()
+app/Http/Controllers/Admin/GeneratorNilaiController.php:289
+
+284            return $pdf->download("Database_Nilai_KKN_Angkatan_{$periodId}.pdf");
+285        } else {
+286            $kelompokKkn = KelompokKkn::with(['lokasi', 'dpl.user:id,name'])->findOrFail($id);
+287            $students = $this->getStudentsForGroup($kelompokKkn);
+288            
+289            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.blanko_nilai', [
+290                'group'    => $kelompokKkn,
+291                'students' => $students,
+292                'angkatan' => '57',
+293                'tahun'    => '2026'
+294            ]);
+295
+296            return $pdf->download("Blanko_Penilaian_Kelompok_{$kelompokKkn->code}.pdf");
+297        }
+298    }
+299
+300    public function exportZip(Request $request)
+301
 7 vendor frames
 
 Illuminate\Routing\ControllerDispatcher->dispatch()
@@ -202,31 +241,94 @@ public/index.php:20
 Queries
 pgsql
 select * from "sessions" where "id" = 'j9UVOC8m7ZSFeO4Akr00sdJqwDVyuPFpBvdobCl2' limit 1
-30.28ms
+29.87ms
 pgsql
 select * from "users" where "id" = 307 limit 1
-2.98ms
+3.04ms
 pgsql
-select * from "cache" where "key" in ('kkn-uin-saizu-cache-e17aabd50a606956dc22f49911a30154abea81a5')
-1.5ms
+select * from "cache" where "key" in ('kkn-uin-saizu-cache-1695c7511180c6d12a985751887c978056023a0e')
+1.79ms
 pgsql
-select * from "cache" where "key" in ('kkn-uin-saizu-cache-e17aabd50a606956dc22f49911a30154abea81a5:timer')
-0.91ms
+delete from "cache" where "key" in ('kkn-uin-saizu-cache-1695c7511180c6d12a985751887c978056023a0e', 'kkn-uin-saizu-cache-illuminate:cache:flexible:created:1695c7511180c6d12a985751887c978056023a0e') and "expiration" <= 1770946105
+14.64ms
 pgsql
-select * from "cache" where "key" in ('kkn-uin-saizu-cache-e17aabd50a606956dc22f49911a30154abea81a5')
-0.91ms
+select * from "cache" where "key" in ('kkn-uin-saizu-cache-1695c7511180c6d12a985751887c978056023a0e:timer')
+1.03ms
 pgsql
-select * from "cache" where "key" = 'kkn-uin-saizu-cache-e17aabd50a606956dc22f49911a30154abea81a5' limit 1 for update
-0.81ms
+delete from "cache" where "key" in ('kkn-uin-saizu-cache-1695c7511180c6d12a985751887c978056023a0e:timer', 'kkn-uin-saizu-cache-illuminate:cache:flexible:created:1695c7511180c6d12a985751887c978056023a0e:timer') and "expiration" <= 1770946105
+6.68ms
 pgsql
-update "cache" set "value" = 'i:2;' where "key" = 'kkn-uin-saizu-cache-e17aabd50a606956dc22f49911a30154abea81a5'
-0.92ms
+insert into "cache" ("key", "value", "expiration") values ('kkn-uin-saizu-cache-1695c7511180c6d12a985751887c978056023a0e:timer', 'i:1770946165;', 1770946165) on conflict do nothing
+8.18ms
+pgsql
+select * from "cache" where "key" in ('kkn-uin-saizu-cache-1695c7511180c6d12a985751887c978056023a0e')
+0.99ms
+pgsql
+insert into "cache" ("key", "value", "expiration") values ('kkn-uin-saizu-cache-1695c7511180c6d12a985751887c978056023a0e', 'i:0;', 1770946165) on conflict do nothing
+7.01ms
+pgsql
+select * from "cache" where "key" = 'kkn-uin-saizu-cache-1695c7511180c6d12a985751887c978056023a0e' limit 1 for update
+1.07ms
+pgsql
+update "cache" set "value" = 'i:1;' where "key" = 'kkn-uin-saizu-cache-1695c7511180c6d12a985751887c978056023a0e'
+0.94ms
 pgsql
 select "roles".*, "model_has_roles"."model_id" as "pivot_model_id", "model_has_roles"."role_id" as "pivot_role_id", "model_has_roles"."model_type" as "pivot_model_type" from "roles" inner join "model_has_roles" on "roles"."id" = "model_has_roles"."role_id" where "model_has_roles"."model_id" in (307) and "model_has_roles"."model_type" = 'App\Models\User'
-4.65ms
+4.57ms
 pgsql
 select "permissions".*, "role_has_permissions"."role_id" as "pivot_role_id", "role_has_permissions"."permission_id" as "pivot_permission_id" from "permissions" inner join "role_has_permissions" on "permissions"."id" = "role_has_permissions"."permission_id" where "role_has_permissions"."role_id" in (2)
-2.79ms
+2.8ms
+kkn
+select * from "kelompok_kkn" where "kelompok_kkn"."id" = '1' limit 1
+28.88ms
+kkn
+select * from "lokasi" where "lokasi"."id" in (1)
+1.83ms
+kkn
+select * from "dosen" where "dosen"."id" in (1)
+1.67ms
+kkn
+select "id", "name" from "users" where "users"."id" in (26)
+2ms
+kkn
+select * from "peserta_kkn" where "kelompok_id" = 1
+2.07ms
+kkn
+select "id", "user_id", "nim", "nama" from "mahasiswa" where "mahasiswa"."id" in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+2.41ms
+kkn
+select * from "nilai_kkn" where "mahasiswa_id" = 27 and "kelompok_id" = 1 limit 1
+2.68ms
+kkn
+select * from "nilai_kkn" where "mahasiswa_id" = 28 and "kelompok_id" = 1 limit 1
+1.08ms
+kkn
+select * from "nilai_kkn" where "mahasiswa_id" = 29 and "kelompok_id" = 1 limit 1
+0.97ms
+kkn
+select * from "nilai_kkn" where "mahasiswa_id" = 30 and "kelompok_id" = 1 limit 1
+1.03ms
+kkn
+select * from "nilai_kkn" where "mahasiswa_id" = 31 and "kelompok_id" = 1 limit 1
+0.98ms
+kkn
+select * from "nilai_kkn" where "mahasiswa_id" = 32 and "kelompok_id" = 1 limit 1
+0.96ms
+kkn
+select * from "nilai_kkn" where "mahasiswa_id" = 33 and "kelompok_id" = 1 limit 1
+1.06ms
+kkn
+select * from "nilai_kkn" where "mahasiswa_id" = 34 and "kelompok_id" = 1 limit 1
+1.23ms
+kkn
+select * from "nilai_kkn" where "mahasiswa_id" = 35 and "kelompok_id" = 1 limit 1
+1.16ms
+kkn
+select * from "nilai_kkn" where "mahasiswa_id" = 36 and "kelompok_id" = 1 limit 1
+1.05ms
+kkn
+select * from "nilai_kkn" where "mahasiswa_id" = 37 and "kelompok_id" = 1 limit 1
+1.17ms
 
 
 
@@ -254,12 +356,12 @@ sec-ch-ua-mobile
 ?0
 sec-ch-ua
 "Not(A:Brand";v="8", "Chromium";v="144", "Google Chrome";v="144"
+referer
+https://kkn.infiatin.cloud/admin/grade-generator
 priority
 u=0, i
-pragma
-no-cache
 cookie
-XSRF-TOKEN=eyJpdiI6ImcycWsrZkN5MkN2RkU2RHFYVkl5dkE9PSIsInZhbHVlIjoiNmlaWG9jc0gwMGR6b0tjOVoxMFRkeHJpZGFuS1RhR3hFTFA5UWpzbVl6MkU1cElpK0ZCcmhPNDlhbkpRTG9hRWlwUllqQk9DUkNBcGx6eDhPZ3g3c3JoaTViSWRYaml1R29zdWl6b1FOZ3MzUDJvblQ4VkRGSjZLZ2c4N0ppMU0iLCJtYWMiOiJkMzcxYjBlYjhmM2NhYWE1YmJmOWMyYWNlNWJlNjRiNmVlZGM4YzhmZWRlMTRlYjdlZmU5ZjY1MzlkY2YzZjBlIiwidGFnIjoiIn0%3D; kkn_session_v3=eyJpdiI6InZSUkRsWldCSFE4cTk4T2FTWGNTMUE9PSIsInZhbHVlIjoiejd1VkNFZnUrOVh1dzBaVndEU25RdXo4K3p6bFdma0lhZ2l4V1kvNU51VkJnYXZhNjdHeHI2THF5RnlhbWxTd0JWeVh5VWtTdEZhWXJJbjFuVnl3SVRPa0hrcnhydG9kV2tydVV3Tjd0eUg4VTc4OW1NdUtRRnFsdE9GU3ZJU0IiLCJtYWMiOiI3OWE4ZWQzYjBkZjc0ZTg3ZTdiYTUwMjQ3YjE2OWUxZjhmYTkwYzFlYzA1YjkzM2FlNjU0NGE4ZTBmZDEwOWNjIiwidGFnIjoiIn0%3D
+XSRF-TOKEN=eyJpdiI6IlVmdWcwTHAzRWV5RHBUZExtL0E0OVE9PSIsInZhbHVlIjoidHlCeVM5a1Jld3JnMHZubmt4aklDNXZtQTRYVFhVU2hHeS8rNVBtMWN6S2E0QzNLVzdSb1ZBR05JU0djMFlCMW5KdG9KcUNORDkvZkdFT2VFVmZhTGVzZWVMVGhmSmdFOFNpV0JDdEVWUGV4Q01OUzlSR3JOL2NncFI4OVAxRUQiLCJtYWMiOiI3MWFlYzUyMjQ2NmM0NDk4NjY3NjMyNTgzN2Y2MjM3NWIxOWYxNTQ0MTU0OTUzMjA4NGMwZTc3ZDE1MWI1YTdhIiwidGFnIjoiIn0%3D; kkn_session_v3=eyJpdiI6IjFlRytwbWdjTDJxRjNHbTNqUURabkE9PSIsInZhbHVlIjoiU212VU9VdHlqaXlRN3BZeDhpNmxGanhNam1md1l5bTZUSVdPZFpoaUhqQ3NGWlIwVVV0Z0xHL0srWWNPUjFJZ3llVC9LbnJUaUJnWXNLUXRmMml4c1JoeEx0VEl2UUd4SlcrTkx2TTNOVDhCQjZRUkFSN3JaRGloZGkyRFdtSVEiLCJtYWMiOiJmZDk0ZDM2YTBmYmE0ZTU5YzJjM2M3NmYxMDMyZGM2YzVjNjI0M2I3ZGIzMTY2YjdiZjRmMzY2ODIxOTFjYmI0IiwidGFnIjoiIn0%3D
 connection
 keep-alive
 cf-warp-tag-id
@@ -267,15 +369,13 @@ ee14046b-a895-4b82-ab02-facc2526bb4a
 cf-visitor
 {"scheme":"https"}
 cf-ray
-9cd059586e9b44b4-SIN
+9cd08c876d6a81a4-SIN
 cf-ipcountry
 ID
 cf-connecting-ip
 112.78.156.229
 cdn-loop
 cloudflare; loops=1
-cache-control
-no-cache
 accept-language
 id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7
 accept-encoding
@@ -287,13 +387,17 @@ Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)
 host
 kkn.infiatin.cloud
 Body
-// No request body
+{
+    "period_id": "1"
+}
 Routing
 controller
-App\Http\Controllers\Admin\GeneratorNilaiController@index
+App\Http\Controllers\Admin\GeneratorNilaiController@exportPdf
 route name
-admin.grade-generator.index
+admin.grade-generator.export-pdf
 middleware
 web, auth, kkn.throttle, role:admin|superadmin
 Routing parameters
-// No routing parameters
+{
+    "id": "1"
+}

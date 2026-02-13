@@ -12,8 +12,14 @@ import {
 import { router } from '@inertiajs/react';
 import axios from 'axios';
 
+type Period = {
+    id: number;
+    name: string;
+};
+
 type Group = {
     id: number;
+    period_id: number;
     code: string;
     name: string;
     desa: string;
@@ -53,6 +59,7 @@ const defaultMeta: Meta = {
 };
 
 interface Props {
+    periods: Period[];
     groups: Group[];
 }
 
@@ -63,7 +70,8 @@ function computeTotal({ discipline, attitude }: StudentRow): number {
     return Math.round((d + a) / 2);
 }
 
-export default function GradeGenerator({ groups }: Props) {
+export default function GradeGenerator({ periods, groups }: Props) {
+    const [selectedPeriodId, setSelectedPeriodId] = useState<number | ''>('');
     const [selectedGroupId, setSelectedGroupId] = useState<number | 'all' | ''>('');
     const [meta, setMeta] = useState<Meta>(defaultMeta);
     const [students, setStudents] = useState<StudentRow[]>([]);
@@ -71,6 +79,22 @@ export default function GradeGenerator({ groups }: Props) {
     const [saving, setSaving] = useState(false);
 
     const isAllGroups = selectedGroupId === 'all';
+
+    const filteredGroups = useMemo(() => {
+        if (!selectedPeriodId) return [];
+        return groups.filter(g => g.period_id === selectedPeriodId);
+    }, [groups, selectedPeriodId]);
+
+    const dropdownOptions = useMemo(() => {
+        const options = [
+            { value: 'all', label: '📋 Semua Kelompok' },
+            ...filteredGroups.map(g => ({
+                value: g.id,
+                label: `Kelompok ${g.code}`
+            }))
+        ];
+        return options;
+    }, [filteredGroups]);
 
     // Fetch students when group changes
     useEffect(() => {
@@ -81,16 +105,23 @@ export default function GradeGenerator({ groups }: Props) {
         }
 
         if (isAllGroups) {
-            setMeta({ ...defaultMeta, kelompok: 'Semua Kelompok' });
+            const period = periods.find(p => p.id === selectedPeriodId);
+            setMeta({
+                ...defaultMeta,
+                angkatan: period ? period.name.replace('Angkatan ', '') : '57',
+                kelompok: 'Semua Kelompok'
+            });
         } else {
             const group = groups.find(g => g.id === selectedGroupId);
+            const period = periods.find(p => p.id === selectedPeriodId);
             if (group) {
                 setMeta({
                     ...defaultMeta,
+                    angkatan: period ? period.name.replace('Angkatan ', '') : '57',
                     kelompok: group.code,
                     desa: group.desa,
                     kecamatan: group.kecamatan,
-                    kabupaten: group.kabupaten || group.name,
+                    kabupaten: group.kabupaten,
                     dpl: group.dpl
                 });
             }
@@ -168,13 +199,6 @@ export default function GradeGenerator({ groups }: Props) {
         window.location.href = `/admin/grade-generator/export-pdf/${selectedGroupId}`;
     };
 
-    const dropdownOptions = [
-        { value: 'all', label: '📋 Semua Kelompok' },
-        ...groups.map(g => ({
-            value: g.id,
-            label: `${g.code} - ${g.name}`
-        }))
-    ];
 
     return (
         <AppLayout title="Generator Nilai">
@@ -190,7 +214,18 @@ export default function GradeGenerator({ groups }: Props) {
                 </div>
 
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                    <div className="max-w-md">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <FormSelect
+                            label="Pilih Angkatan"
+                            placeholder="-- Pilih Angkatan --"
+                            value={selectedPeriodId}
+                            onChange={(e) => {
+                                setSelectedPeriodId(Number(e.target.value) || '');
+                                setSelectedGroupId(''); // Reset kelompok when angkatan changes
+                            }}
+                            options={periods.map(p => ({ value: p.id, label: p.name }))}
+                        />
+
                         <FormSelect
                             label="Pilih Kelompok"
                             placeholder="-- Pilih Kelompok --"
@@ -200,24 +235,24 @@ export default function GradeGenerator({ groups }: Props) {
                                 setSelectedGroupId(val === 'all' ? 'all' : val ? Number(val) : '');
                             }}
                             options={dropdownOptions}
+                            disabled={!selectedPeriodId}
                         />
                     </div>
 
                     {selectedGroupId && !isAllGroups && (
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 bg-slate-50 p-4 rounded-lg border border-slate-100 italic">
-                            <div><span className="font-bold not-italic">Angkatan:</span> {meta.angkatan}</div>
-                            <div><span className="font-bold not-italic">Tahun:</span> {meta.tahun}</div>
-                            <div><span className="font-bold not-italic">Kelompok:</span> {meta.kelompok}</div>
+                            <div><span className="font-bold not-italic">Angkatan:</span> ({meta.angkatan})</div>
+                            <div><span className="font-bold not-italic">Kelompok:</span> ({meta.kelompok})</div>
                             <div><span className="font-bold not-italic">Desa:</span> {meta.desa}</div>
                             <div><span className="font-bold not-italic">Kecamatan:</span> {meta.kecamatan}</div>
-                            <div><span className="font-bold not-italic">Kabupaten/Mitra:</span> {meta.kabupaten}</div>
+                            <div><span className="font-bold not-italic">Kabupaten:</span> {meta.kabupaten}</div>
                             <div className="sm:col-span-2 lg:col-span-3"><span className="font-bold not-italic">DPL:</span> {meta.dpl}</div>
                         </div>
                     )}
 
                     {isAllGroups && (
                         <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 text-sm text-blue-700">
-                            Menampilkan semua mahasiswa dari seluruh kelompok. Untuk menyimpan nilai, pilih kelompok tertentu.
+                            Menampilkan semua mahasiswa dari seluruh kelompok di angkatan ini.
                         </div>
                     )}
                 </div>

@@ -20,25 +20,33 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class GeneratorNilaiController extends Controller
 {
-    /**
-     * Display the grade generator / blanko penilaian page.
-     */
     public function index(): Response
     {
+        $periods = Periode::with('tahunAkademik')->orderByDesc('id')->get()->map(fn($p) => [
+            'id' => $p->id,
+            'name' => "Angkatan " . ($p->name ?? '-') . " (" . ($p->tahunAkademik?->year ?? '-') . ")",
+        ]);
+
         $groups = KelompokKkn::with(['lokasi', 'dpl.user:id,name'])
             ->orderBy('code')
             ->get()
-            ->map(fn(KelompokKkn $g) => [
-                'id'         => $g->id,
-                'code'       => $g->code,
-                'name'       => $g->nama_kelompok,
-                'desa'       => $g->lokasi?->village_name ?? '-',
-                'kecamatan'  => $g->lokasi?->address ?? '-',
-                'kabupaten'  => '-',
-                'dpl'        => $g->dpl?->user?->name ?? '-',
-            ]);
+            ->map(function (KelompokKkn $g) {
+                $addressParts = explode(',', $g->lokasi?->address ?? '');
+                $kelompokNum = preg_replace('/[^0-9]/', '', $g->code);
+                return [
+                    'id'         => $g->id,
+                    'period_id'  => $g->period_id,
+                    'code'       => $kelompokNum,
+                    'name'       => "Kelompok " . $kelompokNum,
+                    'desa'       => $g->lokasi?->village_name ?? '-',
+                    'kecamatan'  => trim($addressParts[0] ?? '-'),
+                    'kabupaten'  => trim($addressParts[1] ?? '-'),
+                    'dpl'        => $g->dpl?->user?->name ?? '-',
+                ];
+            });
 
         return Inertia::render('Admin/GradeGenerator/Index', [
+            'periods' => $periods,
             'groups' => $groups,
         ]);
     }
@@ -132,44 +140,135 @@ class GeneratorNilaiController extends Controller
      */
     public function exportExcel(KelompokKkn $kelompokKkn)
     {
+        $kelompokKkn->load(['lokasi', 'dpl.user:id,name']);
         $students = $this->getStudentsForGroup($kelompokKkn);
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Sheet1');
+
+        // === HEADER ===
+        $sheet->setCellValue('A1', 'Blanko Penilaian Peserta KKN');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        
+        $sheet->setCellValue('A2', 'Angkatan 57 Tahun 2026');
+        $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(12);
+
+        // === META DATA ===
+        $addressParts = explode(',', $kelompokKkn->lokasi?->address ?? '');
+        $meta = [
+            'KELOMPOK'  => preg_replace('/[^0-9]/', '', $kelompokKkn->code),
+            'DESA'      => $kelompokKkn->lokasi?->village_name ?? '-',
+            'KECAMATAN' => trim($addressParts[0] ?? '-'),
+            'KABUPATEN' => trim($addressParts[1] ?? '-'),
+            'DPL'       => $kelompokKkn->dpl?->user?->name ?? '-',
+        ];
+
+        $row = 4;
+        foreach ($meta as $label => $value) {
+            $sheet->setCellValue("A{$row}", $label);
+            $sheet->setCellValue("B{$row}", ':');
+            $sheet->setCellValue("C{$row}", $value);
+            $row++;
+        }
+
+        // === TABLE HEADER ===
+        $headerRow = 10;
+        $headers = ['NO', 'NAMA MAHASISWA', 'NIM', 'DISIPLIN', 'SIKAP', 'TOTAL (B)'];
+        $cols = ['A', 'B', 'C', 'D', 'E', 'F'];
+        
+        foreach ($headers as $i => $h) {
+            $col = $cols[$i];
+            $sheet->setCellValue("{$col}{$headerRow}", $h);
+            $sheet->getStyle("{$col}{$headerRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("{$col}{$headerRow}")->getFont()->setBold(true);
+        }
+
+        // === DATA ROWS ===
+        $startRow = 11;
+        $currentRow = $startRow;
+        
+        // Ensure 15 rows
+        for ($i = 0; $i < 15; $i++) {
+            $student = $students[$i] ?? null;
+            $sheet->setCellValue("A{$currentRow}", $i + 1);
+            $sheet->getStyle("A{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            
+            if ($student) {
+                $sheet->setCellValue("B{$currentRow}", $student['name']);
+                $sheet->setCellValue("C{$currentRow}", $student['nim']);
+                $sheet->getStyle("C{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                
+                if ($student['discipline'] !== null) $sheet->setCellValue("D{$currentRow}", $student['discipline']);
+                if ($student['attitude'] !== null) $sheet->setCellValue("E{$currentRow}", $student['attitude']);
+                
+                if ($student['discipline'] !== null && $student['attitude'] !== null) {
+                    $total = round(($student['discipline'] + $student['attitude']) / 2);
+                    $sheet->setCellValue("F{$currentRow}", $total);
+                }
+                $sheet->getStyle("D{$currentRow}:F{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            }
+            
+            // Borders for the whole row (A-F)
+            $sheet->getStyle("A{$currentRow}:F{$currentRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+            $currentRow++;
+        }
+        
+        // Border for header
+        $sheet->getStyle("A10:F10")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+        // === FOOTER ===
+        $footerStartRow = $currentRow + 1;
+        $sheet->setCellValue("A{$footerStartRow}", '*Keterangan:');
+        $sheet->getStyle("A{$footerStartRow}")->getFont()->setItalic(true)->setSize(9);
+        $sheet->setCellValue("A" . ($footerStartRow + 1), "- Rentang Nilai 60-100");
+        $sheet->getStyle("A" . ($footerStartRow + 1))->getFont()->setItalic(true)->setSize(9);
+
+        // Signature block on the right
+        $sigCol = 'D';
+        $sheet->setCellValue("{$sigCol}{$footerStartRow}", ".........................., .............................. 2026");
+        $sheet->getStyle("{$sigCol}{$footerStartRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        
+        $sheet->setCellValue("{$sigCol}" . ($footerStartRow + 1), "Kepala Desa/Lurah,");
+        
+        $sheet->setCellValue("{$sigCol}" . ($footerStartRow + 5), ".........................................................");
+        $sheet->setCellValue("{$sigCol}" . ($footerStartRow + 6), "NIP.");
+
+        // === COLUMN WIDTHS ===
+        $sheet->getColumnDimension('A')->setWidth(5);
+        $sheet->getColumnDimension('B')->setWidth(45);
+        $sheet->getColumnDimension('C')->setWidth(20);
+        $sheet->getColumnDimension('D')->setWidth(15);
+        $sheet->getColumnDimension('E')->setWidth(15);
+        $sheet->getColumnDimension('F')->setWidth(15);
+
+        // Response
         $filename = "Blanko_Penilaian_Kelompok_{$kelompokKkn->code}.xlsx";
+        $writer = new Xlsx($spreadsheet);
 
-        return \Maatwebsite\Excel\Facades\Excel::download(new class($kelompokKkn, $students) implements \Maatwebsite\Excel\Concerns\FromView, \Maatwebsite\Excel\Concerns\ShouldAutoSize {
-            private $group;
-            private $students;
-
-            public function __construct($group, $students)
-            {
-                $this->group = $group;
-                $this->students = $students;
-            }
-
-            public function view(): \Illuminate\Contracts\View\View
-            {
-                return view('admin.exports.blanko_nilai', [
-                    'group' => $this->group,
-                    'students' => $this->students,
-                    'angkatan' => '57', // Fallback or dynamic
-                    'tahun' => '2026'
-                ]);
-            }
-        }, $filename);
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Cache-Control' => 'max-age=0',
+        ]);
     }
 
     public function exportPdf(KelompokKkn $kelompokKkn)
     {
+        $kelompokKkn->load(['lokasi', 'dpl.user:id,name']);
         $students = $this->getStudentsForGroup($kelompokKkn);
         
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.blanko_nilai', [
-            'group' => $kelompokKkn,
+            'group'    => $kelompokKkn,
             'students' => $students,
             'angkatan' => '57',
-            'tahun' => '2026'
+            'tahun'    => '2026'
         ]);
 
         return $pdf->download("Blanko_Penilaian_Kelompok_{$kelompokKkn->code}.pdf");
     }
+
 
 
     /**

@@ -89,6 +89,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::get('grading-settings', [Admin\KonfigurasiPenilaianController::class, 'index'])->name('grading-settings.index');
         Route::post('grading-settings', [Admin\KonfigurasiPenilaianController::class, 'update'])->name('grading-settings.update');
         Route::get('grade-generator', [Admin\GeneratorNilaiController::class, 'index'])->name('grade-generator.index');
+        Route::get('grade-generator/groups/all/students', [Admin\GeneratorNilaiController::class, 'studentsAll'])->name('grade-generator.students-all');
         Route::get('grade-generator/groups/{kelompokKkn}/students', [Admin\GeneratorNilaiController::class, 'students'])->name('grade-generator.students');
         Route::post('grade-generator/scores', [Admin\GeneratorNilaiController::class, 'saveScores'])->name('grade-generator.save-scores');
         Route::get('grade-generator/export/{kelompokKkn}', [Admin\GeneratorNilaiController::class, 'exportExcel'])->name('grade-generator.export');

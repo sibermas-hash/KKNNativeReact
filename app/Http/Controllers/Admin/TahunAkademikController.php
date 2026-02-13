@@ -13,7 +13,7 @@ class TahunAkademikController extends Controller
 {
     public function index(): Response
     {
-        $academicYears = AcademicYear::orderByDesc('year')->get();
+        $academicYears = TahunAkademik::orderByDesc('year')->get();
 
         return Inertia::render('Admin/AcademicYears/Index', [
             'academicYears' => $academicYears,
@@ -23,43 +23,44 @@ class TahunAkademikController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'year' => ['required', 'string', 'max:9', 'unique:academic_years,year'],
+            'year' => ['required', 'string', 'max:9', 'unique:tahun_akademik,year'],
             'is_active' => ['boolean'],
         ]);
 
         if (!empty($validated['is_active'])) {
-            AcademicYear::where('is_active', true)->update(['is_active' => false]);
+            TahunAkademik::where('is_active', true)->update(['is_active' => false]);
             \Illuminate\Support\Facades\Cache::forget('active_year');
         }
 
-        AcademicYear::create($validated);
+        TahunAkademik::create($validated);
 
         return redirect()->back()->with('success', 'Tahun akademik berhasil ditambahkan.');
     }
 
-    public function update(Request $request, AcademicYear $academicYear): RedirectResponse
+    public function update(Request $request, TahunAkademik $tahunAkademik): RedirectResponse
     {
         $validated = $request->validate([
-            'year' => ['required', 'string', 'max:9', 'unique:academic_years,year,' . $academicYear->id],
+            'year' => ['required', 'string', 'max:9', 'unique:tahun_akademik,year,' . $tahunAkademik->id],
             'is_active' => ['boolean'],
         ]);
 
         if (!empty($validated['is_active'])) {
-            AcademicYear::where('id', '!=', $academicYear->id)
+            TahunAkademik::where('id', '!=', $tahunAkademik->id)
                 ->where('is_active', true)
                 ->update(['is_active' => false]);
             \Illuminate\Support\Facades\Cache::forget('active_year');
         }
 
-        $academicYear->update($validated);
+        $tahunAkademik->update($validated);
 
         return redirect()->back()->with('success', 'Tahun akademik berhasil diperbarui.');
     }
 
-    public function destroy(AcademicYear $academicYear): RedirectResponse
+    public function destroy(TahunAkademik $tahunAkademik): RedirectResponse
     {
-        $academicYear->delete();
+        $tahunAkademik->delete();
 
         return redirect()->back()->with('success', 'Tahun akademik berhasil dihapus.');
     }
 }
+

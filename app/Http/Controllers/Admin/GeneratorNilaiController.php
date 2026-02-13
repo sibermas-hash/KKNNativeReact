@@ -46,68 +46,29 @@ class GeneratorNilaiController extends Controller
     /**
      * Fetch students of a given group with their existing village scores.
      */
-    public function students(KelompokKkn $group)
+    public function students(KelompokKkn $kelompokKkn)
     {
-        $user = auth()->user();
-        \Illuminate\Support\Facades\Log::info("GradeGenerator: Fetching students. Group ID: {$group->id}, User ID: " . ($user?->id ?? 'GUEST') . ", Roles: " . ($user ? implode(',', $user->getRoleNames()->toArray()) : 'NONE'));
-        
-        // Try registrations first
-        $registrations = PesertaKkn::where('kelompok_id', $group->id)
-            ->where('status', 'approved')
-            ->count();
+        return response()->json($this->getStudentsForGroup($kelompokKkn));
+    }
 
-        if ($registrations > 0) {
-            $students = PesertaKkn::with(['mahasiswa:id,user_id,nim,nama'])
-                ->where('kelompok_id', $group->id)
-                ->where('status', 'approved')
-                ->get()
-                ->map(function ($reg) use ($group) {
-                    $userId = $reg->mahasiswa->user_id;
-                    $score = NilaiKkn::where('mahasiswa_id', $userId)
-                        ->where('kelompok_id', $group->id)
-                        ->first();
+    /**
+     * Fetch students from ALL groups (for 'Semua kelompok' option).
+     */
+    public function studentsAll()
+    {
+        $allStudents = [];
+        $groups = KelompokKkn::orderBy('code')->get();
 
-                    return [
-                        'user_id'    => $userId,
-                        'name'       => $reg->mahasiswa->nama,
-                        'nim'        => $reg->mahasiswa->nim,
-                        'discipline' => $score?->discipline_score ? (int)$score->discipline_score : null,
-                        'attitude'   => $score?->attitude_score ? (int)$score->attitude_score : null,
-                    ];
-                });
-
-            return response()->json($students->values()->all());
+        foreach ($groups as $group) {
+            $groupStudents = $this->getStudentsForGroup($group);
+            foreach ($groupStudents as &$s) {
+                $s['group_code'] = $group->code;
+                $s['group_name'] = $group->nama_kelompok;
+            }
+            $allStudents = array_merge($allStudents, $groupStudents);
         }
 
-        // Fallback to group_members join
-        $students = DB::table('anggota_kelompok')
-            ->join('mahasiswa', 'anggota_kelompok.mahasiswa_id', '=', 'mahasiswa.id')
-            ->join('users', 'mahasiswa.user_id', '=', 'users.id')
-            ->leftJoin('nilai_kkn', function($join) use ($group) {
-                $join->on('users.id', '=', 'nilai_kkn.mahasiswa_id')
-                     ->where('nilai_kkn.kelompok_id', '=', $group->id);
-            })
-            ->where('anggota_kelompok.kelompok_id', $group->id)
-            ->select([
-                'users.id as user_id',
-                'mahasiswa.nama',
-                'users.name as user_name',
-                'mahasiswa.nim',
-                'nilai_kkn.discipline_score',
-                'nilai_kkn.attitude_score'
-            ])
-            ->get()
-            ->map(function ($s) {
-                return [
-                    'user_id'    => $s->user_id,
-                    'name'       => $s->nama ?: $s->user_name,
-                    'nim'        => $s->nim,
-                    'discipline' => $s->discipline_score !== null ? (int)$s->discipline_score : null,
-                    'attitude'   => $s->attitude_score !== null ? (int)$s->attitude_score : null,
-                ];
-            });
-
-        return response()->json($students->values()->all());
+        return response()->json($allStudents);
     }
 
     /**
@@ -290,12 +251,28 @@ class GeneratorNilaiController extends Controller
      */
     private function getStudentsForGroup(KelompokKkn $group): array
     {
+        // Fetch all registrations for this group (no status filter)
         $registrations = PesertaKkn::with(['mahasiswa:id,user_id,nim,nama'])
             ->where('kelompok_id', $group->id)
-            ->where('status', 'approved')
             ->get();
 
-        if ($registrations->isEmpty() && \Illuminate\Support\Facades\Schema::hasTable('anggota_kelompok')) {
+        if ($registrations->isNotEmpty()) {
+            return $registrations->map(function ($reg) use ($group) {
+                $userId = $reg->mahasiswa->user_id;
+                $score = NilaiKkn::where('mahasiswa_id', $userId)
+                    ->where('kelompok_id', $group->id)->first();
+                return [
+                    'user_id'    => $userId,
+                    'name'       => $reg->mahasiswa->nama,
+                    'nim'        => $reg->mahasiswa->nim,
+                    'discipline' => $score?->discipline_score ? (int)$score->discipline_score : null,
+                    'attitude'   => $score?->attitude_score ? (int)$score->attitude_score : null,
+                ];
+            })->values()->toArray();
+        }
+
+        // Fallback to anggota_kelompok table
+        if (\Illuminate\Support\Facades\Schema::hasTable('anggota_kelompok')) {
             $members = DB::table('anggota_kelompok')
                 ->join('mahasiswa', 'anggota_kelompok.mahasiswa_id', '=', 'mahasiswa.id')
                 ->join('users', 'mahasiswa.user_id', '=', 'users.id')
@@ -307,6 +284,7 @@ class GeneratorNilaiController extends Controller
                 $score = NilaiKkn::where('mahasiswa_id', $m->user_id)
                     ->where('kelompok_id', $group->id)->first();
                 return [
+                    'user_id'    => $m->user_id,
                     'name'       => $m->nama ?: $m->user_name,
                     'nim'        => $m->nim,
                     'discipline' => $score?->discipline_score ? (int)$score->discipline_score : null,
@@ -315,16 +293,6 @@ class GeneratorNilaiController extends Controller
             })->values()->toArray();
         }
 
-        return $registrations->map(function ($reg) use ($group) {
-            $userId = $reg->mahasiswa->user_id;
-            $score = NilaiKkn::where('mahasiswa_id', $userId)
-                ->where('kelompok_id', $group->id)->first();
-            return [
-                'name'       => $reg->mahasiswa->nama,
-                'nim'        => $reg->mahasiswa->nim,
-                'discipline' => $score?->discipline_score ? (int)$score->discipline_score : null,
-                'attitude'   => $score?->attitude_score ? (int)$score->attitude_score : null,
-            ];
-        })->values()->toArray();
+        return [];
     }
 }

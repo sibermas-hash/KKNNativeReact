@@ -37,6 +37,8 @@ type StudentRow = {
     nim: string;
     discipline: number | null;
     attitude: number | null;
+    group_code?: string;
+    group_name?: string;
 };
 
 const defaultMeta: Meta = {
@@ -61,11 +63,13 @@ function computeTotal({ discipline, attitude }: StudentRow): number {
 }
 
 export default function GradeGenerator({ groups }: Props) {
-    const [selectedGroupId, setSelectedGroupId] = useState<number | ''>('');
+    const [selectedGroupId, setSelectedGroupId] = useState<number | 'all' | ''>('');
     const [meta, setMeta] = useState<Meta>(defaultMeta);
     const [students, setStudents] = useState<StudentRow[]>([]);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
+
+    const isAllGroups = selectedGroupId === 'all';
 
     // Fetch students when group changes
     useEffect(() => {
@@ -75,20 +79,28 @@ export default function GradeGenerator({ groups }: Props) {
             return;
         }
 
-        const group = groups.find(g => g.id === selectedGroupId);
-        if (group) {
-            setMeta({
-                ...defaultMeta,
-                kelompok: group.code,
-                desa: group.desa,
-                kecamatan: group.kecamatan,
-                kabupaten: group.name, // In the controller, kabupaten is mapped to group name
-                dpl: group.dpl
-            });
+        if (isAllGroups) {
+            setMeta({ ...defaultMeta, kelompok: 'Semua Kelompok' });
+        } else {
+            const group = groups.find(g => g.id === selectedGroupId);
+            if (group) {
+                setMeta({
+                    ...defaultMeta,
+                    kelompok: group.code,
+                    desa: group.desa,
+                    kecamatan: group.kecamatan,
+                    kabupaten: group.kabupaten || group.name,
+                    dpl: group.dpl
+                });
+            }
         }
 
         setLoading(true);
-        axios.get(`/admin/grade-generator/groups/${selectedGroupId}/students`)
+        const url = isAllGroups
+            ? '/admin/grade-generator/groups/all/students'
+            : `/admin/grade-generator/groups/${selectedGroupId}/students`;
+
+        axios.get(url)
             .then(res => {
                 setStudents(res.data);
             })
@@ -110,7 +122,7 @@ export default function GradeGenerator({ groups }: Props) {
         return { avg: Number(avg.toFixed(2)), count: students.length };
     }, [students]);
 
-    const updateStudent = (id: string | number, field: keyof Omit<StudentRow, 'user_id' | 'name' | 'nim'>, value: string) => {
+    const updateStudent = (id: string | number, field: keyof Omit<StudentRow, 'user_id' | 'name' | 'nim' | 'group_code' | 'group_name'>, value: string) => {
         setStudents((prev) =>
             prev.map((s) =>
                 s.user_id === id
@@ -124,11 +136,11 @@ export default function GradeGenerator({ groups }: Props) {
     };
 
     const handleSave = () => {
-        if (!selectedGroupId) return;
+        if (!selectedGroupId || isAllGroups) return;
 
         setSaving(true);
         router.post('/admin/grade-generator/scores', {
-            group_id: selectedGroupId,
+            kelompok_id: selectedGroupId,
             scores: students.map(s => ({
                 user_id: s.user_id,
                 discipline: s.discipline,
@@ -146,9 +158,17 @@ export default function GradeGenerator({ groups }: Props) {
     };
 
     const handleExport = () => {
-        if (!selectedGroupId) return;
+        if (!selectedGroupId || isAllGroups) return;
         window.location.href = `/admin/grade-generator/export/${selectedGroupId}`;
     };
+
+    const dropdownOptions = [
+        { value: 'all', label: '📋 Semua Kelompok' },
+        ...groups.map(g => ({
+            value: g.id,
+            label: `${g.code} - ${g.name}`
+        }))
+    ];
 
     return (
         <AppLayout title="Generator Nilai">
@@ -169,15 +189,15 @@ export default function GradeGenerator({ groups }: Props) {
                             label="Pilih Kelompok"
                             placeholder="-- Pilih Kelompok --"
                             value={selectedGroupId}
-                            onChange={(e) => setSelectedGroupId(Number(e.target.value))}
-                            options={groups.map(g => ({
-                                value: g.id,
-                                label: `${g.code} - ${g.name}`
-                            }))}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setSelectedGroupId(val === 'all' ? 'all' : val ? Number(val) : '');
+                            }}
+                            options={dropdownOptions}
                         />
                     </div>
 
-                    {selectedGroupId && (
+                    {selectedGroupId && !isAllGroups && (
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 bg-slate-50 p-4 rounded-lg border border-slate-100 italic">
                             <div><span className="font-bold not-italic">Angkatan:</span> {meta.angkatan}</div>
                             <div><span className="font-bold not-italic">Tahun:</span> {meta.tahun}</div>
@@ -186,6 +206,12 @@ export default function GradeGenerator({ groups }: Props) {
                             <div><span className="font-bold not-italic">Kecamatan:</span> {meta.kecamatan}</div>
                             <div><span className="font-bold not-italic">Kabupaten/Mitra:</span> {meta.kabupaten}</div>
                             <div className="sm:col-span-2 lg:col-span-3"><span className="font-bold not-italic">DPL:</span> {meta.dpl}</div>
+                        </div>
+                    )}
+
+                    {isAllGroups && (
+                        <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 text-sm text-blue-700">
+                            Menampilkan semua mahasiswa dari seluruh kelompok. Untuk menyimpan nilai, pilih kelompok tertentu.
                         </div>
                     )}
                 </div>
@@ -197,7 +223,7 @@ export default function GradeGenerator({ groups }: Props) {
                             <p className="text-xs text-slate-500">Isi nilai kedisiplinan dan sikap (Rentang 60-100).</p>
                         </div>
                         <div className="flex gap-2">
-                            {selectedGroupId && (
+                            {selectedGroupId && !isAllGroups && (
                                 <Button
                                     variant="secondary"
                                     size="sm"
@@ -212,7 +238,7 @@ export default function GradeGenerator({ groups }: Props) {
                                 size="sm"
                                 onClick={handleSave}
                                 loading={saving}
-                                disabled={!selectedGroupId || students.length === 0}
+                                disabled={!selectedGroupId || isAllGroups || students.length === 0}
                             >
                                 <CloudArrowUpIcon className="h-4 w-4" />
                                 Simpan Nilai
@@ -224,8 +250,9 @@ export default function GradeGenerator({ groups }: Props) {
                         <div className="min-w-[800px] divide-y divide-slate-100">
                             <div className="grid grid-cols-12 gap-3 px-4 py-2 text-xs font-semibold uppercase text-slate-500 bg-slate-50">
                                 <div className="col-span-1">No</div>
-                                <div className="col-span-4">Nama Mahasiswa</div>
-                                <div className="col-span-3">NIM</div>
+                                {isAllGroups && <div className="col-span-2">Kelompok</div>}
+                                <div className={isAllGroups ? 'col-span-3' : 'col-span-4'}>Nama Mahasiswa</div>
+                                <div className={isAllGroups ? 'col-span-2' : 'col-span-3'}>NIM</div>
                                 <div className="col-span-1">Disiplin</div>
                                 <div className="col-span-1">Sikap</div>
                                 <div className="col-span-2 text-right">Total (B)</div>
@@ -237,10 +264,15 @@ export default function GradeGenerator({ groups }: Props) {
                                     Memuat data mahasiswa...
                                 </div>
                             ) : students.map((s, idx) => (
-                                <div key={String(s.user_id)} className="grid grid-cols-12 gap-3 px-4 py-3 items-center hover:bg-slate-50 transition-colors">
+                                <div key={`${s.user_id}-${s.group_code || idx}`} className="grid grid-cols-12 gap-3 px-4 py-3 items-center hover:bg-slate-50 transition-colors">
                                     <div className="col-span-1 text-sm text-slate-700">{idx + 1}</div>
-                                    <div className="col-span-4 text-sm font-medium text-slate-900">{s.name}</div>
-                                    <div className="col-span-3 text-sm text-slate-600">{s.nim}</div>
+                                    {isAllGroups && (
+                                        <div className="col-span-2 text-xs font-semibold text-primary">
+                                            {s.group_code}
+                                        </div>
+                                    )}
+                                    <div className={`${isAllGroups ? 'col-span-3' : 'col-span-4'} text-sm font-medium text-slate-900`}>{s.name}</div>
+                                    <div className={`${isAllGroups ? 'col-span-2' : 'col-span-3'} text-sm text-slate-600`}>{s.nim}</div>
                                     <div className="col-span-1">
                                         <input
                                             type="number"
@@ -249,6 +281,7 @@ export default function GradeGenerator({ groups }: Props) {
                                             className="w-full text-center px-1 py-1 text-sm rounded border-slate-200 focus:ring-primary focus:border-primary"
                                             value={s.discipline ?? ''}
                                             onChange={(e) => updateStudent(s.user_id, 'discipline', e.target.value)}
+                                            disabled={isAllGroups}
                                         />
                                     </div>
                                     <div className="col-span-1">
@@ -259,6 +292,7 @@ export default function GradeGenerator({ groups }: Props) {
                                             className="w-full text-center px-1 py-1 text-sm rounded border-slate-200 focus:ring-primary focus:border-primary"
                                             value={s.attitude ?? ''}
                                             onChange={(e) => updateStudent(s.user_id, 'attitude', e.target.value)}
+                                            disabled={isAllGroups}
                                         />
                                     </div>
                                     <div className="col-span-2 text-right">
@@ -283,7 +317,7 @@ export default function GradeGenerator({ groups }: Props) {
                         Total mahasiswa: <span className="font-semibold text-slate-900">{summary.count}</span> ·
                         Rata-rata nilai total: <span className="font-semibold text-slate-900">{summary.avg}</span>
                     </div>
-                    {selectedGroupId && students.length > 0 && (
+                    {selectedGroupId && !isAllGroups && students.length > 0 && (
                         <div className="flex items-center gap-2 text-xs text-primary font-medium">
                             <CheckCircleIcon className="h-4 w-4" />
                             Data siap untuk disimpan atau di-export
@@ -294,3 +328,4 @@ export default function GradeGenerator({ groups }: Props) {
         </AppLayout>
     );
 }
+

@@ -79,12 +79,31 @@ class MasterWebhookController
             'resources' => $resources,
         ]);
 
+
+        $this->ensureLogWritable();
+
         // Sync will be executed by scheduler via master:webhook:sync command.
         return response()->json([
             'ok' => true,
             'queued' => true,
             'resources' => $resources,
         ], 202);
+    }
+
+    private function ensureLogWritable(): void
+    {
+        $dir = storage_path('logs');
+        $today = now()->format('Y-m-d');
+
+        $daily = $dir . DIRECTORY_SEPARATOR . "laravel-{$today}.log";
+        if (is_file($daily)) {
+            @chmod($daily, 0664);
+        }
+
+        $single = $dir . DIRECTORY_SEPARATOR . 'laravel.log';
+        if (is_file($single)) {
+            @chmod($single, 0664);
+        }
     }
 }
 

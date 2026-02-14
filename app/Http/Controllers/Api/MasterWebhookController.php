@@ -58,11 +58,12 @@ class MasterWebhookController
         } elseif (isset($payload['resource']) && is_string($payload['resource']) && $payload['resource'] !== '') {
             $resources = [$payload['resource']];
         }
-
         $triggerDir = storage_path('app/master-webhook');
         if (!is_dir($triggerDir)) {
-            @mkdir($triggerDir, 0775, true);
+            @mkdir($triggerDir, 02775, true);
         }
+
+        @chmod($triggerDir, 02775);
 
         $triggerPath = $triggerDir . DIRECTORY_SEPARATOR . 'trigger.json';
         $data = [

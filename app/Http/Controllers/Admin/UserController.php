@@ -18,17 +18,31 @@ class UserController extends Controller
 {
     public function index(Request $request): Response
     {
-        $users = User::with('roles')
+        $users = User::with(['roles', 'mahasiswa', 'dosen'])
             ->when($request->input('search'), function ($q, $search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('username', 'like', "%{$search}%");
+                $q->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                          ->orWhere('email', 'like', "%{$search}%")
+                          ->orWhere('username', 'like', "%{$search}%")
+                          ->orWhereHas('mahasiswa', function ($sq) use ($search) {
+                              $sq->where('nim', 'like', "%{$search}%");
+                          })
+                          ->orWhereHas('dosen', function ($dq) use ($search) {
+                              $dq->where('nip', 'like', "%{$search}%");
+                          });
+                });
             })
             ->when($request->input('role'), function ($q, $role) {
-                $q->role($role);
+                if ($role === 'student') {
+                    $q->role('student');
+                } elseif ($role === 'dpl') {
+                    $q->role('dpl');
+                } else {
+                    $q->role($role);
+                }
             })
             ->orderBy('name')
-            ->paginate(15)
+            ->paginate(10)
             ->withQueryString();
 
         return Inertia::render('Admin/Users/Index', [
@@ -39,8 +53,10 @@ class UserController extends Controller
 
     public function create(): Response
     {
-        $faculties = Fakultas::orderBy('nama')->get();
-        $programs = Prodi::orderBy('nama')->get();
+        $faculties = Fakultas::orderBy('nama')->get()
+            ->map(fn ($f) => ['id' => $f->id, 'name' => $f->nama]);
+        $programs = Prodi::orderBy('nama')->get()
+            ->map(fn ($p) => ['id' => $p->id, 'name' => $p->nama]);
 
         return Inertia::render('Admin/Users/Form', [
             'faculties' => $faculties,

@@ -11,12 +11,28 @@ use Inertia\Response;
 
 class FakultasController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $fakultas = Fakultas::withCount('prodi')->orderBy('nama')->get();
+        $faculties = Fakultas::query()
+            ->when($request->search, function ($query, $search) {
+                $query->where('nama', 'like', "%{$search}%")
+                      ->orWhere('code', 'like', "%{$search}%");
+            })
+            ->withCount('prodi')
+            ->orderBy('nama')
+            ->paginate(10)
+            ->withQueryString();
+
+        $faculties->getCollection()->transform(fn ($f) => [
+            'id' => $f->id,
+            'code' => $f->code,
+            'name' => $f->nama, // Map nama to name
+            'programs_count' => $f->prodi_count,
+        ]);
 
         return Inertia::render('Admin/Faculties/Index', [
-            'faculties' => $fakultas,
+            'faculties' => $faculties,
+            'filters' => $request->only('search'),
         ]);
     }
 
@@ -24,10 +40,13 @@ class FakultasController extends Controller
     {
         $validated = $request->validate([
             'code' => ['required', 'string', 'max:10', 'unique:fakultas,code'],
-            'nama' => ['required', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:100'],
         ]);
 
-        Fakultas::create($validated);
+        Fakultas::create([
+            'code' => $validated['code'],
+            'nama' => $validated['name'],
+        ]);
 
         return redirect()->back()->with('success', 'Fakultas berhasil ditambahkan.');
     }
@@ -36,10 +55,13 @@ class FakultasController extends Controller
     {
         $validated = $request->validate([
             'code' => ['required', 'string', 'max:10', 'unique:fakultas,code,' . $fakultas->id],
-            'nama' => ['required', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:100'],
         ]);
 
-        $fakultas->update($validated);
+        $fakultas->update([
+            'code' => $validated['code'],
+            'nama' => $validated['name'],
+        ]);
 
         return redirect()->back()->with('success', 'Fakultas berhasil diperbarui.');
     }

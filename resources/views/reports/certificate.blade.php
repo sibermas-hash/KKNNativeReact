@@ -188,18 +188,18 @@
                     <table class="sig-table">
                         <tr>
                             <td class="sig-cell">
-                                Mengetahui,<br>Ketua LPPM
-                                <div class="sig-name">Prof. Dr. H. Fauzi, M.Ag.</div>
-                                NIP. 197103131998031004
+                                Mengetahui,<br>{{ $signer1_title ?? 'Ketua LPPM' }}
+                                <div class="sig-name">{{ $signer1_name ?? 'Prof. Dr. H. Fauzi, M.Ag.' }}</div>
+                                NIP. {{ $signer1_nip ?? '197103131998031004' }}
                             </td>
                             <td class="sig-qr">
                                 <img src="{{ $qr_url }}" class="qr-img" alt="QR Code Verification">
                                 <div style="font-size: 8px; margin-top: 5px; color: #718096;">Scan to Verify</div>
                             </td>
                             <td class="sig-cell">
-                                Purwokerto, {{ $date }}<br>Kepala Pusat Pengabdian
-                                <div class="sig-name">Dr. M. Syaikhul Mujab, S.Ag.</div>
-                                NIP. 197412152003121002
+                                Purwokerto, {{ $date }}<br>{{ $signer2_title ?? 'Kepala Pusat Pengabdian' }}
+                                <div class="sig-name">{{ $signer2_name ?? 'Dr. M. Syaikhul Mujab, S.Ag.' }}</div>
+                                NIP. {{ $signer2_nip ?? '197412152003121002' }}
                             </td>
                         </tr>
                     </table>

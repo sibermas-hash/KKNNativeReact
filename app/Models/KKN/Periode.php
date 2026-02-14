@@ -16,11 +16,14 @@ class Periode extends Model
 
     protected $fillable = [
         'academic_year_id',
+        'angkatan',
+        'jenis',
         'name',
         'start_date',
         'end_date',
         'registration_start',
         'registration_end',
+        'kuota',
         'is_active',
     ];
 

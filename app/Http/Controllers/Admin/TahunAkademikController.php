@@ -11,12 +11,19 @@ use Inertia\Response;
 
 class TahunAkademikController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $academicYears = TahunAkademik::orderByDesc('year')->get();
+        $academicYears = TahunAkademik::query()
+            ->when($request->search, function ($query, $search) {
+                $query->where('year', 'like', "%{$search}%");
+            })
+            ->orderByDesc('year')
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('Admin/AcademicYears/Index', [
             'academicYears' => $academicYears,
+            'filters' => $request->only('search'),
         ]);
     }
 

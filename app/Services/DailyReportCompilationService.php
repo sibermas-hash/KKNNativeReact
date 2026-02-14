@@ -18,7 +18,7 @@ class DailyReportCompilationService
         $user = User::with(['mahasiswa.prodi.fakultas'])->findOrFail($userId);
 
         // Get student's registration and group
-        $registration = PesertaKkn::with(['kelompok.lokasi', 'kelompok.dosen.user'])
+        $registration = PesertaKkn::with(['kelompok.lokasi', 'kelompok.dpl.user'])
             ->where('mahasiswa_id', $user->mahasiswa->id)
             ->latest()
             ->first();
@@ -58,7 +58,7 @@ class DailyReportCompilationService
      */
     public function generateForGroup(int $groupId): \Barryvdh\DomPDF\PDF
     {
-        $group = KelompokKkn::with(['lokasi', 'dosen.user', 'peserta.mahasiswa.user'])->findOrFail($groupId);
+        $group = KelompokKkn::with(['lokasi', 'dpl.user', 'peserta.mahasiswa.user'])->findOrFail($groupId);
 
         $mahasiswaIds = $group->peserta->pluck('mahasiswa_id');
 

@@ -11,12 +11,20 @@ use Inertia\Response;
 
 class LokasiController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $locations = Lokasi::orderBy('village_name')->get();
+        $locations = Lokasi::query()
+            ->when($request->search, function ($query, $search) {
+                $query->where('village_name', 'like', "%{$search}%")
+                      ->orWhere('address', 'like', "%{$search}%");
+            })
+            ->orderBy('village_name')
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('Admin/Locations/Index', [
             'locations' => $locations,
+            'filters' => $request->only('search'),
         ]);
     }
 

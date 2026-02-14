@@ -55,11 +55,14 @@ export interface Program {
 export interface Period {
   id: number;
   academic_year: AcademicYear;
+  angkatan: number;
+  jenis: string;
   name: string;
   start_date: string;
   end_date: string;
   registration_start: string;
   registration_end: string;
+  kuota: number;
   is_active: boolean;
 }
 

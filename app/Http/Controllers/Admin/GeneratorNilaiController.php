@@ -273,24 +273,25 @@ class GeneratorNilaiController extends Controller
 
         if ($id === 'all' && $periodId) {
             $students = $this->getStudentsForPeriod($periodId);
+            $period = Periode::with('tahunAkademik')->findOrFail($periodId);
             
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.blanko_nilai_bulk_list', [
                 'students' => $students,
                 'period_id' => $periodId,
-                'angkatan'   => '57',
-                'tahun'      => '2026'
+                'angkatan'   => $period->angkatan,
+                'tahun'      => $period->tahunAkademik?->year ?? date('Y')
             ]);
 
             return $pdf->download("Database_Nilai_KKN_Angkatan_{$periodId}.pdf");
         } else {
-            $kelompokKkn = KelompokKkn::with(['lokasi', 'dpl.user:id,name'])->findOrFail($id);
+            $kelompokKkn = KelompokKkn::with(['lokasi', 'dpl.user:id,name', 'periode.tahunAkademik'])->findOrFail($id);
             $students = $this->getStudentsForGroup($kelompokKkn);
             
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.blanko_nilai', [
                 'group'    => $kelompokKkn,
                 'students' => $students,
-                'angkatan' => '57',
-                'tahun'    => '2026'
+                'angkatan' => $kelompokKkn->periode?->angkatan ?? '57',
+                'tahun'    => $kelompokKkn->periode?->tahunAkademik?->year ?? date('Y')
             ]);
 
             return $pdf->download("Blanko_Penilaian_Kelompok_{$kelompokKkn->code}.pdf");
@@ -312,13 +313,14 @@ class GeneratorNilaiController extends Controller
         $zipPath = storage_path("app/public/{$zipFileName}");
 
         if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
+            $period = Periode::with('tahunAkademik')->findOrFail($periodId);
             foreach ($groups as $group) {
                 $students = $this->getStudentsForGroup($group);
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.blanko_nilai', [
                     'group'    => $group,
                     'students' => $students,
-                    'angkatan' => '57',
-                    'tahun'    => '2026'
+                    'angkatan' => $period->angkatan,
+                    'tahun'    => $period->tahunAkademik?->year ?? date('Y')
                 ]);
                 
                 $pdfName = "Blanko_Penilaian_Kelompok_{$group->code}.pdf";

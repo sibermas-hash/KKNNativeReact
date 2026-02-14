@@ -11,13 +11,13 @@ class CertificateService
     /**
      * Generate PDF certificate for a specific student score
      */
-    public function generateForStudent(NilaiKkn $score)
+    public function generateForStudent(NilaiKkn $score, array $signers = [])
     {
-        $score->load([
+        $score->loadMissing([
             'mahasiswa.user',
             'kelompok.periode',
             'kelompok.lokasi',
-            'kelompok.dosen.user',
+            'kelompok.dpl.user',
         ]);
 
         // Logic Anti-Halu: Cek progres dokumen wajib (Laporan Akhir)
@@ -36,7 +36,7 @@ class CertificateService
         $verificationToken = strtoupper(substr(md5("CERT-{$score->id}-{$score->mahasiswa_id}"), 0, 12));
         $verificationUrl = url("/verify-certificate/{$verificationToken}");
 
-        $data = [
+        $data = array_merge([
             'name' => $score->mahasiswa->nama ?? $score->mahasiswa->user->name,
             'nim' => $mahasiswaModel?->nim ?? '-',
             'period' => $score->kelompok->periode->name,
@@ -46,7 +46,7 @@ class CertificateService
             'date' => now()->format('d F Y'),
             'certificate_no' => 'KKN/' . $score->kelompok->periode->id . '/' . $verificationToken,
             'qr_url' => "https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=" . urlencode($verificationUrl) . "&choe=UTF-8",
-        ];
+        ], $signers);
 
         return Pdf::loadView('reports.certificate', $data)
             ->setPaper('a4', 'landscape');

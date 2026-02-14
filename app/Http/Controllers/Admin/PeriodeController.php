@@ -12,25 +12,39 @@ use Inertia\Response;
 
 class PeriodeController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $periods = Periode::with('tahunAkademik')->orderByDesc('start_date')->get()
-            ->map(fn ($p) => [
-                'id' => $p->id,
-                'name' => $p->name,
-                'start_date' => $p->start_date?->format('Y-m-d'),
-                'end_date' => $p->end_date?->format('Y-m-d'),
-                'registration_start' => $p->registration_start?->format('Y-m-d'),
-                'registration_end' => $p->registration_end?->format('Y-m-d'),
-                'is_active' => $p->is_active,
-                'academic_year' => $p->tahunAkademik ? ['id' => $p->tahunAkademik->id, 'year' => $p->tahunAkademik->year] : null,
-            ]);
+        $periods = Periode::with('tahunAkademik')
+            ->when($request->search, function ($query, $search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('angkatan', 'like', "%{$search}%")
+                      ->orWhere('jenis', 'like', "%{$search}%");
+            })
+            ->orderByDesc('start_date')
+            ->paginate(10)
+            ->withQueryString();
+
+        $periods->getCollection()->transform(fn ($p) => [
+            'id' => $p->id,
+            'angkatan' => $p->angkatan,
+            'jenis' => $p->jenis,
+            'name' => $p->name,
+            'start_date' => $p->start_date?->format('Y-m-d'),
+            'end_date' => $p->end_date?->format('Y-m-d'),
+            'registration_start' => $p->registration_start?->format('Y-m-d'),
+            'registration_end' => $p->registration_end?->format('Y-m-d'),
+            'kuota' => $p->kuota,
+            'is_active' => $p->is_active,
+            'academic_year' => $p->tahunAkademik ? ['id' => $p->tahunAkademik->id, 'year' => $p->tahunAkademik->year] : null,
+        ]);
+
         $academicYears = TahunAkademik::orderByDesc('year')->get()
             ->map(fn ($ay) => ['id' => $ay->id, 'year' => $ay->year]);
 
         return Inertia::render('Admin/Periods/Index', [
             'periods' => $periods,
             'academicYears' => $academicYears,
+            'filters' => $request->only('search'),
         ]);
     }
 
@@ -38,11 +52,14 @@ class PeriodeController extends Controller
     {
         $validated = $request->validate([
             'academic_year_id' => ['required', 'exists:tahun_akademik,id'],
+            'angkatan' => ['required', 'integer'],
+            'jenis' => ['required', 'string', 'max:100'],
             'name' => ['required', 'string', 'max:100'],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after:start_date'],
             'registration_start' => ['required', 'date'],
             'registration_end' => ['required', 'date', 'after:registration_start'],
+            'kuota' => ['required', 'integer', 'min:1'],
             'is_active' => ['boolean'],
         ]);
 
@@ -60,11 +77,14 @@ class PeriodeController extends Controller
     {
         $validated = $request->validate([
             'academic_year_id' => ['required', 'exists:tahun_akademik,id'],
+            'angkatan' => ['required', 'integer'],
+            'jenis' => ['required', 'string', 'max:100'],
             'name' => ['required', 'string', 'max:100'],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after:start_date'],
             'registration_start' => ['required', 'date'],
             'registration_end' => ['required', 'date', 'after:registration_start'],
+            'kuota' => ['required', 'integer', 'min:1'],
             'is_active' => ['boolean'],
         ]);
 

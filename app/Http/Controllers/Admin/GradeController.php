@@ -10,8 +10,13 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 
+use App\Services\GradingService;
+
 class GradeController extends Controller
 {
+    public function __construct(
+        private GradingService $gradingService
+    ) {}
     public function index()
     {
         $groups = KelompokKkn::with(['dpl.user:id,name'])->orderBy('code')->get(['id','code','nama_kelompok','dpl_id']);
@@ -52,48 +57,22 @@ class GradeController extends Controller
             'attitude_score' => ['nullable','numeric','between:0,100'],
         ]);
 
-        $weights = [
-            'execution_score' => 0.40,
-            'article_score' => 0.30,
-            'discipline_score' => 0.15,
-            'attitude_score' => 0.15,
-        ];
+        $score = NilaiKkn::updateOrCreate(
+            [
+                'mahasiswa_id' => $data['mahasiswa_id'],
+                'kelompok_id' => $data['kelompok_id'],
+            ],
+            [
+                'execution_score' => $data['execution_score'],
+                'article_score' => $data['article_score'],
+                'discipline_score' => $data['discipline_score'],
+                'attitude_score' => $data['attitude_score'],
+                'admin_graded_by' => auth()->id(),
+                'admin_graded_at' => now(),
+            ]
+        );
 
-        $dplWeighted = ($data['execution_score'] ?? 0) * $weights['execution_score']
-            + ($data['article_score'] ?? 0) * $weights['article_score'];
-        $villageWeighted = ($data['discipline_score'] ?? 0) * $weights['discipline_score']
-            + ($data['attitude_score'] ?? 0) * $weights['attitude_score'];
-        $total = round($dplWeighted + $villageWeighted, 2);
-
-        $letter = null;
-        if ($total >= 85) {
-            $letter = 'A';
-        } elseif ($total >= 75) {
-            $letter = 'B';
-        } elseif ($total >= 65) {
-            $letter = 'C';
-        } else {
-            $letter = 'D';
-        }
-
-        DB::transaction(function () use ($data, $dplWeighted, $villageWeighted, $total, $letter) {
-            NilaiKkn::updateOrCreate(
-                [
-                    'mahasiswa_id' => $data['mahasiswa_id'],
-                    'kelompok_id' => $data['kelompok_id'],
-                ],
-                [
-                    'execution_score' => $data['execution_score'],
-                    'article_score' => $data['article_score'],
-                    'discipline_score' => $data['discipline_score'],
-                    'attitude_score' => $data['attitude_score'],
-                    'dpl_weighted_score' => round($dplWeighted, 2),
-                    'village_weighted_score' => round($villageWeighted, 2),
-                    'total_score' => $total,
-                    'letter_grade' => $letter,
-                ]
-            );
-        });
+        $this->gradingService->calculateFinalGrade($score);
 
         return back()->with('success', 'Nilai berhasil disimpan');
     }

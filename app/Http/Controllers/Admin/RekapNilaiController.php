@@ -120,10 +120,24 @@ class RekapNilaiController extends Controller
         $zipPath = storage_path("app/public/{$zipName}");
 
         if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
+            // Eager load all required relationships to avoid N+1 queries in the loop
+            $studentIds = $finalized->pluck('user_id');
+            $groupCodes = $finalized->pluck('kode_kelompok')->unique();
+
+            $scores = NilaiKkn::with([
+                'mahasiswa.user',
+                'kelompok.periode',
+                'kelompok.lokasi',
+                'kelompok.dosen.user',
+            ])
+            ->whereIn('mahasiswa_id', $studentIds)
+            ->whereHas('kelompok', fn($q) => $q->whereIn('code', $groupCodes))
+            ->get()
+            ->groupBy(fn($s) => $s->mahasiswa_id . '|' . $s->kelompok->code);
+
             foreach ($finalized as $row) {
-                $score = NilaiKkn::where('mahasiswa_id', $row->user_id)
-                    ->whereHas('kelompok', fn($q) => $q->where('code', $row->kode_kelompok))
-                    ->first();
+                $lookupKey = $row->user_id . '|' . $row->kode_kelompok;
+                $score = $scores->get($lookupKey)?->first();
                 
                 if ($score) {
                     $pdf = $this->certificate->generateForStudent($score);

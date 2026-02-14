@@ -23,7 +23,7 @@
     <div class="container">
         <div class="header">
             <h1>DATABASE NILAI KKN</h1>
-            <h2>Angkatan {{ $period_id ?? '57' }} Tahun {{ $tahun ?? '2026' }}</h2>
+            <h2>Angkatan {{ $angkatan ?? '57' }} Tahun {{ $tahun ?? '2026' }}</h2>
         </div>
 
         <table class="table">

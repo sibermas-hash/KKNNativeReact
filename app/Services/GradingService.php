@@ -222,14 +222,22 @@ class GradingService
         NilaiKkn::whereHas('kelompok', function ($query) use ($periodId) {
             $query->where('periode_id', $periodId);
         })
+        ->with(['mahasiswa.user']) // Eager load student user for notifications
         ->where('is_finalized', false)
         ->whereNotNull('total_score')
         ->chunkById(50, function ($scores) use (&$count, &$failed) {
+            // Bulk check Laporan Akhir to avoid N+1 queries
+            $studentIds = $scores->pluck('mahasiswa_id');
+            $groupIds = $scores->pluck('kelompok_id')->unique();
+            
+            $reports = \App\Models\KKN\LaporanAkhir::whereIn('mahasiswa_id', $studentIds)
+                ->whereIn('kelompok_id', $groupIds)
+                ->get()
+                ->groupBy(fn($r) => $r->mahasiswa_id . '|' . $r->kelompok_id);
+
             foreach ($scores as $score) {
-                // Anti-Halu Logic: Cek Laporan Akhir
-                $report = \App\Models\KKN\LaporanAkhir::where('mahasiswa_id', $score->mahasiswa_id)
-                    ->where('kelompok_id', $score->kelompok_id)
-                    ->first();
+                $lookupKey = $score->mahasiswa_id . '|' . $score->kelompok_id;
+                $report = $reports->get($lookupKey)?->first();
 
                 if (!$report || $report->status !== 'approved') {
                     $failed++;
@@ -240,9 +248,8 @@ class GradingService
                 $count++;
 
                 // Notify student
-                $studentUser = \App\Models\User::find($score->mahasiswa_id);
-                if ($studentUser) {
-                    $studentUser->notify(new \App\Notifications\KknActivityNotification([
+                if ($score->mahasiswa?->user) {
+                    $score->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
                         'type' => 'success',
                         'title' => 'Nilai KKN Difinalisasi',
                         'message' => 'Nilai KKN Anda telah difinalisasi oleh Admin LPPM. Silakan unduh sertifikat.',

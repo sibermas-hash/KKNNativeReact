@@ -12,21 +12,34 @@ use Inertia\Response;
 
 class ProdiController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $programs = Prodi::with('fakultas')->orderBy('nama')->get()
-            ->map(fn ($p) => [
-                'id' => $p->id,
-                'code' => $p->code,
-                'name' => $p->nama,
-                'faculty' => $p->fakultas ? ['id' => $p->fakultas->id, 'name' => $p->fakultas->nama] : null,
-            ]);
+        $programs = Prodi::with('fakultas')
+            ->when($request->search, function ($query, $search) {
+                $query->where('nama', 'like', "%{$search}%")
+                      ->orWhere('code', 'like', "%{$search}%")
+                      ->orWhereHas('fakultas', function ($q) use ($search) {
+                          $q->where('nama', 'like', "%{$search}%");
+                      });
+            })
+            ->orderBy('nama')
+            ->paginate(10)
+            ->withQueryString();
+
+        $programs->getCollection()->transform(fn ($p) => [
+            'id' => $p->id,
+            'code' => $p->code,
+            'name' => $p->nama, // Map nama to name
+            'faculty' => $p->fakultas ? ['id' => $p->fakultas->id, 'name' => $p->fakultas->nama] : null,
+        ]);
+
         $faculties = Fakultas::orderBy('nama')->get()
             ->map(fn ($f) => ['id' => $f->id, 'name' => $f->nama]);
 
         return Inertia::render('Admin/Programs/Index', [
             'programs' => $programs,
             'faculties' => $faculties,
+            'filters' => $request->only('search'),
         ]);
     }
 
@@ -35,10 +48,14 @@ class ProdiController extends Controller
         $validated = $request->validate([
             'faculty_id' => ['required', 'exists:fakultas,id'],
             'code' => ['required', 'string', 'max:10', 'unique:prodi,code'],
-            'nama' => ['required', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:100'],
         ]);
 
-        Prodi::create($validated);
+        Prodi::create([
+            'faculty_id' => $validated['faculty_id'],
+            'code' => $validated['code'],
+            'nama' => $validated['name'],
+        ]);
 
         return redirect()->back()->with('success', 'Program studi berhasil ditambahkan.');
     }
@@ -48,10 +65,14 @@ class ProdiController extends Controller
         $validated = $request->validate([
             'faculty_id' => ['required', 'exists:fakultas,id'],
             'code' => ['required', 'string', 'max:10', 'unique:prodi,code,' . $program->id],
-            'nama' => ['required', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:100'],
         ]);
 
-        $program->update($validated);
+        $program->update([
+            'faculty_id' => $validated['faculty_id'],
+            'code' => $validated['code'],
+            'nama' => $validated['name'],
+        ]);
 
         return redirect()->back()->with('success', 'Program studi berhasil diperbarui.');
     }

@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Master event-driven sync trigger (safe no-op when no webhook trigger file exists).
+        $schedule->command('master:webhook:sync')->everyMinute();
     }
 
     /**

@@ -22,32 +22,63 @@ class UserController extends Controller
             ->when($request->input('search'), function ($q, $search) {
                 $q->where(function ($query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
-                          ->orWhere('email', 'like', "%{$search}%")
-                          ->orWhere('username', 'like', "%{$search}%")
-                          ->orWhereHas('mahasiswa', function ($sq) use ($search) {
-                              $sq->where('nim', 'like', "%{$search}%");
-                          })
-                          ->orWhereHas('dosen', function ($dq) use ($search) {
-                              $dq->where('nip', 'like', "%{$search}%");
-                          });
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('username', 'like', "%{$search}%");
                 });
             })
-            ->when($request->input('role'), function ($q, $role) {
-                if ($role === 'student') {
-                    $q->role('student');
-                } elseif ($role === 'dpl') {
-                    $q->role('dpl');
-                } else {
-                    $q->role($role);
-                }
-            })
+            ->when($request->input('role'), fn($q, $role) => $q->role($role))
             ->orderBy('name')
-            ->paginate(10)
+            ->paginate(15)
             ->withQueryString();
 
         return Inertia::render('Admin/Users/Index', [
             'users' => $users,
             'filters' => $request->only('search', 'role'),
+            'title' => 'Manajemen Semua Pengguna'
+        ]);
+    }
+
+    public function dosenIndex(Request $request): Response
+    {
+        $users = User::role('dpl')
+            ->with(['dosen'])
+            ->when($request->input('search'), function ($q, $search) {
+                $q->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhereHas('dosen', fn($sq) => $sq->where('nip', 'like', "%{$search}%"));
+                });
+            })
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
+
+        return Inertia::render('Admin/Users/DosenIndex', [
+            'users' => $users,
+            'filters' => $request->only('search'),
+            'title' => 'Manajemen Data Dosen (DPL)'
+        ]);
+    }
+
+    public function mahasiswaIndex(Request $request): Response
+    {
+        $users = User::role('student')
+            ->with(['mahasiswa.prodi.fakultas'])
+            ->when($request->input('search'), function ($q, $search) {
+                $q->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhereHas('mahasiswa', fn($sq) => $sq->where('nim', 'like', "%{$search}%"));
+                });
+            })
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
+
+        return Inertia::render('Admin/Users/MahasiswaIndex', [
+            'users' => $users,
+            'filters' => $request->only('search'),
+            'title' => 'Manajemen Data Mahasiswa'
         ]);
     }
 

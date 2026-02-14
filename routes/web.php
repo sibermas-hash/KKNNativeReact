@@ -66,11 +66,15 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
             ->only(['index', 'show', 'store', 'update', 'destroy'])
             ->parameters(['groups' => 'kelompokKkn']);
 
-        // Users
+        // Users & Roles
         Route::get('users', [Admin\UserController::class, 'index'])->name('users.index');
         Route::get('users/create', [Admin\UserController::class, 'create'])->name('users.create');
         Route::post('users', [Admin\UserController::class, 'store'])->name('users.store');
         Route::patch('users/{user}/toggle-active', [Admin\UserController::class, 'toggleActive'])->name('users.toggle-active');
+
+        // Specialized User Management
+        Route::get('dpl', [Admin\UserController::class, 'dosenIndex'])->name('dpl.index');
+        Route::get('mahasiswa', [Admin\UserController::class, 'mahasiswaIndex'])->name('mahasiswa.index');
 
         // Registrations
         Route::get('registrations', [Admin\PesertaKknController::class, 'index'])->name('registrations.index');

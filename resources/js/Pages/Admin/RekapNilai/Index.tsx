@@ -231,19 +231,19 @@ export default function RekapNilaiIndex({
                         onChange={e => setLocalFilters(f => ({ ...f, period_id: e.target.value }))}
                         className="px-4 py-2 rounded-xl text-sm text-white bg-white/5 border border-white/10 outline-none focus:border-blue-500/50">
                         <option value="" className="bg-slate-900 text-white">Semua Periode</option>
-                        {periods.map(p => <option key={p.id} value={p.id} className="bg-slate-900 text-white">{p.name}</option>)}
+                        {(periods || []).map(p => <option key={p.id} value={p.id} className="bg-slate-900 text-white">{p.name}</option>)}
                     </select>
                     <select value={localFilters.faculty_id ?? ''}
                         onChange={e => setLocalFilters(f => ({ ...f, faculty_id: e.target.value }))}
                         className="px-4 py-2 rounded-xl text-sm text-white bg-white/5 border border-white/10 outline-none focus:border-blue-500/50">
                         <option value="" className="bg-slate-900 text-white">Semua Fakultas</option>
-                        {faculties.map(f => <option key={f.id} value={f.id} className="bg-slate-900 text-white">{f.name}</option>)}
+                        {(faculties || []).map(f => <option key={f.id} value={f.id} className="bg-slate-900 text-white">{f.name}</option>)}
                     </select>
                     <select value={localFilters.group_id ?? ''}
                         onChange={e => setLocalFilters(f => ({ ...f, group_id: e.target.value }))}
                         className="px-4 py-2 rounded-xl text-sm text-white bg-white/5 border border-white/10 outline-none focus:border-blue-500/50">
                         <option value="" className="bg-slate-900 text-white">Semua Kelompok</option>
-                        {groups.map(g => <option key={g.id} value={g.id} className="bg-slate-900 text-white">{g.kode_kelompok}</option>)}
+                        {(groups || []).map(g => <option key={g.id} value={g.id} className="bg-slate-900 text-white">{g.kode_kelompok}</option>)}
                     </select>
                     <select value={localFilters.huruf ?? ''}
                         onChange={e => setLocalFilters(f => ({ ...f, huruf: e.target.value }))}

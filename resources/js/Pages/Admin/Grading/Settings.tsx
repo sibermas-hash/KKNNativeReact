@@ -22,7 +22,7 @@ interface Props {
 
 export default function GradingSettings({ configs }: Props) {
     const { data, setData, post, processing } = useForm({
-        configs: [...(configs.main || []), ...(configs.dpl || []), ...(configs.village || []), ...(configs.lppm || [])].map(c => ({
+        configs: [...(configs?.main || []), ...(configs?.dpl || []), ...(configs?.village || []), ...(configs?.lppm || [])].map(c => ({
             id: c.id,
             percentage: c.percentage
         }))

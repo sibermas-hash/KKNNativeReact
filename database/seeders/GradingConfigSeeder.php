@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\GradingConfig;
+use App\Models\KKN\KonfigurasiPenilaian as GradingConfig;
 use Illuminate\Database\Seeder;
 
 class GradingConfigSeeder extends Seeder
@@ -101,7 +101,7 @@ class GradingConfigSeeder extends Seeder
 
         foreach ($configs as $config) {
             GradingConfig::updateOrCreate(
-                ['config_key' => $config['config_key']],
+            ['config_key' => $config['config_key']],
                 $config
             );
         }

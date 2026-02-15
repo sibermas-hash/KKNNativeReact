@@ -187,7 +187,7 @@ class GradingService
     public function getGroupGradingSummary(int $groupId): array
     {
         $scores = NilaiKkn::where('kelompok_id', $groupId)
-            ->with(['mahasiswa:id,name', 'kelompok'])
+            ->with(['mahasiswa:id,nama', 'kelompok'])
             ->get();
 
         return [

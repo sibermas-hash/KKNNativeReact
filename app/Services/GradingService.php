@@ -130,28 +130,28 @@ class GradingService
 
         // 1. Calculate Komponen A (DPL)
         $aWeighted = (
-            (floatval($score->final_report_score) * (floatval($configs->get('weight_dpl_report', 30)) / 100)) +
-            (floatval($score->execution_score) * (floatval($configs->get('weight_dpl_execution', 40)) / 100)) +
-            (floatval($score->article_score) * (floatval($configs->get('weight_dpl_article', 30)) / 100))
+            (floatval($score->final_report_score ?? 0) * (floatval($configs['weight_dpl_report'] ?? 30) / 100)) +
+            (floatval($score->execution_score ?? 0) * (floatval($configs['weight_dpl_execution'] ?? 40) / 100)) +
+            (floatval($score->article_score ?? 0) * (floatval($configs['weight_dpl_article'] ?? 30) / 100))
         );
 
         // 2. Calculate Komponen B (Mitra)
         $bWeighted = (
-            (floatval($score->attitude_score) * (floatval($configs->get('weight_village_attitude', 50)) / 100)) +
-            (floatval($score->discipline_score) * (floatval($configs->get('weight_village_discipline', 50)) / 100))
+            (floatval($score->attitude_score ?? 0) * (floatval($configs['weight_village_attitude'] ?? 50) / 100)) +
+            (floatval($score->discipline_score ?? 0) * (floatval($configs['weight_village_discipline'] ?? 50) / 100))
         );
 
         // 3. Calculate Komponen C (LPPM)
         $cWeighted = (
-            (floatval($score->workshop_score) * (floatval($configs->get('weight_admin_workshop', 50)) / 100)) +
-            (floatval($score->administration_score) * (floatval($configs->get('weight_admin_administration', 50)) / 100))
+            (floatval($score->workshop_score ?? 0) * (floatval($configs['weight_admin_workshop'] ?? 50) / 100)) +
+            (floatval($score->administration_score ?? 0) * (floatval($configs['weight_admin_administration'] ?? 50) / 100))
         );
 
         // Final Score with Main Group Weights
         $totalScore = (
-            ($aWeighted * (floatval($configs->get('weight_main_dpl', 50)) / 100)) +
-            ($bWeighted * (floatval($configs->get('weight_main_village', 30)) / 100)) +
-            ($cWeighted * (floatval($configs->get('weight_main_lppm', 20)) / 100))
+            ($aWeighted * (floatval($configs['weight_main_dpl'] ?? 50) / 100)) +
+            ($bWeighted * (floatval($configs['weight_main_village'] ?? 30) / 100)) +
+            ($cWeighted * (floatval($configs['weight_main_lppm'] ?? 20) / 100))
         );
 
         // Determine letter grade
@@ -244,6 +244,10 @@ class GradingService
                     continue;
                 }
 
+                // CHECK: Anti-Delusion Logic
+                // Ensure all components have values if weighting is > 0
+                // This is optional but recommended
+                
                 $score->update(['is_finalized' => true]);
                 $count++;
 
@@ -271,11 +275,47 @@ class GradingService
         return $count;
     }
 
+    public function updateUnifiedScore(int $userId, int $groupId, array $components, int $adminId): NilaiKkn
+    {
+        return DB::transaction(function () use ($userId, $groupId, $components, $adminId) {
+            $score = NilaiKkn::updateOrCreate(
+                ['mahasiswa_id' => $userId, 'kelompok_id' => $groupId],
+                array_merge($components, [
+                    'updated_at' => now(),
+                ])
+            );
+
+            $this->calculateFinalGrade($score);
+            
+            \App\Services\AuditService::log(
+                'UPDATE_SCORE_ADMIN',
+                "Admin mengupdate komponen nilai secara manual: " . json_encode($components),
+                $score,
+                null, // will be handled by observer if registered, but service logging is more specific
+                $components
+            );
+
+            return $score->fresh();
+        });
+    }
+
     /**
      * Dispatch background job for mass finalization
      */
     public function dispatchMassFinalization(int $periodId): void
     {
+        $total = NilaiKkn::whereHas('kelompok', fn($q) => $q->where('period_id', $periodId))
+            ->where('is_finalized', false)
+            ->whereNotNull('total_score')
+            ->count();
+
+        Cache::put("finalize_progress_{$periodId}", [
+            'total' => $total,
+            'processed' => 0,
+            'status' => 'processing',
+            'started_at' => now(),
+        ], 3600);
+
         \App\Jobs\FinalizeMassScoresJob::dispatch($periodId, auth()->id());
     }
 }

@@ -11,10 +11,12 @@ use Illuminate\Support\Facades\Route;
 
 // Guest routes
 Route::middleware(['guest', 'kkn.throttle'])->group(function () {
-    Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
-    Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
+    Route::get('/login', [AuthenticatedSessionController::class , 'create'])->name('login');
+    Route::post('/login', [AuthenticatedSessionController::class , 'store'])->name('login.store');
 
     // Password Reset
+    Route::get('/forgot-password', [PasswordResetController::class , 'showForgotForm'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetController::class , 'sendResetLink'])->name('password.email');
     Route::get('/forgot-password', [PasswordResetController::class, 'showForgotForm'])->name('password.request');
     Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->name('password.email');
     Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
@@ -34,9 +36,8 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
     // Root redirect based on role
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-
-
-    Route::prefix('admin')->middleware('role:admin|superadmin')->name('admin.')->group(function () {
+    // Admin Area
+    Route::middleware(['role:admin|superadmin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
 
         // Grades manual input
@@ -51,6 +52,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::resource('periods', Admin\PeriodeController::class)
             ->only(['index', 'store', 'update', 'destroy'])
             ->parameters(['periods' => 'periode']);
+        Route::post('periods/{periode}/duplicate', [Admin\PeriodeController::class, 'duplicate'])->name('periods.duplicate');
         Route::resource('faculties', Admin\FakultasController::class)
             ->only(['index', 'store', 'update', 'destroy'])
             ->parameters(['faculties' => 'fakultas']);
@@ -95,12 +97,16 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::patch('registrations/{pesertaKkn}/reject', [Admin\PesertaKknController::class, 'reject'])->name('registrations.reject');
         Route::patch('registrations/{pesertaKkn}/assign-group', [Admin\PesertaKknController::class, 'assignGroup'])->name('registrations.assign-group');
 
-        // Advanced Activity Management (God Mode Global)
+        // Settings & Configuration
+        Route::get('settings/certificate', [Admin\CertificateConfigController::class, 'index'])->name('settings.certificate.index');
+        Route::post('settings/certificate', [Admin\CertificateConfigController::class, 'update'])->name('settings.certificate.update');
+
+        // Advanced Activity Management
         Route::get('reports', [App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
         Route::get('reports/daily', [Admin\KegiatanKknController::class, 'index'])->name('reports.daily.index');
         Route::get('reports/work-programs', [Admin\ProgramKerjaController::class, 'index'])->name('reports.work-programs.index');
         Route::get('reports/final', [Admin\LaporanAkhirController::class, 'index'])->name('reports.final.index');
-        
+
         // Grading Configuration
         Route::get('grading-settings', [Admin\KonfigurasiPenilaianController::class, 'index'])->name('grading-settings.index');
         Route::post('grading-settings', [Admin\KonfigurasiPenilaianController::class, 'update'])->name('grading-settings.update');
@@ -112,12 +118,13 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::get('grade-generator/export-pdf/{id}', [Admin\GeneratorNilaiController::class, 'exportPdf'])->name('grade-generator.export-pdf');
         Route::get('grade-generator/export-zip', [Admin\GeneratorNilaiController::class, 'exportZip'])->name('grade-generator.export-zip');
 
-
         // Rekap Nilai
         Route::get('rekap-nilai', [Admin\RekapNilaiController::class, 'index'])->name('rekap-nilai.index');
         Route::get('rekap-nilai/export', [Admin\RekapNilaiController::class, 'export'])->name('rekap-nilai.export');
         Route::get('rekap-nilai/bulk-certificates', [Admin\RekapNilaiController::class, 'bulkCertificates'])->name('rekap-nilai.bulk-certificates');
         Route::post('rekap-nilai/finalize-mass', [Admin\RekapNilaiController::class, 'finalizeMass'])->name('rekap-nilai.finalize-mass');
+        Route::get('rekap-nilai/finalize-progress', [Admin\RekapNilaiController::class, 'getFinalizeProgress'])->name('rekap-nilai.finalize-progress');
+        Route::post('rekap-nilai/save-inline', [Admin\RekapNilaiController::class, 'saveInline'])->name('rekap-nilai.save-inline');
         Route::get('rekap-nilai/{score}/certificate', [Admin\RekapNilaiController::class, 'downloadCertificate'])->name('rekap-nilai.certificate');
 
         // Audit Log
@@ -140,8 +147,8 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::post('proposals/{id}/review', [App\Http\Controllers\ProposalController::class, 'review'])->name('proposals.review');
     });
 
-    // ─── DPL (Dosen Pembimbing Lapangan) ────────────────────────────
-    Route::prefix('dpl')->middleware('role:dpl')->name('dpl.')->group(function () {
+    // DPL Area
+    Route::middleware(['role:dpl'])->prefix('dpl')->name('dpl.')->group(function () {
         Route::get('/', [Dpl\DashboardController::class, 'index'])->name('dashboard');
 
         // Groups
@@ -150,23 +157,20 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
 
         // Daily Reports
         Route::get('daily-reports', [Dpl\DailyReportController::class, 'index'])->name('daily-reports.index');
-        Route::get('daily-reports/{dailyReport}', [Dpl\DailyReportController::class, 'show'])->name('daily-reports.show');
+        Route::post('daily-reports/approve-all', [Dpl\DailyReportController::class, 'approveAll'])->name('daily-reports.approve-all');
         Route::patch('daily-reports/{dailyReport}/approve', [Dpl\DailyReportController::class, 'approve'])->name('daily-reports.approve');
-        Route::patch('daily-reports/{dailyReport}/revision', [Dpl\DailyReportController::class, 'revision'])->name('daily-reports.revision');
-
-        // Report Exports
-        Route::get('export/daily-reports/group/{groupId}', [App\Http\Controllers\ReportExportController::class, 'downloadGroupDailyReports'])->name('export.daily-reports.group');
-        Route::get('export/daily-reports/student/{studentId}', [App\Http\Controllers\ReportExportController::class, 'downloadStudentDailyReports'])->name('export.daily-reports.student');
+        Route::patch('daily-reports/{dailyReport}/reject', [Dpl\DailyReportController::class, 'reject'])->name('daily-reports.reject');
 
         // Evaluations
         Route::get('evaluations', [Dpl\EvaluationController::class, 'index'])->name('evaluations.index');
+        Route::post('evaluations/validate-import', [Dpl\EvaluationController::class, 'validateImport'])->name('evaluations.validate-import');
         Route::post('evaluations/import', [Dpl\EvaluationController::class, 'import'])->name('evaluations.import');
         Route::get('evaluations/create', [Dpl\EvaluationController::class, 'create'])->name('evaluations.create');
         Route::post('evaluations', [Dpl\EvaluationController::class, 'store'])->name('evaluations.store');
     });
 
-    // ─── Student ────────────────────────────────────────────────────
-    Route::prefix('student')->middleware('role:student')->name('student.')->group(function () {
+    // Student Area
+    Route::middleware(['role:student'])->prefix('student')->name('student.')->group(function () {
         Route::get('/', [Student\DashboardController::class, 'index'])->name('dashboard');
 
         // Registration
@@ -188,25 +192,26 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::get('final-report', [Student\FinalReportController::class, 'create'])->name('final-report.create');
         Route::post('final-report', [Student\FinalReportController::class, 'store'])->name('final-report.store');
 
-        // Evaluations (read-only)
+        // Evaluations
         Route::get('evaluations', [Student\EvaluationController::class, 'index'])->name('evaluations.index');
 
-        // New Activities
+        // Additional Activities
         Route::get('reports', [App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
         Route::post('reports/upload', [App\Http\Controllers\ReportController::class, 'upload'])->name('reports.upload');
         Route::get('workshops', [App\Http\Controllers\WorkshopController::class, 'index'])->name('workshops.index');
         Route::post('workshops/{workshop}/register', [App\Http\Controllers\WorkshopController::class, 'register'])->name('workshops.register');
-        
+
         Route::get('proposals', [App\Http\Controllers\ProposalController::class, 'index'])->name('proposals.index');
         Route::post('proposals', [App\Http\Controllers\ProposalController::class, 'store'])->name('proposals.store');
     });
 
-    // Notifications (Global)
+    // Notifications API
     Route::prefix('api/notifications')->name('api.notifications.')->group(function () {
         Route::get('/unread', [App\Http\Controllers\Api\NotificationController::class, 'unread'])->name('unread');
         Route::post('/{id}/read', [App\Http\Controllers\Api\NotificationController::class, 'markRead'])->name('mark-read');
         Route::post('/read-all', [App\Http\Controllers\Api\NotificationController::class, 'markAllRead'])->name('mark-all-read');
     });
+
     // Certificates
     Route::get('/certificates/{score}/download', [App\Http\Controllers\CertificateController::class, 'download'])->name('certificates.download');
     Route::get('/admin/certificates/bulk-download', [App\Http\Controllers\CertificateController::class, 'downloadMass'])->name('admin.certificates.bulk-download');

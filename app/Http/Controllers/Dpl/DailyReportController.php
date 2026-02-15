@@ -20,7 +20,7 @@ class DailyReportController extends Controller
 
         $kegiatan = KegiatanKkn::whereIn('kelompok_id', $groupIds)
             ->with(['mahasiswa', 'kelompok'])
-            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
+            ->when($request->input('status'), fn($q, $s) => $q->where('status', $s))
             ->orderByDesc('date')
             ->paginate(15)
             ->withQueryString();
@@ -81,5 +81,20 @@ class DailyReportController extends Controller
         ]));
 
         return redirect()->back()->with('success', 'Laporan dikembalikan untuk revisi.');
+    }
+    public function batchApprove(Request $request): RedirectResponse
+    {
+        $dosen = auth()->user()->dosen;
+        $groupIds = $dosen ? $dosen->kelompokKkn()->pluck('id') : collect();
+
+        $count = KegiatanKkn::whereIn('kelompok_id', $groupIds)
+            ->where('status', 'submitted')
+            ->update([
+            'status' => 'approved',
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+        ]);
+
+        return redirect()->back()->with('success', "{$count} laporan harian berhasil disetujui secara massal.");
     }
 }

@@ -85,7 +85,17 @@ class RekapNilaiController extends Controller
 
         $this->grading->dispatchMassFinalization($request->integer('period_id'));
 
-        return back()->with('success', "Proses finalisasi massal telah dimulai di latar belakang.");
+        return back()->with('info', "Proses finalisasi massal telah dimulai di latar belakang.");
+    }
+
+    public function getFinalizeProgress(Request $request)
+    {
+        $this->authorize('bulkFinalize', NilaiKkn::class);
+        $periodId = $request->integer('period_id');
+        
+        $progress = \Illuminate\Support\Facades\Cache::get("finalize_progress_{$periodId}");
+        
+        return response()->json($progress);
     }
 
     public function downloadCertificate(NilaiKkn $score)
@@ -150,5 +160,29 @@ class RekapNilaiController extends Controller
         }
 
         return response()->download($zipPath)->deleteFileAfterSend(true);
+    }
+    public function saveInline(Request $request)
+    {
+        $this->authorize('update', NilaiKkn::class);
+
+        $validated = $request->validate([
+            'user_id' => ['required', 'integer'],
+            'kelompok_id' => ['required', 'integer'],
+            'component' => ['required', 'string'],
+            'value' => ['nullable', 'numeric', 'min:0', 'max:100'],
+        ]);
+
+        $score = $this->grading->updateUnifiedScore(
+            $validated['user_id'],
+            $validated['kelompok_id'],
+            [$validated['component'] => $validated['value']],
+            auth()->id()
+        );
+
+        return response()->json([
+            'success' => true,
+            'score' => $score,
+            'message' => 'Nilai berhasil diperbarui.',
+        ]);
     }
 }

@@ -13,6 +13,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class EvaluationController extends Controller
@@ -37,16 +39,93 @@ class EvaluationController extends Controller
         ]);
     }
 
-    public function import(Request $request): RedirectResponse
+    public function validateImport(Request $request): Response|RedirectResponse
     {
         $request->validate([
             'group_id' => ['required', 'exists:kelompok_kkn,id'],
             'file' => ['required', 'file', 'mimes:xlsx,xls'],
         ]);
 
-        Excel::import(new EvaluationImport($request->group_id, auth()->id()), $request->file('file'));
+        $group = KelompokKkn::with('peserta.mahasiswa')->find($request->group_id);
+        $rows = Excel::toCollection(new class implements \Maatwebsite\Excel\Concerns\ToCollection {
+            public function collection(\Illuminate\Support\Collection $rows) {}
+        }, $request->file('file'))->first();
+        
+        // Skip headers
+        $dataRows = $rows->slice(7);
+        $preview = [];
 
-        return redirect()->back()->with('success', 'Data penilaian berhasil diimport.');
+        foreach ($dataRows as $row) {
+            $nim = $row[2] ?? null;
+            if (!$nim) continue;
+
+            $mahasiswa = Mahasiswa::where('nim', $nim)->first();
+            $isMember = $group->peserta->pluck('mahasiswa_id')->contains($mahasiswa?->id);
+
+            $preview[] = [
+                'nim' => $nim,
+                'name' => $row[1] ?? 'Unknown',
+                'discipline' => $row[5] ?? 0,
+                'attitude' => $row[6] ?? 0,
+                'status' => $mahasiswa ? ($isMember ? 'READY' : 'NOT_IN_GROUP') : 'NOT_FOUND',
+                'id' => $mahasiswa?->id
+            ];
+        }
+
+        return Inertia::render('Dpl/Evaluations/ImportPreview', [
+            'preview' => $preview,
+            'group' => $group
+        ]);
+    }
+
+    public function import(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'group_id' => ['required', 'exists:kelompok_kkn,id'],
+            'data' => ['required', 'array'],
+        ]);
+
+        $lecturerId = auth()->id();
+        $groupId = $request->group_id;
+
+        DB::transaction(function () use ($request, $lecturerId, $groupId) {
+            foreach ($request->data as $item) {
+                if ($item['status'] !== 'READY') continue;
+
+                $eval = Evaluasi::updateOrCreate([
+                    'mahasiswa_id' => $item['id'],
+                    'kelompok_id' => $groupId,
+                    'evaluator_id' => $lecturerId,
+                    'evaluator_type' => 'dpl'
+                ], [
+                    'evaluated_at' => now(),
+                ]);
+
+                // Clear items
+                $eval->item()->delete();
+
+                // Add scores
+                ItemEvaluasi::create(['evaluasi_id' => $eval->id, 'criterion' => 'Kedisiplinan', 'score' => $item['discipline'], 'weight' => 50]);
+                ItemEvaluasi::create(['evaluasi_id' => $eval->id, 'criterion' => 'Sikap', 'score' => $item['attitude'], 'weight' => 50]);
+
+                $total = ($item['discipline'] * 0.5) + ($item['attitude'] * 0.5);
+                $eval->update(['total_score' => $total, 'grade' => $this->calculateGrade($total)]);
+            }
+        });
+
+        return redirect()->route('dpl.evaluations.index')->with('success', 'Import evaluasi berhasil diselesaikan.');
+    }
+
+    private function calculateGrade($score)
+    {
+        if ($score >= 85) return 'A';
+        if ($score >= 80) return 'A-';
+        if ($score >= 75) return 'B+';
+        if ($score >= 70) return 'B';
+        if ($score >= 65) return 'B-';
+        if ($score >= 60) return 'C+';
+        if ($score >= 55) return 'C';
+        return 'D';
     }
 
     public function create(Request $request): Response

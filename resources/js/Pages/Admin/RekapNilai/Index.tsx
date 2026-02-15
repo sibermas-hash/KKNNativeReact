@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { router, Head, Deferred } from '@inertiajs/react'
 import AppLayout from '@/Layouts/AppLayout'
 import { route } from 'ziggy-js'
@@ -10,12 +10,14 @@ import {
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface ScoreRow {
-    student_id: number
+    mahasiswa_id: number
+    user_id: number
     nama: string
     nim: string
     fakultas: string
     prodi: string
     kode_kelompok: string
+    kelompok_id: number
     desa: string
     nama_dpl: string
     nilai_laporan_akhir: number | null
@@ -128,9 +130,59 @@ export default function RekapNilaiIndex({
 }) {
     const [search, setSearch] = useState('')
     const [localFilters, setLocalFilters] = useState(filters)
-    const [sortKey, setSortKey] = useState<keyof ScoreRow>('kode_kelompok')
+    const [sortKey, setSortKey] = useState<keyof ScoreRow>('nama')
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+    const [editing, setEditing] = useState<{ id: number, col: string } | null>(null)
+    const [editValue, setEditValue] = useState<string>('')
+    const handleSaveInline = (row: ScoreRow, col: string) => {
+        if (editValue === String(row[col as keyof ScoreRow])) {
+            setEditing(null)
+            return
+        }
+
+        router.post(route('admin.rekap-nilai.save-inline'), {
+            user_id: row.mahasiswa_id,
+            kelompok_id: row.kelompok_id,
+            component: col,
+            value: editValue === '' ? null : parseFloat(editValue)
+        }, {
+            preserveScroll: true,
+            onSuccess: () => setEditing(null)
+        })
+    }
     const [selectedRow, setSelectedRow] = useState<ScoreRow | null>(null)
+    const [finalizeProgress, setFinalizeProgress] = useState<{ total: number, processed: number, status: string } | null>(null)
+
+    // Poll for finalization progress
+    useEffect(() => {
+        let timer: any;
+        if (finalizeProgress && finalizeProgress.status === 'processing') {
+            timer = setInterval(async () => {
+                try {
+                    const res = await fetch(route('admin.rekap-nilai.finalize-progress', { period_id: periodeId }));
+                    const data = await res.json();
+                    if (data) {
+                        setFinalizeProgress(data);
+                        if (data.status === 'completed') {
+                            router.reload({ only: ['rows', 'stats'] });
+                            setTimeout(() => setFinalizeProgress(null), 5000);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to fetch progress', e);
+                }
+            }, 2000);
+        }
+        return () => clearInterval(timer);
+    }, [finalizeProgress, periodeId]);
+
+    const handleFinalizeMass = () => {
+        router.post(route('admin.rekap-nilai.finalize-mass'), { period_id: periodeId }, {
+            onSuccess: () => {
+                setFinalizeProgress({ total: 0, processed: 0, status: 'processing' });
+            }
+        });
+    }
 
     // Client-side sort & search
     const processed = useMemo(() => {
@@ -174,6 +226,29 @@ export default function RekapNilaiIndex({
         <AppLayout>
             <Head title="Rekap Nilai KKN" />
             <div className="p-6">
+                {/* ── Progress Overlay ─────────────────────────── */}
+                {finalizeProgress && (
+                    <div className="mb-6 p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 animate-in slide-in-from-top-4 duration-300">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full animate-pulse ${finalizeProgress.status === 'processing' ? 'bg-blue-400' : 'bg-emerald-400'}`} />
+                                <span className="text-sm font-bold text-white">
+                                    {finalizeProgress.status === 'processing' ? 'Memproses Finalisasi Massal...' : 'Finalisasi Massal Selesai!'}
+                                </span>
+                            </div>
+                            <span className="text-xs text-slate-400 font-mono">
+                                {finalizeProgress.processed} / {finalizeProgress.total} Data
+                            </span>
+                        </div>
+                        <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                            <div
+                                className={`h-full transition-all duration-500 ease-out ${finalizeProgress.status === 'processing' ? 'bg-blue-500' : 'bg-emerald-500'}`}
+                                style={{ width: `${finalizeProgress.total > 0 ? (finalizeProgress.processed / finalizeProgress.total) * 100 : 0}%` }}
+                            />
+                        </div>
+                    </div>
+                )}
+
                 {/* ── Header ─────────────────────────────────────── */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                     <div>
@@ -200,13 +275,13 @@ export default function RekapNilaiIndex({
                             Cetak Semua Sertifikat
                         </button>
                         <button
-                            onClick={() => router.post(route('admin.rekap-nilai.finalize-mass'), { period_id: periodeId })}
-                            disabled={!periodeId}
+                            onClick={handleFinalizeMass}
+                            disabled={!periodeId || (finalizeProgress?.status === 'processing')}
                             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold
                 bg-blue-500/20 text-blue-300 border border-blue-500/30
                 hover:bg-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                             <CheckBadgeIcon className="w-4 h-4" />
-                            Finalisasi Semua
+                            {finalizeProgress?.status === 'processing' ? 'Sedang Memproses...' : 'Finalisasi Semua'}
                         </button>
                     </div>
                 </div>
@@ -269,24 +344,28 @@ export default function RekapNilaiIndex({
                                             ['#', null],
                                             ['Mahasiswa', 'nama'],
                                             ['Kelompok', 'kode_kelompok'],
-                                            ['A1', 'nilai_laporan_akhir'],
-                                            ['A2', 'nilai_pelaksanaan'],
-                                            ['A3', 'nilai_artikel'],
-                                            ['B1', 'nilai_sikap'],
-                                            ['B2', 'nilai_kedisiplinan'],
-                                            ['C1', 'nilai_workshop'],
-                                            ['C2', 'nilai_administrasi'],
-                                            ['Total', 'nilai_akhir'],
+                                            ['A1', 'nilai_laporan_akhir', 'Laporan Akhir (DPL)'],
+                                            ['A2', 'nilai_pelaksanaan', 'Pelaksanaan (DPL)'],
+                                            ['A3', 'nilai_artikel', 'Artikel (DPL)'],
+                                            ['B1', 'nilai_sikap', 'Sikap (Desa/Mitra)'],
+                                            ['B2', 'nilai_kedisiplinan', 'Kedisiplinan (Desa/Mitra)'],
+                                            ['C1', 'nilai_workshop', 'Workshop (LPPM)'],
+                                            ['C2', 'nilai_administrasi', 'Administrasi (LPPM)'],
+                                            ['Total', 'nilai_akhir', 'Rumus: (DPL*50%) + (Mitra*30%) + (LPPM*20%)'],
+                                            ['Komponen', null, 'DPL · Desa · Admin'],
                                             ['Grade', 'huruf'],
                                             ['Status', 'is_finalized'],
                                             ['Aksi', null],
-                                        ].map(([label, key]) => (
+                                        ].map(([label, key, tip]) => (
                                             <th key={String(label)}
                                                 onClick={() => key && handleSort(key as keyof ScoreRow)}
+                                                title={tip as string}
                                                 className={`px-4 py-4 text-left text-xs font-bold text-blue-200/60
                         uppercase tracking-wider whitespace-nowrap
+                        ${tip ? 'cursor-help border-b border-white/5' : ''}
                         ${key ? 'cursor-pointer hover:text-white transition-colors' : ''}`}>
                                                 {label}
+                                                {tip && <span className="ml-0.5 text-[8px] opacity-30">ⓘ</span>}
                                                 {key && <SortIcon col={key as keyof ScoreRow} />}
                                             </th>
                                         ))}
@@ -294,7 +373,7 @@ export default function RekapNilaiIndex({
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
                                     {processed.map((row, i) => (
-                                        <tr key={row.student_id}
+                                        <tr key={row.mahasiswa_id}
                                             onClick={() => setSelectedRow(row)}
                                             className="hover:bg-white/5 transition-colors group cursor-pointer">
                                             <td className="px-4 py-4 text-slate-500 text-xs">{i + 1}</td>
@@ -307,18 +386,51 @@ export default function RekapNilaiIndex({
                                                 <p className="text-slate-500 text-[10px]">{row.desa}</p>
                                             </td>
                                             {/* Nilai per komponen */}
-                                            {[row.nilai_laporan_akhir, row.nilai_pelaksanaan, row.nilai_artikel,
-                                            row.nilai_sikap, row.nilai_kedisiplinan,
-                                            row.nilai_workshop, row.nilai_administrasi].map((v, idx) => (
-                                                <td key={idx} className={`px-4 py-4 text-center text-xs ${v === null ? 'text-slate-600' : 'text-slate-300 font-mono'}`}>
-                                                    {fmt(v)}
-                                                </td>
-                                            ))}
+                                            {[
+                                                ['nilai_laporan_akhir', row.nilai_laporan_akhir],
+                                                ['nilai_pelaksanaan', row.nilai_pelaksanaan],
+                                                ['nilai_artikel', row.nilai_artikel],
+                                                ['nilai_sikap', row.nilai_sikap],
+                                                ['nilai_kedisiplinan', row.nilai_kedisiplinan],
+                                                ['nilai_workshop', row.nilai_workshop],
+                                                ['nilai_administrasi', row.nilai_administrasi]
+                                            ].map(([col, v], idx) => {
+                                                const isEditing = editing?.id === row.mahasiswa_id && editing?.col === col as string
+                                                return (
+                                                    <td key={idx}
+                                                        onDoubleClick={(e) => {
+                                                            e.stopPropagation()
+                                                            setEditing({ id: row.mahasiswa_id, col: col as string })
+                                                            setEditValue(v === null ? '' : String(v))
+                                                        }}
+                                                        className={`px-4 py-4 text-center text-xs transition-all ${v === null ? 'text-slate-600' : 'text-slate-300 font-mono'} ${isEditing ? 'bg-blue-500/20' : ''}`}>
+                                                        {isEditing ? (
+                                                            <input
+                                                                autoFocus
+                                                                className="w-12 bg-slate-900 border border-blue-500/50 rounded px-1 outline-none text-center"
+                                                                value={editValue}
+                                                                onChange={e => setEditValue(e.target.value)}
+                                                                onBlur={() => handleSaveInline(row, col as string)}
+                                                                onKeyDown={e => e.key === 'Enter' && handleSaveInline(row, col as string)}
+                                                                onClick={e => e.stopPropagation()}
+                                                            />
+                                                        ) : fmt(v)}
+                                                    </td>
+                                                )
+                                            })}
                                             {/* Nilai Akhir */}
                                             <td className="px-4 py-4 text-center">
                                                 <span className={`text-base font-black ${gradeColor(row.huruf)}`}>
                                                     {row.nilai_akhir ? parseFloat(row.nilai_akhir.toString()).toFixed(1) : '—'}
                                                 </span>
+                                            </td>
+                                            {/* Kelengkapan */}
+                                            <td className="px-4 py-3 text-center">
+                                                <div className="flex justify-center gap-1">
+                                                    <div title="DPL" className={`w-2 h-2 rounded-full ${row.dpl_submitted_at ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                                                    <div title="Mitra/Desa" className={`w-2 h-2 rounded-full ${row.mitra_submitted_at ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                                                    <div title="Admin/LPPM" className={`w-2 h-2 rounded-full ${row.admin_submitted_at ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                                                </div>
                                             </td>
                                             {/* Huruf */}
                                             <td className="px-4 py-4 text-center">
@@ -339,13 +451,13 @@ export default function RekapNilaiIndex({
                                             </td>
                                             <td className="px-4 py-4">
                                                 {row.is_finalized && (
-                                                    <a
-                                                        href={route('admin.rekap-nilai.certificate', row.student_id)}
-                                                        className="p-2 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-all inline-block"
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); router.get(route('admin.rekap-nilai.certificate', row.mahasiswa_id)) }}
+                                                        disabled={!row.is_finalized}
                                                         title="Download Sertifikat"
-                                                    >
-                                                        <DocumentArrowDownIcon className="w-4 h-4" />
-                                                    </a>
+                                                        className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 disabled:opacity-30">
+                                                        <AcademicCapIcon className="w-4 h-4" />
+                                                    </button>
                                                 )}
                                             </td>
                                         </tr>

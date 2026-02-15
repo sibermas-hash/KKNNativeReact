@@ -13,7 +13,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(RegistrationRepositoryInterface::class, RegistrationRepository::class);
+        $this->app->bind(RegistrationRepositoryInterface::class , RegistrationRepository::class);
     }
 
     /**
@@ -32,11 +32,11 @@ class AppServiceProvider extends ServiceProvider
             // Mutation abilities (create, update, delete, finalize, etc.) must pass through policies
             if ($user->hasRole('admin')) {
                 $readOnlyAbilities = ['viewAny', 'view', 'export'];
-                
+
                 if (in_array($ability, $readOnlyAbilities)) {
                     return true;
                 }
-                
+
                 // For mutation abilities, let the policy decide
                 // Return null so the policy is evaluated normally
                 return null;
@@ -49,6 +49,9 @@ class AppServiceProvider extends ServiceProvider
         \App\Models\KKN\NilaiKkn::observe(\App\Observers\AuditObserver::class);
         \App\Models\KKN\Laporan::observe(\App\Observers\AuditObserver::class);
         \App\Models\KKN\KegiatanKkn::observe(\App\Observers\AuditObserver::class);
+        \App\Models\KKN\Mahasiswa::observe(\App\Observers\AuditObserver::class);
+        \App\Models\KKN\Evaluasi::observe(\App\Observers\AuditObserver::class);
+        \App\Models\KKN\KonfigurasiSertifikat::observe(\App\Observers\AuditObserver::class);
 
         // Force HTTPS when behind Cloudflare tunnel
         if ($this->app->environment('production')) {

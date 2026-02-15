@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useForm } from '@inertiajs/react';
+import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
-import { Button, Badge, FormInput, FormSelect, FormTextarea } from '@/Components/ui';
+import { Button, Badge, FormSelect, FormTextarea } from '@/Components/ui';
 import type { PageProps } from '@/types';
 
 interface GroupWithStudents {
@@ -15,7 +16,7 @@ interface Props extends PageProps {
     evaluations: { id: number; student: { name: string; nim: string }; group: { name: string }; total_score?: number; grade?: string }[];
 }
 
-export default function DplEvaluationsPage({ groups, evaluations, ...pageProps }: Props) {
+export default function DplEvaluationsPage({ groups, evaluations }: Props) {
     const [showForm, setShowForm] = useState(false);
 
     // Manual Evaluation Form
@@ -51,7 +52,7 @@ export default function DplEvaluationsPage({ groups, evaluations, ...pageProps }
 
     const handleImportSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        importForm.post(route('dpl.evaluations.import'), {
+        importForm.post(route('dpl.evaluations.validate-import'), {
             onSuccess: () => {
                 importForm.reset();
                 const fileInput = document.getElementById('import-file') as HTMLInputElement;

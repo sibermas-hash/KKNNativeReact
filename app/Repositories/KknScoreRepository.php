@@ -25,41 +25,42 @@ class KknScoreRepository
             ->leftJoin('fakultas as fak', 's.faculty_id', '=', 'fak.id')
             ->leftJoin('prodi as prodi', 's.program_id', '=', 'prodi.id')
             ->leftJoin('nilai_kkn as ks', function ($join) {
-                $join->on('ks.mahasiswa_id', '=', 's.id')
-                     ->on('ks.kelompok_id', '=', 'g.id');
-            })
+            $join->on('ks.mahasiswa_id', '=', 's.id')
+                ->on('ks.kelompok_id', '=', 'g.id');
+        })
             ->where('g.period_id', $periodeId)
             ->when($filters['faculty_id'] ?? null, fn($q, $v) => $q->where('s.faculty_id', $v))
             ->when($filters['kelompok_id'] ?? null, fn($q, $v) => $q->where('g.id', $v))
             ->when($filters['huruf'] ?? null, fn($q, $v) => $q->where('ks.letter_grade', $v))
             ->select([
-                's.id as mahasiswa_id',
-                'u.id as user_id',
-                'u.name as nama',
-                's.nim',
-                'fak.nama as fakultas',
-                'prodi.nama as prodi',
-                'g.code as kode_kelompok',
-                'lok.village_name as desa',
-                'dpl_u.name as nama_dpl',
-                // Komponen A
-                'ks.final_report_score as nilai_laporan_akhir',
-                'ks.execution_score as nilai_pelaksanaan',
-                'ks.article_score as nilai_artikel',
-                // Komponen B
-                'ks.attitude_score as nilai_sikap',
-                'ks.discipline_score as nilai_kedisiplinan',
-                // Komponen C
-                'ks.workshop_score as nilai_workshop',
-                'ks.administration_score as nilai_administrasi',
-                // Output
-                'ks.total_score as nilai_akhir',
-                'ks.letter_grade as huruf',
-                'ks.is_finalized',
-                'ks.dpl_graded_at as dpl_submitted_at',
-                'ks.village_graded_at as mitra_submitted_at',
-                'ks.admin_graded_at as admin_submitted_at',
-            ])
+            's.id as mahasiswa_id',
+            'u.id as user_id',
+            'u.name as nama',
+            's.nim',
+            'fak.nama as fakultas',
+            'prodi.nama as prodi',
+            'g.code as kode_kelompok',
+            'g.id as kelompok_id',
+            'lok.village_name as desa',
+            'dpl_u.name as nama_dpl',
+            // Komponen A
+            'ks.final_report_score as nilai_laporan_akhir',
+            'ks.execution_score as nilai_pelaksanaan',
+            'ks.article_score as nilai_artikel',
+            // Komponen B
+            'ks.attitude_score as nilai_sikap',
+            'ks.discipline_score as nilai_kedisiplinan',
+            // Komponen C
+            'ks.workshop_score as nilai_workshop',
+            'ks.administration_score as nilai_administrasi',
+            // Output
+            'ks.total_score as nilai_akhir',
+            'ks.letter_grade as huruf',
+            'ks.is_finalized',
+            'ks.dpl_graded_at as dpl_submitted_at',
+            'ks.village_graded_at as mitra_submitted_at',
+            'ks.admin_graded_at as admin_submitted_at',
+        ])
             ->orderBy('g.code')
             ->orderBy('u.name')
             ->get();

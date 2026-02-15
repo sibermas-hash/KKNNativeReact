@@ -1,15 +1,17 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { StatusBadge, FormSelect } from '@/Components/ui';
+import { CheckBadgeIcon } from '@heroicons/react/24/outline';
+import { route } from 'ziggy-js';
 import type { PageProps } from '@/types';
 
 interface ReportData {
     id: number;
     date: string;
     title: string;
-    status: string;
     student: { name: string; nim: string };
     group: { name: string };
+    status: string;
 }
 
 interface Props extends PageProps {
@@ -18,10 +20,25 @@ interface Props extends PageProps {
 }
 
 export default function DplDailyReportsIndex({ reports, filters }: Props) {
+    const handleApproveAll = () => {
+        if (confirm('Setujui semua laporan harian yang diajukan?')) {
+            router.post(route('dpl.daily-reports.batch-approve'))
+        }
+    }
+
     return (
         <AppLayout title="Laporan Harian">
-            <div className="mb-4 flex items-center justify-between">
-                <p className="text-sm text-slate-500">{reports.data?.length ?? 0} laporan</p>
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                    <p className="text-sm text-slate-500 font-medium">{reports.data?.length ?? 0} laporan ditemukan</p>
+                    <button
+                        onClick={handleApproveAll}
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 transition-all shadow-sm"
+                    >
+                        <CheckBadgeIcon className="w-4 h-4" />
+                        Setujui Semua
+                    </button>
+                </div>
                 <form>
                     <FormSelect
                         options={[{ value: '', label: 'Semua' }, { value: 'submitted', label: 'Diajukan' }, { value: 'approved', label: 'Disetujui' }, { value: 'revision', label: 'Revisi' }]}

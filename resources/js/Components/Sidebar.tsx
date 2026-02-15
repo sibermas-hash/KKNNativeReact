@@ -68,8 +68,9 @@ const adminNav: NavGroup[] = [
             { label: 'Proposal', href: '/admin/proposals', icon: DocumentMagnifyingGlassIcon },
             { label: 'Generator Nilai', href: '/admin/grade-generator', icon: AdjustmentsVerticalIcon },
             { label: 'Rekap Nilai', href: '/admin/rekap-nilai', icon: DocumentChartBarIcon },
-            { label: 'Log Audit', href: '/admin/audit-log', icon: ShieldExclamationIcon },
+            { label: 'Audit Log', href: '/admin/audit-log', icon: ShieldExclamationIcon },
             { label: 'Pengaturan Nilai', href: '/admin/grading-settings', icon: AdjustmentsVerticalIcon },
+            { label: 'Konfig Sertifikat', href: '/admin/settings/certificate', icon: AdjustmentsVerticalIcon },
         ],
     },
 ];

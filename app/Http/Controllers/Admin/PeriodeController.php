@@ -100,6 +100,25 @@ class PeriodeController extends Controller
         return redirect()->back()->with('success', 'Periode KKN berhasil diperbarui.');
     }
 
+    public function duplicate(Periode $period): RedirectResponse
+    {
+        $newPeriod = $period->replicate();
+        $newPeriod->name = $newPeriod->name . ' (Copy)';
+        $newPeriod->is_active = false;
+        $newPeriod->save();
+
+        // Copy structural groups
+        foreach ($period->kelompok as $group) {
+            $newGroup = $group->replicate();
+            $newGroup->period_id = $newPeriod->id;
+            // Clear DPL and stats for new period
+            $newGroup->dpl_id = null;
+            $newGroup->save();
+        }
+
+        return redirect()->back()->with('success', 'Struktur periode dan kelompok berhasil diduplikasi.');
+    }
+
     public function destroy(Periode $period): RedirectResponse
     {
         $period->delete();

@@ -255,12 +255,19 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                                         </td>
                                         <td className="px-4 py-4 text-right">
                                             <div className="flex justify-end gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => { if (confirm(`Duplikasi struktur periode "${p.name}"?`)) router.post(`/admin/periods/${p.id}/duplicate`) }}
+                                                    className="h-8 w-8 p-0 text-indigo-600"
+                                                    title="Duplikasi Struktur"
+                                                >
+                                                    📋
+                                                </Button>
                                                 <Button variant="ghost" size="sm" onClick={() => startEdit(p)} className="h-8 w-8 p-0" title="Edit">
-                                                    <span className="sr-only">Edit</span>
                                                     ✏️
                                                 </Button>
                                                 <Button variant="ghost" size="sm" onClick={() => setDeleting(p)} className="h-8 w-8 p-0 text-red-600" title="Hapus">
-                                                    <span className="sr-only">Hapus</span>
                                                     🗑️
                                                 </Button>
                                             </div>

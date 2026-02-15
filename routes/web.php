@@ -140,13 +140,6 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
                 Route::get('audit-log', [Admin\LogAuditController::class , 'index'])->name('audit-log.index');
                 Route::get('audit-log/{logAudit}', [Admin\LogAuditController::class , 'show'])->name('audit-log.show');
 
-                // Settings
-                Route::prefix('settings')->name('settings.')->group(function () {
-                    Route::get('certificate', [Admin\CertificateConfigController::class , 'index'])->name('certificate');
-                    Route::post('certificate', [Admin\CertificateConfigController::class , 'update'])->name('certificate.update');
-                }
-                );
-
                 // Report Exports
                 Route::get('export/daily-reports/group/{groupId}', [App\Http\Controllers\ReportExportController::class , 'downloadGroupDailyReports'])->name('export.daily-reports.group');
                 Route::get('export/daily-reports/student/{studentId}', [App\Http\Controllers\ReportExportController::class , 'downloadStudentDailyReports'])->name('export.daily-reports.student');

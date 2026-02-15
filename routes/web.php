@@ -100,41 +100,46 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
             Route::patch('registrations/{pesertaKkn}/assign-group', [Admin\PesertaKknController::class , 'assignGroup'])->name('registrations.assign-group');
 
             // Settings & Configuration
-            Route::get('settings/certificate', [Admin\CertificateConfigController::class , 'index'])->name('settings.certificate.index');
-            Route::post('settings/certificate', [Admin\CertificateConfigController::class , 'update'])->name('settings.certificate.update');
-
-            // Advanced Activity Management
-            Route::get('reports', [App\Http\Controllers\ReportController::class , 'index'])->name('reports.index');
-            Route::get('reports/daily', [Admin\KegiatanKknController::class , 'index'])->name('reports.daily.index');
-            Route::get('reports/work-programs', [Admin\ProgramKerjaController::class , 'index'])->name('reports.work-programs.index');
-            Route::get('reports/final', [Admin\LaporanAkhirController::class , 'index'])->name('reports.final.index');
-
-            // Grading Configuration
-            Route::get('grading-settings', [Admin\KonfigurasiPenilaianController::class , 'index'])->name('grading-settings.index');
-            Route::post('grading-settings', [Admin\KonfigurasiPenilaianController::class , 'update'])->name('grading-settings.update');
-            Route::get('grade-generator', [Admin\GeneratorNilaiController::class , 'index'])->name('grade-generator.index');
-            Route::get('grade-generator/groups/all/students', [Admin\GeneratorNilaiController::class , 'studentsAll'])->name('grade-generator.students-all');
-            Route::get('grade-generator/groups/{kelompokKkn}/students', [Admin\GeneratorNilaiController::class , 'students'])->name('grade-generator.students');
-            Route::post('grade-generator/scores', [Admin\GeneratorNilaiController::class , 'saveScores'])->name('grade-generator.save-scores');
-            Route::get('grade-generator/export/{id}', [Admin\GeneratorNilaiController::class , 'exportExcel'])->name('grade-generator.export');
-            Route::get('grade-generator/export-pdf/{id}', [Admin\GeneratorNilaiController::class , 'exportPdf'])->name('grade-generator.export-pdf');
-            Route::get('grade-generator/export-zip', [Admin\GeneratorNilaiController::class , 'exportZip'])->name('grade-generator.export-zip');
-
-            // Rekap Nilai
-            Route::get('rekap-nilai', [Admin\RekapNilaiController::class , 'index'])->name('rekap-nilai.index');
-            Route::get('rekap-nilai/export', [Admin\RekapNilaiController::class , 'export'])->name('rekap-nilai.export');
-            Route::get('rekap-nilai/bulk-certificates', [Admin\RekapNilaiController::class , 'bulkCertificates'])->name('rekap-nilai.bulk-certificates');
-            Route::post('rekap-nilai/finalize-mass', [Admin\RekapNilaiController::class , 'finalizeMass'])->name('rekap-nilai.finalize-mass');
-            Route::get('rekap-nilai/finalize-progress', [Admin\RekapNilaiController::class , 'getFinalizeProgress'])->name('rekap-nilai.finalize-progress');
-            Route::post('rekap-nilai/save-inline', [Admin\RekapNilaiController::class , 'saveInline'])->name('rekap-nilai.save-inline');
-            Route::get('rekap-nilai/{score}/certificate', [Admin\RekapNilaiController::class , 'downloadCertificate'])->name('rekap-nilai.certificate');
-
-            // Audit Log
-            Route::get('audit-log', [Admin\LogAuditController::class , 'index'])->name('audit-log.index');
-            Route::get('audit-log/{logAudit}', [Admin\LogAuditController::class , 'show'])->name('audit-log.show');
-
-            // Settings
             Route::prefix('settings')->name('settings.')->group(function () {
+                    Route::get('certificate', [Admin\CertificateConfigController::class , 'index'])->name('certificate.index');
+                    Route::post('certificate', [Admin\CertificateConfigController::class , 'update'])->name('certificate.update');
+                    Route::get('system', [Admin\SystemSettingController::class , 'index'])->name('system.index');
+                    Route::post('system', [Admin\SystemSettingController::class , 'update'])->name('system.update');
+                }
+                );
+
+                // Advanced Activity Management
+                Route::get('reports', [App\Http\Controllers\ReportController::class , 'index'])->name('reports.index');
+                Route::get('reports/daily', [Admin\KegiatanKknController::class , 'index'])->name('reports.daily.index');
+                Route::get('reports/work-programs', [Admin\ProgramKerjaController::class , 'index'])->name('reports.work-programs.index');
+                Route::get('reports/final', [Admin\LaporanAkhirController::class , 'index'])->name('reports.final.index');
+
+                // Grading Configuration
+                Route::get('grading-settings', [Admin\KonfigurasiPenilaianController::class , 'index'])->name('grading-settings.index');
+                Route::post('grading-settings', [Admin\KonfigurasiPenilaianController::class , 'update'])->name('grading-settings.update');
+                Route::get('grade-generator', [Admin\GeneratorNilaiController::class , 'index'])->name('grade-generator.index');
+                Route::get('grade-generator/groups/all/students', [Admin\GeneratorNilaiController::class , 'studentsAll'])->name('grade-generator.students-all');
+                Route::get('grade-generator/groups/{kelompokKkn}/students', [Admin\GeneratorNilaiController::class , 'students'])->name('grade-generator.students');
+                Route::post('grade-generator/scores', [Admin\GeneratorNilaiController::class , 'saveScores'])->name('grade-generator.save-scores');
+                Route::get('grade-generator/export/{id}', [Admin\GeneratorNilaiController::class , 'exportExcel'])->name('grade-generator.export');
+                Route::get('grade-generator/export-pdf/{id}', [Admin\GeneratorNilaiController::class , 'exportPdf'])->name('grade-generator.export-pdf');
+                Route::get('grade-generator/export-zip', [Admin\GeneratorNilaiController::class , 'exportZip'])->name('grade-generator.export-zip');
+
+                // Rekap Nilai
+                Route::get('rekap-nilai', [Admin\RekapNilaiController::class , 'index'])->name('rekap-nilai.index');
+                Route::get('rekap-nilai/export', [Admin\RekapNilaiController::class , 'export'])->name('rekap-nilai.export');
+                Route::get('rekap-nilai/bulk-certificates', [Admin\RekapNilaiController::class , 'bulkCertificates'])->name('rekap-nilai.bulk-certificates');
+                Route::post('rekap-nilai/finalize-mass', [Admin\RekapNilaiController::class , 'finalizeMass'])->name('rekap-nilai.finalize-mass');
+                Route::get('rekap-nilai/finalize-progress', [Admin\RekapNilaiController::class , 'getFinalizeProgress'])->name('rekap-nilai.finalize-progress');
+                Route::post('rekap-nilai/save-inline', [Admin\RekapNilaiController::class , 'saveInline'])->name('rekap-nilai.save-inline');
+                Route::get('rekap-nilai/{score}/certificate', [Admin\RekapNilaiController::class , 'downloadCertificate'])->name('rekap-nilai.certificate');
+
+                // Audit Log
+                Route::get('audit-log', [Admin\LogAuditController::class , 'index'])->name('audit-log.index');
+                Route::get('audit-log/{logAudit}', [Admin\LogAuditController::class , 'show'])->name('audit-log.show');
+
+                // Settings
+                Route::prefix('settings')->name('settings.')->group(function () {
                     Route::get('certificate', [Admin\CertificateConfigController::class , 'index'])->name('certificate');
                     Route::post('certificate', [Admin\CertificateConfigController::class , 'update'])->name('certificate.update');
                 }

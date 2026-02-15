@@ -16,10 +16,10 @@ class MasterApiService
 
     public function __construct()
     {
-        $this->baseUrl = rtrim((string) config('services.master_api.url', ''), '/');
-        $this->clientId = (string) config('services.master_api.client_id', '');
-        $this->clientSecret = (string) config('services.master_api.client_secret', '');
-        $this->cacheMinutes = (int) config('services.master_api.cache_minutes', 60);
+        $this->baseUrl = rtrim((string)\App\Models\KKN\SystemSetting::get('master_api_url', config('services.master_api.url', '')), '/');
+        $this->clientId = (string)\App\Models\KKN\SystemSetting::get('master_api_client_id', config('services.master_api.client_id', ''));
+        $this->clientSecret = (string)\App\Models\KKN\SystemSetting::get('master_api_client_secret', config('services.master_api.client_secret', ''));
+        $this->cacheMinutes = (int)config('services.master_api.cache_minutes', 60);
         $this->verifySsl = config('app.env') !== 'local';
     }
 
@@ -45,7 +45,8 @@ class MasterApiService
                     'status' => $response->status(),
                     'body' => $response->body()
                 ]);
-            } catch (\Exception $e) {
+            }
+            catch (\Exception $e) {
                 Log::error('Master API: Connection error', ['error' => $e->getMessage()]);
             }
 
@@ -94,7 +95,8 @@ class MasterApiService
                 'status' => $response->status(),
                 'body' => $response->body()
             ]);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             Log::error("Master API: GET {$endpoint} exception", ['error' => $e->getMessage()]);
         }
 
@@ -133,7 +135,7 @@ class MasterApiService
             $totalPages = is_array($pagination) ? ($pagination['total_pages'] ?? null) : null;
 
             if ($totalPages !== null) {
-                $totalPages = (int) $totalPages;
+                $totalPages = (int)$totalPages;
                 if ($totalPages <= 0) {
                     $totalPages = 1;
                 }
@@ -141,7 +143,8 @@ class MasterApiService
                 if ($page >= $totalPages) {
                     break;
                 }
-            } else {
+            }
+            else {
                 $next = (is_array($pagination) && isset($pagination['links']['next'])) ? $pagination['links']['next'] : null;
                 if (empty($next)) {
                     // If API doesn't provide pagination meta, treat as single page.
@@ -207,7 +210,8 @@ class MasterApiService
             }
 
             return ['status' => $response->successful() ? 'UP' : 'DOWN'];
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             return ['status' => 'DOWN', 'error' => $e->getMessage()];
         }
     }

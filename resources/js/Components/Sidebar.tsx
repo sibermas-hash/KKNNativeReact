@@ -68,7 +68,7 @@ const adminNav: NavGroup[] = [
             { label: 'Proposal', href: '/admin/proposals', icon: DocumentMagnifyingGlassIcon },
             { label: 'Generator Nilai', href: '/admin/grade-generator', icon: AdjustmentsVerticalIcon },
             { label: 'Rekap Nilai', href: '/admin/rekap-nilai', icon: DocumentChartBarIcon },
-            { label: 'Audit Log', href: '/admin/audit-log', icon: ShieldExclamationIcon },
+            { label: 'Log Audit', href: '/admin/audit-log', icon: ShieldExclamationIcon },
             { label: 'Pengaturan Nilai', href: '/admin/grading-settings', icon: AdjustmentsVerticalIcon },
             { label: 'Konfig Sertifikat', href: '/admin/settings/certificate', icon: AdjustmentsVerticalIcon },
         ],
@@ -153,7 +153,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     </div>
                     <div className="min-w-0">
                         <p className="text-sm font-black text-slate-900 tracking-tight leading-none uppercase">KKN SAIZU</p>
-                        <p className="text-[10px] font-bold text-primary mt-1 tracking-[0.1em] uppercase opacity-70">Management v2.2</p>
+                        <p className="text-[10px] font-bold text-primary mt-1 tracking-[0.1em] uppercase opacity-70">Manajemen v2.2</p>
                     </div>
                 </div>
 

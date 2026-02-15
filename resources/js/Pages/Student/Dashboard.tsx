@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import {
     CalendarIcon,
@@ -24,7 +23,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
     const isGroupPinned = registration?.group;
 
     return (
-        <AppLayout title="Personal Command Center">
+        <AppLayout title="Pusat Komando Personal">
             <div className="space-y-10 pb-16 animate-in fade-in duration-700">
                 {/* Modern Hero Section */}
                 <div className="bg-white rounded-[2rem] border border-slate-200/60 p-10 flex flex-col md:flex-row items-center gap-10 shadow-sm relative overflow-hidden group">
@@ -40,23 +39,23 @@ export default function StudentDashboard({ student, registration, dailyReportCou
 
                     <div className="flex-1 text-center md:text-left relative z-10">
                         <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-                            <span className="px-2.5 py-0.5 rounded-lg bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/10">Student Node</span>
+                            <span className="px-2.5 py-0.5 rounded-lg bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/10">Node Mahasiswa</span>
                             <span className="h-1 w-1 rounded-full bg-slate-300" />
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{student?.nim}</span>
                         </div>
                         <h1 className="text-4xl font-black text-slate-900 tracking-tighter">
-                            Welcome back, <span className="text-primary italic">{student?.name?.split(' ')[0]}</span>!
+                            Selamat Datang Kembali, <span className="text-primary italic">{student?.name?.split(' ')[0]}</span>!
                         </h1>
-                        <p className="text-slate-400 font-bold mt-2 uppercase tracking-widest text-xs">Academic Batch {student?.batch_year}</p>
+                        <p className="text-slate-400 font-bold mt-2 uppercase tracking-widest text-xs">Angkatan Akademik {student?.batch_year}</p>
                     </div>
 
                     <div className="relative z-10 flex flex-col items-center md:items-end gap-3">
                         <div className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] border shadow-sm ${registration?.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-100'
                             }`}>
-                            STATUS: {registration?.status ?? 'UNREGISTERED'}
+                            STATUS: {registration?.status === 'approved' ? 'TERDAFTAR' : 'BELUM TERDAFTAR'}
                         </div>
                         {registration?.status === 'approved' && (
-                            <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest animate-pulse">Session Active</p>
+                            <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest animate-pulse">Sesi Aktif</p>
                         )}
                     </div>
                 </div>
@@ -73,9 +72,9 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                                         <div className="p-2 bg-white/10 rounded-lg">
                                             <MapPinIcon className="h-6 w-6" />
                                         </div>
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Deployment Location</span>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Lokasi Penempatan</span>
                                     </div>
-                                    <h2 className="text-4xl font-black tracking-tighter mb-2 italic">{registration.group.location?.name ?? 'Assigned Location'}</h2>
+                                    <h2 className="text-4xl font-black tracking-tighter mb-2 italic">{registration.group.location?.name ?? 'Lokasi Terdaftar'}</h2>
                                     <p className="text-slate-400 text-lg font-bold uppercase tracking-widest mb-10 opacity-80">{registration.group.name}</p>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-10 border-t border-white/5">
@@ -84,8 +83,8 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                                                 <UserIcon className="h-7 w-7" />
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Supervisor (DPL)</p>
-                                                <p className="font-black text-lg tracking-tight leading-none">{registration.group.lecturer?.name ?? 'TBA'}</p>
+                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Dosen Pembimbing (DPL)</p>
+                                                <p className="font-black text-lg tracking-tight leading-none">{registration.group.lecturer?.name ?? 'Belum Ditentukan'}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-5">
@@ -93,7 +92,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                                                 <CalendarIcon className="h-7 w-7" />
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Active Cycle</p>
+                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Siklus Aktif</p>
                                                 <p className="font-black text-lg tracking-tight leading-none">{registration.period?.name}</p>
                                             </div>
                                         </div>
@@ -119,20 +118,20 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                         {/* Recent Progress / Stats */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <StatCard
-                                title="Logs Submitted"
+                                title="Laporan Terkirim"
                                 value={dailyReportCount}
-                                unit="Reports"
+                                unit="Laporan"
                                 icon={DocumentTextIcon}
                                 color="teal"
                             />
                             <StatCard
-                                title="Final Status"
-                                value={finalReport ? 'SUBMITTED' : 'PENDING'}
+                                title="Status Akhir"
+                                value={finalReport ? 'TERKIRIM' : 'PENDING'}
                                 icon={ShieldCheckIcon}
                                 color="teal"
                             />
                             <StatCard
-                                title="Academic Workshop"
+                                title="Workshop Akademik"
                                 value="2 / 3"
                                 icon={AcademicCapIcon}
                                 color="slate"
@@ -145,26 +144,26 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                         <div className="bg-white rounded-[2rem] border border-slate-200/60 p-8 shadow-sm">
                             <h3 className="text-xl font-black text-slate-900 tracking-tighter uppercase italic flex items-center gap-3 mb-8">
                                 <SparklesIcon className="h-6 w-6 text-primary" />
-                                Quick Operations
+                                Operasi Cepat
                             </h3>
                             <div className="space-y-4">
                                 <QuickActionButton
                                     href="/student/daily-reports"
                                     icon={DocumentTextIcon}
-                                    label="Logbook Submission"
-                                    desc="Record daily field activities"
+                                    label="Pengajuan Logbook"
+                                    desc="Catat aktivitas lapangan harian"
                                 />
                                 <QuickActionButton
                                     href="/student/final-report"
                                     icon={CloudArrowUpIcon}
-                                    label="Upload Documentation"
-                                    desc="Submit final outcome files"
+                                    label="Unggah Dokumentasi"
+                                    desc="Kirim file luaran akhir"
                                 />
                                 <QuickActionButton
                                     href="/student/workshops"
                                     icon={CalendarIcon}
-                                    label="Workshop Agenda"
-                                    desc="View mandatory schedules"
+                                    label="Agenda Workshop"
+                                    desc="Lihat jadwal wajib"
                                 />
                             </div>
                         </div>
@@ -173,15 +172,15 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                             <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-transparent pointer-events-none" />
                             <h3 className="text-lg font-black mb-6 flex items-center gap-3 uppercase tracking-tighter">
                                 <span className="h-2 w-2 bg-rose-500 rounded-full animate-ping" />
-                                Critical Briefing
+                                Pengarahan Penting
                             </h3>
                             <div className="space-y-4 relative z-10">
                                 <div className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all cursor-default">
-                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Grading Deadline</p>
+                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Batas Waktu Penilaian</p>
                                     <p className="text-sm font-bold text-slate-200 leading-tight">Pastikan seluruh logbook telah di-approve sebelum 15 Maret 2026.</p>
                                 </div>
                                 <div className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all cursor-default">
-                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Video Outcome</p>
+                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Luaran Video</p>
                                     <p className="text-sm font-bold text-slate-200 leading-tight">Video dokumentasi durasi minimal 3 menit dengan format HD 1080p.</p>
                                 </div>
                             </div>

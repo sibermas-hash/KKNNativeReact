@@ -10,7 +10,8 @@ import {
     ChartPieIcon,
     ArrowUpRightIcon,
     RectangleGroupIcon,
-    UserPlusIcon
+    UserPlusIcon,
+    CheckBadgeIcon,
 } from '@heroicons/react/24/outline';
 import { Deferred } from '@inertiajs/react';
 
@@ -56,29 +57,24 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
     }, []);
 
     return (
-        <AppLayout title="Dashboard Analysis">
+        <AppLayout title="Analisis Dasbor">
             <div className="space-y-10 pb-16 animate-in fade-in duration-700">
-                {/* Modern Header Section */}
+                {/* Bagian Header Modern */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200/60">
                     <div>
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="px-2.5 py-0.5 rounded-lg bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/10">Admin Control</span>
-                            <span className="h-1 w-1 rounded-full bg-slate-300" />
-                            <span className="text-[10px] font-bold text-slate-400">Update Real-time 2026</span>
+                            <span className="px-2 py-1 rounded-lg bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">KONTROL ADMIN</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">• Pembaruan Real-time 2026</span>
                         </div>
                         <h1 className="text-4xl font-black text-slate-900 tracking-tighter">
-                            Overview <span className="text-primary italic">Intelligence</span>
+                            Ringkasan <span className="text-primary italic">Sistem</span>
                         </h1>
                     </div>
-                    <div className="flex gap-3">
-                        <Link
-                            href="/admin/registrations"
-                            className="flex items-center gap-2 px-6 py-3 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all active:scale-95"
-                        >
-                            <UserPlusIcon className="h-4 w-4" />
-                            Validasi Mahasiswa
-                        </Link>
-                    </div>
+
+                    <Link href="/admin/validate" className="group flex items-center gap-3 px-6 py-4 bg-primary text-white rounded-2xl shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all active:scale-95">
+                        <CheckBadgeIcon className="w-6 h-6 animate-pulse" />
+                        <span className="text-sm font-black uppercase tracking-widest">VALIDASI MAHASISWA</span>
+                    </Link>
                 </div>
 
                 {/* KPI Cards Grid */}
@@ -133,15 +129,15 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                                         <div className="p-2.5 bg-primary/5 text-primary rounded-xl">
                                             <ChartPieIcon className="h-6 w-6" />
                                         </div>
-                                        SDG Alignment Distribution
+                                        Distribusi Penyelarasan SDG
                                     </h3>
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">Analytics Data</span>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">DATA ANALITIK</span>
                                 </div>
 
                                 <Deferred data="sdg_distribution" fallback={<div className="h-64 bg-slate-50 animate-pulse rounded-xl" />}>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-8">
-                                        {sdg_distribution && sdg_distribution.length > 0 ? (
-                                            sdg_distribution.slice(0, 10).map((item: any) => {
+                                    {sdg_distribution && sdg_distribution.length > 0 ? (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-8">
+                                            {sdg_distribution.slice(0, 10).map((item: any) => {
                                                 const sdg = SDG_DETAILS[item.id] || { name: 'Unknown', color: 'bg-slate-500' };
                                                 const total = sdg_distribution.reduce((acc: number, curr: any) => acc + curr.count, 0);
                                                 const percentage = Math.round((item.count / total) * 100);
@@ -167,14 +163,14 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                                                         </div>
                                                     </div>
                                                 );
-                                            })
-                                        ) : (
-                                            <div className="col-span-full py-16 text-center border-2 border-dashed border-slate-100 rounded-2xl">
-                                                <SparklesIcon className="h-10 w-10 text-slate-200 mx-auto mb-4" />
-                                                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Initial impact analysis pending</p>
-                                            </div>
-                                        )}
-                                    </div>
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <div className="col-span-full py-16 text-center border-2 border-dashed border-slate-100 rounded-2xl">
+                                            <SparklesIcon className="h-10 w-10 text-slate-200 mx-auto mb-4" />
+                                            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">ANALISIS DAMPAK AWAL TERTUNDA</p>
+                                        </div>
+                                    )}
                                 </Deferred>
                             </div>
                         </div>
@@ -184,9 +180,9 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                             <div className="p-8 border-b border-slate-100 flex items-center justify-between">
                                 <h3 className="text-xl font-black tracking-tight flex items-center gap-3 italic">
                                     <UserPlusIcon className="h-6 w-6 text-primary" />
-                                    Latest Interactions
+                                    Interaksi Terbaru
                                 </h3>
-                                <Link href="/admin/registrations" className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">View Ledger →</Link>
+                                <Link href="/admin/registrations" className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">Lihat Buku Besar →</Link>
                             </div>
                             <div className="divide-y divide-slate-50">
                                 <Deferred data="recentRegistrations" fallback={<div className="p-12 space-y-6">{[1, 2, 3].map(i => <div key={i} className="h-14 bg-slate-50 animate-pulse rounded-xl" />)}</div>}>
@@ -211,7 +207,7 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                                             </div>
                                         ))
                                     ) : (
-                                        <div className="p-16 text-center text-slate-400 italic">No recent registrations detected in the system.</div>
+                                        <div className="p-16 text-center text-slate-400 italic">Tidak ada pendaftaran terbaru terdeteksi dalam sistem.</div>
                                     )}
                                 </Deferred>
                             </div>
@@ -225,12 +221,12 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                             <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent pointer-events-none" />
                             <div className="relative z-10">
                                 <ShieldCheckIcon className="h-12 w-12 text-primary mb-6 group-hover:scale-110 transition-transform" />
-                                <h4 className="text-2xl font-black tracking-tighter mb-4 leading-none uppercase">Security Oversight</h4>
+                                <h4 className="text-2xl font-black tracking-tighter mb-4 leading-none uppercase">PENGAWASAN KEAMANAN</h4>
                                 <p className="text-slate-400 text-sm font-medium leading-relaxed mb-8 opacity-80">
-                                    Full traceability of all administrative actions. Compliance with data integrity protocols verified.
+                                    Pelacakan penuh semua tindakan administratif. Kepatuhan dengan protokol integritas data terverifikasi.
                                 </p>
                                 <Link href="/admin/audit-log" className="flex items-center justify-center gap-2 w-full py-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
-                                    Enter Security Log
+                                    MASUK LOG KEAMANAN
                                     <ArrowUpRightIcon className="h-3.5 w-3.5" />
                                 </Link>
                             </div>
@@ -243,15 +239,15 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                                     <DocumentTextIcon className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <h4 className="text-lg font-black tracking-tight leading-none italic uppercase">Metrics</h4>
-                                    <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Global Documents Progress</p>
+                                    <h4 className="text-lg font-black tracking-tight leading-none italic uppercase">METRIK</h4>
+                                    <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-widest">PROGRES DOKUMEN GLOBAL</p>
                                 </div>
                             </div>
                             <Deferred data="stats" fallback={<div className="space-y-6 animate-pulse"><div className="h-10 bg-slate-50 rounded-lg" /><div className="h-10 bg-slate-50 rounded-lg" /></div>}>
                                 <div className="space-y-6">
-                                    <ProgressItem label="Daily Activity" value={stats?.total_reports || 0} max={100} />
-                                    <ProgressItem label="Operational Plans" value={stats?.total_work_programs || 0} max={50} />
-                                    <ProgressItem label="Final Assessment" value={stats?.total_final_reports || 0} max={20} />
+                                    <ProgressItem label="Aktivitas Harian" value={stats?.total_reports || 0} max={100} />
+                                    <ProgressItem label="Rencana Operasional" value={stats?.total_work_programs || 0} max={50} />
+                                    <ProgressItem label="Penilaian Akhir" value={stats?.total_final_reports || 0} max={20} />
                                 </div>
                             </Deferred>
                         </div>

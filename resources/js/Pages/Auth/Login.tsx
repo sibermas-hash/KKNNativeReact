@@ -15,16 +15,16 @@ export default function Login() {
   };
 
   return (
-    <GuestLayout title="Login">
+    <GuestLayout title="Masuk">
       <form onSubmit={submit} className="space-y-6">
         <div>
           <label htmlFor="login" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
-            Identity Credential
+            Identitas Pengguna
           </label>
           <input
             id="login"
             type="text"
-            placeholder="NIM, NIP or Username"
+            placeholder="NIM, NIP atau Username"
             value={data.login}
             onChange={(event) => setData('login', event.target.value)}
             className="w-full rounded-xl bg-slate-50 border border-slate-100 px-5 py-4 text-slate-900 font-medium shadow-inner focus:bg-white focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all outline-none"
@@ -36,13 +36,13 @@ export default function Login() {
         <div>
           <div className="flex items-center justify-between mb-2">
             <label htmlFor="password" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">
-              Secure Key
+              Kata Sandi
             </label>
             <Link
               href="/forgot-password"
               className="text-[10px] font-bold text-primary hover:underline uppercase tracking-tight"
             >
-              Recover Access?
+              Lupa Kata Sandi?
             </Link>
           </div>
           <input
@@ -65,7 +65,7 @@ export default function Login() {
               onChange={(event) => setData('remember', event.target.checked)}
               className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary transition-all"
             />
-            Keep Session
+            Ingat Sesi Saya
           </label>
         </div>
 
@@ -74,10 +74,9 @@ export default function Login() {
           disabled={processing}
           className="w-full rounded-xl bg-primary py-4 text-xs font-black text-white uppercase tracking-[0.2em] shadow-lg shadow-primary/20 transition-all hover:bg-primary-dark hover:-translate-y-0.5 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {processing ? 'AUTHORIZING...' : 'GRAND ACCESS'}
+          {processing ? 'MENGOTORISASI...' : 'MASUK SEKARANG'}
         </button>
       </form>
     </GuestLayout>
   );
 }
-

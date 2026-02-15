@@ -39,7 +39,7 @@ function LogItem({ log }: { log: any }) {
 
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 flex-wrap mb-3">
-                    <span className="text-slate-900 font-black tracking-tighter text-lg">{log.user?.name ?? 'System Intelligence'}</span>
+                    <span className="text-slate-900 font-black tracking-tighter text-lg">{log.user?.name ?? 'Intelijen Sistem'}</span>
                     <span className={`px-4 py-1 rounded-xl text-[10px] font-black tracking-widest border uppercase shadow-sm ${cfg.bg} ${cfg.color}`}>
                         {log.action}
                     </span>
@@ -94,19 +94,19 @@ export default function AuditLogIndex({ logs, stats, filters, actions }: {
     )
 
     return (
-        <AppLayout title="Security Oversight">
-            <Head title="Audit Log System" />
+        <AppLayout title="Pengawasan Keamanan">
+            <Head title="Sistem Audit Log" />
             <div className="space-y-12 animate-in fade-in duration-700 pb-16">
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-slate-200/60">
                     <div>
                         <div className="flex items-center gap-2 mb-3">
-                            <span className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-600 text-[10px] font-black uppercase tracking-widest border border-rose-100">Compliance Verified</span>
+                            <span className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-600 text-[10px] font-black uppercase tracking-widest border border-rose-100">Kepatuhan Terverifikasi</span>
                             <span className="h-1 w-1 rounded-full bg-slate-300" />
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Real-time Persistence</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Persistensi Real-time</span>
                         </div>
                         <h1 className="text-4xl font-black text-slate-900 tracking-tighter">
-                            Activity <span className="text-primary italic">Ledger</span>
+                            Buku Besar <span className="text-primary italic">Aktivitas</span>
                         </h1>
                     </div>
                 </div>
@@ -114,10 +114,10 @@ export default function AuditLogIndex({ logs, stats, filters, actions }: {
                 {/* Stats Grid - Refined Teal */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
-                        { label: 'System Events', value: stats.total, icon: BoltIcon, color: 'text-primary', bg: 'bg-primary/5' },
-                        { label: 'Critical Risk', value: stats.high_risk, icon: ShieldExclamationIcon, color: 'text-rose-600', bg: 'bg-rose-50' },
-                        { label: 'Active Operators', value: stats.unique_users, icon: UserCircleIcon, color: 'text-slate-900', bg: 'bg-slate-50' },
-                        { label: 'Captured Today', value: stats.today_logs, icon: ArrowPathIcon, color: 'text-primary', bg: 'bg-primary/5' },
+                        { label: 'Kejadian Sistem', value: stats.total, icon: BoltIcon, color: 'text-primary', bg: 'bg-primary/5' },
+                        { label: 'Risiko Kritis', value: stats.high_risk, icon: ShieldExclamationIcon, color: 'text-rose-600', bg: 'bg-rose-50' },
+                        { label: 'Operator Aktif', value: stats.unique_users, icon: UserCircleIcon, color: 'text-slate-900', bg: 'bg-slate-50' },
+                        { label: 'Tercatat Hari Ini', value: stats.today_logs, icon: ArrowPathIcon, color: 'text-primary', bg: 'bg-primary/5' },
                     ].map((s, i) => (
                         <div key={i} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200/60 flex items-center justify-between group transition-all hover:bg-slate-50 hover:-translate-y-1">
                             <div>
@@ -138,7 +138,7 @@ export default function AuditLogIndex({ logs, stats, filters, actions }: {
                             <MagnifyingGlassIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400 group-focus-within:text-primary transition-colors" />
                             <input
                                 type="text"
-                                placeholder="Query history, users, or IP identifiers..."
+                                placeholder="Cari riwayat, pengguna, atau identifier IP..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && applyFilters()}
@@ -151,16 +151,19 @@ export default function AuditLogIndex({ logs, stats, filters, actions }: {
                                 onChange={(e) => applyFilters({ action: e.target.value })}
                                 className="px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 bg-white border border-slate-200 outline-none focus:border-primary/30 shadow-sm cursor-pointer"
                             >
-                                <option value="">Action Schema</option>
-                                {actions.map((a) => (
-                                    <option key={a} value={a}>{a}</option>
-                                ))}
+                                <option value="">Skema Aksi</option>
+                                <option value="LOGIN">LOGIN</option>
+                                <option value="CREATE">CREATE</option>
+                                <option value="UPDATE">UPDATE</option>
+                                <option value="DELETE">DELETE</option>
+                                <option value="GATE_BYPASS">GATE_BYPASS</option>
+                                <option value="FINALISASI">FINALISASI</option>
                             </select>
                             <button
                                 onClick={() => applyFilters()}
                                 className="px-10 py-4 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all active:scale-95 flex items-center gap-3"
                             >
-                                <FunnelIcon className="w-5 h-5" /> Execute Filter
+                                <FunnelIcon className="w-5 h-5" /> Terapkan Filter
                             </button>
                         </div>
                     </div>
@@ -173,7 +176,7 @@ export default function AuditLogIndex({ logs, stats, filters, actions }: {
                         ) : (
                             <div className="py-24 text-center opacity-40">
                                 <ShieldExclamationIcon className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-                                <p className="text-sm font-black uppercase tracking-widest text-slate-400">No security events found in ledger</p>
+                                <p className="text-sm font-black uppercase tracking-widest text-slate-400">Tidak ada kejadian keamanan ditemukan dalam buku besar</p>
                             </div>
                         )}
                     </div>
@@ -181,7 +184,7 @@ export default function AuditLogIndex({ logs, stats, filters, actions }: {
                     {/* Pagination - Premium Minimalist */}
                     <div className="px-10 py-10 bg-slate-50/50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-6">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                            Showing <span className="text-slate-900 border-b-2 border-primary/20">{logs.from ?? 0}</span> to <span className="text-slate-900 border-b-2 border-primary/20">{logs.to ?? 0}</span> of <span className="text-slate-900">{logs.total}</span> entries
+                            Menampilkan <span className="text-slate-900 border-b-2 border-primary/20">{logs.from ?? 0}</span> sampai <span className="text-slate-900 border-b-2 border-primary/20">{logs.to ?? 0}</span> dari <span className="text-slate-900">{logs.total}</span> entri
                         </p>
                         <div className="flex gap-2.5">
                             {logs.links.map((link: any, idx: number) => (

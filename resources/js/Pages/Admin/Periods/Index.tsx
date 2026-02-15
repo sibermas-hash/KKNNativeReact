@@ -239,7 +239,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                             ) : (
                                 periods.data.map((p, idx) => (
                                     <tr key={p.id} className="transition hover:bg-slate-50/80 group">
-                                        <td className="px-4 py-4 text-xs text-slate-400 font-mono">{(periods.meta.current_page - 1) * periods.meta.per_page + idx + 1}</td>
+                                        <td className="px-4 py-4 text-xs text-slate-400 font-mono">{((periods.meta?.current_page || 1) - 1) * (periods.meta?.per_page || 10) + idx + 1}</td>
                                         <td className="px-4 py-4 text-sm font-black text-slate-800 tracking-tight">{p.angkatan}</td>
                                         <td className="px-4 py-4 text-sm text-slate-600 font-black uppercase tracking-tighter">{p.jenis}</td>
                                         <td className="px-4 py-4 text-sm text-slate-500">{p.academic_year?.year || '-'}</td>

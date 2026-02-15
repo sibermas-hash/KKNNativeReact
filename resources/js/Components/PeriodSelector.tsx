@@ -65,7 +65,7 @@ export default function PeriodSelector({ className = '' }: PeriodSelectorProps) 
                     </span>
                     <span className="font-bold text-sm">
                         {activePeriod
-                            ? `KKN ${activePeriod.angkatan || ''} • ${activePeriod.jenis || ''}`
+                            ? `KKN ${activePeriod.angkatan ?? ''} • ${activePeriod.jenis ?? ''}`
                             : 'Pilih Periode'}
                     </span>
                 </div>

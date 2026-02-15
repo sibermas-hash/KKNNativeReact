@@ -78,8 +78,10 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
             Route::get('dpl', [Admin\UserController::class , 'dosenIndex'])->name('dpl.index');
             Route::get('mahasiswa', [Admin\UserController::class , 'mahasiswaIndex'])->name('mahasiswa.index');
 
-            // DPL Assignment
+            // DPL Assignment & Sync
             Route::get('dpl/assignment', [Admin\DplAssignmentController::class , 'index'])->name('dpl.assignment');
+            Route::get('dpl/sync', [Admin\DplSyncController::class , 'index'])->name('dpl.sync');
+            Route::post('dpl/sync', [Admin\DplSyncController::class , 'sync'])->name('dpl.sync.store');
             Route::post('dpl/assign-period', [Admin\DplAssignmentController::class , 'assignToPeriod'])->name('dpl.assign-period');
             Route::post('dpl/assign-group/{group}', [Admin\DplAssignmentController::class , 'assignToGroup'])->name('dpl.assign-group');
             Route::patch('dpl/remove-period/{dplPeriod}', [Admin\DplAssignmentController::class , 'removeDplFromPeriod'])->name('dpl.remove-period');

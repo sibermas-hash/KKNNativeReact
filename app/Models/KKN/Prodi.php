@@ -18,15 +18,17 @@ class Prodi extends Model
         'faculty_id',
         'code',
         'nama',
+        'master_id',
+        'master_synced_at',
     ];
 
     public function fakultas(): BelongsTo
     {
-        return $this->belongsTo(Fakultas::class, 'faculty_id');
+        return $this->belongsTo(Fakultas::class , 'faculty_id');
     }
 
     public function mahasiswa(): HasMany
     {
-        return $this->hasMany(Mahasiswa::class, 'program_id');
+        return $this->hasMany(Mahasiswa::class , 'program_id');
     }
 }

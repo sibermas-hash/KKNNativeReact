@@ -65,7 +65,7 @@ export default function PeriodSelector({ className = '' }: PeriodSelectorProps) 
                     </span>
                     <span className="font-bold text-sm">
                         {activePeriod
-                            ? `KKN ${activePeriod.angkatan} • ${activePeriod.jenis}`
+                            ? `KKN ${activePeriod.angkatan || ''} • ${activePeriod.jenis || ''}`
                             : 'Pilih Periode'}
                     </span>
                 </div>
@@ -103,8 +103,8 @@ export default function PeriodSelector({ className = '' }: PeriodSelectorProps) 
                                                        ${isSelected ? 'bg-indigo-50' : ''}`}
                                             >
                                                 <div className={`p-2 rounded-lg ${isSelected
-                                                        ? 'bg-indigo-600 text-white'
-                                                        : 'bg-gray-100 text-gray-500'
+                                                    ? 'bg-indigo-600 text-white'
+                                                    : 'bg-gray-100 text-gray-500'
                                                     }`}>
                                                     <CalendarDaysIcon className="w-4 h-4" />
                                                 </div>

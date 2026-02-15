@@ -27,8 +27,16 @@ class SystemSetting extends Model
     public static function get(string $key, $default = null)
     {
         return Cache::remember("system_setting_{$key}", now()->addHours(24), function () use ($key, $default) {
-            $setting = self::where('config_key', $key)->first();
-            return $setting ? $setting->value : $default;
+            try {
+                if (!\Illuminate\Support\Facades\Schema::connection('kkn')->hasTable('system_settings')) {
+                    return $default;
+                }
+                $setting = self::where('config_key', $key)->first();
+                return $setting ? $setting->value : $default;
+            }
+            catch (\Exception $e) {
+                return $default;
+            }
         });
     }
 

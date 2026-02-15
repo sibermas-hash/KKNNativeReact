@@ -137,78 +137,85 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             {/* Mobile overlay */}
             {open && (
                 <div
-                    className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm lg:hidden"
+                    className="fixed inset-0 z-30 bg-slate-900/20 backdrop-blur-sm lg:hidden"
                     onClick={onClose}
                 />
             )}
 
             <aside
-                className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-sidebar transition-transform duration-200 lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'
+                className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col bg-sidebar border-r border-slate-200 transition-transform duration-300 lg:translate-x-0 ${open ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
                     }`}
             >
-                {/* Logo */}
-                <div className="flex h-16 items-center gap-3 border-b border-white/10 px-5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-bold text-white">
-                        K
+                {/* Logo Section */}
+                <div className="flex h-20 items-center gap-3 px-6 border-b border-slate-50">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20 transition-transform hover:scale-105">
+                        <span className="text-xl font-black">K</span>
                     </div>
-                    <div>
-                        <p className="text-sm font-bold text-white">KKN UIN SAIZU</p>
-                        <p className="text-[10px] uppercase tracking-wider text-emerald-400 font-bold italic">Sistem Informasi v2.1</p>
+                    <div className="min-w-0">
+                        <p className="text-sm font-black text-slate-900 tracking-tight leading-none uppercase">KKN SAIZU</p>
+                        <p className="text-[10px] font-bold text-primary mt-1 tracking-[0.1em] uppercase opacity-70">Management v2.2</p>
                     </div>
                 </div>
 
-                {/* Nav */}
-                <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+                {/* Nav Section */}
+                <nav className="flex-1 space-y-7 overflow-y-auto px-4 py-8 custom-scrollbar">
                     {navGroups.map((group) => (
-                        <div key={group.title} className="mb-4">
-                            <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                        <div key={group.title}>
+                            <p className="mb-4 px-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                                 {group.title}
                             </p>
-                            {group.items.map((item) => {
-                                const isActive = currentPath === item.href || currentPath.startsWith(item.href + '/');
-                                return (
-                                    <Link
-                                        key={item.href}
-                                        href={item.href}
-                                        onClick={onClose}
-                                        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${isActive
-                                            ? 'bg-sidebar-active text-white font-medium'
-                                            : 'text-slate-300 hover:bg-sidebar-hover hover:text-white'
-                                            }`}
-                                    >
-                                        <item.icon className="h-5 w-5 flex-shrink-0" />
-                                        {item.label}
-                                    </Link>
-                                );
-                            })}
+                            <div className="space-y-1">
+                                {group.items.map((item) => {
+                                    const isActive = currentPath === item.href || currentPath.startsWith(item.href + '/');
+                                    return (
+                                        <Link
+                                            key={item.href}
+                                            href={item.href}
+                                            onClick={onClose}
+                                            className={`group relative flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-all duration-200 ${isActive
+                                                ? 'bg-primary/10 text-primary font-bold shadow-sm'
+                                                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                                }`}
+                                        >
+                                            {isActive && (
+                                                <div className="absolute right-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-l-full bg-primary" />
+                                            )}
+                                            <item.icon className={`h-5 w-5 flex-shrink-0 transition-all ${isActive ? 'text-primary' : 'text-slate-400 group-hover:text-primary group-hover:scale-110'}`} />
+                                            {item.label}
+                                        </Link>
+                                    );
+                                })}
+                            </div>
                         </div>
                     ))}
 
-                    <div className="mt-4 pt-4 border-t border-white/10">
+                    <div className="mt-4 pt-4 border-t border-slate-100">
                         <Link
                             href="/profile"
                             onClick={onClose}
-                            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${currentPath === '/profile'
-                                ? 'bg-sidebar-active text-white font-medium'
-                                : 'text-slate-300 hover:bg-sidebar-hover hover:text-white'
+                            className={`group flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-all ${currentPath === '/profile'
+                                ? 'bg-primary/10 text-primary font-bold'
+                                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                                 }`}
                         >
-                            <UsersIcon className="h-5 w-5 flex-shrink-0" />
+                            <UsersIcon className={`h-5 w-5 transition-all ${currentPath === '/profile' ? 'text-primary' : 'text-slate-400 group-hover:text-primary'}`} />
                             Profil Saya
                         </Link>
                     </div>
                 </nav>
 
-                {/* User */}
-                <div className="border-t border-white/10 px-5 py-3">
+                {/* User Profile Section - Bottom Hook */}
+                <div className="mt-auto border-t border-slate-100 bg-slate-50/50 p-6">
                     <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-light text-xs font-bold text-white">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-slate-200 text-sm font-black text-primary shadow-sm">
                             {auth.user?.name?.charAt(0) ?? '?'}
                         </div>
                         <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium text-white">{auth.user?.name}</p>
-                            <p className="truncate text-xs text-slate-400 capitalize">{roles[0] ?? 'user'}</p>
-                            <p className="text-[10px] text-emerald-400 font-mono">DEBUG: {JSON.stringify(roles)}</p>
+                            <p className="truncate text-sm font-black text-slate-900 tracking-tight leading-none">{auth.user?.name}</p>
+                            <div className="flex items-center gap-1.5 mt-1.5">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                <p className="truncate text-[10px] font-bold text-slate-400 uppercase tracking-widest">{roles[0] ?? 'operator'}</p>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -11,7 +11,7 @@ class AuditService
     /**
      * Log an administrative intervention or critical action
      */
-    public static function log(string $action, string $description, $model = null, array $oldValues = null, array $newValues = null)
+    public static function log(string $action, string $description, $model = null, ?array $oldValues = null, ?array $newValues = null)
     {
         return LogAudit::create([
             'user_id' => Auth::id(),
@@ -36,7 +36,7 @@ class AuditService
             'GATE_BYPASS_GOD_MODE',
             "Superadmin [{$user->name}] mengakses kemampuan sensitif: {$target}",
             null,
-            ['user_id' => $user->id, 'ability' => $target]
+        ['user_id' => $user->id, 'ability' => $target]
         );
     }
 
@@ -44,15 +44,17 @@ class AuditService
     {
         $high = ['DELETE', 'FORCE_FINALIZE', 'UPDATE_SCORE_ADMIN', 'BYPASS_POLICY', 'MASS_FINALIZE'];
         $medium = ['UPDATE', 'APPROVAL', 'REJECTION'];
-        
+
         $actionUpper = strtoupper($action);
         foreach ($high as $h) {
-            if (str_contains($actionUpper, $h)) return 'high';
+            if (str_contains($actionUpper, $h))
+                return 'high';
         }
         foreach ($medium as $m) {
-            if (str_contains($actionUpper, $m)) return 'medium';
+            if (str_contains($actionUpper, $m))
+                return 'medium';
         }
-        
+
         return 'low';
     }
 }

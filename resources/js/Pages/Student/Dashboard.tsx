@@ -9,7 +9,8 @@ import {
     CloudArrowUpIcon,
     AcademicCapIcon,
     ShieldCheckIcon,
-    ArrowRightIcon
+    ArrowRightIcon,
+    SparklesIcon
 } from '@heroicons/react/24/outline';
 
 interface Props {
@@ -20,31 +21,43 @@ interface Props {
 }
 
 export default function StudentDashboard({ student, registration, dailyReportCount, finalReport }: Props) {
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
     const isGroupPinned = registration?.group;
 
     return (
-        <AppLayout title="Dashboard Mahasiswa">
-            <div className="space-y-8">
-                {/* Header Section */}
-                <div className="bg-white rounded-3xl border border-slate-200 p-8 flex flex-col md:flex-row items-center gap-6 shadow-sm">
-                    <div className="h-20 w-20 rounded-2xl bg-indigo-50 flex items-center justify-center text-primary text-3xl font-bold">
-                        {student?.name?.charAt(0)}
+        <AppLayout title="Personal Command Center">
+            <div className="space-y-10 pb-16 animate-in fade-in duration-700">
+                {/* Modern Hero Section */}
+                <div className="bg-white rounded-[2rem] border border-slate-200/60 p-10 flex flex-col md:flex-row items-center gap-10 shadow-sm relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:scale-110 transition-transform duration-700">
+                        <SparklesIcon className="h-40 w-40 text-primary" />
                     </div>
-                    <div className="flex-1 text-center md:text-left">
-                        <h1 className="text-2xl font-bold text-slate-900">Selamat Datang, {student?.name}!</h1>
-                        <p className="text-slate-500">NIM: {student?.nim} • {student?.batch_year}</p>
+
+                    <div className="relative z-10">
+                        <div className="h-24 w-24 rounded-[1.5rem] bg-primary text-white flex items-center justify-center text-4xl font-black shadow-lg shadow-primary/20 transition-transform group-hover:rotate-6">
+                            {student?.name?.charAt(0)}
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${registration?.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
+
+                    <div className="flex-1 text-center md:text-left relative z-10">
+                        <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+                            <span className="px-2.5 py-0.5 rounded-lg bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/10">Student Node</span>
+                            <span className="h-1 w-1 rounded-full bg-slate-300" />
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{student?.nim}</span>
+                        </div>
+                        <h1 className="text-4xl font-black text-slate-900 tracking-tighter">
+                            Welcome back, <span className="text-primary italic">{student?.name?.split(' ')[0]}</span>!
+                        </h1>
+                        <p className="text-slate-400 font-bold mt-2 uppercase tracking-widest text-xs">Academic Batch {student?.batch_year}</p>
+                    </div>
+
+                    <div className="relative z-10 flex flex-col items-center md:items-end gap-3">
+                        <div className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] border shadow-sm ${registration?.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-100'
                             }`}>
-                            Status: {registration?.status ?? 'Belum Terdaftar'}
-                        </span>
+                            STATUS: {registration?.status ?? 'UNREGISTERED'}
+                        </div>
+                        {registration?.status === 'approved' && (
+                            <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest animate-pulse">Session Active</p>
+                        )}
                     </div>
                 </div>
 
@@ -53,50 +66,52 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                     {/* Left Column: Group & Location Info */}
                     <div className="lg:col-span-2 space-y-8">
                         {isGroupPinned ? (
-                            <div className="bg-gradient-to-br from-indigo-600 to-primary rounded-3xl p-8 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden">
+                            <div className="bg-slate-900 rounded-[2rem] p-10 text-white shadow-xl shadow-slate-200 relative overflow-hidden group">
+                                <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-transparent pointer-events-none" />
                                 <div className="relative z-10">
-                                    <div className="flex items-center gap-2 text-indigo-100 mb-4">
-                                        <MapPinIcon className="h-5 w-5" />
-                                        <span className="text-sm font-semibold uppercase tracking-wider">Lokasi KKN</span>
+                                    <div className="flex items-center gap-3 text-primary mb-6">
+                                        <div className="p-2 bg-white/10 rounded-lg">
+                                            <MapPinIcon className="h-6 w-6" />
+                                        </div>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Deployment Location</span>
                                     </div>
-                                    <h2 className="text-3xl font-bold mb-2">{registration.group.location?.name ?? 'Lokasi Terdaftar'}</h2>
-                                    <p className="text-indigo-100 text-lg mb-8">{registration.group.name}</p>
+                                    <h2 className="text-4xl font-black tracking-tighter mb-2 italic">{registration.group.location?.name ?? 'Assigned Location'}</h2>
+                                    <p className="text-slate-400 text-lg font-bold uppercase tracking-widest mb-10 opacity-80">{registration.group.name}</p>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-white/10">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center">
-                                                <UserIcon className="h-5 w-5" />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-10 border-t border-white/5">
+                                        <div className="flex items-center gap-5">
+                                            <div className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                                <UserIcon className="h-7 w-7" />
                                             </div>
                                             <div>
-                                                <p className="text-xs text-indigo-200">DPL</p>
-                                                <p className="font-bold">{registration.group.lecturer?.name ?? 'Belum Ditentukan'}</p>
+                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Supervisor (DPL)</p>
+                                                <p className="font-black text-lg tracking-tight leading-none">{registration.group.lecturer?.name ?? 'TBA'}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center">
-                                                <CalendarIcon className="h-5 w-5" />
+                                        <div className="flex items-center gap-5">
+                                            <div className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                                <CalendarIcon className="h-7 w-7" />
                                             </div>
                                             <div>
-                                                <p className="text-xs text-indigo-200">Periode</p>
-                                                <p className="font-bold">{registration.period?.name}</p>
+                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Active Cycle</p>
+                                                <p className="font-black text-lg tracking-tight leading-none">{registration.period?.name}</p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 {/* Decorative elements */}
-                                <div className="absolute -right-20 -bottom-20 h-64 w-64 bg-white/5 rounded-full blur-3xl" />
-                                <div className="absolute -left-10 -top-10 h-32 w-32 bg-indigo-400/20 rounded-full blur-2xl" />
+                                <div className="absolute -right-20 -bottom-20 h-80 w-80 bg-primary/10 rounded-full blur-[100px]" />
                             </div>
                         ) : (
-                            <div className="bg-white rounded-3xl border border-dashed border-slate-300 p-12 text-center">
-                                <MapPinIcon className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                                <h3 className="text-xl font-bold text-slate-600">Belum Ada Lokasi</h3>
-                                <p className="text-slate-400 mt-2 mb-6">Silakan selesaikan pendaftaran dan tunggu penempatan kelompok.</p>
+                            <div className="bg-white rounded-[2rem] border-2 border-dashed border-slate-200 p-16 text-center group transition-all hover:border-primary/40 hover:bg-primary/5">
+                                <MapPinIcon className="h-16 w-16 text-slate-200 mx-auto mb-6 group-hover:scale-110 group-hover:text-primary/40 transition-all" />
+                                <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase mb-2">Penempatan Pending</h3>
+                                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs mb-10">Data kelompok belum tersedia atau masih diproses.</p>
                                 <Link
                                     href="/student/register"
-                                    className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/20 hover:scale-105 transition"
+                                    className="inline-flex items-center gap-3 px-10 py-4 bg-primary text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all hover:-translate-y-1"
                                 >
-                                    Daftar Sekarang <ArrowRightIcon className="h-4 w-4" />
+                                    Selesaikan Pendaftaran <ArrowRightIcon className="h-4 w-4" />
                                 </Link>
                             </div>
                         )}
@@ -104,66 +119,70 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                         {/* Recent Progress / Stats */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <StatCard
-                                title="Laporan Harian"
+                                title="Logs Submitted"
                                 value={dailyReportCount}
-                                unit="Hari"
+                                unit="Reports"
                                 icon={DocumentTextIcon}
-                                color="blue"
+                                color="teal"
                             />
                             <StatCard
-                                title="Laporan Akhir"
-                                value={finalReport ? 'Selesai' : 'Belum'}
+                                title="Final Status"
+                                value={finalReport ? 'SUBMITTED' : 'PENDING'}
                                 icon={ShieldCheckIcon}
-                                color="emerald"
+                                color="teal"
                             />
                             <StatCard
-                                title="Kehadiran Workshop"
-                                value="2/3" // Mock behavior for now
+                                title="Academic Workshop"
+                                value="2 / 3"
                                 icon={AcademicCapIcon}
-                                color="amber"
+                                color="slate"
                             />
                         </div>
                     </div>
 
                     {/* Right Column: Quick Actions & Notifications */}
                     <div className="space-y-8">
-                        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
-                            <h3 className="text-lg font-bold text-slate-800 mb-6">Aksi Cepat</h3>
-                            <div className="space-y-3">
+                        <div className="bg-white rounded-[2rem] border border-slate-200/60 p-8 shadow-sm">
+                            <h3 className="text-xl font-black text-slate-900 tracking-tighter uppercase italic flex items-center gap-3 mb-8">
+                                <SparklesIcon className="h-6 w-6 text-primary" />
+                                Quick Operations
+                            </h3>
+                            <div className="space-y-4">
                                 <QuickActionButton
                                     href="/student/daily-reports"
                                     icon={DocumentTextIcon}
-                                    label="Tulis Logbook"
-                                    color="indigo"
+                                    label="Logbook Submission"
+                                    desc="Record daily field activities"
                                 />
                                 <QuickActionButton
                                     href="/student/final-report"
                                     icon={CloudArrowUpIcon}
-                                    label="Unggah Laporan"
-                                    color="emerald"
+                                    label="Upload Documentation"
+                                    desc="Submit final outcome files"
                                 />
                                 <QuickActionButton
                                     href="/student/workshops"
                                     icon={CalendarIcon}
-                                    label="Ikuti Workshop"
-                                    color="amber"
+                                    label="Workshop Agenda"
+                                    desc="View mandatory schedules"
                                 />
                             </div>
                         </div>
 
-                        <div className="bg-slate-900 rounded-3xl p-6 text-white shadow-xl">
-                            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                        <div className="bg-slate-900 rounded-[2rem] p-8 text-white shadow-xl shadow-slate-200 relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-transparent pointer-events-none" />
+                            <h3 className="text-lg font-black mb-6 flex items-center gap-3 uppercase tracking-tighter">
                                 <span className="h-2 w-2 bg-rose-500 rounded-full animate-ping" />
-                                Info Penting
+                                Critical Briefing
                             </h3>
-                            <div className="space-y-4">
-                                <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                                    <p className="text-sm font-semibold mb-1">Batas Penilaian DPL</p>
-                                    <p className="text-xs text-slate-400">Pastikan seluruh logbook telah di-approve sebelum 15 Maret 2026.</p>
+                            <div className="space-y-4 relative z-10">
+                                <div className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all cursor-default">
+                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Grading Deadline</p>
+                                    <p className="text-sm font-bold text-slate-200 leading-tight">Pastikan seluruh logbook telah di-approve sebelum 15 Maret 2026.</p>
                                 </div>
-                                <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                                    <p className="text-sm font-semibold mb-1">Dokumentasi Video</p>
-                                    <p className="text-xs text-slate-400">Video dokumentasi desa berdurasi minimal 3 menit dengan format 1080p.</p>
+                                <div className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all cursor-default">
+                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Video Outcome</p>
+                                    <p className="text-sm font-bold text-slate-200 leading-tight">Video dokumentasi durasi minimal 3 menit dengan format HD 1080p.</p>
                                 </div>
                             </div>
                         </div>
@@ -175,38 +194,34 @@ export default function StudentDashboard({ student, registration, dailyReportCou
 }
 
 function StatCard({ title, value, unit, icon: Icon, color }: any) {
-    const colorMap: any = {
-        blue: 'bg-blue-50 text-blue-600',
-        emerald: 'bg-emerald-50 text-emerald-600',
-        amber: 'bg-amber-50 text-amber-600',
-    };
     return (
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition">
-            <div className={`h-12 w-12 rounded-2xl ${colorMap[color]} flex items-center justify-center mb-4`}>
-                <Icon className="h-6 w-6" />
+        <div className="bg-white border border-slate-200/60 rounded-[1.5rem] p-8 shadow-sm hover:shadow-md hover:bg-slate-50 transition-all group">
+            <div className={`h-14 w-14 rounded-2xl flex items-center justify-center mb-6 border transition-all group-hover:scale-110 shadow-sm ${color === 'teal' ? 'bg-primary/5 text-primary border-primary/10' : 'bg-slate-50 text-slate-400 border-slate-200'
+                }`}>
+                <Icon className="h-7 w-7" />
             </div>
-            <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">{title}</p>
-            <div className="mt-1 flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-slate-900">{value}</span>
-                {unit && <span className="text-xs text-slate-400 font-medium">{unit}</span>}
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 group-hover:text-primary transition-colors">{title}</p>
+            <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-slate-900 tracking-tighter">{value}</span>
+                {unit && <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{unit}</span>}
             </div>
         </div>
     );
 }
 
-function QuickActionButton({ href, icon: Icon, label, color }: any) {
-    const colorMap: any = {
-        indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-primary hover:text-white',
-        emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-600 hover:text-white',
-        amber: 'bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-600 hover:text-white',
-    };
+function QuickActionButton({ href, icon: Icon, label, desc }: any) {
     return (
         <Link
             href={href}
-            className={`flex items-center gap-4 p-4 rounded-2xl border transition-all duration-300 font-bold text-sm ${colorMap[color]}`}
+            className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-slate-50 border border-slate-100 transition-all hover:bg-white hover:border-primary/30 hover:shadow-md group"
         >
-            <Icon className="h-5 w-5" />
-            {label}
+            <div className="h-12 w-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:border-primary/20 transition-all">
+                <Icon className="h-6 w-6" />
+            </div>
+            <div className="min-w-0">
+                <p className="font-black text-sm text-slate-900 leading-none group-hover:text-primary transition-colors uppercase tracking-tight">{label}</p>
+                <p className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-widest truncate">{desc}</p>
+            </div>
         </Link>
     );
 }

@@ -1,27 +1,52 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #0B6B3A;
-  --color-primary-light: #0E8A4B;
-  --color-primary-dark: #07512B;
-  --color-primary-50: #ECFDF5;
-  --color-primary-100: #D1FAE5;
-  --color-primary-500: #0B6B3A;
-  --color-primary-600: #095E33;
-  --color-primary-700: #07512B;
-  --color-primary-800: #064424;
-  --color-primary-900: #04371D;
+  /* Premium Teal Palette - Inspired by 6ktmp6.atoms.world */
+  --color-primary: #02A0AC;
+  /* Teal Main */
+  --color-primary-light: #A2DBDC;
+  /* Teal Light */
+  --color-primary-dark: #01828B;
+  /* Teal Dark */
+  --color-primary-50: #f0f9fa;
+  --color-primary-100: #e0f2f4;
+  --color-primary-500: #02a0ac;
+  --color-primary-600: #028a94;
+  --color-primary-700: #01737b;
+  --color-primary-800: #015c63;
+  --color-primary-900: #014b51;
 
-  --color-accent: #F59E0B;
-  --color-accent-light: #FBBF24;
+  /* Accent Colors */
+  --color-secondary: #64748B;
+  /* Slate Gray for borders/muted text */
+  --color-accent: #f59e0b;
+  /* Warning/Pending orange */
 
-  --color-sidebar: #1E293B;
-  --color-sidebar-hover: #334155;
-  --color-sidebar-active: #0B6B3A;
+  /* Surface Colors - Light Mode Focus */
+  --color-surface-base: #f8fafc;
+  /* Slate-50 */
+  --color-surface-card: #ffffff;
+  --color-surface-border: #e2e8f0;
+  /* Slate-200 */
+  --color-surface-muted: #94a3b8;
+  /* Slate-400 */
 
-  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Sidebar - Light Minimalist */
+  --color-sidebar: #ffffff;
+  --color-sidebar-hover: #f1f5f9;
+  --color-sidebar-active: #02A0AC;
+  --color-sidebar-active-bg: #f0f9fa;
 
+  /* Typography */
+  --font-sans: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Outfit', 'Inter', sans-serif;
+
+  /* Design Tokens - Refined */
   --radius-card: 0.75rem;
+  /* More precise than 2.5rem */
+  --radius-inner: 0.5rem;
+  --shadow-premium: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-xl-premium: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
 }
 
 @layer base {
@@ -29,4 +54,3 @@
     @apply font-sans antialiased;
   }
 }
-

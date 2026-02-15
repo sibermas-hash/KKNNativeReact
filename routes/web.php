@@ -77,6 +77,8 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
             // Specialized User Management
             Route::get('dpl', [Admin\UserController::class , 'dosenIndex'])->name('dpl.index');
             Route::get('mahasiswa', [Admin\UserController::class , 'mahasiswaIndex'])->name('mahasiswa.index');
+            Route::get('mahasiswa/sync', [Admin\StudentSyncController::class , 'index'])->name('mahasiswa.sync');
+            Route::post('mahasiswa/sync', [Admin\StudentSyncController::class , 'sync'])->name('mahasiswa.sync.store');
 
             // DPL Assignment & Sync
             Route::get('dpl/assignment', [Admin\DplAssignmentController::class , 'index'])->name('dpl.assignment');

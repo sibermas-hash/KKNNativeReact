@@ -13,10 +13,10 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        \App\Models\KKN\NilaiKkn::class => \App\Policies\KknScorePolicy::class,
-        \App\Models\KKN\LogAudit::class => \App\Policies\AuditLogPolicy::class,
-        \App\Models\KKN\Proposal::class => \App\Policies\ProposalPolicy::class,
-        \App\Models\KKN\Periode::class => \App\Policies\PeriodPolicy::class,
+        \App\Models\KKN\NilaiKkn::class => \App\Policies\KknScorePolicy::class ,
+        \App\Models\KKN\LogAudit::class => \App\Policies\AuditLogPolicy::class ,
+        \App\Models\KKN\Proposal::class => \App\Policies\ProposalPolicy::class ,
+        \App\Models\KKN\Periode::class => \App\Policies\PeriodPolicy::class ,
     ];
 
     /**
@@ -39,7 +39,7 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         // Define dashboard access gates
-        Gate::define('access-admin-panel', fn($user) => $user->hasAnyRole(['superadmin', 'admin']));
+        Gate::define('access-admin-panel', fn($user) => $user->hasRole('superadmin'));
         Gate::define('access-dpl-panel', fn($user) => $user->hasRole('dpl'));
         Gate::define('access-student-panel', fn($user) => $user->hasRole('student'));
     }

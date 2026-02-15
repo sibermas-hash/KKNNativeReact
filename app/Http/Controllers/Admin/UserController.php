@@ -102,7 +102,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
-            'role' => ['required', 'in:admin,dpl,student'],
+            'role' => ['required', 'in:superadmin,dpl,student'],
             // Student fields
             'nim' => ['required_if:role,student', 'nullable', 'string', 'max:20'],
             'faculty_id' => ['required_if:role,student', 'nullable', 'exists:fakultas,id'],
@@ -112,6 +112,11 @@ class UserController extends Controller
             // Lecturer fields
             'nip' => ['required_if:role,dpl', 'nullable', 'string', 'max:20'],
         ]);
+
+        // Constraint: Only 1 superadmin account allowed
+        if ($validated['role'] === 'superadmin' && User::role('superadmin')->count() >= 1) {
+            return back()->withErrors(['role' => 'Akun Superadmin sudah ada dan hanya boleh ada satu.'])->withInput();
+        }
 
         $user = User::create([
             'username' => $validated['username'],

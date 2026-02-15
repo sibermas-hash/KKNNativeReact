@@ -45,7 +45,7 @@ export default function UserForm({ faculties, programs }: Props) {
                             <FormSelect
                                 id="role" label="Peran Pengguna" required
                                 options={[
-                                    { value: 'admin', label: 'Administrator' },
+                                    { value: 'superadmin', label: 'Administrator (Satu Akun Saja)' },
                                     { value: 'dpl', label: 'Dosen (DPL)' },
                                     { value: 'student', label: 'Mahasiswa' }
                                 ]}

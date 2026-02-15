@@ -37,7 +37,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
     Route::get('/', [DashboardController::class , 'index'])->name('dashboard');
 
     // Admin Area
-    Route::middleware(['role:admin|superadmin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::middleware(['role:superadmin'])->prefix('admin')->name('admin.')->group(function () {
             Route::get('/', [Admin\DashboardController::class , 'index'])->name('dashboard');
 
             // Grades manual input

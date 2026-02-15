@@ -56,7 +56,7 @@ export default function UsersIndex({ users, filters }: Props) {
                         <FormSelect
                             options={[
                                 { value: '', label: 'Semua Peran' },
-                                { value: 'admin', label: 'Administrator' },
+                                { value: 'superadmin', label: 'Administrator' },
                                 { value: 'dpl', label: 'Dosen (DPL)' },
                                 { value: 'student', label: 'Mahasiswa' }
                             ]}
@@ -117,7 +117,7 @@ export default function UsersIndex({ users, filters }: Props) {
                                         <td className="px-6 py-4">
                                             {u.roles.map((r) => (
                                                 <Badge key={r.name} variant="primary" className="mr-1 capitalize text-[10px] font-black px-2 py-0.5">
-                                                    {r.name === 'dpl' ? 'Dosen (DPL)' : r.name === 'student' ? 'Mahasiswa' : r.name}
+                                                    {r.name === 'dpl' ? 'Dosen (DPL)' : r.name === 'student' ? 'Mahasiswa' : r.name === 'superadmin' ? 'Administrator' : r.name}
                                                 </Badge>
                                             ))}
                                         </td>

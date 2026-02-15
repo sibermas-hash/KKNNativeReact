@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Services\PeriodContextService;
 use App\Services\StudentTransferService;
 use App\Models\KKN\Periode;
+use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\KelompokKkn;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class StudentTransferController extends Controller
 {
@@ -17,8 +19,31 @@ class StudentTransferController extends Controller
     ) {}
 
     /**
-     * Execute a student transfer.
+     * Display the student transfer page.
      */
+    public function index()
+    {
+        $periodId = $this->contextService->getActivePeriodId();
+
+        $students = $periodId
+            ? PesertaKkn::with(['mahasiswa', 'kelompok', 'periode'])
+                ->where('period_id', $periodId)
+                ->whereNotIn('status', ['rejected'])
+                ->orderBy('created_at', 'desc')
+                ->get()
+            : collect([]);
+
+        $targetPeriods = Periode::where('id', '!=', $periodId)
+            ->orderByDesc('angkatan')
+            ->orderBy('jenis')
+            ->get(['id', 'name', 'angkatan', 'jenis', 'kuota']);
+
+        return Inertia::render('Admin/Peserta/Transfer', [
+            'students' => $students,
+            'targetPeriods' => $targetPeriods,
+            'title' => 'Transfer Peserta',
+        ]);
+    }
     public function transfer(Request $request)
     {
         $validated = $request->validate([

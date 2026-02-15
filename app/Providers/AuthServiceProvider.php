@@ -16,6 +16,7 @@ class AuthServiceProvider extends ServiceProvider
         \App\Models\KKN\NilaiKkn::class => \App\Policies\KknScorePolicy::class,
         \App\Models\KKN\LogAudit::class => \App\Policies\AuditLogPolicy::class,
         \App\Models\KKN\Proposal::class => \App\Policies\ProposalPolicy::class,
+        \App\Models\KKN\Periode::class => \App\Policies\PeriodPolicy::class,
     ];
 
     /**

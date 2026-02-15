@@ -4,7 +4,7 @@ import type { PageProps } from '@/types';
 import Sidebar from '@/Components/Sidebar';
 import PeriodSelector from '@/Components/PeriodSelector';
 import { Bars3Icon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
-import { ToastProvider, useToast, ToastPriority } from '@/Contexts/ToastContext';
+import { ToastProvider, useToast } from '@/Contexts/ToastContext';
 import BellDropdown from '@/Components/Layout/BellDropdown';
 
 function AppLayoutContent({

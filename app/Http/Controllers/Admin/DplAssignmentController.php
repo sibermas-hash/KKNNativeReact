@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\DplPeriod;
 use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\Periode;
 use App\Services\PeriodContextService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class DplAssignmentController extends Controller
 {
@@ -17,8 +19,27 @@ class DplAssignmentController extends Controller
     ) {}
 
     /**
-     * Assign a DPL to a period with max group capacity.
+     * Display the DPL assignment management page.
      */
+    public function index()
+    {
+        $assignments = DplPeriod::with(['dosen', 'periode'])
+            ->withCount('kelompok')
+            ->orderByDesc('created_at')
+            ->get();
+
+        $allDosen = Dosen::orderBy('nama')->get(['id', 'nama', 'nip']);
+        $allPeriods = Periode::orderByDesc('angkatan')
+            ->orderBy('jenis')
+            ->get(['id', 'name', 'angkatan', 'jenis']);
+
+        return Inertia::render('Admin/Dpl/Assignment', [
+            'assignments' => $assignments,
+            'allDosen' => $allDosen,
+            'allPeriods' => $allPeriods,
+            'title' => 'Penugasan DPL',
+        ]);
+    }
     public function assignToPeriod(Request $request)
     {
         $validated = $request->validate([

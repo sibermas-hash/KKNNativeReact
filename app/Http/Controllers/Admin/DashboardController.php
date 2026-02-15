@@ -3,55 +3,66 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\KKN\KegiatanKkn;
-use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\PesertaKkn;
-use App\Models\KKN\Mahasiswa;
-use App\Models\KKN\Periode;
-use App\Models\KKN\ProgramKerja;
-use App\Models\KKN\LaporanAkhir;
+use App\Services\DashboardStatisticsService;
 use App\Services\MasterApi;
+use App\Services\PeriodContextService;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
+    public function __construct(
+        private DashboardStatisticsService $statsService,
+        private PeriodContextService $contextService,
+    ) {}
+
     public function index(): Response
     {
-        $activePeriod = Periode::getActivePeriod();
+        $periodId = $this->contextService->getActivePeriodId();
 
         return Inertia::render('Admin/Dashboard', [
             'masterGroups' => Inertia::defer(function (MasterApi $api) {
                 return $api->getGroups();
             }),
-            'stats' => Inertia::defer(function () use ($activePeriod) {
-                return [
-                    'total_students' => Mahasiswa::count(),
-                    'total_groups' => KelompokKkn::count(),
-                    'total_reports' => KegiatanKkn::count(),
-                    'pending_registrations' => PesertaKkn::where('status', 'pending')->count(),
-                    'active_period' => $activePeriod?->name ?? '-',
-                    'total_work_programs' => ProgramKerja::count(),
-                    'total_final_reports' => LaporanAkhir::count(),
-                ];
-            }),
-            'sdg_distribution' => Inertia::defer(function () {
-                $rawSdgs = ProgramKerja::select('sdg_goals')
-                    ->whereNotNull('sdg_goals')
-                    ->get()
-                    ->flatMap(fn($wp) => (array)$wp->sdg_goals);
-                
-                return $rawSdgs->countBy()->map(function($count, $id) {
+            'stats' => Inertia::defer(function () use ($periodId) {
+                if (!$periodId) {
                     return [
-                        'id' => (int)$id,
-                        'count' => $count,
+                        'total_students' => 0,
+                        'total_groups' => 0,
+                        'total_reports' => 0,
+                        'pending_registrations' => 0,
+                        'total_work_programs' => 0,
+                        'total_final_reports' => 0,
+                        'active_period' => '-',
                     ];
-                })->values();
+                }
+
+                $statistics = $this->statsService->getPeriodStatistics($periodId);
+                $periodData = $this->contextService->getActivePeriodData();
+
+                return array_merge(
+                    $statistics['summary'],
+                    ['active_period' => $periodData['name'] ?? '-']
+                );
             }),
-            'recentRegistrations' => Inertia::defer(fn() => PesertaKkn::with(['mahasiswa.user', 'periode'])
-                ->latest()
-                ->take(5)
-                ->get()),
+            'sdg_distribution' => Inertia::defer(function () use ($periodId) {
+                if (!$periodId) {
+                    return [];
+                }
+                $statistics = $this->statsService->getPeriodStatistics($periodId);
+                return $statistics['sdg_distribution'];
+            }),
+            'recentRegistrations' => Inertia::defer(function () use ($periodId) {
+                if (!$periodId) {
+                    return [];
+                }
+                return \App\Models\KKN\PesertaKkn::with(['mahasiswa.user', 'periode'])
+                    ->where('period_id', $periodId)
+                    ->latest()
+                    ->take(5)
+                    ->get();
+            }),
         ]);
     }
 }
+

@@ -2,6 +2,7 @@ import { useState, useEffect, type PropsWithChildren } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import type { PageProps } from '@/types';
 import Sidebar from '@/Components/Sidebar';
+import PeriodSelector from '@/Components/PeriodSelector';
 import { Bars3Icon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import { ToastProvider, useToast, ToastPriority } from '@/Contexts/ToastContext';
 import BellDropdown from '@/Components/Layout/BellDropdown';
@@ -44,6 +45,7 @@ function AppLayoutContent({
           )}
 
           <div className="ml-auto flex items-center gap-4">
+            <PeriodSelector />
             <BellDropdown />
 
             <div className="h-6 w-px bg-white/10 hidden sm:block" />

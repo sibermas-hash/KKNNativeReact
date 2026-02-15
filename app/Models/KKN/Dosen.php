@@ -42,8 +42,42 @@ class Dosen extends Model
         return $this->hasMany(KelompokKkn::class, 'dpl_id');
     }
 
+    public function dplPeriods(): HasMany
+    {
+        return $this->hasMany(DplPeriod::class, 'dosen_id');
+    }
+
     public function profile(): MorphOne
     {
         return $this->morphOne(UserProfile::class, 'profileable');
+    }
+
+    /**
+     * Check if this DPL can take more groups in a specific period.
+     */
+    public function canTakeMoreGroups(int $periodId): bool
+    {
+        $dplPeriod = $this->dplPeriods()
+            ->where('period_id', $periodId)
+            ->where('is_active', true)
+            ->first();
+
+        if (!$dplPeriod) {
+            return false;
+        }
+
+        return $dplPeriod->hasCapacity();
+    }
+
+    /**
+     * Scope: Available DPL for a specific period (still has capacity).
+     */
+    public function scopeAvailableForPeriod($query, int $periodId)
+    {
+        return $query->whereHas('dplPeriods', function ($q) use ($periodId) {
+            $q->where('period_id', $periodId)
+              ->where('is_active', true)
+              ->whereRaw('(SELECT COUNT(*) FROM kelompok_kkn WHERE dpl_period_id = dpl_periods.id) < max_groups');
+        });
     }
 }

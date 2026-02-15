@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class KelompokKkn extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $connection = 'kkn';
     protected $table = 'kelompok_kkn';
@@ -18,6 +19,7 @@ class KelompokKkn extends Model
         'period_id',
         'location_id',
         'dpl_id',
+        'dpl_period_id',
         'code',
         'nama_kelompok',
         'token',
@@ -42,6 +44,11 @@ class KelompokKkn extends Model
     public function dpl(): BelongsTo
     {
         return $this->belongsTo(Dosen::class, 'dpl_id');
+    }
+
+    public function dplPeriod(): BelongsTo
+    {
+        return $this->belongsTo(DplPeriod::class, 'dpl_period_id');
     }
 
     public function peserta(): HasMany

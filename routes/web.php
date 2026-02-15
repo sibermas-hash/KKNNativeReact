@@ -76,6 +76,16 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::get('dpl', [Admin\UserController::class, 'dosenIndex'])->name('dpl.index');
         Route::get('mahasiswa', [Admin\UserController::class, 'mahasiswaIndex'])->name('mahasiswa.index');
 
+        // DPL Assignment
+        Route::post('dpl/assign-period', [Admin\DplAssignmentController::class, 'assignToPeriod'])->name('dpl.assign-period');
+        Route::post('dpl/assign-group/{group}', [Admin\DplAssignmentController::class, 'assignToGroup'])->name('dpl.assign-group');
+        Route::patch('dpl/remove-period/{dplPeriod}', [Admin\DplAssignmentController::class, 'removeDplFromPeriod'])->name('dpl.remove-period');
+        Route::get('api/available-dpl', [Admin\DplAssignmentController::class, 'getAvailableDpl'])->name('api.available-dpl');
+
+        // Student Transfer
+        Route::post('peserta/transfer', [Admin\StudentTransferController::class, 'transfer'])->name('peserta.transfer');
+        Route::get('api/transfer-targets', [Admin\StudentTransferController::class, 'getTransferTargets'])->name('api.transfer-targets');
+
         // Registrations
         Route::get('registrations', [Admin\PesertaKknController::class, 'index'])->name('registrations.index');
         Route::get('registrations/{pesertaKkn}', [Admin\PesertaKknController::class, 'show'])->name('registrations.show');

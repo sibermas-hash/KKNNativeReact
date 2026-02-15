@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Periode extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $connection = 'kkn';
     protected $table = 'periode';
@@ -70,5 +71,10 @@ class Periode extends Model
     public function peserta(): HasMany
     {
         return $this->hasMany(PesertaKkn::class, 'period_id');
+    }
+
+    public function dplPeriods(): HasMany
+    {
+        return $this->hasMany(DplPeriod::class, 'period_id');
     }
 }

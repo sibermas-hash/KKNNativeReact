@@ -398,6 +398,7 @@ export default function RekapNilaiIndex({
                                                 const isEditing = editing?.id === row.mahasiswa_id && editing?.col === col as string
                                                 return (
                                                     <td key={idx}
+                                                        onClick={(e) => e.stopPropagation()}
                                                         onDoubleClick={(e) => {
                                                             e.stopPropagation()
                                                             setEditing({ id: row.mahasiswa_id, col: col as string })

@@ -119,13 +119,18 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
                 // Grading Configuration
                 Route::get('grading-settings', [Admin\KonfigurasiPenilaianController::class , 'index'])->name('grading-settings.index');
                 Route::post('grading-settings', [Admin\KonfigurasiPenilaianController::class , 'update'])->name('grading-settings.update');
-                Route::get('grade-generator', [Admin\GeneratorNilaiController::class , 'index'])->name('grade-generator.index');
-                Route::get('grade-generator/groups/all/students', [Admin\GeneratorNilaiController::class , 'studentsAll'])->name('grade-generator.students-all');
-                Route::get('grade-generator/groups/{kelompokKkn}/students', [Admin\GeneratorNilaiController::class , 'students'])->name('grade-generator.students');
-                Route::post('grade-generator/scores', [Admin\GeneratorNilaiController::class , 'saveScores'])->name('grade-generator.save-scores');
-                Route::get('grade-generator/export/{id}', [Admin\GeneratorNilaiController::class , 'exportExcel'])->name('grade-generator.export');
-                Route::get('grade-generator/export-pdf/{id}', [Admin\GeneratorNilaiController::class , 'exportPdf'])->name('grade-generator.export-pdf');
-                Route::get('grade-generator/export-zip', [Admin\GeneratorNilaiController::class , 'exportZip'])->name('grade-generator.export-zip');
+
+                // Village Score Input (Accessible by Admin and DPL)
+                Route::middleware(['role:superadmin|dpl'])->group(function () {
+                    Route::get('grade-generator', [Admin\GeneratorNilaiController::class , 'index'])->name('grade-generator.index');
+                    Route::get('grade-generator/groups/all/students', [Admin\GeneratorNilaiController::class , 'studentsAll'])->name('grade-generator.students-all');
+                    Route::get('grade-generator/groups/{kelompokKkn}/students', [Admin\GeneratorNilaiController::class , 'students'])->name('grade-generator.students');
+                    Route::post('grade-generator/scores', [Admin\GeneratorNilaiController::class , 'saveScores'])->name('grade-generator.save-scores');
+                    Route::get('grade-generator/export/{id}', [Admin\GeneratorNilaiController::class , 'exportExcel'])->name('grade-generator.export');
+                    Route::get('grade-generator/export-pdf/{id}', [Admin\GeneratorNilaiController::class , 'exportPdf'])->name('grade-generator.export-pdf');
+                    Route::get('grade-generator/export-zip', [Admin\GeneratorNilaiController::class , 'exportZip'])->name('grade-generator.export-zip');
+                }
+                );
 
                 // Rekap Nilai
                 Route::get('rekap-nilai', [Admin\RekapNilaiController::class , 'index'])->name('rekap-nilai.index');

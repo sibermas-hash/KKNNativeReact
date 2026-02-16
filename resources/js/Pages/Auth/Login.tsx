@@ -48,7 +48,7 @@ export default function Login() {
           <input
             id="login"
             type="text"
-            placeholder="NIM, NIP atau Username"
+            placeholder="NIM / NIP"
             value={data.login}
             onChange={(event) => setData('login', event.target.value)}
             className="w-full rounded-xl bg-slate-50 border border-slate-100 px-5 py-4 text-slate-900 font-medium shadow-inner focus:bg-white focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all outline-none"

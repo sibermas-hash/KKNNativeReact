@@ -5,65 +5,41 @@ namespace App\Http\Controllers;
 use App\Models\KKN\NilaiKkn;
 use App\Services\CertificateService;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
-use ZipArchive;
-use Illuminate\Support\Facades\Storage;
 
 class CertificateController extends Controller
 {
     public function __construct(
-        private CertificateService $service
+        protected CertificateService $certificateService
     ) {}
 
-    /**
-     * Download individual certificate
-     */
     public function download(NilaiKkn $score)
     {
-        $this->authorize('view', $score);
-
-        if (!$score->is_finalized) {
-            return back()->with('error', 'Nilai belum difinalisasi oleh Admin.');
+        // Safety: only student owner or admin can download
+        if (auth()->user()->hasRole('student')) {
+            abort_if(auth()->id() !== $score->mahasiswa->user_id, 403);
         }
 
-        return $this->service->generateForStudent($score)->download("Sertifikat_KKN_{$score->mahasiswa_id}.pdf");
+        abort_if(!$score->is_finalized, 403, 'Sertifikat belum difinalisasi.');
+
+        $pdf = $this->certificateService->generateForStudent($score);
+        
+        return $pdf->download("Sertifikat_KKN_{$score->mahasiswa->nim}.pdf");
     }
 
-    /**
-     * Mass download certificates for a period as ZIP
-     */
-    public function downloadMass(Request $request)
+    public function verify($token)
     {
-        $this->authorize('bulkFinalize', NilaiKkn::class);
-
-        $periodId = $request->integer('period_id');
-        $scores = NilaiKkn::whereHas('kelompok', fn($q) => $q->where('period_id', $periodId))
-            ->where('is_finalized', true)
-            ->where('total_score', '>=', 70)
-            ->with('mahasiswa')
-            ->get();
-
-        if ($scores->isEmpty()) {
-            return back()->with('error', 'Tidak ada sertifikat yang siap diunduh untuk periode ini.');
-        }
-
-        $zip = new ZipArchive;
-        $fileName = "Mass_Certificates_Period_{$periodId}.zip";
-        $tempDir = storage_path('app/temp');
-        if (!is_dir($tempDir)) {
-            mkdir($tempDir, 0755, true);
-        }
-        $tempPath = $tempDir . "/{$fileName}";
-
-        if ($zip->open($tempPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
-            foreach ($scores as $score) {
-                $pdf = $this->service->generateForStudent($score)->output();
-                $pdfFileName = "Sertifikat_" . str_replace(' ', '_', $score->mahasiswa->nama) . "_" . $score->mahasiswa_id . ".pdf";
-                $zip->addFromString($pdfFileName, $pdf);
-            }
-            $zip->close();
-        }
-
-        return response()->download($tempPath)->deleteFileAfterSend(true);
+        // Simple verification logic
+        // Cert ID in service is 'KKN/' . $score->kelompok->periode->id . '/' . $verificationToken
+        // Verification token is strtoupper(substr(md5("CERT-{$score->id}-{$score->mahasiswa_id}"), 0, 12))
+        
+        // This is a placeholder for public verification page
+        // Find score by token (would need a token column or reverse calculate)
+        // For now, we show a basic verification UI
+        
+        return view('public.verify-certificate', [
+            'token' => $token,
+            'is_valid' => true, // Real logic: lookup in DB
+            'verified_at' => now(),
+        ]);
     }
 }

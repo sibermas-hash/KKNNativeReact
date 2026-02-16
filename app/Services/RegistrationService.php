@@ -14,7 +14,7 @@ class RegistrationService
     ) {
     }
 
-    public function register(Mahasiswa $mahasiswa, int $periodeId, ?string $notes): PesertaKkn
+    public function register(Mahasiswa $mahasiswa, int $periodeId, ?int $kelompokId, ?string $notes): PesertaKkn
     {
         $existing = $this->registrations->findForMahasiswaPeriode($mahasiswa->id, $periodeId);
 
@@ -24,11 +24,25 @@ class RegistrationService
             ]);
         }
 
+        if ($kelompokId) {
+            $kelompok = \App\Models\KKN\KelompokKkn::withCount(['peserta' => function ($q) {
+                $q->whereIn('status', ['pending', 'approved']);
+            }])->find($kelompokId);
+
+            if ($kelompok && $kelompok->peserta_count >= $kelompok->capacity) {
+                throw ValidationException::withMessages([
+                    'kelompok_id' => "Kelompok {$kelompok->nama_kelompok} sudah penuh.",
+                ]);
+            }
+        }
+
         return $this->registrations->create([
             'mahasiswa_id' => $mahasiswa->id,
             'period_id' => $periodeId,
+            'kelompok_id' => $kelompokId,
             'notes' => $notes,
             'status' => 'pending',
+            'registration_date' => now(),
         ]);
     }
 }

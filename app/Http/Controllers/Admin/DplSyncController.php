@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -51,17 +52,25 @@ class DplSyncController extends Controller
             'name' => 'required|string',
             'email' => 'nullable|email',
             'organization_id' => 'nullable|integer',
+            'birth_date' => 'nullable|date',
+            'gender' => 'nullable|string',
         ]);
 
         try {
             DB::transaction(function () use ($validated) {
-                // 1. Create User
+                // 1. Determine Password (DDMMYYYY from birth_date or fallback)
+                $password = 'password123';
+                if (!empty($validated['birth_date'])) {
+                    $password = \Carbon\Carbon::parse($validated['birth_date'])->format('dmY');
+                }
+
+                // 2. Create User
                 $user = User::firstOrCreate(
                     ['username' => $validated['nip']],
                     [
                         'name' => $validated['name'],
                         'email' => $validated['email'] ?? $validated['nip'] . '@kkn.uinsaizu.ac.id',
-                        'password' => Hash::make('password123'), // Default password
+                        'password' => Hash::make($password),
                         'is_active' => true,
                     ]
                 );
@@ -86,6 +95,8 @@ class DplSyncController extends Controller
                     [
                         'user_id' => $user->id,
                         'nama' => $validated['name'],
+                        'birth_date' => $validated['birth_date'],
+                        'gender' => $validated['gender'],
                         'faculty_id' => $facultyId,
                         'master_id' => $validated['organization_id'] ?? null,
                         'master_synced_at' => now(),

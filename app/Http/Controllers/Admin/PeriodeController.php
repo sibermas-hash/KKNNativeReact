@@ -33,6 +33,8 @@ class PeriodeController extends Controller
             'end_date' => $p->end_date?->format('Y-m-d'),
             'registration_start' => $p->registration_start?->format('Y-m-d'),
             'registration_end' => $p->registration_end?->format('Y-m-d'),
+            'grading_start' => $p->grading_start?->format('Y-m-d'),
+            'grading_end' => $p->grading_end?->format('Y-m-d'),
             'kuota' => $p->kuota,
             'is_active' => $p->is_active,
             'academic_year' => $p->tahunAkademik ? ['id' => $p->tahunAkademik->id, 'year' => $p->tahunAkademik->year] : null,
@@ -60,6 +62,8 @@ class PeriodeController extends Controller
             'registration_start' => ['required', 'date'],
             'registration_end' => ['required', 'date', 'after:registration_start'],
             'kuota' => ['required', 'integer', 'min:1'],
+            'grading_start' => ['nullable', 'date'],
+            'grading_end' => ['nullable', 'date', 'after_or_equal:grading_start'],
             'is_active' => ['boolean'],
         ]);
 
@@ -85,6 +89,8 @@ class PeriodeController extends Controller
             'registration_start' => ['required', 'date'],
             'registration_end' => ['required', 'date', 'after:registration_start'],
             'kuota' => ['required', 'integer', 'min:1'],
+            'grading_start' => ['nullable', 'date'],
+            'grading_end' => ['nullable', 'date', 'after_or_equal:grading_start'],
             'is_active' => ['boolean'],
         ]);
 

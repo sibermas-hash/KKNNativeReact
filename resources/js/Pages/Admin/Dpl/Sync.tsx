@@ -41,6 +41,8 @@ export default function DplSync({ availableDosen, filters, title }: Props) {
             name: dosen.name,
             email: dosen.email,
             organization_id: dosen.organization_id,
+            birth_date: (dosen as any).birth_date,
+            gender: (dosen as any).gender,
         });
     };
 
@@ -142,7 +144,7 @@ export default function DplSync({ availableDosen, filters, title }: Props) {
                         💡 Catatan Penting
                     </p>
                     <p className="text-sm text-slate-600 mt-2 font-medium leading-relaxed">
-                        Dosen yang Anda pilih akan otomatis dibuatkan akun sistem dengan username <span className="font-bold">NIP</span> dan password default <span className="font-bold">password123</span>. Mereka diwajibkan mengganti password pada saat pertama kali login.
+                        Dosen yang Anda pilih akan otomatis dibuatkan akun sistem dengan username <span className="font-bold">NIP</span> dan password default menggunakan format <span className="font-bold">DDMMYYYY</span> (Tanggal Lahir). Jika data tanggal lahir tidak tersedia, password default adalah <span className="font-bold">password123</span>.
                     </p>
                 </div>
             </div>

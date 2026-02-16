@@ -15,10 +15,10 @@ class DashboardController extends Controller
         $mahasiswa = $user->mahasiswa;
 
         $registration = $mahasiswa
-            ? PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
-                ->with('periode', 'kelompok.lokasi', 'kelompok.dpl')
-                ->latest()
-                ->first()
+            ?PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
+            ->with('periode', 'kelompok.lokasi', 'kelompok.dpl')
+            ->latest()
+            ->first()
             : null;
 
         $dailyReportCount = $mahasiswa
@@ -29,11 +29,18 @@ class DashboardController extends Controller
             ? $mahasiswa->laporanAkhir()->latest()->first()
             : null;
 
+        $grade = $mahasiswa
+            ?\App\Models\KKN\NilaiKkn::where('mahasiswa_id', $user->id) // Note: NilaiKkn uses user_id as foreign key according to other parts of code
+            ->where('is_finalized', true)
+            ->first()
+            : null;
+
         return Inertia::render('Student/Dashboard', [
             'student' => $mahasiswa,
             'registration' => $registration,
             'dailyReportCount' => $dailyReportCount,
             'finalReport' => $finalReport,
+            'grade' => $grade,
         ]);
     }
 }

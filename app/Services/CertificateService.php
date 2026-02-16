@@ -58,11 +58,11 @@ class CertificateService
             'grade' => $score->letter_grade,
             'date' => now()->translatedFormat('d F Y'),
             'certificate_no' => 'KKN/' . $score->kelompok->periode->id . '/' . $verificationToken,
-            'signer_left_name' => $configs['cert_signer_left_name'] ?? '-',
-            'signer_left_title' => $configs['cert_signer_left_title'] ?? '-',
-            'signer_right_name' => $configs['cert_signer_right_name'] ?? '-',
-            'signer_right_title' => $configs['cert_signer_right_title'] ?? '-',
-            'background' => $configs['cert_background'] ?? '/images/cert-bg.png',
+            'signer1_name' => $configs['cert_signer_left_name'] ?? '-',
+            'signer1_title' => $configs['cert_signer_left_title'] ?? '-',
+            'signer2_name' => $configs['cert_signer_right_name'] ?? '-',
+            'signer2_title' => $configs['cert_signer_right_title'] ?? '-',
+            'bg_image' => $configs['cert_background'] ?? public_path('images/cert-bg-default.png'),
             'qr_url' => "https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=" . urlencode($verificationUrl) . "&choe=UTF-8",
         ];
 

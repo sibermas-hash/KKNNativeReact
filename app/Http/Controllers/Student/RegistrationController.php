@@ -16,16 +16,22 @@ class RegistrationController extends Controller
     {
         $today = now()->toDateString();
 
-        $periode = Periode::query()
-            ->select(['id', 'nama', 'registration_start', 'registration_end'])
+        $periods = Periode::query()
             ->where('is_active', true)
             ->whereDate('registration_start', '<=', $today)
             ->whereDate('registration_end', '>=', $today)
+            ->with(['kelompok' => function ($query) {
+                $query->where('status', 'active')
+                    ->with('lokasi')
+                    ->withCount(['peserta' => function ($q) {
+                        $q->whereIn('status', ['pending', 'approved']);
+                    }]);
+            }])
             ->orderByDesc('registration_start')
             ->get();
 
         return Inertia::render('Student/Register', [
-            'periods' => $periode,
+            'periods' => $periods,
         ]);
     }
 
@@ -43,6 +49,7 @@ class RegistrationController extends Controller
         $registrationService->register(
             $user->mahasiswa,
             (int) $request->input('period_id'),
+            $request->input('kelompok_id') ? (int) $request->input('kelompok_id') : null,
             $request->input('notes')
         );
 

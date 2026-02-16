@@ -26,6 +26,8 @@ class Periode extends Model
         'registration_end',
         'kuota',
         'is_active',
+        'grading_start',
+        'grading_end',
     ];
 
     protected $casts = [
@@ -33,6 +35,8 @@ class Periode extends Model
         'end_date' => 'date',
         'registration_start' => 'date',
         'registration_end' => 'date',
+        'grading_start' => 'date',
+        'grading_end' => 'date',
         'is_active' => 'boolean',
     ];
 
@@ -60,21 +64,21 @@ class Periode extends Model
 
     public function tahunAkademik(): BelongsTo
     {
-        return $this->belongsTo(TahunAkademik::class, 'academic_year_id');
+        return $this->belongsTo(TahunAkademik::class , 'academic_year_id');
     }
 
     public function kelompok(): HasMany
     {
-        return $this->hasMany(KelompokKkn::class, 'period_id');
+        return $this->hasMany(KelompokKkn::class , 'period_id');
     }
 
     public function peserta(): HasMany
     {
-        return $this->hasMany(PesertaKkn::class, 'period_id');
+        return $this->hasMany(PesertaKkn::class , 'period_id');
     }
 
     public function dplPeriods(): HasMany
     {
-        return $this->hasMany(DplPeriod::class, 'period_id');
+        return $this->hasMany(DplPeriod::class , 'period_id');
     }
 }

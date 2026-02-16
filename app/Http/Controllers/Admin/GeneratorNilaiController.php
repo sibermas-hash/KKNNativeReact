@@ -26,14 +26,36 @@ class GeneratorNilaiController extends Controller
         $periods = Periode::with('tahunAkademik')->orderByDesc('id')->get()->map(fn($p) => [
             'id' => $p->id,
             'name' => "Angkatan " . ($p->name ?? '-') . " (" . ($p->tahunAkademik?->year ?? '-') . ")",
+            'grading_start' => $p->grading_start?->format('Y-m-d'),
+            'grading_end' => $p->grading_end?->format('Y-m-d'),
         ]);
 
-        $groups = KelompokKkn::with(['lokasi', 'dpl.user:id,name'])
-            ->orderBy('code')
+        $query = KelompokKkn::with(['lokasi', 'dosen.user:id,name']); // Load pivot 'dosen' instead of just 'dpl'
+
+        // MULTI-DPL LOGIC: Filter groups for logged-in DPL
+        if (auth()->user()->hasRole('dpl')) {
+            $dosenId = auth()->user()->dosen?->id;
+            if ($dosenId) {
+                // Show groups where this DPL is assigned AND has 'Ketua' (Admin) role
+                $query->whereHas('dosen', function ($q) use ($dosenId) {
+                    $q->where('dosen_id', $dosenId)
+                      ->where('role', 'Ketua');
+                });
+            } else {
+                // Failsafe: If DPL data not found
+                $query->whereRaw('1 = 0');
+            }
+        }
+
+        $groups = $query->orderBy('code')
             ->get()
             ->map(function (KelompokKkn $g) {
                 $addressParts = explode(',', $g->lokasi?->address ?? '');
                 $kelompokNum = preg_replace('/[^0-9]/', '', $g->code);
+                
+                // Get the main DPL name (Ketua)
+                $mainDpl = $g->dosen->where('pivot.role', 'Ketua')->first();
+
                 return [
                     'id'         => $g->id,
                     'period_id'  => $g->period_id,
@@ -42,7 +64,7 @@ class GeneratorNilaiController extends Controller
                     'desa'       => $g->lokasi?->village_name ?? '-',
                     'kecamatan'  => trim($addressParts[0] ?? '-'),
                     'kabupaten'  => trim($addressParts[1] ?? '-'),
-                    'dpl'        => $g->dpl?->user?->name ?? '-',
+                    'dpl'        => $mainDpl?->user?->name ?? '-',
                 ];
             });
 
@@ -91,14 +113,40 @@ class GeneratorNilaiController extends Controller
             'scores.*.user_id'    => ['required', 'exists:users,id'],
             'scores.*.discipline' => ['nullable', 'numeric', 'between:0,100'],
             'scores.*.attitude'   => ['nullable', 'numeric', 'between:0,100'],
+            'evidence_file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'], // Max 5MB
         ]);
 
-        DB::transaction(function () use ($data, $request) {
+        // ENFORCE GRADING PERIOD for DPL
+        if (auth()->user()->hasRole('dpl')) {
+            $group = KelompokKkn::with('periode')->find($data['kelompok_id']);
+            $period = $group?->periode;
+            
+            if ($period && $period->grading_start && $period->grading_end) {
+                $now = now()->startOfDay();
+                if ($now->lt($period->grading_start) || $now->gt($period->grading_end)) {
+                    return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
+                }
+            }
+        }
+
+        // Handle File Upload
+        $evidencePath = null;
+        if ($request->hasFile('evidence_file')) {
+            $file = $request->file('evidence_file');
+            // Store in: storage/app/public/evidence/{kelompok_id}/{filename}
+            $evidencePath = $file->storeAs(
+                "evidence/{$data['kelompok_id']}",
+                "blanko_" . time() . ".{$file->getClientOriginalExtension()}",
+                'public'
+            );
+        }
+
+        DB::transaction(function () use ($data, $request, $evidencePath) {
             foreach ($data['scores'] as $row) {
                 $discipline = $row['discipline'] ?? null;
                 $attitude   = $row['attitude'] ?? null;
 
-                if ($discipline === null && $attitude === null) {
+                if ($discipline === null && $attitude === null && !$evidencePath) {
                     continue;
                 }
 
@@ -109,19 +157,31 @@ class GeneratorNilaiController extends Controller
 
                 $score = NilaiKkn::firstOrNew([
                     'mahasiswa_id' => $row['user_id'],
-                    'kelompok_id'   => $data['kelompok_id'],
+                    'kelompok_id'  => $data['kelompok_id'],
                 ]);
 
-                $score->discipline_score     = $discipline;
-                $score->attitude_score       = $attitude;
-                $score->village_weighted_score = $villageWeighted;
-                $score->village_graded_by    = $request->user()->id;
-                $score->village_graded_at    = now();
+                // Update scores only if provided
+                if ($discipline !== null) $score->discipline_score = $discipline;
+                if ($attitude !== null) $score->attitude_score = $attitude;
+                if ($villageWeighted !== null) $score->village_weighted_score = $villageWeighted;
+                
+                // Update specific metadata for village grade
+                if ($discipline !== null || $attitude !== null) {
+                    $score->village_graded_by = $request->user()->id;
+                    $score->village_graded_at = now();
+                }
 
-                // Recalculate total if DPL scores exist
+                // Update evidence file if uploaded (overwrite existing)
+                if ($evidencePath) {
+                    $score->evidence_file = $evidencePath;
+                }
+
+                // Recalculate total
                 $dplWeighted = $score->dpl_weighted_score ?? 0;
                 $lppmWeighted = $score->lppm_weighted_score ?? 0;
-                $total = round($dplWeighted + ($villageWeighted ?? 0) + $lppmWeighted, 2);
+                $currentVillage = $score->village_weighted_score ?? 0;
+                
+                $total = round($dplWeighted + $currentVillage + $lppmWeighted, 2);
                 $score->total_score = $total;
 
                 if ($total >= 85)      $score->letter_grade = 'A';
@@ -133,7 +193,7 @@ class GeneratorNilaiController extends Controller
             }
         });
 
-        return back()->with('success', 'Nilai kedisiplinan & sikap berhasil disimpan.');
+        return back()->with('success', 'Nilai & Bukti Blanko berhasil disimpan.');
     }
 
     /**

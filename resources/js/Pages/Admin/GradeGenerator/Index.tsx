@@ -16,6 +16,8 @@ import axios from 'axios';
 type Period = {
     id: number;
     name: string;
+    grading_start?: string;
+    grading_end?: string;
 };
 
 type Group = {
@@ -78,6 +80,7 @@ export default function GradeGenerator({ periods, groups }: Props) {
     const [students, setStudents] = useState<StudentRow[]>([]);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
 
     const isAllGroups = selectedGroupId === 'all';
 
@@ -144,7 +147,7 @@ export default function GradeGenerator({ periods, groups }: Props) {
             .finally(() => {
                 setLoading(false);
             });
-    }, [selectedGroupId, groups]);
+    }, [selectedGroupId, groups, periods, selectedPeriodId, isAllGroups]);
 
     const summary = useMemo(() => {
         if (!students.length) return { avg: 0, count: 0 };
@@ -168,20 +171,33 @@ export default function GradeGenerator({ periods, groups }: Props) {
         );
     };
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setEvidenceFile(e.target.files[0]);
+        }
+    };
+
     const handleSave = () => {
         if (!selectedGroupId || isAllGroups) return;
 
         setSaving(true);
-        router.post('/admin/grade-generator/scores', {
-            kelompok_id: selectedGroupId,
-            scores: students.map(s => ({
-                user_id: s.user_id,
-                discipline: s.discipline,
-                attitude: s.attitude
-            }))
-        }, {
+        const formData = new FormData();
+        formData.append('kelompok_id', String(selectedGroupId));
+        if (evidenceFile) {
+            formData.append('evidence_file', evidenceFile);
+        }
+
+        students.forEach((s, index) => {
+            formData.append(`scores[${index}][user_id]`, String(s.user_id));
+            if (s.discipline !== null) formData.append(`scores[${index}][discipline]`, String(s.discipline));
+            if (s.attitude !== null) formData.append(`scores[${index}][attitude]`, String(s.attitude));
+        });
+
+        router.post('/admin/grade-generator/scores', formData, {
+            forceFormData: true,
             onSuccess: () => {
                 setSaving(false);
+                setEvidenceFile(null);
             },
             onError: () => {
                 setSaving(false);
@@ -205,7 +221,6 @@ export default function GradeGenerator({ periods, groups }: Props) {
         window.location.href = `/admin/grade-generator/export-zip?period_id=${selectedPeriodId}`;
     };
 
-
     return (
         <AppLayout title="Generator Nilai">
             <div className="space-y-6">
@@ -214,20 +229,26 @@ export default function GradeGenerator({ periods, groups }: Props) {
                     <div>
                         <h1 className="text-2xl font-bold text-slate-900">Blanko Penilaian & Generator Nilai</h1>
                         <p className="text-sm text-slate-600">
-                            Pilih kelompok untuk mengisi nilai kedisiplinan dan sikap, lalu cetak blanko resmi.
+                            Pilih kelompok untuk mengisi nilai kedisiplinan dan sikap, serta upload bukti blanko nilai.
                         </p>
+                        {selectedPeriodId && periods.find(p => p.id === selectedPeriodId)?.grading_start && (
+                            <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-100 text-xs font-bold text-amber-700">
+                                <CalculatorIcon className="w-3.5 h-3.5" />
+                                Masa Penilaian: {new Date(periods.find(p => p.id === selectedPeriodId)!.grading_start!).toLocaleDateString('id-ID')} s/d {new Date(periods.find(p => p.id === selectedPeriodId)!.grading_end!).toLocaleDateString('id-ID')}
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                    <div className="grid gap-4 sm:grid-cols-2">
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
+                    <div className="grid gap-6 sm:grid-cols-2">
                         <FormSelect
                             label="Pilih Angkatan"
                             placeholder="-- Pilih Angkatan --"
                             value={selectedPeriodId}
                             onChange={(e) => {
                                 setSelectedPeriodId(Number(e.target.value) || '');
-                                setSelectedGroupId(''); // Reset kelompok when angkatan changes
+                                setSelectedGroupId('');
                             }}
                             options={periods.map(p => ({ value: p.id, label: p.name }))}
                         />
@@ -246,148 +267,170 @@ export default function GradeGenerator({ periods, groups }: Props) {
                     </div>
 
                     {selectedGroupId && !isAllGroups && (
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 bg-slate-50 p-4 rounded-lg border border-slate-100 italic">
-                            <div><span className="font-bold not-italic">Angkatan:</span> ({meta.angkatan})</div>
-                            <div><span className="font-bold not-italic">Kelompok:</span> ({meta.kelompok})</div>
-                            <div><span className="font-bold not-italic">Desa:</span> {meta.desa}</div>
-                            <div><span className="font-bold not-italic">Kecamatan:</span> {meta.kecamatan}</div>
-                            <div><span className="font-bold not-italic">Kabupaten:</span> {meta.kabupaten}</div>
-                            <div className="sm:col-span-2 lg:col-span-3"><span className="font-bold not-italic">DPL:</span> {meta.dpl}</div>
+                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 space-y-4">
+                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 italic text-sm">
+                                <div><span className="font-bold not-italic">Angkatan:</span> ({meta.angkatan})</div>
+                                <div><span className="font-bold not-italic">Kelompok:</span> ({meta.kelompok})</div>
+                                <div><span className="font-bold not-italic">Desa:</span> {meta.desa}</div>
+                                <div><span className="font-bold not-italic">Kecamatan:</span> {meta.kecamatan}</div>
+                                <div><span className="font-bold not-italic">Kabupaten:</span> {meta.kabupaten}</div>
+                                <div className="sm:col-span-2 lg:col-span-3"><span className="font-bold not-italic">DPL:</span> {meta.dpl}</div>
+                            </div>
+
+                            <div className="pt-4 border-t border-slate-200">
+                                <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    Upload Scan Blanko Nilai (PDF/JPG/PNG, Max 5MB)
+                                </label>
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        type="file"
+                                        accept=".pdf,.jpg,.jpeg,.png"
+                                        onChange={handleFileChange}
+                                        className="block w-full text-sm text-slate-500
+                                            file:mr-4 file:py-2 file:px-4
+                                            file:rounded-full file:border-0
+                                            file:text-sm file:font-semibold
+                                            file:bg-primary/10 file:text-primary
+                                            hover:file:bg-primary/20
+                                        "
+                                    />
+                                    {evidenceFile && (
+                                        <span className="text-xs text-green-600 font-medium flex items-center gap-1">
+                                            <CheckCircleIcon className="w-4 h-4" /> Siap Upload
+                                        </span>
+                                    )}
+                                </div>
+                                <p className="text-xs text-slate-500 mt-1">
+                                    *Upload bukti fisik penilaian lapangan yang sudah ditandatangani. Data baru akan menimpa file lama.
+                                </p>
+                            </div>
                         </div>
                     )}
 
                     {isAllGroups && (
                         <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 text-sm text-blue-700">
-                            Menampilkan semua mahasiswa dari seluruh kelompok. Untuk menyimpan nilai, pilih kelompok tertentu.
+                            Menampilkan semua mahasiswa dari seluruh kelompok. Untuk menyimpan nilai & upload bukti, pilih kelompok tertentu.
                         </div>
                     )}
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                    <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+                    <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50/50">
                         <div>
-                            <p className="text-sm font-semibold text-slate-800">Daftar Mahasiswa</p>
-                            <p className="text-xs text-slate-500">Isi nilai kedisiplinan dan sikap (Rentang 60-100).</p>
+                            <h3 className="text-base font-bold text-slate-800">Input Nilai Mahasiswa</h3>
+                            <p className="text-sm text-slate-500">Isi nilai kedisiplinan dan sikap dari range 0-100.</p>
                         </div>
                         <div className="flex gap-2">
                             {(selectedGroupId || isAllGroups) && (
-                                <>
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        onClick={handleExport}
-                                    >
-                                        <ArchiveBoxArrowDownIcon className="h-4 w-4" />
-                                        Excel {isAllGroups ? '(Gabung)' : ''}
+                                <div className="flex gap-2 mr-2 border-r border-slate-200 pr-2">
+                                    <Button variant="secondary" size="sm" onClick={handleExport}>
+                                        <ArchiveBoxArrowDownIcon className="h-4 w-4 mr-1" /> Excel
                                     </Button>
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        onClick={handleExportPdf}
-                                    >
-                                        <DocumentArrowDownIcon className="h-4 w-4" />
-                                        PDF {isAllGroups ? '(Gabung)' : ''}
+                                    <Button variant="secondary" size="sm" onClick={handleExportPdf}>
+                                        <DocumentArrowDownIcon className="h-4 w-4 mr-1" /> PDF
                                     </Button>
                                     {isAllGroups && (
-                                        <Button
-                                            variant="secondary"
-                                            size="sm"
-                                            onClick={handleExportZip}
-                                        >
-                                            <FolderArrowDownIcon className="h-4 w-4" />
-                                            ZIP (Satuan)
+                                        <Button variant="secondary" size="sm" onClick={handleExportZip}>
+                                            <FolderArrowDownIcon className="h-4 w-4 mr-1" /> ZIP
                                         </Button>
                                     )}
-                                </>
+                                </div>
                             )}
+
                             <Button
                                 variant="primary"
                                 size="sm"
                                 onClick={handleSave}
                                 loading={saving}
                                 disabled={!selectedGroupId || isAllGroups || students.length === 0}
+                                className="shadow-lg shadow-primary/20"
                             >
-                                <CloudArrowUpIcon className="h-4 w-4" />
-                                Simpan Nilai
+                                <CloudArrowUpIcon className="h-4 w-4 mr-1" />
+                                Simpan Nilai & Bukti
                             </Button>
                         </div>
                     </div>
 
                     <div className="overflow-x-auto">
-                        <div className="min-w-[800px] divide-y divide-slate-100">
-                            <div className="grid grid-cols-12 gap-3 px-4 py-2 text-xs font-semibold uppercase text-slate-500 bg-slate-50">
-                                <div className="col-span-1">No</div>
-                                {isAllGroups && <div className="col-span-2">Kelompok</div>}
-                                <div className={isAllGroups ? 'col-span-3' : 'col-span-4'}>Nama Mahasiswa</div>
-                                <div className={isAllGroups ? 'col-span-2' : 'col-span-3'}>NIM</div>
-                                <div className="col-span-1">Disiplin</div>
-                                <div className="col-span-1">Sikap</div>
-                                <div className="col-span-2 text-right">Total (B)</div>
-                            </div>
-
-                            {loading ? (
-                                <div className="p-8 text-center text-slate-500 flex justify-center items-center gap-2">
-                                    <ArrowPathIcon className="h-5 w-5 animate-spin" />
-                                    Memuat data mahasiswa...
-                                </div>
-                            ) : students.map((s, idx) => (
-                                <div key={`${s.user_id}-${s.group_code || idx}`} className="grid grid-cols-12 gap-3 px-4 py-3 items-center hover:bg-slate-50 transition-colors">
-                                    <div className="col-span-1 text-sm text-slate-700">{idx + 1}</div>
-                                    {isAllGroups && (
-                                        <div className="col-span-2 text-xs font-semibold text-primary">
-                                            {s.group_code}
-                                        </div>
-                                    )}
-                                    <div className={`${isAllGroups ? 'col-span-3' : 'col-span-4'} text-sm font-medium text-slate-900`}>{s.name}</div>
-                                    <div className={`${isAllGroups ? 'col-span-2' : 'col-span-3'} text-sm text-slate-600`}>{s.nim}</div>
-                                    <div className="col-span-1">
-                                        <input
-                                            type="number"
-                                            min={0}
-                                            max={100}
-                                            className="w-full text-center px-1 py-1 text-sm rounded border-slate-200 focus:ring-primary focus:border-primary"
-                                            value={s.discipline ?? ''}
-                                            onChange={(e) => updateStudent(s.user_id, 'discipline', e.target.value)}
-                                            disabled={isAllGroups}
-                                        />
-                                    </div>
-                                    <div className="col-span-1">
-                                        <input
-                                            type="number"
-                                            min={0}
-                                            max={100}
-                                            className="w-full text-center px-1 py-1 text-sm rounded border-slate-200 focus:ring-primary focus:border-primary"
-                                            value={s.attitude ?? ''}
-                                            onChange={(e) => updateStudent(s.user_id, 'attitude', e.target.value)}
-                                            disabled={isAllGroups}
-                                        />
-                                    </div>
-                                    <div className="col-span-2 text-right">
-                                        <span className={`text-sm font-bold ${computeTotal(s) > 0 ? 'text-primary' : 'text-slate-300'}`}>
-                                            {computeTotal(s) || '-'}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
-
-                            {!loading && students.length === 0 && (
-                                <div className="px-4 py-12 text-center text-sm text-slate-500">
-                                    {selectedGroupId ? 'Tidak ada mahasiswa di kelompok ini.' : 'Pilih kelompok terlebih dahulu.'}
-                                </div>
-                            )}
-                        </div>
+                        <table className="min-w-full divide-y divide-slate-200">
+                            <thead className="bg-slate-50">
+                                <tr>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider w-12">No</th>
+                                    {isAllGroups && <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Kelompok</th>}
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Mahasiswa</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">NIM</th>
+                                    <th scope="col" className="px-6 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider w-32">Disiplin (0-100)</th>
+                                    <th scope="col" className="px-6 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider w-32">Sikap (0-100)</th>
+                                    <th scope="col" className="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Rata-rata</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-slate-200">
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={isAllGroups ? 7 : 6} className="px-6 py-12 text-center text-slate-500">
+                                            <div className="flex justify-center items-center gap-2">
+                                                <ArrowPathIcon className="h-5 w-5 animate-spin text-primary" />
+                                                Loading data...
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : students.length > 0 ? (
+                                    students.map((s, idx) => (
+                                        <tr key={`${s.user_id}-${idx}`} className="hover:bg-slate-50 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{idx + 1}</td>
+                                            {isAllGroups && <td className="px-6 py-4 whitespace-nowrap text-xs font-medium text-primary">{s.group_code}</td>}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{s.name}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{s.nim}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    max="100"
+                                                    className="w-20 text-center text-sm rounded-md border-slate-300 focus:border-primary focus:ring focus:ring-primary/20 transition-all font-mono"
+                                                    value={s.discipline ?? ''}
+                                                    onChange={(e) => updateStudent(s.user_id, 'discipline', e.target.value)}
+                                                    disabled={isAllGroups}
+                                                />
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    max="100"
+                                                    className="w-20 text-center text-sm rounded-md border-slate-300 focus:border-primary focus:ring focus:ring-primary/20 transition-all font-mono"
+                                                    value={s.attitude ?? ''}
+                                                    onChange={(e) => updateStudent(s.user_id, 'attitude', e.target.value)}
+                                                    disabled={isAllGroups}
+                                                />
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold">
+                                                <span className={computeTotal(s) > 0 ? 'text-primary' : 'text-slate-300'}>
+                                                    {computeTotal(s) || '-'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={isAllGroups ? 7 : 6} className="px-6 py-12 text-center text-sm text-slate-500 italic">
+                                            {selectedGroupId ? 'Tidak ada data mahasiswa.' : 'Silakan pilih kelompok terlebih dahulu.'}
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-primary/5 rounded-2xl border border-primary/10">
-                    <div className="text-sm text-slate-600">
-                        Total mahasiswa: <span className="font-semibold text-slate-900">{summary.count}</span> ·
-                        Rata-rata nilai total: <span className="font-semibold text-slate-900">{summary.avg}</span>
+                <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-sm">
+                    <div className="flex gap-6">
+                        <span className="text-slate-600">Total Mahasiswa: <strong className="text-slate-900">{summary.count}</strong></span>
+                        <span className="text-slate-600">Rata-rata Nilai: <strong className="text-slate-900">{summary.avg}</strong></span>
                     </div>
                     {selectedGroupId && !isAllGroups && students.length > 0 && (
-                        <div className="flex items-center gap-2 text-xs text-primary font-medium">
-                            <CheckCircleIcon className="h-4 w-4" />
-                            Data siap untuk disimpan atau di-export
+                        <div className="flex items-center gap-2 text-primary font-medium">
+                            <CheckCircleIcon className="h-5 w-5" />
+                            Data siap disimpan
                         </div>
                     )}
                 </div>

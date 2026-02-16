@@ -43,11 +43,8 @@ class LoginRequest extends FormRequest
 
     protected function credentials(): array
     {
-        $login = $this->input('login');
-        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-
         return [
-            $field => $login,
+            'username' => $this->input('login'),
             'password' => $this->input('password'),
             'is_active' => true,
         ];

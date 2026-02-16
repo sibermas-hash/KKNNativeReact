@@ -88,6 +88,13 @@ class DplAssignmentController extends Controller
                 'dpl_id' => $dplPeriod->dosen_id,       // backward compat
                 'dpl_period_id' => $dplPeriod->id,
             ]);
+
+            // Sync with Multi-DPL pivot table (Primary DPL becomes Ketua)
+            // We use syncWithoutDetaching or sync based on intended behavior. 
+            // Here, we sync specifically for the 'Ketua' role to ensure this DPL can manage the group.
+            $group->dosen()->syncWithoutDetaching([
+                $dplPeriod->dosen_id => ['role' => 'Ketua']
+            ]);
         });
 
         return back()->with('success', 'DPL berhasil ditugaskan ke kelompok.');

@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class StudentSyncService
 {
@@ -76,13 +77,19 @@ class StudentSyncService
             if (!$facultyId) $facultyId = Fakultas::first()?->id;
             if (!$prodiId) $prodiId = Prodi::first()?->id;
 
-            // 2. Create/Update User
+            // 2. Determine Password (DDMMYYYY from birth_date or fallback)
+            $password = 'password123';
+            if (!empty($data['birth_date'])) {
+                $password = \Carbon\Carbon::parse($data['birth_date'])->format('dmY');
+            }
+
+            // 3. Create/Update User
             $user = User::firstOrCreate(
                 ['username' => $data['nim']],
                 [
                     'name' => $data['name'],
                     'email' => $data['email'] ?? $data['nim'] . '@student.uinsaizu.ac.id',
-                    'password' => Hash::make('password123'),
+                    'password' => Hash::make($password),
                     'is_active' => true,
                 ]
             );
@@ -101,6 +108,7 @@ class StudentSyncService
                     'program_id' => $prodiId,
                     'batch_year' => $data['batch_year'] ?? date('Y'),
                     'gender' => $data['gender'] ?? 'L',
+                    'birth_date' => $data['birth_date'] ?? null,
                     'master_id' => $data['id'] ?? null,
                     'master_synced_at' => now(),
                 ]

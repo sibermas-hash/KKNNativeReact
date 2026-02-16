@@ -87,6 +87,7 @@ const dplNav: NavGroup[] = [
         items: [
             { label: 'Kelompok Saya', href: '/dpl/groups', icon: UserGroupIcon },
             { label: 'Laporan Harian', href: '/dpl/daily-reports', icon: DocumentTextIcon },
+            { label: 'Generator Nilai', href: '/admin/grade-generator', icon: AdjustmentsVerticalIcon },
             { label: 'Evaluasi', href: '/dpl/evaluations', icon: StarIcon },
         ],
     },

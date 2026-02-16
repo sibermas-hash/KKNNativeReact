@@ -31,11 +31,12 @@ class NilaiKkn extends Model
         'letter_grade',
         'is_finalized',
         'dpl_graded_by',
-        'village_graded_by',
-        'admin_graded_by',
         'dpl_graded_at',
+        'village_graded_by',
         'village_graded_at',
         'admin_graded_at',
+        'evidence_file',
+        'dpl_score_1',
     ];
 
     protected $casts = [
@@ -47,11 +48,11 @@ class NilaiKkn extends Model
 
     public function mahasiswa(): BelongsTo
     {
-        return $this->belongsTo(Mahasiswa::class, 'mahasiswa_id');
+        return $this->belongsTo(Mahasiswa::class , 'mahasiswa_id');
     }
 
     public function kelompok(): BelongsTo
     {
-        return $this->belongsTo(KelompokKkn::class, 'kelompok_id');
+        return $this->belongsTo(KelompokKkn::class , 'kelompok_id');
     }
 }

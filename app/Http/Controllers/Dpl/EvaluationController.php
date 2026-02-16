@@ -3,22 +3,37 @@
 namespace App\Http\Controllers\Dpl;
 
 use App\Http\Controllers\Controller;
-use App\Imports\EvaluationImport;
 use App\Models\KKN\Evaluasi;
 use App\Models\KKN\ItemEvaluasi;
 use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Mahasiswa;
+use App\Services\GradingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Str;
 
 class EvaluationController extends Controller
 {
+    public function __construct(
+        protected GradingService $gradingService
+    ) {}
+
+    private function checkGradingPeriod(KelompokKkn $group)
+    {
+        $period = $group->periode;
+        if ($period && $period->grading_start && $period->grading_end) {
+            $now = now()->startOfDay();
+            if ($now->lt($period->grading_start) || $now->gt($period->grading_end)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public function index(): Response
     {
         $dosen = auth()->user()->dosen;
@@ -30,7 +45,7 @@ class EvaluationController extends Controller
             ->get();
 
         $groups = KelompokKkn::whereIn('id', $groupIds)
-            ->with(['peserta' => fn($q) => $q->where('status', 'approved')->with('mahasiswa')])
+            ->with(['peserta' => fn($q) => $q->where('status', 'approved')->with('mahasiswa'), 'periode'])
             ->get();
 
         return Inertia::render('Dpl/Evaluations/Index', [
@@ -46,17 +61,51 @@ class EvaluationController extends Controller
             'file' => ['required', 'file', 'mimes:xlsx,xls'],
         ]);
 
-        $group = KelompokKkn::with('peserta.mahasiswa')->find($request->group_id);
+        $group = KelompokKkn::with(['peserta.mahasiswa', 'periode'])->find($request->group_id);
+        
+        if (!$this->checkGradingPeriod($group)) {
+            return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
+        }
+
         $rows = Excel::toCollection(new class implements \Maatwebsite\Excel\Concerns\ToCollection {
             public function collection(\Illuminate\Support\Collection $rows) {}
         }, $request->file('file'))->first();
         
-        // Skip headers
-        $dataRows = $rows->slice(7);
+        // --- SMART COLUMN DETECTION ---
+        $headerRowIndex = -1;
+        $colMapping = [
+            'nim' => -1,
+            'name' => -1,
+            'discipline' => -1,
+            'attitude' => -1
+        ];
+
+        // Search for header row (max 20 rows deep)
+        foreach ($rows->take(20) as $index => $row) {
+            foreach ($row as $colIndex => $content) {
+                $clean = Str::lower(trim($content));
+                if (Str::contains($clean, ['nim', 'nomor induk'])) $colMapping['nim'] = $colIndex;
+                if (Str::contains($clean, ['nama', 'name', 'mahasiswa'])) $colMapping['name'] = $colIndex;
+                if (Str::contains($clean, ['disiplin', 'kedisiplinan', 'discipline'])) $colMapping['discipline'] = $colIndex;
+                if (Str::contains($clean, ['sikap', 'attitude', 'etika'])) $colMapping['attitude'] = $colIndex;
+            }
+
+            // If we found at least NIM and one score, we assume this is the header row
+            if ($colMapping['nim'] !== -1 && ($colMapping['discipline'] !== -1 || $colMapping['attitude'] !== -1)) {
+                $headerRowIndex = $index;
+                break;
+            }
+        }
+
+        if ($headerRowIndex === -1 || $colMapping['nim'] === -1) {
+            return back()->with('error', 'Format file tidak dikenali. Pastikan ada kolom NIM dan Nilai (Disiplin/Sikap).');
+        }
+
+        $dataRows = $rows->slice($headerRowIndex + 1);
         $preview = [];
 
         foreach ($dataRows as $row) {
-            $nim = $row[2] ?? null;
+            $nim = trim($row[$colMapping['nim']] ?? '');
             if (!$nim) continue;
 
             $mahasiswa = Mahasiswa::where('nim', $nim)->first();
@@ -64,9 +113,9 @@ class EvaluationController extends Controller
 
             $preview[] = [
                 'nim' => $nim,
-                'name' => $row[1] ?? 'Unknown',
-                'discipline' => $row[5] ?? 0,
-                'attitude' => $row[6] ?? 0,
+                'name' => $row[$colMapping['name']] ?? 'Unknown',
+                'discipline' => $colMapping['discipline'] !== -1 ? ($row[$colMapping['discipline']] ?? 0) : 0,
+                'attitude' => $colMapping['attitude'] !== -1 ? ($row[$colMapping['attitude']] ?? 0) : 0,
                 'status' => $mahasiswa ? ($isMember ? 'READY' : 'NOT_IN_GROUP') : 'NOT_FOUND',
                 'id' => $mahasiswa?->id
             ];
@@ -74,7 +123,8 @@ class EvaluationController extends Controller
 
         return Inertia::render('Dpl/Evaluations/ImportPreview', [
             'preview' => $preview,
-            'group' => $group
+            'group' => $group,
+            'mapping' => $colMapping // Send mapping for transparency
         ]);
     }
 
@@ -84,6 +134,11 @@ class EvaluationController extends Controller
             'group_id' => ['required', 'exists:kelompok_kkn,id'],
             'data' => ['required', 'array'],
         ]);
+
+        $group = KelompokKkn::with('periode')->find($request->group_id);
+        if (!$this->checkGradingPeriod($group)) {
+            return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
+        }
 
         $lecturerId = auth()->id();
         $groupId = $request->group_id;
@@ -101,15 +156,25 @@ class EvaluationController extends Controller
                     'evaluated_at' => now(),
                 ]);
 
-                // Clear items
                 $eval->item()->delete();
 
-                // Add scores
                 ItemEvaluasi::create(['evaluasi_id' => $eval->id, 'criterion' => 'Kedisiplinan', 'score' => $item['discipline'], 'weight' => 50]);
                 ItemEvaluasi::create(['evaluasi_id' => $eval->id, 'criterion' => 'Sikap', 'score' => $item['attitude'], 'weight' => 50]);
 
                 $total = ($item['discipline'] * 0.5) + ($item['attitude'] * 0.5);
                 $eval->update(['total_score' => $total, 'grade' => $this->calculateGrade($total)]);
+
+                // Sync to NilaiKkn (Centralized)
+                $mahasiswa = Mahasiswa::find($item['id']);
+                if ($mahasiswa) {
+                    $this->gradingService->submitVillageHeadScores(
+                        $mahasiswa->user_id,
+                        $groupId,
+                        $item['discipline'],
+                        $item['attitude'],
+                        $lecturerId
+                    );
+                }
             }
         });
 
@@ -155,6 +220,11 @@ class EvaluationController extends Controller
             'items.*.weight' => ['required', 'numeric', 'min:0', 'max:100'],
         ]);
 
+        $group = KelompokKkn::with('periode')->find($validated['group_id']);
+        if (!$this->checkGradingPeriod($group)) {
+            return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
+        }
+
         $evaluation = Evaluasi::create([
             'mahasiswa_id' => $validated['student_id'],
             'kelompok_id' => $validated['group_id'],
@@ -166,6 +236,8 @@ class EvaluationController extends Controller
 
         $totalScore = 0;
         $totalWeight = 0;
+        $discipline = 0;
+        $attitude = 0;
 
         foreach ($validated['items'] as $item) {
             ItemEvaluasi::create([
@@ -175,26 +247,32 @@ class EvaluationController extends Controller
                 'weight' => $item['weight'],
             ]);
 
+            if (stripos($item['criterion'], 'disiplin') !== false) $discipline = $item['score'];
+            if (stripos($item['criterion'], 'sikap') !== false) $attitude = $item['score'];
+
             $totalScore += $item['score'] * ($item['weight'] / 100);
             $totalWeight += $item['weight'];
         }
 
         $finalScore = $totalWeight > 0 ? round($totalScore, 2) : 0;
-        $grade = match (true) {
-            $finalScore >= 85 => 'A',
-            $finalScore >= 80 => 'A-',
-            $finalScore >= 75 => 'B+',
-            $finalScore >= 70 => 'B',
-            $finalScore >= 65 => 'B-',
-            $finalScore >= 60 => 'C+',
-            $finalScore >= 55 => 'C',
-            default => 'D',
-        };
+        $grade = $this->calculateGrade($finalScore);
 
         $evaluation->update([
             'total_score' => $finalScore,
             'grade' => $grade,
         ]);
+
+        // Sync to NilaiKkn (Centralized)
+        $mahasiswa = Mahasiswa::find($validated['student_id']);
+        if ($mahasiswa && $validated['evaluator_type'] === 'dpl') {
+            $this->gradingService->submitVillageHeadScores(
+                $mahasiswa->user_id,
+                $validated['group_id'],
+                $discipline,
+                $attitude,
+                auth()->id()
+            );
+        }
 
         return redirect()->route('dpl.evaluations.index')
             ->with('success', 'Evaluasi berhasil disimpan.');

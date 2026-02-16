@@ -25,6 +25,12 @@ class StoreRegistrationRequest extends FormRequest
                         ->whereDate('registration_end', '>=', $today);
                 }),
             ],
+            'kelompok_id' => [
+                'nullable',
+                Rule::exists('kelompok_kkn', 'id')->where(function ($query) {
+                    $query->where('period_id', $this->period_id);
+                }),
+            ],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }

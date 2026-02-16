@@ -34,22 +34,37 @@ class Dosen extends Model
 
     public function fakultas(): BelongsTo
     {
-        return $this->belongsTo(Fakultas::class, 'faculty_id');
+        return $this->belongsTo(Fakultas::class , 'faculty_id');
     }
 
-    public function kelompokKkn(): HasMany
+    // Relationship: A lecturer can supervise multiple groups (Many-to-Many via pivot)
+    public function pimpinKelompok()
     {
-        return $this->hasMany(KelompokKkn::class, 'dpl_id');
+        return $this->belongsToMany(KelompokKkn::class , 'dpl_kelompok', 'dosen_id', 'kelompok_kkn_id')
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+
+    // Helper: Get groups where this Dosen is the 'Ketua' (Admin)
+    public function adminKelompok()
+    {
+        return $this->pimpinKelompok()->wherePivot('role', 'Ketua');
+    }
+
+    // Legacy: Keep this for backward compatibility if needed, or remove if fully migrated
+    public function kelompok()
+    {
+        return $this->hasMany(KelompokKkn::class , 'dpl_id');
     }
 
     public function dplPeriods(): HasMany
     {
-        return $this->hasMany(DplPeriod::class, 'dosen_id');
+        return $this->hasMany(DplPeriod::class , 'dosen_id');
     }
 
     public function profile(): MorphOne
     {
-        return $this->morphOne(UserProfile::class, 'profileable');
+        return $this->morphOne(UserProfile::class , 'profileable');
     }
 
     /**
@@ -76,8 +91,8 @@ class Dosen extends Model
     {
         return $query->whereHas('dplPeriods', function ($q) use ($periodId) {
             $q->where('period_id', $periodId)
-              ->where('is_active', true)
-              ->whereRaw('(SELECT COUNT(*) FROM kelompok_kkn WHERE dpl_period_id = dpl_periods.id) < max_groups');
+                ->where('is_active', true)
+                ->whereRaw('(SELECT COUNT(*) FROM kelompok_kkn WHERE dpl_period_id = dpl_periods.id) < max_groups');
         });
     }
 }

@@ -14,6 +14,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class SyncMasterData extends Command
 {
@@ -105,7 +106,7 @@ class SyncMasterData extends Command
         $now = now();
         foreach ($orgs as $orgData) {
             // Only sync faculties (check if name contains 'Fakultas')
-            if (str_contains($orgData['name'], 'Fakultas') || $orgData['level'] == 2) {
+            if (str_contains($orgData['name'], 'Fakultas') || ($orgData['level'] ?? 0) == 2) {
                 Fakultas::on('kkn')->updateOrCreate(
                     ['master_id' => $orgData['id']],
                     [
@@ -127,7 +128,7 @@ class SyncMasterData extends Command
         
         $employees = [];
         if ($this->option('source') === 'api') {
-            $employees = $this->masterApi->getAllEmployees();
+            $employees = $this->masterApi->getSyncDosen();
         } else {
             // Direct DB Pull from 'master' connection
             $masterLecturers = MasterLecturer::all();
@@ -135,10 +136,10 @@ class SyncMasterData extends Command
                 $employees[] = [
                     'id' => $ml->id,
                     'nip' => $ml->nip,
-                    'name' => $ml->name,
+                    'nama' => $ml->nama,
                     'email' => $ml->email,
-                    'phone' => $ml->phone,
-                    'organization' => ['code' => 'FTIK'], // Default or logic to find
+                    'telepon' => $ml->telepon,
+                    'organization' => ['code' => 'FTIK'], 
                 ];
             }
         }
@@ -150,16 +151,17 @@ class SyncMasterData extends Command
 
         $synced = 0;
         $now = now();
-        foreach ($employees as $empData) {
-            // Find Faculty
-            $orgCode = $empData['organization']['code'] ?? null;
-            $faculty = $orgCode ? Fakultas::on('kkn')->where('code', $orgCode)->first() : null;
+        // Default faculty if not found in data (Dosen might not have unit/faculty in Master API directly mapped)
+        // For now, assign to first available faculty or specific default
+        $defaultFaculty = Fakultas::on('kkn')->first();
 
-            if (!$faculty) continue;
+        foreach ($employees as $empData) {
+            // Use 'nip' as stable identifier
+            $nip = $empData['nip'] ?? null;
+            if (!$nip) continue;
 
             // 1. Ensure User account exists
-            // username is unique, so use it as the identity key to avoid duplicate inserts
-            $username = (string) ($empData['nip'] ?? '');
+            $username = (string) $nip;
             $incomingEmail = $empData['email'] ?? null;
             $fallbackEmail = $username . '@kkn.local';
 
@@ -172,20 +174,20 @@ class SyncMasterData extends Command
             }
 
             $user->username = $username;
-            $user->name = $empData['name'];
+            $user->name = $empData['nama'] ?? $empData['name'] ?? 'Unknown';
             $user->password = Hash::make($username);
             $user->save();
 
             // 2. Ensure Lecturer record exists (Local KKN)
-            Dosen::updateOrCreate(
-                ['nip' => $empData['nip']],
+            // Note: KKN Dosen table uses 'nama', 'phone'
+            Dosen::on('kkn')->updateOrCreate(
+                ['nip' => $nip],
                 [
                     'master_id' => $empData['id'],
                     'user_id' => $user->id,
-                    'nip' => $empData['nip'],
-                    'nama' => $empData['name'],
-                    'faculty_id' => $faculty->id,
-                    'phone' => $empData['phone'] ?? null,
+                    'nama' => $empData['nama'] ?? $empData['name'] ?? 'Unknown',
+                    'faculty_id' => $defaultFaculty?->id, // TO DO: logic to map unit_kerja to faculty
+                    'phone' => $empData['telepon'] ?? $empData['phone'] ?? null,
                     'master_synced_at' => $now,
                 ]
             );
@@ -201,7 +203,7 @@ class SyncMasterData extends Command
         
         $students = [];
         if ($this->option('source') === 'api') {
-            $students = $this->masterApi->getAllStudents();
+            $students = $this->masterApi->getSyncMahasiswa();
         } else {
             // Direct DB Pull from 'master' connection
             $masterStudents = MasterStudent::all();
@@ -209,14 +211,13 @@ class SyncMasterData extends Command
                 $students[] = [
                     'id' => $ms->id,
                     'nim' => $ms->nim,
-                    'name' => $ms->name,
+                    'nama' => $ms->nama,
                     'email' => $ms->email,
-                    'faculty_code' => $ms->faculty_code ?? 'FTIK',
-                    'program_code' => $ms->program_code ?? 'UNKNOWN',
-                    'batch_year' => $ms->batch_year ?? date('Y'),
-                    'gender' => $ms->gender ?? 'L',
-                    'birth_place' => $ms->birth_place,
-                    'birth_date' => $ms->birth_date?->format('Y-m-d'),
+                    'prodi' => $ms->prodi,
+                    'angkatan' => $ms->angkatan,
+                    'jenis_kelamin' => $ms->jenis_kelamin,
+                    'tempat_lahir' => $ms->tempat_lahir ?? null,
+                    'tanggal_lahir' => $ms->tanggal_lahir,
                 ];
             }
         }
@@ -228,24 +229,25 @@ class SyncMasterData extends Command
 
         $synced = 0;
         $now = now();
+        $defaultFaculty = Fakultas::on('kkn')->first();
+
         foreach ($students as $studData) {
-            // Find Faculty & Program
-            $faculty = Fakultas::on('kkn')->where('code', $studData['faculty_code'] ?? 'FTIK')->first();
-            
-            // Program is a bit tricky, let's auto-create if missing or use default
+            $nim = $studData['nim'] ?? null;
+            if (!$nim) continue;
+
+            // Map Prodi (Program Studi)
+            // Master API returns 'prodi' as string name usually
+            $prodiName = $studData['prodi'] ?? 'Unknown Program';
             $program = Prodi::on('kkn')->firstOrCreate(
-                ['code' => $studData['program_code'] ?? 'UNKNOWN'],
+                ['nama' => $prodiName], // Map by Name if code is not distinct
                 [
-                    'nama' => $studData['program_name'] ?? 'Unknown Program',
-                    'faculty_id' => $faculty?->id ?? Fakultas::on('kkn')->first()?->id,
+                    'code' => strtoupper(substr(Str::slug($prodiName), 0, 10)),
+                    'faculty_id' => $defaultFaculty?->id,
                 ]
             );
 
-            if (!$faculty) continue;
-
             // 1. Ensure User account exists
-            // username is unique, so use it as the identity key to avoid duplicate inserts
-            $username = (string) ($studData['nim'] ?? '');
+            $username = (string) $nim;
             $incomingEmail = $studData['email'] ?? null;
             $fallbackEmail = $username . '@kkn.local';
 
@@ -258,24 +260,24 @@ class SyncMasterData extends Command
             }
 
             $user->username = $username;
-            $user->name = $studData['name'];
+            $user->name = $studData['nama'] ?? $studData['name'] ?? 'Unknown';
             $user->password = Hash::make($username);
             $user->save();
 
             // 2. Ensure Student record exists (Local KKN)
-            Mahasiswa::updateOrCreate(
-                ['nim' => $studData['nim']],
+            // Mapping fields: nama, batch_year (angkatan), gender (jenis_kelamin), birth_date (tanggal_lahir)
+            Mahasiswa::on('kkn')->updateOrCreate(
+                ['nim' => $nim],
                 [
                     'master_id' => $studData['id'],
                     'user_id' => $user->id,
-                    'nim' => $studData['nim'],
-                    'nama' => $studData['name'],
-                    'faculty_id' => $faculty->id,
+                    'nama' => $studData['nama'] ?? $studData['name'] ?? 'Unknown',
+                    'faculty_id' => $defaultFaculty?->id, // Default for now
                     'program_id' => $program->id,
-                    'batch_year' => $studData['batch_year'] ?? date('Y'),
-                    'gender' => $studData['gender'] ?? 'L',
-                    'birth_place' => $studData['birth_place'] ?? null,
-                    'birth_date' => $studData['birth_date'] ?? null,
+                    'batch_year' => $studData['angkatan'] ?? $studData['batch_year'] ?? date('Y'),
+                    'gender' => $studData['jenis_kelamin'] ?? $studData['gender'] ?? 'L',
+                    'birth_place' => $studData['tempat_lahir'] ?? $studData['birth_place'] ?? null,
+                    'birth_date' => $studData['tanggal_lahir'] ?? $studData['birth_date'] ?? null,
                     'master_synced_at' => $now,
                 ]
             );

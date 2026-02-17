@@ -144,17 +144,19 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             )}
 
             <aside
-                className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col bg-sidebar border-r border-slate-200 transition-transform duration-300 lg:translate-x-0 ${open ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
+                className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col bg-sidebar border-r border-white/5 transition-transform duration-300 lg:translate-x-0 ${open ? 'translate-x-0 shadow-2xl shadow-black' : '-translate-x-full'
                     }`}
             >
-                {/* Logo Section */}
-                <div className="flex h-20 items-center gap-3 px-6 border-b border-slate-50">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20 transition-transform hover:scale-105">
-                        <span className="text-xl font-black">K</span>
+                {/* Logo Section - Academic Prestige */}
+                <div className="flex h-20 items-center gap-3 px-6 border-b border-white/5 relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-dark text-white shadow-lg shadow-primary/20 transition-all group-hover:scale-110 group-hover:rotate-3">
+                        {/* Placeholder for UIN Logo - Symbolic Book/Knowledge Icon */}
+                        <AcademicCapIcon className="w-7 h-7 text-accent-gold" />
                     </div>
-                    <div className="min-w-0">
-                        <p className="text-sm font-black text-slate-900 tracking-tight leading-none uppercase">KKN SAIZU</p>
-                        <p className="text-[10px] font-bold text-primary mt-1 tracking-[0.1em] uppercase opacity-70">Manajemen v2.2</p>
+                    <div className="min-w-0 relative">
+                        <p className="text-sm font-black text-white tracking-widest leading-none">UIN SAIZU</p>
+                        <p className="text-[9px] font-black text-accent-gold mt-1 tracking-[0.2em] uppercase opacity-80">KKN INTELLIGENCE</p>
                     </div>
                 </div>
 
@@ -162,7 +164,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 <nav className="flex-1 space-y-7 overflow-y-auto px-4 py-8 custom-scrollbar">
                     {navGroups.map((group) => (
                         <div key={group.title}>
-                            <p className="mb-4 px-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                            <p className="mb-4 px-4 text-[9px] font-black uppercase tracking-[0.3em] text-white/20">
                                 {group.title}
                             </p>
                             <div className="space-y-1">
@@ -173,49 +175,39 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                                             key={item.href}
                                             href={item.href}
                                             onClick={onClose}
-                                            className={`group relative flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-all duration-200 ${isActive
-                                                ? 'bg-primary/10 text-primary font-bold shadow-sm'
-                                                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                            className={`group relative flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-all duration-300 ${isActive
+                                                ? 'bg-primary/10 text-accent-gold font-black shadow-[inset_0_0_20px_rgba(212,175,55,0.05)]'
+                                                : 'text-white/40 hover:bg-white/5 hover:text-white'
                                                 }`}
                                         >
                                             {isActive && (
-                                                <div className="absolute right-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-l-full bg-primary" />
+                                                <div className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-accent-gold shadow-[0_0_10px_rgba(212,175,55,1)]" />
                                             )}
-                                            <item.icon className={`h-5 w-5 flex-shrink-0 transition-all ${isActive ? 'text-primary' : 'text-slate-400 group-hover:text-primary group-hover:scale-110'}`} />
-                                            {item.label}
+                                            <item.icon className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ${isActive ? 'text-accent-gold scale-110 drop-shadow-[0_0_10px_rgba(212,175,55,0.4)]' : 'text-white/20 group-hover:text-primary-light group-hover:scale-110'}`} />
+                                            <span className="tracking-tight">{item.label}</span>
                                         </Link>
                                     );
                                 })}
                             </div>
                         </div>
                     ))}
-
-                    <div className="mt-4 pt-4 border-t border-slate-100">
-                        <Link
-                            href="/profile"
-                            onClick={onClose}
-                            className={`group flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-all ${currentPath === '/profile'
-                                ? 'bg-primary/10 text-primary font-bold'
-                                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                                }`}
-                        >
-                            <UsersIcon className={`h-5 w-5 transition-all ${currentPath === '/profile' ? 'text-primary' : 'text-slate-400 group-hover:text-primary'}`} />
-                            Profil Saya
-                        </Link>
-                    </div>
                 </nav>
 
-                {/* User Profile Section - Bottom Hook */}
-                <div className="mt-auto border-t border-slate-100 bg-slate-50/50 p-6">
+                {/* User Profile Section - Bottom Elite Hook */}
+                <div className="mt-auto border-t border-white/5 bg-white/5 p-6 backdrop-blur-md">
                     <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-slate-200 text-sm font-black text-primary shadow-sm">
-                            {auth.user?.name?.charAt(0) ?? '?'}
+                        <div className="relative">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-white/5 to-white/10 border border-white/10 text-sm font-black text-accent-gold shadow-lg">
+                                {auth.user?.name?.charAt(0) ?? '?'}
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-primary border-2 border-sidebar flex items-center justify-center">
+                                <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                            </div>
                         </div>
                         <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-black text-slate-900 tracking-tight leading-none">{auth.user?.name}</p>
+                            <p className="truncate text-sm font-black text-white tracking-tight leading-none uppercase">{auth.user?.name}</p>
                             <div className="flex items-center gap-1.5 mt-1.5">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                                <p className="truncate text-[10px] font-bold text-slate-400 uppercase tracking-widest">{roles[0] ?? 'operator'}</p>
+                                <p className="truncate text-[9px] font-black text-primary-light uppercase tracking-widest opacity-60">{roles[0] ?? 'operator'}</p>
                             </div>
                         </div>
                     </div>

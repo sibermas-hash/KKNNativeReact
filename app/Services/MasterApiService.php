@@ -16,9 +16,9 @@ class MasterApiService
 
     public function __construct()
     {
-        $this->baseUrl = rtrim((string)\App\Models\KKN\SystemSetting::get('master_api_url', config('services.master_api.url', '')), '/');
-        $this->clientId = (string)\App\Models\KKN\SystemSetting::get('master_api_client_id', config('services.master_api.client_id', ''));
-        $this->clientSecret = (string)\App\Models\KKN\SystemSetting::get('master_api_client_secret', config('services.master_api.client_secret', ''));
+        $this->baseUrl = rtrim(config('services.master_api.url', ''), '/');
+        $this->clientId = config('services.master_api.client_id', '');
+        $this->clientSecret = config('services.master_api.client_secret', '');
         $this->cacheMinutes = (int)config('services.master_api.cache_minutes', 60);
         $this->verifySsl = config('app.env') !== 'local';
     }
@@ -35,6 +35,7 @@ class MasterApiService
                 $response = Http::withOptions(['verify' => $this->verifySsl])->post($this->baseUrl . '/auth/token', [
                     'client_id' => $this->clientId,
                     'client_secret' => $this->clientSecret,
+                    'scope' => 'sync:read',
                 ]);
 
                 if ($response->successful()) {
@@ -174,7 +175,17 @@ class MasterApiService
     {
         try {
             $response = Http::withOptions(['verify' => $this->verifySsl])->get($this->baseUrl . '/health');
-            return $response->json() ?? ['status' => 'DOWN'];
+            $data = $response->json();
+
+            if (isset($data['success']) && $data['success'] && isset($data['data']['status'])) {
+                return $data['data'];
+            }
+
+            if (isset($data['status'])) {
+                return $data;
+            }
+
+            return ['status' => 'DOWN', 'error' => 'Invalid response format'];
         }
         catch (\Exception $e) {
             return ['status' => 'DOWN', 'error' => $e->getMessage()];

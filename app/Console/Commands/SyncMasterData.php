@@ -129,6 +129,7 @@ class SyncMasterData extends Command
         $employees = [];
         if ($this->option('source') === 'api') {
             $employees = $this->masterApi->getSyncDosen();
+            $this->info("  Fetched " . count($employees) . " lecturers from API");
         } else {
             // Direct DB Pull from 'master' connection
             $masterLecturers = MasterLecturer::all();
@@ -151,9 +152,18 @@ class SyncMasterData extends Command
 
         $synced = 0;
         $now = now();
-        // Default faculty if not found in data (Dosen might not have unit/faculty in Master API directly mapped)
-        // For now, assign to first available faculty or specific default
+        
+        // Default faculty if not found in data
         $defaultFaculty = Fakultas::on('kkn')->first();
+        if (!$defaultFaculty) {
+            $defaultFaculty = Fakultas::on('kkn')->create([
+                'code' => 'DEFAULT',
+                'nama' => 'Default Faculty',
+                'master_id' => 0,
+                'master_synced_at' => $now,
+            ]);
+            $this->info('  Created Default Faculty as fallback');
+        }
 
         foreach ($employees as $empData) {
             // Use 'nip' as stable identifier
@@ -175,8 +185,24 @@ class SyncMasterData extends Command
 
             $user->username = $username;
             $user->name = $empData['nama'] ?? $empData['name'] ?? 'Unknown';
-            $user->password = Hash::make($username);
+
+            // Password pattern: DDYYMM from birth_date
+            $birthDate = $empData['tanggal_lahir'] ?? $empData['birth_date'] ?? null;
+            if ($birthDate) {
+                // Formatting Y-m-d to DDYYMM
+                $dt = new \DateTime($birthDate);
+                $password = $dt->format('d') . $dt->format('y') . $dt->format('m');
+                $user->password = Hash::make($password);
+            } else {
+                $user->password = Hash::make($username);
+            }
+
             $user->save();
+            
+            // Assign Role
+            if (!$user->hasRole('dpl')) {
+                $user->assignRole('dpl');
+            }
 
             // 2. Ensure Lecturer record exists (Local KKN)
             // Note: KKN Dosen table uses 'nama', 'phone'
@@ -204,6 +230,7 @@ class SyncMasterData extends Command
         $students = [];
         if ($this->option('source') === 'api') {
             $students = $this->masterApi->getSyncMahasiswa();
+            $this->info("  Fetched " . count($students) . " students from API");
         } else {
             // Direct DB Pull from 'master' connection
             $masterStudents = MasterStudent::all();
@@ -230,6 +257,15 @@ class SyncMasterData extends Command
         $synced = 0;
         $now = now();
         $defaultFaculty = Fakultas::on('kkn')->first();
+        if (!$defaultFaculty) {
+            $defaultFaculty = Fakultas::on('kkn')->create([
+                'code' => 'DEFAULT',
+                'nama' => 'Default Faculty', 
+                'master_id' => 0,
+                'master_synced_at' => $now,
+            ]);
+            $this->info('  Created Default Faculty as fallback');
+        }
 
         foreach ($students as $studData) {
             $nim = $studData['nim'] ?? null;
@@ -261,8 +297,23 @@ class SyncMasterData extends Command
 
             $user->username = $username;
             $user->name = $studData['nama'] ?? $studData['name'] ?? 'Unknown';
-            $user->password = Hash::make($username);
+
+            // Password pattern: DDYYMM from birth_date
+            $birthDate = $studData['tanggal_lahir'] ?? $studData['birth_date'] ?? null;
+            if ($birthDate) {
+                $dt = new \DateTime($birthDate);
+                $password = $dt->format('d') . $dt->format('y') . $dt->format('m');
+                $user->password = Hash::make($password);
+            } else {
+                $user->password = Hash::make($username);
+            }
+
             $user->save();
+            
+            // Assign Role
+            if (!$user->hasRole('student')) {
+                $user->assignRole('student');
+            }
 
             // 2. Ensure Student record exists (Local KKN)
             // Mapping fields: nama, batch_year (angkatan), gender (jenis_kelamin), birth_date (tanggal_lahir)

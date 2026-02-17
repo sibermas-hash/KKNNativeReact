@@ -5,7 +5,6 @@ import {
     UsersIcon,
     ShieldCheckIcon,
     DocumentTextIcon,
-    GlobeAltIcon,
     SparklesIcon,
     ChartPieIcon,
     ArrowUpRightIcon,
@@ -57,107 +56,106 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
     }, []);
 
     return (
-        <AppLayout title="Analisis Dasbor">
-            <div className="space-y-10 pb-16 animate-in fade-in duration-700">
-                {/* Bagian Header Modern */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200/60">
-                    <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <span className="px-2 py-1 rounded-lg bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">KONTROL ADMIN</span>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">• Pembaruan Real-time 2026</span>
+        <AppLayout title="Academic Intelligence Dashboard">
+            <div className="space-y-16 pb-16 animate-in fade-in duration-1000">
+                {/* Elite Header Section */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-12 border-b border-white/5 relative">
+                    <div className="absolute -left-12 top-0 w-24 h-24 bg-primary/10 blur-3xl rounded-full" />
+                    <div className="relative">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="px-3 py-1 rounded-full bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-[10px] font-black uppercase tracking-[0.3em]">MODIFIED 2026 PROXIMITY</div>
+                            <div className="w-2 h-2 rounded-full bg-primary-light animate-pulse" />
                         </div>
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tighter">
-                            Ringkasan <span className="text-primary italic">Sistem</span>
+                        <h1 className="text-6xl font-black text-white tracking-tighter uppercase italic">
+                            Management <span className="text-accent-gold text-glow-gold">Nexus</span>
                         </h1>
+                        <p className="text-white/40 text-sm mt-3 font-medium uppercase tracking-widest">Orchestrating academic impact across the regional ecosystem.</p>
                     </div>
 
-                    <Link href="/admin/validate" className="group flex items-center gap-3 px-6 py-4 bg-primary text-white rounded-2xl shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all active:scale-95">
-                        <CheckBadgeIcon className="w-6 h-6 animate-pulse" />
-                        <span className="text-sm font-black uppercase tracking-widest">VALIDASI MAHASISWA</span>
+                    <Link href="/admin/validate" className="group flex items-center gap-3 px-10 py-6 bg-gradient-to-br from-primary to-primary-dark text-white rounded-[2rem] shadow-2xl shadow-primary/20 hover:scale-[1.02] hover:-rotate-1 transition-all active:scale-95 border border-white/10 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                        <CheckBadgeIcon className="w-6 h-6 text-accent-gold" />
+                        <span className="text-xs font-black uppercase tracking-ultrawide">VALIDATE CANDIDATES</span>
                     </Link>
                 </div>
 
-                {/* KPI Cards Grid */}
-                <Deferred data="stats" fallback={<div className="grid grid-cols-1 md:grid-cols-4 gap-6">{[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-white animate-pulse rounded-xl border border-slate-100" />)}</div>}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <AnalyticsCard
-                            title="Total Mahasiswa"
+                {/* Prestige Stats - Inspired by youware.app */}
+                <Deferred data="stats" fallback={<div className="grid grid-cols-1 md:grid-cols-4 gap-8">{[1, 2, 3, 4].map(i => <div key={i} className="h-44 glass animate-pulse rounded-[2.5rem]" />)}</div>}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+                        <PrestigeStat
+                            label="TOTAL SCHOLARS"
                             value={stats?.total_students}
-                            icon={UsersIcon}
-                            color="teal"
                             delay={0}
                             mounted={mounted}
                         />
-                        <AnalyticsCard
-                            title="Total Kelompok"
+                        <PrestigeStat
+                            label="ACTIVE BRIGADES"
                             value={stats?.total_groups}
-                            icon={RectangleGroupIcon}
-                            color="slate"
                             delay={100}
                             mounted={mounted}
                         />
-                        <AnalyticsCard
-                            title="Laporan Masuk"
+                        <PrestigeStat
+                            label="UPLINKED REPORTS"
                             value={(stats?.total_reports || 0) + (stats?.total_final_reports || 0)}
-                            icon={DocumentTextIcon}
-                            color="teal"
                             delay={200}
                             mounted={mounted}
                         />
-                        <AnalyticsCard
-                            title="Penerbitan Sertifikat"
+                        <PrestigeStat
+                            label="CERTIFIED IMPACT"
                             value={stats?.total_final_reports}
-                            icon={ShieldCheckIcon}
-                            color="slate"
                             delay={300}
                             mounted={mounted}
                         />
                     </div>
                 </Deferred>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-slate-900">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                     {/* Main Feed Content */}
-                    <div className="lg:col-span-2 space-y-8">
+                    <div className="lg:col-span-2 space-y-12">
                         {/* SDG Impact Analysis Card */}
-                        <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-8 group overflow-hidden relative">
-                            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
-                                <GlobeAltIcon className="h-40 w-40 text-primary" />
-                            </div>
+                        <div className="glass rounded-[3rem] shadow-2xl p-12 group overflow-hidden relative">
+                            <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/5 blur-[120px] rounded-full pointer-events-none group-hover:bg-primary/10 transition-colors duration-1000" />
+
                             <div className="relative z-10">
-                                <div className="flex items-center justify-between mb-10">
-                                    <h3 className="text-xl font-black tracking-tight flex items-center gap-3">
-                                        <div className="p-2.5 bg-primary/5 text-primary rounded-xl">
-                                            <ChartPieIcon className="h-6 w-6" />
+                                <div className="flex items-center justify-between mb-16">
+                                    <div className="flex items-center gap-6">
+                                        <div className="p-4 bg-accent-gold/10 text-accent-gold rounded-[1.5rem] border border-accent-gold/20 shadow-lg shadow-accent-gold/5">
+                                            <ChartPieIcon className="h-8 w-8" />
                                         </div>
-                                        Distribusi Penyelarasan SDG
-                                    </h3>
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">DATA ANALITIK</span>
+                                        <div>
+                                            <h3 className="text-3xl font-black text-white tracking-tighter uppercase italic">Sustainability Metrics</h3>
+                                            <p className="text-[10px] font-black text-accent-gold/40 mt-3 tracking-ultrawide uppercase">Global Alignment Tracker</p>
+                                        </div>
+                                    </div>
+                                    <div className="px-6 py-3 rounded-2xl bg-white/[0.02] border border-white/5">
+                                        <span className="text-[10px] font-black text-white/40 uppercase tracking-ultrawide">REAL-TIME ANALYTICS</span>
+                                    </div>
                                 </div>
 
-                                <Deferred data="sdg_distribution" fallback={<div className="h-64 bg-slate-50 animate-pulse rounded-xl" />}>
+                                <Deferred data="sdg_distribution" fallback={<div className="h-80 bg-white/5 animate-pulse rounded-3xl" />}>
                                     {sdg_distribution && sdg_distribution.length > 0 ? (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-8">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-20 gap-y-12">
                                             {sdg_distribution.slice(0, 10).map((item: any) => {
-                                                const sdg = SDG_DETAILS[item.id] || { name: 'Unknown', color: 'bg-slate-500' };
+                                                const sdg = SDG_DETAILS[item.id] || { name: 'Unknown', color: 'bg-white/20' };
                                                 const total = sdg_distribution.reduce((acc: number, curr: any) => acc + curr.count, 0);
                                                 const percentage = Math.round((item.count / total) * 100);
 
                                                 return (
-                                                    <div key={item.id} className="space-y-3 group/item">
+                                                    <div key={item.id} className="space-y-5 group/item cursor-default">
                                                         <div className="flex justify-between items-end">
-                                                            <div className="flex items-center gap-3 text-slate-900">
-                                                                <div className={`w-3 h-3 rounded-md ${sdg.color} shadow-sm group-hover/item:scale-125 transition-transform`} />
-                                                                <span className="text-xs font-black uppercase tracking-tight group-hover/item:text-primary transition-colors truncate max-w-[150px]">
+                                                            <div className="flex items-center gap-5">
+                                                                <div className={`w-4 h-4 rounded-full ${sdg.color} shadow-[0_0_20px_rgba(255,255,255,0.2)] group-hover/item:scale-150 transition-all duration-700`} />
+                                                                <span className="text-xs font-black uppercase tracking-widest text-white/60 group-hover/item:text-accent-gold transition-all truncate max-w-[200px]">
                                                                     {sdg.name}
                                                                 </span>
                                                             </div>
-                                                            <span className="text-[10px] font-black text-slate-400 tabular-nums">
-                                                                {item.count} PROKER
+                                                            <span className="text-[10px] font-black text-white/20 tabular-nums bg-white/[0.02] px-3 py-1 rounded-lg border border-white/5">
+                                                                {item.count}
                                                             </span>
                                                         </div>
-                                                        <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/60">
+                                                        <div className="h-3 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px]">
                                                             <div
-                                                                className={`h-full ${sdg.color} transition-all duration-[1s] ease-out rounded-full shadow-lg opacity-80 group-hover/item:opacity-100`}
+                                                                className={`h-full ${sdg.color} transition-all duration-[2s] ease-out rounded-full shadow-[0_0_20px_rgba(255,255,255,0.1)] opacity-60 group-hover/item:opacity-100`}
                                                                 style={{ width: `${percentage}%` }}
                                                             />
                                                         </div>
@@ -166,9 +164,9 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                                             })}
                                         </div>
                                     ) : (
-                                        <div className="col-span-full py-16 text-center border-2 border-dashed border-slate-100 rounded-2xl">
-                                            <SparklesIcon className="h-10 w-10 text-slate-200 mx-auto mb-4" />
-                                            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">ANALISIS DAMPAK AWAL TERTUNDA</p>
+                                        <div className="col-span-full py-24 text-center border-2 border-dashed border-white/5 rounded-[2.5rem] bg-white/[0.01]">
+                                            <SparklesIcon className="h-16 w-16 text-white/5 mx-auto mb-6" />
+                                            <p className="text-white/20 font-black text-[10px] uppercase tracking-ultrawide">Inert Impact Analysis Detected</p>
                                         </div>
                                     )}
                                 </Deferred>
@@ -176,78 +174,90 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                         </div>
 
                         {/* Recent Activity Card */}
-                        <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm overflow-hidden text-slate-900">
-                            <div className="p-8 border-b border-slate-100 flex items-center justify-between">
-                                <h3 className="text-xl font-black tracking-tight flex items-center gap-3 italic">
-                                    <UserPlusIcon className="h-6 w-6 text-primary" />
-                                    Interaksi Terbaru
-                                </h3>
-                                <Link href="/admin/registrations" className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">Lihat Buku Besar →</Link>
+                        <div className="glass rounded-[3rem] shadow-2xl overflow-hidden">
+                            <div className="p-12 border-b border-white/5 flex items-center justify-between">
+                                <div className="flex items-center gap-6">
+                                    <div className="p-4 bg-primary/20 text-primary-light rounded-2xl border border-primary/20 leading-none">
+                                        <UserPlusIcon className="h-8 w-8" />
+                                    </div>
+                                    <h3 className="text-3xl font-black text-white tracking-tighter uppercase italic leading-none">Interaction Log</h3>
+                                </div>
+                                <Link href="/admin/registrations" className="px-6 py-3 bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-ultrawide text-accent-gold transition-all">AUDIT LEDGER →</Link>
                             </div>
-                            <div className="divide-y divide-slate-50">
-                                <Deferred data="recentRegistrations" fallback={<div className="p-12 space-y-6">{[1, 2, 3].map(i => <div key={i} className="h-14 bg-slate-50 animate-pulse rounded-xl" />)}</div>}>
+                            <div className="divide-y divide-white/[0.03]">
+                                <Deferred data="recentRegistrations" fallback={<div className="p-12 space-y-8">{[1, 2, 3].map(i => <div key={i} className="h-16 bg-white/5 animate-pulse rounded-2xl" />)}</div>}>
                                     {recentRegistrations && recentRegistrations.length > 0 ? (
                                         recentRegistrations.map((reg) => (
-                                            <div key={reg.id} className="p-6 hover:bg-slate-50/50 transition-all flex items-center justify-between group">
-                                                <div className="flex items-center gap-5 text-slate-900">
-                                                    <div className="h-12 w-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-900 font-black group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+                                            <div key={reg.id} className="p-10 hover:bg-white/[0.04] transition-all flex items-center justify-between group">
+                                                <div className="flex items-center gap-8">
+                                                    <div className="h-16 w-16 rounded-[1.5rem] bg-gradient-to-br from-white/5 to-white/10 border border-white/10 flex items-center justify-center text-xl font-black text-white group-hover:from-primary group-hover:to-primary-dark transition-all shadow-xl group-hover:shadow-primary/30 relative">
                                                         {reg.student?.user?.name?.charAt(0)}
+                                                        <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-accent-gold border-[3px] border-[#080808] opacity-0 group-hover:opacity-100 transition-opacity" />
                                                     </div>
                                                     <div>
-                                                        <p className="font-black uppercase tracking-tight text-sm leading-none transition-colors group-hover:text-primary">{reg.student?.user?.name}</p>
-                                                        <p className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-widest">{reg.student?.nim} • {reg.period?.name}</p>
+                                                        <p className="font-black uppercase tracking-widest text-base text-white/90 group-hover:text-accent-gold transition-colors">{reg.student?.user?.name}</p>
+                                                        <div className="flex items-center gap-4 mt-2.5">
+                                                            <span className="text-[10px] text-white/20 font-bold uppercase tracking-widest bg-white/5 px-3 py-1 rounded-lg italic border border-white/5">{reg.student?.nim}</span>
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-white/10" />
+                                                            <span className="text-[10px] text-primary-light font-black uppercase tracking-ultrawide">{reg.period?.name}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-[0.1em] border shadow-sm ${reg.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                                    reg.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                        'bg-rose-50 text-rose-600 border-rose-100'
+                                                <div className={`px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-ultrawide border shadow-2xl backdrop-blur-md transition-all group-hover:scale-110 overflow-hidden relative ${reg.status === 'pending' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-amber-500/5' :
+                                                    reg.status === 'approved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-500/5' :
+                                                        'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-rose-500/5'
                                                     }`}>
-                                                    {reg.status}
+                                                    <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    <span className="relative z-10">{reg.status}</span>
                                                 </div>
                                             </div>
                                         ))
                                     ) : (
-                                        <div className="p-16 text-center text-slate-400 italic">Tidak ada pendaftaran terbaru terdeteksi dalam sistem.</div>
+                                        <div className="p-24 text-center text-white/10 font-black uppercase tracking-ultrawide italic">No registration protocols detected.</div>
                                     )}
                                 </Deferred>
                             </div>
                         </div>
                     </div>
 
-                    {/* Meta/Rail Content */}
-                    <div className="space-y-8">
-                        {/* Audit Summary Card */}
-                        <div className="bg-slate-900 rounded-xl p-8 text-white relative overflow-hidden group shadow-xl">
-                            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent pointer-events-none" />
+                    {/* Meta Section */}
+                    <div className="space-y-12">
+                        {/* Security Ledger Card */}
+                        <div className="bg-gradient-to-br from-surface-panel to-black rounded-[3rem] p-12 text-white relative overflow-hidden group border border-white/10 shadow-2xl">
+                            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none" />
+                            <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-accent-gold/5 blur-[100px] rounded-full" />
+
                             <div className="relative z-10">
-                                <ShieldCheckIcon className="h-12 w-12 text-primary mb-6 group-hover:scale-110 transition-transform" />
-                                <h4 className="text-2xl font-black tracking-tighter mb-4 leading-none uppercase">PENGAWASAN KEAMANAN</h4>
-                                <p className="text-slate-400 text-sm font-medium leading-relaxed mb-8 opacity-80">
-                                    Pelacakan penuh semua tindakan administratif. Kepatuhan dengan protokol integritas data terverifikasi.
+                                <div className="w-20 h-20 glass rounded-[1.5rem] mb-10 flex items-center justify-center transition-all duration-700 group-hover:rotate-[360deg] group-hover:border-accent-gold/40">
+                                    <ShieldCheckIcon className="h-10 w-10 text-accent-gold text-glow-gold" />
+                                </div>
+                                <h4 className="text-4xl font-black tracking-tighter mb-5 uppercase italic">Integrity <span className="text-accent-gold italic">Sentinel</span></h4>
+                                <p className="text-white/30 text-sm font-medium leading-relaxed mb-12 uppercase tracking-widest text-[11px]">
+                                    All administrative protocols are monitored and logged within the immutable audit trail.
                                 </p>
-                                <Link href="/admin/audit-log" className="flex items-center justify-center gap-2 w-full py-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
-                                    MASUK LOG KEAMANAN
-                                    <ArrowUpRightIcon className="h-3.5 w-3.5" />
+                                <Link href="/admin/audit-log" className="flex items-center justify-center gap-4 w-full py-6 bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 rounded-[1.5rem] text-[10px] font-black uppercase tracking-ultrawide transition-all group-hover:border-accent-gold/30 group-hover:text-accent-gold active:scale-95 shadow-lg">
+                                    SECURITY LEDGER
+                                    <ArrowUpRightIcon className="h-4 w-4" />
                                 </Link>
                             </div>
                         </div>
 
-                        {/* Document Progress Summary */}
-                        <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-8 text-slate-900">
-                            <div className="flex items-center gap-3 mb-8">
-                                <div className="p-2.5 bg-primary/5 text-primary rounded-xl">
-                                    <DocumentTextIcon className="h-5 w-5" />
+                        {/* Critical Metrics - Progress Circle Vibe */}
+                        <div className="glass rounded-[3rem] shadow-2xl p-12 text-white">
+                            <div className="flex items-center gap-6 mb-12">
+                                <div className="p-4 bg-accent-gold/10 text-accent-gold rounded-[1.5rem] border border-accent-gold/20 shadow-lg">
+                                    <ChartPieIcon className="h-8 w-8" />
                                 </div>
                                 <div>
-                                    <h4 className="text-lg font-black tracking-tight leading-none italic uppercase">METRIK</h4>
-                                    <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-widest">PROGRES DOKUMEN GLOBAL</p>
+                                    <h4 className="text-2xl font-black tracking-tighter uppercase italic leading-none">Telemetry</h4>
+                                    <p className="text-[10px] font-black text-white/20 mt-3 uppercase tracking-ultrawide">DOCUMENT FLOW STATUS</p>
                                 </div>
                             </div>
-                            <Deferred data="stats" fallback={<div className="space-y-6 animate-pulse"><div className="h-10 bg-slate-50 rounded-lg" /><div className="h-10 bg-slate-50 rounded-lg" /></div>}>
-                                <div className="space-y-6">
-                                    <ProgressItem label="Aktivitas Harian" value={stats?.total_reports || 0} max={100} />
-                                    <ProgressItem label="Rencana Operasional" value={stats?.total_work_programs || 0} max={50} />
-                                    <ProgressItem label="Penilaian Akhir" value={stats?.total_final_reports || 0} max={20} />
+                            <Deferred data="stats" fallback={<div className="space-y-10 animate-pulse"><div className="h-16 bg-white/5 rounded-2xl" /><div className="h-16 bg-white/5 rounded-2xl" /></div>}>
+                                <div className="space-y-12">
+                                    <ProgressItem label="Operation Daily Logs" value={stats?.total_reports || 0} max={100} />
+                                    <ProgressItem label="Strategic Blueprints" value={stats?.total_work_programs || 0} max={50} />
+                                    <ProgressItem label="Impact Assessments" value={stats?.total_final_reports || 0} max={20} />
                                 </div>
                             </Deferred>
                         </div>
@@ -258,21 +268,23 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
     );
 }
 
-function AnalyticsCard({ title, value, icon: Icon, color, delay, mounted }: any) {
+function PrestigeStat({ label, value, delay, mounted }: any) {
     return (
         <div
-            className={`group bg-white rounded-xl border border-slate-200/60 p-6 transition-all duration-700 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            className={`group glass rounded-[2.5rem] p-10 transition-all duration-1000 hover:shadow-primary/10 hover:-translate-y-3 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'
                 }`}
             style={{ transitionDelay: `${delay}ms` }}
         >
-            <div className={`p-3.5 rounded-xl inline-block mb-4 border transition-all duration-500 group-hover:scale-110 group-hover:shadow-md ${color === 'teal' ? 'bg-primary/5 text-primary border-primary/10' : 'bg-slate-50 text-slate-500 border-slate-200'
-                }`}>
-                <Icon className="h-7 w-7" />
-            </div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] group-hover:text-primary transition-colors">{title}</p>
-            <h4 className="text-3xl font-black text-slate-900 mt-2 tracking-tighter tabular-nums">
+            <h4 className="text-6xl font-black text-white mb-4 tracking-tighter tabular-nums drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] group-hover:scale-105 transition-transform duration-700">
                 {typeof value === 'number' ? value.toLocaleString() : (value || 0)}
             </h4>
+            <p className="text-[11px] font-black text-accent-gold tracking-ultrawide uppercase opacity-60 group-hover:opacity-100 transition-all">{label}</p>
+
+            <div className="mt-8 pt-8 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
+                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-full bg-accent-gold w-1/4 animate-shimmer" />
+                </div>
+            </div>
         </div>
     );
 }
@@ -280,16 +292,16 @@ function AnalyticsCard({ title, value, icon: Icon, color, delay, mounted }: any)
 function ProgressItem({ label, value, max }: any) {
     const percentage = Math.min((value / (max || 1)) * 100, 100);
     return (
-        <div className="space-y-2 group/prog">
+        <div className="space-y-5 group/prog">
             <div className="flex justify-between items-end px-1">
-                <span className="text-xs font-black text-slate-800 tracking-tight group-hover/prog:text-primary transition-colors">{label}</span>
-                <span className="text-[10px] font-black text-slate-400 uppercase tabular-nums">
-                    {value} / {max}
+                <span className="text-[10px] font-black text-white/40 tracking-ultrawide uppercase italic group-hover/prog:text-accent-gold transition-colors">{label}</span>
+                <span className="text-[11px] font-black text-white/20 tabular-nums bg-white/[0.02] px-3 py-1 rounded-lg border border-white/5">
+                    {value} <span className="opacity-10">/</span> {max}
                 </span>
             </div>
-            <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100 shadow-inner">
+            <div className="h-3.5 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px] shadow-2xl">
                 <div
-                    className="h-full bg-primary rounded-full transition-all duration-[1.2s] ease-out shadow-sm"
+                    className="h-full bg-gradient-to-r from-primary via-primary-light to-accent-gold rounded-full transition-all duration-[2.5s] ease-out shadow-[0_0_20px_rgba(0,135,90,0.3)]"
                     style={{ width: `${percentage}%` }}
                 />
             </div>

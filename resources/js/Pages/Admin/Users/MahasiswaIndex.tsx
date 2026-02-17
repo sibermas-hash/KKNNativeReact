@@ -4,6 +4,15 @@ import AppLayout from '@/Layouts/AppLayout';
 import { Button, Badge, FormInput, Pagination } from '@/Components/ui';
 import type { PageProps } from '@/types';
 import type { PaginationMeta } from '@/Components/UI/Pagination';
+import {
+    UserIcon,
+    AcademicCapIcon,
+    BuildingLibraryIcon,
+    MagnifyingGlassIcon,
+    PowerIcon,
+    PlusIcon,
+    AtSymbolIcon
+} from '@heroicons/react/24/outline';
 
 interface UserData {
     id: number;
@@ -40,100 +49,161 @@ export default function MahasiswaIndex({ users, filters, title }: Props) {
     }, [search]);
 
     return (
-        <AppLayout title={title}>
-            <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex flex-1 max-w-xl">
+        <AppLayout title="Scholar Candidate Registry">
+            <div className="space-y-12 pb-16 animate-in fade-in duration-1000">
+                {/* Elite Header */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-white/5 relative">
+                    <div className="absolute -left-12 top-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
+                    <div className="relative">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="px-3 py-1 rounded-full bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-[10px] font-black uppercase tracking-[0.3em]">SCHOLAR ROSTER</div>
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary-light animate-pulse" />
+                        </div>
+                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic">
+                            Candidate <span className="text-accent-gold text-glow-gold">Roster</span>
+                        </h1>
+                        <p className="text-white/40 text-sm mt-3 font-medium uppercase tracking-[0.15em]">Registry of all academic candidates participating in the KKN tactical deployment cycle.</p>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <div className="px-6 py-3 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col items-center">
+                            <span className="text-[9px] font-black text-white/20 uppercase tracking-widest leading-none">TOTAL CANDIDATES</span>
+                            <span className="text-xl font-black text-white mt-1">{users.meta?.total || 0}</span>
+                        </div>
+                        <Link href="/admin/users/create?role=student">
+                            <button className="group flex items-center gap-3 px-8 py-5 bg-gradient-to-br from-primary to-primary-dark text-white rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all border border-white/10 relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                                <PlusIcon className="w-5 h-5 text-accent-gold" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">ENLIST SCHOLAR</span>
+                            </button>
+                        </Link>
+                    </div>
+                </div>
+
+                {/* Filter Section */}
+                <div className="p-8 glass rounded-[2.5rem] relative group">
+                    <div className="absolute inset-y-0 left-12 flex items-center pointer-events-none">
+                        <MagnifyingGlassIcon className="h-5 w-5 text-white/20 group-focus-within:text-accent-gold transition-colors" />
+                    </div>
                     <FormInput
-                        placeholder="Cari nama, NIM, atau email..."
+                        placeholder="SCAN CANDIDATE RECORDS (NAME, NIM, EMAIL)..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="bg-white"
+                        className="pl-14 py-5 bg-black/40 border-white/10 text-xs font-bold uppercase tracking-widest text-white placeholder:text-white/10 focus:border-accent-gold/50 transition-all rounded-2xl"
                     />
                 </div>
-                <div className="flex items-center gap-4">
-                    <p className="hidden lg:block text-sm font-bold text-slate-500 bg-white px-4 py-2 rounded-xl border border-slate-200">
-                        {users.meta?.total || 0} Mahasiswa
-                    </p>
-                    <Link href="/admin/users/create?role=student">
-                        <Button className="shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95">
-                            + Tambah Mahasiswa
-                        </Button>
-                    </Link>
-                </div>
-            </div>
 
-            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl transition-all duration-500">
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-slate-200">
-                        <thead className="bg-slate-50">
-                            <tr>
-                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Identitas</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Program Studi</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Username/Email</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
-                                <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {users.data.length === 0 ? (
+                {/* Main Table Section */}
+                <div className="bg-white/[0.02] rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden backdrop-blur-xxl relative">
+                    <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none">
+                        <AcademicCapIcon className="h-64 w-64 text-white" />
+                    </div>
+
+                    <div className="overflow-x-auto relative z-10">
+                        <table className="min-w-full divide-y divide-white/5">
+                            <thead className="bg-white/[0.02]">
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center text-sm text-slate-500 font-medium italic">
-                                        Data mahasiswa tidak ditemukan.
-                                    </td>
+                                    <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Candidate</th>
+                                    <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Strategic Sector</th>
+                                    <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Uplink Access</th>
+                                    <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30 text-center">Status</th>
+                                    <th className="px-8 py-6 text-right text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Nexus Control</th>
                                 </tr>
-                            ) : (
-                                users.data.map((u) => (
-                                    <tr key={u.id} className="transition hover:bg-slate-50/80 group">
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col">
-                                                <span className="text-sm font-black text-slate-800 uppercase tracking-tight">{u.name}</span>
-                                                <span className="text-[10px] font-bold text-primary font-mono bg-emerald-50 px-2 py-0.5 rounded w-fit mt-1 uppercase">
-                                                    NIM: {u.mahasiswa?.nim || '-'}
-                                                </span>
+                            </thead>
+                            <tbody className="divide-y divide-white/[0.03]">
+                                {users.data.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="px-8 py-24 text-center">
+                                            <div className="flex flex-col items-center">
+                                                <AcademicCapIcon className="h-12 w-12 text-white/5 mb-4" />
+                                                <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] italic">No scholar candidates detected.</p>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col">
-                                                <span className="text-xs font-bold text-slate-700">{u.mahasiswa?.prodi?.nama || '-'}</span>
-                                                <span className="text-[10px] text-slate-400 font-medium uppercase tracking-tighter">
-                                                    {u.mahasiswa?.prodi?.fakultas?.nama || '-'}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col text-xs">
-                                                <span className="font-bold text-slate-700">{u.username}</span>
-                                                <span className="text-slate-400 font-medium">{u.email}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <Badge variant={u.is_active ? 'success' : 'danger'} className="text-[9px] font-black uppercase tracking-widest">
-                                                {u.is_active ? 'Aktif' : 'Nonaktif'}
-                                            </Badge>
-                                        </td>
-                                        <td className="px-6 py-4 text-right border-l border-transparent transition-all group-hover:border-slate-100">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className={`font-black text-[10px] uppercase tracking-wider ${u.is_active ? 'text-red-500 hover:bg-red-50' : 'text-emerald-500 hover:bg-emerald-50'}`}
-                                                onClick={() => toggleForm.patch(`/admin/users/${u.id}/toggle-active`)}
-                                                loading={toggleForm.processing}
-                                            >
-                                                {u.is_active ? 'Nonaktifkan' : 'Aktifkan'}
-                                            </Button>
                                         </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                                ) : (
+                                    users.data.map((u) => (
+                                        <tr key={u.id} className="group hover:bg-white/[0.04] transition-all duration-300">
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-5">
+                                                    <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-white/5 to-white/10 border border-white/10 flex items-center justify-center text-xl font-black text-accent-gold group-hover:scale-110 transition-transform shadow-xl">
+                                                        {u.name.charAt(0)}
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-base font-black text-white group-hover:text-accent-gold transition-colors uppercase tracking-tight leading-none italic">{u.name}</span>
+                                                        <div className="flex items-center gap-2 mt-2">
+                                                            <UserIcon className="h-3 w-3 text-primary-light" />
+                                                            <span className="text-[10px] font-black text-primary-light uppercase tracking-widest leading-none">
+                                                                NIM: {u.mahasiswa?.nim || '---'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <div className="flex flex-col gap-1.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <AcademicCapIcon className="h-3.5 w-3.5 text-white/20" />
+                                                        <span className="text-[11px] font-black text-white/70 uppercase tracking-tighter leading-none italic">{u.mahasiswa?.prodi?.nama || '---'}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <BuildingLibraryIcon className="h-3.5 w-3.5 text-white/10" />
+                                                        <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest leading-none">
+                                                            {u.mahasiswa?.prodi?.fakultas?.nama || '---'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <div className="flex flex-col gap-1.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[10px] font-bold text-white/50 tracking-wider font-mono">{u.username}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <AtSymbolIcon className="h-3 w-3 text-white/10" />
+                                                        <span className="text-[10px] font-bold text-white/20 tracking-wider font-mono">{u.email}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6 text-center">
+                                                <Badge variant={u.is_active ? 'success' : 'danger'} className="px-4 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-[0.2em] shadow-lg">
+                                                    {u.is_active ? 'ENABLED' : 'DISABLED'}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-8 py-6 text-right">
+                                                <button
+                                                    disabled={toggleForm.processing}
+                                                    className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 ${u.is_active
+                                                        ? 'border-rose-500/20 text-rose-500 bg-rose-500/5 hover:bg-rose-500/20 hover:border-rose-500/40'
+                                                        : 'border-emerald-500/20 text-emerald-500 bg-emerald-500/5 hover:bg-emerald-500/20 hover:border-emerald-500/40'}`}
+                                                    onClick={() => toggleForm.patch(`/admin/users/${u.id}/toggle-active`)}
+                                                >
+                                                    <PowerIcon className="h-3 w-3" />
+                                                    {u.is_active ? 'DEACTIVATE' : 'AUTHORIZE'}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {users.meta && (
+                        <div className="px-8 py-6 bg-white/[0.01] border-t border-white/5">
+                            <Pagination meta={users.meta} />
+                        </div>
+                    )}
                 </div>
 
-                {users.meta && (
-                    <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100">
-                        <Pagination meta={users.meta} />
-                    </div>
-                )}
+                {/* Footer UI */}
+                <div className="flex items-center justify-between px-8">
+                    <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">
+                        DATA SOURCE: UIN-SAIZU-SCHOLAR-RECORDS
+                    </p>
+                    <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">
+                        ACCESS: LEVEL-CANDIDATE
+                    </p>
+                </div>
             </div>
         </AppLayout>
     );

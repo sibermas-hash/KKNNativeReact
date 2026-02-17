@@ -2,6 +2,17 @@ import { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Button, Badge, FormInput, FormSelect, Modal } from '@/Components/ui';
+import {
+    UserGroupIcon,
+    PlusIcon,
+    ShieldCheckIcon,
+    CalendarIcon,
+    IdentificationIcon,
+    MagnifyingGlassIcon,
+    TrashIcon,
+    XMarkIcon,
+    UserCircleIcon
+} from '@heroicons/react/24/outline';
 
 interface PeriodAssignment {
     id: number;
@@ -55,7 +66,7 @@ export default function DplAssignment({ assignments, allDosen, allPeriods, title
     };
 
     const handleRemove = (dplPeriodId: number) => {
-        if (confirm('Yakin ingin menghapus penugasan DPL ini?')) {
+        if (confirm('AUTHORIZATION REQUIRED: DO YOU WISH TO TERMINATE THIS OFFICER DEPLOYMENT?')) {
             assignForm.patch(`/admin/dpl/remove-period/${dplPeriodId}`);
         }
     };
@@ -71,147 +82,188 @@ export default function DplAssignment({ assignments, allDosen, allPeriods, title
     const periodOptions = allPeriods.map(p => ({ value: p.id, label: `Angkatan ${p.angkatan} - ${p.jenis} (${p.name})` }));
 
     return (
-        <AppLayout title={title}>
-            <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex flex-1 max-w-xl">
-                    <FormInput
-                        placeholder="Cari nama DPL, NIP, atau periode..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="bg-white"
-                    />
-                </div>
-                <div className="flex items-center gap-4">
-                    <p className="hidden lg:block text-sm font-bold text-slate-500 bg-white px-4 py-2 rounded-xl border border-slate-200">
-                        {assignments.length} Penugasan
-                    </p>
-                    <Button
-                        onClick={() => setShowModal(true)}
-                        className="shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95"
-                    >
-                        + Tugaskan DPL
-                    </Button>
-                </div>
-            </div>
+        <AppLayout title="Command Officer Deployment">
+            <div className="space-y-12 pb-16 animate-in fade-in duration-1000">
+                {/* Elite Header */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-white/5 relative">
+                    <div className="absolute -left-12 top-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
+                    <div className="relative">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="px-3 py-1 rounded-full bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-[10px] font-black uppercase tracking-[0.3em]">STRATEGIC ASSIGNMENT</div>
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary-light animate-pulse" />
+                        </div>
+                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic line-height-1">
+                            Officer <span className="text-accent-gold text-glow-gold">Deployment</span>
+                        </h1>
+                        <p className="text-white/40 text-sm mt-4 font-medium uppercase tracking-[0.15em]">Assigning Field Command Officers to operational scholastic cycles.</p>
+                    </div>
 
-            {/* Assignment Table */}
-            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl">
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-slate-200">
-                        <thead className="bg-slate-50">
-                            <tr>
-                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">DPL</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Periode</th>
-                                <th className="px-6 py-4 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">Kelompok</th>
-                                <th className="px-6 py-4 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
-                                <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {filtered.length === 0 ? (
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="group flex items-center gap-4 px-10 py-5 bg-gradient-to-br from-primary to-primary-dark text-white rounded-[2rem] shadow-2xl shadow-primary/40 hover:scale-[1.02] active:scale-95 transition-all border border-white/10 relative overflow-hidden"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                        <PlusIcon className="h-6 w-6 text-accent-gold" />
+                        <span className="text-xs font-black uppercase tracking-widest italic">DEPLOY OFFICER</span>
+                    </button>
+                </div>
+
+                {/* Filter Row */}
+                <div className="flex items-center justify-between p-4 glass rounded-[2.5rem]">
+                    <div className="relative group max-w-xl flex-1">
+                        <MagnifyingGlassIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-accent-gold transition-colors" />
+                        <input
+                            placeholder="SCAN DEPLOYMENTS FOR IDENTIFIERS..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full pl-14 pr-8 py-4 bg-black/40 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-accent-gold/50 transition-all"
+                        />
+                    </div>
+                    <div className="hidden lg:flex items-center gap-4 px-8 py-4 bg-white/5 rounded-2xl border border-white/5">
+                        <UserGroupIcon className="h-5 w-5 text-accent-gold" />
+                        <span className="text-[10px] font-black text-white/40 uppercase tracking-widest italic">ACTIVE DEPLOYMENTS: {assignments.length}</span>
+                    </div>
+                </div>
+
+                {/* Assignment Ledger (Table) */}
+                <div className="bg-white/[0.02] rounded-[3rem] border border-white/10 shadow-2xl overflow-hidden backdrop-blur-xxl relative">
+                    <div className="overflow-x-auto relative z-10">
+                        <table className="min-w-full divide-y divide-white/5">
+                            <thead className="bg-white/[0.02]">
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center text-sm text-slate-500 font-medium italic">
-                                        Belum ada penugasan DPL.
-                                    </td>
+                                    <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Command Officer</th>
+                                    <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Temporal Cycle</th>
+                                    <th className="px-8 py-6 text-center text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Brigade Load</th>
+                                    <th className="px-8 py-6 text-center text-[10px] font-black uppercase tracking-[0.3em] text-white/30">System Status</th>
+                                    <th className="px-8 py-6 text-right text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Operation</th>
                                 </tr>
-                            ) : (
-                                filtered.map((a) => (
-                                    <tr key={a.id} className="transition hover:bg-slate-50/80 group">
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col">
-                                                <span className="text-sm font-black text-slate-800 uppercase tracking-tight">{a.dosen.nama}</span>
-                                                <span className="text-[10px] font-bold text-primary font-mono bg-emerald-50 px-2 py-0.5 rounded w-fit mt-1">
-                                                    NIP: {a.dosen.nip}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col text-xs">
-                                                <span className="font-bold text-slate-700">{a.periode.name}</span>
-                                                <span className="text-slate-400 font-medium">
-                                                    Angkatan {a.periode.angkatan} • {a.periode.jenis}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
+                            </thead>
+                            <tbody className="divide-y divide-white/[0.03]">
+                                {filtered.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="px-8 py-24 text-center">
                                             <div className="flex flex-col items-center">
-                                                <span className="text-lg font-black text-slate-800">{a.kelompok_count}</span>
-                                                <span className="text-[10px] text-slate-400 font-bold">/ {a.max_groups} maks</span>
+                                                <IdentificationIcon className="h-12 w-12 text-white/5 mb-4" />
+                                                <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] italic">No active officer deployments detected.</p>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <Badge
-                                                variant={a.is_active ? 'success' : 'danger'}
-                                                className="text-[9px] font-black uppercase tracking-widest"
-                                            >
-                                                {a.is_active ? 'Aktif' : 'Nonaktif'}
-                                            </Badge>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            {a.kelompok_count === 0 && (
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="font-black text-[10px] uppercase tracking-wider text-red-500 hover:bg-red-50"
-                                                    onClick={() => handleRemove(a.id)}
-                                                >
-                                                    Hapus
-                                                </Button>
-                                            )}
                                         </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                                ) : (
+                                    filtered.map((a) => (
+                                        <tr key={a.id} className="group hover:bg-white/[0.04] transition-all duration-300">
+                                            <td className="px-8 py-10">
+                                                <div className="flex flex-col">
+                                                    <span className="text-base font-black text-white tracking-widest uppercase italic group-hover:text-accent-gold transition-colors">{a.dosen.nama}</span>
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        <IdentificationIcon className="h-3 w-3 text-primary-light" />
+                                                        <span className="text-[9px] font-black text-white/20 font-mono tracking-widest uppercase">ID // {a.dosen.nip}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-10">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[11px] font-black text-white/60 uppercase tracking-tighter leading-none italic">{a.periode.name}</span>
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        <CalendarIcon className="h-3 w-3 text-white/10" />
+                                                        <span className="text-[9px] font-bold text-white/10 uppercase tracking-widest italic">CYCLE {a.periode.angkatan} • {a.periode.jenis}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-10 text-center">
+                                                <div className="flex flex-col items-center group-hover:scale-110 transition-transform">
+                                                    <span className="text-xl font-black text-white italic tabular-nums leading-none">{a.kelompok_count}</span>
+                                                    <span className="text-[8px] font-black text-white/20 uppercase tracking-widest mt-1">/ {a.max_groups} LIMIT</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-10 text-center">
+                                                <div className={`inline-flex px-4 py-1.5 rounded-xl border text-[8px] font-black tracking-[0.2em] uppercase shadow-2xl backdrop-blur-md ${a.is_active ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-rose-400 bg-rose-500/10 border-rose-500/20'}`}>
+                                                    {a.is_active ? 'DEPLOYED' : 'TERMINATED'}
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-10 text-right">
+                                                {a.kelompok_count === 0 && (
+                                                    <button
+                                                        onClick={() => handleRemove(a.id)}
+                                                        className="p-4 rounded-2xl bg-rose-500/5 border border-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-all active:scale-90 shadow-2xl"
+                                                        title="TERMINATE DEPLOYMENT"
+                                                    >
+                                                        <TrashIcon className="h-6 w-6" />
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+
+                {/* Deploy Modal */}
+                <Modal open={showModal} onClose={() => setShowModal(false)} maxWidth="lg">
+                    <div className="glass rounded-[3rem] p-10 border-white/10 relative overflow-hidden">
+                        <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/10 blur-[80px] rounded-full pointer-events-none" />
+
+                        <div className="flex items-center justify-between mb-10">
+                            <h3 className="text-2xl font-black text-white tracking-tighter uppercase italic flex items-center gap-4">
+                                <UserCircleIcon className="h-8 w-8 text-accent-gold" />
+                                Officer Deployment
+                            </h3>
+                            <button onClick={() => setShowModal(false)} className="p-2 rounded-xl bg-white/5 text-white/20 hover:text-white transition-colors">
+                                <XMarkIcon className="h-6 w-6" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleAssign} className="space-y-10 relative z-10">
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-1">OFFICER IDENTIFICATION</label>
+                                <FormSelect
+                                    placeholder="SELECT COMMAND OFFICER..."
+                                    options={dosenOptions}
+                                    value={assignForm.data.dosen_id}
+                                    onChange={(e) => assignForm.setData('dosen_id', e.target.value)}
+                                    error={assignForm.errors.dosen_id}
+                                    className="bg-black/40 border-white/10 text-[10px] font-black tracking-widest text-white h-14 rounded-2xl focus:border-accent-gold/50"
+                                />
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-1">TEMPORAL CYCLE TARGET</label>
+                                <FormSelect
+                                    placeholder="SELECT DEPLOYMENT CYCLE..."
+                                    options={periodOptions}
+                                    value={assignForm.data.period_id}
+                                    onChange={(e) => assignForm.setData('period_id', e.target.value)}
+                                    error={assignForm.errors.period_id}
+                                    className="bg-black/40 border-white/10 text-[10px] font-black tracking-widest text-white h-14 rounded-2xl focus:border-accent-gold/50"
+                                />
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-1">BRIGADE ALLOCATION LIMIT</label>
+                                <FormInput
+                                    type="number"
+                                    min="1"
+                                    max="20"
+                                    value={assignForm.data.max_groups}
+                                    onChange={(e) => assignForm.setData('max_groups', e.target.value)}
+                                    className="bg-black/40 border-white/10 text-xs font-black tracking-widest text-accent-gold h-14 rounded-2xl focus:border-accent-gold/50"
+                                />
+                                {assignForm.errors.max_groups && <p className="text-rose-500 text-[9px] font-black uppercase tracking-widest ml-1">{assignForm.errors.max_groups}</p>}
+                            </div>
+
+                            <div className="pt-6 flex gap-6">
+                                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-5 text-white/20 text-[10px] font-black uppercase tracking-widest hover:bg-white/5 rounded-[2rem] transition-all italic border border-white/5">
+                                    ABORT
+                                </button>
+                                <button type="submit" disabled={assignForm.processing} className="flex-[2] py-5 bg-gradient-to-br from-primary to-primary-dark text-white text-[10px] font-black uppercase tracking-widest rounded-[2rem] shadow-2xl shadow-primary/40 hover:scale-[1.02] active:scale-95 transition-all border border-white/10 italic">
+                                    AUTHORIZE DEPLOYMENT
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </Modal>
             </div>
-
-            {/* Assign DPL Modal */}
-            <Modal open={showModal} onClose={() => setShowModal(false)} maxWidth="lg">
-                <form onSubmit={handleAssign} className="space-y-4">
-                    <h3 className="text-lg font-black text-slate-800 mb-4">Tugaskan DPL ke Periode</h3>
-
-                    <FormSelect
-                        label="Dosen"
-                        placeholder="Pilih Dosen..."
-                        options={dosenOptions}
-                        value={assignForm.data.dosen_id}
-                        onChange={(e) => assignForm.setData('dosen_id', e.target.value)}
-                        error={assignForm.errors.dosen_id}
-                    />
-
-                    <FormSelect
-                        label="Periode"
-                        placeholder="Pilih Periode..."
-                        options={periodOptions}
-                        value={assignForm.data.period_id}
-                        onChange={(e) => assignForm.setData('period_id', e.target.value)}
-                        error={assignForm.errors.period_id}
-                    />
-
-                    <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Maks Kelompok</label>
-                        <FormInput
-                            type="number"
-                            min="1"
-                            max="20"
-                            value={assignForm.data.max_groups}
-                            onChange={(e) => assignForm.setData('max_groups', e.target.value)}
-                        />
-                        {assignForm.errors.max_groups && <p className="mt-1 text-xs text-red-500">{assignForm.errors.max_groups}</p>}
-                    </div>
-
-                    <div className="pt-4 flex gap-3 justify-end">
-                        <Button variant="ghost" type="button" onClick={() => setShowModal(false)}>
-                            Batal
-                        </Button>
-                        <Button type="submit" loading={assignForm.processing}>
-                            Tugaskan
-                        </Button>
-                    </div>
-                </form>
-            </Modal>
         </AppLayout>
     );
 }

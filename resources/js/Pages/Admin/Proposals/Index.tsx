@@ -4,6 +4,11 @@ import AppLayout from '@/Layouts/AppLayout';
 import {
     DocumentCheckIcon,
     MagnifyingGlassIcon,
+    ShieldCheckIcon,
+    CurrencyDollarIcon,
+    UserGroupIcon,
+    WrenchScrewdriverIcon,
+    XMarkIcon
 } from '@heroicons/react/24/outline';
 
 interface Props {
@@ -45,140 +50,188 @@ export default function AdminProposalsIndex({ proposals }: Props) {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'approved': return 'bg-emerald-100 text-emerald-700';
-            case 'rejected': return 'bg-rose-100 text-rose-700';
-            case 'revision_required': return 'bg-amber-100 text-amber-700';
-            case 'submitted': return 'bg-blue-100 text-blue-700';
-            default: return 'bg-slate-100 text-slate-700';
+            case 'approved': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+            case 'rejected': return 'text-rose-400 bg-rose-500/10 border-rose-500/20';
+            case 'revision_required': return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+            case 'submitted': return 'text-primary-light bg-primary/10 border-primary/20';
+            default: return 'text-white/20 bg-white/5 border-white/10';
         }
     };
 
     return (
-        <AppLayout title="Kelola Proposal KKN">
-            <div className="space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <h1 className="text-2xl font-bold text-slate-900">Review Proposal Program Kerja</h1>
+        <AppLayout title="Mission Blueprint Review">
+            <div className="space-y-12 pb-16 animate-in fade-in duration-1000">
+                {/* Elite Header */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-white/5 relative">
+                    <div className="absolute -left-12 top-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
                     <div className="relative">
-                        <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="px-3 py-1 rounded-full bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-[10px] font-black uppercase tracking-[0.3em]">STRATEGIC PLANNING</div>
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary-light animate-pulse" />
+                        </div>
+                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic line-height-1">
+                            Mission <span className="text-accent-gold text-glow-gold">Blueprints</span>
+                        </h1>
+                        <p className="text-white/40 text-sm mt-4 font-medium uppercase tracking-[0.15em]">Validation of tactical programs and fiscal resource allocations.</p>
+                    </div>
+
+                    <div className="flex items-center gap-6 px-8 py-5 glass rounded-[2rem] group hover:border-accent-gold/20 transition-all">
+                        <div className="flex flex-col items-end">
+                            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest leading-none">PENDING REVIEWS</span>
+                            <span className="text-[9px] font-bold text-accent-gold mt-1 tracking-widest uppercase">CRITICAL PATH ANALYSIS</span>
+                        </div>
+                        <div className="w-px h-8 bg-white/10" />
+                        <ShieldCheckIcon className="h-6 w-6 text-accent-gold" />
+                    </div>
+                </div>
+
+                {/* Filter / Search Row */}
+                <div className="flex items-center justify-between p-4 glass rounded-[2.5rem]">
+                    <div className="relative group max-w-lg flex-1">
+                        <MagnifyingGlassIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-accent-gold transition-colors" />
                         <input
-                            type="text"
-                            placeholder="Cari proposal..."
-                            className="pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-primary focus:border-primary w-full md:w-64"
+                            placeholder="SCAN BLUEPRINTS FOR IDENTIFIERS..."
+                            className="w-full pl-14 pr-8 py-4 bg-black/40 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-accent-gold/50 transition-all"
                         />
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <table className="min-w-full divide-y divide-slate-200">
-                        <thead className="bg-slate-50">
-                            <tr>
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Judul & Kelompok</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Program Utama</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Anggaran</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
-                                <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {proposals.data.map((proposal) => (
-                                <tr key={proposal.id} className="hover:bg-slate-50 transition">
-                                    <td className="px-6 py-4">
-                                        <p className="font-bold text-slate-900">{proposal.title}</p>
-                                        <p className="text-xs text-slate-500">{proposal.group?.name} • Oleh: {proposal.user?.name}</p>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <p className="text-sm text-slate-700">{proposal.program_title}</p>
-                                        <p className="text-xs text-slate-400">{proposal.program_department}</p>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <p className="text-sm font-semibold text-slate-900">
-                                            Rp {new Intl.NumberFormat('id-ID').format(proposal.budget || 0)}
-                                        </p>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusColor(proposal.status)}`}>
-                                            {proposal.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <button
-                                            onClick={() => openReview(proposal)}
-                                            className="p-2 text-primary hover:bg-primary/10 rounded-lg transition"
-                                            title="Review"
-                                        >
-                                            <DocumentCheckIcon className="h-5 w-5" />
-                                        </button>
-                                    </td>
+                {/* Registry Ledger (Table) */}
+                <div className="bg-white/[0.02] rounded-[3rem] border border-white/10 shadow-2xl overflow-hidden backdrop-blur-xxl relative">
+                    <div className="overflow-x-auto relative z-10">
+                        <table className="min-w-full divide-y divide-white/5">
+                            <thead className="bg-white/[0.02]">
+                                <tr>
+                                    <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Blueprint & Brigade</th>
+                                    <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Primary Objective</th>
+                                    <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Fiscal Reserve</th>
+                                    <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Phase</th>
+                                    <th className="px-8 py-6 text-right text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Command</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-white/[0.03]">
+                                {proposals.data.map((proposal) => (
+                                    <tr key={proposal.id} className="group hover:bg-white/[0.04] transition-all duration-300">
+                                        <td className="px-8 py-10">
+                                            <div className="flex flex-col max-w-xs">
+                                                <span className="text-base font-black text-white tracking-tight uppercase italic group-hover:text-accent-gold transition-colors leading-none">{proposal.title}</span>
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <UserGroupIcon className="h-3 w-3 text-white/20" />
+                                                    <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">{proposal.group?.name} • {proposal.user?.name}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-10">
+                                            <div className="flex flex-col">
+                                                <span className="text-[11px] font-black text-white/60 uppercase tracking-tighter leading-none italic">{proposal.program_title}</span>
+                                                <span className="text-[9px] font-bold text-white/10 uppercase tracking-widest mt-1 italic">{proposal.program_department}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-10">
+                                            <div className="flex items-center gap-2 bg-white/[0.03] border border-white/5 px-4 py-2 rounded-xl w-fit">
+                                                <CurrencyDollarIcon className="h-4 w-4 text-emerald-500" />
+                                                <span className="text-[11px] font-black text-white tabular-nums">
+                                                    IDR {new Intl.NumberFormat('id-ID').format(proposal.budget || 0)}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-10">
+                                            <div className={`inline-flex px-4 py-1.5 rounded-xl border text-[8px] font-black tracking-[0.2em] uppercase shadow-2xl backdrop-blur-md ${getStatusColor(proposal.status)}`}>
+                                                {proposal.status.replace('_', ' ')}
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-10 text-right">
+                                            <button
+                                                onClick={() => openReview(proposal)}
+                                                className="p-4 rounded-2xl bg-white/5 border border-white/5 text-white/20 hover:text-accent-gold hover:bg-white/10 transition-all active:scale-90 shadow-2xl"
+                                                title="EXECUTE REVIEW"
+                                            >
+                                                <DocumentCheckIcon className="h-6 w-6" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 {/* Review Modal */}
                 {showReviewModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-                        <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden">
-                            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-                                <h3 className="text-xl font-bold text-slate-800">Review Proposal</h3>
-                                <button onClick={() => setShowReviewModal(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-black/80 backdrop-blur-xl animate-in fade-in duration-300">
+                        <div className="glass rounded-[3rem] w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-500 border-white/10 relative">
+                            <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/10 blur-[80px] rounded-full pointer-events-none" />
+
+                            <div className="p-10 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
+                                <h3 className="text-2xl font-black text-white tracking-tighter uppercase italic flex items-center gap-4">
+                                    <DocumentCheckIcon className="h-7 w-7 text-accent-gold" />
+                                    Blueprint Validation
+                                </h3>
+                                <button onClick={() => setShowReviewModal(false)} className="p-2 rounded-xl bg-white/5 text-white/20 hover:text-white transition-colors">
+                                    <XMarkIcon className="h-6 w-6" />
+                                </button>
                             </div>
-                            <form onSubmit={submitReview} className="p-8 space-y-6">
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                                        <label className="text-xs font-bold text-slate-400 uppercase">Judul</label>
-                                        <p className="font-semibold text-slate-900">{selectedProposal?.title}</p>
+
+                            <form onSubmit={submitReview} className="p-10 space-y-10 relative z-10">
+                                <div className="grid grid-cols-2 gap-6 text-[10px] font-black uppercase tracking-widest">
+                                    <div className="p-6 bg-black/40 rounded-[2rem] border border-white/5">
+                                        <label className="text-white/20 block mb-2">IDENTIFICATION</label>
+                                        <p className="text-white italic line-clamp-1">{selectedProposal?.title}</p>
                                     </div>
-                                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                                        <label className="text-xs font-bold text-slate-400 uppercase">Kelompok</label>
-                                        <p className="font-semibold text-slate-900">{selectedProposal?.group?.name}</p>
+                                    <div className="p-6 bg-black/40 rounded-[2rem] border border-white/5">
+                                        <label className="text-white/20 block mb-2">BRIGADE HUB</label>
+                                        <p className="text-white italic line-clamp-1">{selectedProposal?.group?.name}</p>
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="block text-sm font-bold text-slate-700">Tentukan Status</label>
-                                    <div className="grid grid-cols-3 gap-3">
-                                        {['approved', 'revision_required', 'rejected'].map((s) => (
+                                <div className="space-y-4">
+                                    <label className="block text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-1">PHASE DETERMINATION</label>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        {[
+                                            { id: 'approved', label: 'CERTIFY', color: 'border-emerald-500/20 text-emerald-400 bg-emerald-500/10' },
+                                            { id: 'revision_required', label: 'REVISE', color: 'border-amber-500/20 text-amber-400 bg-amber-500/10' },
+                                            { id: 'rejected', label: 'TERMINATE', color: 'border-rose-500/20 text-rose-400 bg-rose-500/10' }
+                                        ].map((s) => (
                                             <button
-                                                key={s}
+                                                key={s.id}
                                                 type="button"
-                                                onClick={() => setData('status', s)}
-                                                className={`py-3 px-4 rounded-xl border-2 text-xs font-bold uppercase transition-all ${data.status === s
-                                                        ? 'border-primary bg-primary/10 text-primary'
-                                                        : 'border-slate-100 bg-slate-50 text-slate-500 hover:border-slate-200'
+                                                onClick={() => setData('status', s.id)}
+                                                className={`py-5 px-4 rounded-2xl border transition-all duration-300 text-[10px] font-black tracking-widest uppercase italic shadow-2xl ${data.status === s.id
+                                                    ? `${s.color} border-current scale-105 shadow-glow`
+                                                    : 'border-white/5 bg-white/5 text-white/20 hover:border-white/20'
                                                     }`}
                                             >
-                                                {s.replace('_', ' ')}
+                                                {s.label}
                                             </button>
                                         ))}
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="block text-sm font-bold text-slate-700">Catatan / Feedback</label>
+                                <div className="space-y-4">
+                                    <label className="block text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-1 italic">FEEDBACK TELEMETRY</label>
                                     <textarea
                                         value={data.feedback}
                                         onChange={(e) => setData('feedback', e.target.value)}
-                                        className="w-full h-32 rounded-2xl border-slate-200 focus:ring-primary focus:border-primary text-sm p-4"
-                                        placeholder="Berikan alasan atau instruksi revisi..."
+                                        className="w-full h-40 bg-black/40 rounded-[2rem] border-white/10 focus:border-accent-gold/50 text-xs font-medium tracking-widest text-white/60 p-8 shadow-2xl placeholder:text-white/5"
+                                        placeholder="INPUT STRATEGIC FEEDBACK OR REVISION REQUIREMENTS..."
                                     />
-                                    {errors.feedback && <p className="text-rose-500 text-xs">{errors.feedback}</p>}
+                                    {errors.feedback && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest ml-1">{errors.feedback}</p>}
                                 </div>
 
-                                <div className="flex items-center gap-3 pt-4">
+                                <div className="flex items-center gap-6 pt-4">
                                     <button
                                         type="button"
                                         onClick={() => setShowReviewModal(false)}
-                                        className="flex-1 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-2xl transition"
+                                        className="flex-1 py-5 text-white/20 text-[10px] font-black uppercase tracking-widest hover:bg-white/5 rounded-[2rem] transition-all"
                                     >
-                                        Batal
+                                        ABORT
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={processing || !data.status}
-                                        className="flex-[2] py-4 bg-primary text-white font-extrabold rounded-3xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all text-sm disabled:opacity-50"
+                                        className="flex-[2] py-5 bg-gradient-to-br from-primary to-primary-dark text-white text-[10px] font-black uppercase tracking-widest rounded-[2rem] shadow-2xl shadow-primary/40 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 border border-white/10"
                                     >
-                                        SIMPAN HASIL REVIEW
+                                        COMMIT VALIDATION
                                     </button>
                                 </div>
                             </form>

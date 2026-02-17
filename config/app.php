@@ -9,7 +9,7 @@ return [
 
     'env' => env('APP_ENV', 'production'),
 
-    'debug' => (bool) env('APP_DEBUG', false),
+    'debug' => (bool)env('APP_DEBUG', false),
 
     'url' => env('APP_URL', 'http://localhost'),
 
@@ -40,12 +40,12 @@ return [
         /*
          * Application Service Providers...
          */
-        App\Providers\AppServiceProvider::class,
-        App\Providers\AuthServiceProvider::class,
+        App\Providers\AppServiceProvider::class ,
+        App\Providers\AuthServiceProvider::class ,
         // App\Providers\BroadcastServiceProvider::class,
-        App\Providers\EventServiceProvider::class,
-        App\Providers\RouteServiceProvider::class,
-        App\Providers\DataSyncServiceProvider::class, // Added
+        // App\Providers\EventServiceProvider::class,
+        // App\Providers\RouteServiceProvider::class,
+        App\Providers\DataSyncServiceProvider::class , // Added
     ])->toArray(),
 
     'aliases' => Facade::defaultAliases()->merge([

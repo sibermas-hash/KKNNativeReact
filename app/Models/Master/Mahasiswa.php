@@ -2,12 +2,11 @@
 
 namespace App\Models\Master;
 
-use App\Models\KKN\Fakultas;
-use App\Models\KKN\Prodi;
 use App\Models\KKN\Mahasiswa as KknMahasiswa;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Mahasiswa extends Model
 {
@@ -16,19 +15,27 @@ class Mahasiswa extends Model
 
     protected $fillable = [
         'nim',
-        'name',
+        'nama',
         'email',
-        'faculty_code',
-        'program_code',
-        'batch_year',
-        'gender',
-        'birth_place',
-        'birth_date',
+        'telepon',
+        'prodi',
+        'angkatan',
+        'tanggal_lahir',
+        'jenis_kelamin',
+        'status',
     ];
 
     protected $casts = [
-        'birth_date' => 'date',
+        'tanggal_lahir' => 'date',
     ];
+
+    /**
+     * Accessor for backward compatibility (name → nama).
+     */
+    public function getNameAttribute(): ?string
+    {
+        return $this->nama;
+    }
 
     public function user(): BelongsTo
     {
@@ -38,8 +45,8 @@ class Mahasiswa extends Model
     /**
      * Get the corresponding KKN student record.
      */
-    public function kknStudent()
+    public function kknStudent(): HasOne
     {
-        return KknMahasiswa::where('nim', $this->nim)->first();
+        return $this->hasOne(KknMahasiswa::class, 'nim', 'nim');
     }
 }

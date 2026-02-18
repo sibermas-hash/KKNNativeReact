@@ -2,13 +2,11 @@
 
 namespace App\Models\Master;
 
-use App\Models\KKN\Fakultas;
 use App\Models\KKN\Dosen as KknDosen;
 use App\Models\User;
-use App\Models\UserProfile;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Dosen extends Model
 {
@@ -17,10 +15,23 @@ class Dosen extends Model
 
     protected $fillable = [
         'nip',
-        'name',
+        'nama',
         'email',
-        'phone',
+        'telepon',
+        'gelar_depan',
+        'gelar_belakang',
+        'jabatan',
+        'prodi',
+        'status',
     ];
+
+    /**
+     * Accessor for backward compatibility (name → nama).
+     */
+    public function getNameAttribute(): ?string
+    {
+        return $this->nama;
+    }
 
     public function user(): BelongsTo
     {
@@ -30,8 +41,8 @@ class Dosen extends Model
     /**
      * Get the corresponding KKN lecturer record.
      */
-    public function kknLecturer()
+    public function kknLecturer(): HasOne
     {
-        return KknDosen::where('nip', $this->nip)->first();
+        return $this->hasOne(KknDosen::class, 'nip', 'nip');
     }
 }

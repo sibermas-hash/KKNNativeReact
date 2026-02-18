@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Jobs\SyncMasterDataJob;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -58,36 +59,48 @@ class MasterWebhookController
         } elseif (isset($payload['resource']) && is_string($payload['resource']) && $payload['resource'] !== '') {
             $resources = [$payload['resource']];
         }
-        $triggerDir = storage_path('app/master-webhook');
-        if (!is_dir($triggerDir)) {
-            @mkdir($triggerDir, 02775, true);
-        }
 
-        @chmod($triggerDir, 02775);
+        // Resolve sync type from webhook resources
+        $syncType = $this->resolveSyncType($resources);
 
-        $triggerPath = $triggerDir . DIRECTORY_SEPARATOR . 'trigger.json';
-        $data = [
-            'received_at' => now()->toIso8601String(),
-            'timestamp' => $ts,
-            'event_id' => $payload['id'] ?? null,
+        // Dispatch queue job instead of writing trigger file
+        SyncMasterDataJob::dispatch($syncType, $resources);
+
+        Log::info('Master webhook received (KKN) — dispatched sync job', [
             'resources' => $resources,
-        ];
-
-        @file_put_contents($triggerPath, json_encode($data, JSON_UNESCAPED_SLASHES), LOCK_EX);
-
-        Log::info('Master webhook received (KKN)', [
-            'resources' => $resources,
+            'sync_type' => $syncType,
         ]);
 
-
-        $this->ensureLogWritable();
-
-        // Sync will be executed by scheduler via master:webhook:sync command.
         return response()->json([
             'ok' => true,
             'queued' => true,
             'resources' => $resources,
         ], 202);
+    }
+
+    private function resolveSyncType(array $resources): string
+    {
+        $map = [
+            'organizations' => 'fakultas',
+            'employees' => 'dosen',
+            'dosen' => 'dosen',
+            'students' => 'mahasiswa',
+            'mahasiswa' => 'mahasiswa',
+        ];
+
+        $types = [];
+        foreach ($resources as $r) {
+            if (isset($map[$r])) {
+                $types[] = $map[$r];
+            }
+        }
+
+        $types = array_unique($types);
+        if (count($types) === 1) {
+            return $types[0];
+        }
+
+        return 'all';
     }
 
     private function ensureLogWritable(): void

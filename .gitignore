@@ -24,3 +24,11 @@ Homestead.yaml
 Thumbs.db
 cloudflared.exe
 connect_server.bat
+
+# Debug/deployment scripts
+check_local_master.php
+deploy_seeder.exp
+list_master_api_tables.php
+list_master_tables.php
+remote_seeder_final.php
+seeder_b64.txt

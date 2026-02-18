@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\PasswordHelper;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Prodi;
@@ -77,11 +78,11 @@ class StudentSyncService
             if (!$facultyId) $facultyId = Fakultas::first()?->id;
             if (!$prodiId) $prodiId = Prodi::first()?->id;
 
-            // 2. Determine Password (DDMMYYYY from birth_date or fallback)
-            $password = 'password123';
-            if (!empty($data['birth_date'])) {
-                $password = \Carbon\Carbon::parse($data['birth_date'])->format('dmY');
-            }
+            // 2. Determine Password (DDMMYYYY from birth_date or fallback to NIM)
+            $password = PasswordHelper::fromBirthDate(
+                $data['birth_date'] ?? null,
+                $data['nim']
+            );
 
             // 3. Create/Update User
             $user = User::firstOrCreate(

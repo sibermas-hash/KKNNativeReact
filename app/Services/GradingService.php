@@ -168,9 +168,9 @@ class GradingService
     }
 
     /**
-     * Determine letter grade based on total score
+     * Determine letter grade based on total score.
      */
-    private function determineLetterGrade(float $totalScore): string
+    public static function determineLetterGrade(float $totalScore): string
     {
         foreach (self::GRADE_SCALE as $scale) {
             if ($totalScore >= $scale['min'] && $totalScore <= $scale['max']) {

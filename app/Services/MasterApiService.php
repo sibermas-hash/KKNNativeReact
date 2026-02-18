@@ -164,6 +164,22 @@ class MasterApiService
     }
 
     /**
+     * Fetch all employees (lecturers) for DPL sync.
+     */
+    public function getAllEmployees(): array
+    {
+        return $this->getAllPages('/sync/dosen');
+    }
+
+    /**
+     * Fetch all students for student sync.
+     */
+    public function getAllStudents(): array
+    {
+        return $this->getAllPages('/sync/mahasiswa');
+    }
+
+    /**
      * Fetch all organizations (Faculties)
      */
     public function getAllOrganizations(): array

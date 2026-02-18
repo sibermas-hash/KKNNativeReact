@@ -3,12 +3,10 @@
 namespace App\Models\KKN;
 
 use App\Models\User;
-use App\Models\UserProfile;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Dosen extends Model
 {
@@ -51,6 +49,12 @@ class Dosen extends Model
         return $this->pimpinKelompok()->wherePivot('role', 'Ketua');
     }
 
+    // Alias used by DPL controllers (DailyReport, FinalReport, Evaluation, Grading)
+    public function kelompokKkn()
+    {
+        return $this->pimpinKelompok();
+    }
+
     // Legacy: Keep this for backward compatibility if needed, or remove if fully migrated
     public function kelompok()
     {
@@ -60,11 +64,6 @@ class Dosen extends Model
     public function dplPeriods(): HasMany
     {
         return $this->hasMany(DplPeriod::class , 'dosen_id');
-    }
-
-    public function profile(): MorphOne
-    {
-        return $this->morphOne(UserProfile::class , 'profileable');
     }
 
     /**

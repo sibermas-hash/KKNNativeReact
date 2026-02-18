@@ -8,6 +8,7 @@ use App\Models\KKN\Periode;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Mahasiswa;
+use App\Services\GradingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -180,14 +181,10 @@ class GeneratorNilaiController extends Controller
                 $dplWeighted = $score->dpl_weighted_score ?? 0;
                 $lppmWeighted = $score->lppm_weighted_score ?? 0;
                 $currentVillage = $score->village_weighted_score ?? 0;
-                
+
                 $total = round($dplWeighted + $currentVillage + $lppmWeighted, 2);
                 $score->total_score = $total;
-
-                if ($total >= 85)      $score->letter_grade = 'A';
-                elseif ($total >= 75)  $score->letter_grade = 'B';
-                elseif ($total >= 65)  $score->letter_grade = 'C';
-                else                   $score->letter_grade = 'D';
+                $score->letter_grade = GradingService::determineLetterGrade($total);
 
                 $score->save();
             }
@@ -417,7 +414,8 @@ class GeneratorNilaiController extends Controller
         }
 
         // Fallback to anggota_kelompok table
-        if (\Illuminate\Support\Facades\Schema::hasTable('anggota_kelompok')) {
+        $hasAnggotaTable = \Illuminate\Support\Facades\Cache::remember('has_anggota_kelompok_table', 3600, fn() => \Illuminate\Support\Facades\Schema::hasTable('anggota_kelompok'));
+        if ($hasAnggotaTable) {
             $members = DB::table('anggota_kelompok')
                 ->join('mahasiswa', 'anggota_kelompok.mahasiswa_id', '=', 'mahasiswa.id')
                 ->join('users', 'mahasiswa.user_id', '=', 'users.id')

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\PasswordHelper;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\Fakultas;
@@ -58,11 +59,11 @@ class DplSyncController extends Controller
 
         try {
             DB::transaction(function () use ($validated) {
-                // 1. Determine Password (DDMMYYYY from birth_date or fallback)
-                $password = 'password123';
-                if (!empty($validated['birth_date'])) {
-                    $password = \Carbon\Carbon::parse($validated['birth_date'])->format('dmY');
-                }
+                // 1. Determine Password (DDMMYYYY from birth_date or fallback to NIP)
+                $password = PasswordHelper::fromBirthDate(
+                    $validated['birth_date'] ?? null,
+                    $validated['nip']
+                );
 
                 // 2. Create User
                 $user = User::firstOrCreate(

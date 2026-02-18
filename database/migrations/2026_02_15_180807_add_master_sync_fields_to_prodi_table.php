@@ -11,8 +11,12 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::connection('kkn')->table('prodi', function (Blueprint $table) {
-            $table->unsignedBigInteger('master_id')->nullable()->after('nama');
-            $table->timestamp('master_synced_at')->nullable()->after('master_id');
+            if (!Schema::connection('kkn')->hasColumn('prodi', 'master_id')) {
+                $table->unsignedBigInteger('master_id')->nullable()->after('nama');
+            }
+            if (!Schema::connection('kkn')->hasColumn('prodi', 'master_synced_at')) {
+                $table->timestamp('master_synced_at')->nullable()->after('master_id');
+            }
         });
     }
 

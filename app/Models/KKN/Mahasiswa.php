@@ -3,12 +3,10 @@
 namespace App\Models\KKN;
 
 use App\Models\User;
-use App\Models\UserProfile;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Mahasiswa extends Model
 {
@@ -70,8 +68,4 @@ class Mahasiswa extends Model
         return $this->hasMany(Evaluasi::class, 'mahasiswa_id');
     }
 
-    public function profile(): MorphOne
-    {
-        return $this->morphOne(UserProfile::class, 'profileable');
-    }
 }

@@ -20,10 +20,11 @@ class UserController extends Controller
     {
         $users = User::with(['roles', 'mahasiswa', 'dosen'])
             ->when($request->input('search'), function ($q, $search) {
-                $q->where(function ($query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%")
-                        ->orWhere('username', 'like', "%{$search}%");
+                $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+                $q->where(function ($query) use ($s) {
+                    $query->where('name', 'like', "%{$s}%")
+                        ->orWhere('email', 'like', "%{$s}%")
+                        ->orWhere('username', 'like', "%{$s}%");
                 });
             })
             ->when($request->input('role'), fn($q, $role) => $q->role($role))
@@ -43,10 +44,11 @@ class UserController extends Controller
         $users = User::role('dpl')
             ->with(['dosen'])
             ->when($request->input('search'), function ($q, $search) {
-                $q->where(function ($query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%")
-                        ->orWhereHas('dosen', fn($sq) => $sq->where('nip', 'like', "%{$search}%"));
+                $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+                $q->where(function ($query) use ($s) {
+                    $query->where('name', 'like', "%{$s}%")
+                        ->orWhere('email', 'like', "%{$s}%")
+                        ->orWhereHas('dosen', fn($sq) => $sq->where('nip', 'like', "%{$s}%"));
                 });
             })
             ->orderBy('name')
@@ -65,10 +67,11 @@ class UserController extends Controller
         $users = User::role('student')
             ->with(['mahasiswa.prodi.fakultas'])
             ->when($request->input('search'), function ($q, $search) {
-                $q->where(function ($query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%")
-                        ->orWhereHas('mahasiswa', fn($sq) => $sq->where('nim', 'like', "%{$search}%"));
+                $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+                $q->where(function ($query) use ($s) {
+                    $query->where('name', 'like', "%{$s}%")
+                        ->orWhere('email', 'like', "%{$s}%")
+                        ->orWhereHas('mahasiswa', fn($sq) => $sq->where('nim', 'like', "%{$s}%"));
                 });
             })
             ->orderBy('name')

@@ -37,7 +37,8 @@ class EvaluationController extends Controller
     public function index(): Response
     {
         $dosen = auth()->user()->dosen;
-        $groupIds = $dosen ? $dosen->kelompokKkn()->pluck('id') : collect();
+        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        $groupIds = $dosen->kelompokKkn()->pluck('id');
 
         $evaluations = Evaluasi::whereIn('kelompok_id', $groupIds)
             ->with(['mahasiswa', 'kelompok', 'item'])

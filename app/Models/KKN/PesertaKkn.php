@@ -107,9 +107,10 @@ class PesertaKkn extends Model
             return $query;
         }
 
-        return $query->whereHas('mahasiswa', function ($q) use ($search) {
-            $q->where('nama', 'like', "%{$search}%")
-              ->orWhere('nim', 'like', "%{$search}%");
+        $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+        return $query->whereHas('mahasiswa', function ($q) use ($s) {
+            $q->where('nama', 'like', "%{$s}%")
+              ->orWhere('nim', 'like', "%{$s}%");
         });
     }
 }

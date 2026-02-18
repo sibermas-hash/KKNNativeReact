@@ -15,8 +15,9 @@ class FakultasController extends Controller
     {
         $faculties = Fakultas::query()
             ->when($request->search, function ($query, $search) {
-                $query->where('nama', 'like', "%{$search}%")
-                      ->orWhere('code', 'like', "%{$search}%");
+                $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+                $query->where('nama', 'like', "%{$s}%")
+                      ->orWhere('code', 'like', "%{$s}%");
             })
             ->withCount('prodi')
             ->orderBy('nama')

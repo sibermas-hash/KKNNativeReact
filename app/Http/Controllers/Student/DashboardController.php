@@ -30,9 +30,9 @@ class DashboardController extends Controller
             : null;
 
         $grade = $mahasiswa
-            ?\App\Models\KKN\NilaiKkn::where('mahasiswa_id', $user->id) // Note: NilaiKkn uses user_id as foreign key according to other parts of code
-            ->where('is_finalized', true)
-            ->first()
+            ? \App\Models\KKN\NilaiKkn::where('mahasiswa_id', $user->id)
+                ->where('is_finalized', true)
+                ->first()
             : null;
 
         return Inertia::render('Student/Dashboard', [

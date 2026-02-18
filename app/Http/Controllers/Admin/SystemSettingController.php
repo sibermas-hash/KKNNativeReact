@@ -7,26 +7,50 @@ use App\Models\KKN\SystemSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class SystemSettingController extends Controller
 {
     /**
+     * Config keys that contain sensitive values and must be encrypted in DB.
+     */
+    private const SECRET_KEYS = [
+        'master_api_client_secret',
+        'master_api_token',
+        'gemini_api_key',
+        'storage_secret',
+    ];
+
+    /**
      * Display the system settings page.
      */
     public function index(): Response
     {
-        $settings = SystemSetting::whereIn('group', ['master_api', 'general', 'ai_settings', 'storage_settings'])->get()->groupBy('group');
+        $settings = SystemSetting::whereIn('group', ['master_api', 'general', 'ai_settings', 'storage_settings'])->get();
 
         // Ensure default settings exist if none found
-        if ($settings->isEmpty() || !isset($settings['storage_settings'])) {
+        if ($settings->isEmpty() || !$settings->contains('group', 'storage_settings')) {
             $this->initializeDefaults();
-            $settings = SystemSetting::whereIn('group', ['master_api', 'general', 'ai_settings', 'storage_settings'])->get()->groupBy('group');
+            $settings = SystemSetting::whereIn('group', ['master_api', 'general', 'ai_settings', 'storage_settings'])->get();
         }
 
+        // Decrypt secret values for display
+        $settings->transform(function ($setting) {
+            if (in_array($setting->config_key, self::SECRET_KEYS) && $setting->value) {
+                try {
+                    $setting->value = Crypt::decryptString($setting->value);
+                }
+                catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                // Value was stored before encryption was added; leave as-is
+                }
+            }
+            return $setting;
+        });
+
         return Inertia::render('Admin/Settings/System', [
-            'settings' => $settings,
+            'settings' => $settings->groupBy('group'),
             'title' => 'Pengaturan Sistem & API'
         ]);
     }
@@ -45,7 +69,12 @@ class SystemSettingController extends Controller
         foreach ($validated['settings'] as $item) {
             $setting = SystemSetting::find($item['id']);
             if ($setting) {
-                $setting->update(['value' => $item['value']]);
+                $value = $item['value'];
+                // Encrypt secret values before storing
+                if (in_array($setting->config_key, self::SECRET_KEYS) && $value) {
+                    $value = Crypt::encryptString($value);
+                }
+                $setting->update(['value' => $value]);
                 // Clear cache for this specific key
                 Cache::forget("system_setting_{$setting->config_key}");
             }
@@ -92,7 +121,7 @@ class SystemSettingController extends Controller
             [
                 'config_key' => 'gemini_api_key',
                 'label' => 'Google Gemini API Key',
-                'value' => env('GEMINI_API_KEY'),
+                'value' => config('services.gemini.api_key'),
                 'type' => 'password',
                 'group' => 'ai_settings',
             ],
@@ -149,6 +178,10 @@ class SystemSettingController extends Controller
         ];
 
         foreach ($defaults as $data) {
+            // Encrypt secret values before storing
+            if (in_array($data['config_key'], self::SECRET_KEYS) && $data['value']) {
+                $data['value'] = Crypt::encryptString($data['value']);
+            }
             SystemSetting::updateOrCreate(['config_key' => $data['config_key']], $data);
         }
     }

@@ -1,8 +1,8 @@
 <?php
 
 use App\Models\User;
-use App\Models\KknScore;
-use App\Models\Group;
+use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\KelompokKkn;
 use App\Policies\KknScorePolicy;
 use Spatie\Permission\Models\Role;
 
@@ -34,11 +34,7 @@ test('admin can finalize scores', function () {
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
-    $group = Group::factory()->create();
-    $score = KknScore::factory()->create([
-        'group_id' => $group->id,
-        'is_finalized' => false,
-    ]);
+    $score = new NilaiKkn(['is_finalized' => false]);
 
     $policy = new KknScorePolicy();
     expect($policy->finalize($admin, $score))->toBeTrue();
@@ -56,11 +52,7 @@ test('admin cannot update finalized scores', function () {
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
-    $group = Group::factory()->create();
-    $score = KknScore::factory()->create([
-        'group_id' => $group->id,
-        'is_finalized' => true,
-    ]);
+    $score = new NilaiKkn(['is_finalized' => true]);
 
     $policy = new KknScorePolicy();
     expect($policy->update($admin, $score))->toBeFalse();
@@ -70,11 +62,7 @@ test('admin can update non-finalized scores', function () {
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
-    $group = Group::factory()->create();
-    $score = KknScore::factory()->create([
-        'group_id' => $group->id,
-        'is_finalized' => false,
-    ]);
+    $score = new NilaiKkn(['is_finalized' => false]);
 
     $policy = new KknScorePolicy();
     expect($policy->update($admin, $score))->toBeTrue();
@@ -92,11 +80,7 @@ test('student cannot finalize scores', function () {
     $student = User::factory()->create();
     $student->assignRole('student');
 
-    $group = Group::factory()->create();
-    $score = KknScore::factory()->create([
-        'group_id' => $group->id,
-        'is_finalized' => false,
-    ]);
+    $score = new NilaiKkn(['is_finalized' => false]);
 
     $policy = new KknScorePolicy();
     expect($policy->finalize($student, $score))->toBeFalse();
@@ -106,11 +90,7 @@ test('superadmin can finalize scores', function () {
     $superadmin = User::factory()->create();
     $superadmin->assignRole('superadmin');
 
-    $group = Group::factory()->create();
-    $score = KknScore::factory()->create([
-        'group_id' => $group->id,
-        'is_finalized' => false,
-    ]);
+    $score = new NilaiKkn(['is_finalized' => false]);
 
     $policy = new KknScorePolicy();
     expect($policy->finalize($superadmin, $score))->toBeTrue();

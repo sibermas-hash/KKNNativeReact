@@ -14,9 +14,8 @@ class DailyReportController extends Controller
     public function index(Request $request): Response
     {
         $dosen = auth()->user()->dosen;
-        $groupIds = $dosen
-            ? $dosen->kelompokKkn()->pluck('id')
-            : collect();
+        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        $groupIds = $dosen->kelompokKkn()->pluck('id');
 
         $kegiatan = KegiatanKkn::whereIn('kelompok_id', $groupIds)
             ->with(['mahasiswa', 'kelompok'])
@@ -42,6 +41,11 @@ class DailyReportController extends Controller
 
     public function approve(KegiatanKkn $dailyReport): RedirectResponse
     {
+        $dosen = auth()->user()->dosen;
+        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        $groupIds = $dosen->kelompokKkn()->pluck('id');
+        abort_if(!$groupIds->contains($dailyReport->kelompok_id), 403);
+
         $dailyReport->update([
             'status' => 'approved',
             'reviewed_by' => auth()->id(),
@@ -62,6 +66,11 @@ class DailyReportController extends Controller
 
     public function revision(Request $request, KegiatanKkn $dailyReport): RedirectResponse
     {
+        $dosen = auth()->user()->dosen;
+        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        $groupIds = $dosen->kelompokKkn()->pluck('id');
+        abort_if(!$groupIds->contains($dailyReport->kelompok_id), 403);
+
         $validated = $request->validate([
             'revision_notes' => ['required', 'string', 'max:1000'],
         ]);
@@ -85,7 +94,8 @@ class DailyReportController extends Controller
     public function batchApprove(Request $request): RedirectResponse
     {
         $dosen = auth()->user()->dosen;
-        $groupIds = $dosen ? $dosen->kelompokKkn()->pluck('id') : collect();
+        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        $groupIds = $dosen->kelompokKkn()->pluck('id');
 
         $count = KegiatanKkn::whereIn('kelompok_id', $groupIds)
             ->where('status', 'submitted')

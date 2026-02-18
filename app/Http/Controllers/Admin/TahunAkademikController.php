@@ -15,7 +15,8 @@ class TahunAkademikController extends Controller
     {
         $academicYears = TahunAkademik::query()
             ->when($request->search, function ($query, $search) {
-                $query->where('year', 'like', "%{$search}%");
+                $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+                $query->where('year', 'like', "%{$s}%");
             })
             ->orderByDesc('year')
             ->paginate(10)

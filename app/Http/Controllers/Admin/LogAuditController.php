@@ -20,9 +20,10 @@ class LogAuditController extends Controller
             ->when($request->date_from, fn($q, $v) => $q->whereDate('created_at', '>=', $v))
             ->when($request->date_to, fn($q, $v) => $q->whereDate('created_at', '<=', $v))
             ->when($request->search, fn($q, $v) => $q->where(function($q) use ($v) {
-                $q->where('description', 'like', "%{$v}%")
-                  ->orWhere('ip_address', 'like', "%{$v}%")
-                  ->orWhereHas('user', fn($q) => $q->where('name', 'like', "%{$v}%"));
+                $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $v);
+                $q->where('description', 'like', "%{$escaped}%")
+                  ->orWhere('ip_address', 'like', "%{$escaped}%")
+                  ->orWhereHas('user', fn($q) => $q->where('name', 'like', "%{$escaped}%"));
             }));
 
         $logs = $query->latest()

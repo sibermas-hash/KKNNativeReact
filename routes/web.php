@@ -17,8 +17,6 @@ Route::middleware(['guest', 'kkn.throttle'])->group(function () {
     // Password Reset
     Route::get('/forgot-password', [PasswordResetController::class , 'showForgotForm'])->name('password.request');
     Route::post('/forgot-password', [PasswordResetController::class , 'sendResetLink'])->name('password.email');
-    Route::get('/forgot-password', [PasswordResetController::class , 'showForgotForm'])->name('password.request');
-    Route::post('/forgot-password', [PasswordResetController::class , 'sendResetLink'])->name('password.email');
     Route::get('/reset-password/{token}', [PasswordResetController::class , 'showResetForm'])->name('password.reset');
     Route::post('/reset-password', [PasswordResetController::class , 'reset'])->name('password.update');
 });
@@ -172,7 +170,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
 
             // Daily Reports
             Route::get('daily-reports', [Dpl\DailyReportController::class , 'index'])->name('daily-reports.index');
-            Route::post('daily-reports/approve-all', [Dpl\DailyReportController::class , 'approveAll'])->name('daily-reports.approve-all');
+            Route::post('daily-reports/approve-all', [Dpl\DailyReportController::class , 'batchApprove'])->name('daily-reports.approve-all');
             Route::patch('daily-reports/{dailyReport}/approve', [Dpl\DailyReportController::class , 'approve'])->name('daily-reports.approve');
             Route::patch('daily-reports/{dailyReport}/reject', [Dpl\DailyReportController::class , 'reject'])->name('daily-reports.reject');
 
@@ -219,14 +217,6 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
 
             Route::get('proposals', [App\Http\Controllers\ProposalController::class , 'index'])->name('proposals.index');
             Route::post('proposals', [App\Http\Controllers\ProposalController::class , 'store'])->name('proposals.store');
-        }
-        );
-
-        // Notifications API
-        Route::prefix('api/notifications')->name('api.notifications.')->group(function () {
-            Route::get('/unread', [App\Http\Controllers\Api\NotificationController::class , 'unread'])->name('unread');
-            Route::post('/{id}/read', [App\Http\Controllers\Api\NotificationController::class , 'markRead'])->name('mark-read');
-            Route::post('/read-all', [App\Http\Controllers\Api\NotificationController::class , 'markAllRead'])->name('mark-all-read');
         }
         );
 

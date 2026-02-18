@@ -14,7 +14,8 @@ class FinalReportController extends Controller
     public function index(Request $request): Response
     {
         $dosen = auth()->user()->dosen;
-        $groupIds = $dosen ? $dosen->kelompokKkn()->pluck('id') : collect();
+        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        $groupIds = $dosen->kelompokKkn()->pluck('id');
 
         $reports = LaporanAkhir::whereIn('kelompok_id', $groupIds)
             ->with(['mahasiswa', 'kelompok'])

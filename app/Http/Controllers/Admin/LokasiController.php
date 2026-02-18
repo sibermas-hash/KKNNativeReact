@@ -15,8 +15,9 @@ class LokasiController extends Controller
     {
         $locations = Lokasi::query()
             ->when($request->search, function ($query, $search) {
-                $query->where('village_name', 'like', "%{$search}%")
-                      ->orWhere('address', 'like', "%{$search}%");
+                $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+                $query->where('village_name', 'like', "%{$s}%")
+                      ->orWhere('address', 'like', "%{$s}%");
             })
             ->orderBy('village_name')
             ->paginate(10)

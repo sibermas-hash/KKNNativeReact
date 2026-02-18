@@ -16,9 +16,10 @@ class PeriodeController extends Controller
     {
         $periods = Periode::with('tahunAkademik')
             ->when($request->search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('angkatan', 'like', "%{$search}%")
-                      ->orWhere('jenis', 'like', "%{$search}%");
+                $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+                $query->where('name', 'like', "%{$s}%")
+                      ->orWhere('angkatan', 'like', "%{$s}%")
+                      ->orWhere('jenis', 'like', "%{$s}%");
             })
             ->orderByDesc('start_date')
             ->paginate(10)

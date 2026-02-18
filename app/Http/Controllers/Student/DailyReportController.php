@@ -51,7 +51,7 @@ class DailyReportController extends Controller
             'activity' => ['required', 'string'],
             'reflection' => ['nullable', 'string'],
             'output' => ['nullable', 'string'],
-            'files.*' => ['nullable', 'file', 'max:5120'],
+            'files.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf,doc,docx', 'max:5120'],
         ]);
 
         $kegiatan = KegiatanKkn::create([

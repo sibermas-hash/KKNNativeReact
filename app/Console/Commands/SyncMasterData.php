@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Helpers\PasswordHelper;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\Mahasiswa;
@@ -176,8 +177,9 @@ class SyncMasterData extends Command
             $fallbackEmail = $username . '@kkn.local';
 
             $user = User::on('kkn')->firstOrNew(['username' => $username]);
+            $isNewUser = !$user->exists;
 
-            if (!$user->exists) {
+            if ($isNewUser) {
                 $user->email = !empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
             } elseif (empty($user->email)) {
                 $user->email = !empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
@@ -186,15 +188,12 @@ class SyncMasterData extends Command
             $user->username = $username;
             $user->name = $empData['nama'] ?? $empData['name'] ?? 'Unknown';
 
-            // Password pattern: DDYYMM from birth_date
-            $birthDate = $empData['tanggal_lahir'] ?? $empData['birth_date'] ?? null;
-            if ($birthDate) {
-                // Formatting Y-m-d to DDYYMM
-                $dt = new \DateTime($birthDate);
-                $password = $dt->format('d') . $dt->format('y') . $dt->format('m');
-                $user->password = Hash::make($password);
-            } else {
-                $user->password = Hash::make($username);
+            // Only set password for NEW users — never overwrite existing passwords
+            if ($isNewUser) {
+                $birthDate = $empData['tanggal_lahir'] ?? $empData['birth_date'] ?? null;
+                $user->password = Hash::make(
+                    PasswordHelper::fromBirthDate($birthDate, $username)
+                );
             }
 
             $user->save();
@@ -288,8 +287,9 @@ class SyncMasterData extends Command
             $fallbackEmail = $username . '@kkn.local';
 
             $user = User::on('kkn')->firstOrNew(['username' => $username]);
+            $isNewUser = !$user->exists;
 
-            if (!$user->exists) {
+            if ($isNewUser) {
                 $user->email = !empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
             } elseif (empty($user->email)) {
                 $user->email = $fallbackEmail;
@@ -298,14 +298,16 @@ class SyncMasterData extends Command
             $user->username = $username;
             $user->name = $studData['nama'] ?? $studData['name'] ?? 'Unknown';
 
-            // Password pattern: DDYYMM from birth_date
-            $birthDate = $studData['tanggal_lahir'] ?? $studData['birth_date'] ?? null;
-            if ($birthDate) {
-                $dt = new \DateTime($birthDate);
-                $password = $dt->format('d') . $dt->format('y') . $dt->format('m');
-                $user->password = Hash::make($password);
-            } else {
-                $user->password = Hash::make($username);
+            // Only set password for NEW users — never overwrite existing passwords
+            if ($isNewUser) {
+                $birthDate = $studData['tanggal_lahir'] ?? $studData['birth_date'] ?? null;
+                if ($birthDate) {
+                    $dt = new \DateTime($birthDate);
+                    $password = $dt->format('d') . $dt->format('y') . $dt->format('m');
+                    $user->password = Hash::make($password);
+                } else {
+                    $user->password = Hash::make($username);
+                }
             }
 
             $user->save();

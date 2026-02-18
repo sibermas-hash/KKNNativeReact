@@ -16,10 +16,11 @@ class ProdiController extends Controller
     {
         $programs = Prodi::with('fakultas')
             ->when($request->search, function ($query, $search) {
-                $query->where('nama', 'like', "%{$search}%")
-                      ->orWhere('code', 'like', "%{$search}%")
-                      ->orWhereHas('fakultas', function ($q) use ($search) {
-                          $q->where('nama', 'like', "%{$search}%");
+                $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+                $query->where('nama', 'like', "%{$s}%")
+                      ->orWhere('code', 'like', "%{$s}%")
+                      ->orWhereHas('fakultas', function ($q) use ($s) {
+                          $q->where('nama', 'like', "%{$s}%");
                       });
             })
             ->orderBy('nama')

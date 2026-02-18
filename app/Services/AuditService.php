@@ -11,10 +11,10 @@ class AuditService
     /**
      * Log an administrative intervention or critical action
      */
-    public static function log(string $action, string $description, $model = null, ?array $oldValues = null, ?array $newValues = null)
+    public static function log(string $action, string $description, $model = null, ?array $oldValues = null, ?array $newValues = null, ?int $userId = null)
     {
         return LogAudit::create([
-            'user_id' => Auth::id(),
+            'user_id' => $userId ?? Auth::id(),
             'action' => $action,
             'description' => $description,
             'model_type' => $model ? get_class($model) : null,
@@ -36,7 +36,9 @@ class AuditService
             'GATE_BYPASS_GOD_MODE',
             "Superadmin [{$user->name}] mengakses kemampuan sensitif: {$target}",
             null,
-        ['user_id' => $user->id, 'ability' => $target]
+            ['user_id' => $user->id, 'ability' => $target],
+            null,
+            $user->id
         );
     }
 

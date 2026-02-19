@@ -1,13 +1,13 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Factories\KKN;
 
-use App\Models\AcademicYear;
+use App\Models\KKN\TahunAkademik;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class AcademicYearFactory extends Factory
+class TahunAkademikFactory extends Factory
 {
-    protected $model = AcademicYear::class;
+    protected $model = TahunAkademik::class;
 
     public function definition(): array
     {
@@ -17,5 +17,10 @@ class AcademicYearFactory extends Factory
             'year' => $startYear . '/' . ($startYear + 1),
             'is_active' => false,
         ];
+    }
+
+    public function active(): static
+    {
+        return $this->state(['is_active' => true]);
     }
 }

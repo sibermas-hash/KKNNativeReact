@@ -10,10 +10,10 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        if (Schema::connection('kkn')->hasTable('system_settings')) {
+        if (Schema::hasTable('system_settings')) {
             return;
         }
-        Schema::connection('kkn')->create('system_settings', function (Blueprint $table) {
+        Schema::create('system_settings', function (Blueprint $table) {
             $table->id();
             $table->string('config_key')->unique();
             $table->string('label');
@@ -29,6 +29,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::connection('kkn')->dropIfExists('system_settings');
+        Schema::dropIfExists('system_settings');
     }
 };

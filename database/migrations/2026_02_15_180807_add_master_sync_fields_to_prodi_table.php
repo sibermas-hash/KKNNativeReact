@@ -10,11 +10,11 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::connection('kkn')->table('prodi', function (Blueprint $table) {
-            if (!Schema::connection('kkn')->hasColumn('prodi', 'master_id')) {
+        Schema::table('prodi', function (Blueprint $table) {
+            if (!Schema::hasColumn('prodi', 'master_id')) {
                 $table->unsignedBigInteger('master_id')->nullable()->after('nama');
             }
-            if (!Schema::connection('kkn')->hasColumn('prodi', 'master_synced_at')) {
+            if (!Schema::hasColumn('prodi', 'master_synced_at')) {
                 $table->timestamp('master_synced_at')->nullable()->after('master_id');
             }
         });
@@ -25,7 +25,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::connection('kkn')->table('prodi', function (Blueprint $table) {
+        Schema::table('prodi', function (Blueprint $table) {
             $table->dropColumn(['master_id', 'master_synced_at']);
         });
     }

@@ -1,15 +1,15 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Factories\KKN;
 
-use App\Models\AcademicYear;
-use App\Models\Period;
+use App\Models\KKN\Periode;
+use App\Models\KKN\TahunAkademik;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
-class PeriodFactory extends Factory
+class PeriodeFactory extends Factory
 {
-    protected $model = Period::class;
+    protected $model = Periode::class;
 
     public function definition(): array
     {
@@ -19,7 +19,7 @@ class PeriodFactory extends Factory
         $registrationEnd = (clone $start)->subWeek();
 
         return [
-            'academic_year_id' => AcademicYear::factory(),
+            'academic_year_id' => TahunAkademik::factory(),
             'name' => 'Periode ' . $this->faker->unique()->word(),
             'start_date' => $start->toDateString(),
             'end_date' => $end->toDateString(),

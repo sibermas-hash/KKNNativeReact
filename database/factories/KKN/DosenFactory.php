@@ -1,23 +1,23 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Factories\KKN;
 
-use App\Models\Faculty;
-use App\Models\Lecturer;
+use App\Models\KKN\Dosen;
+use App\Models\KKN\Fakultas;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class LecturerFactory extends Factory
+class DosenFactory extends Factory
 {
-    protected $model = Lecturer::class;
+    protected $model = Dosen::class;
 
     public function definition(): array
     {
         return [
             'user_id' => User::factory(),
             'nip' => $this->faker->unique()->numerify('################'),
-            'name' => $this->faker->name(),
-            'faculty_id' => Faculty::factory(),
+            'nama' => $this->faker->name(),
+            'faculty_id' => Fakultas::factory(),
             'phone' => $this->faker->phoneNumber(),
         ];
     }

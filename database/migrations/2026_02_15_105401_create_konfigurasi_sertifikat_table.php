@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::connection('kkn')->create('konfigurasi_sertifikat', function (Blueprint $table) {
+        Schema::create('konfigurasi_sertifikat', function (Blueprint $table) {
             $table->id();
             $table->string('config_key')->unique();
             $table->string('label');

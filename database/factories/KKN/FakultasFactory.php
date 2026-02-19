@@ -1,13 +1,13 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Factories\KKN;
 
-use App\Models\Faculty;
+use App\Models\KKN\Fakultas;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class FacultyFactory extends Factory
+class FakultasFactory extends Factory
 {
-    protected $model = Faculty::class;
+    protected $model = Fakultas::class;
 
     public function definition(): array
     {
@@ -15,7 +15,7 @@ class FacultyFactory extends Factory
 
         return [
             'code' => 'F' . str_pad($sequence, 2, '0', STR_PAD_LEFT),
-            'name' => 'Fakultas ' . $this->faker->unique()->word(),
+            'nama' => 'Fakultas ' . $this->faker->unique()->word(),
         ];
     }
 }

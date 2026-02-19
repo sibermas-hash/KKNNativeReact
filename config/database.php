@@ -112,7 +112,12 @@ return [
             'sslmode' => env('DB_SSLMODE', 'prefer'),
         ],
 
-        'kkn' => [
+        'kkn' => env('DB_KKN_DRIVER', 'pgsql') === 'sqlite' ? [
+            'driver' => 'sqlite',
+            'database' => env('DB_DATABASE', ':memory:'),
+            'prefix' => '',
+            'foreign_key_constraints' => true,
+        ] : [
             'driver' => 'pgsql',
             'host' => env('DB_KKN_HOST', 'master.infiatin.cloud'),
             'port' => env('DB_KKN_PORT', '5432'),

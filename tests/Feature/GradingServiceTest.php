@@ -1,7 +1,10 @@
 <?php
 
-use App\Services\GradingService;
+use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\KonfigurasiPenilaian;
+use App\Models\KKN\NilaiKkn;
 use App\Models\User;
+use App\Services\GradingService;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
@@ -31,19 +34,12 @@ test('determineLetterGrade returns correct grades', function () {
 });
 
 test('calculateFinalGrade saves lppm_weighted_score', function () {
-    // TODO: Rewrite with KKN model factories (KelompokKkn, NilaiKkn, KonfigurasiPenilaian)
-    $this->markTestSkipped('Requires KKN model factories to be created.');
     $student = User::factory()->create();
-    $student->assignRole('student');
-    
-    $dpl = User::factory()->create();
-    $dpl->assignRole('dpl');
+    $kelompok = KelompokKkn::factory()->create();
 
-    $group = Group::factory()->create();
-
-    $score = KknScore::factory()->create([
-        'student_id' => $student->id,
-        'group_id' => $group->id,
+    $score = NilaiKkn::factory()->create([
+        'mahasiswa_id' => $student->id,
+        'kelompok_id' => $kelompok->id,
         'final_report_score' => 80,
         'execution_score' => 85,
         'article_score' => 75,
@@ -54,25 +50,27 @@ test('calculateFinalGrade saves lppm_weighted_score', function () {
         'is_finalized' => false,
     ]);
 
-    // Create default grading configs
+    // Create grading weight configs
     $configs = [
-        'weight_dpl_report' => '30',
-        'weight_dpl_execution' => '40',
-        'weight_dpl_article' => '30',
-        'weight_village_discipline' => '50',
-        'weight_village_attitude' => '50',
-        'weight_admin_workshop' => '60',
-        'weight_admin_administration' => '40',
-        'weight_main_dpl' => '50',
-        'weight_main_village' => '30',
-        'weight_main_lppm' => '20',
+        'weight_dpl_report' => 30,
+        'weight_dpl_execution' => 40,
+        'weight_dpl_article' => 30,
+        'weight_village_discipline' => 50,
+        'weight_village_attitude' => 50,
+        'weight_admin_workshop' => 60,
+        'weight_admin_administration' => 40,
+        'weight_main_dpl' => 50,
+        'weight_main_village' => 30,
+        'weight_main_lppm' => 20,
     ];
 
     foreach ($configs as $key => $value) {
-        GradingConfig::firstOrCreate(
-            ['config_key' => $key],
-            ['config_value' => $value]
-        );
+        KonfigurasiPenilaian::create([
+            'config_key' => $key,
+            'label' => str_replace('_', ' ', $key),
+            'percentage' => $value,
+            'group' => 'main',
+        ]);
     }
 
     $service = new GradingService();

@@ -33,5 +33,10 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="LOG_CHANNEL" value="null"/>
+        <env name="MASTER_API_URL" value="https://test.local"/>
+        <env name="MASTER_API_CLIENT_ID" value="test_client"/>
+        <env name="MASTER_API_CLIENT_SECRET" value="test_secret"/>
+        <env name="API_ADMIN_SECRET" value="test_admin_secret"/>
     </php>
 </phpunit>

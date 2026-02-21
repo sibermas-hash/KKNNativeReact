@@ -16,9 +16,9 @@ class MasterApiService
 
     public function __construct()
     {
-        $this->baseUrl = rtrim(config('services.master_api.url', ''), '/');
-        $this->clientId = config('services.master_api.client_id', '');
-        $this->clientSecret = config('services.master_api.client_secret', '');
+        $this->baseUrl = rtrim(config('services.master_api.url') ?? '', '/');
+        $this->clientId = config('services.master_api.client_id') ?? '';
+        $this->clientSecret = config('services.master_api.client_secret') ?? '';
         $this->cacheMinutes = (int)config('services.master_api.cache_minutes', 60);
         $this->verifySsl = config('app.env') !== 'local';
     }

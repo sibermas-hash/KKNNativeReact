@@ -161,6 +161,17 @@ class RekapNilaiController extends Controller
 
         return response()->download($zipPath)->deleteFileAfterSend(true);
     }
+    private const ALLOWED_SCORE_COMPONENTS = [
+        'final_report_score',
+        'execution_score',
+        'article_score',
+        'discipline_score',
+        'attitude_score',
+        'workshop_score',
+        'administration_score',
+        'dpl_score_1',
+    ];
+
     public function saveInline(Request $request)
     {
         $this->authorize('update', NilaiKkn::class);
@@ -168,7 +179,7 @@ class RekapNilaiController extends Controller
         $validated = $request->validate([
             'user_id' => ['required', 'integer'],
             'kelompok_id' => ['required', 'integer'],
-            'component' => ['required', 'string'],
+            'component' => ['required', 'string', 'in:' . implode(',', self::ALLOWED_SCORE_COMPONENTS)],
             'value' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
 

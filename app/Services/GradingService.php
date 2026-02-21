@@ -248,7 +248,8 @@ class GradingService
                 // Ensure all components have values if weighting is > 0
                 // This is optional but recommended
                 
-                $score->update(['is_finalized' => true]);
+                $score->is_finalized = true;
+                $score->save();
                 $count++;
 
                 // Notify student
@@ -275,13 +276,23 @@ class GradingService
         return $count;
     }
 
+    private const SAFE_SCORE_COMPONENTS = [
+        'final_report_score', 'execution_score', 'article_score',
+        'discipline_score', 'attitude_score', 'workshop_score',
+        'administration_score', 'dpl_score_1',
+    ];
+
     public function updateUnifiedScore(int $userId, int $groupId, array $components, int $adminId): NilaiKkn
     {
+        // Defense-in-depth: only allow known score component fields
+        $components = array_intersect_key($components, array_flip(self::SAFE_SCORE_COMPONENTS));
+
         return DB::transaction(function () use ($userId, $groupId, $components, $adminId) {
             $score = NilaiKkn::updateOrCreate(
                 ['mahasiswa_id' => $userId, 'kelompok_id' => $groupId],
                 array_merge($components, [
-                    'updated_at' => now(),
+                    'admin_graded_by' => $adminId,
+                    'admin_graded_at' => now(),
                 ])
             );
 

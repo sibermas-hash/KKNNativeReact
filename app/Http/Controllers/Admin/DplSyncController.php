@@ -107,7 +107,8 @@ class DplSyncController extends Controller
 
             return back()->with('success', "DPL {$validated['name']} berhasil ditambahkan dan akun telah dibuat.");
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal melakukan sinkronisasi: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('DPL sync failed', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Gagal melakukan sinkronisasi. Silakan coba lagi atau hubungi administrator.');
         }
     }
 }

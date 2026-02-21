@@ -26,17 +26,7 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        // Implicit grant "Super Admin" all permissions
-        Gate::before(function ($user, $ability) {
-            if ($user->hasRole('superadmin')) {
-                // Log non-read actions for accountability
-                if (!str_starts_with($ability, 'view') && !str_starts_with($ability, 'access')) {
-                    \App\Services\AuditService::logGodModeAccess($user, $ability);
-                }
-                return true;
-            }
-            return null;
-        });
+        // Gate::before is defined in AppServiceProvider to avoid duplicate callbacks.
 
         // Define dashboard access gates
         Gate::define('access-admin-panel', fn($user) => $user->hasRole('superadmin'));

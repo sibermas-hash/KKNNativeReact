@@ -27,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'kkn.throttle' => \App\Http\Middleware\KknThrottleMiddleware::class,
+            'api.key' => \App\Http\Middleware\ValidateApiKey::class,
         ]);
 
         $middleware->redirectGuestsTo('/login');

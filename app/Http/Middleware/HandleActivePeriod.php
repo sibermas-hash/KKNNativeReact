@@ -28,7 +28,11 @@ class HandleActivePeriod
         if ($request->has('period_id')) {
             $periodId = (int) $request->input('period_id');
             try {
-                $this->contextService->setActivePeriod($periodId);
+                // Only admins can freely switch periods; students/DPL stay on their enrolled period
+                $user = auth()->user();
+                if ($user->hasRole('superadmin') || $user->hasRole('admin')) {
+                    $this->contextService->setActivePeriod($periodId);
+                }
             } catch (\Throwable $e) {
                 // Silently fail if period doesn't exist
             }

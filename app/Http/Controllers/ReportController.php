@@ -54,7 +54,7 @@ class ReportController extends Controller
     public function upload(Request $request)
     {
         $validated = $request->validate([
-            'type' => 'required|string',
+            'type' => ['required', 'string', 'in:final_report,daily_report,weekly_report,documentation,other'],
             'title' => 'required|string|max:255',
             'file' => 'required|file|max:512000|mimes:pdf,docx,png,jpg,jpeg,mp4,avi,mov,xlsx', // 500MB max, restricted MIME types
         ]);

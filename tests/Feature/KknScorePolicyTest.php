@@ -52,7 +52,8 @@ test('admin cannot update finalized scores', function () {
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
-    $score = new NilaiKkn(['is_finalized' => true]);
+    $score = new NilaiKkn();
+    $score->is_finalized = true;
 
     $policy = new KknScorePolicy();
     expect($policy->update($admin, $score))->toBeFalse();

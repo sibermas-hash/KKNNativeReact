@@ -36,14 +36,16 @@ class SystemSettingController extends Controller
             $settings = SystemSetting::whereIn('group', ['master_api', 'general', 'ai_settings', 'storage_settings'])->get();
         }
 
-        // Decrypt secret values for display
+        // Mask secret values for display (only show last 4 chars)
         $settings->transform(function ($setting) {
             if (in_array($setting->config_key, self::SECRET_KEYS) && $setting->value) {
                 try {
-                    $setting->value = Crypt::decryptString($setting->value);
-                }
-                catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
-                // Value was stored before encryption was added; leave as-is
+                    $decrypted = Crypt::decryptString($setting->value);
+                    $setting->value = str_repeat('*', max(0, strlen($decrypted) - 4)) . substr($decrypted, -4);
+                    $setting->is_secret = true;
+                } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                    $setting->value = '********';
+                    $setting->is_secret = true;
                 }
             }
             return $setting;

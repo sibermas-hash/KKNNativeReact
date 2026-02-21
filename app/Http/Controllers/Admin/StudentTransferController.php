@@ -64,7 +64,8 @@ class StudentTransferController extends Controller
 
             return back()->with('success', 'Peserta berhasil dipindahkan.');
         } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Student transfer failed', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Transfer peserta gagal. Silakan coba lagi.');
         }
     }
 

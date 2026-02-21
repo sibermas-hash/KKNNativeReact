@@ -63,7 +63,8 @@ class WorkshopController extends Controller
             );
             return back()->with('success', 'Pendaftaran workshop berhasil.');
         } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Workshop registration failed', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Pendaftaran workshop gagal. Silakan coba lagi.');
         }
     }
 }

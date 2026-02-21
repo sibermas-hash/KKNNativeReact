@@ -44,7 +44,7 @@ class CertificateService
         $body = str_replace('[LOKASI]', "<strong>{$locationStr}</strong>", $body);
         $body = str_replace('[PERIODE]', "<strong>{$periodName}</strong>", $body);
 
-        $verificationToken = strtoupper(substr(md5("CERT-{$score->id}-{$score->mahasiswa_id}"), 0, 12));
+        $verificationToken = self::generateVerificationToken($score);
         $verificationUrl = url("/verify-certificate/{$verificationToken}");
 
         $data = [
@@ -68,5 +68,17 @@ class CertificateService
 
         return Pdf::loadView('reports.certificate', $data)
             ->setPaper('a4', 'landscape');
+    }
+
+    /**
+     * Generate a cryptographically strong verification token for a score.
+     * Uses HMAC-SHA256 with APP_KEY as secret, making tokens unguessable.
+     */
+    public static function generateVerificationToken(NilaiKkn $score): string
+    {
+        $secret = config('app.key');
+        $payload = "CERT-{$score->id}-{$score->mahasiswa_id}";
+
+        return strtoupper(substr(hash_hmac('sha256', $payload, $secret), 0, 16));
     }
 }

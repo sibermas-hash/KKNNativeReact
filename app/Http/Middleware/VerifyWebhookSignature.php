@@ -11,7 +11,7 @@ class VerifyWebhookSignature
     public function handle(Request $request, Closure $next): Response
     {
         $signature = $request->header('X-Hub-Signature');
-        
+
         // Ensure signature is present
         if (!$signature) {
             return response()->json(['error' => 'Signature missing'], 401);
@@ -20,12 +20,23 @@ class VerifyWebhookSignature
         // Get key from config
         $secret = config('services.master_api.webhook_secret');
         if (!$secret) {
-            // Log error: Secret not configured
             return response()->json(['error' => 'Server configuration error'], 500);
         }
-        
-        // Re-calculate signature from body
-        $expected = 'sha256=' . hash_hmac('sha256', $request->getContent(), $secret);
+
+        // Validate timestamp to prevent replay attacks
+        $timestamp = $request->header('X-Webhook-Timestamp');
+        if ($timestamp) {
+            $windowSeconds = (int) config('services.master_api.webhook_window_seconds', 600);
+            if (abs(time() - (int) $timestamp) > $windowSeconds) {
+                return response()->json(['error' => 'Request expired'], 401);
+            }
+        }
+
+        // Re-calculate signature from body (include timestamp if present)
+        $payload = $timestamp
+            ? $timestamp . '.' . $request->getContent()
+            : $request->getContent();
+        $expected = 'sha256=' . hash_hmac('sha256', $payload, $secret);
 
         if (!hash_equals($expected, $signature)) {
             return response()->json(['error' => 'Invalid signature'], 401);

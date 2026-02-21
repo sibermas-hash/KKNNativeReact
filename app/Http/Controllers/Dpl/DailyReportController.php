@@ -32,6 +32,11 @@ class DailyReportController extends Controller
 
     public function show(KegiatanKkn $dailyReport): Response
     {
+        $dosen = auth()->user()->dosen;
+        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        $groupIds = $dosen->kelompokKkn()->pluck('id');
+        abort_if(!$groupIds->contains($dailyReport->kelompok_id), 403, 'Anda tidak memiliki akses ke laporan ini.');
+
         $dailyReport->load(['mahasiswa', 'kelompok.lokasi', 'fileKegiatan', 'reviewer']);
 
         return Inertia::render('Dpl/DailyReports/Show', [

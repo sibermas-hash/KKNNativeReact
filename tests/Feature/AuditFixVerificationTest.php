@@ -139,8 +139,10 @@ test('[AUDIT 1.2] Admin tidak bisa update score yang sudah finalized', function 
     $admin->assignRole('admin');
 
     $policy = new KknScorePolicy();
-    $finalizedScore = new NilaiKkn(['is_finalized' => true]);
-    $nonFinalizedScore = new NilaiKkn(['is_finalized' => false]);
+    $finalizedScore = new NilaiKkn();
+    $finalizedScore->is_finalized = true;
+    $nonFinalizedScore = new NilaiKkn();
+    $nonFinalizedScore->is_finalized = false;
 
     expect($policy->update($admin, $finalizedScore))->toBeFalse();
     expect($policy->update($admin, $nonFinalizedScore))->toBeTrue();

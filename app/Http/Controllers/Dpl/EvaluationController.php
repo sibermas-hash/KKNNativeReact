@@ -34,6 +34,20 @@ class EvaluationController extends Controller
         return true;
     }
 
+    /**
+     * Verify the logged-in DPL is assigned to the given group.
+     */
+    private function authorizeGroupOwnership(int $groupId): \App\Models\KKN\Dosen
+    {
+        $dosen = auth()->user()->dosen;
+        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+
+        $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
+        abort_if(!$groupIds->contains($groupId), 403, 'Anda tidak memiliki akses ke kelompok ini.');
+
+        return $dosen;
+    }
+
     public function index(): Response
     {
         $dosen = auth()->user()->dosen;
@@ -62,8 +76,10 @@ class EvaluationController extends Controller
             'file' => ['required', 'file', 'mimes:xlsx,xls'],
         ]);
 
+        $this->authorizeGroupOwnership($request->group_id);
+
         $group = KelompokKkn::with(['peserta.mahasiswa', 'periode'])->find($request->group_id);
-        
+
         if (!$this->checkGradingPeriod($group)) {
             return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
         }
@@ -134,7 +150,11 @@ class EvaluationController extends Controller
         $request->validate([
             'group_id' => ['required', 'exists:kelompok_kkn,id'],
             'data' => ['required', 'array'],
+            'data.*.discipline' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'data.*.attitude' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
+
+        $this->authorizeGroupOwnership($request->group_id);
 
         $group = KelompokKkn::with('periode')->find($request->group_id);
         if (!$this->checkGradingPeriod($group)) {
@@ -197,9 +217,9 @@ class EvaluationController extends Controller
     public function create(Request $request): Response
     {
         $dosen = auth()->user()->dosen;
-        $groups = $dosen
-            ? KelompokKkn::where('dpl_id', $dosen->id)->with('peserta.mahasiswa')->get()
-            : collect();
+        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
+        $groups = KelompokKkn::whereIn('id', $groupIds)->with('peserta.mahasiswa')->get();
 
         return Inertia::render('Dpl/Evaluations/Form', [
             'groups' => $groups,
@@ -220,6 +240,8 @@ class EvaluationController extends Controller
             'items.*.score' => ['required', 'numeric', 'min:0', 'max:100'],
             'items.*.weight' => ['required', 'numeric', 'min:0', 'max:100'],
         ]);
+
+        $this->authorizeGroupOwnership($validated['group_id']);
 
         $group = KelompokKkn::with('periode')->find($validated['group_id']);
         if (!$this->checkGradingPeriod($group)) {

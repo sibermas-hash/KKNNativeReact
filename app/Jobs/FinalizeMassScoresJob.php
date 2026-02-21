@@ -64,7 +64,8 @@ class FinalizeMassScoresJob implements ShouldQueue
                     if (!$report || $report->status !== 'approved') {
                         $failed++;
                     } else {
-                        $score->update(['is_finalized' => true]);
+                        $score->is_finalized = true;
+                        $score->save();
                         $totalFinalized++;
                         
                         // Notify student

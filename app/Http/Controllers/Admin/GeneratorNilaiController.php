@@ -22,6 +22,22 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class GeneratorNilaiController extends Controller
 {
+    /**
+     * Verify the logged-in DPL is assigned to the given group.
+     */
+    private function authorizeDplGroup(int $groupId): void
+    {
+        if (!auth()->user()->hasRole('dpl')) {
+            return;
+        }
+
+        $dosen = auth()->user()->dosen;
+        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+
+        $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
+        abort_if(!$groupIds->contains($groupId), 403, 'Anda tidak memiliki akses ke kelompok ini.');
+    }
+
     public function index(): Response
     {
         $periods = Periode::with('tahunAkademik')->orderByDesc('id')->get()->map(fn($p) => [
@@ -80,6 +96,8 @@ class GeneratorNilaiController extends Controller
      */
     public function students(KelompokKkn $kelompokKkn)
     {
+        $this->authorizeDplGroup($kelompokKkn->id);
+
         return response()->json($this->getStudentsForGroup($kelompokKkn));
     }
 
@@ -88,6 +106,9 @@ class GeneratorNilaiController extends Controller
      */
     public function studentsAll()
     {
+        // DPL users should not access all groups
+        abort_if(auth()->user()->hasRole('dpl'), 403, 'DPL hanya dapat mengakses kelompok yang ditugaskan.');
+
         $allStudents = [];
         $groups = KelompokKkn::orderBy('code')->get();
 
@@ -116,6 +137,8 @@ class GeneratorNilaiController extends Controller
             'scores.*.attitude'   => ['nullable', 'numeric', 'between:0,100'],
             'evidence_file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'], // Max 5MB
         ]);
+
+        $this->authorizeDplGroup($data['kelompok_id']);
 
         // ENFORCE GRADING PERIOD for DPL
         if (auth()->user()->hasRole('dpl')) {
@@ -199,7 +222,13 @@ class GeneratorNilaiController extends Controller
     public function exportExcel(Request $request, $id)
     {
         $periodId = $request->query('period_id');
-        
+
+        if ($id !== 'all') {
+            $this->authorizeDplGroup((int) $id);
+        } else {
+            abort_if(auth()->user()->hasRole('dpl'), 403, 'DPL hanya dapat mengekspor kelompok yang ditugaskan.');
+        }
+
         if ($id === 'all' && $periodId) {
             $students = $this->getStudentsForPeriod($periodId);
             $spreadsheet = new Spreadsheet();
@@ -328,6 +357,12 @@ class GeneratorNilaiController extends Controller
     {
         $periodId = $request->query('period_id');
 
+        if ($id !== 'all') {
+            $this->authorizeDplGroup((int) $id);
+        } else {
+            abort_if(auth()->user()->hasRole('dpl'), 403, 'DPL hanya dapat mengekspor kelompok yang ditugaskan.');
+        }
+
         if ($id === 'all' && $periodId) {
             $students = $this->getStudentsForPeriod($periodId);
             $period = Periode::with('tahunAkademik')->findOrFail($periodId);
@@ -357,6 +392,8 @@ class GeneratorNilaiController extends Controller
 
     public function exportZip(Request $request)
     {
+        abort_if(auth()->user()->hasRole('dpl'), 403, 'DPL hanya dapat mengekspor kelompok yang ditugaskan.');
+
         $periodId = $request->query('period_id');
         if (!$periodId) abort(400, 'Missing period_id');
 

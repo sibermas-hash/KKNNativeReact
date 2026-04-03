@@ -59,7 +59,7 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
                     Emerald Premium Header 
                     Refining from heavy black to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                     <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
@@ -72,7 +72,7 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
                             </span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
-                            Arsip <span className="text-emerald-300 text-glow-emerald">Prodi</span>
+                            Arsip <span className="text-emerald-300">Prodi</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
                              Manajemen unit akademik dalam struktur fakultas. Seluruh data record prodi diselaraskan secara otomatis dengan basis data universitas.
@@ -154,7 +154,7 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
                     <div className="lg:col-span-2 space-y-6">
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mx-1">
                             <div className="relative group flex-1 max-w-xl">
-                                <Search className="absolute left-6 top-1/2/2 h-5 w-5 text-slate-300 group-focus-within:text-primaryz-10" />
+                                <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within:text-primaryz-10" />
                                 <input
                                     placeholder="Cari berdasarkan nama sektor prodi..."
                                     value={search}
@@ -248,7 +248,7 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
                                         <span className="text-[11px] font-semibold text-slate-100 ">MONITOR_VERIFIED</span>
                                      </div>
                                      <div className="flex gap-5">
-                                        <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help text-glow-emerald">
+                                        <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
                                             <Fingerprint className="h-7 w-7" />
                                         </div>
                                         <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">

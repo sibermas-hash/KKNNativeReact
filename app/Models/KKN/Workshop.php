@@ -22,6 +22,10 @@ class Workshop extends Model
         'end_time',
         'location',
         'max_participants',
+        'latitude',
+        'longitude',
+        'radius_meters',
+        'active_token',
         'status',
     ];
 

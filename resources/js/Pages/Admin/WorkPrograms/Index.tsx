@@ -45,7 +45,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
                     Emerald Premium Header 
                     Refining from basic header to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                     <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
@@ -58,7 +58,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
                             </span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
-                            Arsip <span className="text-emerald-300 text-glow-emerald">Program Kerja</span>
+                            Arsip <span className="text-emerald-300">Program Kerja</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
                              Repositori inisiatif strategis, manajemen pelaporan draf, dan orkestrasi program pengabdian mahasiswa dalam ekosistem KKN UIN SAIZU.
@@ -81,7 +81,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
                 {/* Operations Toolbar */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                     <div className="relative group max-w-lg w-full">
-                        <Search className="absolute left-6 top-1/2/2 h-4.5 w-4.5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
                         <input
                             placeholder="Cari program kerja, judul, atau kelompok..."
                             className="w-full h-15 pl-14 pr-8 py-2 bg-white border border-slate-200 rounded-lg text-sm text-sm text-slate-900 outline-none focus:border-primary/50

@@ -160,7 +160,7 @@ export default function RekapNilaiIndex({
                     Emerald Premium Header 
                     Refining from basic header to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                     <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
@@ -173,7 +173,7 @@ export default function RekapNilaiIndex({
                             </span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
-                            Rekapitulasi <span className="text-emerald-300 text-glow-emerald">Nilai KKN</span>
+                            Rekapitulasi <span className="text-emerald-300">Nilai KKN</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
                              Agregasi capaian prestasi mahasiswa, validasi indeks penilaian, dan orkestrasi sertifikasi digital secara terpusat dalam ekosistem KKN UIN SAIZU.
@@ -216,7 +216,7 @@ export default function RekapNilaiIndex({
                         <RekapStatCard label="DATA TERKUNCI" value={stats.finalized} icon={CheckCircle} color="text-emerald-500" bg="bg-emerald-50/50" border="border-emerald-100" />
                         <RekapStatCard label="BELUM FINAL" value={stats.pending} icon={AlertCircle} color="text-rose-500" bg="bg-rose-50/50" border="border-rose-100" />
 
-                        <div className="p-6 bg-white from-primary-dark to-[#043d23]rounded-lg border border-primary flex flex-col justify-between group overflow-hidden relative">
+                        <div className="p-6 bg-white from-primary-darkrounded-lg border border-primary flex flex-col justify-between group overflow-hidden relative">
                              <div className="absolute top-0 right-0 p-6 opacity-10 text-emerald-300 pointer-events-none group-hover:scale-110 transition-transform">
                                 <ShieldCheck className="h-16 w-16" />
                             </div>
@@ -238,7 +238,7 @@ export default function RekapNilaiIndex({
 
                 <div className="flex flex-col xl:flex-row gap-6 items-center justify-between">
                     <div className="flex-1 w-full xl:max-w-xl relative group">
-                        <Search className="absolute left-5 top-1/2/2 w-4.5 h-4.5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
                         <input
                             placeholder="Cari berdasarkan NIM atau Nama..."
                             value={search}

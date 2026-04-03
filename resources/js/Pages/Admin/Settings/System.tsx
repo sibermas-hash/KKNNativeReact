@@ -72,7 +72,7 @@ export default function SystemSettings({ settings }: Props) {
                     Emerald Premium Header 
                     Refining from basic header to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                     <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
@@ -85,7 +85,7 @@ export default function SystemSettings({ settings }: Props) {
                             </span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
-                            Arsitektur <span className="text-emerald-300 text-glow-emerald">Sistem</span>
+                            Arsitektur <span className="text-emerald-300">Sistem</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
                              Konfigurasi parameter operasional utama, orkestrasi kredensial API, dan manajemen integritas infrastruktur digital fungsional KKN UIN SAIZU.
@@ -147,7 +147,7 @@ export default function SystemSettings({ settings }: Props) {
                                                     <button
                                                         type="button"
                                                         onClick={() => togglePassword(setting.id)}
-                                                        className="absolute right-4 top-1/2/2 p-2 text-slate-300 hover:text-primaryactive:scale-95"
+                                                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-slate-300 hover:text-primaryactive:scale-95"
                                                     >
                                                         {showPassword[setting.id] ? (
                                                             <EyeOff className="w-4.5 h-4.5" />

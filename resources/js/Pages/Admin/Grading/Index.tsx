@@ -185,7 +185,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
                         </p>
 
                         <div className="relative group/select">
-                            <div className="absolute left-6 top-1/2/2 text-primary z-10">
+                            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-primary z-10">
                                 <Cpu className="h-5 w-5" />
                             </div>
                             <select
@@ -219,7 +219,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
                     Emerald Premium Header 
                     Refining from basic header to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                     <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
@@ -232,7 +232,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
                             </span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
-                            Analisis <span className="text-emerald-300 text-glow-emerald">Nilai Mahasiswa</span>
+                            Analisis <span className="text-emerald-300">Nilai Mahasiswa</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
                              Orkestrasi pembobotan nilai multisumber: DPL (50%) | Mitra/Desa (30%) | Admin/Hub (20%). Evaluasi presisi untuk integritas capaian pengabdian.
@@ -261,7 +261,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-20 lg:mx-2">
                     <div className="flex flex-col md:flex-row gap-6 w-full md:w-auto flex-1">
                         <div className="relative group/search flex-1 max-w-lg">
-                            <Search className="absolute left-6 top-1/2/2 h-5 w-5 text-slate-300 group-focus-within/search:text-primary transition-colors z-10" />
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within/search:text-primary transition-colors z-10" />
                             <input
                                 placeholder="Cari berdasarkan NIM atau Identitas Nama..."
                                 value={search}
@@ -270,7 +270,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
                             />
                         </div>
                         <div className="relative group/select">
-                             <div className="absolute left-6 top-1/2/2 h-4.5 w-4.5 text-primary pointer-events-none z-10">
+                             <div className="absolute left-6 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-primary pointer-events-none z-10">
                                 <Cpu className="h-full w-full" />
                             </div>
                             <select
@@ -446,7 +446,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
                                     <p className="text-[10px] font-semibold text-slate-300  mb-4">ESTIMASI_AKHIR_ABSOLUT</p>
                                     <div className="flex items-center gap-6">
                                         <div className="flex flex-col items-end">
-                                            <span className="text-6xl font-semibold text-primary  text-glow-emerald">{preview.score}</span>
+                                            <span className="text-6xl font-semibold text-primary ">{preview.score}</span>
                                             <span className="text-[9px] font-semibold text-slate-400 mt-2  opacity-50">SKOR NUMERIK</span>
                                         </div>
                                         <div className="w-px h-16 bg-slate-100" />

@@ -86,7 +86,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
                     Emerald Premium Header 
                     Refining from basic header to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                     <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
@@ -99,7 +99,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
                             </span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
-                            Repositori <span className="text-emerald-300 text-glow-emerald">Dokumentasi</span>
+                            Repositori <span className="text-emerald-300">Dokumentasi</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
                              Manajemen arsip digital, validasi dokumentasi visual, dan pengawasan luaran kegiatan mahasiswa berdasarkan parameter audit operasional KKN UIN SAIZU.
@@ -133,7 +133,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
                         value={summary.pending_review} 
                         color="amber"
                     />
-                    <div className="bg-white from-primary-dark to-[#043d23] p-7rounded-lg border border-primary flex flex-col justify-between group overflow-hidden relative">
+                    <div className="bg-white from-primary-dark p-7rounded-lg border border-primary flex flex-col justify-between group overflow-hidden relative">
                          <div className="absolute top-0 right-0 p-8 opacity-10 text-emerald-300 pointer-events-none group-hover:scale-110 transition-transform">
                             <ShieldCheck className="h-24 w-24" />
                         </div>
@@ -157,7 +157,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
 
                 {/* Filter Toolbar */}
                 <div className="relative group max-w-lg">
-                    <Search className="absolute left-6 top-1/2/2 w-4.5 h-4.5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
+                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
                     <input
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}

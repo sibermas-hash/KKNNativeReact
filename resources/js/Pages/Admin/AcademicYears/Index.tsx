@@ -4,19 +4,14 @@ import AppLayout from '@/Layouts/AppLayout';
 import { FormInput, ConfirmDialog, Pagination } from '@/Components/ui';
 import type { PageProps, AcademicYear } from '@/types';
 import type { PaginationMeta } from '@/Components/UI/Pagination';
-import { 
-    Calendar, 
-    Plus, 
-    Edit2, 
-    Trash2, 
-    Search, 
-    RotateCcw, 
-    CheckCircle, 
-    Info,
-    
-    Cpu,
-    Save,
-    ShieldCheck
+import {
+    Calendar,
+    Plus,
+    Edit2,
+    Trash2,
+    Search,
+    CheckCircle,
+    Info
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -170,7 +165,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                     <div className="lg:col-span-2 space-y-4">
                         {/* Search */}
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2/2 w-4 h-4 text-slate-400" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <input
                                 placeholder="Cari tahun akademik..."
                                 value={search}

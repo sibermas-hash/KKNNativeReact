@@ -57,7 +57,7 @@ export default function GroupShow({ group }: Props) {
                     Emerald Premium Header 
                     Replacing basic header with tactical emerald gradient monitor
                 */}
-                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                     <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
@@ -74,7 +74,7 @@ export default function GroupShow({ group }: Props) {
                             </span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
-                             Kelompok <span className="text-emerald-300 text-glow-emerald">{group.code}</span>
+                             Kelompok <span className="text-emerald-300">{group.code}</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl flex items-center gap-3">
                              <Layers className="w-5 h-5 text-emerald-300 opacity-50" />
@@ -336,7 +336,7 @@ export default function GroupShow({ group }: Props) {
                         </div>
 
                         {/* Program Statistics - High Contrast Emerald */}
-                        <div className="bg-white from-primary-DEFAULT to-primary-dark p-12 rounded-lg relative overflow-hidden group hover:-translate-y-2border border-slate-200">
+                        <div className="bg-white to-primary-dark p-12 rounded-lg relative overflow-hidden group hover:-translate-y-2border border-slate-200">
                              <div className="absolute -bottom-8 -right-8 p-12 text-white pointer-events-none group-hover:scale-110 group-hover:-rotate-12 transition-transform">
                                 <Briefcase className="w-64 h-64" />
                             </div>

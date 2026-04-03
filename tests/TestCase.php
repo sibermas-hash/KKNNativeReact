@@ -11,7 +11,6 @@ abstract class TestCase extends BaseTestCase
     protected function beforeRefreshingDatabase()
     {
         $this->ensurePostgresTestDatabaseExists();
-        $this->shareTestingConnections();
     }
 
     protected function setUp(): void

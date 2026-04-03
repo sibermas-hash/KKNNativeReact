@@ -131,7 +131,7 @@ export default function GroupsIndex({ groups, periods, locations, lecturers }: P
                     Emerald Premium Header 
                     Refining from heavy black to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                     <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
@@ -144,7 +144,7 @@ export default function GroupsIndex({ groups, periods, locations, lecturers }: P
                             </span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
-                            Arsip <span className="text-emerald-300 text-glow-emerald">Kelompok</span>
+                            Arsip <span className="text-emerald-300">Kelompok</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
                              Manajemen pembagian unit operasional, penugasan DPL eksekutif, dan sinkronisasi daerah pengabdian KKN UIN SAIZU.
@@ -366,7 +366,7 @@ export default function GroupsIndex({ groups, periods, locations, lecturers }: P
                 {/* Filter Search Area */}
                 <div className="flex flex-col md:flex-row items-center justify-between gap-6 mx-2">
                     <div className="relative flex-1 w-full max-w-2xl group">
-                         <Search className="absolute left-6 top-1/2/2 w-5 h-5 text-slate-300 group-focus-within:text-primaryz-10" />
+                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-primaryz-10" />
                          <input
                             placeholder="Cari berdasarkan nama, kode, atau destinasi lokasi..."
                             value={search}
@@ -548,7 +548,7 @@ export default function GroupsIndex({ groups, periods, locations, lecturers }: P
                                 <span className="text-[11px] font-semibold text-slate-100 ">REALTIME_UNIT_SYNC</span>
                              </div>
                              <div className="flex gap-5">
-                                <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help text-glow-emerald">
+                                <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
                                     <Cpu className="h-7 w-7" />
                                 </div>
                                 <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">

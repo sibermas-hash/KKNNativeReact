@@ -244,7 +244,7 @@ export default function GradeGenerator({ periods, groups }: Props) {
                     Emerald Premium Header 
                     Refining from heavy black to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                     <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
@@ -257,7 +257,7 @@ export default function GradeGenerator({ periods, groups }: Props) {
                             </span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
-                            Pusat <span className="text-emerald-300 text-glow-emerald">Penilaian</span>
+                            Pusat <span className="text-emerald-300">Penilaian</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
                              Input dan sinkronisasi parameter nilai merit, kedisiplinan, serta sikap kolektif mahasiswa berdasarkan audit orisinal pengabdian di lapangan.
@@ -575,7 +575,7 @@ export default function GradeGenerator({ periods, groups }: Props) {
                                 <span className="text-[11px] font-semibold text-slate-100 ">VAL_INTEG_SYNC_OK</span>
                              </div>
                              <div className="flex gap-5">
-                                <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help text-glow-emerald">
+                                <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
                                     <Cpu className="h-7 w-7" />
                                 </div>
                                 <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
@@ -602,7 +602,7 @@ function MetaItem({ label, value, primary = false }: { label: string; value: str
             <span className="text-[10px] font-semibold text-slate-400  group-hover/meta:text-primary transition-colors">{label}</span>
             <p className={clsx(
                 "text-[15px] font-semibold  truncate max-w-full mt-1",
-                primary ? "text-primary text-glow-emerald" : "text-slate-900"
+                primary ? "text-primary" : "text-slate-900"
             )}>
                 {value || 'DATA_PENDING'}
             </p>

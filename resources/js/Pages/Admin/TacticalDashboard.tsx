@@ -21,7 +21,7 @@ export default function TacticalDashboard() {
       <div className="space-y-12 pb-24">
         
         {/* Simple & Powerful Hero Banner */}
-        <section className="relative overflow-hidden rounded-lg bg-white from-[#10a853] via-[#0d8c45] to-[#043d23] p-12 md:p-20 border border-slate-200 group">
+        <section className="relative overflow-hidden rounded-lg bg-white from-[#10a853] via-[#0d8c45] p-12 md:p-20 border border-slate-200 group">
           <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.1),transparent_50%)]" />
           
           <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-16">
@@ -35,7 +35,7 @@ export default function TacticalDashboard() {
               
               <h1 className="text-6xl md:text-8xl font-semibold  text-white ">
                 Pusat <br /> 
-                <span className="text-emerald-300 text-glow-emerald">KOMANDO</span>
+                <span className="text-emerald-300">KOMANDO</span>
               </h1>
               
               <p className="text-emerald-50/70 text-xl text-sm leading-normal max-w-2xl">

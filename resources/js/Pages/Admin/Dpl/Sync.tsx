@@ -65,7 +65,7 @@ export default function DplSync({ availableDosen, filters }: Props) {
                     Emerald Premium Header 
                     Refining from heavy black to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                     <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
@@ -78,7 +78,7 @@ export default function DplSync({ availableDosen, filters }: Props) {
                             </span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
-                            Aktivasi <span className="text-emerald-300 text-glow-emerald">Personel</span>
+                            Aktivasi <span className="text-emerald-300">Personel</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
                              Sinkronisasi data silsilah dosen dari pangkalan data eksternal untuk inisialisasi orkestrasi penugasan DPL secara terintegrasi.
@@ -120,7 +120,7 @@ export default function DplSync({ availableDosen, filters }: Props) {
                 {/* Operations Navigator */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 lg:mx-2">
                     <form onSubmit={handleSearch} className="relative group flex-1 max-w-2xl">
-                        <MagnifyingGlassIcon className="absolute left-6 top-1/2/2 w-6 h-6 text-slate-300 group-focus-within:text-primaryz-10" />
+                        <MagnifyingGlassIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300 group-focus-within:text-primaryz-10" />
                         <input
                             placeholder="Cari berdasarkan NIP atau nama kandidat..."
                             value={search}
@@ -228,7 +228,7 @@ export default function DplSync({ availableDosen, filters }: Props) {
                                 <span className="text-[11px] font-semibold text-slate-100 ">GATEWAY_ENCRYPTED</span>
                              </div>
                              <div className="flex gap-5">
-                                <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help text-glow-emerald">
+                                <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
                                     <CpuChipIcon className="h-7 w-7" />
                                 </div>
                                 <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">

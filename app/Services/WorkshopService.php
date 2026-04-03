@@ -190,19 +190,21 @@ class WorkshopService
         $groupId = $user->getActiveGroupId();
 
         if ($groupId) {
-             $configuredScore = \App\Models\KKN\KonfigurasiPenilaian::where('config_key', 'workshop_attendance_score')
+            $configuredScore = \App\Models\KKN\KonfigurasiPenilaian::where('config_key', 'workshop_attendance_score')
                 ->first()?->percentage ?? 100;
-             $workshopScore = $participant->attendance_status === 'attended'
+            $workshopScore = $participant->attendance_status === 'attended'
                 ? (float) $configuredScore
                 : 0.0;
+            $adminId = auth()->id()
+                ?? \App\Models\User::role('superadmin')->value('id');
 
-             $this->gradingService->submitAdminScores(
-                 $user->id,
-                 $groupId,
-                 $workshopScore,
-                 $participant->user->nilaiKkn()->where('kelompok_id', $groupId)->first()?->administration_score ?? 0,
-                 auth()->id() ?? \App\Models\User::role('superadmin')->first()?->id ?? 1
-             );
+            $this->gradingService->submitAdminScores(
+                $user->id,
+                $groupId,
+                $workshopScore,
+                $participant->user->nilaiKkn()->where('kelompok_id', $groupId)->first()?->administration_score ?? 0,
+                $adminId
+            );
         }
     }
 

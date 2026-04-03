@@ -35,7 +35,7 @@ export default function StudentSync(_props: Props) {
                     Emerald Premium Header 
                     Refining from basic header to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                     <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
@@ -51,7 +51,7 @@ export default function StudentSync(_props: Props) {
                             </span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
-                            Integrasi <span className="text-emerald-300 text-glow-emerald">Master Data</span>
+                            Integrasi <span className="text-emerald-300">Master Data</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
                              Proses penarikan dan sinkronisasi basis data identitas mahasiswa dari sistem informasi akademik terpusat untuk orkestrasi pendaftaran KKN.
@@ -98,7 +98,7 @@ export default function StudentSync(_props: Props) {
                                     "w-full h-24rounded-lg text-sm font-semibold  flex items-center justify-center gap-6active:scale-95 group/sync",
                                     processing 
                                         ? "bg-slate-50 text-slate-400 cursor-not-allowed border border-slate-200" 
-                                        : "bg-white from-primary-dark to-[#043d23] text-white border border-primary hover:scale-[1.02]
+                                        : "bg-white from-primary-dark text-white border border-primary hover:scale-[1.02]
                                 )}
                             >
                                 {processing ? (

@@ -83,7 +83,7 @@ export default function Login() {
               Username
             </label>
             <div className="relative group">
-              <div className="absolute left-4 top-1/2/2 text-slate-400 group-focus-within:text-primary transition-colors">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
                 <User size={18} />
               </div>
               <input
@@ -103,7 +103,7 @@ export default function Login() {
               Kata Sandi
             </label>
             <div className="relative group">
-              <div className="absolute left-4 top-1/2/2 text-slate-400 group-focus-within:text-primary transition-colors">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
                 <KeyRound size={18} />
               </div>
               <input
@@ -117,7 +117,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2/2 text-slate-400 hover:text-slate-600 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                 title={showPassword ? 'Sembunyikan' : 'Tampilkan'}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}

@@ -158,7 +158,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                     Emerald Premium Header 
                     Refining from heavy black to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                     <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
@@ -171,7 +171,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                             </span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
-                            Manajemen <span className="text-emerald-300 text-glow-emerald">Periode</span>
+                            Manajemen <span className="text-emerald-300">Periode</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
                              Konfigurasi jadwal strategis, audit pendaftaran, dan orkestrasi timeline pengabdian masyarakat untuk seluruh unit KKN UIN SAIZU.
@@ -340,7 +340,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                 <div className="bg-white rounded-lg border border-slate-200 overflow-hidden mb-10 mx-2">
                     <div className="p-10 border-b border-slate-200 bg-slate-50/50">
                         <div className="relative group max-w-md w-full">
-                            <Search className="absolute left-6 top-1/2/2 h-5 w-5 text-slate-400 group-focus-within:text-primaryz-10" />
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-primaryz-10" />
                             <input
                                 placeholder="Cari nama atau jenis..."
                                 value={search}
@@ -493,7 +493,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                                 <span className="text-[11px] font-semibold text-slate-100 ">REALTIME_LEDGER_SYNC</span>
                              </div>
                              <div className="flex gap-5">
-                                <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help text-glow-emerald">
+                                <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
                                     <Database className="h-7 w-7" />
                                 </div>
                                 <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">

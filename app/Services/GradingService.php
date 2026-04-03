@@ -97,7 +97,7 @@ class GradingService
         int $groupId,
         float $workshopScore,
         float $adminScore,
-        int $adminId
+        ?int $adminId
     ): NilaiKkn {
         return DB::transaction(function () use ($userId, $groupId, $workshopScore, $adminScore, $adminId) {
             $score = NilaiKkn::updateOrCreate(

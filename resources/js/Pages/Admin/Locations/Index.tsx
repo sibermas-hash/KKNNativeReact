@@ -93,7 +93,7 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
                     Emerald Premium Header 
                     Refining from basic header to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                     <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
@@ -106,7 +106,7 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
                             </span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
-                            Master <span className="text-emerald-300 text-glow-emerald">Wilayah</span>
+                            Master <span className="text-emerald-300">Wilayah</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
                              Pusat pengelolaan basis data wilayah administratif untuk penempatan dan koordinasi unit pengabdian mahasiswa di seluruh sektor geografis KKN UIN SAIZU.
@@ -231,7 +231,7 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
                 {/* Table Area */}
                 <div className="space-y-6">
                     <div className="relative group max-w-lg">
-                        <Search className="absolute left-6 top-1/2/2 h-4.5 w-4.5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
                         <input
                             type="search"
                             placeholder="Cari berdasarkan nama desa atau kode..."

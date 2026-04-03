@@ -1,13 +1,7 @@
 import { useState } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import type { User } from '@/types';
-import { 
-  Menu, 
-  ChevronDown, 
-  LogOut, 
-  Bell, 
-  Search
-} from 'lucide-react';
+import { Menu, LogOut } from 'lucide-react';
 import Sidebar from '@/Components/Sidebar';
 
 interface AppLayoutProps {

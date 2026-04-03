@@ -59,7 +59,7 @@ export default function AuditLogIndex({ logs, stats, filters }: { logs: any; sta
                     Emerald Premium Header 
                     Refining from heavy black to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                     <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
@@ -72,7 +72,7 @@ export default function AuditLogIndex({ logs, stats, filters }: { logs: any; sta
                             </span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
-                            Jejak <span className="text-emerald-300 text-glow-emerald">Audit</span>
+                            Jejak <span className="text-emerald-300">Audit</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
                              Pantauan riwayat mutasi data, aktivitas autentikasi, dan protokol administratif sistem untuk menjamin transparansi operasional KKN UIN SAIZU.
@@ -103,7 +103,7 @@ export default function AuditLogIndex({ logs, stats, filters }: { logs: any; sta
                 {/* Filters & Actions */}
                 <div className="flex flex-col lg:flex-row gap-8 lg:mx-2">
                     <div className="flex-1 relative group">
-                        <Search className="absolute left-6 top-1/2/2 h-6 w-6 text-slate-300 group-focus-within:text-primaryz-10" />
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-300 group-focus-within:text-primaryz-10" />
                         <input
                             placeholder="Cari berdasarkan nama, IP, atau keterangan tindakan..."
                             value={search}
@@ -113,7 +113,7 @@ export default function AuditLogIndex({ logs, stats, filters }: { logs: any; sta
                         />
                     </div>
                     <div className="lg:w-72 relative group">
-                        <Filter className="absolute left-6 top-1/2/2 h-5 w-5 text-slate-300 pointer-events-none group-focus-within:text-primaryz-10" />
+                        <Filter className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 pointer-events-none group-focus-within:text-primaryz-10" />
                         <select
                             value={filters.action ?? ''}
                             onChange={(e) => applyFilters({ action: e.target.value })}
@@ -248,7 +248,7 @@ export default function AuditLogIndex({ logs, stats, filters }: { logs: any; sta
                                 <span className="text-[11px] font-semibold text-slate-100 ">REALTIME_SECURITY_LOCK</span>
                              </div>
                              <div className="flex gap-5">
-                                <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help text-glow-emerald">
+                                <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
                                     <Cpu className="h-7 w-7" />
                                 </div>
                                 <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">

@@ -182,7 +182,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                     Emerald Premium Header 
                     Replacing light header with a premium emerald tactical gradient
                 */}
-                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                     <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
@@ -195,7 +195,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                             </span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
-                            Pusat <span className="text-emerald-300 text-glow-emerald">Pembekalan</span>
+                            Pusat <span className="text-emerald-300">Pembekalan</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
                              Pusat pengelolaan pembekalan operasional mahasiswa. Atur agenda taktis, manajemen kuota audiens, dan audit presensi dalam satu modul kontrol.
@@ -255,7 +255,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                                 <div className="space-y-3 group/field">
                                     <label className="text-[10px] font-semibold text-slate-400  ml-2 group-focus-within/field:text-primary transition-colors">Tanggal_Kegiatan</label>
                                     <div className="relative">
-                                        <Calendar className="absolute left-6 top-1/2/2 h-5 w-5 text-slate-300 group-focus-within/field:text-primary transition-colors z-10" />
+                                        <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within/field:text-primary transition-colors z-10" />
                                         <input
                                             type="date"
                                             value={data.workshop_date}
@@ -268,7 +268,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                                 <div className="space-y-3 group/field">
                                     <label className="text-[10px] font-semibold text-slate-400  ml-2 group-focus-within/field:text-primary transition-colors">Waktu_Mulai</label>
                                     <div className="relative">
-                                        <Clock3 className="absolute left-6 top-1/2/2 h-5 w-5 text-slate-300 group-focus-within/field:text-primary transition-colors z-10" />
+                                        <Clock3 className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within/field:text-primary transition-colors z-10" />
                                         <input
                                             type="time"
                                             value={data.start_time}
@@ -282,7 +282,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                                 <div className="space-y-3 group/field">
                                     <label className="text-[10px] font-semibold text-slate-400  ml-2 group-focus-within/field:text-primary transition-colors">Waktu_Selesai</label>
                                     <div className="relative">
-                                        <Clock3 className="absolute left-6 top-1/2/2 h-5 w-5 text-slate-300 group-focus-within/field:text-primary transition-colors z-10" />
+                                        <Clock3 className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within/field:text-primary transition-colors z-10" />
                                         <input
                                             type="time"
                                             value={data.end_time}
@@ -296,7 +296,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                                 <div className="space-y-3 group/field">
                                     <label className="text-[10px] font-semibold text-slate-400  ml-2 group-focus-within/field:text-primary transition-colors">Lokasi_Kegiatan</label>
                                     <div className="relative">
-                                        <MapPin className="absolute left-6 top-1/2/2 h-5 w-5 text-slate-300 group-focus-within/field:text-primary transition-colors z-10" />
+                                        <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within/field:text-primary transition-colors z-10" />
                                         <input
                                             type="text"
                                             value={data.location}
@@ -310,7 +310,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                                 <div className="space-y-3 group/field">
                                     <label className="text-[10px] font-semibold text-slate-400  ml-2 group-focus-within/field:text-primary transition-colors">Kuota_Peserta</label>
                                     <div className="relative">
-                                        <Users className="absolute left-6 top-1/2/2 h-5 w-5 text-slate-300 group-focus-within/field:text-primary transition-colors z-10" />
+                                        <Users className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within/field:text-primary transition-colors z-10" />
                                         <input
                                             type="number"
                                             min="1"
@@ -499,7 +499,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                                 <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
                                     <Cpu className="h-7 w-7" />
                                 </div>
-                                <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help text-glow-emerald">
+                                <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
                                     <Fingerprint className="h-7 w-7" />
                                 </div>
                              </div>

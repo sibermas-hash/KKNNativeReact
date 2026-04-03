@@ -51,7 +51,7 @@ export default function UserForm({ faculties, programs }: Props) {
                     Emerald Premium Header 
                     Refining from basic header to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                     <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
@@ -74,7 +74,7 @@ export default function UserForm({ faculties, programs }: Props) {
                             </div>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
-                            Registrasi <span className="text-emerald-300 text-glow-emerald">Personel</span>
+                            Registrasi <span className="text-emerald-300">Personel</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
                              Inisialisasi record baru dalam registry pusat. Pastikan seluruh parameter administratif dan peran otorisasi telah diverifikasi sesuai protokol keamanan.

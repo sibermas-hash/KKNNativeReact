@@ -111,7 +111,7 @@ export default function DplAssignment({ assignments, allDosen, allPeriods }: Pro
                     Emerald Premium Header 
                     Refining from basic header to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                     <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
@@ -124,7 +124,7 @@ export default function DplAssignment({ assignments, allDosen, allPeriods }: Pro
                             </span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
-                            Matriks <span className="text-emerald-300 text-glow-emerald">Penugasan</span>
+                            Matriks <span className="text-emerald-300">Penugasan</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
                              Alokasi strategis Dosen Pembimbing Lapangan (DPL) ke periode aktif serta manajemen kapasitas bimbingan mahasiswa secara terpadu.
@@ -155,7 +155,7 @@ export default function DplAssignment({ assignments, allDosen, allPeriods }: Pro
                 {/* Tactical Search Bar */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative">
                     <div className="relative group max-w-md w-full">
-                        <MagnifyingGlassIcon className="absolute left-4 top-1/2/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
+                        <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
                         <input
                             placeholder="Cari DPL atau Nama Periode..."
                             value={search}
@@ -288,7 +288,7 @@ export default function DplAssignment({ assignments, allDosen, allPeriods }: Pro
                                 <span className="text-[11px] font-semibold text-slate-100 ">AUTH_LINK_STABLE</span>
                              </div>
                              <div className="flex gap-5">
-                                <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help text-glow-emerald">
+                                <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
                                     <Cpu className="h-7 w-7" />
                                 </div>
                              </div>
@@ -312,7 +312,7 @@ export default function DplAssignment({ assignments, allDosen, allPeriods }: Pro
                         <div className="absolute top-0 right-0 p-8 text-slate-900 pointer-events-none">
                             <BriefcaseIcon className="h-32 w-32" />
                         </div>
-                        <button onClick={() => setShowModal(false)} className="absolute right-8 top-1/2/2 h-12 w-12 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-100hover:rotate-90">
+                        <button onClick={() => setShowModal(false)} className="absolute right-8 top-1/2 -translate-y-1/2 h-12 w-12 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-100hover:rotate-90">
                             <XMarkIcon className="h-7 w-7" />
                         </button>
                     </div>

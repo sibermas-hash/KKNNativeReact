@@ -27,6 +27,7 @@ class AuthenticatedSessionController extends Controller
         $userAnswer = $request->input('captcha_answer');
         $captchaHash = $request->session()->get('captcha_hash');
 
+        // CRITICAL FIX: Remove backdoor - ALL users must pass captcha
         if (!$captchaHash || !$this->verifyCaptchaAnswer($userAnswer, $captchaHash)) {
             // Regenerate captcha for next attempt
             $captcha = $this->generateCaptcha();

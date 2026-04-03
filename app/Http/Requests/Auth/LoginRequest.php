@@ -22,7 +22,7 @@ class LoginRequest extends FormRequest
             'login' => ['required', 'string'],
             'password' => ['required', 'string'],
             'remember' => ['boolean'],
-            'captcha_answer' => ['required', 'integer'],
+            'captcha_answer' => ['required', 'integer', 'min:0', 'max:999'],
         ];
     }
 

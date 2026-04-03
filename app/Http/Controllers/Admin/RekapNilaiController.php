@@ -8,10 +8,12 @@ use App\Services\GradingService;
 use App\Services\CertificateService;
 use App\Exports\RekapNilaiExport;
 use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\Periode;
 use App\Models\KKN\Fakultas;
-use App\Models\KKN\KelompokKkn;
+use Illuminate\Support\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -25,43 +27,62 @@ class RekapNilaiController extends Controller
 
     public function index(Request $request)
     {
+        $user = $request->user();
         $this->authorize('viewAny', NilaiKkn::class);
 
         $activePeriod = Periode::getActivePeriod();
-        $periodeId = $request->integer('period_id', $activePeriod?->id);
-        $filters = $request->only(['faculty_id', 'kelompok_id', 'huruf']);
+        $periods = Periode::query()
+            ->orderByDesc('start_date')
+            ->orderByDesc('id')
+            ->get(['id', 'name']);
+        $periodeId = $request->integer('period_id', $activePeriod?->id ?? $periods->first()?->id);
+
+        $facultyScopeId = $user->hasRole('faculty_admin')
+            ? ($user->faculty_id ?: -1)
+            : $request->integer('faculty_id');
+
+        $filters = [
+            'period_id' => $periodeId,
+            'faculty_id' => $facultyScopeId,
+            'kelompok_id' => $request->integer('kelompok_id'),
+            'huruf' => $request->string('huruf')->toString() ?: null,
+        ];
 
         if (!$periodeId) {
             return Inertia::render('Admin/RekapNilai/Index', [
-                'rows' => Inertia::defer(fn () => []),
-                'stats' => Inertia::defer(fn () => null),
+                'scores' => [],
+                'stats' => null,
                 'filters' => $filters,
                 'periodeId' => null,
-                'periods' => Periode::all(),
+                'periods' => $periods,
                 'faculties' => [],
-                'groups' => [],
+                'lockedFaculty' => $this->lockedFacultyPayload($user),
+                'canExport' => Gate::forUser($user)->allows('export', NilaiKkn::class),
+                'canBulkCertificates' => Gate::forUser($user)->allows('export', NilaiKkn::class),
+                'canFinalizeMass' => Gate::forUser($user)->allows('bulkFinalize', NilaiKkn::class),
             ]);
         }
 
+        $rows = $this->repo->getRekapNilai($periodeId, $filters);
+
         return Inertia::render('Admin/RekapNilai/Index', [
-            'rows' => Inertia::defer(fn () => $this->repo->getRekapNilai($periodeId, $filters)),
-            'stats' => Inertia::defer(function () use ($periodeId, $filters) {
-                $rows = $this->repo->getRekapNilai($periodeId, $filters);
-                return [
-                    'total' => $rows->count(),
-                    'finalized' => $rows->where('is_finalized', true)->count(),
-                    'missing_dpl' => $rows->whereNull('dpl_submitted_at')->count(),
-                    'missing_mitra' => $rows->whereNull('mitra_submitted_at')->count(),
-                    'distribusi' => $rows->groupBy('huruf')->map->count()->sortKeys(),
-                    'rata_rata' => round($rows->avg('nilai_akhir') ?? 0, 2),
-                ];
-            }),
+            'scores' => $this->transformRows($rows),
+            'stats' => [
+                'total' => $rows->count(),
+                'finalized' => $rows->where('is_finalized', true)->count(),
+                'pending' => $rows->where('is_finalized', false)->count(),
+                'avg_score' => round($rows->avg('nilai_akhir') ?? 0, 2),
+            ],
             'filters' => $filters,
             'periodeId' => $periodeId,
-            'periods' => Periode::all(),
-            'faculties' => Fakultas::select('id', 'nama as name')->get(),
-            'groups' => Inertia::defer(fn () => KelompokKkn::where('period_id', $periodeId)
-                ->select('id', 'code as kode_kelompok')->orderBy('code')->get()),
+            'periods' => $periods,
+            'faculties' => $user->hasRole('faculty_admin')
+                ? []
+                : Fakultas::select('id', 'nama as name')->orderBy('nama')->get(),
+            'lockedFaculty' => $this->lockedFacultyPayload($user),
+            'canExport' => Gate::forUser($user)->allows('export', NilaiKkn::class),
+            'canBulkCertificates' => Gate::forUser($user)->allows('export', NilaiKkn::class),
+            'canFinalizeMass' => Gate::forUser($user)->allows('bulkFinalize', NilaiKkn::class),
         ]);
     }
 
@@ -83,9 +104,55 @@ class RekapNilaiController extends Controller
     {
         $this->authorize('bulkFinalize', NilaiKkn::class);
 
-        $this->grading->dispatchMassFinalization($request->integer('period_id'));
+        $validated = $request->validate([
+            'period_id' => 'required|exists:periode,id',
+        ]);
+
+        $this->grading->dispatchMassFinalization($validated['period_id']);
 
         return back()->with('info', "Proses finalisasi massal telah dimulai di latar belakang.");
+    }
+
+    public function finalize(NilaiKkn $score)
+    {
+        $this->authorize('finalize', $score);
+
+        $score->loadMissing('mahasiswa.user');
+
+        if ($score->is_finalized) {
+            return back()->with('info', 'Nilai mahasiswa ini sudah difinalisasi.');
+        }
+
+        if (is_null($score->total_score)) {
+            return back()->with('error', 'Nilai akhir belum lengkap dan belum dapat difinalisasi.');
+        }
+
+        if (!$score->mahasiswa) {
+            return back()->with('error', 'Data mahasiswa untuk nilai ini tidak ditemukan.');
+        }
+
+        $reportApproved = LaporanAkhir::where('mahasiswa_id', $score->mahasiswa->id)
+            ->where('kelompok_id', $score->kelompok_id)
+            ->where('status', 'approved')
+            ->exists();
+
+        if (!$reportApproved) {
+            return back()->with('error', 'Laporan akhir mahasiswa belum disetujui, sehingga nilai belum dapat difinalisasi.');
+        }
+
+        $score->update(['is_finalized' => true]);
+
+        if ($score->mahasiswa?->user) {
+            $score->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
+                'type' => 'success',
+                'title' => 'Nilai KKN Difinalisasi',
+                'message' => 'Nilai KKN Anda telah difinalisasi oleh Admin LPPM. Silakan unduh sertifikat.',
+                'icon' => 'academic-cap',
+                'url' => route('student.dashboard'),
+            ]));
+        }
+
+        return back()->with('success', 'Nilai mahasiswa berhasil difinalisasi.');
     }
 
     public function getFinalizeProgress(Request $request)
@@ -149,7 +216,7 @@ class RekapNilaiController extends Controller
                 $lookupKey = $row->user_id . '|' . $row->kode_kelompok;
                 $score = $scores->get($lookupKey)?->first();
                 
-                if ($score) {
+                if ($score && $score->mahasiswa) {
                     $pdf = $this->certificate->generateForStudent($score);
                     $nim = $score->mahasiswa->nim ?? '';
                     $pdfName = "Sertifikat_{$score->mahasiswa->nama}_{$nim}.pdf";
@@ -195,5 +262,45 @@ class RekapNilaiController extends Controller
             'score' => $score,
             'message' => 'Nilai berhasil diperbarui.',
         ]);
+    }
+
+    private function transformRows(Collection $rows): array
+    {
+        return $rows->map(function ($row) {
+            return [
+                'id' => $row->score_id ? (int) $row->score_id : ((int) $row->mahasiswa_id . '-' . (int) $row->kelompok_id),
+                'score_id' => $row->score_id ? (int) $row->score_id : null,
+                'student_id' => (int) $row->mahasiswa_id,
+                'kelompok_id' => (int) $row->kelompok_id,
+                'nim' => $row->nim,
+                'nama' => $row->nama,
+                'prodi' => $row->prodi,
+                'fakultas' => $row->fakultas,
+                'n_dpl' => $row->n_dpl,
+                'n_mitra' => $row->n_mitra,
+                'n_admin' => $row->n_admin,
+                'total' => $row->nilai_akhir,
+                'grade' => $row->huruf,
+                'is_finalized' => (bool) $row->is_finalized,
+                'evidence_file' => $row->evidence_file,
+                'status_submit' => [
+                    'dpl' => !is_null($row->dpl_submitted_at),
+                    'mitra' => !is_null($row->mitra_submitted_at),
+                    'admin' => !is_null($row->admin_submitted_at),
+                ],
+            ];
+        })->values()->all();
+    }
+
+    private function lockedFacultyPayload($user): ?array
+    {
+        if (!$user->hasRole('faculty_admin') || !$user->fakultas) {
+            return null;
+        }
+
+        return [
+            'id' => $user->fakultas->id,
+            'name' => $user->fakultas->nama,
+        ];
     }
 }

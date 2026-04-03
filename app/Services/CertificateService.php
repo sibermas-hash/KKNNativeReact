@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\KKN\NilaiKkn;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
+use RuntimeException;
 
 class CertificateService
 {
@@ -20,20 +21,33 @@ class CertificateService
             'kelompok.dpl.user',
         ]);
 
+        $mahasiswaModel = $score->mahasiswa;
+
+        if (!$mahasiswaModel) {
+            throw new RuntimeException('Data mahasiswa untuk nilai ini tidak ditemukan.');
+        }
+
         // Logic Anti-Halu
-        $laporanAkhir = \App\Models\KKN\LaporanAkhir::where('mahasiswa_id', $score->mahasiswa_id)
+        $laporanAkhir = \App\Models\KKN\LaporanAkhir::where('mahasiswa_id', $mahasiswaModel->id)
             ->where('kelompok_id', $score->kelompok_id)
             ->first();
 
-        abort_if(!$laporanAkhir || $laporanAkhir->status !== 'approved', 403, 'Sertifikat belum tersedia. Laporan akhir belum disetujui DPL.');
-        abort_if($score->total_score < 70, 403, 'Sertifikat hanya diberikan kepada mahasiswa dengan nilai minimal B.');
+        if (!$laporanAkhir || $laporanAkhir->status !== 'approved') {
+            throw new RuntimeException('Sertifikat belum tersedia. Laporan akhir belum disetujui DPL.');
+        }
+        if ($score->total_score < 70) {
+            throw new RuntimeException('Sertifikat hanya diberikan kepada mahasiswa dengan nilai minimal B.');
+        }
 
         // Load Dynamic Configs
         $configs = \App\Models\KKN\KonfigurasiSertifikat::all()->pluck('value', 'config_key');
 
-        $mahasiswaModel = $score->mahasiswa;
         $lokasi = $score->kelompok->lokasi;
-        $locationStr = trim(($lokasi->village_name ?? '') . ', ' . ($lokasi->district_name ?? '') . ', ' . ($lokasi->city_name ?? ''));
+        $locationStr = trim(implode(', ', array_filter([
+            $lokasi->village_name ?? null,
+            $lokasi->district_name ?? null,
+            $lokasi->regency_name ?? null,
+        ])));
         $name = $score->mahasiswa->nama ?? $score->mahasiswa->user->name;
         $periodName = $score->kelompok->periode->name;
 

@@ -74,9 +74,13 @@ class StudentSyncService
                 $prodiId = Prodi::where('master_id', $data['prodi_id'])->first()?->id;
             }
 
-            // Fallbacks
-            if (!$facultyId) $facultyId = Fakultas::first()?->id;
-            if (!$prodiId) $prodiId = Prodi::first()?->id;
+            // Fallbacks - Log warning instead of silent wrong assignment
+            if (!$facultyId) {
+                Log::warning("Student {$data['nim']} has unmapped organization_id: {$data['organization_id']}. Skipping faculty assignment.");
+            }
+            if (!$prodiId) {
+                Log::warning("Student {$data['nim']} has unmapped prodi_id: {$data['prodi_id']}. Skipping prodi assignment.");
+            }
 
             // 2. Determine Password (DDMMYYYY from birth_date or fallback to NIM)
             $password = PasswordHelper::fromBirthDate(
@@ -96,6 +100,9 @@ class StudentSyncService
             );
 
             if (!$user->hasRole('student')) {
+                if (!$user->wasRecentlyCreated) {
+                    Log::info("Existing user {$user->username} is being assigned student role during sync.");
+                }
                 $user->assignRole('student');
             }
 

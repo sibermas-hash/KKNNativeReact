@@ -22,8 +22,12 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class GeneratorNilaiController extends Controller
 {
+    public function __construct(
+        private GradingService $gradingService
+    ) {}
+
     /**
-     * Verify the logged-in DPL is assigned to the given group.
+     * Verify the logged-in DPL is assigned to the given group as Ketua.
      */
     private function authorizeDplGroup(int $groupId): void
     {
@@ -32,10 +36,14 @@ class GeneratorNilaiController extends Controller
         }
 
         $dosen = auth()->user()->dosen;
-        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        abort_if(!$dosen, 403, 'Data profil dosen tidak ditemukan.');
 
-        $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
-        abort_if(!$groupIds->contains($groupId), 403, 'Anda tidak memiliki akses ke kelompok ini.');
+        $isAssigned = $dosen->kelompokKkn()
+            ->where('kelompok_kkn.id', $groupId)
+            ->wherePivot('role', 'Ketua')
+            ->exists();
+
+        abort_if(!$isAssigned, 403, 'Akses Ditolak: Anda harus menjadi Ketua DPL untuk kelompok ini agar dapat memberikan nilai.');
     }
 
     public function index(): Response
@@ -47,19 +55,17 @@ class GeneratorNilaiController extends Controller
             'grading_end' => $p->grading_end?->format('Y-m-d'),
         ]);
 
-        $query = KelompokKkn::with(['lokasi', 'dosen.user:id,name']); // Load pivot 'dosen' instead of just 'dpl'
+        $query = KelompokKkn::with(['lokasi', 'dosen.user:id,name']);
 
         // MULTI-DPL LOGIC: Filter groups for logged-in DPL
         if (auth()->user()->hasRole('dpl')) {
             $dosenId = auth()->user()->dosen?->id;
             if ($dosenId) {
-                // Show groups where this DPL is assigned AND has 'Ketua' (Admin) role
                 $query->whereHas('dosen', function ($q) use ($dosenId) {
                     $q->where('dosen_id', $dosenId)
                       ->where('role', 'Ketua');
                 });
             } else {
-                // Failsafe: If DPL data not found
                 $query->whereRaw('1 = 0');
             }
         }
@@ -70,7 +76,6 @@ class GeneratorNilaiController extends Controller
                 $addressParts = explode(',', $g->lokasi?->address ?? '');
                 $kelompokNum = preg_replace('/[^0-9]/', '', $g->code);
                 
-                // Get the main DPL name (Ketua)
                 $mainDpl = $g->dosen->where('pivot.role', 'Ketua')->first();
 
                 return [
@@ -91,22 +96,14 @@ class GeneratorNilaiController extends Controller
         ]);
     }
 
-    /**
-     * Fetch students of a given group with their existing village scores.
-     */
     public function students(KelompokKkn $kelompokKkn)
     {
         $this->authorizeDplGroup($kelompokKkn->id);
-
         return response()->json($this->getStudentsForGroup($kelompokKkn));
     }
 
-    /**
-     * Fetch students from ALL groups (for 'Semua kelompok' option).
-     */
     public function studentsAll()
     {
-        // DPL users should not access all groups
         abort_if(auth()->user()->hasRole('dpl'), 403, 'DPL hanya dapat mengakses kelompok yang ditugaskan.');
 
         $allStudents = [];
@@ -124,9 +121,6 @@ class GeneratorNilaiController extends Controller
         return response()->json($allStudents);
     }
 
-    /**
-     * Save village head scores (discipline + attitude) for multiple students.
-     */
     public function saveScores(Request $request)
     {
         $data = $request->validate([
@@ -135,12 +129,11 @@ class GeneratorNilaiController extends Controller
             'scores.*.user_id'    => ['required', 'exists:users,id'],
             'scores.*.discipline' => ['nullable', 'numeric', 'between:0,100'],
             'scores.*.attitude'   => ['nullable', 'numeric', 'between:0,100'],
-            'evidence_file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'], // Max 5MB
+            'evidence_file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
 
         $this->authorizeDplGroup($data['kelompok_id']);
 
-        // ENFORCE GRADING PERIOD for DPL
         if (auth()->user()->hasRole('dpl')) {
             $group = KelompokKkn::with('periode')->find($data['kelompok_id']);
             $period = $group?->periode;
@@ -153,15 +146,14 @@ class GeneratorNilaiController extends Controller
             }
         }
 
-        // Handle File Upload
+        // Handle File Upload - PROTECTED STORAGE
         $evidencePath = null;
         if ($request->hasFile('evidence_file')) {
             $file = $request->file('evidence_file');
-            // Store in: storage/app/public/evidence/{kelompok_id}/{filename}
+            // Store in private storage (local disk) for security
             $evidencePath = $file->storeAs(
                 "evidence/{$data['kelompok_id']}",
-                "blanko_" . time() . ".{$file->getClientOriginalExtension()}",
-                'public'
+                "blanko_" . time() . ".{$file->getClientOriginalExtension()}"
             );
         }
 
@@ -174,51 +166,33 @@ class GeneratorNilaiController extends Controller
                     continue;
                 }
 
-                $villageWeighted = null;
-                if ($discipline !== null && $attitude !== null) {
-                    $villageWeighted = round(($discipline + $attitude) / 2, 2);
-                }
-
                 $score = NilaiKkn::firstOrNew([
                     'mahasiswa_id' => $row['user_id'],
                     'kelompok_id'  => $data['kelompok_id'],
                 ]);
 
-                // Update scores only if provided
                 if ($discipline !== null) $score->discipline_score = $discipline;
                 if ($attitude !== null) $score->attitude_score = $attitude;
-                if ($villageWeighted !== null) $score->village_weighted_score = $villageWeighted;
-                
-                // Update specific metadata for village grade
+
                 if ($discipline !== null || $attitude !== null) {
-                    $score->village_graded_by = $request->user()->id;
-                    $score->village_graded_at = now();
+                    $score->dpl_graded_by = $request->user()->id;
+                    $score->dpl_graded_at = now();
                 }
 
-                // Update evidence file if uploaded (overwrite existing)
                 if ($evidencePath) {
                     $score->evidence_file = $evidencePath;
                 }
 
-                // Recalculate total
-                $dplWeighted = $score->dpl_weighted_score ?? 0;
-                $lppmWeighted = $score->lppm_weighted_score ?? 0;
-                $currentVillage = $score->village_weighted_score ?? 0;
-
-                $total = round($dplWeighted + $currentVillage + $lppmWeighted, 2);
-                $score->total_score = $total;
-                $score->letter_grade = GradingService::determineLetterGrade($total);
-
                 $score->save();
+
+                // Recalculate everything safely using Service
+                $this->gradingService->calculateFinalGrade($score);
             }
         });
 
         return back()->with('success', 'Nilai & Bukti Blanko berhasil disimpan.');
     }
 
-    /**
-     * Export blanko penilaian as Excel (.xlsx) matching official template.
-     */
     public function exportExcel(Request $request, $id)
     {
         $periodId = $request->query('period_id');
@@ -238,7 +212,7 @@ class GeneratorNilaiController extends Controller
             
             $filename = "Database_Nilai_KKN_Angkatan_{$periodId}.xlsx";
         } else {
-            $kelompokKkn = KelompokKkn::with(['lokasi', 'dpl.user:id,name'])->findOrFail($id);
+            $kelompokKkn = KelompokKkn::with(['lokasi', 'dosen.user:id,name', 'periode.tahunAkademik'])->findOrFail($id);
             $students = $this->getStudentsForGroup($kelompokKkn);
             
             $spreadsheet = new Spreadsheet();
@@ -266,9 +240,11 @@ class GeneratorNilaiController extends Controller
         $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         
         $sheet->mergeCells('A2:F2');
-        $sheet->setCellValue('A2', 'Angkatan 57 Tahun 2026');
+        $sheet->setCellValue('A2', 'Angkatan ' . ($kelompokKkn->periode?->name ?? '57') . ' Tahun ' . ($kelompokKkn->periode?->tahunAkademik?->year ?? date('Y')));
         $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(12);
         $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        $mainDpl = $kelompokKkn->dosen->where('pivot.role', 'Ketua')->first();
 
         // === META DATA ===
         $addressParts = explode(',', $kelompokKkn->lokasi?->address ?? '');
@@ -277,7 +253,7 @@ class GeneratorNilaiController extends Controller
             'DESA'      => $kelompokKkn->lokasi?->village_name ?? '-',
             'KECAMATAN' => trim($addressParts[0] ?? '-'),
             'KABUPATEN' => trim($addressParts[1] ?? '-'),
-            'DPL'       => $kelompokKkn->dpl?->user?->name ?? '-',
+            'DPL'       => $mainDpl?->user?->name ?? '-',
         ];
 
         $row = 4;
@@ -301,17 +277,11 @@ class GeneratorNilaiController extends Controller
             $sheet->getStyle("{$col}{$headerRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
         }
 
-        // === DATA ROWS ===
         $currentRow = 11;
         foreach ($students as $idx => $student) {
             $sheet->setCellValue("A{$currentRow}", $idx + 1);
-            $sheet->getStyle("A{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            
             $sheet->setCellValue("B{$currentRow}", $student['name']);
-            
-            // Force NIM as string to prevent scientific notation
             $sheet->setCellValueExplicit("C{$currentRow}", $student['nim'], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-            $sheet->getStyle("C{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             
             if ($student['discipline'] !== null) $sheet->setCellValue("D{$currentRow}", $student['discipline']);
             if ($student['attitude'] !== null) $sheet->setCellValue("E{$currentRow}", $student['attitude']);
@@ -320,31 +290,18 @@ class GeneratorNilaiController extends Controller
                 $total = round(($student['discipline'] + $student['attitude']) / 2);
                 $sheet->setCellValue("F{$currentRow}", $total);
             }
-            $sheet->getStyle("D{$currentRow}:F{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            
-            // Borders for the whole row (A-F)
             $sheet->getStyle("A{$currentRow}:F{$currentRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
             $currentRow++;
         }
 
         // === FOOTER ===
         $footerStartRow = $currentRow + 1;
-        $sheet->setCellValue("A{$footerStartRow}", '*Keterangan:');
-        $sheet->getStyle("A{$footerStartRow}")->getFont()->setItalic(true)->setSize(9);
-        $sheet->setCellValue("A" . ($footerStartRow + 1), "- Rentang Nilai 60-100");
-        $sheet->getStyle("A" . ($footerStartRow + 1))->getFont()->setItalic(true)->setSize(9);
-
-        // Signature block on the right
         $sigCol = 'D';
-        $sheet->setCellValue("{$sigCol}{$footerStartRow}", ".........................., .............................. 2026");
-        $sheet->getStyle("{$sigCol}{$footerStartRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-        
+        $sheet->setCellValue("{$sigCol}{$footerStartRow}", ($kelompokKkn->lokasi?->village_name ?? '..........................') . ", " . now()->translatedFormat('d F Y'));
         $sheet->setCellValue("{$sigCol}" . ($footerStartRow + 1), "Kepala Desa/Lurah,");
-        
         $sheet->setCellValue("{$sigCol}" . ($footerStartRow + 5), ".........................................................");
         $sheet->setCellValue("{$sigCol}" . ($footerStartRow + 6), "NIP.");
 
-        // === COLUMN WIDTHS ===
         $sheet->getColumnDimension('A')->setWidth(5);
         $sheet->getColumnDimension('B')->setWidth(45);
         $sheet->getColumnDimension('C')->setWidth(20);
@@ -366,23 +323,23 @@ class GeneratorNilaiController extends Controller
         if ($id === 'all' && $periodId) {
             $students = $this->getStudentsForPeriod($periodId);
             $period = Periode::with('tahunAkademik')->findOrFail($periodId);
-            
+
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.blanko_nilai_bulk_list', [
                 'students' => $students,
                 'period_id' => $periodId,
-                'angkatan'   => $period->angkatan,
+                'periode'   => $period->name,
                 'tahun'      => $period->tahunAkademik?->year ?? date('Y')
             ]);
 
-            return $pdf->download("Database_Nilai_KKN_Angkatan_{$periodId}.pdf");
+            return $pdf->download("Database_Nilai_KKN_Periode_{$periodId}.pdf");
         } else {
-            $kelompokKkn = KelompokKkn::with(['lokasi', 'dpl.user:id,name', 'periode.tahunAkademik'])->findOrFail($id);
+            $kelompokKkn = KelompokKkn::with(['lokasi', 'dosen.user:id,name', 'periode.tahunAkademik'])->findOrFail($id);
             $students = $this->getStudentsForGroup($kelompokKkn);
-            
+
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.blanko_nilai', [
                 'group'    => $kelompokKkn,
                 'students' => $students,
-                'angkatan' => $kelompokKkn->periode?->angkatan ?? '57',
+                'periode' => $kelompokKkn->periode?->name ?? '57',
                 'tahun'    => $kelompokKkn->periode?->tahunAkademik?->year ?? date('Y')
             ]);
 
@@ -397,8 +354,13 @@ class GeneratorNilaiController extends Controller
         $periodId = $request->query('period_id');
         if (!$periodId) abort(400, 'Missing period_id');
 
-        $groups = KelompokKkn::with(['lokasi', 'dpl.user:id,name'])
+        $groups = KelompokKkn::with(['lokasi', 'dosen.user:id,name', 'periode.tahunAkademik'])
             ->where('period_id', $periodId)
+            ->whereHas('dosen', function($q) {
+                if (auth()->user()->hasRole('dpl')) {
+                    $q->where('dosen_id', auth()->user()->dosen->id)->where('role', 'Ketua');
+                }
+            })
             ->orderBy('code')
             ->get();
 
@@ -407,16 +369,15 @@ class GeneratorNilaiController extends Controller
         $zipPath = storage_path("app/public/{$zipFileName}");
 
         if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
-            $period = Periode::with('tahunAkademik')->findOrFail($periodId);
             foreach ($groups as $group) {
                 $students = $this->getStudentsForGroup($group);
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.blanko_nilai', [
                     'group'    => $group,
                     'students' => $students,
-                    'angkatan' => $period->angkatan,
-                    'tahun'    => $period->tahunAkademik?->year ?? date('Y')
+                    'periode' => $group->periode?->name ?? '57',
+                    'tahun'    => $group->periode?->tahunAkademik?->year ?? date('Y')
                 ]);
-                
+
                 $pdfName = "Blanko_Penilaian_Kelompok_{$group->code}.pdf";
                 $zip->addFromString($pdfName, $pdf->output());
             }
@@ -426,59 +387,33 @@ class GeneratorNilaiController extends Controller
         return response()->download($zipPath)->deleteFileAfterSend(true);
     }
 
-
-
     private function getStudentsForGroup($group): array
     {
-        // Fetch all registrations for this group (no status filter)
         $registrations = PesertaKkn::with(['mahasiswa:id,user_id,nim,nama'])
             ->where('kelompok_id', $group->id)
+            ->whereIn('status', ['approved', 'pending'])
             ->get();
 
-        if ($registrations->isNotEmpty()) {
-            return $registrations->map(function ($reg) use ($group) {
-                $userId = $reg->mahasiswa->user_id;
-                $score = NilaiKkn::where('mahasiswa_id', $userId)
-                    ->where('kelompok_id', $group->id)->first();
-                return [
-                    'user_id'    => $userId,
-                    'name'       => $reg->mahasiswa->nama,
-                    'nim'        => $reg->mahasiswa->nim,
-                    'discipline' => $score?->discipline_score ? (int)$score->discipline_score : null,
-                    'attitude'   => $score?->attitude_score ? (int)$score->attitude_score : null,
-                ];
-            })->values()->toArray();
-        }
+        // Pre-load all scores for this group in one query to avoid N+1
+        $userIds = $registrations->pluck('mahasiswa.user_id')->filter();
+        $scores = NilaiKkn::where('kelompok_id', $group->id)
+            ->whereIn('mahasiswa_id', $userIds)
+            ->get()
+            ->keyBy('mahasiswa_id');
 
-        // Fallback to anggota_kelompok table
-        $hasAnggotaTable = \Illuminate\Support\Facades\Cache::remember('has_anggota_kelompok_table', 3600, fn() => \Illuminate\Support\Facades\Schema::hasTable('anggota_kelompok'));
-        if ($hasAnggotaTable) {
-            $members = DB::table('anggota_kelompok')
-                ->join('mahasiswa', 'anggota_kelompok.mahasiswa_id', '=', 'mahasiswa.id')
-                ->join('users', 'mahasiswa.user_id', '=', 'users.id')
-                ->where('anggota_kelompok.kelompok_id', $group->id)
-                ->select('mahasiswa.id', 'users.id as user_id', 'mahasiswa.nim', 'mahasiswa.nama', 'users.name as user_name')
-                ->get();
-
-            return $members->map(function ($m) use ($group) {
-                $score = NilaiKkn::where('mahasiswa_id', $m->user_id)
-                    ->where('kelompok_id', $group->id)->first();
-                return [
-                    'user_id'    => $m->user_id,
-                    'name'       => $m->nama ?: $m->user_name,
-                    'nim'        => $m->nim,
-                    'discipline' => $score?->discipline_score ? (int)$score->discipline_score : null,
-                    'attitude'   => $score?->attitude_score ? (int)$score->attitude_score : null,
-                ];
-            })->values()->toArray();
-        }
-
-        return [];
+        return $registrations->map(function ($reg) use ($scores) {
+            $userId = $reg->mahasiswa->user_id;
+            $score = $scores->get($userId);
+            return [
+                'user_id'    => $userId,
+                'name'       => $reg->mahasiswa->nama,
+                'nim'        => $reg->mahasiswa->nim,
+                'discipline' => $score?->discipline_score ? (int)$score->discipline_score : null,
+                'attitude'   => $score?->attitude_score ? (int)$score->attitude_score : null,
+            ];
+        })->values()->toArray();
     }
 
-    /**
-     * Helper: get all students for a period.
-     */
     private function getStudentsForPeriod($periodId): array
     {
         return DB::table('mahasiswa as s')
@@ -514,18 +449,16 @@ class GeneratorNilaiController extends Controller
 
     private function populateSheetBulk($sheet, $students, $periodId)
     {
-        // === HEADER ===
         $sheet->mergeCells('A1:G1');
         $sheet->setCellValue('A1', 'DATABASE NILAI KKN');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         
         $sheet->mergeCells('A2:G2');
-        $sheet->setCellValue('A2', 'Angkatan ' . ($periodId ?? '57') . ' Tahun 2026');
+        $sheet->setCellValue('A2', 'Angkatan ' . ($periodId ?? '57') . ' Tahun ' . date('Y'));
         $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(12);
         $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-        // === TABLE HEADER ===
         $headerRow = 5;
         $headers = ['NO', 'KELOMPOK', 'NAMA MAHASISWA', 'NIM', 'DISIPLIN', 'SIKAP', 'TOTAL NILAI'];
         $cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
@@ -533,21 +466,16 @@ class GeneratorNilaiController extends Controller
         foreach ($headers as $i => $h) {
             $col = $cols[$i];
             $sheet->setCellValue("{$col}{$headerRow}", $h);
-            $sheet->getStyle("{$col}{$headerRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $sheet->getStyle("{$col}{$headerRow}")->getFont()->setBold(true);
             $sheet->getStyle("{$col}{$headerRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
         }
 
-        // === DATA ROWS ===
         $currentRow = 6;
         foreach ($students as $idx => $student) {
             $sheet->setCellValue("A{$currentRow}", $idx + 1);
             $sheet->setCellValue("B{$currentRow}", $student['group_code']);
             $sheet->setCellValue("C{$currentRow}", $student['name']);
-            
-            // Force NIM as string
             $sheet->setCellValueExplicit("D{$currentRow}", $student['nim'], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-            
             $sheet->setCellValue("E{$currentRow}", $student['discipline']);
             $sheet->setCellValue("F{$currentRow}", $student['attitude']);
             
@@ -555,20 +483,8 @@ class GeneratorNilaiController extends Controller
                 $total = round(($student['discipline'] + $student['attitude']) / 2);
                 $sheet->setCellValue("G{$currentRow}", $total);
             }
-
             $sheet->getStyle("A{$currentRow}:G{$currentRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-            $sheet->getStyle("A{$currentRow}:B{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle("D{$currentRow}:G{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $currentRow++;
         }
-
-        // === COLUMN WIDTHS ===
-        $sheet->getColumnDimension('A')->setWidth(5);
-        $sheet->getColumnDimension('B')->setWidth(15);
-        $sheet->getColumnDimension('C')->setWidth(40);
-        $sheet->getColumnDimension('D')->setWidth(20);
-        $sheet->getColumnDimension('E')->setWidth(12);
-        $sheet->getColumnDimension('F')->setWidth(12);
-        $sheet->getColumnDimension('G')->setWidth(12);
     }
 }

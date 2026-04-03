@@ -29,9 +29,9 @@ class DplAssignmentController extends Controller
             ->get();
 
         $allDosen = Dosen::orderBy('nama')->get(['id', 'nama', 'nip']);
-        $allPeriods = Periode::orderByDesc('angkatan')
+        $allPeriods = Periode::orderByDesc('periode')
             ->orderBy('jenis')
-            ->get(['id', 'name', 'angkatan', 'jenis']);
+            ->get(['id', 'name', 'periode', 'jenis']);
 
         return Inertia::render('Admin/Dpl/Assignment', [
             'assignments' => $assignments,
@@ -84,14 +84,18 @@ class DplAssignmentController extends Controller
         }
 
         DB::connection('kkn')->transaction(function () use ($group, $dplPeriod) {
+            // Check if another Ketua already exists and demote them
+            $existingKetua = $group->dosen()->wherePivot('role', 'Ketua')->first();
+            if ($existingKetua && $existingKetua->id !== $dplPeriod->dosen_id) {
+                $group->dosen()->updateExistingPivot($existingKetua->id, ['role' => 'Anggota']);
+            }
+
             $group->update([
                 'dpl_id' => $dplPeriod->dosen_id,       // backward compat
                 'dpl_period_id' => $dplPeriod->id,
             ]);
 
             // Sync with Multi-DPL pivot table (Primary DPL becomes Ketua)
-            // We use syncWithoutDetaching or sync based on intended behavior. 
-            // Here, we sync specifically for the 'Ketua' role to ensure this DPL can manage the group.
             $group->dosen()->syncWithoutDetaching([
                 $dplPeriod->dosen_id => ['role' => 'Ketua']
             ]);

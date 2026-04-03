@@ -17,6 +17,10 @@ class DailyReportCompilationService
     {
         $user = User::with(['mahasiswa.prodi.fakultas'])->findOrFail($userId);
 
+        if (!$user->mahasiswa) {
+            throw new \RuntimeException('User tidak memiliki data mahasiswa.');
+        }
+
         // Get student's registration and group
         $registration = PesertaKkn::with(['kelompok.lokasi', 'kelompok.dpl.user'])
             ->where('mahasiswa_id', $user->mahasiswa->id)

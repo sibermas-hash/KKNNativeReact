@@ -8,18 +8,22 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (Schema::connection('kkn')->hasTable('workshops')) {
-            Schema::connection('kkn')->table('workshops', function (Blueprint $table) {
-                if (!Schema::connection('kkn')->hasColumn('workshops', 'latitude')) {
+        $workshopTable = Schema::connection('kkn')->hasTable('workshop')
+            ? 'workshop'
+            : (Schema::connection('kkn')->hasTable('workshops') ? 'workshops' : null);
+
+        if ($workshopTable) {
+            Schema::connection('kkn')->table($workshopTable, function (Blueprint $table) use ($workshopTable) {
+                if (!Schema::connection('kkn')->hasColumn($workshopTable, 'latitude')) {
                     $table->decimal('latitude', 10, 8)->nullable();
                 }
-                if (!Schema::connection('kkn')->hasColumn('workshops', 'longitude')) {
+                if (!Schema::connection('kkn')->hasColumn($workshopTable, 'longitude')) {
                     $table->decimal('longitude', 11, 8)->nullable();
                 }
-                if (!Schema::connection('kkn')->hasColumn('workshops', 'radius_meters')) {
+                if (!Schema::connection('kkn')->hasColumn($workshopTable, 'radius_meters')) {
                     $table->integer('radius_meters')->default(100);
                 }
-                if (!Schema::connection('kkn')->hasColumn('workshops', 'active_token')) {
+                if (!Schema::connection('kkn')->hasColumn($workshopTable, 'active_token')) {
                     $table->string('active_token', 10)->nullable();
                 }
             });
@@ -39,13 +43,17 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (Schema::connection('kkn')->hasTable('workshops')) {
-            Schema::connection('kkn')->table('workshops', function (Blueprint $table) {
+        $workshopTable = Schema::connection('kkn')->hasTable('workshop')
+            ? 'workshop'
+            : (Schema::connection('kkn')->hasTable('workshops') ? 'workshops' : null);
+
+        if ($workshopTable) {
+            Schema::connection('kkn')->table($workshopTable, function (Blueprint $table) use ($workshopTable) {
                 $columns = array_values(array_filter([
-                    Schema::connection('kkn')->hasColumn('workshops', 'latitude') ? 'latitude' : null,
-                    Schema::connection('kkn')->hasColumn('workshops', 'longitude') ? 'longitude' : null,
-                    Schema::connection('kkn')->hasColumn('workshops', 'radius_meters') ? 'radius_meters' : null,
-                    Schema::connection('kkn')->hasColumn('workshops', 'active_token') ? 'active_token' : null,
+                    Schema::connection('kkn')->hasColumn($workshopTable, 'latitude') ? 'latitude' : null,
+                    Schema::connection('kkn')->hasColumn($workshopTable, 'longitude') ? 'longitude' : null,
+                    Schema::connection('kkn')->hasColumn($workshopTable, 'radius_meters') ? 'radius_meters' : null,
+                    Schema::connection('kkn')->hasColumn($workshopTable, 'active_token') ? 'active_token' : null,
                 ]));
 
                 if ($columns !== []) {

@@ -11,7 +11,7 @@ import {
     Sparkles,
     Cpu,
     Fingerprint,
-    Zap,
+    
     ShieldCheck,
     Activity
 } from 'lucide-react';
@@ -52,30 +52,30 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
             
             <div className="space-y-10 pb-16">
                 {/* Sleek Minimalist Operational Header */}
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 border-b border-slate-100 pb-10">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 border-b border-slate-200 pb-10">
                     <div className="space-y-1">
                         <div className="flex items-center gap-3">
-                            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse />
-                            <span className="text-[10px] font-black text-emerald-600 uppercase  italic">
+                            <div className="h-2 w-2 rounded-lg bg-emerald-500 />
+                            <span className="text-[10px] font-semibold text-emerald-600 ">
                                 DPL_COMMAND_TERMINAL_V3.2
                             </span>
                         </div>
-                        <h1 className="text-2xl md:text-3xl font-black text-slate-900  uppercase italic leading-none">
-                            Pusat <span className="text-primary italic">Komando</span> Pembimbing
+                        <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 ">
+                            Pusat <span className="text-primary">Komando</span> Pembimbing
                         </h1>
-                        <p className="text-slate-400 font-bold text-xs italic  flex items-center gap-2">
+                        <p className="text-slate-400 text-sm text-xs  flex items-center gap-2">
                              <Activity className="h-3.5 w-3.5 text-emerald-500" />
                              Validasi logbook dan evaluasi capaian taktis unit bimbingan.
                         </p>
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="px-6 py-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-6
+                        <div className="px-6 py-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center gap-6
                             <div className="text-right">
-                                <span className="block text-[9px] font-black text-slate-400 uppercase  italic leading-none mb-1">Status Otoritas</span>
-                                <span className="text-sm font-black text-slate-900 uppercase italic 
+                                <span className="block text-[9px] font-semibold text-slate-400  mb-1">Status Otoritas</span>
+                                <span className="text-sm font-semibold text-slate-900 
                             </div>
-                            <div className="h-10 w-10 bg-white rounded-xl border border-slate-100 flex items-center justify-center text-primary">
+                            <div className="h-10 w-10 bg-white rounded-xl border border-slate-200 flex items-center justify-center text-primary">
                                 <ShieldCheck className="h-5 w-5 stroke-[2.5px]" />
                             </div>
                         </div>
@@ -113,21 +113,21 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
                     />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Activity Heatmap & Unit List */}
-                    <div className="lg:col-span-2 space-y-10">
+                    <div className="lg:col-span-2 space-y-6">
                         {/* Heatmap Section */}
                         <div className="bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-8 opacity-[0.02] text-slate-900 pointer-events-none group-hover:rotate-12 transition-transform">
+                            <div className="absolute top-0 right-0 p-8 text-slate-900 pointer-events-none group-hover:rotate-12 transition-transform">
                                 <Cpu className="h-32 w-32" />
                             </div>
                             
                             <div className="relative z-10 flex items-center justify-between mb-10">
                                 <div>
-                                    <h3 className="text-xl font-black text-slate-900  uppercase italic leading-none">Aktivitas Masuk</h3>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase  mt-2 italic">Telemetri logbook 14 siklus terakhir</p>
+                                    <h3 className="text-xl font-semibold text-slate-900 ">Aktivitas Masuk</h3>
+                                    <p className="text-[10px] text-sm text-slate-400  mt-2">Telemetri logbook 14 siklus terakhir</p>
                                 </div>
-                                <div className="p-3 bg-slate-50 rounded-xl text-slate-300 border border-slate-100
+                                <div className="p-3 bg-slate-50 rounded-xl text-slate-300 border border-slate-200
                                     <BarChart3 className="h-6 w-6" />
                                 </div>
                             </div>
@@ -139,16 +139,16 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
                                         <div key={i} className="flex-1 flex flex-col items-center gap-3 group relative h-full justify-end">
                                             <div
                                                 className={clsx(
-                                                    "w-full rounded-t-xl transition-all relative",
+                                                    "w-full rounded-t-xlrelative",
                                                     day.count > 0 ? "bg-primary : "bg-slate-100"
                                                 )}
                                                 style={{ height: mounted ? `${Math.max(5, height)}%` : '0%' }}
                                             >
-                                                <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-bold py-1.5 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap z-20 pointer-events-none uppercase 
+                                                <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] text-sm py-1.5 px-3 rounded-lg opacity-0 group-hover:opacity-100whitespace-nowrap z-20 pointer-events-none 
                                                     {day.count} Laporan · {day.date}
                                                 </div>
                                             </div>
-                                            <span className="text-[9px] font-bold text-slate-400 uppercase 
+                                            <span className="text-[9px] text-sm text-slate-400 
                                         </div>
                                     )
                                 })}
@@ -157,10 +157,10 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
 
                         {/* Groups Registry */}
                         <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-                            <div className="px-10 py-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                            <div className="px-6 py-8 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
                                 <div>
-                                    <h3 className="text-xl font-black text-slate-900  uppercase italic leading-none">Daftar Unit Bimbingan</h3>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase  mt-2 italic">Daftar kelompok dalam jurisdiksi Anda</p>
+                                    <h3 className="text-xl font-semibold text-slate-900 ">Daftar Unit Bimbingan</h3>
+                                    <p className="text-[10px] text-sm text-slate-400  mt-2">Daftar kelompok dalam jurisdiksi Anda</p>
                                 </div>
                                 <Fingerprint className="h-6 w-6 text-slate-300" />
                             </div>
@@ -168,40 +168,40 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
                             {groups.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-10">
                                     {groups.map((group) => (
-                                        <div key={group.id} className="bg-white border border-slate-200rounded-lg p-8 hover:shadow-xl hover:border-primary/30 transition-all group relative overflow-hidden">
-                                             <div className="absolute top-0 right-0 p-6 opacity-[0.03] text-primary group-hover:scale-125 transition-transform">
+                                        <div key={group.id} className="bg-white border border-slate-200rounded-lg p-8 hover:shadow-xl hover:border-primary/30group relative overflow-hidden">
+                                             <div className="absolute top-0 right-0 p-6 text-primary group-hover:scale-125 transition-transform">
                                                 <Users2 className="h-20 w-20" />
                                             </div>
                                             
                                             <div className="flex items-center justify-between mb-6 relative z-10">
-                                                <div className="px-3 py-1 bg-primary/5 rounded-lg border border-primary/10 text-primary text-[9px] font-black uppercase 
+                                                <div className="px-3 py-1 bg-primary/5 rounded-lg border border-primary/10 text-primary text-[9px] font-semibold 
                                                     {group.periode?.name || 'REGULER'}
                                                 </div>
-                                                <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:border-primary/20 transition-all">
+                                                <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:border-primary">
                                                     <Users2 className="h-5 w-5" />
                                                 </div>
                                             </div>
                                             
-                                            <h4 className="text-2xl font-black text-slate-900 group-hover:text-primary transition  italic uppercase">{group.code}</h4>
-                                            <div className="flex items-center gap-2 text-slate-400 text-[10px] mt-2 mb-8 font-black uppercase  italic opacity-70">
+                                            <h4 className="text-2xl font-semibold text-slate-900 group-hover:text-primary transition ">{group.code}</h4>
+                                            <div className="flex items-center gap-2 text-slate-400 text-xs mt-2 mb-8 font-semibold  opacity-50">
                                                 <MapPin className="h-3.5 w-3.5" />
                                                 {group.lokasi?.village_name || group.desa || '---'}
                                             </div>
 
                                             <div className="grid grid-cols-2 gap-4 mb-8">
-                                                <div className="bg-slate-50 p-4 rounded-lg border border-slate-100
-                                                    <p className="text-[9px] text-slate-400 uppercase font-bold  mb-1">Populasi</p>
-                                                    <p className="text-xl font-black text-slate-900 italic  <span className="text-[10px] font-bold text-slate-400 
+                                                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200
+                                                    <p className="text-[9px] text-slate-400 text-sm  mb-1">Populasi</p>
+                                                    <p className="text-xl font-semibold text-slate-900  <span className="text-[10px] text-sm text-slate-400 
                                                 </div>
-                                                <div className="bg-slate-50 p-4 rounded-lg border border-slate-100
-                                                    <p className="text-[9px] text-slate-400 uppercase font-bold  mb-1">Arsip</p>
-                                                    <p className="text-xl font-black text-slate-900 italic  <span className="text-[10px] font-bold text-slate-400 
+                                                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200
+                                                    <p className="text-[9px] text-slate-400 text-sm  mb-1">Arsip</p>
+                                                    <p className="text-xl font-semibold text-slate-900  <span className="text-[10px] text-sm text-slate-400 
                                                 </div>
                                             </div>
 
                                             <Link
                                                 href={`/dpl/groups/${group.id}`}
-                                                className="w-full h-14 bg-white border border-slate-200 rounded-lg text-[10px] font-black uppercase  text-slate-600 hover:bg-primary hover:text-white hover:border-primary transition-all flex items-center justify-center gap-3 active:scale-95"
+                                                className="w-full h-14 bg-white border border-slate-200 rounded-lg text-xs font-semibold  text-slate-600 hover:bg-primary hover:text-white hover:border-primaryflex items-center justify-center gap-3"
                                             >
                                                 Lihat Detail <ArrowRight className="h-4 w-4" />
                                             </Link>
@@ -212,24 +212,24 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
                                 <div className="p-24 text-center">
                                     <div className="relative inline-block">
                                         <Users2 className="h-16 w-16 text-slate-100 mx-auto mb-6" />
-                                        <div className="absolute top-0 right-0 h-4 w-4 bg-slate-200 rounded-full animate-ping" />
+                                        <div className="absolute top-0 right-0 h-4 w-4 bg-slate-200 rounded-lg animate-ping" />
                                     </div>
-                                    <h3 className="text-xl font-extrabold text-slate-300 uppercase  italic">Unit Kosong</h3>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase  mt-2">Belum ada unit pendelegasian terdeteksi.</p>
+                                    <h3 className="text-xl font-extrabold text-slate-300 ">Unit Kosong</h3>
+                                    <p className="text-[10px] text-sm text-slate-400  mt-2">Belum ada unit pendelegasian terdeteksi.</p>
                                 </div>
                             )}
                         </div>
                     </div>
 
                     {/* Operational Intelligence Sidebar */}
-                    <div className="lg:col-span-1 space-y-10">
+                    <div className="lg:col-span-1 space-y-6">
                         <section className="bg-white rounded-lg p-10 border border-slate-200 relative overflow-hidden group h-fit">
-                            <div className="absolute top-0 right-0 p-8 opacity-[0.03] text-rose-500 pointer-events-none group-hover:scale-110 transition-transform">
+                            <div className="absolute top-0 right-0 p-8 text-rose-500 pointer-events-none group-hover:scale-110 transition-transform">
                                 <Zap className="h-32 w-32" />
                             </div>
                             
-                            <h3 className="text-lg font-black text-slate-900  uppercase italic flex items-center gap-4 mb-10 relative z-10 leading-none">
-                                <span className="flex h-2.5 w-2.5 rounded-full bg-rose-500 animate-pulse />
+                            <h3 className="text-lg font-semibold text-slate-900  flex items-center gap-4 mb-10 relative z-10">
+                                <span className="flex h-2.5 w-2.5 rounded-lg bg-rose-500 />
                                 Status Anomali
                             </h3>
 
@@ -237,25 +237,25 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
                                 {atRiskStudents.length > 0 ? (
                                     <>
                                         <div className="flex items-center justify-between px-1 mb-2">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase  Inaktif</span>
-                                            <span className="text-[9px] font-black text-rose-500 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-100 uppercase  72 Jam</span>
+                                            <span className="text-[10px] text-sm text-slate-400  Inaktif</span>
+                                            <span className="text-[9px] font-semibold text-rose-500 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-100  72 Jam</span>
                                         </div>
                                         
                                         <div className="space-y-4">
                                             {atRiskStudents.slice(0, 5).map((s) => (
-                                                <div key={s.id} className="p-5 rounded-lg bg-slate-50 border border-slate-100 hover:border-rose-100 hover:bg-white transition-all group/item hover:shadow-md">
+                                                <div key={s.id} className="p-5 rounded-lg bg-slate-50 border border-slate-200 hover:border-rose-100 hover:bg-whitegroup/item hover:shadow-md">
                                                     <div className="flex justify-between items-start mb-2">
-                                                        <p className="text-sm font-extrabold text-slate-900 group-hover/item:text-rose-500 transition-colors  uppercase italic">{s.user?.name}</p>
+                                                        <p className="text-sm font-extrabold text-slate-900 group-hover/item:text-rose-500 transition-colors ">{s.user?.name}</p>
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <Fingerprint className="w-3.5 h-3.5 text-slate-300" />
-                                                        <p className="text-[10px] text-slate-400 font-bold uppercase  · KELP {s.peserta?.[0]?.kelompok?.code || '---'}</p>
+                                                        <p className="text-[10px] text-slate-400 text-sm  · KELP {s.peserta?.[0]?.kelompok?.code || '---'}</p>
                                                     </div>
                                                 </div>
                                             ))}
                                             {atRiskStudents.length > 5 && (
-                                                <div className="text-center pt-4 border-t border-slate-50">
-                                                    <p className="text-[9px] text-slate-400 font-black uppercase  italic">
+                                                <div className="text-center pt-4 border-t border-slate-200">
+                                                    <p className="text-[9px] text-slate-400 font-semibold ">
                                                         + {atRiskStudents.length - 5} Anomali Sinyal Lainnya
                                                     </p>
                                                 </div>
@@ -264,23 +264,23 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
                                     </>
                                 ) : (
                                     <div className="py-24 text-center">
-                                    <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-100
+                                    <div className="w-20 h-20 bg-emerald-50 rounded-lg flex items-center justify-center mx-auto mb-6 border border-emerald-100
                                         <Star className="w-10 h-10 text-emerald-500" />
                                     </div>
-                                        <p className="text-sm font-black text-emerald-600 uppercase  Optimal</p>
-                                        <p className="text-[10px] text-slate-400 mt-2 font-bold uppercase  leading-relaxed">Seluruh unit bimbingan terdeteksi aktif.</p>
+                                        <p className="text-sm font-semibold text-emerald-600  Optimal</p>
+                                        <p className="text-[10px] text-slate-400 mt-2 text-sm  leading-normal">Seluruh unit bimbingan terdeteksi aktif.</p>
                                     </div>
                                 )}
                             </div>
                         </section>
 
-                        <div className="p-8 bg-slate-50rounded-lg border border-slate-100 space-y-5">
+                        <div className="p-8 bg-slate-50rounded-lg border border-slate-200 space-y-5">
                             <div className="flex items-center gap-3">
                                 <Sparkles className="w-5 h-5 text-primary" />
-                                <h4 className="text-[10px] font-extrabold text-primary uppercase  italic">Catatan Singkat</h4>
+                                <h4 className="text-[10px] font-extrabold text-primary ">Catatan Singkat</h4>
                             </div>
-                            <p className="text-[10px] text-slate-400 font-medium leading-relaxed italic">
-                                Gunakan fitur <span className="text-slate-900 font-bold">Persetujuan Massal</span> pada modul Laporan Harian untuk memproses arsip dalam jumlah besar. 
+                            <p className="text-[10px] text-slate-400 font-medium leading-normal">
+                                Gunakan fitur <span className="text-slate-900 text-sm">Persetujuan Massal</span> pada modul Laporan Harian untuk memproses arsip dalam jumlah besar. 
                                 Pemantauan anomali membantu mencegah hambatan akademik mahasiswa.
                             </p>
                         </div>
@@ -301,8 +301,8 @@ function AnalyticsCard({ title, value, unit, icon: Icon, color, delay, mounted }
     return (
         <div
             className={clsx(
-                "bg-white border border-slate-200 rounded-lg p-10 hover:shadow-xl transition-all group relative overflow-hidden",
-                mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+                "bg-white border border-slate-200 rounded-lg p-10 hover:shadow-xlgroup relative overflow-hidden",
+                mounted ? "opacity-100y-0" : "opacity-0y-8"
             )}
             style={{ transitionDelay: `${delay}ms` }}
         >
@@ -311,17 +311,17 @@ function AnalyticsCard({ title, value, unit, icon: Icon, color, delay, mounted }
                     <Icon className="h-8 w-8" />
                 </div>
                 <div className="text-right">
-                    <p className="text-slate-400 text-[10px] font-black uppercase  mb-1">{title}</p>
+                    <p className="text-slate-400 text-xs font-semibold  mb-1">{title}</p>
                     <div className="flex items-baseline justify-end gap-2">
-                        <h4 className="text-5xl font-black text-slate-900  italic">{value}</h4>
-                        {unit && <span className="text-[10px] font-bold text-slate-400 uppercase 
+                        <h4 className="text-5xl font-semibold text-slate-900 ">{value}</h4>
+                        {unit && <span className="text-[10px] text-sm text-slate-400 
                     </div>
                 </div>
             </div>
             
-            <div className="mt-8 pt-8 border-t border-slate-50 flex items-center justify-between relative z-10">
-                 <span className="text-[9px] font-bold text-slate-400 uppercase  italic group-hover:text-primary transition-colors">Sinkronisasi Langsung</span>
-                 <ArrowRight className="w-3.5 h-3.5 text-slate-200 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+            <div className="mt-8 pt-8 border-t border-slate-200 flex items-center justify-between relative z-10">
+                 <span className="text-[9px] text-sm text-slate-400  group-hover:text-primary transition-colors">Sinkronisasi Langsung</span>
+                 <ArrowRight className="w-3.5 h-3.5 text-slate-200 group-hover:text-primary group-hover:translate-x-1" />
             </div>
         </div>
     );

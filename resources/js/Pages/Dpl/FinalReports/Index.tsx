@@ -36,50 +36,50 @@ export default function DplFinalReportsIndex({ reports }: Props) {
             <Head title="Laporan Akhir Mahasiswa" />
 
             <div className="space-y-8 pb-16">
-                <div className="rounded-[2rem] border border-slate-100 bg-white p-8
+                <div className="rounded-[2rem] border border-slate-200 bg-white p-8
                     <div className="flex items-start justify-between gap-6">
                         <div className="space-y-3">
-                            <p className="text-[11px] font-black uppercase  text-slate-400">
+                            <p className="text-[11px] font-semibold  text-slate-400">
                                 DPL Final Report Desk
                             </p>
-                            <h1 className="text-3xl font-black  text-slate-900">
+                            <h1 className="text-3xl font-semibold  text-slate-900">
                                 Laporan Akhir Mahasiswa
                             </h1>
-                            <p className="max-w-2xl text-sm font-medium leading-relaxed text-slate-500">
+                            <p className="max-w-2xl text-sm font-medium leading-normal text-slate-500">
                                 Halaman ini menampilkan laporan akhir mahasiswa dari kelompok yang Anda dampingi.
                                 Anda dapat membuka detail laporan untuk meninjau isi, status, dan catatan review.
                             </p>
                         </div>
 
-                        <div className="rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4 text-right">
-                            <p className="text-[10px] font-black uppercase  text-slate-400">
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-right">
+                            <p className="text-[10px] font-semibold  text-slate-400">
                                 Total Laporan
                             </p>
-                            <p className="mt-1 text-2xl font-black tabular-nums text-slate-900">
+                            <p className="mt-1 text-2xl font-semibold text-slate-900">
                                 {rows.length}
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <div className="overflow-hiddenrounded-lg border border-slate-100 bg-white
+                <div className="overflow-hiddenrounded-lg border border-slate-200 bg-white
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-slate-100">
                             <thead className="bg-slate-50/80">
                                 <tr>
-                                    <th className="px-6 py-4 text-left text-[11px] font-black uppercase  text-slate-400">
+                                    <th className="px-6 py-4 text-left text-xs font-semibold  text-slate-400">
                                         Laporan
                                     </th>
-                                    <th className="px-6 py-4 text-left text-[11px] font-black uppercase  text-slate-400">
+                                    <th className="px-6 py-4 text-left text-xs font-semibold  text-slate-400">
                                         Mahasiswa
                                     </th>
-                                    <th className="px-6 py-4 text-left text-[11px] font-black uppercase  text-slate-400">
+                                    <th className="px-6 py-4 text-left text-xs font-semibold  text-slate-400">
                                         Kelompok
                                     </th>
-                                    <th className="px-6 py-4 text-left text-[11px] font-black uppercase  text-slate-400">
+                                    <th className="px-6 py-4 text-left text-xs font-semibold  text-slate-400">
                                         Status
                                     </th>
-                                    <th className="px-6 py-4 text-right text-[11px] font-black uppercase  text-slate-400">
+                                    <th className="px-6 py-4 text-right text-xs font-semibold  text-slate-400">
                                         Aksi
                                     </th>
                                 </tr>
@@ -89,11 +89,11 @@ export default function DplFinalReportsIndex({ reports }: Props) {
                                     <tr key={report.id} className="hover:bg-slate-50/60 transition-colors">
                                         <td className="px-6 py-5 align-top">
                                             <div className="flex items-start gap-4">
-                                                <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3 text-slate-500">
+                                                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-slate-500">
                                                     <FileText className="h-5 w-5" />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <p className="text-sm font-black text-slate-900">
+                                                    <p className="text-sm font-semibold text-slate-900">
                                                         {report.title}
                                                     </p>
                                                     <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
@@ -105,7 +105,7 @@ export default function DplFinalReportsIndex({ reports }: Props) {
                                         </td>
                                         <td className="px-6 py-5 align-top">
                                             <div className="space-y-1">
-                                                <p className="text-sm font-bold text-slate-900">
+                                                <p className="text-sm text-sm text-slate-900">
                                                     {report.mahasiswa?.nama ?? '-'}
                                                 </p>
                                                 <p className="text-xs font-medium text-slate-500">
@@ -114,7 +114,7 @@ export default function DplFinalReportsIndex({ reports }: Props) {
                                             </div>
                                         </td>
                                         <td className="px-6 py-5 align-top">
-                                            <div className="inline-flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700">
+                                            <div className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-sm text-slate-700">
                                                 <Users className="h-4 w-4 text-slate-400" />
                                                 <span>{report.kelompok?.nama_kelompok ?? '-'}</span>
                                             </div>
@@ -125,7 +125,7 @@ export default function DplFinalReportsIndex({ reports }: Props) {
                                         <td className="px-6 py-5 align-top text-right">
                                             <Link
                                                 href={`/dpl/final-reports/${report.id}`}
-                                                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-xs font-black uppercase  text-slate-700 transition-colors hover:border-primary hover:text-primary"
+                                                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold  text-slate-700 transition-colors hover:border-primary hover:text-primary"
                                             >
                                                 Detail
                                                 <ArrowRight className="h-4 w-4" />

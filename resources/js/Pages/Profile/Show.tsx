@@ -80,23 +80,23 @@ export default function ProfileShow() {
             <div className="grid gap-6 md:grid-cols-3">
                 {/* Avatar Section */}
                 <div className="md:col-span-1">
-                    <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-lg">
+                    <div className="rounded-2xl border border-slate-200 bg-white/5 p-6
                         <div className="text-center">
                             <div className="relative inline-block">
                                 {avatarSrc ? (
                                     <img
                                         src={avatarSrc}
                                         alt={user.name}
-                                        className="h-32 w-32 rounded-full border-4 border-white/10 object-cover
+                                        className="h-32 w-32 rounded-lg border-4 border-slate-200 object-cover
                                     />
                                 ) : (
-                                    <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-white/10 bg-white from-emerald-500/30 to-blue-500/30 text-4xl font-bold text-white
+                                    <div className="flex h-32 w-32 items-center justify-center rounded-lg border-4 border-slate-200 bg-white from-emerald-500/30 to-blue-500/30 text-4xl text-sm text-white
                                         {user.name.charAt(0).toUpperCase()}
                                     </div>
                                 )}
                                 <button
                                     onClick={() => avatarInputRef.current?.click()}
-                                    className="absolute bottom-0 right-0 rounded-full bg-emerald-600 p-2 text-white transition hover:bg-emerald-700"
+                                    className="absolute bottom-0 right-0 rounded-lg bg-emerald-600 p-2 text-white transition hover:bg-emerald-700"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
@@ -124,7 +124,7 @@ export default function ProfileShow() {
                 {/* Forms Section */}
                 <div className="space-y-6 md:col-span-2">
                     {/* Profile Form */}
-                    <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-lg">
+                    <div className="rounded-2xl border border-slate-200 bg-white/5 p-6
                         <h2 className="mb-6 flex items-center gap-2 text-lg font-semibold text-white">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-500" viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
@@ -138,7 +138,7 @@ export default function ProfileShow() {
                                 <input
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
-                                    className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                                    className="w-full rounded-lg border border-slate-200 bg-white/5 px-3 py-2 text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                                 />
                                 {errors.name && <p className="mt-1 text-sm text-rose-400">{errors.name}</p>}
                             </div>
@@ -148,7 +148,7 @@ export default function ProfileShow() {
                                 <input
                                     value={user.email}
                                     disabled
-                                    className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-slate-500 opacity-60"
+                                    className="w-full rounded-lg border border-slate-200 bg-white/5 px-3 py-2 text-slate-500 opacity-50"
                                 />
                             </div>
 
@@ -157,7 +157,7 @@ export default function ProfileShow() {
                                 <input
                                     value={data.phone}
                                     onChange={(e) => setData('phone', e.target.value)}
-                                    className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                                    className="w-full rounded-lg border border-slate-200 bg-white/5 px-3 py-2 text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                                     placeholder="08xxxxxxxxxx"
                                 />
                                 {errors.phone && <p className="mt-1 text-sm text-rose-400">{errors.phone}</p>}
@@ -168,7 +168,7 @@ export default function ProfileShow() {
                                 <textarea
                                     value={data.address}
                                     onChange={(e) => setData('address', e.target.value)}
-                                    className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                                    className="w-full rounded-lg border border-slate-200 bg-white/5 px-3 py-2 text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                                     rows={3}
                                     placeholder="Alamat lengkap..."
                                 />
@@ -187,7 +187,7 @@ export default function ProfileShow() {
                     </div>
 
                     {/* Password Form */}
-                    <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-lg">
+                    <div className="rounded-2xl border border-slate-200 bg-white/5 p-6
                         <h2 className="mb-6 flex items-center gap-2 text-lg font-semibold text-white">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-rose-500" viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
@@ -202,7 +202,7 @@ export default function ProfileShow() {
                                     type="password"
                                     value={passwordForm.data.current_password}
                                     onChange={(e) => passwordForm.setData('current_password', e.target.value)}
-                                    className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/20"
+                                    className="w-full rounded-lg border border-slate-200 bg-white/5 px-3 py-2 text-white focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/20"
                                 />
                                 {passwordForm.errors.current_password && (
                                     <p className="mt-1 text-sm text-rose-400">{passwordForm.errors.current_password}</p>
@@ -215,7 +215,7 @@ export default function ProfileShow() {
                                     type="password"
                                     value={passwordForm.data.password}
                                     onChange={(e) => passwordForm.setData('password', e.target.value)}
-                                    className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/20"
+                                    className="w-full rounded-lg border border-slate-200 bg-white/5 px-3 py-2 text-white focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/20"
                                 />
                                 <p className="mt-1 text-xs text-slate-500">
                                     Minimal 8 karakter, mengandung huruf besar, kecil, angka, dan simbol.
@@ -231,7 +231,7 @@ export default function ProfileShow() {
                                     type="password"
                                     value={passwordForm.data.password_confirmation}
                                     onChange={(e) => passwordForm.setData('password_confirmation', e.target.value)}
-                                    className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/20"
+                                    className="w-full rounded-lg border border-slate-200 bg-white/5 px-3 py-2 text-white focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/20"
                                 />
                             </div>
 

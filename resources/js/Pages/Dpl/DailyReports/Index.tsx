@@ -33,7 +33,7 @@ export default function DplDailyReportsIndex({ reports, filters }: Props) {
                     <p className="text-sm text-slate-500 font-medium">{reports.data?.length ?? 0} laporan ditemukan</p>
                     <button
                         onClick={handleApproveAll}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 transition-all
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs text-sm hover:bg-emerald-600
                     >
                         <CheckBadgeIcon className="w-4 h-4" />
                         Setujui Semua
@@ -53,12 +53,12 @@ export default function DplDailyReportsIndex({ reports, filters }: Props) {
                 <table className="min-w-full divide-y divide-slate-200">
                     <thead className="bg-slate-50">
                         <tr>
-                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Tanggal</th>
-                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Judul</th>
-                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Mahasiswa</th>
-                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Kelompok</th>
-                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Status</th>
-                            <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-500">Aksi</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500">Tanggal</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500">Judul</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500">Mahasiswa</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500">Kelompok</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500">Status</th>
+                            <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500">Aksi</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">

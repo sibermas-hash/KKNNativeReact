@@ -76,7 +76,18 @@ class RegistrationService
                 ]);
             }
 
-            // 4. ACTIVE FILTER: Cek apakah sedang mengikuti KKN di periode lain (Status Approved/Pending)
+            // 4. FACULTY FILTER: Cek apakah mahasiswa sesuai dengan fakultas lokasi (jika dibatasi)
+            if ($kelompokId) {
+                $kelompok = KelompokKkn::query()->with('lokasi')->findOrFail($kelompokId);
+                if ($kelompok->lokasi?->faculty_id && $mahasiswa->faculty_id && $kelompok->lokasi->faculty_id !== $mahasiswa->faculty_id) {
+                    $facultyName = \App\Models\KKN\Fakultas::find($kelompok->lokasi->faculty_id)?->nama ?? 'Fakultas Lain';
+                    throw ValidationException::withMessages([
+                        'kelompok_id' => "Kelompok ini khusus untuk mahasiswa {$facultyName}. Anda berasal dari fakultas yang berbeda.",
+                    ]);
+                }
+            }
+
+            // 5. ACTIVE FILTER: Cek apakah sedang mengikuti KKN di periode lain (Status Approved/Pending)
             $activeInOtherPeriod = PesertaKkn::query()
                 ->where('mahasiswa_id', $mahasiswa->id)
                 ->where('period_id', '!=', $periodeId)

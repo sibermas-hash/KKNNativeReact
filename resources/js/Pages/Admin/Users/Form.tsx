@@ -51,45 +51,44 @@ export default function UserForm({ faculties, programs }: Props) {
                     Emerald Premium Header 
                     Refining from basic header to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
-                    {/* Background decorations */}
-                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full  -translate-y-1/2 translate-x-1/2 opacity-50" />
+                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                    <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
                         <div className="flex items-center gap-6 mb-2">
                             <Link 
                                 href="/admin/users"
-                                className="group/back flex items-center gap-2.5 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl transition-all backdrop-blur-md"
+                                className="group/back flex items-center gap-2.5 px-4 py-2 bg-white/10 hover:bg-white/20 border border-slate-200 rounded-xl
                             >
                                 <ChevronLeft className="w-4 h-4 text-emerald-300 group-hover/back:-translate-x-1 transition-transform" />
-                                <span className="text-[10px] font-black text-white uppercase  italic">Kembali</span>
+                                <span className="text-[10px] font-semibold text-white ">Kembali</span>
                             </Link>
                             <div className="h-4 w-px bg-white/10" />
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-emerald-500/20 rounded-lg border border-emerald-500/30">
                                     <Fingerprint className="h-3.5 w-3.5 text-emerald-300" />
                                 </div>
-                                <span className="text-[10px] font-black text-emerald-100 uppercase  leading-none italic">
+                                <span className="text-[10px] font-semibold text-emerald-100 ">
                                     IDENTITY_PROVISIONING_V3
                                 </span>
                             </div>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none ">
-                            Registrasi <span className="text-emerald-300 text-glow-emerald italic">Personel</span>
+                        <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
+                            Registrasi <span className="text-emerald-300 text-glow-emerald">Personel</span>
                         </h1>
-                        <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
+                        <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
                              Inisialisasi record baru dalam registry pusat. Pastikan seluruh parameter administratif dan peran otorisasi telah diverifikasi sesuai protokol keamanan.
                         </p>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
-                        <div className="bg-white/10 p-6 rounded-lg border border-white/20 flex items-center gap-6 min-w-[240px]">
+                        <div className="bg-white/10 p-6 rounded-lg border border-slate-200 flex items-center gap-6 min-w-[240px]">
                             <div className="p-3 bg-white rounded-lg text-primary
                                 <ShieldCheck className="h-6 w-6" />
                             </div>
                             <div>
-                                <span className="text-[9px] font-black text-emerald-200/60 uppercase  block mb-1.5 italic">Status Keamanan</span>
-                                <span className="text-xl font-black text-white uppercase  italic leading-none">Koneksi Terenkripsi</span>
+                                <span className="text-[9px] font-semibold text-emerald-200/60  block mb-1.5">Status Keamanan</span>
+                                <span className="text-xl font-semibold text-white ">Koneksi Terenkripsi</span>
                             </div>
                         </div>
                     </div>
@@ -97,15 +96,15 @@ export default function UserForm({ faculties, programs }: Props) {
 
                 <form onSubmit={handleSubmit} className="space-y-8">
                     {/* Role Selection */}
-                    <div className="bg-white p-8rounded-lg border border-slate-100 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-8 opacity-[0.02] text-primary pointer-events-none group-hover:rotate-12 transition-transform">
+                    <div className="bg-white p-8rounded-lg border border-slate-200 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-8 text-primary pointer-events-none group-hover:rotate-12 transition-transform">
                             <ShieldCheck className="h-32 w-32" />
                         </div>
                         
                         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
                             <div className="md:col-span-4 space-y-1">
-                                <h3 className="text-sm font-bold text-slate-900 uppercase  Akses</h3>
-                                <p className="text-xs text-slate-500 font-medium italic">Tentukan peran pengguna dalam sistem.</p>
+                                <h3 className="text-sm text-sm text-slate-900  Akses</h3>
+                                <p className="text-xs text-slate-500 font-medium">Tentukan peran pengguna dalam sistem.</p>
                             </div>
                             <div className="md:col-span-8">
                                 <FormSelect
@@ -121,26 +120,26 @@ export default function UserForm({ faculties, programs }: Props) {
                                     value={form.data.role}
                                     onChange={(e) => form.setData('role', e.target.value)}
                                     error={form.errors.role}
-                                    className="h-14 font-bold text-slate-700"
+                                    className="h-14 text-sm text-slate-700"
                                 />
                             </div>
                         </div>
                     </div>
 
                     {/* Basic Info */}
-                    <div className="bg-white p-10 rounded-lg border border-slate-100 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-10 opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-110 transition-transform">
-                            <Key className="h-40 w-40 transform translate-x-1/4 -translate-y-1/4" />
+                    <div className="bg-white p-10 rounded-lg border border-slate-200 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-10 text-slate-900 pointer-events-none group-hover:scale-110 transition-transform">
+                            <Key className="h-40 w-40 transformx-1/4/4" />
                         </div>
 
                         <div className="relative z-10">
-                            <div className="flex items-center gap-4 mb-10 border-b border-slate-50 pb-6">
+                            <div className="flex items-center gap-4 mb-10 border-b border-slate-200 pb-6">
                                 <div className="p-3 bg-slate-900 text-primary rounded-xl
                                     <UserCircle className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-slate-900  leading-none uppercase">Informasi Akun Utama</h3>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase  mt-2">Kredensial & Identitas Dasar</p>
+                                    <h3 className="text-lg text-sm text-slate-900 ">Informasi Akun Utama</h3>
+                                    <p className="text-[10px] text-sm text-slate-400  mt-2">Kredensial & Identitas Dasar</p>
                                 </div>
                             </div>
 
@@ -155,14 +154,14 @@ export default function UserForm({ faculties, programs }: Props) {
 
                     {/* Student Specific */}
                     {isStudent && (
-                        <div className="bg-white p-10 rounded-lg border border-slate-100 group">
-                            <div className="flex items-center gap-4 mb-10 border-b border-slate-50 pb-6">
+                        <div className="bg-white p-10 rounded-lg border border-slate-200 group">
+                            <div className="flex items-center gap-4 mb-10 border-b border-slate-200 pb-6">
                                 <div className="p-3 bg-primary text-white rounded-xl
                                     <GraduationCap className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-slate-900  leading-none uppercase">Data Mahasiswa</h3>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase  mt-2">Distribusi Unit Akademik</p>
+                                    <h3 className="text-lg text-sm text-slate-900 ">Data Mahasiswa</h3>
+                                    <p className="text-[10px] text-sm text-slate-400  mt-2">Distribusi Unit Akademik</p>
                                 </div>
                             </div>
 
@@ -193,14 +192,14 @@ export default function UserForm({ faculties, programs }: Props) {
 
                     {/* DPL Specific */}
                     {isDpl && (
-                        <div className="bg-white p-10 rounded-lg border border-slate-100 group">
-                             <div className="flex items-center gap-4 mb-10 border-b border-slate-50 pb-6">
+                        <div className="bg-white p-10 rounded-lg border border-slate-200 group">
+                             <div className="flex items-center gap-4 mb-10 border-b border-slate-200 pb-6">
                                 <div className="p-3 bg-slate-900 text-primary rounded-xl
                                     <Briefcase className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-slate-900  leading-none uppercase">Data Dosen</h3>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase  mt-2">Identitas Tugas Lapangan</p>
+                                    <h3 className="text-lg text-sm text-slate-900 ">Data Dosen</h3>
+                                    <p className="text-[10px] text-sm text-slate-400  mt-2">Identitas Tugas Lapangan</p>
                                 </div>
                             </div>
 
@@ -212,14 +211,14 @@ export default function UserForm({ faculties, programs }: Props) {
                     )}
 
                     {isFacultyAdmin && (
-                        <div className="bg-white p-10 rounded-lg border border-slate-100 group">
-                            <div className="flex items-center gap-4 mb-10 border-b border-slate-50 pb-6">
+                        <div className="bg-white p-10 rounded-lg border border-slate-200 group">
+                            <div className="flex items-center gap-4 mb-10 border-b border-slate-200 pb-6">
                                 <div className="p-3 bg-primary text-white rounded-xl
                                     <Briefcase className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-slate-900  leading-none uppercase">Akses Fakultas</h3>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase  mt-2">Akun ini hanya dapat melihat rekap nilai akhir fakultas.</p>
+                                    <h3 className="text-lg text-sm text-slate-900 ">Akses Fakultas</h3>
+                                    <p className="text-[10px] text-sm text-slate-400  mt-2">Akun ini hanya dapat melihat rekap nilai akhir fakultas.</p>
                                 </div>
                             </div>
 
@@ -239,12 +238,12 @@ export default function UserForm({ faculties, programs }: Props) {
                     )}
 
                     {/* Submit Area */}
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-10 border-t border-slate-100">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-10 border-t border-slate-200">
                          <div className="flex items-start gap-4 max-w-xl self-start">
                             <ShieldCheck className="w-5 h-5 text-slate-300 shrink-0 mt-0.5" />
                             <div className="space-y-1">
-                                <h4 className="text-[10px] font-extrabold text-slate-400 uppercase  leading-none">Verifikasi Keamanan Dasar</h4>
-                                <p className="text-[10px] text-slate-400 font-medium leading-relaxed italic">
+                                <h4 className="text-[10px] font-extrabold text-slate-400 ">Verifikasi Keamanan Dasar</h4>
+                                <p className="text-[10px] text-slate-400 font-medium leading-normal">
                                     Pastikan data yang dimasukkan telah sesuai dengan identitas resmi. Akun akan langsung aktif setelah proses penyimpanan selesai.
                                 </p>
                             </div>
@@ -253,18 +252,18 @@ export default function UserForm({ faculties, programs }: Props) {
                         <div className="flex items-center gap-4 w-full md:w-auto">
                             <Link
                                 href="/admin/users"
-                                className="flex-1 md:flex-none px-10 py-5 bg-white text-slate-400 text-xs font-bold uppercase  rounded-lg border border-slate-200 hover:bg-slate-50 hover:text-slate-600 transition-all text-center"
+                                className="flex-1 md:flex-none px-6 py-5 bg-white text-slate-400 text-xs text-sm  rounded-lg border border-slate-200 hover:bg-slate-50 hover:text-slate-600text-center"
                             >
                                 Batal
                             </Link>
                             <Button
                                 type="submit"
                                 disabled={form.processing}
-                                className="flex-1 md:flex-none px-14 py-5 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-all font-bold"
+                                className="flex-1 md:flex-none px-6 py-5 bg-slate-900 text-white rounded-lg hover:bg-slate-800text-sm"
                             >
                                 {form.processing ? (
                                     <div className="flex items-center gap-2">
-                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        <Loader2 className="w-4 h-4" />
                                         <span>Menyimpan...</span>
                                     </div>
                                 ) : (

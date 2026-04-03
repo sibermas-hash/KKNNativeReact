@@ -76,10 +76,10 @@ export default function DplFinalReportsShow({ report }: Props) {
                             <ChevronLeft className="h-5 w-5" />
                         </Link>
                         <div>
-                            <p className="text-[11px] font-black uppercase  text-slate-400">
+                            <p className="text-[11px] font-semibold  text-slate-400">
                                 DPL Final Report Desk
                             </p>
-                            <h1 className="text-3xl font-black  text-slate-900">
+                            <h1 className="text-3xl font-semibold  text-slate-900">
                                 Detail Laporan Akhir
                             </h1>
                         </div>
@@ -89,15 +89,15 @@ export default function DplFinalReportsShow({ report }: Props) {
                 </div>
 
                 <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
-                    <section className="space-y-8rounded-lg border border-slate-100 bg-white p-8
-                        <div className="space-y-3 border-b border-slate-100 pb-6">
+                    <section className="space-y-8rounded-lg border border-slate-200 bg-white p-8
+                        <div className="space-y-3 border-b border-slate-200 pb-6">
                             <div className="flex items-center gap-3 text-slate-500">
                                 <FileText className="h-5 w-5" />
-                                <span className="text-xs font-black uppercase 
+                                <span className="text-xs font-semibold 
                                     Dokumen Laporan
                                 </span>
                             </div>
-                            <h2 className="text-2xl font-black  text-slate-900">
+                            <h2 className="text-2xl font-semibold  text-slate-900">
                                 {report.title}
                             </h2>
                             <p className="text-sm font-medium text-slate-500">
@@ -107,41 +107,41 @@ export default function DplFinalReportsShow({ report }: Props) {
 
                         <div className="space-y-6">
                             <div className="grid gap-4 md:grid-cols-2">
-                                <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+                                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                                     <div className="mb-2 flex items-center gap-2 text-slate-500">
                                         <User className="h-4 w-4" />
-                                        <span className="text-xs font-black uppercase 
+                                        <span className="text-xs font-semibold 
                                     </div>
-                                    <p className="text-sm font-bold text-slate-900">{report.mahasiswa?.nama ?? '-'}</p>
+                                    <p className="text-sm text-sm text-slate-900">{report.mahasiswa?.nama ?? '-'}</p>
                                     <p className="text-xs font-medium text-slate-500">{report.mahasiswa?.nim ?? '-'}</p>
                                 </div>
 
-                                <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+                                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                                     <div className="mb-2 flex items-center gap-2 text-slate-500">
                                         <Users className="h-4 w-4" />
-                                        <span className="text-xs font-black uppercase 
+                                        <span className="text-xs font-semibold 
                                     </div>
-                                    <p className="text-sm font-bold text-slate-900">
+                                    <p className="text-sm text-sm text-slate-900">
                                         {report.kelompok?.nama_kelompok ?? '-'}
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                                 <div className="mb-2 flex items-center gap-2 text-slate-500">
                                     <MapPin className="h-4 w-4" />
-                                    <span className="text-xs font-black uppercase  KKN</span>
+                                    <span className="text-xs font-semibold  KKN</span>
                                 </div>
-                                <p className="text-sm font-medium leading-relaxed text-slate-700">
+                                <p className="text-sm font-medium leading-normal text-slate-700">
                                     {formatLocation(report)}
                                 </p>
                             </div>
 
-                            <div className="rounded-2xl border border-slate-100 bg-white p-5">
-                                <p className="mb-3 text-xs font-black uppercase  text-slate-500">
+                            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                                <p className="mb-3 text-xs font-semibold  text-slate-500">
                                     Ringkasan / Abstrak
                                 </p>
-                                <p className="text-sm leading-relaxed text-slate-700">
+                                <p className="text-sm leading-normal text-slate-700">
                                     {report.abstract || 'Mahasiswa belum mengisi abstrak laporan akhir.'}
                                 </p>
                             </div>
@@ -151,7 +151,7 @@ export default function DplFinalReportsShow({ report }: Props) {
                                     href={`/storage/${report.file_path}`}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="inline-flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 px-5 py-3 text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-white"
+                                    className="inline-flex items-center gap-3 rounded-lg border border-primary bg-primary/5 px-5 py-3 text-sm text-sm text-primary transition-colors hover:bg-primary hover:text-white"
                                 >
                                     <Download className="h-4 w-4" />
                                     Unduh {report.file_name ?? 'dokumen laporan'}
@@ -160,12 +160,12 @@ export default function DplFinalReportsShow({ report }: Props) {
                         </div>
                     </section>
 
-                    <aside className="space-y-6rounded-lg border border-slate-100 bg-white p-8
+                    <aside className="space-y-6rounded-lg border border-slate-200 bg-white p-8
                         <div className="space-y-3">
-                            <h3 className="text-sm font-black uppercase  text-slate-900">
+                            <h3 className="text-sm font-semibold  text-slate-900">
                                 Tinjauan DPL
                             </h3>
-                            <p className="text-sm font-medium leading-relaxed text-slate-500">
+                            <p className="text-sm font-medium leading-normal text-slate-500">
                                 Gunakan panel ini untuk menyetujui laporan akhir atau mengirimkannya kembali
                                 dengan catatan revisi.
                             </p>
@@ -175,7 +175,7 @@ export default function DplFinalReportsShow({ report }: Props) {
                             type="button"
                             onClick={() => approveForm.patch(`/dpl/final-reports/${report.id}/approve`)}
                             disabled={approveForm.processing}
-                            className="inline-flex w-full items-center justify-center gap-3 rounded-lg bg-emerald-600 px-5 py-3 text-sm font-black uppercase  text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="inline-flex w-full items-center justify-center gap-3 rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold  text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             <CheckCircle2 className="h-4 w-4" />
                             Setujui Laporan
@@ -190,7 +190,7 @@ export default function DplFinalReportsShow({ report }: Props) {
                         >
                             <div className="flex items-center gap-2 text-slate-600">
                                 <MessageSquare className="h-4 w-4" />
-                                <span className="text-xs font-black uppercase 
+                                <span className="text-xs font-semibold 
                                     Catatan Revisi
                                 </span>
                             </div>
@@ -207,7 +207,7 @@ export default function DplFinalReportsShow({ report }: Props) {
                             <button
                                 type="submit"
                                 disabled={revisionForm.processing}
-                                className="inline-flex w-full items-center justify-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-5 py-3 text-sm font-black uppercase  text-amber-700 transition-colors hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="inline-flex w-full items-center justify-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-5 py-3 text-sm font-semibold  text-amber-700 transition-colors hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 <MessageSquare className="h-4 w-4" />
                                 Kirim Revisi

@@ -13,7 +13,7 @@ import {
     RotateCcw, 
     CheckCircle, 
     Info,
-    Zap,
+    
     Cpu,
     Save,
     ShieldCheck
@@ -119,7 +119,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                                 <div
                                     className={clsx(
                                         "flex items-center gap-3 p-4 border rounded-lg cursor-pointer",
-                                        form.data.is_active ? 'bg-primary/5 border-primary/20' : 'bg-slate-50 border-slate-200'
+                                        form.data.is_active ? 'bg-primary/5 border-primary' : 'bg-slate-50 border-slate-200'
                                     )}
                                     onClick={() => form.setData('is_active', !form.data.is_active)}
                                 >
@@ -170,7 +170,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                     <div className="lg:col-span-2 space-y-4">
                         {/* Search */}
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <Search className="absolute left-3 top-1/2/2 w-4 h-4 text-slate-400" />
                             <input
                                 placeholder="Cari tahun akademik..."
                                 value={search}

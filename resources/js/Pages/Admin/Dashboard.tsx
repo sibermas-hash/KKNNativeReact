@@ -86,33 +86,33 @@ export default function AdminDashboard({ auth, stats, sdg_distribution, recentRe
             <div className="space-y-8 pb-20">
                 
                 {/* Sleek Minimalist Operational Header */}
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-8">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-8">
                     <div className="space-y-1">
                         <div className="flex items-center gap-3">
-                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse />
-                            <span className="text-[9px] font-black text-emerald-600 uppercase  italic">
-                                OPERATIONAL_HUB_EMERALD_V3
+                            <div className="h-1.5 w-1.5 rounded-lg bg-emerald-500 />
+                            <span className="text-[9px] font-semibold text-emerald-600 ">
+                                -HUB_EMERALD_V3
                             </span>
                         </div>
-                        <h1 className="text-2xl md:text-3xl font-black text-slate-900  uppercase italic leading-none">
+                        <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 ">
                             Selamat Datang, <br className="md:hidden" />
                             <span className="text-primary">{translatedRole}</span>
                         </h1>
-                        <p className="text-slate-400 font-bold text-[11px] italic  flex items-center gap-2">
+                        <p className="text-slate-400 text-sm text-xs  flex items-center gap-2">
                             <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
                             Akses taktis ke seluruh instrumen operasional KKN UIN SAIZU.
                         </p>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div className="px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-4
+                        <div className="px-4 py-2 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-4
                             <div className="text-right">
-                                <span className="block text-[8px] font-black text-slate-400 uppercase  italic leading-none mb-1">Status Periode</span>
-                                <span className="text-xs font-black text-slate-900 uppercase italic 
-                                    {stats?.active_period || 'HUB_WAITING'}
+                                <span className="block text-[8px] font-semibold text-slate-400  mb-1">Status Periode</span>
+                                <span className="text-xs font-semibold text-slate-900 
+                                    {stats?.active_period || '—'}
                                 </span>
                             </div>
-                            <div className="h-8 w-8 bg-white rounded-lg border border-slate-100 flex items-center justify-center text-primary">
+                            <div className="h-8 w-8 bg-white rounded-lg border border-slate-200 flex items-center justify-center text-primary">
                                 <Activity className="w-4 h-4 stroke-[2.5px]" />
                             </div>
                         </div>
@@ -120,14 +120,14 @@ export default function AdminDashboard({ auth, stats, sdg_distribution, recentRe
                         <div className="flex gap-1.5">
                             <Link 
                                 href="/admin/periods" 
-                                className="h-10 w-10 bg-white text-slate-400 border border-slate-200 rounded-lg flex items-center justify-center transition-all hover:text-primary hover:border-primary/30 hover:shadow-lg active:scale-95 transition-all"
+                                className="h-10 w-10 bg-white text-slate-400 border border-slate-200 rounded-lg flex items-center justify-centerhover:text-primary hover:border-primary/30 hover:shadow-lg"
                                 title="Kelola Periode"
                             >
                                 <CalendarDays className="w-4 h-4" />
                             </Link>
                             <Link 
                                 href="/admin/registrations" 
-                                className="h-10 w-10 bg-primary text-white rounded-lg flex items-center justify-center transition-all hover:-translate-y-1 active:scale-95"
+                                className="h-10 w-10 bg-primary text-white rounded-lg flex items-center justify-centerhover:-translate-y-1"
                                 title="Audit Registrasi"
                             >
                                 <Users className="w-4 h-4" />
@@ -170,18 +170,18 @@ export default function AdminDashboard({ auth, stats, sdg_distribution, recentRe
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* RECENT RECORDS - COMPACT */}
-                    <div className="lg:col-span-2 bg-whiterounded-lg border border-slate-100 overflow-hidden">
-                        <div className="px-8 py-5 border-b border-slate-50 flex items-center justify-between bg-slate-50/20">
+                    <div className="lg:col-span-2 bg-whiterounded-lg border border-slate-200 overflow-hidden">
+                        <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/20">
                             <div className="flex items-center gap-4">
-                                <div className="p-2.5 bg-white rounded-xl border border-slate-100 text-primary">
+                                <div className="p-2.5 bg-white rounded-xl border border-slate-200 text-primary">
                                     <ClipboardList className="w-5 h-5 stroke-[2.5px]" />
                                 </div>
                                 <div>
-                                    <h3 className="text-base font-black text-slate-900  leading-none uppercase italic">Aktivitas Terkini</h3>
-                                    <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase  italic leading-none">Sinkronisasi Registrasi</p>
+                                    <h3 className="text-base font-semibold text-slate-900 ">Aktivitas Terkini</h3>
+                                    <p className="text-[9px] text-sm text-slate-400 mt-1 ">Sinkronisasi Registrasi</p>
                                 </div>
                             </div>
-                            <Link href="/admin/registrations" className="flex items-center gap-2 text-[9px] font-black text-primary hover:text-primary-dark transition-colors uppercase  italic group/link">
+                            <Link href="/admin/registrations" className="flex items-center gap-2 text-[9px] font-semibold text-primary hover:text-primary-dark transition-colors  group/link">
                                 Selengkapnya
                                 <ArrowRight className="w-3 h-3 group-hover/link:translate-x-1 transition-transform" />
                             </Link>
@@ -189,22 +189,22 @@ export default function AdminDashboard({ auth, stats, sdg_distribution, recentRe
                         <div className="divide-y divide-slate-50">
                             {recentRegistrations && recentRegistrations.length > 0 ? (
                                 recentRegistrations.map((reg) => (
-                                    <div key={reg.id} className="px-8 py-5 hover:bg-slate-50/40 transition-all flex items-center justify-between group/row cursor-default">
+                                    <div key={reg.id} className="px-6 py-5 hover:bg-slate-50/40flex items-center justify-between group/row cursor-default">
                                         <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-base font-black text-slate-300 group-hover/row:bg-primary group-hover/row:text-white transition-all italic leading-none">
+                                            <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-base font-semibold text-slate-300 group-hover/row:bg-primary group-hover/row:text-white">
                                                 {reg.mahasiswa?.user?.name?.charAt(0) || 'U'}
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="font-black text-[13px] text-slate-900 leading-none group-hover/row:text-primary transition-colors italic uppercase">{reg.mahasiswa?.user?.name || 'ENTITAS_PESERTA'}</p>
+                                                <p className="font-black text-sm text-slate-900 group-hover/row:text-primary transition-colors">{reg.mahasiswa?.user?.name || 'ENTITAS_PESERTA'}</p>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-[9px] font-bold text-slate-400 italic">NIM: {reg.mahasiswa?.nim || '---'}</span>
-                                                    <div className="h-1 w-1 rounded-full bg-slate-200" />
-                                                    <span className="text-[9px] font-bold text-slate-400 italic uppercase truncate max-w-[120px]">{reg.periode?.name}</span>
+                                                    <span className="text-[9px] text-sm text-slate-400">NIM: {reg.mahasiswa?.nim || '---'}</span>
+                                                    <div className="h-1 w-1 rounded-lg bg-slate-200" />
+                                                    <span className="text-[9px] text-sm text-slate-400 truncate max-w-[120px]">{reg.periode?.name}</span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className={clsx(
-                                            "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase  italic",
+                                            "px-4 py-1.5 rounded-lg text-[9px] font-semibold ",
                                             reg.status === 'pending' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
                                             reg.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
                                             'bg-rose-50 text-rose-600 border border-rose-100'
@@ -216,21 +216,21 @@ export default function AdminDashboard({ auth, stats, sdg_distribution, recentRe
                             ) : (
                                 <div className="p-16 text-center">
                                     <ClipboardList className="w-8 h-8 text-slate-200 mx-auto mb-4" />
-                                    <p className="text-[9px] font-black text-slate-400 uppercase  italic">Belum ada aktivitas terekam</p>
+                                    <p className="text-[9px] font-semibold text-slate-400 ">Belum ada aktivitas terekam</p>
                                 </div>
                             )}
                         </div>
                     </div>
 
                     {/* SDG ANALYTICS - COMPACT */}
-                    <div className="bg-whiterounded-lg border border-slate-100 p-8 space-y-8 group overflow-hidden relative">
-                        <div className="absolute top-0 right-0 p-8 opacity-[0.02] text-primary rotate-12 group-hover:rotate-45 transition-transform pointer-events-none">
+                    <div className="bg-whiterounded-lg border border-slate-200 p-8 space-y-8 group overflow-hidden relative">
+                        <div className="absolute top-0 right-0 p-8 text-primary rotate-12 group-hover:rotate-45 transition-transform pointer-events-none">
                              <Globe2 className="w-32 h-32" />
                         </div>
                         
                         <div className="relative z-10">
-                            <h3 className="text-base font-black text-slate-900  leading-none uppercase italic">Analitik SDG</h3>
-                            <p className="text-[9px] font-bold text-slate-400 mt-2 uppercase  italic leading-none">Distribusi Fokus Program</p>
+                            <h3 className="text-base font-semibold text-slate-900 ">Analitik SDG</h3>
+                            <p className="text-[9px] text-sm text-slate-400 mt-2 ">Distribusi Fokus Program</p>
                         </div>
 
                         <div className="space-y-5 relative z-10">
@@ -245,13 +245,13 @@ export default function AdminDashboard({ auth, stats, sdg_distribution, recentRe
                                             <div className="flex justify-between items-end">
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-xl drop-shadow-sm">{sdg.icon}</span>
-                                                    <span className="text-[10px] font-black text-slate-700 truncate max-w-[120px] uppercase italic 
+                                                    <span className="text-[10px] font-semibold text-slate-700 truncate max-w-[120px] 
                                                 </div>
-                                                <span className="text-xs font-black text-slate-900 tabular-nums italic">{item.count}</span>
+                                                <span className="text-xs font-semibold text-slate-900">{item.count}</span>
                                             </div>
-                                            <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100">
+                                            <div className="h-1.5 w-full bg-slate-50 rounded-lg overflow-hidden border border-slate-200">
                                                 <div 
-                                                    className={clsx("h-full rounded-full transition-all", sdg.color)} 
+                                                    className={clsx("h-full rounded-lg", sdg.color)} 
                                                     style={{ width: `${Math.max(5, percentage)}%` }} 
                                                 />
                                             </div>
@@ -264,26 +264,26 @@ export default function AdminDashboard({ auth, stats, sdg_distribution, recentRe
                 </div>
 
                 {/* Tactical Global Monitor - COMPACT */}
-                <div className="p-8 bg-[#043d23] rounded-lg border border-primary/20 relative overflow-hidden group">
+                <div className="p-8 bg-[#043d23] rounded-lg border border-primary relative overflow-hidden group">
                      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
                         <div className="space-y-4">
                             <div className="flex items-center gap-3">
-                                <div className="p-2.5 bg-primary/10 rounded-xl border border-primary/20 text-primary">
+                                <div className="p-2.5 bg-primary/10 rounded-xl border border-primary text-primary">
                                     <ShieldCheck className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <h4 className="text-[9px] font-black text-white uppercase  italic leading-none">INTEGRITY_CONTROL_PROTOCOL</h4>
-                                    <p className="text-[8px] text-emerald-400 font-bold  mt-1.5 italic">STATUS: ENCRYPTED_SATELLITE_LINK</p>
+                                    <h4 className="text-[9px] font-semibold text-white ">INTEGRITY_CONTROL_PROTOCOL</h4>
+                                    <p className="text-[8px] text-emerald-400 text-sm  mt-1.5">STATUS: ENCRYPTED_SATELLITE_LINK</p>
                                 </div>
                             </div>
-                            <p className="text-[12px] text-slate-400 font-bold leading-relaxed max-w-3xl italic opacity-80">
+                            <p className="text-[12px] text-slate-400 text-sm leading-normal max-w-3xl opacity-75">
                                 Protokol audit sistem aktif. Seluruh aktivitas operasional terekam secara real-time untuk keperluan monitoring KKN UIN SAIZU.
                             </p>
                         </div>
                         <div className="flex items-center gap-4 border-l border-slate-800 pl-8 hidden lg:flex">
                              <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
-                                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-                                <span className="text-[9px] font-black text-slate-100 uppercase  italic">LIVE</span>
+                                <div className="h-2 w-2 rounded-lg bg-emerald-500 animate-ping" />
+                                <span className="text-[9px] font-semibold text-slate-100 ">LIVE</span>
                              </div>
                              <div className="flex gap-3">
                                 <Fingerprint className="h-6 w-6 text-slate-600 hover:text-primary transition-colors cursor-help" />
@@ -306,26 +306,26 @@ function MetricCard({ label, value, icon: Icon, color, description }: any) {
     };
 
     return (
-        <div className="bg-white rounded-lg p-5 border border-slate-100 hover:shadow-2xl hover:-translate-y-1 transition-all group relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-[0.03] text-slate-900 transition-transform group-hover:scale-125">
+        <div className="bg-white rounded-lg p-5 border border-slate-200 hover:shadow-2xlgroup relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 text-slate-900 transition-transform group-hover:scale-125">
                  <Icon className="w-16 h-16" />
             </div>
             
             <div className="flex items-center gap-3 mb-6 relative z-10">
-                <div className={clsx("p-2.5 rounded-xl transition-all group-hover:rotate-6", iconColors[color])}>
+                <div className={clsx("p-2.5 rounded-xlgroup-hover:rotate-6", iconColors[color])}>
                     <Icon className="w-4 h-4 stroke-[2.5px]" />
                 </div>
-                <div className="text-left font-black text-[9px] text-slate-400 uppercase  grow italic leading-none">{label}</div>
+                <div className="text-left font-semibold text-[9px] text-slate-400  grow">{label}</div>
             </div>
             
             <div className="flex items-baseline gap-2 relative z-10">
-                <h4 className="text-3xl font-black text-slate-900  leading-none italic tabular-nums">
+                <h4 className="text-3xl font-semibold text-slate-900 ">
                     {value?.toLocaleString() || 0}
                 </h4>
-                <span className="text-[8px] font-black text-slate-300 uppercase  italic">{description}</span>
+                <span className="text-[8px] font-semibold text-slate-300 ">{description}</span>
             </div>
             
-            <div className="mt-6 border-t border-slate-50 pt-4 opacity-50 flex justify-end">
+            <div className="mt-6 border-t border-slate-200 pt-4 opacity-50 flex justify-end">
                 <MoreHorizontal className="w-4 h-4 text-slate-200 group-hover:text-primary transition-colors cursor-pointer" />
             </div>
         </div>

@@ -38,7 +38,11 @@ class KelompokKknController extends Controller
             'status' => $g->status,
             'registrations_count' => $g->peserta_count,
             'period' => $g->periode ? ['id' => $g->periode->id, 'name' => $g->periode->name] : null,
-            'location' => $g->lokasi ? ['id' => $g->lokasi->id, 'village_name' => $g->lokasi->village_name] : null,
+            'location' => $g->lokasi ? [
+                'id' => $g->lokasi->id,
+                'village_name' => $g->lokasi->village_name,
+                'full_name' => $g->lokasi->full_name,
+            ] : null,
             'main_lecturer' => $mainDpl ? ['id' => $mainDpl->id, 'name' => $mainDpl->nama] : null,
             'lecturers' => $allDpls,
             ];
@@ -47,7 +51,11 @@ class KelompokKknController extends Controller
         $periods = Periode::where('is_active', true)->orderByDesc('start_date')->get()
             ->map(fn($p) => ['id' => $p->id, 'name' => $p->name]);
         $locations = Lokasi::orderBy('village_name')->get()
-            ->map(fn($l) => ['id' => $l->id, 'village_name' => $l->village_name]);
+            ->map(fn($l) => [
+                'id' => $l->id,
+                'village_name' => $l->village_name,
+                'full_name' => $l->full_name,
+            ]);
         $lecturers = Dosen::orderBy('nama')->get()
             ->map(fn($d) => ['id' => $d->id, 'name' => $d->nama]);
 
@@ -67,6 +75,7 @@ class KelompokKknController extends Controller
             'dosen',
             'peserta.mahasiswa',
             'programKerja',
+            'posko',
         ]);
 
         return Inertia::render('Admin/Groups/Show', [
@@ -79,7 +88,6 @@ class KelompokKknController extends Controller
         $validated = $request->validate([
             'period_id' => ['required', 'exists:periode,id'],
             'location_id' => ['required', 'exists:lokasi,id'],
-            // 'lecturers' expects array of objects: { id: 1, role: 'Ketua' }
             'lecturers' => ['nullable', 'array'],
             'lecturers.*.id' => ['required', 'exists:dosen,id'],
             'lecturers.*.role' => ['required', 'in:Ketua,Anggota'],
@@ -87,6 +95,32 @@ class KelompokKknController extends Controller
             'capacity' => ['required', 'integer', 'min:1', 'max:50'],
             'status' => ['required', 'in:draft,active,closed'],
         ]);
+
+        // Proteksi: Validasi Kuota DPL & Peran Ketua
+        if (!empty($validated['lecturers'])) {
+            $ketuaCount = 0;
+            foreach ($validated['lecturers'] as $l) {
+                if ($l['role'] === 'Ketua') $ketuaCount++;
+
+                $dplPeriod = \App\Models\KKN\DplPeriod::where('dosen_id', $l['id'])
+                    ->where('period_id', $validated['period_id'])
+                    ->where('is_active', true)
+                    ->first();
+
+                if (!$dplPeriod) {
+                    $dosen = \App\Models\KKN\Dosen::find($l['id']);
+                    return back()->withErrors(['lecturers' => "Dosen {$dosen->nama} belum terdaftar/aktif di periode ini."])->withInput();
+                }
+
+                if (!$dplPeriod->hasCapacity()) {
+                    return back()->withErrors(['lecturers' => "Dosen {$dplPeriod->dosen->nama} sudah mencapai batas maksimal kelompok."])->withInput();
+                }
+            }
+
+            if ($ketuaCount > 1) {
+                return back()->withErrors(['lecturers' => 'Satu kelompok hanya boleh memiliki maksimal satu Ketua (DPL Utama).'])->withInput();
+            }
+        }
 
         $group = KelompokKkn::create([
             'period_id' => $validated['period_id'],
@@ -96,24 +130,23 @@ class KelompokKknController extends Controller
             'status' => $validated['status'],
             'code' => 'KKN-' . strtoupper(Str::random(6)),
             'token' => strtoupper(Str::random(8)),
-            // 'dpl_id' is deprecated or can be set to the Ketua's ID if needed for backward compatibility
         ]);
 
-        // Sync DPLs via Pivot Table
+        // Sync DPLs via Pivot Table & Sync Flat Columns
         if (!empty($validated['lecturers'])) {
             $syncData = [];
             foreach ($validated['lecturers'] as $l) {
-                // Ensure only one Ketua per group if necessary, but array allows strictly what's sent
                 $syncData[$l['id']] = ['role' => $l['role']];
             }
             $group->dosen()->sync($syncData);
+            $group->syncKetuaFlatColumns();
         }
 
         return redirect()->back()->with('success', 'Kelompok berhasil ditambahkan.');
-    }
+        }
 
-    public function update(Request $request, KelompokKkn $group): RedirectResponse
-    {
+        public function update(Request $request, KelompokKkn $group): RedirectResponse
+        {
         $validated = $request->validate([
             'period_id' => ['required', 'exists:periode,id'],
             'location_id' => ['required', 'exists:lokasi,id'],
@@ -125,6 +158,34 @@ class KelompokKknController extends Controller
             'status' => ['required', 'in:draft,active,closed'],
         ]);
 
+        // Proteksi: Validasi Kuota DPL & Peran Ketua
+        if (isset($validated['lecturers'])) {
+            $ketuaCount = 0;
+            foreach ($validated['lecturers'] as $l) {
+                if ($l['role'] === 'Ketua') $ketuaCount++;
+
+                $dplPeriod = \App\Models\KKN\DplPeriod::where('dosen_id', $l['id'])
+                    ->where('period_id', $validated['period_id'])
+                    ->where('is_active', true)
+                    ->first();
+
+                if (!$dplPeriod) {
+                    $dosen = \App\Models\KKN\Dosen::find($l['id']);
+                    return back()->withErrors(['lecturers' => "Dosen {$dosen->nama} belum terdaftar/aktif di periode ini."])->withInput();
+                }
+
+                // Cek kuota, abaikan jika dosen tersebut memang sudah ada di kelompok ini (update)
+                $isAlreadyInGroup = $group->dosen()->where('dosen_id', $l['id'])->exists();
+                if (!$isAlreadyInGroup && !$dplPeriod->hasCapacity()) {
+                    return back()->withErrors(['lecturers' => "Dosen {$dplPeriod->dosen->nama} sudah mencapai batas maksimal kelompok."])->withInput();
+                }
+            }
+
+            if ($ketuaCount > 1) {
+                return back()->withErrors(['lecturers' => 'Satu kelompok hanya boleh memiliki maksimal satu Ketua (DPL Utama).'])->withInput();
+            }
+        }
+
         $group->update([
             'period_id' => $validated['period_id'],
             'location_id' => $validated['location_id'],
@@ -133,20 +194,25 @@ class KelompokKknController extends Controller
             'status' => $validated['status'],
         ]);
 
-        // Sync DPLs via Pivot Table
+        // Sync DPLs via Pivot Table & Sync Flat Columns
         if (isset($validated['lecturers'])) {
             $syncData = [];
             foreach ($validated['lecturers'] as $l) {
                 $syncData[$l['id']] = ['role' => $l['role']];
             }
             $group->dosen()->sync($syncData);
+            $group->syncKetuaFlatColumns();
         }
 
         return redirect()->back()->with('success', 'Kelompok berhasil diperbarui.');
-    }
-
+        }
     public function destroy(KelompokKkn $group): RedirectResponse
     {
+        // Prevent deletion if group has active participants
+        if ($group->peserta()->whereIn('status', ['pending', 'approved', 'document_submitted'])->exists()) {
+            return redirect()->back()->withErrors(['error' => 'Kelompok masih memiliki peserta aktif. Pindahkan atau tolak semua peserta terlebih dahulu.']);
+        }
+
         $group->dosen()->detach(); // Clean up pivot
         $group->delete();
 

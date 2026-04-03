@@ -58,13 +58,15 @@ class DailyReportController extends Controller
         ]);
 
         // Notify student
-        $dailyReport->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
-            'type' => 'success',
-            'title' => 'Laporan Harian Disetujui',
-            'message' => "Laporan harian Anda tanggal " . $dailyReport->date->format('d/m/Y') . " telah disetujui.",
-            'icon' => 'check-circle',
-            'url' => route('student.daily-reports.index'),
-        ]));
+        if ($dailyReport->mahasiswa?->user) {
+            $dailyReport->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
+                'type' => 'success',
+                'title' => 'Laporan Harian Disetujui',
+                'message' => "Laporan harian Anda tanggal " . $dailyReport->date->format('d/m/Y') . " telah disetujui.",
+                'icon' => 'check-circle',
+                'url' => route('student.daily-reports.index'),
+            ]));
+        }
 
         return redirect()->back()->with('success', 'Laporan harian disetujui.');
     }
@@ -86,13 +88,15 @@ class DailyReportController extends Controller
         ]);
 
         // Notify student
-        $dailyReport->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
-            'type' => 'warning',
-            'title' => 'Revisi Laporan Harian',
-            'message' => "Laporan harian Anda tanggal " . $dailyReport->date->format('d/m/Y') . " memerlukan revisi.",
-            'icon' => 'exclamation-circle',
-            'url' => route('student.daily-reports.index'),
-        ]));
+        if ($dailyReport->mahasiswa?->user) {
+            $dailyReport->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
+                'type' => 'warning',
+                'title' => 'Revisi Laporan Harian',
+                'message' => "Laporan harian Anda tanggal " . $dailyReport->date->format('d/m/Y') . " memerlukan revisi.",
+                'icon' => 'exclamation-circle',
+                'url' => route('student.daily-reports.index'),
+            ]));
+        }
 
         return redirect()->back()->with('success', 'Laporan dikembalikan untuk revisi.');
     }

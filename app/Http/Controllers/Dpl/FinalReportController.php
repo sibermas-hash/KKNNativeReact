@@ -54,13 +54,15 @@ class FinalReportController extends Controller
         ]);
 
         // Notify student
-        $report->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
-            'type' => 'success',
-            'title' => 'Laporan Akhir Disetujui',
-            'message' => "Laporan akhir Anda (" . $report->title . ") telah disetujui oleh DPL.",
-            'icon' => 'check-circle',
-            'url' => route('student.dashboard'),
-        ]));
+        if ($report->mahasiswa?->user) {
+            $report->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
+                'type' => 'success',
+                'title' => 'Laporan Akhir Disetujui',
+                'message' => "Laporan akhir Anda (" . $report->title . ") telah disetujui oleh DPL.",
+                'icon' => 'check-circle',
+                'url' => route('student.dashboard'),
+            ]));
+        }
 
         return redirect()->back()->with('success', 'Laporan akhir berhasil disetujui.');
     }
@@ -80,13 +82,15 @@ class FinalReportController extends Controller
         ]);
 
         // Notify student
-        $report->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
-            'type' => 'warning',
-            'title' => 'Revisi Laporan Akhir',
-            'message' => "Laporan akhir Anda memerlukan perbaikan. Catatan: " . $validated['notes'],
-            'icon' => 'exclamation-triangle',
-            'url' => route('student.dashboard'),
-        ]));
+        if ($report->mahasiswa?->user) {
+            $report->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
+                'type' => 'warning',
+                'title' => 'Revisi Laporan Akhir',
+                'message' => "Laporan akhir Anda memerlukan perbaikan. Catatan: " . $validated['notes'],
+                'icon' => 'exclamation-triangle',
+                'url' => route('student.dashboard'),
+            ]));
+        }
 
         return redirect()->back()->with('success', 'Laporan akhir dikembalikan untuk revisi.');
     }

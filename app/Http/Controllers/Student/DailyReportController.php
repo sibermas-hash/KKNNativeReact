@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\FileKegiatanKkn;
+use App\Models\KKN\PesertaWorkshop;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -15,7 +16,7 @@ class DailyReportController extends Controller
 {
     public function index(): Response
     {
-        $mahasiswa = auth()->user()->mahasiswa;
+        $mahasiswa = auth()->user()?->mahasiswa;
 
         $kegiatan = $mahasiswa
             ? KegiatanKkn::where('mahasiswa_id', $mahasiswa->id)
@@ -24,26 +25,59 @@ class DailyReportController extends Controller
                 ->paginate(10)
             : collect();
 
+        // Check workshop status for UI warning
+        $isWorkshopPassed = PesertaWorkshop::where('user_id', auth()->id())
+            ->where('attendance_status', 'attended')
+            ->exists();
+
         return Inertia::render('Student/DailyReports/Index', [
             'reports' => $kegiatan,
+            'isWorkshopPassed' => $isWorkshopPassed,
         ]);
     }
 
     public function create(): Response
     {
-        $mahasiswa = auth()->user()->mahasiswa;
+        $mahasiswa = auth()->user()?->mahasiswa;
         $pendaftaran = $mahasiswa?->peserta()->where('status', 'approved')->with('kelompok')->first();
+        
+        abort_if(!$pendaftaran, 403, 'Anda belum terdaftar dalam kelompok aktif.');
+
+        // SOP ENFORCEMENT: Harus lulus Pembekalan/Workshop
+        $isWorkshopPassed = PesertaWorkshop::where('user_id', auth()->id())
+            ->where('attendance_status', 'attended')
+            ->exists();
+
+        if (!$isWorkshopPassed) {
+            return Inertia::render('Student/DailyReports/Index', [
+                'flash' => ['error' => 'Akses Terkunci: Anda wajib mengikuti dan dinyatakan LULUS Pembekalan/Workshop sebelum dapat mengisi laporan harian.'],
+                'reports' => $mahasiswa->kegiatan()->orderByDesc('date')->paginate(10),
+                'isWorkshopPassed' => false
+            ]);
+        }
 
         return Inertia::render('Student/DailyReports/Create', [
-            'group' => $pendaftaran?->kelompok,
+            'group' => $pendaftaran->kelompok,
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $mahasiswa = auth()->user()->mahasiswa;
+        $mahasiswa = auth()->user()?->mahasiswa;
+        abort_if(!$mahasiswa, 403, 'Profil mahasiswa tidak ditemukan.');
+        
         $pendaftaran = $mahasiswa->peserta()->where('status', 'approved')->first();
         abort_if(!$pendaftaran || !$pendaftaran->kelompok_id, 403, 'Anda belum ditempatkan di kelompok.');
+
+        // SOP ENFORCEMENT: Safety check for API/Direct POST
+        $isWorkshopPassed = PesertaWorkshop::where('user_id', auth()->id())
+            ->where('attendance_status', 'attended')
+            ->exists();
+        
+        if (!$isWorkshopPassed) {
+            return redirect()->route('student.daily-reports.index')
+                ->with('error', 'Anda belum diizinkan mengirim laporan harian karena belum lulus pembekalan.');
+        }
 
         $validated = $request->validate([
             'date' => ['required', 'date'],
@@ -51,6 +85,9 @@ class DailyReportController extends Controller
             'activity' => ['required', 'string'],
             'reflection' => ['nullable', 'string'],
             'output' => ['nullable', 'string'],
+            'latitude' => ['nullable', 'numeric'],
+            'longitude' => ['nullable', 'numeric'],
+            'location_name' => ['nullable', 'string', 'max:255'],
             'files.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf,doc,docx', 'max:5120'],
         ]);
 
@@ -62,6 +99,9 @@ class DailyReportController extends Controller
             'activity' => $validated['activity'],
             'reflection' => $validated['reflection'] ?? null,
             'output' => $validated['output'] ?? null,
+            'latitude' => $validated['latitude'] ?? null,
+            'longitude' => $validated['longitude'] ?? null,
+            'location_name' => $validated['location_name'] ?? null,
             'status' => 'submitted',
         ]);
 
@@ -74,18 +114,6 @@ class DailyReportController extends Controller
                     'file_name' => $file->getClientOriginalName(),
                 ]);
             }
-        }
-
-        // Notify DPL
-        $dpl = $kegiatan->kelompok->dpl->user;
-        if ($dpl) {
-            $dpl->notify(new \App\Notifications\KknActivityNotification([
-                'type' => 'info',
-                'title' => 'Laporan Harian Baru',
-                'message' => "{$mahasiswa->user->name} telah mengirim laporan harian untuk tanggal " . $kegiatan->date->format('d/m/Y'),
-                'icon' => 'document-text',
-                'url' => route('dpl.daily-reports.index', ['status' => 'submitted']),
-            ]));
         }
 
         return redirect()->route('student.daily-reports.index')
@@ -114,6 +142,9 @@ class DailyReportController extends Controller
             'activity' => ['required', 'string'],
             'reflection' => ['nullable', 'string'],
             'output' => ['nullable', 'string'],
+            'latitude' => ['nullable', 'numeric'],
+            'longitude' => ['nullable', 'numeric'],
+            'location_name' => ['nullable', 'string', 'max:255'],
         ]);
 
         $dailyReport->update([

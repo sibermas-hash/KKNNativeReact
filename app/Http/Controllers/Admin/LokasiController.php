@@ -3,66 +3,148 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Imports\LokasiWilayahImport;
+use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
+use App\Models\KKN\PoskoKelompok;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use Maatwebsite\Excel\Facades\Excel;
 
 class LokasiController extends Controller
 {
     public function index(Request $request): Response
     {
+        Gate::authorize('manage-master-data');
         $locations = Lokasi::query()
+            ->withCount('kelompok')
+            ->withCount([
+                'kelompok as posko_count' => fn ($query) => $query->whereHas('posko'),
+            ])
             ->when($request->search, function ($query, $search) {
                 $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
-                $query->where('village_name', 'like', "%{$s}%")
-                      ->orWhere('address', 'like', "%{$s}%");
+
+                $query->where(function ($innerQuery) use ($s) {
+                    $innerQuery->where('village_name', 'like', "%{$s}%")
+                        ->orWhere('district_name', 'like', "%{$s}%")
+                        ->orWhere('regency_name', 'like', "%{$s}%")
+                        ->orWhere('village_code', 'like', "%{$s}%");
+                });
             })
+            ->orderBy('regency_name')
+            ->orderBy('district_name')
             ->orderBy('village_name')
-            ->paginate(10)
+            ->paginate(15)
             ->withQueryString();
+
+        $locations->getCollection()->transform(fn ($location) => [
+            'id' => $location->id,
+            'village_code' => $location->village_code,
+            'village_name' => $location->village_name,
+            'district_name' => $location->district_name,
+            'regency_name' => $location->regency_name,
+            'full_name' => $location->full_name,
+            'groups_count' => $location->kelompok_count,
+            'posko_count' => $location->posko_count,
+            'can_delete' => $this->canDeleteLocation($location),
+            'delete_blocker' => $this->getDeleteBlockerReason($location),
+        ]);
 
         return Inertia::render('Admin/Locations/Index', [
             'locations' => $locations,
             'filters' => $request->only('search'),
+            'summary' => [
+                'total_locations' => Lokasi::count(),
+                'assigned_groups' => KelompokKkn::count(),
+                'reported_posko' => PoskoKelompok::count(),
+            ],
         ]);
+    }
+
+    public function import(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv,txt', 'max:10240'],
+        ]);
+
+        $import = new LokasiWilayahImport();
+        Excel::import($import, $validated['file']);
+
+        return redirect()->back()->with(
+            'success',
+            "Import lokasi selesai. {$import->createdCount} data baru, {$import->updatedCount} data diperbarui, {$import->skippedCount} baris kosong dilewati."
+        );
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'village_name' => ['required', 'string', 'max:100'],
-            'address' => ['nullable', 'string'],
-            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
-            'capacity' => ['required', 'integer', 'min:1'],
+            'district_name' => ['required', 'string', 'max:100'],
+            'regency_name' => ['required', 'string', 'max:100'],
+            'village_code' => ['nullable', 'string', 'max:20'],
+            'capacity' => ['nullable', 'integer', 'min:0'],
         ]);
 
-        Lokasi::create($validated);
+        Lokasi::create([
+            'village_name' => $validated['village_name'],
+            'district_name' => $validated['district_name'],
+            'regency_name' => $validated['regency_name'],
+            'village_code' => $validated['village_code'] ?? null,
+            'capacity' => $validated['capacity'] ?? 0,
+        ]);
 
-        return redirect()->back()->with('success', 'Lokasi berhasil ditambahkan.');
+        return redirect()->back()->with('success', 'Lokasi administratif berhasil ditambahkan.');
     }
 
-    public function update(Request $request, Lokasi $location): RedirectResponse
+    public function update(Request $request, Lokasi $lokasi): RedirectResponse
     {
         $validated = $request->validate([
             'village_name' => ['required', 'string', 'max:100'],
-            'address' => ['nullable', 'string'],
-            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
-            'capacity' => ['required', 'integer', 'min:1'],
+            'district_name' => ['required', 'string', 'max:100'],
+            'regency_name' => ['required', 'string', 'max:100'],
+            'village_code' => ['nullable', 'string', 'max:20'],
+            'capacity' => ['nullable', 'integer', 'min:0'],
         ]);
 
-        $location->update($validated);
+        $lokasi->update([
+            'village_name' => $validated['village_name'],
+            'district_name' => $validated['district_name'],
+            'regency_name' => $validated['regency_name'],
+            'village_code' => $validated['village_code'] ?? null,
+            'capacity' => $validated['capacity'] ?? $lokasi->capacity,
+        ]);
 
-        return redirect()->back()->with('success', 'Lokasi berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Lokasi administratif berhasil diperbarui.');
     }
 
-    public function destroy(Lokasi $location): RedirectResponse
+    public function destroy(Lokasi $lokasi): RedirectResponse
     {
-        $location->delete();
+        $lokasi->loadCount('kelompok');
 
-        return redirect()->back()->with('success', 'Lokasi berhasil dihapus.');
+        if (! $this->canDeleteLocation($lokasi)) {
+            return redirect()->back()->with('error', $this->getDeleteBlockerReason($lokasi));
+        }
+
+        $lokasi->delete();
+
+        return redirect()->back()->with('success', 'Lokasi administratif berhasil dihapus.');
+    }
+
+    private function canDeleteLocation(Lokasi $location): bool
+    {
+        return (int) ($location->kelompok_count ?? 0) === 0;
+    }
+
+    private function getDeleteBlockerReason(Lokasi $location): ?string
+    {
+        if ((int) ($location->kelompok_count ?? 0) > 0) {
+            return 'Lokasi tidak dapat dihapus karena masih dipakai oleh kelompok KKN.';
+        }
+
+        return null;
     }
 }

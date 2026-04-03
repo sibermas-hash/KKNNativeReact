@@ -14,12 +14,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
+        $seeders = [
             RoleSeeder::class ,
-            AdminUserSeeder::class ,
             MasterDataSeeder::class ,
-            SampleUserSeeder::class ,
+            KonfigurasiPenilaianSeeder::class ,
             KonfigurasiSertifikatSeeder::class ,
-        ]);
+        ];
+
+        if (app()->environment('local')) {
+            $seeders[] = AdminUserSeeder::class;
+            $seeders[] = SampleUserSeeder::class;
+        }
+
+        $this->call($seeders);
     }
 }

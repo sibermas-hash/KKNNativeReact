@@ -1,42 +1,59 @@
 import type { PropsWithChildren } from 'react';
 import { Head } from '@inertiajs/react';
-import { AcademicCapIcon } from '@heroicons/react/24/solid';
+import { Globe } from 'lucide-react';
 
 export default function GuestLayout({
   title,
   children,
 }: PropsWithChildren<{ title?: string }>) {
   return (
-    <div className="min-h-screen bg-surface-base selection:bg-primary/20 selection:text-primary text-white font-sans relative overflow-hidden">
+    <div className="min-h-screen bg-[#fcfdfe] font-sans text-slate-900 selection:bg-primary/20 selection:text-primary-dark relative flex items-center justify-center p-6">
       <Head title={title ? `${title} - KKN UIN SAIZU` : 'SIM-KKN UIN SAIZU'} />
 
-      {/* Futuristic Background Elements */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 blur-[150px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-accent-gold/5 blur-[100px] rounded-full pointer-events-none" />
-      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03] pointer-events-none" />
+      {/* STATIC BACKGROUND OVERLAY - NO ANIMATION FOR STABILITY */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-DEFAULT/5 via-white to-emerald-500/10" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4" />
+      </div>
 
-      {/* Design System Injection */}
-      <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+      <div className="w-full max-w-[440px] relative z-50">
+        {/* BRANDING */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-white border border-slate-100 mb-6 mx-auto">
+            <Globe className="w-9 h-9 text-primary" />
+          </div>
+          <h2 className="text-3xl font-black text-slate-900  leading-none">
+            UIN <span className="text-primary italic">SAIZU</span>
+          </h2>
+          <div className="flex items-center justify-center gap-3 mt-3">
+             <div className="h-px w-8 bg-slate-200" />
+             <p className="text-[11px] font-bold text-slate-400 uppercase 
+               Portal KKN
+             </p>
+             <div className="h-px w-8 bg-slate-200" />
+          </div>
+        </div>
 
-      <div className="flex min-h-screen items-center justify-center px-6 py-12 relative z-10">
-        <div className="w-full max-w-md animate-in fade-in zoom-in duration-700">
-          <div className="rounded-[2.5rem] bg-white/[0.03] p-12 backdrop-blur-xxl border border-white/10 shadow-2xl relative">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-              <div className="flex h-20 w-20 items-center justify-center rounded-[2rem] bg-gradient-to-br from-primary to-primary-dark text-white shadow-2xl shadow-primary/40 border border-white/10 group">
-                <AcademicCapIcon className="w-10 h-10 text-accent-gold transition-transform group-hover:scale-110" />
-              </div>
-            </div>
-
-            <div className="mt-6 mb-12 text-center">
-              <h1 className="text-3xl font-black text-white tracking-tighter uppercase italic">UIN SAIZU <span className="text-accent-gold">KKN</span></h1>
-              <p className="mt-4 text-[10px] font-black text-white/30 uppercase tracking-ultrawide">QUANTUM MANAGEMENT • 2026</p>
-            </div>
+        {/* CONTENT CARD - RE-STABILIZED */}
+        <div className="bg-white rounded-lg p-8 sm:p-12 border border-slate-100 relative z-50 transition-all">
+          <div className="relative z-10">
             {children}
           </div>
+          
+          {/* Accent Bottom */}
+          <div className="absolute bottom-0 inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+        </div>
 
-          <p className="mt-10 text-center text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">
-            © 2026 LPPM UIN SAIZU - SECURED ACADEMIC NEXUS
+        {/* CLEAN FOOTER */}
+        <div className="mt-12 text-center space-y-4">
+          <p className="text-[10px] text-slate-400 font-bold uppercase 
+            Lembaga Penelitian dan Pengabdian kepada Masyarakat
           </p>
+          <div className="flex justify-center items-center gap-3 text-[10px] text-slate-300 font-bold">
+            <span>v3.2 EMERALD</span>
+            <div className="w-1 h-1 rounded-full bg-slate-200" />
+            <span>SECURE_SESSION_ACTIVE</span>
+          </div>
         </div>
       </div>
     </div>

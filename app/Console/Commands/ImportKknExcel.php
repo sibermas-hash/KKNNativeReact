@@ -108,7 +108,7 @@ class ImportKknExcel extends Command
                     [
                         'name' => $dplName,
                         'email' => str_replace([' ', "'"], ['.', ''], strtolower($dplName)) . '@uinsaizu.ac.id',
-                        'password' => Hash::make('password'),
+                        'password' => Hash::make(\Illuminate\Support\Str::password(12)),
                     ]
                 );
                 
@@ -144,7 +144,7 @@ class ImportKknExcel extends Command
                     [
                         'name' => $nama,
                         'email' => $nim . '@student.uinsaizu.ac.id',
-                        'password' => Hash::make($nim),
+                        'password' => Hash::make(\Illuminate\Support\Str::password(12)),
                         'phone' => $phone,
                     ]
                 );
@@ -211,7 +211,6 @@ class ImportKknExcel extends Command
             'program_kerja',
             'kegiatan_kkn',
             'file_kegiatan_kkn',
-            'proposal',
             'dokumen_peserta_kkn',
             'peserta_kkn',
             'group_members',

@@ -12,7 +12,11 @@ import {
     Search, 
     RotateCcw, 
     CheckCircle, 
-    Info
+    Info,
+    Zap,
+    Cpu,
+    Save,
+    ShieldCheck
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -76,177 +80,212 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
     }
 
     return (
-        <AppLayout title="Tahun Akademik">
+        <AppLayout title="Protokol Siklus Akademik">
             <Head title="Manajemen Tahun Akademik" />
 
-            <div className="space-y-12 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                {/* Tactical Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-8 border-b border-slate-100">
-                    <div>
-                        <div className="flex items-center gap-3 mb-4">
-                            <Calendar className="h-4 w-4 text-primary" />
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] leading-none italic">
-                                ACADEMIC_CYCLE_MANAGEMENT_V1
+            <div className="space-y-12 pb-24">
+                {/* 
+                    Emerald Premium Header 
+                    Refining from heavy black to lush tactical emerald gradient
+                */}
+                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
+                    {/* Background decorations */}
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+                    
+                    <div className="relative z-10 space-y-5 flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                             <div className="p-2.5 bg-white/10 rounded-xl border border-white/20 backdrop-blur-md">
+                                <Calendar className="h-4 w-4 text-emerald-300" />
+                             </div>
+                            <span className="text-[10px] font-black text-emerald-100 uppercase  leading-none italic">
+                                ACADEMIC_CYCLE_SYNC_V3
                             </span>
                         </div>
-                        <h1 className="text-4xl font-extrabold text-slate-900 tracking-tighter uppercase italic leading-none">
-                            Kalender <span className="text-primary italic">Akademik</span>
+                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                            Kalender <span className="text-emerald-300 text-glow-emerald italic">Akademik</span>
                         </h1>
-                        <p className="text-slate-500 text-sm mt-4 font-medium italic opacity-70 leading-relaxed max-w-2xl">
-                            Konfigurasi siklus tahun ajaran aktif sebagai basis pendaftaran dan operasional unit KKN.
+                        <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
+                             Konfigurasi siklus tahun ajaran aktif sebagai basis pendaftaran, evaluasi, dan operasional unit KKN UIN SAIZU secara terpadu.
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-5">
-                        <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-6 min-w-[200px] group hover:border-primary/30 transition-all">
-                            <div className="p-3 bg-slate-900 rounded-2xl text-primary shadow-lg shadow-slate-900/10 group-hover:scale-110 transition-transform">
+                    <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
+                        <div className="bg-white/10 p-6 rounded-lg border border-white/20 flex items-center gap-6 min-w-[200px] group/stat">
+                            <div className="p-3 bg-white rounded-lg text-primary group-hover/stat:scale-110 transition-transform">
                                 <RotateCcw className="h-6 w-6" />
                             </div>
                             <div>
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5 italic">Total Archive</span>
-                                <span className="text-2xl font-black text-slate-900 tabular-nums italic leading-none">{academicYears.meta?.total || 0} Records</span>
+                                <span className="text-[9px] font-black text-emerald-200/60 uppercase  block mb-1.5 italic">Total Catatan</span>
+                                <span className="text-2xl font-black text-white tabular-nums italic leading-none">{academicYears.meta?.total || 0} Arsip</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:mx-2">
                     {/* Form Section */}
                     <div className="lg:col-span-1">
-                        <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm sticky top-8">
-                            <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-3">
-                                <div className="p-2 bg-slate-50 rounded-lg">
-                                    {editing ? <Edit2 className="w-4 h-4 text-primary" /> : <Plus className="w-4 h-4 text-primary" />}
-                                </div>
-                                {editing ? 'Edit Tahun Akademik' : 'Tambah Tahun Akademik'}
-                            </h2>
-                            
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-700 ml-1">Nama Tahun Akademik</label>
-                                    <FormInput
-                                        placeholder="Contoh: 2024/2025"
-                                        value={form.data.year}
-                                        onChange={(e) => form.setData('year', e.target.value)}
-                                        error={form.errors.year}
-                                        label=""
-                                        className="bg-slate-50 border-slate-200 text-sm font-medium rounded-2xl focus:bg-white transition-all h-12"
-                                        required
-                                    />
-                                </div>
+                        <div className="bg-white rounded-[3rem] p-10 border border-slate-100 sticky top-12 group overflow-hidden">
+                            <div className="absolute top-0 right-0 p-12 opacity-[0.02] text-slate-900 pointer-events-none group-hover:rotate-6 transition-transform">
+                                <Calendar className="h-64 w-64" />
+                            </div>
 
-                                <div 
-                                    className={clsx(
-                                        "flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer group",
-                                        form.data.is_active ? 'bg-primary/5 border-primary/20' : 'bg-slate-50 border-slate-200 hover:bg-white'
-                                    )} 
-                                    onClick={() => form.setData('is_active', !form.data.is_active)}
-                                >
-                                    <div className={clsx(
-                                        "w-5 h-5 rounded-md border flex items-center justify-center transition-all",
-                                        form.data.is_active ? 'bg-primary border-primary' : 'bg-white border-slate-300'
-                                    )}>
-                                        {form.data.is_active && <CheckCircle className="w-3.5 h-3.5 text-white" />}
+                            <div className="relative z-10 space-y-10">
+                                <div className="flex items-center gap-5 border-b border-slate-50 pb-8">
+                                    <div className="p-3.5 bg-primary rounded-lg text-white
+                                        {editing ? <Edit2 className="h-6 w-6 stroke-[2.5px]" /> : <Plus className="h-6 w-6 stroke-[3px]" />}
                                     </div>
                                     <div>
-                                        <span className={clsx("text-xs font-bold block", form.data.is_active ? 'text-primary' : 'text-slate-600')}>
-                                            {form.data.is_active ? 'Status Aktif' : 'Status Tidak Aktif'}
-                                        </span>
-                                        <span className="text-[10px] text-slate-400 font-medium">Beralih status aktif/nonaktif</span>
+                                        <h3 className="text-xl font-black text-slate-900 uppercase italic  leading-[0.8]">{editing ? 'Ubah_Siklus' : 'Inisialisasi_Tahun'}</h3>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase  mt-2 italic opacity-70">{editing ? 'PENYESUAIAN RECORD' : 'INPUT TAHUN BARU'}</p>
                                     </div>
                                 </div>
+                                
+                                <form onSubmit={handleSubmit} className="space-y-8">
+                                    <div className="space-y-3 group/field">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase  ml-2 italic group-focus-within/field:text-primary transition-colors">Identitas Tahun Akademik</label>
+                                        <FormInput
+                                            placeholder="Contoh: 2024/2025"
+                                            value={form.data.year}
+                                            onChange={(e) => form.setData('year', e.target.value)}
+                                            error={form.errors.year}
+                                            label=""
+                                            className="bg-slate-50 border-slate-100 text-sm font-black rounded-lg focus:bg-white focus:border-primary/40 transition-all h-16 px-8 italic uppercase placeholder:opacity-30"
+                                            required
+                                        />
+                                    </div>
 
-                                <div className="flex flex-col gap-3 pt-2">
-                                    <button 
-                                        type="submit" 
-                                        disabled={form.processing} 
-                                        className="w-full py-3.5 bg-slate-900 text-white text-sm font-bold rounded-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+                                    <div 
+                                        className={clsx(
+                                            "flex items-center gap-5 p-6rounded-lg border transition-all cursor-pointer group hover:shadow-md",
+                                            form.data.is_active ? 'bg-primary/5 border-primary/20' : 'bg-slate-50 border-slate-100 hover:bg-white'
+                                        )} 
+                                        onClick={() => form.setData('is_active', !form.data.is_active)}
                                     >
-                                        {editing ? 'Simpan Perubahan' : 'Tambah Data'}
-                                    </button>
-                                    {editing && (
+                                        <div className={clsx(
+                                            "w-7 h-7 rounded-xl border flex items-center justify-center transition-all",
+                                            form.data.is_active ? 'bg-primary border-primary : 'bg-white border-slate-200'
+                                        )}>
+                                            {form.data.is_active && <CheckCircle className="w-4 h-4 text-white stroke-[3px]" />}
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <span className={clsx("text-[11px] font-black uppercase  italic leading-none", form.data.is_active ? 'text-primary' : 'text-slate-400')}>
+                                                {form.data.is_active ? 'STATUS: ACTIVE_GATEWAY' : 'STATUS: INACTIVE_SECTOR'}
+                                            </span>
+                                            <span className="text-[9px] text-slate-400 font-bold uppercase  italic opacity-60">Matikan pendaftaran temporal</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col gap-4 pt-4">
                                         <button 
-                                            type="button" 
-                                            onClick={cancelEdit} 
-                                            className="w-full py-3.5 bg-white text-slate-500 text-sm font-bold rounded-2xl border border-slate-200 hover:bg-slate-50 transition-all"
+                                            type="submit" 
+                                            disabled={form.processing} 
+                                            className="w-full py-5.5 bg-primary text-white text-[11px] font-black rounded-lg hover:bg-primary-dark transition-all flex items-center justify-center gap-4 uppercase  hover:-translate-y-1 active:scale-95 italic"
                                         >
-                                            Batal
+                                             {editing ? <Save className="w-5 h-5" /> : <Plus className="w-5 h-5 stroke-[2.5px]" />}
+                                            {editing ? 'TERAPKAN_PERUBAHAN' : 'COMMIT_DATA_TAHUN'}
                                         </button>
-                                    )}
+                                        {editing && (
+                                            <button 
+                                                type="button" 
+                                                onClick={cancelEdit} 
+                                                className="w-full py-4.5 bg-white text-slate-400 text-[10px] font-black rounded-lg border border-slate-100 hover:text-slate-900 transition-all uppercase  italic"
+                                            >
+                                                Membatalkan_Sesi
+                                            </button>
+                                        )}
+                                    </div>
+                                </form>
+
+                                <div className="p-8 bg-slate-50 border border-slate-100rounded-lg flex gap-5 items-start">
+                                    <div className="p-3 bg-white rounded-xl text-primary border border-primary/10 shrink-0">
+                                        <Info className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-[10px] font-black text-slate-900 uppercase  mb-1.5 italic leading-none">INTEGRITAS_GLOBAL</h4>
+                                        <p className="text-[11px] text-slate-500 leading-relaxed font-bold italic opacity-70">
+                                            Hanya diizinkan satu tahun akademik berstatus <strong className="text-primary opacity-100 italic">"ACTIVE"</strong> sebagai referensi orkestrasi pendaftaran.
+                                        </p>
+                                    </div>
                                 </div>
-                            </form>
+                            </div>
                         </div>
                     </div>
 
                     {/* Table Section */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <div className="relative max-w-md">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <div className="lg:col-span-2 space-y-10">
+                        <div className="relative max-w-2xl group mx-1">
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-primary transition-all z-10" />
                             <input
-                                placeholder="Cari tahun akademik..."
+                                placeholder="Cari record tahun akademik..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-medium outline-none focus:border-primary/50 shadow-sm transition-all"
+                                className="w-full pl-16 pr-8 py-5.5 bg-white border border-slate-100rounded-lg text-sm font-black text-slate-900 outline-none focus:border-primary/50 transition-all italic uppercase placeholder:opacity-30"
                             />
                         </div>
 
-                        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-slate-100">
+                        <div className="bg-white rounded-[3.5rem] border border-slate-100 overflow-hidden group mx-1">
+                            <div className="overflow-x-auto relative z-10 custom-scrollbar pr-1">
+                                <table className="min-w-full divide-y divide-slate-50">
                                     <thead className="bg-slate-50/50">
                                         <tr>
-                                            <th className="px-8 py-5 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">Tahun Akademik</th>
-                                            <th className="px-8 py-5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Status</th>
-                                            <th className="px-8 py-5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500">Aksi</th>
+                                            <th className="px-10 py-7 text-left text-[11px] font-black uppercase  text-slate-400 italic">Identitas_Tahun_Akademik</th>
+                                            <th className="px-10 py-7 text-center text-[11px] font-black uppercase  text-slate-400 italic">Status_Gateway</th>
+                                            <th className="px-10 py-7 text-right text-[11px] font-black uppercase  text-slate-400 italic pr-14">Operasi_Otoritas</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-100 bg-white">
+                                    <tbody className="divide-y divide-slate-50 bg-white">
                                         {academicYears.data.length === 0 ? (
                                             <tr>
-                                                <td colSpan={3} className="px-8 py-20 text-center">
-                                                    <div className="flex flex-col items-center gap-2 opacity-30">
-                                                        <Calendar className="h-12 w-12 text-slate-300" />
-                                                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest leading-none">Data Kosong</p>
+                                                <td colSpan={3} className="px-10 py-40 text-center">
+                                                    <div className="flex flex-col items-center gap-10 opacity-30">
+                                                        <div className="p-10 bg-slate-50 rounded-full border border-slate-100
+                                                             <Calendar className="h-20 w-20 text-slate-200" />
+                                                        </div>
+                                                        <p className="text-[12px] font-black uppercase  text-slate-400 italic">SYSTEM_INFO: NO_ACADEMIC_RECORDS_DETECTED</p>
                                                     </div>
                                                 </td>
                                             </tr>
                                         ) : (
                                             academicYears.data.map((ay) => (
-                                                <tr key={ay.id} className="group hover:bg-slate-50/50 transition-all">
-                                                    <td className="px-8 py-6">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="h-10 w-10 rounded-xl bg-slate-900 flex items-center justify-center text-xs font-bold text-white">
+                                                <tr key={ay.id} className="group/row hover:bg-slate-50/20 transition-all cursor-default">
+                                                    <td className="px-10 py-9">
+                                                        <div className="flex items-center gap-6">
+                                                            <div className="h-14 w-14 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-lg font-black text-primary italic group-hover/row:scale-110 transition-transform">
                                                                 {ay.year.split('/')[0].slice(-2)}
                                                             </div>
-                                                            <span className="text-sm font-bold text-slate-900">{ay.year}</span>
+                                                            <div className="flex flex-col gap-1.5">
+                                                                <span className="text-2xl font-black text-slate-900 group-hover/row:text-primary transition-colors  uppercase italic leading-none">{ay.year}</span>
+                                                                <span className="text-[9px] font-black text-slate-300 uppercase  italic opacity-60">ACADEMIC_YEAR_ID: {ay.id.toString().padStart(4, '0')}</span>
+                                                            </div>
                                                         </div>
                                                     </td>
-                                                    <td className="px-8 py-6 text-center">
+                                                    <td className="px-10 py-9 text-center">
                                                         <span className={clsx(
-                                                            "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide",
-                                                            ay.is_active ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
+                                                            "inline-flex items-center gap-3 px-5 py-2.5 rounded-lg text-[10px] font-black uppercase  italic border transition-all",
+                                                            ay.is_active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-400 border-slate-100"
                                                         )}>
                                                             {ay.is_active ? (
                                                                 <>
-                                                                    <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                                                                    Aktif
+                                                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse />
+                                                                    OPERATIONAL_ACTIVE
                                                                 </>
-                                                            ) : 'Nonaktif'}
+                                                            ) : 'IDLE_INACTIVE'}
                                                         </span>
                                                     </td>
-                                                    <td className="px-8 py-6 text-right">
-                                                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <td className="px-10 py-9 text-right pr-14">
+                                                        <div className="flex justify-end gap-3 opacity-0 group-hover/row:opacity-100 transition-all transform group-hover/row:-translate-x-2">
                                                             <button 
                                                                 onClick={() => startEdit(ay)} 
-                                                                className="p-2.5 rounded-xl border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all shadow-sm"
+                                                                className="p-3.5 bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary/40 rounded-lg transition-all hover:-translate-y-1 active:scale-95"
                                                             >
-                                                                <Edit2 className="w-4 h-4" />
+                                                                <Edit2 className="w-5 h-5 stroke-[2.5px]" />
                                                             </button>
                                                             <button 
                                                                 onClick={() => setDeleting(ay)} 
-                                                                className="p-2.5 rounded-xl border border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-200 transition-all shadow-sm"
+                                                                className="p-3.5 bg-white border border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-200 rounded-lg transition-all hover:-translate-y-1 active:scale-95"
                                                             >
-                                                                <Trash2 className="w-4 h-4" />
+                                                                <Trash2 className="w-5 h-5 stroke-[2.5px]" />
                                                             </button>
                                                         </div>
                                                     </td>
@@ -257,24 +296,49 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                                 </table>
                             </div>
                             {academicYears.meta && (
-                                <div className="px-8 py-5 bg-slate-50/30 border-t border-slate-100">
+                                <div className="px-10 py-9 bg-slate-50/30 border-t border-slate-100">
                                     <Pagination meta={academicYears.meta} />
                                 </div>
                             )}
                         </div>
 
-                        {/* Info Card */}
-                        <div className="p-8 bg-blue-50/50 rounded-[2rem] border border-blue-100 flex gap-5 items-start">
-                             <div className="p-3 bg-white rounded-xl shadow-sm text-blue-500 border border-blue-100 shrink-0">
-                                 <Info className="w-5 h-5" />
-                             </div>
-                             <div>
-                                 <h4 className="text-xs font-bold text-blue-800 uppercase tracking-widest mb-1.5">Informasi Sistem</h4>
-                                 <p className="text-xs text-blue-700/70 leading-relaxed font-medium">
-                                     Tahun akademik yang berstatus <strong className="text-blue-900 italic">"Aktif"</strong> akan digunakan sebagai referensi utama 
-                                     saat mahasiswa melakukan pendaftaran KKN. Pastikan hanya ada satu tahun akademik aktif pada satu periode pelaksanaan.
-                                 </p>
-                             </div>
+                         {/* Tactical Emerald Footer Monitor */}
+                        <div className="p-12 bg-slate-900 rounded-[3.5rem] border border-slate-800 relative overflow-hidden group mx-1">
+                             {/* Decorative Elements */}
+                             <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
+
+                             <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-12">
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                                            <ShieldCheck className="h-7 w-7 text-primary" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-[11px] font-black text-white uppercase  italic leading-none">CALENDAR_GOVERNANCE_PROTOCOL_V3</h4>
+                                            <p className="text-[10px] text-emerald-400 font-bold  mt-2 italic whitespace-nowrap">STATUS: CYCLE_DATA_SNC_VERIFIED</p>
+                                        </div>
+                                    </div>
+                                    <p className="text-[14px] text-slate-400 font-bold leading-relaxed max-w-4xl italic opacity-80">
+                                        Petunjuk Strategis: Kalender akademik merupakan pilar utama dalam orkestrasi linimasa KKN UIN SAIZU. 
+                                        Sistem secara otomatis akan mengunci pendaftaran jika tidak terdeteksi tahun akademik dengan status <span className="text-primary font-black uppercase italic">"Active"</span>. 
+                                        Pastikan transisi antar siklus tahun akademik dilakukan melalui prosedur otentikasi admin pusat.
+                                    </p>
+                                </div>
+                                <div className="flex flex-col items-end gap-5 shrink-0 border-l border-slate-800 pl-12 hidden lg:flex">
+                                     <div className="flex items-center gap-3 mb-1 px-5 py-2.5 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
+                                        <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                                        <span className="text-[11px] font-black text-slate-100 uppercase  italic">TEMPORAL_LOCK_OK</span>
+                                     </div>
+                                     <div className="flex gap-5">
+                                        <div className="h-14 w-14 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help text-glow-emerald">
+                                            <Cpu className="h-7 w-7" />
+                                        </div>
+                                        <div className="h-14 w-14 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
+                                            <Zap className="h-7 w-7" />
+                                        </div>
+                                     </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

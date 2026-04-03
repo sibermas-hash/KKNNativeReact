@@ -22,23 +22,17 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
-            // Superadmin bypasses everything (with audit logging)
-            if ($user->hasRole('superadmin')) {
-                \App\Services\AuditService::logGodModeAccess($user, $ability);
-                return true;
-            }
-
-            // Admin: only auto-bypass for read/view abilities
-            // Mutation abilities (create, update, delete, finalize, etc.) must pass through policies
-            if ($user->hasRole('admin')) {
-                $readOnlyAbilities = ['viewAny', 'view', 'export'];
-
+            if ($user->hasRole('Admin') || $user->hasRole('superadmin')) {
+                // Auto-bypass for read/view abilities only
+                $readOnlyAbilities = ['viewAny', 'view', 'export', 'viewInertia'];
                 if (in_array($ability, $readOnlyAbilities)) {
                     return true;
                 }
 
-                // For mutation abilities, let the policy decide
-                // Return null so the policy is evaluated normally
+                // Log sensitive interventions (mutations)
+                \App\Services\AuditService::logGodModeAccess($user, $ability);
+
+                // Mutation abilities pass through to policies for proper checks
                 return null;
             }
 

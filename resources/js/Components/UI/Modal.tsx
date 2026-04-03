@@ -6,7 +6,7 @@ interface ModalProps {
     open: boolean;
     onClose: () => void;
     title?: string;
-    maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+    maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 }
 
 const widths = {
@@ -15,6 +15,7 @@ const widths = {
     lg: 'max-w-lg',
     xl: 'max-w-xl',
     '2xl': 'max-w-2xl',
+    '3xl': 'max-w-3xl',
 };
 
 export default function Modal({
@@ -29,29 +30,29 @@ export default function Modal({
             <Dialog as="div" className="relative z-50" onClose={onClose}>
                 <TransitionChild
                     as={Fragment}
-                    enter="ease-out duration-200"
+                    enter="ease-out"
                     enterFrom="opacity-0"
                     enterTo="opacity-100"
-                    leave="ease-in duration-150"
+                    leave="ease-in"
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+                    <div className="fixed inset-0 bg-black/40 />
                 </TransitionChild>
 
                 <div className="fixed inset-0 overflow-y-auto">
                     <div className="flex min-h-full items-center justify-center p-4">
                         <TransitionChild
                             as={Fragment}
-                            enter="ease-out duration-200"
+                            enter="ease-out"
                             enterFrom="opacity-0 scale-95"
                             enterTo="opacity-100 scale-100"
-                            leave="ease-in duration-150"
+                            leave="ease-in"
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
                             <DialogPanel
-                                className={`w-full ${widths[maxWidth]} rounded-xl bg-white p-6 shadow-2xl ring-1 ring-slate-900/5`}
+                                className={`w-full ${widths[maxWidth]} rounded-xl bg-white p-6 ring-1 ring-slate-900/5`}
                             >
                                 {title && (
                                     <div className="mb-4 flex items-center justify-between">

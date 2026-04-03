@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Response;
 
 class DplSyncController extends Controller
@@ -24,6 +25,7 @@ class DplSyncController extends Controller
 
     public function index(Request $request): Response
     {
+        Gate::authorize('sync-data');
         $externalDosen = $this->masterApi->getAllEmployees();
         $localDosenNips = Dosen::pluck('nip')->toArray();
 
@@ -48,7 +50,10 @@ class DplSyncController extends Controller
 
     public function sync(Request $request): RedirectResponse
     {
+        Gate::authorize('sync-data');
+
         $validated = $request->validate([
+            'master_id' => 'nullable|integer',
             'nip' => 'required|string',
             'name' => 'required|string',
             'email' => 'nullable|email',
@@ -99,7 +104,7 @@ class DplSyncController extends Controller
                         'birth_date' => $validated['birth_date'],
                         'gender' => $validated['gender'],
                         'faculty_id' => $facultyId,
-                        'master_id' => $validated['organization_id'] ?? null,
+                        'master_id' => $validated['master_id'] ?? null,
                         'master_synced_at' => now(),
                     ]
                 );

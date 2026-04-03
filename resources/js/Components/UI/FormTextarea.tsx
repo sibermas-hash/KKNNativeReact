@@ -20,7 +20,7 @@ const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
                 id={id}
                 rows={rest.rows ?? 4}
                 className={clsx(
-                    'w-full rounded-lg border px-3 py-2 text-sm shadow-sm transition placeholder:text-slate-400',
+                    'w-full rounded-lg border px-3 py-2 text-sm transition placeholder:text-slate-400',
                     'focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20',
                     error
                         ? 'border-red-300 focus:border-red-500 focus:ring-red-200'

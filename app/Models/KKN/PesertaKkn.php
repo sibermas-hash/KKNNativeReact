@@ -22,18 +22,21 @@ class PesertaKkn extends Model
         'period_id',
         'kelompok_id',
         'status',
+        'role',
+        'notes',
         'registration_date',
         'approved_at',
         'approved_by',
-        'notes',
+        'joined_group_at',
+        'group_locked_until',
     ];
 
     protected $casts = [
         'registration_date' => 'datetime',
         'approved_at' => 'datetime',
+        'joined_group_at' => 'datetime',
+        'group_locked_until' => 'datetime',
     ];
-
-    // ──── Relationships ────
 
     public function mahasiswa(): BelongsTo
     {
@@ -50,63 +53,29 @@ class PesertaKkn extends Model
         return $this->belongsTo(KelompokKkn::class, 'kelompok_id');
     }
 
-    public function approvedBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'approved_by');
-    }
-
     public function dokumen(): HasMany
     {
         return $this->hasMany(DokumenPesertaKkn::class, 'peserta_kkn_id');
     }
 
-    public function histories(): HasMany
+    public function approver(): BelongsTo
     {
-        return $this->hasMany(RegistrationHistory::class, 'peserta_kkn_id');
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
-    // ──── Query Scopes ────
-
-    public function scopeByPeriod(Builder $query, int $periodId): Builder
+    /**
+     * Scope to find the leader of a group.
+     */
+    public function scopeKetua(Builder $query): Builder
     {
-        return $query->where('period_id', $periodId);
+        return $query->where('role', 'Ketua');
     }
 
-    public function scopeByAngkatan(Builder $query, int $angkatan): Builder
+    /**
+     * Scope for searching students by NIM or Name.
+     */
+    public function scopeSearch(Builder $query, string $search): Builder
     {
-        return $query->whereHas('periode', function ($q) use ($angkatan) {
-            $q->where('angkatan', $angkatan);
-        });
-    }
-
-    public function scopeByJenisKkn(Builder $query, string $jenis): Builder
-    {
-        return $query->whereHas('periode', function ($q) use ($jenis) {
-            $q->where('jenis', $jenis);
-        });
-    }
-
-    public function scopeByStatus(Builder $query, string $status): Builder
-    {
-        return $query->where('status', $status);
-    }
-
-    public function scopeWithGroup(Builder $query): Builder
-    {
-        return $query->whereNotNull('kelompok_id');
-    }
-
-    public function scopeWithoutGroup(Builder $query): Builder
-    {
-        return $query->whereNull('kelompok_id');
-    }
-
-    public function scopeSearch(Builder $query, ?string $search): Builder
-    {
-        if (!$search) {
-            return $query;
-        }
-
         $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
         return $query->whereHas('mahasiswa', function ($q) use ($s) {
             $q->where('nama', 'like', "%{$s}%")
@@ -114,4 +83,3 @@ class PesertaKkn extends Model
         });
     }
 }
-

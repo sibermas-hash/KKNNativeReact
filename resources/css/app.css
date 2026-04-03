@@ -1,60 +1,33 @@
 @import "tailwindcss";
+@import "./leaflet.css";
 
 @theme {
-  /* UIN SAIZU Elite Green Palette */
-  --color-primary: #006241;
-  --color-primary-light: #00875A;
-  --color-primary-dark: #004B32;
+  /* Core Colors */
+  --color-primary: #10a853;
   --color-primary-50: #f0fdf4;
-  --color-primary-100: #dcfce7;
-  --color-primary-500: #16a34a;
-  --color-primary-900: #14532d;
 
-  /* UIN SAIZU Prestige Gold Palette */
-  --color-accent-gold: #D4AF37;
-  --color-accent-amber: #F59E0B;
-  --color-accent-muted: #B8860B;
+  /* Neutral */
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-900: #0f172a;
 
-  /* Surface Colors - Luxury Dark Mode */
-  --color-surface-base: #050505;
-  --color-surface-panel: #0d1117;
-  --color-surface-card: rgba(255, 255, 255, 0.03);
-  --color-surface-border: rgba(255, 255, 255, 0.08);
-  --color-surface-muted: #64748B;
-
-  /* Sidebar - Dark Glass */
-  --color-sidebar: #050505;
-  --color-sidebar-hover: rgba(255, 255, 255, 0.05);
-  --color-sidebar-active: #D4AF37;
-  --color-sidebar-active-bg: rgba(212, 175, 55, 0.1);
+  /* Surfaces */
+  --color-surface-base: #ffffff;
+  --color-surface-panel: #f8fafc;
+  --color-surface-border: #e2e8f0;
 
   /* Typography */
-  --font-sans: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
-  --font-display: 'Outfit', 'Inter', sans-serif;
+  --font-sans: 'System-ui', -apple-system, sans-serif;
 
-  /* Design Tokens - Elite */
-  --radius-card: 1.25rem;
-  --radius-inner: 1rem;
-  --shadow-premium: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-  --shadow-xl-premium: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  /* Design Tokens - Minimal */
+  --radius-card: 0.5rem;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 @layer base {
   body {
-    @apply font-sans antialiased text-white/90;
-  }
-}
-
-@layer utilities {
-  .tracking-ultrawide {
-    letter-spacing: 0.5em;
-  }
-
-  .text-glow-gold {
-    text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
-  }
-
-  .glass {
-    @apply bg-white/[0.03] border border-white/10 backdrop-blur-xl;
+    @apply font-sans antialiased text-slate-700 bg-white;
   }
 }

@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\AuditLog;
+use App\Models\KKN\LogAudit;
 
 class AuditLogPolicy extends BasePolicy
 {
@@ -12,12 +12,12 @@ class AuditLogPolicy extends BasePolicy
         return $user->hasRole('superadmin');
     }
 
-    public function view(User $user, AuditLog $log): bool
+    public function view(User $user, LogAudit $log): bool
     {
         return $user->hasRole('superadmin');
     }
 
-    public function delete(User $user, AuditLog $log): bool
+    public function delete(User $user, LogAudit $log): bool
     {
         return false; // Immutable logs, strict compliance
     }

@@ -8,80 +8,87 @@ use App\Models\KKN\Prodi;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Response;
 
 class ProdiController extends Controller
 {
     public function index(Request $request): Response
     {
-        $programs = Prodi::with('fakultas')
+        Gate::authorize('manage-master-data');
+        $programs = Prodi::query()
+            ->with('fakultas')
             ->when($request->search, function ($query, $search) {
                 $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
-                $query->where('nama', 'like', "%{$s}%")
-                      ->orWhere('code', 'like', "%{$s}%")
-                      ->orWhereHas('fakultas', function ($q) use ($s) {
-                          $q->where('nama', 'like', "%{$s}%");
-                      });
+
+                $query->where(function ($inner) use ($s) {
+                    $inner->where('nama', 'like', "%{$s}%")
+                        ->orWhere('code', 'like', "%{$s}%")
+                        ->orWhereHas('fakultas', function ($facultyQuery) use ($s) {
+                            $facultyQuery->where('nama', 'like', "%{$s}%");
+                        });
+                });
             })
             ->orderBy('nama')
             ->paginate(10)
             ->withQueryString();
 
-        $programs->getCollection()->transform(fn ($p) => [
-            'id' => $p->id,
-            'code' => $p->code,
-            'name' => $p->nama, // Map nama to name
-            'faculty' => $p->fakultas ? ['id' => $p->fakultas->id, 'name' => $p->fakultas->nama] : null,
+        $programs->getCollection()->transform(fn (Prodi $program) => [
+            'id' => $program->id,
+            'code' => $program->code,
+            'name' => $program->nama,
+            'faculty' => $program->fakultas ? [
+                'id' => $program->fakultas->id,
+                'name' => $program->fakultas->nama,
+            ] : null,
         ]);
 
-        $faculties = Fakultas::orderBy('nama')->get()
-            ->map(fn ($f) => ['id' => $f->id, 'name' => $f->nama]);
+        $lastSyncedAt = Prodi::query()
+            ->whereNotNull('master_synced_at')
+            ->latest('master_synced_at')
+            ->first()?->master_synced_at;
 
         return Inertia::render('Admin/Programs/Index', [
             'programs' => $programs,
-            'faculties' => $faculties,
+            'faculties' => Fakultas::query()
+                ->orderBy('nama')
+                ->get()
+                ->map(fn (Fakultas $faculty) => [
+                    'id' => $faculty->id,
+                    'name' => $faculty->nama,
+                ]),
             'filters' => $request->only('search'),
+            'syncInfo' => [
+                'mode' => 'sync-only',
+                'source' => 'Master Mahasiswa',
+                'last_synced_at' => $lastSyncedAt?->format('d M Y H:i'),
+            ],
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'faculty_id' => ['required', 'exists:fakultas,id'],
-            'code' => ['required', 'string', 'max:10', 'unique:prodi,code'],
-            'name' => ['required', 'string', 'max:100'],
-        ]);
-
-        Prodi::create([
-            'faculty_id' => $validated['faculty_id'],
-            'code' => $validated['code'],
-            'nama' => $validated['name'],
-        ]);
-
-        return redirect()->back()->with('success', 'Program studi berhasil ditambahkan.');
+        return $this->syncOnlyResponse('program studi');
     }
 
     public function update(Request $request, Prodi $program): RedirectResponse
     {
-        $validated = $request->validate([
-            'faculty_id' => ['required', 'exists:fakultas,id'],
-            'code' => ['required', 'string', 'max:10', 'unique:prodi,code,' . $program->id],
-            'name' => ['required', 'string', 'max:100'],
-        ]);
-
-        $program->update([
-            'faculty_id' => $validated['faculty_id'],
-            'code' => $validated['code'],
-            'nama' => $validated['name'],
-        ]);
-
-        return redirect()->back()->with('success', 'Program studi berhasil diperbarui.');
+        return $this->syncOnlyResponse('program studi');
     }
 
     public function destroy(Prodi $program): RedirectResponse
     {
-        $program->delete();
+        return $this->syncOnlyResponse('program studi');
+    }
 
-        return redirect()->back()->with('success', 'Program studi berhasil dihapus.');
+    private function syncOnlyResponse(string $label): RedirectResponse
+    {
+        return redirect()->back()->with(
+            'error',
+            sprintf(
+                'Data %s mengikuti sinkronisasi master mahasiswa dan tidak dapat diubah manual.',
+                $label
+            )
+        );
     }
 }

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Dpl;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\NilaiKkn;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,49 +17,59 @@ class DashboardController extends Controller
         $user = auth()->user();
         $dosen = $user->dosen;
 
-        $kelompok = $dosen
-            ?KelompokKkn::where('dpl_id', $dosen->id)
-            ->withCount(['peserta', 'kegiatan'])
-            ->with(['lokasi', 'periode'])
-            ->get()
-            : collect();
+        if (!$dosen) {
+            return Inertia::render('Dpl/Dashboard', [
+                'groups' => [],
+                'pendingReports' => 0,
+                'gradingProgress' => "0%",
+                'atRiskStudents' => [],
+                'activityTrend' => [],
+            ]);
+        }
 
-        $pendingReports = $dosen
-            ?KegiatanKkn::whereIn('kelompok_id', $kelompok->pluck('id'))
+        // Multi-DPL Logic: Fetch all groups assigned to this lecturer through the pivot table
+        $kelompok = $dosen->kelompokKkn()
+            ->withCount(['peserta' => function($q) {
+                $q->where('status', 'approved');
+            }, 'kegiatan'])
+            ->with(['lokasi', 'periode'])
+            ->get();
+
+        $groupIds = $kelompok->pluck('id');
+
+        $pendingReports = KegiatanKkn::whereIn('kelompok_id', $groupIds)
             ->where('status', 'submitted')
-            ->count()
-            : 0;
+            ->count();
 
         $totalStudents = $kelompok->sum('peserta_count');
-        $gradedCount = $dosen
-            ?\App\Models\KKN\NilaiKkn::whereIn('kelompok_id', $kelompok->pluck('id'))
+        
+        $gradedCount = NilaiKkn::whereIn('kelompok_id', $groupIds)
             ->whereNotNull('dpl_graded_at')
-            ->count()
-            : 0;
+            ->count();
 
         $gradingProgress = $totalStudents > 0 ? round(($gradedCount / $totalStudents) * 100) : 0;
 
-        // Smart Flagging: Students who haven't posted in 3 days
-        $atRiskStudents = $dosen && $totalStudents > 0
-            ?\App\Models\KKN\Mahasiswa::whereHas('peserta', function ($q) use ($kelompok) {
-            $q->whereIn('kelompok_id', $kelompok->pluck('id'))->where('status', 'approved');
-        })
+        // Smart Flagging: Students in assigned groups who haven't posted in 3 days
+        $atRiskStudents = $totalStudents > 0
+            ? Mahasiswa::whereHas('peserta', function ($q) use ($groupIds) {
+                $q->whereIn('kelompok_id', $groupIds)->where('status', 'approved');
+            })
             ->whereDoesntHave('kegiatan', function ($q) {
-            $q->where('date', '>=', now()->subDays(3));
-        })
-            ->with(['user', 'peserta.kelompok'])
+                $q->where('date', '>=', now()->subDays(3));
+            })
+            ->with(['user', 'peserta' => function($q) use ($groupIds) {
+                $q->whereIn('kelompok_id', $groupIds);
+            }, 'peserta.kelompok'])
             ->get()
             : collect();
 
         // Logbook Activity Trend (Last 14 days)
-        $activityTrend = $dosen
-            ?KegiatanKkn::whereIn('kelompok_id', $kelompok->pluck('id'))
+        $activityTrend = KegiatanKkn::whereIn('kelompok_id', $groupIds)
             ->where('date', '>=', now()->subDays(14))
             ->selectRaw('date, count(*) as count')
             ->groupBy('date')
             ->orderBy('date')
-            ->get()
-            : collect();
+            ->get();
 
         return Inertia::render('Dpl/Dashboard', [
             'groups' => $kelompok,

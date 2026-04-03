@@ -25,14 +25,15 @@ class KknScoreRepository
             ->leftJoin('fakultas as fak', 's.faculty_id', '=', 'fak.id')
             ->leftJoin('prodi as prodi', 's.program_id', '=', 'prodi.id')
             ->leftJoin('nilai_kkn as ks', function ($join) {
-            $join->on('ks.mahasiswa_id', '=', 's.id')
-                ->on('ks.kelompok_id', '=', 'g.id');
-        })
+                $join->on('ks.user_id', '=', 'u.id')
+                     ->on('ks.kelompok_id', '=', 'g.id');
+            })
             ->where('g.period_id', $periodeId)
             ->when($filters['faculty_id'] ?? null, fn($q, $v) => $q->where('s.faculty_id', $v))
             ->when($filters['kelompok_id'] ?? null, fn($q, $v) => $q->where('g.id', $v))
             ->when($filters['huruf'] ?? null, fn($q, $v) => $q->where('ks.letter_grade', $v))
             ->select([
+            'ks.id as score_id',
             's.id as mahasiswa_id',
             'u.id as user_id',
             'u.name as nama',
@@ -43,6 +44,9 @@ class KknScoreRepository
             'g.id as kelompok_id',
             'lok.village_name as desa',
             'dpl_u.name as nama_dpl',
+            'ks.dpl_weighted_score as n_dpl',
+            'ks.village_weighted_score as n_mitra',
+            'ks.lppm_weighted_score as n_admin',
             // Komponen A
             'ks.final_report_score as nilai_laporan_akhir',
             'ks.execution_score as nilai_pelaksanaan',
@@ -57,6 +61,7 @@ class KknScoreRepository
             'ks.total_score as nilai_akhir',
             'ks.letter_grade as huruf',
             'ks.is_finalized',
+            'ks.evidence_file',
             'ks.dpl_graded_at as dpl_submitted_at',
             'ks.village_graded_at as mitra_submitted_at',
             'ks.admin_graded_at as admin_submitted_at',

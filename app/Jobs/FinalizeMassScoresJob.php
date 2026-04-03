@@ -48,7 +48,7 @@ class FinalizeMassScoresJob implements ShouldQueue
         ->whereNotNull('total_score')
         ->with('mahasiswa.user')
         ->chunk(100, function ($scores) use (&$processed, &$failed, &$totalFinalized) {
-            $studentIds = $scores->pluck('mahasiswa_id');
+            $studentIds = $scores->map(fn ($score) => $score->mahasiswa?->id)->filter()->unique();
             $groupIds = $scores->pluck('kelompok_id')->unique();
             
             $reports = \App\Models\KKN\LaporanAkhir::whereIn('mahasiswa_id', $studentIds)
@@ -58,7 +58,13 @@ class FinalizeMassScoresJob implements ShouldQueue
 
             foreach ($scores as $score) {
                 try {
-                    $lookupKey = $score->mahasiswa_id . '|' . $score->kelompok_id;
+                    if (!$score->mahasiswa) {
+                        $failed++;
+                        $processed++;
+                        continue;
+                    }
+
+                    $lookupKey = $score->mahasiswa->id . '|' . $score->kelompok_id;
                     $report = $reports->get($lookupKey)?->first();
 
                     if (!$report || $report->status !== 'approved') {

@@ -38,6 +38,7 @@ class GroupController extends Controller
             'peserta.mahasiswa.fakultas',
             'peserta.mahasiswa.prodi',
             'programKerja',
+            'posko',
         ]);
 
         return Inertia::render('Dpl/Groups/Show', [

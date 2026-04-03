@@ -9,6 +9,7 @@ use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\KelompokKkn;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class StudentTransferController extends Controller
@@ -23,6 +24,7 @@ class StudentTransferController extends Controller
      */
     public function index()
     {
+        Gate::authorize('transfer-students');
         $periodId = $this->contextService->getActivePeriodId();
 
         $students = $periodId
@@ -34,9 +36,9 @@ class StudentTransferController extends Controller
             : collect([]);
 
         $targetPeriods = Periode::where('id', '!=', $periodId)
-            ->orderByDesc('angkatan')
+            ->orderByDesc('periode')
             ->orderBy('jenis')
-            ->get(['id', 'name', 'angkatan', 'jenis', 'kuota']);
+            ->get(['id', 'name', 'periode', 'jenis', 'kuota']);
 
         return Inertia::render('Admin/Peserta/Transfer', [
             'students' => $students,
@@ -46,6 +48,8 @@ class StudentTransferController extends Controller
     }
     public function transfer(Request $request)
     {
+        Gate::authorize('transfer-students');
+
         $validated = $request->validate([
             'peserta_kkn_id' => 'required|exists:peserta_kkn,id',
             'target_period_id' => 'required|exists:periode,id',
@@ -77,9 +81,9 @@ class StudentTransferController extends Controller
         $currentPeriodId = $request->input('current_period_id');
 
         $periods = Periode::where('id', '!=', $currentPeriodId)
-            ->orderBy('angkatan', 'desc')
+            ->orderBy('periode', 'desc')
             ->orderBy('jenis')
-            ->get(['id', 'angkatan', 'jenis', 'name', 'kuota']);
+            ->get(['id', 'periode', 'jenis', 'name', 'kuota']);
 
         $groups = [];
         if ($request->has('target_period_id')) {

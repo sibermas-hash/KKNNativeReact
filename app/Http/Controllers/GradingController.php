@@ -28,7 +28,7 @@ class GradingController extends Controller
         $groupId = $request->input('group_id');
         
         $groups = [];
-        if ($user->hasRole('admin') || $user->hasRole('superadmin')) {
+        if ($user->hasRole('superadmin')) {
              $groups = KelompokKkn::orderBy('code')->get();
              if (!$groupId && $groups->isNotEmpty()) {
                  $groupId = $groups->first()->id;
@@ -65,7 +65,7 @@ class GradingController extends Controller
         $validated = $request->validated();
 
         $score = NilaiKkn::firstOrNew([
-            'mahasiswa_id' => $validated['student_id'],
+            'user_id' => $validated['student_id'],
             'kelompok_id' => $validated['group_id'],
         ]);
 
@@ -91,7 +91,7 @@ class GradingController extends Controller
         $validated = $request->validated();
 
         $score = NilaiKkn::firstOrNew([
-            'mahasiswa_id' => $validated['student_id'],
+            'user_id' => $validated['student_id'],
             'kelompok_id' => $validated['group_id'],
         ]);
 
@@ -116,7 +116,7 @@ class GradingController extends Controller
         $validated = $request->validated();
 
         $score = NilaiKkn::firstOrNew([
-            'mahasiswa_id' => $validated['student_id'],
+            'user_id' => $validated['student_id'],
             'kelompok_id' => $validated['group_id'],
         ]);
 

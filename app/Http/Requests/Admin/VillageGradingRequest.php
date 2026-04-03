@@ -14,7 +14,7 @@ class VillageGradingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'student_id' => 'required|exists:mahasiswa,id',
+            'student_id' => 'required|exists:users,id',
             'group_id' => 'required|exists:kelompok_kkn,id',
             'discipline_score' => 'required|numeric|min:0|max:100',
             'attitude_score' => 'required|numeric|min:0|max:100',

@@ -20,23 +20,33 @@
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_KEY" value="base64:gmXyBdhx211CTzkueKONa2P/32GhRs7YR4ezr8Bk5/4="/>
+        <env name="APP_CONFIG_CACHE" value="bootstrap/cache/config.testing.php"/>
+        <env name="APP_EVENTS_CACHE" value="bootstrap/cache/events.testing.php"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="APP_PACKAGES_CACHE" value="bootstrap/cache/packages.testing.php"/>
+        <env name="APP_ROUTES_CACHE" value="bootstrap/cache/routes.testing.php"/>
+        <env name="APP_SERVICES_CACHE" value="bootstrap/cache/services.testing.php"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
+        <!-- Database credentials: set via .env.testing or CI environment variables -->
+        <env name="DB_CONNECTION" value="pgsql"/>
+        <env name="DB_HOST" value="127.0.0.1"/>
+        <env name="DB_PORT" value="5433"/>
+        <env name="DB_DATABASE" value="kkn_test"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
-        <env name="DB_KKN_DRIVER" value="sqlite"/>
+        <env name="DB_KKN_HOST" value="127.0.0.1"/>
+        <env name="DB_KKN_PORT" value="5433"/>
+        <env name="DB_KKN_DATABASE" value="kkn_test"/>
+        <env name="DB_MASTER_HOST" value="127.0.0.1"/>
+        <env name="DB_MASTER_PORT" value="5433"/>
+        <env name="DB_MASTER_DATABASE" value="kkn_test"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
         <env name="LOG_CHANNEL" value="null"/>
         <env name="MASTER_API_URL" value="https://test.local"/>
-        <env name="MASTER_API_CLIENT_ID" value="test_client"/>
-        <env name="MASTER_API_CLIENT_SECRET" value="test_secret"/>
-        <env name="API_ADMIN_SECRET" value="test_admin_secret"/>
     </php>
 </phpunit>

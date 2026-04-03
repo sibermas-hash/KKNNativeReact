@@ -18,19 +18,19 @@ class DashboardStatisticsService
     private const CACHE_TTL = 300; // 5 minutes
 
     /**
-     * Get comprehensive statistics for a specific period.
+     * Get comprehensive statistics for a specific period, optionally scoped by faculty.
      */
-    public function getPeriodStatistics(int $periodId): array
+    public function getPeriodStatistics(int $periodId, ?int $facultyId = null): array
     {
-        $cacheKey = "dashboard:period:{$periodId}";
+        $cacheKey = "dashboard:period:{$periodId}:faculty:" . ($facultyId ?? 'global');
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($periodId) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($periodId, $facultyId) {
             return [
-                'summary' => $this->getSummaryStats($periodId),
-                'students_by_status' => $this->getStudentsByStatus($periodId),
-                'grade_distribution' => $this->getGradeDistribution($periodId),
-                'dpl_workload' => $this->getDplWorkload($periodId),
-                'sdg_distribution' => $this->getSdgDistribution($periodId),
+                'summary' => $this->getSummaryStats($periodId, $facultyId),
+                'students_by_status' => $this->getStudentsByStatus($periodId, $facultyId),
+                'grade_distribution' => $this->getGradeDistribution($periodId, $facultyId),
+                'dpl_workload' => $this->getDplWorkload($periodId, $facultyId),
+                'sdg_distribution' => $this->getSdgDistribution($periodId, $facultyId),
             ];
         });
     }
@@ -38,28 +38,45 @@ class DashboardStatisticsService
     /**
      * Get summary counts for the dashboard cards.
      */
-    private function getSummaryStats(int $periodId): array
+    private function getSummaryStats(int $periodId, ?int $facultyId = null): array
     {
-        $totalStudents = PesertaKkn::where('period_id', $periodId)->count();
-        $totalGroups = KelompokKkn::where('period_id', $periodId)->count();
-        $totalReports = KegiatanKkn::whereHas('kelompok', function ($q) use ($periodId) {
+        $studentQuery = PesertaKkn::where('period_id', $periodId);
+        $groupQuery = KelompokKkn::where('period_id', $periodId);
+        $reportQuery = KegiatanKkn::whereHas('kelompok', function ($q) use ($periodId) {
             $q->where('period_id', $periodId);
-        })->count();
-        $pendingRegistrations = PesertaKkn::where('period_id', $periodId)
-            ->where('status', 'pending')
-            ->count();
-        $totalWorkPrograms = ProgramKerja::whereHas('kelompok', function ($q) use ($periodId) {
+        });
+        $wpQuery = ProgramKerja::whereHas('kelompok', function ($q) use ($periodId) {
             $q->where('period_id', $periodId);
-        })->count();
-        $totalFinalReports = LaporanAkhir::whereHas('kelompok', function ($q) use ($periodId) {
+        });
+        $finalReportQuery = LaporanAkhir::whereHas('kelompok', function ($q) use ($periodId) {
             $q->where('period_id', $periodId);
-        })->count();
-        $assignedStudents = PesertaKkn::where('period_id', $periodId)
-            ->whereNotNull('kelompok_id')
-            ->count();
-        $unassignedStudents = PesertaKkn::where('period_id', $periodId)
-            ->whereNull('kelompok_id')
-            ->count();
+        });
+
+        if ($facultyId) {
+            $studentQuery->whereHas('mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
+            $groupQuery->whereHas('peserta.mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
+            $reportQuery->whereHas('mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
+            $wpQuery->whereHas('kelompok.peserta.mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
+            $finalReportQuery->whereHas('mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
+        }
+
+        $totalStudents = (clone $studentQuery)->count();
+        $totalGroups = (clone $groupQuery)->distinct('kelompok_kkn.id')->count();
+        $totalReports = (clone $reportQuery)->count();
+        $pendingRegistrations = (clone $studentQuery)->where('status', 'pending')->count();
+        $totalWorkPrograms = (clone $wpQuery)->count();
+        $totalFinalReports = (clone $finalReportQuery)->count();
+        
+        $assignedStudents = (clone $studentQuery)->whereNotNull('kelompok_id')->count();
+        $unassignedStudents = (clone $studentQuery)->whereNull('kelompok_id')->count();
+        
+        $poskoQuery = \App\Models\KKN\PoskoKelompok::whereHas('kelompok', function ($q) use ($periodId) {
+            $q->where('period_id', $periodId);
+        });
+        if ($facultyId) {
+            $poskoQuery->whereHas('kelompok.peserta.mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
+        }
+        $reportedPosko = $poskoQuery->count();
 
         return [
             'total_students' => $totalStudents,
@@ -70,20 +87,27 @@ class DashboardStatisticsService
             'total_final_reports' => $totalFinalReports,
             'assigned_students' => $assignedStudents,
             'unassigned_students' => $unassignedStudents,
+            'reported_posko' => $reportedPosko,
         ];
     }
 
     /**
      * Get student registration counts by status.
      */
-    private function getStudentsByStatus(int $periodId): array
+    private function getStudentsByStatus(int $periodId, ?int $facultyId = null): array
     {
-        return DB::connection('kkn')
+        $query = DB::connection('kkn')
             ->table('peserta_kkn')
             ->select('status', DB::raw('COUNT(*) as count'))
             ->where('period_id', $periodId)
-            ->whereNull('deleted_at')
-            ->groupBy('status')
+            ->whereNull('deleted_at');
+
+        if ($facultyId) {
+            $query->join('mahasiswa', 'peserta_kkn.mahasiswa_id', '=', 'mahasiswa.id')
+                  ->where('mahasiswa.faculty_id', $facultyId);
+        }
+
+        return $query->groupBy('status')
             ->pluck('count', 'status')
             ->toArray();
     }
@@ -91,16 +115,24 @@ class DashboardStatisticsService
     /**
      * Get grade distribution for finalized scores.
      */
-    private function getGradeDistribution(int $periodId): array
+    private function getGradeDistribution(int $periodId, ?int $facultyId = null): array
     {
-        return DB::connection('kkn')
+        $query = DB::connection('kkn')
             ->table('nilai_kkn')
             ->select('letter_grade', DB::raw('COUNT(*) as count'))
             ->join('kelompok_kkn', 'nilai_kkn.kelompok_id', '=', 'kelompok_kkn.id')
             ->where('kelompok_kkn.period_id', $periodId)
             ->where('nilai_kkn.is_finalized', true)
-            ->whereNull('kelompok_kkn.deleted_at')
-            ->groupBy('letter_grade')
+            ->whereNull('kelompok_kkn.deleted_at');
+
+        if ($facultyId) {
+            $query->join('peserta_kkn', 'nilai_kkn.kelompok_id', '=', 'peserta_kkn.kelompok_id')
+                  ->join('mahasiswa', 'peserta_kkn.mahasiswa_id', '=', 'mahasiswa.id')
+                  ->where('mahasiswa.faculty_id', $facultyId)
+                  ->distinct(); // Avoid double counting if multiple students in same group
+        }
+
+        return $query->groupBy('letter_grade')
             ->pluck('count', 'letter_grade')
             ->toArray();
     }
@@ -108,9 +140,9 @@ class DashboardStatisticsService
     /**
      * Get DPL workload (groups and students per DPL).
      */
-    private function getDplWorkload(int $periodId): array
+    private function getDplWorkload(int $periodId, ?int $facultyId = null): array
     {
-        return DB::connection('kkn')
+        $query = DB::connection('kkn')
             ->table('kelompok_kkn')
             ->select(
                 'dosen.nama as dpl_name',
@@ -121,8 +153,14 @@ class DashboardStatisticsService
             ->join('dosen', 'kelompok_kkn.dpl_id', '=', 'dosen.id')
             ->leftJoin('peserta_kkn', 'kelompok_kkn.id', '=', 'peserta_kkn.kelompok_id')
             ->where('kelompok_kkn.period_id', $periodId)
-            ->whereNull('kelompok_kkn.deleted_at')
-            ->groupBy('dosen.id', 'dosen.nama', 'dosen.nip')
+            ->whereNull('kelompok_kkn.deleted_at');
+
+        if ($facultyId) {
+            $query->join('mahasiswa', 'peserta_kkn.mahasiswa_id', '=', 'mahasiswa.id')
+                  ->where('mahasiswa.faculty_id', $facultyId);
+        }
+
+        return $query->groupBy('dosen.id', 'dosen.nama', 'dosen.nip')
             ->orderByDesc('total_groups')
             ->get()
             ->toArray();
@@ -131,13 +169,18 @@ class DashboardStatisticsService
     /**
      * Get SDG distribution from work programs.
      */
-    private function getSdgDistribution(int $periodId): array
+    private function getSdgDistribution(int $periodId, ?int $facultyId = null): array
     {
-        $rawSdgs = ProgramKerja::whereHas('kelompok', function ($q) use ($periodId) {
+        $query = ProgramKerja::whereHas('kelompok', function ($q) use ($periodId) {
             $q->where('period_id', $periodId);
         })
-            ->select('sdg_goals')
-            ->whereNotNull('sdg_goals')
+        ->whereNotNull('sdg_goals');
+
+        if ($facultyId) {
+            $query->whereHas('kelompok.peserta.mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
+        }
+
+        $rawSdgs = $query->select('sdg_goals')
             ->get()
             ->flatMap(fn($wp) => (array) $wp->sdg_goals);
 
@@ -152,8 +195,9 @@ class DashboardStatisticsService
     /**
      * Clear cached statistics for a period.
      */
-    public function clearCache(int $periodId): void
+    public function clearCache(int $periodId, ?int $facultyId = null): void
     {
-        Cache::forget("dashboard:period:{$periodId}");
+        $facultyKey = $facultyId ?? 'global';
+        Cache::forget("dashboard:period:{$periodId}:faculty:{$facultyKey}");
     }
 }

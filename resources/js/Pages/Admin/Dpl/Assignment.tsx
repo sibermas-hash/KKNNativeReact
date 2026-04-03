@@ -1,18 +1,23 @@
 import { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Button, Badge, FormInput, FormSelect, Modal } from '@/Components/ui';
+import { FormInput, FormSelect, Modal } from '@/Components/ui';
 import {
-    UserGroupIcon,
     PlusIcon,
-    ShieldCheckIcon,
-    CalendarIcon,
-    IdentificationIcon,
     MagnifyingGlassIcon,
     TrashIcon,
     XMarkIcon,
-    UserCircleIcon
+    UserCircleIcon,
+    AcademicCapIcon,
+    ArrowUpRightIcon,
+    BriefcaseIcon,
+    CalendarIcon,
+    UsersIcon,
+    IdentificationIcon,
+    ShieldCheckIcon
 } from '@heroicons/react/24/outline';
+import { clsx } from 'clsx';
+import { Cpu } from 'lucide-react';
 
 interface PeriodAssignment {
     id: number;
@@ -45,9 +50,10 @@ interface Props {
     title: string;
 }
 
-export default function DplAssignment({ assignments, allDosen, allPeriods, title }: Props) {
+export default function DplAssignment({ assignments, allDosen, allPeriods }: Props) {
     const [showModal, setShowModal] = useState(false);
     const [search, setSearch] = useState('');
+    const [editingAssignment, setEditingAssignment] = useState<PeriodAssignment | null>(null);
 
     const assignForm = useForm({
         dosen_id: '',
@@ -60,13 +66,30 @@ export default function DplAssignment({ assignments, allDosen, allPeriods, title
         assignForm.post('/admin/dpl/assign-period', {
             onSuccess: () => {
                 setShowModal(false);
+                setEditingAssignment(null);
                 assignForm.reset();
             },
         });
     };
 
+    const openEditModal = (assignment: PeriodAssignment) => {
+        setEditingAssignment(assignment);
+        assignForm.setData({
+            dosen_id: assignment.dosen_id.toString(),
+            period_id: assignment.period_id.toString(),
+            max_groups: assignment.max_groups.toString(),
+        });
+        setShowModal(true);
+    };
+
+    const openCreateModal = () => {
+        setEditingAssignment(null);
+        assignForm.reset();
+        setShowModal(true);
+    };
+
     const handleRemove = (dplPeriodId: number) => {
-        if (confirm('AUTHORIZATION REQUIRED: DO YOU WISH TO TERMINATE THIS OFFICER DEPLOYMENT?')) {
+        if (confirm('KONFIRMASI: Apakah Anda yakin ingin menghentikan penugasan DPL ini?')) {
             assignForm.patch(`/admin/dpl/remove-period/${dplPeriodId}`);
         }
     };
@@ -79,117 +102,157 @@ export default function DplAssignment({ assignments, allDosen, allPeriods, title
     );
 
     const dosenOptions = allDosen.map(d => ({ value: d.id, label: `${d.nama} (${d.nip})` }));
-    const periodOptions = allPeriods.map(p => ({ value: p.id, label: `Angkatan ${p.angkatan} - ${p.jenis} (${p.name})` }));
+    const periodOptions = allPeriods.map(p => ({ value: p.id, label: `ANGKATAN ${p.angkatan} // ${p.jenis} (${p.name})` }));
 
     return (
-        <AppLayout title="Command Officer Deployment">
-            <div className="space-y-12 pb-16 animate-in fade-in duration-1000">
-                {/* Elite Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-white/5 relative">
-                    <div className="absolute -left-12 top-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
-                    <div className="relative">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="px-3 py-1 rounded-full bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-[10px] font-black uppercase tracking-[0.3em]">STRATEGIC ASSIGNMENT</div>
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary-light animate-pulse" />
+        <AppLayout title="Penugasan Dosen (DPL)">
+            <div className="space-y-10 pb-16">
+                {/* 
+                    Emerald Premium Header 
+                    Refining from basic header to lush tactical emerald gradient
+                */}
+                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
+                    {/* Background decorations */}
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+                    
+                    <div className="relative z-10 space-y-5 flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                             <div className="p-2.5 bg-white/10 rounded-xl border border-white/20 backdrop-blur-md">
+                                <ShieldCheckIcon className="h-4 w-4 text-emerald-300" />
+                             </div>
+                            <span className="text-[10px] font-black text-emerald-100 uppercase  leading-none italic">
+                                PERSONNEL_ORCHESTRATION_V3
+                            </span>
                         </div>
-                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic line-height-1">
-                            Officer <span className="text-accent-gold text-glow-gold">Deployment</span>
+                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                            Matriks <span className="text-emerald-300 text-glow-emerald italic">Penugasan</span>
                         </h1>
-                        <p className="text-white/40 text-sm mt-4 font-medium uppercase tracking-[0.15em]">Assigning Field Command Officers to operational scholastic cycles.</p>
+                        <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
+                             Alokasi strategis Dosen Pembimbing Lapangan (DPL) ke periode aktif serta manajemen kapasitas bimbingan mahasiswa secara terpadu.
+                        </p>
                     </div>
 
-                    <button
-                        onClick={() => setShowModal(true)}
-                        className="group flex items-center gap-4 px-10 py-5 bg-gradient-to-br from-primary to-primary-dark text-white rounded-[2rem] shadow-2xl shadow-primary/40 hover:scale-[1.02] active:scale-95 transition-all border border-white/10 relative overflow-hidden"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                        <PlusIcon className="h-6 w-6 text-accent-gold" />
-                        <span className="text-xs font-black uppercase tracking-widest italic">DEPLOY OFFICER</span>
-                    </button>
+                    <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
+                        <div className="bg-white/10 p-6 rounded-lg border border-white/20 flex items-center gap-6 min-w-[200px] group/stat hover:scale-105 transition-transform">
+                            <div className="p-3 bg-white rounded-lg text-primary group-hover/stat:rotate-6 transition-all">
+                                <AcademicCapIcon className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <span className="text-[9px] font-black text-emerald-200/60 uppercase  block mb-1.5 italic">Total Otoritas</span>
+                                <span className="text-2xl font-black text-white tabular-nums italic leading-none">{assignments.length} Entri</span>
+                            </div>
+                        </div>
+
+                        <button 
+                            onClick={openCreateModal} 
+                            className="flex items-center gap-4 px-10 py-5.5 bg-white hover:bg-emerald-50 text-primary rounded-[1.5rem] font-black text-xs uppercase  transition-all hover:-translate-y-1 active:scale-95 italic"
+                        >
+                            <PlusIcon className="w-5 h-5 stroke-[3px]" />
+                            Tugaskan DPL Baru
+                        </button>
+                    </div>
                 </div>
 
-                {/* Filter Row */}
-                <div className="flex items-center justify-between p-4 glass rounded-[2.5rem]">
-                    <div className="relative group max-w-xl flex-1">
-                        <MagnifyingGlassIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-accent-gold transition-colors" />
+                {/* Tactical Search Bar */}
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative">
+                    <div className="relative group max-w-md w-full">
+                        <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
                         <input
-                            placeholder="SCAN DEPLOYMENTS FOR IDENTIFIERS..."
+                            placeholder="Cari DPL atau Nama Periode..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-14 pr-8 py-4 bg-black/40 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-accent-gold/50 transition-all"
+                            className="w-full pl-12 pr-6 py-4 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-900 italic outline-none focus:border-primary/50 transition-all uppercase  placeholder:opacity-50"
                         />
-                    </div>
-                    <div className="hidden lg:flex items-center gap-4 px-8 py-4 bg-white/5 rounded-2xl border border-white/5">
-                        <UserGroupIcon className="h-5 w-5 text-accent-gold" />
-                        <span className="text-[10px] font-black text-white/40 uppercase tracking-widest italic">ACTIVE DEPLOYMENTS: {assignments.length}</span>
                     </div>
                 </div>
 
-                {/* Assignment Ledger (Table) */}
-                <div className="bg-white/[0.02] rounded-[3rem] border border-white/10 shadow-2xl overflow-hidden backdrop-blur-xxl relative">
-                    <div className="overflow-x-auto relative z-10">
-                        <table className="min-w-full divide-y divide-white/5">
-                            <thead className="bg-white/[0.02]">
+                {/* Registry Ledger (Tactical Table) */}
+                <div className="bg-whiterounded-lg border border-slate-200 overflow-hidden relative">
+                    <div className="overflow-x-auto relative z-10 custom-scrollbar">
+                        <table className="min-w-full divide-y divide-slate-100">
+                            <thead className="bg-slate-50/50">
                                 <tr>
-                                    <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Command Officer</th>
-                                    <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Temporal Cycle</th>
-                                    <th className="px-8 py-6 text-center text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Brigade Load</th>
-                                    <th className="px-8 py-6 text-center text-[10px] font-black uppercase tracking-[0.3em] text-white/30">System Status</th>
-                                    <th className="px-8 py-6 text-right text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Operation</th>
+                                    <th className="px-10 py-6 text-left text-[10px] font-black uppercase  text-slate-400 italic">Identitas Personel</th>
+                                    <th className="px-10 py-6 text-left text-[10px] font-black uppercase  text-slate-400 italic">Periode KKN</th>
+                                    <th className="px-10 py-6 text-center text-[10px] font-black uppercase  text-slate-400 italic">Beban Tugas</th>
+                                    <th className="px-10 py-6 text-center text-[10px] font-black uppercase  text-slate-400 italic">Status</th>
+                                    <th className="px-10 py-6 text-right text-[10px] font-black uppercase  text-slate-400 italic">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-white/[0.03]">
+                            <tbody className="divide-y divide-slate-100">
                                 {filtered.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="px-8 py-24 text-center">
-                                            <div className="flex flex-col items-center">
-                                                <IdentificationIcon className="h-12 w-12 text-white/5 mb-4" />
-                                                <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] italic">No active officer deployments detected.</p>
+                                        <td colSpan={5} className="px-10 py-24 text-center">
+                                            <div className="flex flex-col items-center gap-4 opacity-40">
+                                                <div className="p-6 bg-slate-50 rounded-full">
+                                                     <UserCircleIcon className="h-12 w-12 text-slate-200" />
+                                                </div>
+                                                <p className="text-[10px] font-black text-slate-500 italic uppercase ">PENUGASAN TIDAK DITEMUKAN</p>
                                             </div>
                                         </td>
                                     </tr>
                                 ) : (
                                     filtered.map((a) => (
-                                        <tr key={a.id} className="group hover:bg-white/[0.04] transition-all duration-300">
-                                            <td className="px-8 py-10">
-                                                <div className="flex flex-col">
-                                                    <span className="text-base font-black text-white tracking-widest uppercase italic group-hover:text-accent-gold transition-colors">{a.dosen.nama}</span>
-                                                    <div className="flex items-center gap-2 mt-2">
-                                                        <IdentificationIcon className="h-3 w-3 text-primary-light" />
-                                                        <span className="text-[9px] font-black text-white/20 font-mono tracking-widest uppercase">ID // {a.dosen.nip}</span>
+                                        <tr key={a.id} className="group hover:bg-slate-50/30 transition-colors">
+                                            <td className="px-10 py-8">
+                                                <div className="flex items-center gap-5">
+                                                    <div className="p-3.5 rounded-lg bg-slate-100 text-slate-400 group-hover:bg-primary group-hover:text-white transition-all font-black text-xs h-12 w-12 flex items-center justify-center shrink-0 italic">
+                                                        {a.dosen.nama.charAt(0)}
+                                                    </div>
+                                                    <div className="flex flex-col min-w-0">
+                                                        <span className="text-[14px] font-black text-slate-900 group-hover:text-primary transition-colors uppercase italic  truncate leading-none">{a.dosen.nama}</span>
+                                                        <div className="flex items-center gap-2 mt-2">
+                                                            <IdentificationIcon className="h-3 w-3 text-slate-300" />
+                                                            <span className="text-[9px] font-bold text-slate-400 font-mono  uppercase">ID: {a.dosen.nip}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-10">
+                                            <td className="px-10 py-8">
                                                 <div className="flex flex-col">
-                                                    <span className="text-[11px] font-black text-white/60 uppercase tracking-tighter leading-none italic">{a.periode.name}</span>
+                                                    <span className="text-[12px] font-black text-slate-800 italic uppercase  leading-none">{a.periode.name}</span>
                                                     <div className="flex items-center gap-2 mt-2">
-                                                        <CalendarIcon className="h-3 w-3 text-white/10" />
-                                                        <span className="text-[9px] font-bold text-white/10 uppercase tracking-widest italic">CYCLE {a.periode.angkatan} • {a.periode.jenis}</span>
+                                                        <div className="h-1 w-1 rounded-full bg-primary/40" />
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase  italic">{a.periode.jenis}</span>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-10 text-center">
-                                                <div className="flex flex-col items-center group-hover:scale-110 transition-transform">
-                                                    <span className="text-xl font-black text-white italic tabular-nums leading-none">{a.kelompok_count}</span>
-                                                    <span className="text-[8px] font-black text-white/20 uppercase tracking-widest mt-1">/ {a.max_groups} LIMIT</span>
+                                            <td className="px-10 py-8 text-center">
+                                                <div className="flex flex-col items-center gap-3">
+                                                    <div className="flex items-baseline gap-1.5 p-1 px-3 bg-slate-50 rounded-lg group-hover:bg-primary/5 transition-colors">
+                                                        <span className="text-[16px] font-black text-slate-900 tabular-nums italic leading-none">{a.kelompok_count}</span>
+                                                        <span className="text-[10px] font-black text-slate-400 uppercase  {a.max_groups}</span>
+                                                    </div>
+                                                    <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden
+                                                        <div 
+                                                            className={clsx(
+                                                                "h-full rounded-full transition-all",
+                                                                (a.kelompok_count / a.max_groups) >= 0.8 ? "bg-rose-500 : "bg-primary
+                                                            )}
+                                                            style={{ width: `${Math.min((a.kelompok_count / a.max_groups) * 100, 100)}%` }}
+                                                        />
+                                                    </div>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-10 text-center">
-                                                <div className={`inline-flex px-4 py-1.5 rounded-xl border text-[8px] font-black tracking-[0.2em] uppercase shadow-2xl backdrop-blur-md ${a.is_active ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-rose-400 bg-rose-500/10 border-rose-500/20'}`}>
-                                                    {a.is_active ? 'DEPLOYED' : 'TERMINATED'}
+                                            <td className="px-10 py-8 text-center">
+                                                <div className={clsx(
+                                                    "inline-flex px-4 py-1.5 rounded-lg text-[9px] font-black uppercase  italic
+                                                    a.is_active ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"
+                                                )}>
+                                                    {a.is_active ? 'AKTIF' : 'NONAKTIF'}
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-10 text-right">
-                                                {a.kelompok_count === 0 && (
-                                                    <button
-                                                        onClick={() => handleRemove(a.id)}
-                                                        className="p-4 rounded-2xl bg-rose-500/5 border border-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-all active:scale-90 shadow-2xl"
-                                                        title="TERMINATE DEPLOYMENT"
-                                                    >
-                                                        <TrashIcon className="h-6 w-6" />
+                                            <td className="px-10 py-8 text-right">
+                                                <div className="flex justify-end gap-2.5 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+                                                    <button onClick={() => openEditModal(a)} className="p-3 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary hover:scale-105 active:scale-95 transition-all outline-none" title="ATUR PENUGASAN">
+                                                        <ArrowUpRightIcon className="h-4 w-4 stroke-[2.5px]" />
                                                     </button>
-                                                )}
+                                                    {a.kelompok_count === 0 && (
+                                                        <button onClick={() => handleRemove(a.id)} className="p-3 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-200 hover:scale-105 active:scale-95 transition-all outline-none" title="HENTIKAN PENUGASAN">
+                                                            <TrashIcon className="h-4 w-4 stroke-[2.5px]" />
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
@@ -199,71 +262,121 @@ export default function DplAssignment({ assignments, allDosen, allPeriods, title
                     </div>
                 </div>
 
-                {/* Deploy Modal */}
-                <Modal open={showModal} onClose={() => setShowModal(false)} maxWidth="lg">
-                    <div className="glass rounded-[3rem] p-10 border-white/10 relative overflow-hidden">
-                        <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/10 blur-[80px] rounded-full pointer-events-none" />
+                {/* Tactical Emerald Footer Monitor */}
+                <div className="p-12 bg-slate-900 rounded-[3.5rem] border border-slate-800 relative overflow-hidden group mx-1">
+                     {/* Decorative Elements */}
+                     <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
 
-                        <div className="flex items-center justify-between mb-10">
-                            <h3 className="text-2xl font-black text-white tracking-tighter uppercase italic flex items-center gap-4">
-                                <UserCircleIcon className="h-8 w-8 text-accent-gold" />
-                                Officer Deployment
-                            </h3>
-                            <button onClick={() => setShowModal(false)} className="p-2 rounded-xl bg-white/5 text-white/20 hover:text-white transition-colors">
-                                <XMarkIcon className="h-6 w-6" />
-                            </button>
+                     <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-12">
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-5">
+                                <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                                    <ShieldCheckIcon className="h-7 w-7 text-primary" />
+                                </div>
+                                <div>
+                                    <h4 className="text-[11px] font-black text-white uppercase  italic leading-none">GOVERNANCE_PERSONNEL_PROTOCOL_V3</h4>
+                                    <p className="text-[10px] text-emerald-400 font-bold  mt-2 italic whitespace-nowrap">STATUS: DELEGATION_INTEGRITY_VERIFIED</p>
+                                </div>
+                            </div>
+                            <p className="text-[14px] text-slate-400 font-bold leading-relaxed max-w-4xl italic opacity-80">
+                                Petunjuk Operasional: Batasan bimbingan (Load Factor) harus dipatuhi untuk menjamin kualitas bimbingan akademik pada tiap sektor KKN. 
+                                Sistem secara otomatis akan mengunci modifikasi penugasan jika terdeteksi adanya keterikatan data kelompok aktif. 
+                                Gunakan audit trail untuk memantau sejarah delegasi otoritas personel DPL secara temporal.
+                            </p>
                         </div>
+                        <div className="flex flex-col items-end gap-5 shrink-0 border-l border-slate-800 pl-12 hidden lg:flex">
+                             <div className="flex items-center gap-3 mb-1 px-5 py-2.5 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
+                                <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="text-[11px] font-black text-slate-100 uppercase  italic">AUTH_LINK_STABLE</span>
+                             </div>
+                             <div className="flex gap-5">
+                                <div className="h-14 w-14 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help text-glow-emerald">
+                                    <Cpu className="h-7 w-7" />
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                        <form onSubmit={handleAssign} className="space-y-10 relative z-10">
-                            <div className="space-y-4">
-                                <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-1">OFFICER IDENTIFICATION</label>
+            <Modal open={showModal} onClose={() => setShowModal(false)} maxWidth="2xl">
+                <div className="bg-white rounded-[3rem] p-10 overflow-hidden relative border border-slate-100">
+                    <div className="px-10 py-9 border-b border-slate-50 bg-slate-50/30 flex items-center gap-6 relative overflow-hidden">
+                        <div className="p-4 bg-primary rounded-[1.25rem] text-white relative z-10">
+                            <BriefcaseIcon className="h-7 w-7 stroke-[2.5px]" />
+                        </div>
+                        <div className="relative z-10">
+                            <h3 className="text-2xl font-black text-slate-900 uppercase italic  leading-none">
+                                {editingAssignment ? 'Modifikasi_Delegasi' : 'Inisialisasi_Tugas'}
+                            </h3>
+                            <p className="text-[10px] font-black text-slate-400 mt-2 uppercase  italic opacity-70">SINKRONISASI OTORITAS PERSONEL DPL</p>
+                        </div>
+                        <div className="absolute top-0 right-0 p-8 opacity-[0.03] text-slate-900 pointer-events-none">
+                            <BriefcaseIcon className="h-32 w-32" />
+                        </div>
+                        <button onClick={() => setShowModal(false)} className="absolute right-8 top-1/2 -translate-y-1/2 h-12 w-12 flex items-center justify-center rounded-lg bg-white border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-100 transition-all hover:rotate-90">
+                            <XMarkIcon className="h-7 w-7" />
+                        </button>
+                    </div>
+
+                    <form onSubmit={handleAssign} className="space-y-10">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase  ml-2 italic flex items-center gap-2">
+                                    <UserCircleIcon className="h-3.5 w-3.5 text-primary/60" /> PILIH DPL
+                                </label>
                                 <FormSelect
-                                    placeholder="SELECT COMMAND OFFICER..."
+                                    placeholder="PILIH DPL..."
                                     options={dosenOptions}
                                     value={assignForm.data.dosen_id}
                                     onChange={(e) => assignForm.setData('dosen_id', e.target.value)}
                                     error={assignForm.errors.dosen_id}
-                                    className="bg-black/40 border-white/10 text-[10px] font-black tracking-widest text-white h-14 rounded-2xl focus:border-accent-gold/50"
+                                    className="bg-slate-50 border-slate-200 text-sm font-black text-slate-900 h-14 rounded-lg focus:bg-white focus:border-primary transition-all italic 
                                 />
                             </div>
 
-                            <div className="space-y-4">
-                                <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-1">TEMPORAL CYCLE TARGET</label>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase  ml-2 italic flex items-center gap-2">
+                                    <CalendarIcon className="h-3.5 w-3.5 text-primary/60" /> PILIH PERIODE
+                                </label>
                                 <FormSelect
-                                    placeholder="SELECT DEPLOYMENT CYCLE..."
+                                    placeholder="PILIH PERIODE..."
                                     options={periodOptions}
                                     value={assignForm.data.period_id}
                                     onChange={(e) => assignForm.setData('period_id', e.target.value)}
                                     error={assignForm.errors.period_id}
-                                    className="bg-black/40 border-white/10 text-[10px] font-black tracking-widest text-white h-14 rounded-2xl focus:border-accent-gold/50"
+                                    className="bg-slate-50 border-slate-200 text-sm font-black text-slate-900 h-14 rounded-lg focus:bg-white focus:border-primary transition-all italic 
                                 />
                             </div>
 
-                            <div className="space-y-4">
-                                <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-1">BRIGADE ALLOCATION LIMIT</label>
+                            <div className="col-span-full space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase  ml-2 italic flex items-center gap-2">
+                                    <UsersIcon className="h-3.5 w-3.5 text-primary/60" /> BATAS KAPASITAS (MAKS. KELOMPOK)
+                                </label>
                                 <FormInput
                                     type="number"
                                     min="1"
                                     max="20"
                                     value={assignForm.data.max_groups}
                                     onChange={(e) => assignForm.setData('max_groups', e.target.value)}
-                                    className="bg-black/40 border-white/10 text-xs font-black tracking-widest text-accent-gold h-14 rounded-2xl focus:border-accent-gold/50"
+                                    error={assignForm.errors.max_groups}
+                                    className="bg-slate-50 border-slate-200 text-lg font-black text-slate-900 h-14 rounded-lg focus:bg-white focus:border-primary transition-all italic tabular-nums 
                                 />
-                                {assignForm.errors.max_groups && <p className="text-rose-500 text-[9px] font-black uppercase tracking-widest ml-1">{assignForm.errors.max_groups}</p>}
+                                <p className="text-[9px] font-bold text-slate-400 italic ml-2 mt-2 uppercase  opacity-60">* Rekomendasi kapasitas standar adalah 5-8 kelompok per DPL.</p>
                             </div>
+                        </div>
 
-                            <div className="pt-6 flex gap-6">
-                                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-5 text-white/20 text-[10px] font-black uppercase tracking-widest hover:bg-white/5 rounded-[2rem] transition-all italic border border-white/5">
-                                    ABORT
-                                </button>
-                                <button type="submit" disabled={assignForm.processing} className="flex-[2] py-5 bg-gradient-to-br from-primary to-primary-dark text-white text-[10px] font-black uppercase tracking-widest rounded-[2rem] shadow-2xl shadow-primary/40 hover:scale-[1.02] active:scale-95 transition-all border border-white/10 italic">
-                                    AUTHORIZE DEPLOYMENT
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </Modal>
-            </div>
+                        <div className="flex justify-end gap-4 pt-10 border-t border-slate-100">
+                            <button type="button" onClick={() => setShowModal(false)} className="px-8 py-4 bg-white text-slate-400 text-[11px] font-black uppercase  rounded-lg border border-slate-200 hover:bg-slate-50 transition-all italic">
+                                BATAL
+                            </button>
+                            <button type="submit" disabled={assignForm.processing} className="px-12 py-4 bg-slate-900 text-white text-[11px] font-black uppercase  rounded-lg hover:scale-[1.03] active:scale-95 transition-all disabled:opacity-50 italic">
+                                {editingAssignment ? 'SIMPAN PERUBAHAN' : 'SIMPAN PENUGASAN'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </Modal>
         </AppLayout>
     );
 }

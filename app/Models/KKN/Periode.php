@@ -12,12 +12,18 @@ class Periode extends Model
 {
     use HasFactory, SoftDeletes;
 
+    private const CACHE_KEYS = [
+        'active_period',
+        'default_period_id',
+        'available_periods',
+    ];
+
     protected $connection = 'kkn';
     protected $table = 'periode';
 
     protected $fillable = [
         'academic_year_id',
-        'angkatan',
+        'periode',
         'jenis',
         'name',
         'start_date',
@@ -47,18 +53,29 @@ class Periode extends Model
         });
     }
 
+    public static function flushContextCache(): void
+    {
+        foreach (self::CACHE_KEYS as $cacheKey) {
+            \Illuminate\Support\Facades\Cache::forget($cacheKey);
+        }
+    }
+
     protected static function booted()
     {
         static::updated(function () {
-            \Illuminate\Support\Facades\Cache::forget('active_period');
+            self::flushContextCache();
         });
 
         static::created(function () {
-            \Illuminate\Support\Facades\Cache::forget('active_period');
+            self::flushContextCache();
         });
 
         static::deleted(function () {
-            \Illuminate\Support\Facades\Cache::forget('active_period');
+            self::flushContextCache();
+        });
+
+        static::restored(function () {
+            self::flushContextCache();
         });
     }
 

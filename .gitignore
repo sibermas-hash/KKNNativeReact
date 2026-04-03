@@ -3,6 +3,7 @@
 .env
 .env.backup
 .env.production
+.env.testing
 .phpactor.json
 .phpunit.result.cache
 /.fleet
@@ -32,3 +33,26 @@ list_master_api_tables.php
 list_master_tables.php
 remote_seeder_final.php
 seeder_b64.txt
+check_users.php
+create_test_accounts.php
+setup_sample_data.php
+
+# Database files
+database.sqlite
+*.sqlite
+*.bak
+
+# Test files in public
+public/test_*.php
+
+# Capacitor Android build artifacts
+android/app/build/
+android/.gradle/
+android/local.properties
+
+# APK signing
+*.jks
+*.keystore
+
+# APK distribution
+public/downloads/*.apk

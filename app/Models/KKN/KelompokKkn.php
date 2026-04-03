@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class KelompokKkn extends Model
@@ -41,6 +42,41 @@ class KelompokKkn extends Model
         return $this->belongsTo(Lokasi::class , 'location_id');
     }
 
+    public function dpl(): BelongsTo
+    {
+        return $this->belongsTo(Dosen::class, 'dpl_id');
+    }
+
+    public function posko(): HasOne
+    {
+        return $this->hasOne(PoskoKelompok::class, 'kelompok_id');
+    }
+
+    public function slotTerkunci(): HasMany
+    {
+        return $this->hasMany(SlotTerkunci::class, 'kelompok_id');
+    }
+
+    public function peserta(): HasMany
+    {
+        return $this->hasMany(PesertaKkn::class, 'kelompok_id');
+    }
+
+    public function kegiatan(): HasMany
+    {
+        return $this->hasMany(KegiatanKkn::class, 'kelompok_id');
+    }
+
+    public function programKerja(): HasMany
+    {
+        return $this->hasMany(ProgramKerja::class, 'kelompok_id');
+    }
+
+    public function laporanAkhir(): HasMany
+    {
+        return $this->hasMany(LaporanAkhir::class, 'kelompok_id');
+    }
+
     // Relationship: A group can have multiple DPLs (Many-to-Many)
     public function dosen()
     {
@@ -49,50 +85,43 @@ class KelompokKkn extends Model
             ->withTimestamps();
     }
 
-    // Helper: Get the main DPL (Ketua)
-    public function ketuaDpl()
+    /**
+     * Get the main DPL (Ketua) record.
+     */
+    public function getKetuaDplAttribute()
     {
         return $this->dosen()->wherePivot('role', 'Ketua')->first();
     }
 
-    // Legacy: Keep this for backward compatibility if code still calls $group->dpl
-    public function dpl()
+    /**
+     * Synchronize flat DPL columns based on the pivot 'Ketua'.
+     * This is crucial for backward compatibility and simpler reporting queries.
+     */
+    public function syncKetuaFlatColumns(): void
     {
-        return $this->belongsTo(Dosen::class , 'dpl_id');
+        $ketua = $this->dosen()->wherePivot('role', 'Ketua')->first();
+        
+        if ($ketua) {
+            $dplPeriod = DplPeriod::where('dosen_id', $ketua->id)
+                ->where('period_id', $this->period_id)
+                ->first();
+
+            $this->updateQuietly([
+                'dpl_id' => $ketua->id,
+                'dpl_period_id' => $dplPeriod?->id
+            ]);
+        } else {
+            $this->updateQuietly([
+                'dpl_id' => null,
+                'dpl_period_id' => null
+            ]);
+        }
     }
 
-    public function dplPeriod(): BelongsTo
+    protected static function booted()
     {
-        return $this->belongsTo(DplPeriod::class , 'dpl_period_id');
-    }
-
-    public function peserta(): HasMany
-    {
-        return $this->hasMany(PesertaKkn::class , 'kelompok_id');
-    }
-
-    public function kegiatan(): HasMany
-    {
-        return $this->hasMany(KegiatanKkn::class , 'kelompok_id');
-    }
-
-    public function programKerja(): HasMany
-    {
-        return $this->hasMany(ProgramKerja::class , 'kelompok_id');
-    }
-
-    public function laporanAkhir(): HasMany
-    {
-        return $this->hasMany(LaporanAkhir::class , 'kelompok_id');
-    }
-
-    public function evaluasi(): HasMany
-    {
-        return $this->hasMany(Evaluasi::class , 'kelompok_id');
-    }
-
-    public function nilaiKkn(): HasMany
-    {
-        return $this->hasMany(NilaiKkn::class , 'kelompok_id');
+        static::deleting(function ($group) {
+            $group->dosen()->detach();
+        });
     }
 }

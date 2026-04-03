@@ -136,8 +136,7 @@ test('[AUDIT 1.2] Student TIDAK bisa akses fitur admin', function () {
 
 test('[AUDIT 1.2] Admin tidak bisa update score yang sudah finalized', function () {
     $admin = User::factory()->create();
-    $admin->assignRole('admin');
-
+        $admin->assignRole('superadmin');
     $policy = new KknScorePolicy();
     $finalizedScore = new NilaiKkn();
     $finalizedScore->is_finalized = true;

@@ -2,22 +2,19 @@
 
 namespace App\Helpers;
 
-use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class PasswordHelper
 {
     /**
-     * Generate a default password from a birth date.
+     * Generate a secure random default password.
      *
-     * Format: DDMMYYYY (e.g. 15021990 for Feb 15, 1990).
-     * Fallback: the username (NIP/NIM) if no birth date is available.
+     * Returns a 12-character random password.
+     * The $birthDate and $username params are kept for backward compatibility
+     * but are no longer used in password generation.
      */
     public static function fromBirthDate(?string $birthDate, string $username): string
     {
-        if (!empty($birthDate)) {
-            return Carbon::parse($birthDate)->format('dmY');
-        }
-
-        return $username;
+        return Str::password(12);
     }
 }

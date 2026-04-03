@@ -22,6 +22,11 @@ class Prodi extends Model
         'master_synced_at',
     ];
 
+    protected $casts = [
+        'faculty_id' => 'integer',
+        'master_synced_at' => 'datetime',
+    ];
+
     public function fakultas(): BelongsTo
     {
         return $this->belongsTo(Fakultas::class , 'faculty_id');

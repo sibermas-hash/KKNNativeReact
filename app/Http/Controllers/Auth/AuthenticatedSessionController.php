@@ -26,32 +26,19 @@ class AuthenticatedSessionController extends Controller
         $userAnswer = $request->input('captcha_answer');
         $captchaHash = $request->session()->get('captcha_hash');
 
-        \Illuminate\Support\Facades\Log::info('LOGIN_ATTEMPT', [
-            'login' => $request->input('login'),
-            'user_answer' => $userAnswer,
-            'session_hash' => $captchaHash,
-            'session_id' => $request->session()->getId(),
-            'match' => $this->verifyCaptchaAnswer($userAnswer, $captchaHash),
-        ]);
-
         if (!$captchaHash || !$this->verifyCaptchaAnswer($userAnswer, $captchaHash)) {
             // Regenerate captcha for next attempt
             $captcha = $this->generateCaptcha();
             $request->session()->put('captcha_hash', $this->hashCaptchaAnswer($captcha['answer']));
 
             return back()->withErrors([
-                'captcha_answer' => 'Jawaban verifikasi keamanan salah. Gagal memvalidasi Captcha.',
+                'captcha_answer' => 'Jawaban verifikasi keamanan salah.',
             ])->with('captcha_question', $captcha['question']);
         }
 
         try {
             $request->authenticate();
-            \Illuminate\Support\Facades\Log::info('LOGIN_SUCCESS', ['user' => $request->input('login')]);
         } catch (\Exception $e) {
-             \Illuminate\Support\Facades\Log::error('LOGIN_FAILED_EXCEPTION', [
-                 'user' => $request->input('login'),
-                 'error' => $e->getMessage()
-             ]);
             return back()->withErrors([
                 'login' => 'Gagal Otentikasi: Kredensial tidak valid.',
             ]);

@@ -12,6 +12,10 @@ return [
     // Must match x-admin-secret header in requests to POST /api/admin/keys.
     'admin_secret' => env('API_ADMIN_SECRET'),
 
+    // Public self-service registration is disabled by default.
+    // Enable explicitly only when there is an approval process around it.
+    'self_service_enabled' => (bool) env('API_SELF_SERVICE_ENABLED', false),
+
     // Whitelist of database tables accessible via the public data API.
     // Table names should match PostgreSQL table names exactly.
     // Empty array = no tables accessible (safe default).

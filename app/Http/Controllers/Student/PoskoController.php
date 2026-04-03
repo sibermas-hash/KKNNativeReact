@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PoskoController extends Controller
 {
@@ -53,6 +54,33 @@ class PoskoController extends Controller
         ]);
     }
 
+    public function photo(PoskoKelompok $posko): StreamedResponse
+    {
+        $user = auth()->user();
+        abort_unless($user, 403);
+
+        if ($user->hasRole('student')) {
+            $registration = $this->getApprovedRegistration();
+            abort_if(!$registration || $registration->kelompok_id !== $posko->kelompok_id, 403, 'Anda tidak memiliki akses ke foto posko ini.');
+        } elseif ($user->hasRole('dpl') && !$user->hasRole('superadmin')) {
+            $dosen = $user->dosen;
+            abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+
+            $isAssigned = $dosen->kelompokKkn()
+                ->where('kelompok_kkn.id', $posko->kelompok_id)
+                ->exists();
+
+            abort_if(!$isAssigned, 403, 'Anda tidak memiliki akses ke foto posko ini.');
+        } else {
+            abort_unless($user->hasRole('superadmin'), 403, 'Anda tidak memiliki akses ke foto posko ini.');
+        }
+
+        [$disk, $path] = $this->resolvePhotoStorage($posko->photo_path);
+        abort_if(!$path, 404, 'Foto posko tidak ditemukan.');
+
+        return Storage::disk($disk)->response($path, $posko->photo_name);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $registration = $this->getApprovedRegistration();
@@ -83,7 +111,7 @@ class PoskoController extends Controller
             $connection = DB::connection('kkn');
             $persist = function () use ($existingPosko, $validated, $newPhotoPath, $newPhotoName, $newPhotoSize, $request, $registration) {
                 if ($existingPosko?->photo_path) {
-                    Storage::disk('public')->delete($existingPosko->photo_path);
+                    $this->deletePhotoFromKnownDisks($existingPosko->photo_path);
                 }
 
                 PoskoKelompok::updateOrCreate(
@@ -108,7 +136,7 @@ class PoskoController extends Controller
                 }
             } catch (\Exception $e) {
                 // Cleanup uploaded file if DB operation fails
-                Storage::disk('public')->delete($newPhotoPath);
+                Storage::disk('local')->delete($newPhotoPath);
                 throw $e;
             }
         } else {
@@ -124,6 +152,36 @@ class PoskoController extends Controller
         }
 
         return redirect()->route('student.posko.edit')->with('success', 'Data posko kelompok berhasil diperbarui.');
+    }
+
+    private function resolvePhotoStorage(?string $path): array
+    {
+        if (!$path) {
+            return ['local', null];
+        }
+
+        if (Storage::disk('local')->exists($path)) {
+            return ['local', $path];
+        }
+
+        if (Storage::disk('public')->exists($path)) {
+            return ['public', $path];
+        }
+
+        return ['local', null];
+    }
+
+    private function deletePhotoFromKnownDisks(?string $path): void
+    {
+        if (!$path) {
+            return;
+        }
+
+        foreach (['local', 'public'] as $disk) {
+            if (Storage::disk($disk)->exists($path)) {
+                Storage::disk($disk)->delete($path);
+            }
+        }
     }
 
     private function getApprovedRegistration(): ?PesertaKkn

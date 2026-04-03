@@ -87,16 +87,16 @@ export default function ProfileShow() {
                                     <img
                                         src={avatarSrc}
                                         alt={user.name}
-                                        className="h-32 w-32 rounded-full border-4 border-white/10 object-cover shadow-lg"
+                                        className="h-32 w-32 rounded-full border-4 border-white/10 object-cover
                                     />
                                 ) : (
-                                    <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-white/10 bg-gradient-to-br from-emerald-500/30 to-blue-500/30 text-4xl font-bold text-white shadow-lg">
+                                    <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-white/10 bg-gradient-to-br from-emerald-500/30 to-blue-500/30 text-4xl font-bold text-white
                                         {user.name.charAt(0).toUpperCase()}
                                     </div>
                                 )}
                                 <button
                                     onClick={() => avatarInputRef.current?.click()}
-                                    className="absolute bottom-0 right-0 rounded-full bg-emerald-600 p-2 text-white shadow-lg transition hover:bg-emerald-700"
+                                    className="absolute bottom-0 right-0 rounded-full bg-emerald-600 p-2 text-white transition hover:bg-emerald-700"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
@@ -178,7 +178,7 @@ export default function ProfileShow() {
                                 <button
                                     type="submit"
                                     disabled={processing}
-                                    className="rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 px-6 py-2 text-sm font-semibold text-white shadow-lg transition hover:from-emerald-700 hover:to-emerald-600 disabled:opacity-60"
+                                    className="rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 px-6 py-2 text-sm font-semibold text-white transition hover:from-emerald-700 hover:to-emerald-600 disabled:opacity-60"
                                 >
                                     {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
                                 </button>
@@ -239,7 +239,7 @@ export default function ProfileShow() {
                                 <button
                                     type="submit"
                                     disabled={passwordForm.processing}
-                                    className="rounded-lg bg-gradient-to-r from-rose-600 to-rose-500 px-6 py-2 text-sm font-semibold text-white shadow-lg transition hover:from-rose-700 hover:to-rose-600 disabled:opacity-60"
+                                    className="rounded-lg bg-gradient-to-r from-rose-600 to-rose-500 px-6 py-2 text-sm font-semibold text-white transition hover:from-rose-700 hover:to-rose-600 disabled:opacity-60"
                                 >
                                     {passwordForm.processing ? 'Mengubah...' : 'Ubah Password'}
                                 </button>

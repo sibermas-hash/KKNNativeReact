@@ -21,6 +21,12 @@ class RegistrationController extends Controller
      */
     public function register(Request $request): JsonResponse
     {
+        if (! config('api_keys.self_service_enabled', false)) {
+            return response()->json([
+                'error' => 'Registrasi mandiri API key sedang dinonaktifkan. Hubungi admin untuk pengajuan akses.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'project_name' => 'required|string|max:255',
             'email' => 'required|email|max:255',

@@ -227,7 +227,7 @@
                     <div class="student-info">NIM. <strong>{{ $nim }}</strong></div>
 
                     <div class="certify-text">
-                        {!! $body !!}
+                        {!! nl2br(e($body)) !!}
                     </div>
 
                     <div class="grade-ribbon">

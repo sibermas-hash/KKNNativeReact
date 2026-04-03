@@ -57,7 +57,7 @@ class FinalReportController extends Controller
                 'title' => $validated['title'],
                 'abstract' => $validated['abstract'] ?? null,
                 'file_path' => $path,
-                'file_name' => $file->getClientOriginalName(),
+                'file_name' => strip_tags($file->getClientOriginalName()),
                 'status' => 'submitted',
                 'submitted_at' => now(),
             ],

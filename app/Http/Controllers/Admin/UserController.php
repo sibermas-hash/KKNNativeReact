@@ -19,13 +19,14 @@ class UserController extends Controller
 {
     public function index(Request $request): Response
     {
-        $users = User::with(['roles', 'mahasiswa', 'dosen'])
+        $users = User::with(['roles', 'mahasiswa.prodi.fakultas', 'dosen.fakultas', 'fakultas'])
             ->when($request->input('search'), function ($q, $search) {
                 $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
                 $q->where(function ($query) use ($s) {
                     $query->where('name', 'like', "%{$s}%")
                         ->orWhere('email', 'like', "%{$s}%")
-                        ->orWhere('username', 'like', "%{$s}%");
+                        ->orWhere('username', 'like', "%{$s}%")
+                        ->orWhereHas('fakultas', fn ($facultyQuery) => $facultyQuery->where('nama', 'like', "%{$s}%"));
                 });
             })
             ->when($request->input('role'), fn($q, $role) => $q->role($role))
@@ -43,7 +44,7 @@ class UserController extends Controller
     public function dosenIndex(Request $request): Response
     {
         $users = User::role('dpl')
-            ->with(['dosen'])
+            ->with(['dosen.fakultas'])
             ->when($request->input('search'), function ($q, $search) {
                 $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
                 $q->where(function ($query) use ($s) {
@@ -106,10 +107,10 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()->symbols()],
-            'role' => ['required', 'in:superadmin,dpl,student'],
+            'role' => ['required', 'in:superadmin,faculty_admin,dpl,student'],
             // Student fields
             'nim' => ['required_if:role,student', 'nullable', 'string', 'max:20'],
-            'faculty_id' => ['required_if:role,student', 'nullable', 'exists:fakultas,id'],
+            'faculty_id' => ['required_if:role,student,dpl,faculty_admin', 'nullable', 'exists:fakultas,id'],
             'program_id' => ['required_if:role,student', 'nullable', 'exists:prodi,id'],
             'batch_year' => ['required_if:role,student', 'nullable', 'integer'],
             'gender' => ['required_if:role,student', 'nullable', 'in:L,P'],
@@ -128,6 +129,7 @@ class UserController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'is_active' => true,
+            'faculty_id' => $validated['role'] === 'faculty_admin' ? $validated['faculty_id'] : null,
         ]);
 
         $user->assignRole($validated['role']);

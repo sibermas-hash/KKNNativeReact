@@ -11,10 +11,40 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('periode', function (Blueprint $table) {
-            $table->integer('angkatan')->nullable()->after('academic_year_id');
-            $table->string('jenis', 100)->nullable()->after('angkatan');
-            $table->integer('kuota')->nullable()->after('end_date');
+        if (! Schema::hasTable('periode')) {
+            return;
+        }
+
+        $columnsToAdd = [];
+
+        if (! Schema::hasColumn('periode', 'angkatan')) {
+            $columnsToAdd['angkatan'] = true;
+        }
+
+        if (! Schema::hasColumn('periode', 'jenis')) {
+            $columnsToAdd['jenis'] = true;
+        }
+
+        if (! Schema::hasColumn('periode', 'kuota')) {
+            $columnsToAdd['kuota'] = true;
+        }
+
+        if ($columnsToAdd === []) {
+            return;
+        }
+
+        Schema::table('periode', function (Blueprint $table) use ($columnsToAdd) {
+            if (isset($columnsToAdd['angkatan'])) {
+                $table->integer('angkatan')->nullable()->after('academic_year_id');
+            }
+
+            if (isset($columnsToAdd['jenis'])) {
+                $table->string('jenis', 100)->nullable()->after('angkatan');
+            }
+
+            if (isset($columnsToAdd['kuota'])) {
+                $table->integer('kuota')->nullable()->after('end_date');
+            }
         });
     }
 
@@ -23,8 +53,24 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('periode', function (Blueprint $table) {
-            $table->dropColumn(['angkatan', 'jenis', 'kuota']);
+        if (! Schema::hasTable('periode')) {
+            return;
+        }
+
+        $columnsToDrop = [];
+
+        foreach (['angkatan', 'jenis', 'kuota'] as $column) {
+            if (Schema::hasColumn('periode', $column)) {
+                $columnsToDrop[] = $column;
+            }
+        }
+
+        if ($columnsToDrop === []) {
+            return;
+        }
+
+        Schema::table('periode', function (Blueprint $table) use ($columnsToDrop) {
+            $table->dropColumn($columnsToDrop);
         });
     }
 };

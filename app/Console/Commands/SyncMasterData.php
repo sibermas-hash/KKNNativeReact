@@ -273,11 +273,17 @@ class SyncMasterData extends Command
             // Map Prodi (Program Studi)
             // Master API returns 'prodi' as string name usually
             $prodiName = $studData['prodi'] ?? 'Unknown Program';
-            $program = Prodi::on('kkn')->firstOrCreate(
-                ['nama' => $prodiName], // Map by Name if code is not distinct
+            $programLookup = isset($studData['prodi_id'])
+                ? ['master_id' => $studData['prodi_id']]
+                : ['nama' => $prodiName];
+
+            $program = Prodi::on('kkn')->updateOrCreate(
+                $programLookup,
                 [
                     'code' => strtoupper(substr(Str::slug($prodiName), 0, 10)),
+                    'nama' => $prodiName,
                     'faculty_id' => $defaultFaculty?->id,
+                    'master_synced_at' => $now,
                 ]
             );
 
@@ -300,14 +306,7 @@ class SyncMasterData extends Command
 
             // Only set password for NEW users — never overwrite existing passwords
             if ($isNewUser) {
-                $birthDate = $studData['tanggal_lahir'] ?? $studData['birth_date'] ?? null;
-                if ($birthDate) {
-                    $dt = new \DateTime($birthDate);
-                    $password = $dt->format('d') . $dt->format('y') . $dt->format('m');
-                    $user->password = Hash::make($password);
-                } else {
-                    $user->password = Hash::make($username);
-                }
+                $user->password = Hash::make(\Illuminate\Support\Str::password(12));
             }
 
             $user->save();

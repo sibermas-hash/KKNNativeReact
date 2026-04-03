@@ -83,12 +83,12 @@ class ApiKey extends Model
      */
     public static function findByPlaintext(string $candidate): ?self
     {
-        // Cache active keys to prevent loading all keys on every request
+        // Cache all keys so middleware can distinguish invalid vs inactive keys.
         $keys = \Illuminate\Support\Facades\Cache::remember(
-            'api_keys_active',
+            'api_keys_all',
             3600, // 1 hour cache
             function () {
-                return static::where('is_active', true)->get();
+                return static::query()->get();
             }
         );
 
@@ -107,6 +107,7 @@ class ApiKey extends Model
     public static function clearCache(): void
     {
         \Illuminate\Support\Facades\Cache::forget('api_keys_active');
+        \Illuminate\Support\Facades\Cache::forget('api_keys_all');
     }
 
     private function looksHashed(string $value): bool

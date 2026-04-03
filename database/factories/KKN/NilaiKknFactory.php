@@ -14,8 +14,7 @@ class NilaiKknFactory extends Factory
     public function definition(): array
     {
         return [
-            // FK references users.id (legacy from original kkn_scores.student_id constrained('users'))
-            'mahasiswa_id' => User::factory(),
+            'user_id' => User::factory(),
             'kelompok_id' => KelompokKkn::factory(),
             'final_report_score' => $this->faker->randomFloat(2, 60, 100),
             'execution_score' => $this->faker->randomFloat(2, 60, 100),

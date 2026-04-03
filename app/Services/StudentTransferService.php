@@ -73,11 +73,11 @@ class StudentTransferService
             throw new \Exception('Tidak dapat memindahkan peserta ke periode yang sama.');
         }
 
-        // Must be same or later angkatan
+        // Must be same or later period number
         $currentPeriod = $peserta->periode;
-        if ($targetPeriod->angkatan && $currentPeriod->angkatan
-            && $targetPeriod->angkatan < $currentPeriod->angkatan) {
-            throw new \Exception('Tidak dapat memindahkan peserta ke angkatan yang lebih lama.');
+        if ($targetPeriod->periode && $currentPeriod->periode
+            && $targetPeriod->periode < $currentPeriod->periode) {
+            throw new \Exception('Tidak dapat memindahkan peserta ke periode yang lebih lama.');
         }
 
         // Check quota on target period

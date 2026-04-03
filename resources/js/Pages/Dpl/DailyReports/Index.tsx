@@ -33,7 +33,7 @@ export default function DplDailyReportsIndex({ reports, filters }: Props) {
                     <p className="text-sm text-slate-500 font-medium">{reports.data?.length ?? 0} laporan ditemukan</p>
                     <button
                         onClick={handleApproveAll}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 transition-all shadow-sm"
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 transition-all
                     >
                         <CheckBadgeIcon className="w-4 h-4" />
                         Setujui Semua
@@ -49,7 +49,7 @@ export default function DplDailyReportsIndex({ reports, filters }: Props) {
                 </form>
             </div>
 
-            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white
                 <table className="min-w-full divide-y divide-slate-200">
                     <thead className="bg-slate-50">
                         <tr>

@@ -11,12 +11,16 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        if ($user->hasRole('superadmin')) {
+        if ($user->hasRole('Admin') || $user->hasRole('superadmin')) {
             return redirect()->route('admin.dashboard');
         }
 
         if ($user->hasRole('dpl')) {
             return redirect()->route('dpl.dashboard');
+        }
+
+        if ($user->hasRole('faculty_admin')) {
+            return redirect()->route('admin.rekap-nilai.index');
         }
 
         return redirect()->route('student.dashboard');

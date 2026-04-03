@@ -22,7 +22,7 @@ class PeriodContextService
         Session::put(self::SESSION_KEY, $periodId);
         Session::put(self::SESSION_DATA_KEY, [
             'id' => $period->id,
-            'angkatan' => $period->angkatan,
+            'periode' => $period->periode,
             'jenis' => $period->jenis,
             'name' => $period->name,
             'academic_year' => $period->tahunAkademik?->year ?? null,
@@ -58,27 +58,27 @@ class PeriodContextService
     {
         return Cache::remember('default_period_id', 3600, function () {
             return Periode::where('is_active', true)
-                ->orderBy('angkatan', 'desc')
+                ->orderBy('periode', 'desc')
                 ->value('id');
         });
     }
 
     /**
-     * Get all available periods grouped by angkatan for the period selector.
+     * Get all available periods grouped by period number for the period selector.
      */
     public function getAvailablePeriods(): array
     {
         return Cache::remember('available_periods', 3600, function () {
             return Periode::with('tahunAkademik')
-                ->orderBy('angkatan', 'desc')
+                ->orderBy('periode', 'desc')
                 ->orderBy('jenis')
                 ->get()
-                ->groupBy('angkatan')
+                ->groupBy('periode')
                 ->map(function ($periods) {
                     return $periods->map(function ($period) {
                         return [
                             'id' => $period->id,
-                            'angkatan' => $period->angkatan,
+                            'periode' => $period->periode,
                             'jenis' => $period->jenis,
                             'name' => $period->name,
                             'academic_year' => $period->tahunAkademik?->year ?? null,

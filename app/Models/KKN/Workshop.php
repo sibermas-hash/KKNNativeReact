@@ -29,6 +29,16 @@ class Workshop extends Model
         'workshop_date' => 'date',
     ];
 
+    public function getStartTimeAttribute($value): ?string
+    {
+        return $value ? substr((string) $value, 0, 5) : null;
+    }
+
+    public function getEndTimeAttribute($value): ?string
+    {
+        return $value ? substr((string) $value, 0, 5) : null;
+    }
+
     public function peserta(): HasMany
     {
         return $this->hasMany(PesertaWorkshop::class, 'workshop_id');

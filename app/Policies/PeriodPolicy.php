@@ -13,7 +13,7 @@ class PeriodPolicy extends BasePolicy
     public function viewAny(User $user): bool
     {
         return $this->superAdminBypass($user, 'viewAny')
-            ?? $user->hasAnyRole(['admin', 'superadmin']);
+            ?? $user->hasRole('superadmin');
     }
 
     /**
@@ -22,7 +22,7 @@ class PeriodPolicy extends BasePolicy
     public function view(User $user, Periode $period): bool
     {
         return $this->superAdminBypass($user, 'view')
-            ?? $user->hasAnyRole(['admin', 'superadmin']);
+            ?? $user->hasRole('superadmin');
     }
 
     /**
@@ -31,7 +31,7 @@ class PeriodPolicy extends BasePolicy
     public function manageDpl(User $user, Periode $period): bool
     {
         return $this->superAdminBypass($user, 'manageDpl')
-            ?? $user->hasRole('admin');
+            ?? $user->hasRole('superadmin');
     }
 
     /**
@@ -40,7 +40,7 @@ class PeriodPolicy extends BasePolicy
     public function transferStudents(User $user): bool
     {
         return $this->superAdminBypass($user, 'transferStudents')
-            ?? $user->hasRole('admin');
+            ?? $user->hasRole('superadmin');
     }
 
     /**
@@ -49,7 +49,7 @@ class PeriodPolicy extends BasePolicy
     public function manageRegistrations(User $user, Periode $period): bool
     {
         return $this->superAdminBypass($user, 'manageRegistrations')
-            ?? $user->hasRole('admin');
+            ?? $user->hasRole('superadmin');
     }
 
     /**

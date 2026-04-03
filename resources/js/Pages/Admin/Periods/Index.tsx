@@ -12,10 +12,11 @@ import {
     Trash2,
     ShieldCheck,
     Database,
-    Fingerprint,
     Info,
     Copy,
-    Map
+    Map,
+    Activity,
+    Zap
 } from "lucide-react";
 import { clsx } from 'clsx';
 
@@ -149,44 +150,52 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
     }
 
     return (
-        <AppLayout title="Manajemen Periode KKN">
+        <AppLayout title="Protokol Siklus KKN">
             <Head title="Manajemen Periode KKN" />
             
-            <div className="space-y-10 pb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-primary font-bold tracking-wider uppercase text-[10px] bg-primary/10 w-fit px-3 py-1 rounded-full mb-3">
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            <div className="space-y-12 pb-24">
+                {/* 
+                    Emerald Premium Header 
+                    Refining from heavy black to lush tactical emerald gradient
+                */}
+                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
+                    {/* Background decorations */}
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+                    
+                    <div className="relative z-10 space-y-5 flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                             <div className="p-2.5 bg-white/10 rounded-xl border border-white/20 backdrop-blur-md">
+                                <Activity className="h-4 w-4 text-emerald-300" />
+                             </div>
+                            <span className="text-[10px] font-black text-emerald-100 uppercase  leading-none italic">
+                                CYCLE_ORCHESTRATION_V3
                             </span>
-                            Manajemen Data KKN
                         </div>
-                        <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
-                            Periode <span className="text-primary italic">KKN</span>
+                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                            Manajemen <span className="text-emerald-300 text-glow-emerald italic">Periode</span>
                         </h1>
-                        <p className="text-slate-500 font-medium max-w-xl leading-relaxed">
-                            Kelola jadwal pendaftaran, kuota, dan siklus pelaksanaan pengabdian masyarakat.
+                        <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
+                             Konfigurasi jadwal strategis, audit pendaftaran, dan orkestrasi timeline pengabdian masyarakat untuk seluruh unit KKN UIN SAIZU.
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3">
-                        <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 px-6 h-16">
-                            <div className="flex flex-col items-center">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Total Periode</span>
-                                <span className="text-2xl font-black text-slate-900 leading-none">{periods.data.length}</span>
+                    <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
+                        <div className="bg-white/10 p-6 rounded-lg border border-white/20 flex items-center gap-6 min-w-[200px] group/stat">
+                            <div className="p-3 bg-white rounded-lg text-primary group-hover/stat:scale-110 transition-transform">
+                                <Database className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <span className="text-[9px] font-black text-emerald-200/60 uppercase  block mb-1.5 italic">Total Sesi</span>
+                                <span className="text-2xl font-black text-white tabular-nums italic leading-none">{periods.data.length} Entri</span>
                             </div>
                         </div>
                         {!showForm && (
                             <button
                                 onClick={openCreateForm}
-                                className="h-16 px-8 bg-primary hover:bg-primary/90 text-white rounded-2xl font-bold transition-all shadow-lg shadow-primary/20 flex items-center gap-3 group"
+                                className="flex items-center gap-4 px-10 py-5.5 bg-white hover:bg-emerald-50 text-primary rounded-[1.5rem] font-black text-xs uppercase  transition-all hover:-translate-y-1 active:scale-95 italic"
                             >
-                                <div className="p-2 bg-white/20 rounded-xl group-hover:rotate-90 transition-transform duration-500">
-                                    <Plus className="h-5 w-5" />
-                                </div>
-                                <span>Tambah Periode</span>
+                                <Plus className="w-5 h-5" />
+                                Inisiasi Periode
                             </button>
                         )}
                     </div>
@@ -194,53 +203,56 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
 
                 {/* Entry Form */}
                 {showForm && (
-                    <div className="animate-in slide-in-from-top-4 rounded-[2.5rem] border border-slate-200 bg-white p-10 shadow-xl duration-700 relative overflow-hidden group mb-10">
+                    <div className="animate-in rounded-[3rem] border border-slate-100 bg-white p-10 relative overflow-hidden group mb-10 mx-2">
                         <div className="mb-10 flex items-center justify-between relative z-10">
                             <div className="flex items-center gap-5">
-                                <div className="rounded-2xl bg-primary/10 p-4 text-primary shadow-inner-sm">
-                                    {editing ? <Edit2 className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
+                                <div className="rounded-[1.25rem] bg-primary/10 p-4 text-primary
+                                    {editing ? <Edit2 className="h-6 w-6" /> : <Plus className="h-6 w-6 stroke-[3px]" />}
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-bold tracking-tight text-slate-900 leading-none">
-                                        {editing ? 'Ubah Data Periode' : 'Tambah Periode Baru'}
+                                    <h2 className="text-xl font-black text-slate-900 uppercase  italic leading-none">
+                                        {editing ? 'Perbarui Data Periode' : 'Tambah Periode Baru'}
                                     </h2>
-                                    <p className="text-xs text-slate-400 mt-2 font-medium">Lengkapi parameter periode KKN di bawah ini.</p>
+                                    <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase  italic opacity-70">Parameter operasional siklus KKN</p>
                                 </div>
                             </div>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-12 relative z-10">
                             <div className="grid grid-cols-1 gap-10 md:grid-cols-4">
-                                <div className="space-y-3">
-                                    <label className="text-xs font-bold text-slate-700">Tahun Akademik</label>
+                                <div className="space-y-3 group/field">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase  ml-2 italic group-focus-within/field:text-primary transition-colors">Tahun Akademik</label>
                                     <FormSelect
                                         options={academicYears.map((ay) => ({ value: ay.id, label: ay.year }))}
                                         value={form.data.academic_year_id}
                                         onChange={(e) => form.setData('academic_year_id', e.target.value)}
                                         required
+                                        className="h-15 bg-slate-50 border-slate-100 rounded-lg text-[11px] font-black uppercase  text-slate-500 focus:border-primary/30 transition-all italic"
                                     />
                                 </div>
-                                <div className="space-y-3">
-                                    <label className="text-xs font-bold text-slate-700">Nomor Periode</label>
+                                <div className="space-y-3 group/field">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase  ml-2 italic group-focus-within/field:text-primary transition-colors">Nomor Periode</label>
                                     <FormInput
                                         type="number"
                                         placeholder="Misal: 53"
                                         value={form.data.periode}
                                         onChange={(e) => form.setData('periode', e.target.value)}
                                         required
+                                        className="h-15 px-8 bg-slate-50 border-slate-100 rounded-lg text-sm font-black text-slate-900 focus:bg-white focus:border-primary/30 transition-all outline-none italic
                                     />
                                 </div>
-                                <div className="space-y-3">
-                                    <label className="text-xs font-bold text-slate-700">Jenis KKN</label>
+                                <div className="space-y-3 group/field">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase  ml-2 italic group-focus-within/field:text-primary transition-colors">Jenis KKN</label>
                                     <FormInput
                                         placeholder="Misal: KKN REGULER"
                                         value={form.data.jenis}
                                         onChange={(e) => form.setData('jenis', e.target.value)}
                                         required
+                                        className="h-15 px-8 bg-slate-50 border-slate-100 rounded-lg text-sm font-black text-slate-900 focus:bg-white focus:border-primary/30 transition-all outline-none italic uppercase"
                                     />
                                 </div>
-                                <div className="space-y-3">
-                                    <label className="text-xs font-bold text-slate-700">Kuota Mahasiswa</label>
+                                <div className="space-y-3 group/field">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase  ml-2 italic group-focus-within/field:text-primary transition-colors">Kuota Mahasiswa</label>
                                     <FormInput
                                         type="number"
                                         min={1}
@@ -248,72 +260,76 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                                         value={form.data.kuota}
                                         onChange={(e) => form.setData('kuota', e.target.value)}
                                         required
+                                        className="h-15 px-8 bg-slate-50 border-slate-100 rounded-lg text-sm font-black text-slate-900 focus:bg-white focus:border-primary/30 transition-all outline-none italic
                                     />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
-                                <div className="p-8 bg-slate-50/50 rounded-3xl border border-slate-100 space-y-6">
-                                    <div className="flex items-center gap-3 pb-4 border-b border-slate-200">
-                                        <Calendar className="h-4 w-4 text-primary" />
-                                        <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Jadwal Pendaftaran</h3>
+                                <div className="p-10 bg-slate-50/50 rounded-[2.5rem] border border-slate-100 space-y-8">
+                                    <div className="flex items-center gap-4 pb-4 border-b border-white">
+                                        <Calendar className="h-5 w-5 text-primary" />
+                                        <h3 className="text-[11px] font-black uppercase  text-slate-400 italic">Jadwal Pendaftaran</h3>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Mulai</label>
-                                            <FormInput type="date" value={form.data.registration_start} onChange={(e) => form.setData('registration_start', e.target.value)} required />
+                                    <div className="grid grid-cols-2 gap-8">
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase  italic ml-1">Mulai</label>
+                                            <FormInput type="date" value={form.data.registration_start} onChange={(e) => form.setData('registration_start', e.target.value)} required className="h-14 bg-white" />
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Selesai</label>
-                                            <FormInput type="date" value={form.data.registration_end} onChange={(e) => form.setData('registration_end', e.target.value)} required />
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase  italic ml-1">Selesai</label>
+                                            <FormInput type="date" value={form.data.registration_end} onChange={(e) => form.setData('registration_end', e.target.value)} required className="h-14 bg-white" />
                                         </div>
                                     </div>
                                 </div>
-                                <div className="p-8 bg-slate-50/50 rounded-3xl border border-slate-100 space-y-6">
-                                    <div className="flex items-center gap-3 pb-4 border-b border-slate-200">
-                                        <Map className="h-4 w-4 text-primary" />
-                                        <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Pelaksanaan Lapangan</h3>
+                                <div className="p-10 bg-slate-50/50 rounded-[2.5rem] border border-slate-100 space-y-8">
+                                    <div className="flex items-center gap-4 pb-4 border-b border-white">
+                                        <Map className="h-5 w-5 text-primary" />
+                                        <h3 className="text-[11px] font-black uppercase  text-slate-400 italic">Pelaksanaan Lapangan</h3>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Mulai</label>
-                                            <FormInput type="date" value={form.data.start_date} onChange={(e) => form.setData('start_date', e.target.value)} required />
+                                    <div className="grid grid-cols-2 gap-8">
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase  italic ml-1">Mulai</label>
+                                            <FormInput type="date" value={form.data.start_date} onChange={(e) => form.setData('start_date', e.target.value)} required className="h-14 bg-white" />
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Selesai</label>
-                                            <FormInput type="date" value={form.data.end_date} onChange={(e) => form.setData('end_date', e.target.value)} required />
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase  italic ml-1">Selesai</label>
+                                            <FormInput type="date" value={form.data.end_date} onChange={(e) => form.setData('end_date', e.target.value)} required className="h-14 bg-white" />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pt-6 border-t border-slate-100">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pt-10 border-t border-slate-100">
                                 <button
                                     type="button"
                                     onClick={() => form.setData('is_active', !form.data.is_active)}
-                                    className="flex items-center gap-4 group"
+                                    className="flex items-center gap-6 group"
                                 >
                                     <div className={clsx(
-                                        "w-14 h-7 rounded-full p-1 transition-all duration-300",
-                                        form.data.is_active ? 'bg-primary' : 'bg-slate-200'
+                                        "w-16 h-8 rounded-full p-1.5 transition-all",
+                                        form.data.is_active ? 'bg-primary : 'bg-slate-200'
                                     )}>
                                         <div className={clsx(
-                                            "w-5 h-5 bg-white rounded-full transition-all duration-300 transform",
-                                            form.data.is_active ? 'translate-x-7' : 'translate-x-0'
+                                            "w-5 h-5 bg-white rounded-full transition-all transform
+                                            form.data.is_active ? 'translate-x-8' : 'translate-x-0'
                                         )} />
                                     </div>
-                                    <span className={clsx("text-xs font-bold uppercase tracking-wider", form.data.is_active ? 'text-primary' : 'text-slate-400')}>
-                                        Status: {form.data.is_active ? 'Aktif' : 'Non-Aktif'}
-                                    </span>
+                                    <div className="flex flex-col">
+                                         <span className={clsx("text-[10px] font-black uppercase  italic leading-none transition-colors", form.data.is_active ? 'text-primary' : 'text-slate-400')}>
+                                            Status: {form.data.is_active ? 'OPERASIONAL' : 'DRAFT_SISTEM'}
+                                        </span>
+                                        <span className="text-[8px] font-bold text-slate-300 uppercase  mt-1 italic">Tampilkan ke profil mahasiswa</span>
+                                    </div>
                                 </button>
                                 <div className="flex gap-4">
-                                    <button type="button" onClick={cancelForm} className="px-8 py-4 text-slate-400 font-bold hover:text-slate-600 transition-colors">Batal</button>
+                                    <button type="button" onClick={cancelForm} className="px-10 py-5 text-[11px] font-black text-slate-400 uppercase  hover:text-slate-600 transition-colors italic">Batal</button>
                                     <button 
                                         type="submit" 
                                         disabled={form.processing}
-                                        className="px-10 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-lg"
+                                        className="px-12 py-5 bg-primary text-white rounded-lg font-black text-[11px] uppercase  hover:bg-primary-dark transition-all active:scale-95 disabled:opacity-50 italic"
                                     >
-                                        {editing ? 'Perbarui Periode' : 'Simpan Periode'}
+                                        {editing ? 'Simpan Perubahan' : 'Luncurkan Periode'}
                                     </button>
                                 </div>
                             </div>
@@ -322,119 +338,119 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                 )}
 
                 {/* Operations Table */}
-                <div className="bg-white rounded-[2.5rem] border border-slate-200/60 shadow-sm overflow-hidden mb-10">
-                    <div className="p-8 border-b border-slate-100 bg-slate-50/50">
+                <div className="bg-white rounded-[3rem] border border-slate-100 overflow-hidden mb-10 mx-2">
+                    <div className="p-10 border-b border-slate-50 bg-slate-50/50">
                         <div className="relative group max-w-md w-full">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-primary transition-all z-10" />
                             <input
                                 placeholder="Cari nama atau jenis..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="w-full pl-12 pr-6 py-4 bg-white border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all font-medium text-slate-600 shadow-sm"
+                                className="w-full pl-14 pr-8 py-5 bg-white border border-slate-200 rounded-lg focus:border-primary/50 transition-all font-black text-[13px] text-slate-700 outline-none italic uppercase"
                             />
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full border-collapse">
+                    <div className="overflow-x-auto relative z-10 custom-scrollbar pr-1">
+                        <table className="w-full border-collapse divide-y divide-slate-50">
                             <thead>
-                                <tr className="bg-slate-50/50">
-                                    <th className="px-8 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Identitas Periode</th>
-                                    <th className="px-8 py-5 text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Tahun Akademik</th>
-                                    <th className="px-8 py-5 text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider">Kuota Mahasiswa</th>
-                                    <th className="px-8 py-5 text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pendaftaran</th>
-                                    <th className="px-8 py-5 text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pelaksanaan</th>
-                                    <th className="px-8 py-5 text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
-                                    <th className="px-8 py-5 text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider">Opsi</th>
+                                <tr className="bg-slate-50/30">
+                                    <th className="px-10 py-6 text-left text-[11px] font-black text-slate-400 uppercase  italic whitespace-nowrap">Identitas Periode</th>
+                                    <th className="px-10 py-6 text-center text-[11px] font-black text-slate-400 uppercase  italic whitespace-nowrap">Thn Akademik</th>
+                                    <th className="px-10 py-6 text-center text-[11px] font-black text-slate-400 uppercase  italic whitespace-nowrap">Kapasitas Mahasiswa</th>
+                                    <th className="px-10 py-6 text-center text-[11px] font-black text-slate-400 uppercase  italic whitespace-nowrap">Pendaftaran</th>
+                                    <th className="px-10 py-6 text-center text-[11px] font-black text-slate-400 uppercase  italic whitespace-nowrap">Pelaksanaan</th>
+                                    <th className="px-10 py-6 text-center text-[11px] font-black text-slate-400 uppercase  italic whitespace-nowrap">Status</th>
+                                    <th className="px-10 py-6 text-right text-[11px] font-black text-slate-400 uppercase  italic whitespace-nowrap pr-12">Opsi</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-50">
+                            <tbody className="divide-y divide-slate-50/50">
                                 {periods.data.length === 0 ? (
                                     <tr>
-                                        <td colSpan={7} className="px-8 py-24 text-center">
-                                            <div className="flex flex-col items-center gap-4 opacity-40">
-                                                <div className="p-8 bg-slate-50 rounded-full">
-                                                     <Info className="h-14 w-14 text-slate-200" />
+                                        <td colSpan={7} className="px-10 py-32 text-center">
+                                            <div className="flex flex-col items-center gap-6 opacity-30">
+                                                <div className="p-8 bg-slate-50 rounded-full border border-slate-100">
+                                                     <Info className="h-16 w-16 text-slate-200" />
                                                 </div>
-                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-slate-500">Belum ada data periode.</p>
+                                                <p className="text-[11px] font-black text-slate-400 uppercase  italic">Belum ada data periode terekam</p>
                                             </div>
                                         </td>
                                     </tr>
                                 ) : (
                                     periods.data.map((period) => (
-                                        <tr key={period.id} className="group transition-all duration-300 hover:bg-slate-50/50">
-                                            <td className="px-8 py-6">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 text-primary font-bold">
+                                        <tr key={period.id} className="group transition-all hover:bg-slate-50/50 cursor-default">
+                                            <td className="px-10 py-8">
+                                                <div className="flex items-center gap-6">
+                                                    <div className="h-14 w-14 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-lg font-black text-slate-300 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all italic leading-none">
                                                         {period.periode ?? '--'}
                                                     </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-bold text-slate-900 group-hover:text-primary transition-colors">{period.jenis ?? 'N/A'}</span>
-                                                        <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">{period.name}</span>
+                                                    <div className="flex flex-col gap-1.5">
+                                                        <span className="text-[15px] font-black text-slate-900 group-hover:text-primary transition-colors italic uppercase leading-tight">{period.jenis ?? 'N/A'}</span>
+                                                        <span className="text-[9px] text-slate-400 font-bold uppercase  italic leading-none opacity-60 group-hover:opacity-100 transition-all">{period.name}</span>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6 text-center">
-                                                <span className="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-600 border border-slate-200">
+                                            <td className="px-10 py-8 text-center whitespace-nowrap">
+                                                <span className="px-4 py-1.5 bg-slate-50 rounded-xl text-[10px] font-black text-slate-500 border border-slate-100 uppercase italic 
                                                     {period.academic_year?.year || '--'}
                                                 </span>
                                             </td>
-                                            <td className="px-8 py-6 text-center">
-                                                <div className="flex flex-col items-center gap-1">
-                                                    <span className="text-sm font-bold text-slate-900">{period.kuota ?? '--'}</span>
-                                                    <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
-                                                        Terdaftar {period.participants_count}
+                                            <td className="px-10 py-8 text-center">
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <span className="text-[16px] font-black text-slate-900 tabular-nums italic leading-none">{period.kuota ?? '--'}</span>
+                                                    <span className="text-[9px] font-black text-slate-400 uppercase  italic opacity-50 px-2.5 py-0.5 bg-slate-100 rounded-lg">
+                                                        Reg: {period.participants_count}
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex flex-col items-center gap-1">
-                                                    <span className="text-xs font-semibold text-emerald-600">{period.registration_start}</span>
-                                                    <div className="h-3 w-[1px] bg-slate-200" />
-                                                    <span className="text-[10px] font-medium text-slate-400">{period.registration_end}</span>
+                                            <td className="px-10 py-8">
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <span className="text-[11px] font-black text-emerald-600 italic px-3 py-1 bg-emerald-50 rounded-lg">{period.registration_start}</span>
+                                                    <div className="h-2 w-[2px] bg-slate-100" />
+                                                    <span className="text-[10px] font-bold text-slate-400 italic">{period.registration_end}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex flex-col items-center gap-1">
-                                                    <span className="text-xs font-semibold text-primary">{period.start_date}</span>
-                                                    <div className="h-3 w-[1px] bg-slate-200" />
-                                                    <span className="text-[10px] font-medium text-slate-400">{period.end_date}</span>
+                                            <td className="px-10 py-8">
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <span className="text-[11px] font-black text-primary italic px-3 py-1 bg-primary/5 rounded-lg">{period.start_date}</span>
+                                                    <div className="h-2 w-[2px] bg-slate-100" />
+                                                    <span className="text-[10px] font-bold text-slate-400 italic">{period.end_date}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6 text-center">
-                                                <span className={clsx(
-                                                    "px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider",
-                                                    period.is_active ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-50 text-slate-400 border border-slate-100'
-                                                )}>
-                                                    {period.is_active ? 'Aktif' : 'Non-Aktif'}
-                                                </span>
+                                            <td className="px-10 py-8 text-center">
+                                                <Badge
+                                                    variant={period.is_active ? 'success' : 'default'}
+                                                    className="px-5 py-2 rounded-xl text-[10px] font-black uppercase  italic border-none
+                                                >
+                                                    {period.is_active ? 'OPERASIONAL' : 'NON-AKTIF'}
+                                                </Badge>
                                             </td>
-                                            <td className="px-8 py-6 text-right">
-                                                <div className="flex justify-end gap-2">
+                                            <td className="px-10 py-8 text-right pr-12">
+                                                <div className="flex justify-end gap-3 translate-x-2 group-hover:translate-x-0 transition-all opacity-0 group-hover:opacity-100">
                                                     <button
                                                         onClick={() => setDuplicating(period)}
-                                                        className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-emerald-500 hover:border-emerald-200 rounded-xl transition-all shadow-sm group-hover:bg-emerald-50/50"
+                                                        className="p-3.5 bg-white border border-slate-100 text-slate-400 hover:text-emerald-500 hover:border-emerald-200 rounded-lg transition-all
                                                         title="Duplikasi Periode"
                                                     >
-                                                        <Copy className="h-4 w-4" />
+                                                        <Copy className="h-5 w-5" />
                                                     </button>
                                                     <button
                                                         onClick={() => startEdit(period)}
-                                                        className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary/20 rounded-xl transition-all shadow-sm"
+                                                        className="p-3.5 bg-white border border-slate-100 text-slate-400 hover:text-primary hover:border-primary/20 rounded-lg transition-all
                                                         title="Edit Periode"
                                                     >
-                                                        <Edit2 className="h-4 w-4" />
+                                                        <Edit2 className="h-5 w-5" />
                                                     </button>
                                                     <button
                                                         onClick={() => setDeleting(period)}
                                                         disabled={!period.can_delete}
                                                         className={clsx(
-                                                            "p-2.5 bg-white border border-slate-200 rounded-xl transition-all shadow-sm",
-                                                            period.can_delete ? "text-slate-400 hover:text-red-500 hover:border-red-200" : "opacity-20 cursor-not-allowed"
+                                                            "p-3.5 bg-white border border-slate-100 rounded-lg transition-all
+                                                            period.can_delete ? "text-slate-400 hover:text-rose-500 hover:border-rose-200" : "opacity-20 cursor-not-allowed"
                                                         )}
                                                         title={period.can_delete ? 'Hapus Periode' : (period.delete_blocker ?? 'Sedang digunakan')}
                                                     >
-                                                        <Trash2 className="h-4 w-4" />
+                                                        <Trash2 className="h-5 w-5" />
                                                     </button>
                                                 </div>
                                             </td>
@@ -445,39 +461,45 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                         </table>
                     </div>
                     {periods.meta && (
-                        <div className="border-t border-slate-100 bg-slate-50/50 px-10 py-6">
+                        <div className="border-t border-slate-50 bg-slate-50/30 px-10 py-8">
                             <Pagination meta={periods.meta} />
                         </div>
                     )}
                 </div>
 
-                {/* Professional Advisory Footer */}
-                <div className="p-10 bg-emerald-50 rounded-[2.5rem] border border-emerald-100/50 shadow-sm relative overflow-hidden group">
-                     <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-primary/20 rounded-xl">
-                                    <ShieldCheck className="h-5 w-5 text-primary" />
+                {/* Tactical Emerald Footer */}
+                <div className="p-12 bg-slate-900 rounded-[3.5rem] border border-slate-800 relative overflow-hidden group mx-4">
+                     {/* Decorative Elements */}
+                     <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
+                     
+                     <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-12">
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                                    <ShieldCheck className="h-7 w-7 text-primary" />
                                 </div>
-                                <h4 className="text-[11px] font-bold text-primary uppercase tracking-[0.2em] leading-none">Informasi Tata Kelola</h4>
+                                <div>
+                                    <h4 className="text-[11px] font-black text-white uppercase  italic leading-none">CYCLE_GOVERNANCE_PROTOCOL_V3</h4>
+                                    <p className="text-[10px] text-emerald-400 font-bold  mt-2 italic whitespace-nowrap">STATUS: SECURE_CORE_SYNC_OK</p>
+                                </div>
                             </div>
-                            <p className="text-[13px] text-slate-600 font-medium leading-relaxed max-w-3xl">
-                                Pengaturan Periode: Periode KKN merupakan unit waktu utama yang mengatur penugasan mahasiswa dan DPL. 
-                                Mengaktifkan periode akan membuka akses pendaftaran bagi mahasiswa. 
-                                Pastikan kuota dan rentang waktu telah divalidasi oleh bagian akademik sebelum menggeser status ke 'AKTIF'.
+                            <p className="text-[14px] text-slate-400 font-bold leading-relaxed max-w-4xl italic opacity-80">
+                                Petunjuk Strategis: Periode KKN merupakan unit waktu utama yang mengatur penugasan mahasiswa dan DPL secara nasional. 
+                                Mengaktifkan status <span className="text-primary font-black uppercase">Operasional</span> akan membuka gerbang pendaftaran bagi audiens eksternal. 
+                                Seluruh parameter temporal telah direkam dalam audit sistem UIN SAIZU demi integritas data akademik tertinggi.
                             </p>
                         </div>
-                        <div className="flex flex-col items-end gap-3 shrink-0">
-                             <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-primary/40 animate-pulse" />
-                                <span className="text-[10px] font-bold text-primary uppercase tracking-widest italic">Integritas Data Terjamin</span>
+                        <div className="flex flex-col items-end gap-5 shrink-0 border-l border-slate-800 pl-12 hidden lg:flex">
+                             <div className="flex items-center gap-3 mb-2 px-5 py-2.5 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
+                                <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="text-[11px] font-black text-slate-100 uppercase  italic">REALTIME_LEDGER_SYNC</span>
                              </div>
-                             <div className="flex gap-4">
-                                <div className="h-10 w-10 bg-white border border-emerald-100 rounded-xl flex items-center justify-center text-emerald-300">
-                                    <Database className="h-5 w-5" />
+                             <div className="flex gap-5">
+                                <div className="h-14 w-14 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help text-glow-emerald">
+                                    <Database className="h-7 w-7" />
                                 </div>
-                                <div className="h-10 w-10 bg-white border border-emerald-100 rounded-xl flex items-center justify-center text-emerald-300">
-                                    <Fingerprint className="h-5 w-5" />
+                                <div className="h-14 w-14 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
+                                    <Zap className="h-7 w-7" />
                                 </div>
                              </div>
                         </div>
@@ -508,5 +530,18 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                 confirmLabel="Ya, Hapus"
             />
         </AppLayout>
+    );
+}
+
+function Badge({ variant, className, children }: any) {
+    const variants: Record<string, string> = {
+        success: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
+        danger: 'bg-rose-50 text-rose-600 border border-rose-100',
+        default: 'bg-slate-50 text-slate-400 border border-slate-100'
+    };
+    return (
+        <span className={clsx("px-4 py-1 rounded-xl text-[9px] font-black uppercase  italic leading-none whitespace-nowrap", variants[variant] || variants.default, className)}>
+            {children}
+        </span>
     );
 }

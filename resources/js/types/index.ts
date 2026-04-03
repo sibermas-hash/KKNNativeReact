@@ -3,6 +3,7 @@ export interface User {
   username: string;
   name: string;
   email: string;
+  faculty?: Faculty | null;
   roles?: string[];
   permissions?: string[];
   profile?: UserProfile;
@@ -87,9 +88,10 @@ export interface Group {
 export interface Location {
   id: number;
   village_name: string;
+  district_name?: string | null;
+  regency_name?: string | null;
+  full_name?: string;
   address?: string;
-  latitude?: number;
-  longitude?: number;
   capacity: number;
 }
 
@@ -185,6 +187,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     error?: string;
     warning?: string;
     info?: string;
+    captcha_question?: string;
   };
   errors?: Record<string, string>;
 } & T;

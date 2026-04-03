@@ -5,6 +5,7 @@ namespace App\Models\KKN;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class TahunAkademik extends Model
 {
@@ -24,23 +25,30 @@ class TahunAkademik extends Model
 
     public static function getActiveYear(): ?self
     {
-        return \Illuminate\Support\Facades\Cache::remember('active_year', now()->addHours(24), function () {
+        return Cache::remember('active_year', now()->addHours(24), function () {
             return self::where('is_active', true)->first();
         });
     }
 
     protected static function booted()
     {
-        static::updated(function () {
-            \Illuminate\Support\Facades\Cache::forget('active_year');
+        static::saving(function ($model) {
+            // Jika tahun ini diset aktif, nonaktifkan tahun lainnya
+            if ($model->is_active) {
+                self::where('id', '!=', $model->id)
+                    ->where('is_active', true)
+                    ->update(['is_active' => false]);
+                
+                Cache::forget('active_year');
+            }
         });
 
-        static::created(function () {
-            \Illuminate\Support\Facades\Cache::forget('active_year');
+        static::saved(function () {
+            Cache::forget('active_year');
         });
 
         static::deleted(function () {
-            \Illuminate\Support\Facades\Cache::forget('active_year');
+            Cache::forget('active_year');
         });
     }
 

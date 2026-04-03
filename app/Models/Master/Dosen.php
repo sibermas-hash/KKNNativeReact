@@ -25,6 +25,10 @@ class Dosen extends Model
         'status',
     ];
 
+    protected $casts = [
+        'status' => 'string',
+    ];
+
     /**
      * Accessor for backward compatibility (name → nama).
      */

@@ -31,18 +31,6 @@ return [
 
     'connections' => [
 
-        'sqlite' => [
-            'driver' => 'sqlite',
-            'url' => env('DB_URL'),
-            'database' => env('DB_DATABASE', database_path('database.sqlite')),
-            'prefix' => '',
-            'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-            'busy_timeout' => null,
-            'journal_mode' => null,
-            'synchronous' => null,
-            'transaction_mode' => 'DEFERRED',
-        ],
-
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DB_URL'),
@@ -112,12 +100,7 @@ return [
             'sslmode' => env('DB_SSLMODE', 'prefer'),
         ],
 
-        'kkn' => env('DB_KKN_DRIVER', 'pgsql') === 'sqlite' ? [
-            'driver' => 'sqlite',
-            'database' => env('DB_DATABASE', ':memory:'),
-            'prefix' => '',
-            'foreign_key_constraints' => true,
-        ] : [
+        'kkn' => [
             'driver' => 'pgsql',
             'host' => env('DB_KKN_HOST', 'master.infiatin.cloud'),
             'port' => env('DB_KKN_PORT', '5432'),

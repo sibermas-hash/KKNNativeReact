@@ -169,13 +169,15 @@ class ReportController extends Controller
             abort_unless($user->hasRole('superadmin'), 403, 'Anda tidak memiliki akses ke file laporan ini.');
         }
 
-        if (!$report->file_path || !Storage::disk('public')->exists($report->file_path)) {
+        [$disk, $path] = $this->resolveReportStorage($report->file_path);
+
+        if (!$path) {
             abort(404, 'File laporan tidak ditemukan.');
         }
 
-        return Storage::disk('public')->download(
-            $report->file_path,
-            $report->file_name ?: basename($report->file_path)
+        return Storage::disk($disk)->download(
+            $path,
+            $report->file_name ?: basename($path)
         );
     }
 
@@ -215,5 +217,22 @@ class ReportController extends Controller
         }
 
         return \Illuminate\Support\Facades\Storage::download($score->evidence_file);
+    }
+
+    private function resolveReportStorage(?string $path): array
+    {
+        if (!$path) {
+            return ['local', null];
+        }
+
+        if (Storage::disk('local')->exists($path)) {
+            return ['local', $path];
+        }
+
+        if (Storage::disk('public')->exists($path)) {
+            return ['public', $path];
+        }
+
+        return ['local', null];
     }
 }

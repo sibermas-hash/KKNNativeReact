@@ -1,191 +1,400 @@
-import { Link } from '@inertiajs/react';
+import { Link, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import {
-    CalendarIcon,
-    MapPinIcon,
-    UserIcon,
-    DocumentTextIcon,
-    CloudArrowUpIcon,
-    AcademicCapIcon,
-    ShieldCheckIcon,
-    ArrowRightIcon,
-    SparklesIcon
-} from '@heroicons/react/24/outline';
+    Calendar,
+    MapPin,
+    User,
+    FileText,
+    UploadCloud,
+    GraduationCap,
+    ShieldCheck,
+    ArrowRight,
+    Sparkles,
+    IdCard,
+    Zap,
+    Info,
+    Rocket,
+    Lock,
+    Beaker,
+    ClipboardList,
+    CheckCircle,
+    Activity,
+    ChevronRight,
+    Presentation,
+    BadgeCheck
+} from 'lucide-react';
+import { clsx } from 'clsx';
 
 interface Props {
     student: any;
     registration: any;
     dailyReportCount: number;
+    workProgramCount: number;
+    workshopRegistered: boolean;
     finalReport: any;
+    grade: any;
 }
 
-export default function StudentDashboard({ student, registration, dailyReportCount, finalReport }: Props) {
-    const isGroupPinned = registration?.group;
+export default function StudentDashboard({ student, registration, dailyReportCount, workProgramCount, workshopRegistered, finalReport, grade }: Props) {
+    const isApproved = registration?.status === 'approved';
+    const isPending = registration?.status === 'pending';
+    const isGroupPinned = isApproved && Boolean(registration?.group);
+    const studentFirstName = student?.name?.split(' ')?.[0] ?? 'Mahasiswa';
+
+    // Alur Pelaksanaan KKN (SOP UIN SAIZU Compliance)
+    const phases = [
+        {
+            id: 1,
+            label: 'Pendaftaran',
+            desc: 'Registrasi & Plotting',
+            icon: Rocket,
+            isCompleted: isApproved,
+            isActive: !registration || isPending
+        },
+        {
+            id: 2,
+            label: 'Pembekalan',
+            desc: 'Pembekalan & Metode',
+            icon: Presentation,
+            isCompleted: isApproved && workshopRegistered,
+            isActive: isApproved && !workshopRegistered
+        },
+        {
+            id: 3,
+            label: 'Persiapan',
+            desc: 'Program Kerja',
+            icon: Beaker,
+            isCompleted: workshopRegistered && workProgramCount > 0, 
+            isActive: workshopRegistered && workProgramCount === 0
+        },
+        {
+            id: 4,
+            label: 'Pelaksanaan',
+            desc: 'Laporan Harian',
+            icon: ClipboardList,
+            isCompleted: dailyReportCount >= (registration?.period?.min_logbook ?? 30), 
+            isActive: workProgramCount > 0 && dailyReportCount < (registration?.period?.min_logbook ?? 30)
+        },
+        {
+            id: 5,
+            label: 'Pelaporan',
+            desc: 'Laporan Akhir',
+            icon: UploadCloud,
+            isCompleted: !!finalReport,
+            isActive: dailyReportCount >= (registration?.period?.min_logbook ?? 30) && !finalReport
+        },
+        {
+            id: 6,
+            label: 'Evaluasi',
+            desc: 'Nilai & Sertifikat',
+            icon: BadgeCheck,
+            isCompleted: grade?.is_finalized,
+            isActive: !!finalReport && !grade?.is_finalized
+        }
+    ];
+
+    const activePhaseIndex = phases.findIndex(p => p.isActive);
+    const currentPhase = activePhaseIndex !== -1 ? phases[activePhaseIndex] : (phases.every(p => p.isCompleted) ? phases[5] : phases[0]);
 
     return (
-        <AppLayout title="Pusat Komando Personal">
-            <div className="space-y-10 pb-16 animate-in fade-in duration-700">
-                {/* Modern Hero Section */}
-                <div className="bg-white rounded-[2rem] border border-slate-200/60 p-10 flex flex-col md:flex-row items-center gap-10 shadow-sm relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:scale-110 transition-transform duration-700">
-                        <SparklesIcon className="h-40 w-40 text-primary" />
-                    </div>
-
-                    <div className="relative z-10">
-                        <div className="h-24 w-24 rounded-[1.5rem] bg-primary text-white flex items-center justify-center text-4xl font-black shadow-lg shadow-primary/20 transition-transform group-hover:rotate-6">
-                            {student?.name?.charAt(0)}
+        <AppLayout title="Dasbor Mahasiswa">
+            <Head title="Portal Mahasiswa" />
+            
+            <div className="space-y-12 pb-24">
+                {/* Sleek Minimalist Operational Header */}
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 border-b border-slate-100 pb-10">
+                    <div className="flex items-center gap-6">
+                        <div className="relative shrink-0">
+                            <div className="h-16 w-16 rounded-lg bg-white border border-slate-100 text-primary flex items-center justify-center text-2xl font-black italic leading-none">
+                                {student?.name?.charAt(0) ?? 'M'}
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-white rounded-full flex items-center justify-center border border-slate-100">
+                               <ShieldCheck className={clsx("h-3.5 w-3.5", isApproved ? "text-emerald-500" : "text-slate-300")} />
+                            </div>
+                        </div>
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-black text-emerald-600 uppercase  italic">
+                                    STUDENT_TERMINAL_V3.2
+                                </span>
+                            </div>
+                            <h1 className="text-2xl md:text-3xl font-black text-slate-900  uppercase italic leading-none">
+                                Halo, <span className="text-primary">{studentFirstName}!</span>
+                            </h1>
+                            <p className="text-slate-400 font-bold text-xs italic  flex items-center gap-2">
+                                <Sparkles className="w-3 h-3 text-emerald-400 fill-emerald-100" />
+                                Anda sedang dalam tahap <span className="text-slate-600 underline decoration-emerald-200 decoration-2 underline-offset-4">{isPending ? 'VERIFIKASI_ADMIN' : currentPhase.label}</span>.
+                            </p>
                         </div>
                     </div>
 
-                    <div className="flex-1 text-center md:text-left relative z-10">
-                        <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-                            <span className="px-2.5 py-0.5 rounded-lg bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/10">Node Mahasiswa</span>
-                            <span className="h-1 w-1 rounded-full bg-slate-300" />
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{student?.nim}</span>
+                    <div className="flex items-center gap-4">
+                        <div className="px-6 py-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-6 min-w-[220px]">
+                            <div className="text-right">
+                                <span className="block text-[9px] font-black text-slate-400 uppercase  italic leading-none mb-1">Status Otoritas</span>
+                                <span className={clsx(
+                                    "text-sm font-black uppercase italic  leading-none block",
+                                    isApproved ? "text-emerald-600" : "text-amber-500"
+                                )}>
+                                    {isApproved ? 'AKTIF_VERIFIED' : isPending ? 'PENDING' : 'DATA_KOSONG'}
+                                </span>
+                            </div>
+                            <div className={clsx(
+                                "h-10 w-10 bg-white rounded-xl border border-slate-100 flex items-center justify-center",
+                                isApproved ? "text-emerald-500" : "text-amber-500"
+                            )}>
+                                {isApproved ? <ShieldCheck className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
+                            </div>
                         </div>
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tighter">
-                            Selamat Datang Kembali, <span className="text-primary italic">{student?.name?.split(' ')[0]}</span>!
-                        </h1>
-                        <p className="text-slate-400 font-bold mt-2 uppercase tracking-widest text-xs">Angkatan Akademik {student?.batch_year}</p>
-                    </div>
-
-                    <div className="relative z-10 flex flex-col items-center md:items-end gap-3">
-                        <div className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] border shadow-sm ${registration?.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-100'
-                            }`}>
-                            STATUS: {registration?.status === 'approved' ? 'TERDAFTAR' : 'BELUM TERDAFTAR'}
-                        </div>
-                        {registration?.status === 'approved' && (
-                            <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest animate-pulse">Sesi Aktif</p>
-                        )}
+                        
+                        <Link 
+                            href="/student/register" 
+                            className="h-12 px-6 bg-slate-900 text-white rounded-xl text-[11px] font-black uppercase  flex items-center justify-center hover:bg-primary transition-all active:scale-95 italic"
+                        >
+                            Detail Pendaftaran
+                        </Link>
                     </div>
                 </div>
 
-                {/* Dashboard Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Left Column: Group & Location Info */}
-                    <div className="lg:col-span-2 space-y-8">
-                        {isGroupPinned ? (
-                            <div className="bg-slate-900 rounded-[2rem] p-10 text-white shadow-xl shadow-slate-200 relative overflow-hidden group">
-                                <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-transparent pointer-events-none" />
-                                <div className="relative z-10">
-                                    <div className="flex items-center gap-3 text-primary mb-6">
-                                        <div className="p-2 bg-white/10 rounded-lg">
-                                            <MapPinIcon className="h-6 w-6" />
-                                        </div>
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Lokasi Penempatan</span>
-                                    </div>
-                                    <h2 className="text-4xl font-black tracking-tighter mb-2 italic">{registration.group.location?.name ?? 'Lokasi Terdaftar'}</h2>
-                                    <p className="text-slate-400 text-lg font-bold uppercase tracking-widest mb-10 opacity-80">{registration.group.name}</p>
+                {/* Road to Success - Progress Viz */}
+                <div className="bg-white rounded-[3.5rem] p-12 border border-slate-100 relative group overflow-hidden">
+                    <div className="flex items-center gap-4 mb-16 relative z-10">
+                        <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-100 group-hover:text-primary transition-colors">
+                            <Activity className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                            <h3 className="text-xs font-black uppercase  italic text-slate-900 leading-none">Alur Pelaksanaan KKN</h3>
+                            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase  italic opacity-60">Progress Perjalanan Anda (SOP UIN SAIZU)</p>
+                        </div>
+                    </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-10 border-t border-white/5">
-                                        <div className="flex items-center gap-5">
-                                            <div className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                                                <UserIcon className="h-7 w-7" />
+                    <div className="relative flex flex-col md:flex-row justify-between gap-12 md:gap-6">
+                        {/* Connecting Line */}
+                        <div className="absolute top-10 left-10 right-10 h-0.5 bg-slate-50 hidden md:block" />
+                        
+                        {phases.map((phase, idx) => {
+                            const Icon = phase.icon;
+                            return (
+                                <div key={idx} className="relative z-10 flex-1 flex flex-col items-center text-center group/phase mt-2">
+                                    <div className={clsx(
+                                        "h-20 w-20rounded-lg flex items-center justify-center transition-all border-4
+                                        phase.isCompleted ? "bg-emerald-500 border-white text-white" :
+                                        phase.isActive ? "bg-primary border-white text-white scale-110" :
+                                        "bg-slate-50 border-white text-slate-300"
+                                    )}>
+                                        {phase.isCompleted ? <CheckCircle className="w-10 h-10" /> : <Icon className="w-10 h-10" />}
+                                    </div>
+                                    <div className="mt-8 space-y-2">
+                                        <p className={clsx(
+                                            "text-[11px] font-black uppercase  italic",
+                                            phase.isActive ? "text-primary" : phase.isCompleted ? "text-emerald-600" : "text-slate-400"
+                                        )}>
+                                            {phase.label}
+                                        </p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase  opacity-60 leading-none">{phase.desc}</p>
+                                    </div>
+                                    {!phase.isCompleted && !phase.isActive && (
+                                        <div className="absolute top-0 right-1 -mt-2 -mr-2 bg-white p-2 rounded-xl border border-slate-100
+                                            <Lock className="w-3.5 h-3.5 text-slate-200" />
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Contextual Stats & Info */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                    <div className="lg:col-span-2 space-y-12">
+                        {isGroupPinned ? (
+                            <section className="bg-white rounded-[3.5rem] p-12 border border-slate-100 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-16 opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-125 transition-transform">
+                                    <MapPin className="h-64 w-64" />
+                                </div>
+                                
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-5 text-primary mb-10 border-b border-slate-50 pb-8">
+                                        <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
+                                            <MapPin className="h-7 w-7" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-[11px] font-black uppercase  text-slate-400 italic">Informasi Lokasi & Posko</h3>
+                                            <p className="text-[10px] font-bold text-primary uppercase  mt-1 italic">Data Penempatan Terakreditasi</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="mb-12">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase  mb-4 italic">Desa / Kelurahan</p>
+                                        <h2 className="text-5xl font-black  text-slate-900 italic uppercase">
+                                            {registration.group.location?.name ?? 'Lokasi Belum Ditetapkan'}
+                                        </h2>
+                                        <div className="mt-8 flex items-center gap-4">
+                                            <span className="text-slate-900 text-xl font-black uppercase  bg-slate-50 border border-slate-100 px-8 py-3.5 rounded-[1.5rem] tabular-nums italic
+                                                {registration.group.name}
+                                            </span>
+                                            <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                                            <span className="text-[10px] font-black text-slate-400 uppercase  italic">Unit Aktif</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 pt-12 border-t border-slate-50">
+                                        <div className="flex items-center gap-6 p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100 group/item hover:bg-white hover:border-primary/20 transition-all cursor-default
+                                            <div className="h-16 w-16 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover/item:text-primary group-hover/item:border-primary/20 transition-all
+                                                <User className="h-8 w-8" />
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Dosen Pembimbing (DPL)</p>
-                                                <p className="font-black text-lg tracking-tight leading-none">{registration.group.lecturer?.name ?? 'Belum Ditentukan'}</p>
+                                                <p className="text-[10px] font-black text-slate-400 uppercase  mb-1.5 italic leading-none">Dosen Pembimbing</p>
+                                                <p className="font-black text-base text-slate-900  uppercase italic">{registration.group.lecturer?.name ?? 'Belum Ditetapkan'}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-5">
-                                            <div className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                                                <CalendarIcon className="h-7 w-7" />
+                                        <div className="flex items-center gap-6 p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100 group/item hover:bg-white hover:border-primary/20 transition-all cursor-default
+                                            <div className="h-16 w-16 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover/item:text-primary group-hover/item:border-primary/20 transition-all
+                                                <Calendar className="h-8 w-8" />
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Siklus Aktif</p>
-                                                <p className="font-black text-lg tracking-tight leading-none">{registration.period?.name}</p>
+                                                <p className="text-[10px] font-black text-slate-400 uppercase  mb-1.5 italic leading-none">Periode KKN</p>
+                                                <p className="font-black text-base text-slate-900  uppercase italic">{registration.period?.name}</p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                {/* Decorative elements */}
-                                <div className="absolute -right-20 -bottom-20 h-80 w-80 bg-primary/10 rounded-full blur-[100px]" />
-                            </div>
+                            </section>
                         ) : (
-                            <div className="bg-white rounded-[2rem] border-2 border-dashed border-slate-200 p-16 text-center group transition-all hover:border-primary/40 hover:bg-primary/5">
-                                <MapPinIcon className="h-16 w-16 text-slate-200 mx-auto mb-6 group-hover:scale-110 group-hover:text-primary/40 transition-all" />
-                                <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase mb-2">Penempatan Pending</h3>
-                                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs mb-10">Data kelompok belum tersedia atau masih diproses.</p>
+                            <section className="bg-white rounded-[3.5rem] border-2 border-dashed border-slate-100 p-24 text-center group transition-all hover:border-primary/40 hover:bg-primary/5
+                                <div className="relative inline-block mb-10">
+                                    <MapPin className={clsx("h-20 w-20 transition-all", isPending ? "text-amber-200" : "text-slate-100")} />
+                                    <div className={clsx("absolute top-0 right-0 h-5 w-5 rounded-full animate-ping", isPending ? "bg-amber-400" : "bg-primary")} />
+                                </div>
+                                <h3 className="text-3xl font-black text-slate-900  uppercase italic mb-4">
+                                    {isPending ? 'Verifikasi Berlangsung' : 'Penempatan Menunggu'}
+                                </h3>
+                                <p className="text-slate-400 font-bold uppercase  text-[11px] mb-14 leading-relaxed max-w-sm mx-auto opacity-70 italic">
+                                    {isPending 
+                                        ? 'Data pendaftaran Anda sedang dalam tahap peninjauan oleh Admin LPPM.' 
+                                        : 'Sistem belum menetapkan lokasi penempatan untuk profil Anda.'}
+                                </p>
                                 <Link
                                     href="/student/register"
-                                    className="inline-flex items-center gap-3 px-10 py-4 bg-primary text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all hover:-translate-y-1"
+                                    className="inline-flex items-center gap-5 px-14 py-6 bg-slate-900 text-whiterounded-lg text-[11px] font-black uppercase  hover:bg-primary transition-all active:scale-95 italic group/btn"
                                 >
-                                    Selesaikan Pendaftaran <ArrowRightIcon className="h-4 w-4" />
+                                    {isPending ? 'Ubah Pilihan' : 'Daftar Kelompok'} <ArrowRight className="h-4 w-4 group-hover:translate-x-2 transition-transform" />
                                 </Link>
-                            </div>
+                            </section>
                         )}
 
-                        {/* Recent Progress / Stats */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Visual Metrics */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                             <StatCard
-                                title="Laporan Terkirim"
+                                title="Total Laporan"
                                 value={dailyReportCount}
-                                unit="Laporan"
-                                icon={DocumentTextIcon}
-                                color="teal"
+                                unit="Entri"
+                                icon={FileText}
+                                color="primary"
                             />
                             <StatCard
-                                title="Status Akhir"
-                                value={finalReport ? 'TERKIRIM' : 'PENDING'}
-                                icon={ShieldCheckIcon}
-                                color="teal"
+                                title="Status Laporan Akhir"
+                                value={finalReport ? 'TERKIRIM' : 'BELUM'}
+                                unit="Status"
+                                icon={ShieldCheck}
+                                color="emerald"
                             />
                             <StatCard
-                                title="Workshop Akademik"
-                                value="2 / 3"
-                                icon={AcademicCapIcon}
+                                title="Verifikasi Akun"
+                                value={isApproved ? 'TERVERIFIKASI' : isPending ? 'MENUNGGU' : 'BELUM AKTIF'}
+                                unit="Status"
+                                icon={GraduationCap}
                                 color="slate"
                             />
                         </div>
                     </div>
 
-                    {/* Right Column: Quick Actions & Notifications */}
-                    <div className="space-y-8">
-                        <div className="bg-white rounded-[2rem] border border-slate-200/60 p-8 shadow-sm">
-                            <h3 className="text-xl font-black text-slate-900 tracking-tighter uppercase italic flex items-center gap-3 mb-8">
-                                <SparklesIcon className="h-6 w-6 text-primary" />
-                                Operasi Cepat
-                            </h3>
-                            <div className="space-y-4">
+                    {/* Navigation Sidebar */}
+                    <div className="space-y-12">
+                        <section className="bg-white rounded-[3rem] border border-slate-100 p-10 h-fit">
+                            <div className="flex items-center gap-4 mb-12 border-b border-slate-50 pb-8">
+                                <div className="p-3 bg-slate-50 rounded-lg text-slate-400 border border-slate-100">
+                                    <Zap className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-[11px] font-black uppercase  italic text-slate-900 leading-none">Menu Cepat</h3>
+                                    <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase  italic opacity-60">Akses Aktivitas Utama</p>
+                                </div>
+                            </div>
+                            
+                            <div className="space-y-5">
+                                <QuickActionButton
+                                    href="/student/workshops"
+                                    icon={Presentation}
+                                    label="Pembekalan"
+                                    desc="Ikuti pembekalan resmi"
+                                    disabled={!isApproved}
+                                />
                                 <QuickActionButton
                                     href="/student/daily-reports"
-                                    icon={DocumentTextIcon}
-                                    label="Pengajuan Logbook"
-                                    desc="Catat aktivitas lapangan harian"
+                                    icon={ClipboardList}
+                                    label="Laporan Harian"
+                                    desc="Catat aktivitas lapangan"
+                                    disabled={!isGroupPinned}
+                                />
+                                <QuickActionButton
+                                    href="/student/posko"
+                                    icon={MapPin}
+                                    label="Perbarui Posko"
+                                    desc="Perbarui koordinat lokasi"
+                                    disabled={!isGroupPinned}
                                 />
                                 <QuickActionButton
                                     href="/student/final-report"
-                                    icon={CloudArrowUpIcon}
-                                    label="Unggah Dokumentasi"
-                                    desc="Kirim file luaran akhir"
-                                />
-                                <QuickActionButton
-                                    href="/student/workshops"
-                                    icon={CalendarIcon}
-                                    label="Agenda Workshop"
-                                    desc="Lihat jadwal wajib"
+                                    icon={UploadCloud}
+                                    label="Laporan Akhir"
+                                    desc="Unggah produk KKN final"
+                                    disabled={!isGroupPinned}
                                 />
                             </div>
-                        </div>
+                        </section>
 
-                        <div className="bg-slate-900 rounded-[2rem] p-8 text-white shadow-xl shadow-slate-200 relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-transparent pointer-events-none" />
-                            <h3 className="text-lg font-black mb-6 flex items-center gap-3 uppercase tracking-tighter">
-                                <span className="h-2 w-2 bg-rose-500 rounded-full animate-ping" />
-                                Pengarahan Penting
+                        <section className="bg-white rounded-[3rem] p-10 border border-slate-100 relative overflow-hidden group italic">
+                            <div className="absolute top-0 right-0 p-10 opacity-[0.02] text-primary group-hover:scale-125 transition-transform pointer-events-none">
+                                <Info className="h-40 w-40" />
+                            </div>
+                            
+                            <h3 className="text-[11px] font-black mb-12 flex items-center gap-4 uppercase  italic text-slate-400">
+                                <span className="flex h-2.5 w-2.5 rounded-full bg-primary animate-pulse />
+                                Informasi Penting
                             </h3>
-                            <div className="space-y-4 relative z-10">
-                                <div className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all cursor-default">
-                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Batas Waktu Penilaian</p>
-                                    <p className="text-sm font-bold text-slate-200 leading-tight">Pastikan seluruh logbook telah di-approve sebelum 15 Maret 2026.</p>
+                            
+                            <div className="space-y-8 relative z-10 italic">
+                                <div className="space-y-3">
+                                    <p className="text-[10px] font-black text-primary uppercase  italic flex items-center gap-2">
+                                        <Lock className="h-3.5 w-3.5" />
+                                        Batas Pengunggahan
+                                    </p>
+                                    <p className="text-[11px] font-bold text-slate-500 leading-relaxed italic opacity-80 uppercase  seluruh laporan harian telah diverifikasi sebelum periode pelaksanaan berakhir.</p>
                                 </div>
-                                <div className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all cursor-default">
-                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Luaran Video</p>
-                                    <p className="text-sm font-bold text-slate-200 leading-tight">Video dokumentasi durasi minimal 3 menit dengan format HD 1080p.</p>
+                                <div className="space-y-3 pt-6 border-t border-slate-50">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase  italic flex items-center gap-2">
+                                        <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                                        Proteksi Jamsostek
+                                    </p>
+                                    <p className="text-[11px] font-bold text-slate-500 leading-relaxed italic opacity-80 uppercase  mahasiswa peserta KKN telah didaftarkan dalam program BPJS Ketenagakerjaan selama masa bakti.</p>
+                                </div>
+                                <div className="space-y-3 pt-6 border-t border-slate-50">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase  italic flex items-center gap-2">
+                                        <IdCard className="h-3.5 w-3.5" />
+                                        Penerbitan Sertifikat
+                                    </p>
+                                    <p className="text-[11px] font-bold text-slate-500 leading-relaxed italic opacity-80 uppercase  akan diterbitkan otomatis setelah proses evaluasi nilai oleh DPL dan Admin selesai.</p>
                                 </div>
                             </div>
-                        </div>
+                        </section>
                     </div>
+                </div>
+
+                <div className="text-center pt-12 opacity-20">
+                    <p className="text-[10px] font-black text-slate-300 uppercase  italic">
+                        Pusat Layanan Mahasiswa • UIN SAIZU © 2024
+                    </p>
                 </div>
             </div>
         </AppLayout>
@@ -193,34 +402,64 @@ export default function StudentDashboard({ student, registration, dailyReportCou
 }
 
 function StatCard({ title, value, unit, icon: Icon, color }: any) {
+    const colorClasses: any = {
+        primary: 'bg-primary/5 text-primary border-primary/10
+        emerald: 'bg-emerald-50 text-emerald-500 border-emerald-100
+        slate: 'bg-slate-50 text-slate-400 border-slate-200
+    };
+
     return (
-        <div className="bg-white border border-slate-200/60 rounded-[1.5rem] p-8 shadow-sm hover:shadow-md hover:bg-slate-50 transition-all group">
-            <div className={`h-14 w-14 rounded-2xl flex items-center justify-center mb-6 border transition-all group-hover:scale-110 shadow-sm ${color === 'teal' ? 'bg-primary/5 text-primary border-primary/10' : 'bg-slate-50 text-slate-400 border-slate-200'
-                }`}>
-                <Icon className="h-7 w-7" />
+        <div className="bg-white border border-slate-100 rounded-[3rem] p-10 hover:shadow-2xl hover:-translate-y-1.5 transition-all group overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-6 opacity-[0.02] text-slate-900 transition-transform group-hover:scale-150 group-hover:rotate-12">
+                <Icon className="h-24 w-24" />
             </div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 group-hover:text-primary transition-colors">{title}</p>
-            <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black text-slate-900 tracking-tighter">{value}</span>
-                {unit && <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{unit}</span>}
+            
+            <div className={clsx(
+                "h-20 w-20rounded-lg flex items-center justify-center mb-10 border transition-all group-hover:scale-110 relative z-10",
+                colorClasses[color]
+            )}>
+                <Icon className="h-10 w-10" />
+            </div>
+            
+            <div className="relative z-10">
+                <p className="text-[11px] font-black text-slate-400 uppercase  mb-3 group-hover:text-primary transition-colors italic leading-none">{title}</p>
+                <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-black text-slate-900  italic">{value}</span>
+                    {unit && <span className="text-[10px] font-black text-slate-400 uppercase  opacity-60 italic">{unit}</span>}
+                </div>
             </div>
         </div>
     );
 }
 
-function QuickActionButton({ href, icon: Icon, label, desc }: any) {
+function QuickActionButton({ href, icon: Icon, label, desc, disabled }: any) {
+    if (disabled) {
+        return (
+            <div className="flex items-center gap-6 p-7 rounded-[2.5rem] bg-slate-50 border border-slate-100 opacity-40 cursor-not-allowed">
+                <div className="h-16 w-16 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-200
+                    <Icon className="h-8 w-8" />
+                </div>
+                <div>
+                    <p className="font-black text-sm text-slate-400 uppercase italic  leading-none">{label}</p>
+                    <p className="text-[10px] text-slate-300 font-bold mt-2.5 uppercase  italic leading-none opacity-60">{desc}</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <Link
             href={href}
-            className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-slate-50 border border-slate-100 transition-all hover:bg-white hover:border-primary/30 hover:shadow-md group"
+            className="flex items-center gap-6 p-7 rounded-[2.5rem] bg-white border border-slate-100 transition-all hover:bg-slate-50 hover:border-primary/20 hover:shadow-xl group active:scale-95
         >
-            <div className="h-12 w-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:border-primary/20 transition-all">
-                <Icon className="h-6 w-6" />
+            <div className="h-16 w-16 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:bg-white group-hover:border-primary/20 transition-all
+                <Icon className="h-8 w-8" />
             </div>
             <div className="min-w-0">
-                <p className="font-black text-sm text-slate-900 leading-none group-hover:text-primary transition-colors uppercase tracking-tight">{label}</p>
-                <p className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-widest truncate">{desc}</p>
+                <p className="font-black text-sm text-slate-900 leading-none group-hover:text-primary transition-colors uppercase italic 
+                <p className="text-[10px] text-slate-400 font-bold mt-2.5 uppercase  truncate italic opacity-80 leading-none">{desc}</p>
             </div>
+            <ChevronRight className="h-4 w-4 ml-auto text-slate-200 group-hover:text-primary group-hover:translate-x-1 transition-all" />
         </Link>
     );
 }

@@ -15,12 +15,14 @@ class LokasiFactory extends Factory
             'province_id' => (string) $this->faker->numberBetween(1, 34),
             'regency_id' => (string) $this->faker->numberBetween(1, 500),
             'district_id' => (string) $this->faker->numberBetween(1, 7000),
+            'regency_name' => 'Kabupaten ' . $this->faker->city(),
+            'district_name' => 'Kecamatan ' . $this->faker->citySuffix(),
             'village_code' => $this->faker->unique()->numerify('##########'),
-            'village_name' => $this->faker->city(),
-            'address' => $this->faker->address(),
-            'latitude' => $this->faker->latitude(-8, -6),
-            'longitude' => $this->faker->longitude(106, 115),
-            'capacity' => $this->faker->numberBetween(10, 30),
+            'village_name' => 'Desa ' . $this->faker->city(),
+            'address' => null,
+            'latitude' => null,
+            'longitude' => null,
+            'capacity' => 0,
         ];
     }
 }

@@ -8,6 +8,7 @@ interface ConfirmDialogProps {
     title?: string;
     message?: string;
     confirmLabel?: string;
+    confirmVariant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
     processing?: boolean;
 }
 
@@ -18,6 +19,7 @@ export default function ConfirmDialog({
     title = 'Konfirmasi',
     message = 'Apakah Anda yakin ingin melanjutkan?',
     confirmLabel = 'Ya, Lanjutkan',
+    confirmVariant = 'danger',
     processing = false,
 }: ConfirmDialogProps) {
     return (
@@ -27,7 +29,7 @@ export default function ConfirmDialog({
                 <Button variant="secondary" onClick={onClose} disabled={processing}>
                     Batal
                 </Button>
-                <Button variant="danger" onClick={onConfirm} loading={processing}>
+                <Button variant={confirmVariant} onClick={onConfirm} loading={processing}>
                     {confirmLabel}
                 </Button>
             </div>

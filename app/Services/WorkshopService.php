@@ -34,6 +34,50 @@ class WorkshopService
         ]);
     }
 
+    public function updateWorkshop(Workshop $workshop, array $data): Workshop
+    {
+        return DB::transaction(function () use ($workshop, $data) {
+            if (! $this->canMutateWorkshop($workshop)) {
+                throw new \InvalidArgumentException('Pembekalan yang sudah memasuki tahap presensi tidak dapat diubah lagi.');
+            }
+
+            $registeredCount = $workshop->participants()->count();
+            $maxParticipants = $data['max_participants'] ?? null;
+
+            if ($maxParticipants !== null && $maxParticipants < $registeredCount) {
+                throw new \InvalidArgumentException('Kuota pembekalan tidak boleh lebih kecil dari jumlah peserta yang sudah terdaftar.');
+            }
+
+            $workshop->update([
+                'title' => $data['title'],
+                'description' => $data['description'] ?? null,
+                'methodology' => $data['methodology'] ?? null,
+                'workshop_date' => $data['workshop_date'],
+                'start_time' => $data['start_time'] ?? null,
+                'end_time' => $data['end_time'] ?? null,
+                'location' => $data['location'] ?? null,
+                'max_participants' => $maxParticipants,
+            ]);
+
+            return $workshop->fresh();
+        });
+    }
+
+    public function cancelWorkshop(Workshop $workshop): Workshop
+    {
+        return DB::transaction(function () use ($workshop) {
+            if (! $this->canCancelWorkshop($workshop)) {
+                throw new \InvalidArgumentException('Pembekalan yang sudah memiliki presensi tercatat tidak dapat dibatalkan.');
+            }
+
+            $workshop->update([
+                'status' => 'cancelled',
+            ]);
+
+            return $workshop->fresh();
+        });
+    }
+
     /**
      * Register participant for workshop
      */
@@ -42,13 +86,17 @@ class WorkshopService
         return DB::transaction(function () use ($workshopId, $userId) {
             $workshop = Workshop::lockForUpdate()->findOrFail($workshopId);
 
+            if ($workshop->status !== 'scheduled') {
+                throw new \InvalidArgumentException("Pembekalan belum dibuka untuk pendaftaran");
+            }
+
             // Check if already registered
             $existing = PesertaWorkshop::where('workshop_id', $workshopId)
                 ->where('user_id', $userId)
                 ->first();
 
             if ($existing) {
-                throw new \InvalidArgumentException("Already registered for this workshop");
+                throw new \InvalidArgumentException("Anda sudah terdaftar pada pembekalan ini");
             }
 
             // Check if workshop is full (inside transaction with lock)
@@ -56,7 +104,7 @@ class WorkshopService
                 $currentParticipants = PesertaWorkshop::where('workshop_id', $workshopId)->count();
                 
                 if ($currentParticipants >= $workshop->max_participants) {
-                    throw new \InvalidArgumentException("Workshop is full");
+                    throw new \InvalidArgumentException("Kuota pembekalan sudah penuh");
                 }
             }
 
@@ -69,26 +117,68 @@ class WorkshopService
     }
 
     /**
-     * Mark participant as attended
+     * Self-attendance by student with GPS, Token, and Device validation
      */
-    public function markAttendance(int $participantId, bool $attended = true): PesertaWorkshop
+    public function submitSelfAttendance(int $workshopId, int $userId, float $lat, float $lng, string $token, string $deviceSignature, string $ip): PesertaWorkshop
     {
-        return DB::transaction(function () use ($participantId, $attended) {
-            $participant = PesertaWorkshop::findOrFail($participantId);
+        return DB::transaction(function () use ($workshopId, $userId, $lat, $lng, $token, $deviceSignature, $ip) {
+            $workshop = Workshop::findOrFail($workshopId);
+
+            // 1. Validate Secret Token
+            if ($workshop->active_token !== $token) {
+                throw new \InvalidArgumentException("Kode rahasia absensi salah atau sudah kadaluwarsa.");
+            }
+
+            // 2. Validate Geofence (GPS)
+            if ($workshop->latitude && $workshop->longitude) {
+                $distance = $this->calculateDistance($lat, $lng, (float)$workshop->latitude, (float)$workshop->longitude);
+                if ($distance > $workshop->radius_meters) {
+                    throw new \InvalidArgumentException("Posisi Anda berada di luar radius lokasi pembekalan (" . round($distance) . "m).");
+                }
+            }
+
+            // 3. Anti-Cheating: Device Fingerprinting
+            // Check if this device has already been used by another user for THIS workshop
+            $deviceUsed = PesertaWorkshop::where('workshop_id', $workshopId)
+                ->where('user_id', '!=', $userId)
+                ->where('device_signature', $deviceSignature)
+                ->exists();
+
+            if ($deviceUsed) {
+                throw new \InvalidArgumentException("Perangkat ini sudah digunakan untuk melakukan absensi NIM lain. Akses ditolak.");
+            }
+
+            $participant = PesertaWorkshop::where('workshop_id', $workshopId)
+                ->where('user_id', $userId)
+                ->firstOrFail();
 
             $participant->update([
-                'attendance_status' => $attended ? 'attended' : 'absent',
-                'checked_in_at' => $attended ? now() : null,
+                'attendance_status' => 'attended',
+                'checked_in_at' => now(),
+                'device_signature' => $deviceSignature,
+                'ip_address' => $ip,
             ]);
 
-            // Generate certificate and update kkn_scores if attended
-            if ($attended) {
-                $this->generateCertificate($participant);
-                $this->syncWorkshopScore($participant);
-            }
+            $this->generateCertificate($participant);
+            $this->syncWorkshopScore($participant);
 
             return $participant->fresh();
         });
+    }
+
+    /**
+     * Calculate distance between two GPS points in meters (Haversine formula)
+     */
+    private function calculateDistance(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $earthRadius = 6371000; // meters
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($dLng / 2) * sin($dLng / 2);
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        return $earthRadius * $c;
     }
 
     /**
@@ -100,16 +190,18 @@ class WorkshopService
         $groupId = $user->getActiveGroupId();
 
         if ($groupId) {
-             // A4: Use configurable workshop score
-             $workshopScore = \App\Models\KKN\KonfigurasiPenilaian::where('config_key', 'workshop_attendance_score')
+             $configuredScore = \App\Models\KKN\KonfigurasiPenilaian::where('config_key', 'workshop_attendance_score')
                 ->first()?->percentage ?? 100;
+             $workshopScore = $participant->attendance_status === 'attended'
+                ? (float) $configuredScore
+                : 0.0;
 
              $this->gradingService->submitAdminScores(
                  $user->id,
                  $groupId,
-                 (float) $workshopScore,
+                 $workshopScore,
                  $participant->user->nilaiKkn()->where('kelompok_id', $groupId)->first()?->administration_score ?? 0,
-                 auth()->id() ?? \App\Models\User::role('admin')->first()?->id ?? 1
+                 auth()->id() ?? \App\Models\User::role('superadmin')->first()?->id ?? 1
              );
         }
     }
@@ -134,7 +226,11 @@ class WorkshopService
 
                 if ($attended) {
                     $this->generateCertificate($participant);
+                } else {
+                    $this->revokeCertificate($participant);
                 }
+
+                $this->syncWorkshopScore($participant);
 
                 $results[] = $participant->fresh();
             }
@@ -193,32 +289,107 @@ class WorkshopService
         return "B-449/Un.19/K.LPPM/P.{$date}/{$workshop->id}";
     }
 
+    private function revokeCertificate(PesertaWorkshop $participant): void
+    {
+        if ($participant->certificate_path) {
+            Storage::disk('public')->delete($participant->certificate_path);
+        }
+
+        $participant->update([
+            'certificate_generated' => false,
+            'certificate_path' => null,
+            'certificate_issued_at' => null,
+        ]);
+    }
+
     /**
      * Get upcoming workshops
      */
-    public function getUpcomingWorkshops(): array
+    public function getUpcomingWorkshops(?int $userId = null, bool $includeParticipants = false, bool $includeAllStatuses = false): array
     {
-        $workshops = Workshop::where('workshop_date', '>=', now()->toDateString())
-            ->where('status', 'scheduled')
-            ->withCount('participants')
+        $query = Workshop::where('workshop_date', '>=', now()->toDateString())
+            ->withCount('participants');
+
+        if (! $includeAllStatuses) {
+            $query->where('status', 'scheduled');
+        }
+
+        if ($includeParticipants) {
+            $query->with([
+                'participants' => fn ($participantQuery) => $participantQuery
+                    ->with('user:id,name,email')
+                    ->orderBy('created_at'),
+            ]);
+        } elseif ($userId) {
+            $query->with([
+                'participants' => fn ($participantQuery) => $participantQuery
+                    ->select('id', 'workshop_id', 'user_id', 'attendance_status')
+                    ->where('user_id', $userId),
+            ]);
+        }
+
+        $workshops = $query
             ->orderBy('workshop_date')
             ->get();
 
-        return $workshops->map(function ($workshop) {
+        return $workshops->map(function ($workshop) use ($userId, $includeParticipants) {
+            $userRegistration = $userId ? $workshop->participants->first() : null;
+            $timeWindow = collect([$workshop->start_time, $workshop->end_time])
+                ->filter()
+                ->implode(' - ');
+            $hasRecordedAttendance = $includeParticipants
+                ? $workshop->participants->contains(fn (PesertaWorkshop $participant) => in_array($participant->attendance_status, ['attended', 'absent', 'excused'], true))
+                : false;
+
             return [
                 'id' => $workshop->id,
                 'title' => $workshop->title,
                 'description' => $workshop->description,
                 'methodology' => $workshop->methodology,
                 'date' => $workshop->workshop_date->format('d-m-Y'),
-                'time' => $workshop->start_time . ' - ' . $workshop->end_time,
+                'workshop_date_value' => $workshop->workshop_date->format('Y-m-d'),
+                'time' => $timeWindow !== '' ? $timeWindow : 'Menunggu jadwal',
+                'start_time' => $workshop->start_time ? substr((string) $workshop->start_time, 0, 5) : null,
+                'end_time' => $workshop->end_time ? substr((string) $workshop->end_time, 0, 5) : null,
                 'location' => $workshop->location,
                 'registered' => $workshop->participants_count,
                 'max_participants' => $workshop->max_participants,
+                'status' => $workshop->status,
                 'is_full' => $workshop->max_participants 
-                    ? $workshop->participants_count >= $workshop->max_participants 
+                    ? $workshop->participants_count >= $workshop->max_participants
                     : false,
+                'can_edit' => $includeParticipants && $workshop->status === 'scheduled' && ! $hasRecordedAttendance,
+                'can_cancel' => $includeParticipants && $workshop->status === 'scheduled' && ! $hasRecordedAttendance,
+                'is_registered' => (bool) $userRegistration,
+                'attendance_status' => $userRegistration?->attendance_status,
+                'participants' => $includeParticipants
+                    ? $workshop->participants->map(fn (PesertaWorkshop $participant) => [
+                        'id' => $participant->id,
+                        'user_id' => $participant->user_id,
+                        'name' => $participant->user?->name ?? 'Peserta Pembekalan',
+                        'email' => $participant->user?->email,
+                        'attendance_status' => $participant->attendance_status,
+                        'certificate_generated' => (bool) $participant->certificate_generated,
+                        'checked_in_at' => $participant->checked_in_at?->toDateTimeString(),
+                    ])->values()->all()
+                    : [],
             ];
         })->toArray();
+    }
+
+    private function canMutateWorkshop(Workshop $workshop): bool
+    {
+        if ($workshop->status !== 'scheduled') {
+            return false;
+        }
+
+        return ! $workshop->participants()
+            ->whereIn('attendance_status', ['attended', 'absent', 'excused'])
+            ->exists();
+    }
+
+    private function canCancelWorkshop(Workshop $workshop): bool
+    {
+        return $this->canMutateWorkshop($workshop);
     }
 }

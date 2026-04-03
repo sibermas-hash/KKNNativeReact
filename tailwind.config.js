@@ -9,23 +9,28 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#006241', // UIN Saizu Green
-          light: '#00875A',
-          dark: '#004B32',
+          DEFAULT: '#10a853', // UIN SAIZU Green
+          light: '#34d399',
+          dark: '#059669',
+          50: '#f0fdf4',
+          100: '#dcfce7',
         },
         accent: {
-          gold: '#D4AF37', // UIN Saizu Gold
-          amber: '#F59E0B',
+          slate: '#64748b', // Neutral slate
+          green: '#10a853',
         },
         surface: {
-          base: '#050505',
-          panel: '#111827',
-          card: 'rgba(255, 255, 255, 0.03)',
+          base: '#ffffff',
+          panel: '#f8fafc',
+          card: '#ffffff',
+          border: '#e2e8f0',
+          hover: '#f1f5f9',
         }
       },
       boxShadow: {
-        'neon-green': '0 0 20px rgba(0, 98, 65, 0.2)',
-        'neon-gold': '0 0 20px rgba(212, 175, 55, 0.2)',
+        'soft': '0 1px 3px rgba(0, 0, 0, 0.08)',
+        'sm-soft': '0 1px 2px rgba(0, 0, 0, 0.05)',
+        'lg-soft': '0 4px 12px rgba(0, 0, 0, 0.1)',
       },
       backdropBlur: {
         'xxl': '40px',

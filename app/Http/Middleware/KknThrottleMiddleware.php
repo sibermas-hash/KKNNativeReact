@@ -2,8 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 class KknThrottleMiddleware extends ThrottleRequests
@@ -14,9 +15,16 @@ class KknThrottleMiddleware extends ThrottleRequests
      */
     protected function resolveRequestSignature($request)
     {
+        $routeName = $request->route()?->getName();
+
+        $guestIdentifier = $request->ip();
+        if (!$request->user() && $routeName === 'login.store' && $request->filled('login')) {
+            $guestIdentifier = Str::transliterate(Str::lower((string) $request->input('login'))) . '|' . $request->ip();
+        }
+
         return hash('xxh128', implode('|', [
-            $request->user()?->id ?: $request->ip(),
-            $request->route()?->getName() ?: $request->path(),
+            $request->user()?->id ?: $guestIdentifier,
+            $routeName ?: $request->path(),
             $request->ip(),
         ]));
     }
@@ -28,7 +36,6 @@ class KknThrottleMiddleware extends ThrottleRequests
     {
         // Define critical endpoints that need stricter limits
         $criticalEndpoints = [
-            'login',
             'password.email',
             'password.update',
             'student.registration.store',
@@ -44,6 +51,21 @@ class KknThrottleMiddleware extends ThrottleRequests
         // This prevents production misconfiguration from bypassing rate limits
         if (config('app.env') === 'local' && config('app.debug') === true) {
             return parent::handle($request, $next, $maxAttempts, $decayMinutes, $prefix);
+        }
+
+        // Halaman login harus longgar agar mahasiswa dari IP yang sama tidak
+        // saling menahan hanya untuk membuka form autentikasi.
+        if ($routeName === 'login') {
+            $maxAttempts = 300;
+            $decayMinutes = 1;
+        }
+
+        // Submit login tetap dibatasi, tetapi jauh lebih longgar daripada
+        // brute-force limiter di LoginRequest karena banyak mahasiswa bisa
+        // berbagi IP yang sama saat hari-H.
+        if ($routeName === 'login.store') {
+            $maxAttempts = 240;
+            $decayMinutes = 1;
         }
 
         // Strict limit for critical endpoints: 10 attempts per 5 minutes

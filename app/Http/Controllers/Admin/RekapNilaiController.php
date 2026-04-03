@@ -247,14 +247,23 @@ class RekapNilaiController extends Controller
 
     public function saveInline(Request $request)
     {
-        $this->authorize('update', NilaiKkn::class);
-
         $validated = $request->validate([
             'user_id' => ['required', 'integer'],
             'kelompok_id' => ['required', 'integer'],
             'component' => ['required', 'string', 'in:' . implode(',', self::ALLOWED_SCORE_COMPONENTS)],
             'value' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
+
+        // Authorize against the specific score record (not just the class)
+        $existingScore = NilaiKkn::where('user_id', $validated['user_id'])
+            ->where('kelompok_id', $validated['kelompok_id'])
+            ->first();
+
+        if ($existingScore) {
+            $this->authorize('update', $existingScore);
+        } else {
+            $this->authorize('create', NilaiKkn::class);
+        }
 
         $score = $this->grading->updateUnifiedScore(
             $validated['user_id'],

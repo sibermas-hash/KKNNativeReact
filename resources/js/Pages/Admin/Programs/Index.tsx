@@ -1,19 +1,21 @@
 import { useState, useEffect } from 'react';
-import { useForm, router } from '@inertiajs/react';
+import { router, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Button, FormInput, FormSelect, ConfirmDialog, Pagination } from '@/Components/ui';
+import { Pagination } from '@/Components/ui';
 import type { PageProps, Faculty, Program } from '@/types';
 import type { PaginationMeta } from '@/Components/UI/Pagination';
 import {
-    AcademicCapIcon,
-    PlusIcon,
-    PencilSquareIcon,
-    TrashIcon,
-    MagnifyingGlassIcon,
-    BuildingLibraryIcon,
-    DocumentTextIcon,
-    ShieldExclamationIcon
-} from '@heroicons/react/24/outline';
+    GraduationCap,
+    Search,
+    FileText,
+    ShieldCheck,
+    Fingerprint,
+    Globe,
+    Info,
+    Cpu,
+    Activity,
+    Zap
+} from 'lucide-react';
 
 interface ProgramWithFaculty extends Omit<Program, 'faculty'> {
     faculty: Faculty;
@@ -29,14 +31,15 @@ interface Props extends PageProps {
     filters: {
         search?: string;
     };
+    syncInfo: {
+        mode: 'sync-only';
+        source: string;
+        last_synced_at?: string | null;
+    };
 }
 
-export default function ProgramsIndex({ programs, faculties, filters }: Props) {
-    const [editing, setEditing] = useState<ProgramWithFaculty | null>(null);
-    const [deleting, setDeleting] = useState<ProgramWithFaculty | null>(null);
+export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
     const [search, setSearch] = useState(filters.search || '');
-
-    const form = useForm({ faculty_id: '', code: '', name: '' });
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -45,177 +48,165 @@ export default function ProgramsIndex({ programs, faculties, filters }: Props) {
             }
         }, 300);
         return () => clearTimeout(timer);
-    }, [search]);
-
-    function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        if (editing) {
-            form.put(`/admin/programs/${editing.id}`, {
-                onSuccess: () => { setEditing(null); form.reset(); },
-            });
-        } else {
-            form.post('/admin/programs', { onSuccess: () => form.reset() });
-        }
-    }
-
-    function startEdit(p: ProgramWithFaculty) {
-        setEditing(p);
-        form.setData({ faculty_id: String(p.faculty.id), code: p.code, name: p.name });
-    }
-
-    const deleteForm = useForm({});
+    }, [search, filters.search]);
 
     return (
-        <AppLayout title="Scholastic Stream Registry">
-            <div className="space-y-12 pb-16 animate-in fade-in duration-1000">
-                {/* Elite Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-white/5 relative">
-                    <div className="absolute -left-12 top-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
-                    <div className="relative">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="px-3 py-1 rounded-full bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-[10px] font-black uppercase tracking-[0.3em]">ACADEMIC SPECIALIZATION</div>
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary-light animate-pulse" />
+        <AppLayout title="Arsip Sektor Akademik">
+            <Head title="Manajemen Program Studi" />
+            
+            <div className="space-y-12 pb-24">
+                {/* 
+                    Emerald Premium Header 
+                    Refining from heavy black to lush tactical emerald gradient
+                */}
+                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
+                    {/* Background decorations */}
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+                    
+                    <div className="relative z-10 space-y-5 flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                             <div className="p-2.5 bg-white/10 rounded-xl border border-white/20 backdrop-blur-md">
+                                <Cpu className="h-4 w-4 text-emerald-300" />
+                             </div>
+                            <span className="text-[10px] font-black text-emerald-100 uppercase  leading-none italic">
+                                ACADEMIC_REGISTRY_UNIT_V3
+                            </span>
                         </div>
-                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic line-height-1">
-                            Scholastic <span className="text-accent-gold text-glow-gold">Streams</span>
+                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                            Arsip <span className="text-emerald-300 text-glow-emerald italic">Prodi</span>
                         </h1>
-                        <p className="text-white/40 text-sm mt-4 font-medium uppercase tracking-[0.15em]">Calibrating specific academic specializations and study programs.</p>
+                        <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
+                             Manajemen unit akademik dalam struktur fakultas. Seluruh data record prodi diselaraskan secara otomatis dengan basis data universitas.
+                        </p>
                     </div>
 
-                    <div className="flex items-center gap-6 px-8 py-5 glass rounded-[2rem] group hover:border-accent-gold/20 transition-all">
-                        <div className="flex flex-col items-end">
-                            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest leading-none">ACTIVE STREAMS</span>
-                            <span className="text-xl font-black text-white mt-1 tabular-nums">{programs.meta?.total || 0}</span>
+                    <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
+                        <div className="bg-white/10 p-6 rounded-lg border border-white/20 flex items-center gap-6 min-w-[200px] group/stat">
+                            <div className="p-3 bg-white rounded-lg text-primary group-hover/stat:scale-110 transition-transform">
+                                <GraduationCap className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <span className="text-[9px] font-black text-emerald-200/60 uppercase  block mb-1.5 italic">Total Unit</span>
+                                <span className="text-2xl font-black text-white tabular-nums italic leading-none">{programs.meta?.total || 0} Sektor</span>
+                            </div>
                         </div>
-                        <div className="w-px h-8 bg-white/10" />
-                        <AcademicCapIcon className="h-6 w-6 text-accent-gold" />
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                    {/* Stream Definition (Form) */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:mx-2">
+                    {/* Input Section (Tactical Reference) */}
                     <div className="lg:col-span-1">
-                        <div className="glass rounded-[2.5rem] p-10 border-white/10 shadow-2xl sticky top-8 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-6 opacity-[0.03] pointer-events-none text-white">
-                                <DocumentTextIcon className="h-32 w-32 rotate-12" />
+                        <div className="bg-white rounded-[3rem] p-10 border border-slate-100 sticky top-12 group overflow-hidden">
+                            <div className="absolute top-0 right-0 p-12 opacity-[0.02] text-slate-900 pointer-events-none group-hover:rotate-6 transition-transform">
+                                <FileText className="h-64 w-64" />
                             </div>
 
-                            <h2 className="text-2xl font-black text-white tracking-tighter uppercase italic mb-10 flex items-center gap-4">
-                                <div className="p-3 rounded-xl bg-accent-gold/10 text-accent-gold border border-accent-gold/20 shadow-xl">
-                                    {editing ? <PencilSquareIcon className="h-6 w-6" /> : <PlusIcon className="h-6 w-6" />}
+                            <div className="relative z-10 space-y-10">
+                                <div className="flex items-center gap-5 border-b border-slate-50 pb-8">
+                                    <div className="p-3 bg-primary rounded-lg text-white
+                                        <Info className="h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-black text-slate-900 uppercase italic  leading-none leading-[0.8]">Status_Record</h3>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase  mt-2 italic opacity-70">SINKRONISASI EKSTERNAL</p>
+                                    </div>
                                 </div>
-                                {editing ? 'Modify Stream' : 'Initialize Stream'}
-                            </h2>
-                            <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-white/40 uppercase tracking-widest pl-1 text-primary-light">PARENT SECTOR</label>
-                                    <FormSelect
-                                        options={faculties.map((f) => ({ value: f.id, label: f.name }))}
-                                        placeholder="SELECT SECTOR"
-                                        value={form.data.faculty_id}
-                                        onChange={(e) => form.setData('faculty_id', e.target.value)}
-                                        error={form.errors.faculty_id}
-                                        className="bg-black/40 border-white/10 text-[10px] font-black tracking-widest text-white h-14 rounded-2xl focus:border-accent-gold/50"
-                                        required
-                                    />
+
+                                <div className="space-y-8">
+                                    <div className="p-6 bg-slate-50 border border-slate-100rounded-lg
+                                        <p className="text-[13px] font-bold text-slate-500 leading-relaxed italic">
+                                            Pengelolaan manual dinonaktifkan untuk menjaga integritas relasi data mahasiswa dengan database utama UIN SAIZU.
+                                        </p>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-6">
+                                        <div className="bg-white border border-slate-100 rounded-lg p-6 group/item hover:border-primary/20 transition-all">
+                                            <span className="text-[9px] font-black text-slate-300 uppercase  block mb-2 italic px-1">Kanal_Sumber_Data</span>
+                                            <div className="flex items-center gap-3">
+                                                 <Globe className="h-4 w-4 text-primary" />
+                                                 <span className="text-[14px] font-black text-slate-900 italic uppercase">{syncInfo.source}</span>
+                                            </div>
+                                        </div>
+                                        <div className="bg-white border border-slate-100 rounded-lg p-6 border-l-4 border-l-primary group/item hover:border-primary/20 transition-all">
+                                            <span className="text-[9px] font-black text-slate-300 uppercase  block mb-2 italic px-1">Audit_Sinkronisasi</span>
+                                            <div className="flex items-center gap-3">
+                                                 <Activity className="h-4 w-4 text-emerald-500" />
+                                                 <span className="text-[14px] font-black text-primary italic uppercase tabular-nums">{syncInfo.last_synced_at || 'BELUM_TERCATAT'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4 pt-4">
+                                        <div className="flex items-start gap-4 p-5 bg-white border border-slate-50 rounded-lg group/tip hover:bg-emerald-50/30 transition-all
+                                            <ShieldCheck className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
+                                            <p className="text-[12px] text-slate-500 font-bold leading-relaxed italic pr-2">Pemetaan fakultas digunakan untuk delegasi otoritas admin departemen secara otomatis.</p>
+                                        </div>
+                                        <div className="flex items-start gap-4 p-5 bg-white border border-slate-50 rounded-lg group/tip hover:bg-primary/5 transition-all
+                                            <Fingerprint className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                                            <p className="text-[12px] text-slate-500 font-bold leading-relaxed italic pr-2"> Kode unit prodi bersifat absolut dan tervalidasi oleh sistem informasi akademik.</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-white/40 uppercase tracking-widest pl-1">STREAM VECTOR (CODE)</label>
-                                    <FormInput
-                                        placeholder="E.G. PAI"
-                                        value={form.data.code}
-                                        onChange={(e) => form.setData('code', e.target.value)}
-                                        error={form.errors.code}
-                                        className="bg-black/40 border-white/10 text-xs font-black tracking-widest text-accent-gold h-14 rounded-2xl focus:border-accent-gold/50"
-                                        required
-                                    />
-                                </div>
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-white/40 uppercase tracking-widest pl-1">STREAM NOMENCLATURE</label>
-                                    <FormInput
-                                        placeholder="E.G. PENDIDIKAN AGAMA ISLAM..."
-                                        value={form.data.name}
-                                        onChange={(e) => form.setData('name', e.target.value)}
-                                        error={form.errors.name}
-                                        className="bg-black/40 border-white/10 text-xs font-bold tracking-widest text-white h-14 rounded-2xl focus:border-accent-gold/50 placeholder:text-white/5"
-                                        required
-                                    />
-                                </div>
-                                <div className="flex gap-4 pt-6">
-                                    <button type="submit" disabled={form.processing} className="flex-1 py-5 bg-gradient-to-br from-primary to-primary-dark text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all border border-white/10">
-                                        {editing ? 'COMMIT MODIFICATION' : 'DEPLOY STREAM'}
-                                    </button>
-                                    {editing && (
-                                        <button type="button" onClick={() => { setEditing(null); form.reset(); }} className="px-8 py-5 bg-white/5 text-white/40 text-[10px] font-black uppercase tracking-widest rounded-2xl border border-white/5 hover:bg-white/10 transition-all">
-                                            ABORT
-                                        </button>
-                                    )}
-                                </div>
-                            </form>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Registry Ledger (Table) */}
-                    <div className="lg:col-span-2 space-y-8">
-                        <div className="relative group">
-                            <MagnifyingGlassIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-white/20 group-focus-within:text-accent-gold transition-colors" />
-                            <input
-                                placeholder="SCAN SCHOLASTIC STREAMS..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="w-full pl-16 pr-8 py-5 bg-white/[0.02] border border-white/10 rounded-2xl text-xs font-black uppercase tracking-widest text-white outline-none focus:border-accent-gold/40 shadow-2xl transition-all"
-                            />
+                    {/* Data List (Tactical Table) */}
+                    <div className="lg:col-span-2 space-y-10">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mx-1">
+                            <div className="relative group flex-1 max-w-xl">
+                                <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within:text-primary transition-all z-10" />
+                                <input
+                                    placeholder="Cari berdasarkan nama sektor prodi..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="w-full pl-16 pr-8 py-5.5 bg-white border border-slate-100rounded-lg text-sm font-black text-slate-900 outline-none focus:border-primary/50 transition-all italic uppercase placeholder:opacity-30"
+                                />
+                            </div>
+                            <div className="flex items-center gap-4 text-slate-400 italic shrink-0">
+                                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="text-[10px] font-black uppercase  leading-none">STATUS_SYNC: <span className="text-emerald-600">VERIFIED</span></span>
+                            </div>
                         </div>
 
-                        <div className="bg-white/[0.02] rounded-[3rem] border border-white/10 shadow-2xl overflow-hidden backdrop-blur-xxl relative">
-                            <div className="absolute top-0 right-0 p-10 opacity-[0.02] pointer-events-none text-white">
-                                <AcademicCapIcon className="h-64 w-64" />
-                            </div>
-                            <div className="overflow-x-auto relative z-10">
-                                <table className="min-w-full divide-y divide-white/5">
-                                    <thead className="bg-white/[0.02]">
+                        <div className="bg-white rounded-[3.5rem] border border-slate-100 overflow-hidden group mx-1">
+                            <div className="overflow-x-auto relative z-10 custom-scrollbar pr-1">
+                                <table className="min-w-full divide-y divide-slate-50">
+                                    <thead className="bg-slate-50/50">
                                         <tr>
-                                            <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Vector</th>
-                                            <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Nomenclature</th>
-                                            <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Parent Sector</th>
-                                            <th className="px-8 py-6 text-right text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Control</th>
+                                            <th className="px-10 py-7 text-left text-[11px] font-black uppercase  text-slate-400 italic">Identitas_Prodi</th>
+                                            <th className="px-10 py-7 text-left text-[11px] font-black uppercase  text-slate-400 italic">Afiliasi_Fakultas</th>
+                                            <th className="px-10 py-7 text-right text-[11px] font-black uppercase  text-slate-400 italic pr-14">Mode_Operasi</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-white/[0.03]">
+                                    <tbody className="divide-y divide-slate-50 bg-white">
                                         {programs.data.length === 0 ? (
                                             <tr>
-                                                <td colSpan={4} className="px-8 py-24 text-center">
-                                                    <div className="flex flex-col items-center">
-                                                        <DocumentTextIcon className="h-12 w-12 text-white/5 mb-4" />
-                                                        <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] italic">No scholastic streams found in current scans.</p>
+                                                <td colSpan={3} className="px-10 py-40 text-center">
+                                                    <div className="flex flex-col items-center gap-8 opacity-30">
+                                                        <div className="p-10 bg-slate-50 rounded-full border border-slate-100
+                                                             <Globe className="h-20 w-20 text-slate-200" />
+                                                        </div>
+                                                        <p className="text-[12px] font-black uppercase  text-slate-400 italic">SYSTEM_MESSAGE: NO_ACADEMIC_UNIT_DETECTED</p>
                                                     </div>
                                                 </td>
                                             </tr>
                                         ) : (
                                             programs.data.map((p) => (
-                                                <tr key={p.id} className="group hover:bg-white/[0.04] transition-all duration-300">
-                                                    <td className="px-8 py-10">
-                                                        <div className="px-3 py-1.5 rounded-lg bg-accent-gold/10 border border-accent-gold/20 inline-flex">
-                                                            <span className="text-[11px] font-black text-accent-gold uppercase tracking-widest italic">{p.code}</span>
+                                                <tr key={p.id} className="group/row hover:bg-slate-50/20 transition-all cursor-default">
+                                                    <td className="px-10 py-9">
+                                                        <span className="text-[17px] font-black text-slate-900 group-hover/row:text-primary transition-colors  uppercase italic leading-none">{p.name}</span>
+                                                    </td>
+                                                    <td className="px-10 py-9">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="h-7 w-1.5 bg-slate-100 group-hover/row:bg-primary transition-all rounded-full" />
+                                                            <span className="text-[12px] font-black text-slate-500 uppercase  italic group-hover/row:text-slate-900 transition-colors opacity-70 group-hover:opacity-100">{p.faculty?.name}</span>
                                                         </div>
                                                     </td>
-                                                    <td className="px-8 py-10">
-                                                        <span className="text-base font-black text-white tracking-tight uppercase italic group-hover:text-accent-gold transition-colors leading-none">{p.name}</span>
-                                                    </td>
-                                                    <td className="px-8 py-10">
-                                                        <div className="flex items-center gap-3">
-                                                            <BuildingLibraryIcon className="h-4 w-4 text-white/10" />
-                                                            <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">{p.faculty?.name}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-8 py-10 text-right">
-                                                        <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                                                            <button onClick={() => startEdit(p)} className="p-3 rounded-xl bg-white/5 border border-white/5 text-white/40 hover:text-accent-gold hover:bg-white/10 transition-all">
-                                                                <PencilSquareIcon className="h-5 w-5" />
-                                                            </button>
-                                                            <button onClick={() => setDeleting(p)} className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-all">
-                                                                <TrashIcon className="h-5 w-5" />
-                                                            </button>
+                                                    <td className="px-10 py-9 text-right pr-14">
+                                                        <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-black uppercase  text-slate-400 italic group-hover/row:bg-white group-hover/row:text-primary group-hover/row:border-primary/20 transition-all">
+                                                            <Zap className="w-3.5 h-3.5" />
+                                                            SINKRON_READY
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -225,24 +216,53 @@ export default function ProgramsIndex({ programs, faculties, filters }: Props) {
                                 </table>
                             </div>
                             {programs.meta && (
-                                <div className="px-8 py-6 bg-white/[0.01] border-t border-white/5">
+                                <div className="px-10 py-9 bg-slate-50/30 border-t border-slate-100">
                                     <Pagination meta={programs.meta} />
                                 </div>
                             )}
                         </div>
+
+                        {/* Tactical Emerald Footer Monitor */}
+                        <div className="p-12 bg-slate-900 rounded-[3.5rem] border border-slate-800 relative overflow-hidden group mx-1">
+                             {/* Decorative Elements */}
+                             <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
+
+                             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-12">
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                                            <ShieldCheck className="h-7 w-7 text-primary" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-[11px] font-black text-white uppercase  italic leading-none">ACADEMIC_SECTOR_PROTOCOL_V3</h4>
+                                            <p className="text-[10px] text-emerald-400 font-bold  mt-2 italic whitespace-nowrap">STATUS: SECURE_CORE_SYNC_ESTABLISHED</p>
+                                        </div>
+                                    </div>
+                                    <p className="text-[14px] text-slate-400 font-bold leading-relaxed max-w-4xl italic opacity-80">
+                                        Petunjuk Strategis: Program studi merupakan unit granula terkecil dalam sistem distribusi personel KKN. 
+                                        Pastikan mapping fakultas akurat untuk menjamin sinkronisasi pelaporan akademik di seluruh ekosistem digital UIN SAIZU. 
+                                        Record ini bersifat <span className="text-primary font-black uppercase">Read-Only</span> berbasis otentikasi database pusat.
+                                    </p>
+                                </div>
+                                <div className="flex flex-col items-end gap-5 shrink-0 border-l border-slate-800 pl-12 hidden lg:flex">
+                                     <div className="flex items-center gap-3 mb-1 px-5 py-2.5 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
+                                        <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                                        <span className="text-[11px] font-black text-slate-100 uppercase  italic">MONITOR_VERIFIED</span>
+                                     </div>
+                                     <div className="flex gap-5">
+                                        <div className="h-14 w-14 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help text-glow-emerald">
+                                            <Fingerprint className="h-7 w-7" />
+                                        </div>
+                                        <div className="h-14 w-14 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
+                                            <Zap className="h-7 w-7" />
+                                        </div>
+                                     </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <ConfirmDialog
-                open={!!deleting}
-                onClose={() => setDeleting(null)}
-                onConfirm={() => { if (deleting) deleteForm.delete(`/admin/programs/${deleting.id}`, { onSuccess: () => setDeleting(null) }); }}
-                title="TERMINATE SCHOLASTIC STREAM"
-                message={`AUTHORIZATION REQUIRED: PURGING "${deleting?.name}" FROM THE REGISTRY WILL DISRUPT ASSOCIATED ENROLMENTS. PROCEED?`}
-                processing={deleteForm.processing}
-                confirmLabel="CONFIRM WIPE"
-            />
         </AppLayout>
     );
 }

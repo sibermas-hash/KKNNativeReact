@@ -33,11 +33,14 @@ return new class extends Migration
         Schema::create('periods', function (Blueprint $table) {
             $table->id();
             $table->foreignId('academic_year_id')->constrained()->cascadeOnDelete();
+            $table->integer('periode')->nullable();
+            $table->string('jenis', 100)->nullable();
             $table->string('name', 100);
             $table->date('start_date');
             $table->date('end_date');
             $table->date('registration_start');
             $table->date('registration_end');
+            $table->integer('kuota')->default(2000);
             $table->boolean('is_active')->default(false);
             $table->timestamps();
         });
@@ -60,6 +63,8 @@ return new class extends Migration
             $table->foreignId('faculty_id')->constrained()->cascadeOnDelete();
             $table->foreignId('program_id')->constrained()->cascadeOnDelete();
             $table->year('batch_year');
+            $table->integer('sks_completed')->default(0);
+            $table->decimal('gpa', 3, 2)->default(0.00);
             $table->enum('gender', ['L', 'P']);
             $table->string('university', 100)->nullable();
             $table->string('birth_place', 100)->nullable();

@@ -9,15 +9,25 @@ use App\Models\KKN\Mahasiswa as Student;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
 class AccountSeeder extends Seeder
 {
     public function run(): void
     {
+        if (! app()->environment('local')) {
+            $this->command?->warn('AccountSeeder dilewati karena hanya diizinkan pada environment local.');
+            return;
+        }
+
+        $defaultPassword = env('KKN_LOCAL_SEED_PASSWORD');
+        $studentPassword = $defaultPassword ?: Str::password(16);
+        $lecturerPassword = $defaultPassword ?: Str::password(16);
+
         $this->command->info('Start seeding roles...');
         // Pastikan role ada
-        $roles = ['superadmin', 'admin', 'dpl', 'student'];
+        $roles = ['superadmin', 'dpl', 'student'];
         foreach ($roles as $role) {
             Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
         }
@@ -43,10 +53,13 @@ class AccountSeeder extends Seeder
             'username' => 'mahasiswa',
             'name' => 'Budi Mahasiswa',
             'is_active' => true,
-            'password' => Hash::make('password123'),
+            'password' => Hash::make($studentPassword),
         ]
         );
         $this->command->info('Student user created: ' . $studentUser->username);
+        if ($studentUser->wasRecentlyCreated) {
+            $this->command?->warn("Password awal mahasiswa lokal: {$studentPassword}");
+        }
 
         $this->command->info('Creating student profile...');
         Student::updateOrCreate(
@@ -75,10 +88,13 @@ class AccountSeeder extends Seeder
             'username' => 'dosen',
             'name' => 'Dr. Ahmad Dosen, M.Pd.',
             'is_active' => true,
-            'password' => Hash::make('password123'),
+            'password' => Hash::make($lecturerPassword),
         ]
         );
         $this->command->info('Lecturer user created: ' . $lecturerUser->username);
+        if ($lecturerUser->wasRecentlyCreated) {
+            $this->command?->warn("Password awal DPL lokal: {$lecturerPassword}");
+        }
 
         $this->command->info('Creating lecturer profile...');
         Lecturer::updateOrCreate(

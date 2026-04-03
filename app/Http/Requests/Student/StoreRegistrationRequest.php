@@ -14,23 +14,25 @@ class StoreRegistrationRequest extends FormRequest
 
     public function rules(): array
     {
-        $today = now()->toDateString();
-
         return [
             'period_id' => [
                 'required',
-                Rule::exists('periods', 'id')->where(function ($query) use ($today) {
+                'exists:periode,id',
+                Rule::exists('periode', 'id')->where(function ($query) {
                     $query->where('is_active', true)
-                        ->whereDate('registration_start', '<=', $today)
-                        ->whereDate('registration_end', '>=', $today);
+                        ->whereDate('registration_start', '<=', now())
+                        ->whereDate('registration_end', '>=', now());
                 }),
             ],
             'kelompok_id' => [
                 'nullable',
                 Rule::exists('kelompok_kkn', 'id')->where(function ($query) {
-                    $query->where('period_id', $this->period_id);
+                    $query->where('period_id', $this->period_id)
+                        ->where('status', 'active');
                 }),
             ],
+            'health_certificate' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'],
+            'parent_permission' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }

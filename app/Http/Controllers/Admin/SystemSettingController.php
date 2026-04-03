@@ -8,7 +8,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Response;
 
 class SystemSettingController extends Controller
@@ -28,13 +30,10 @@ class SystemSettingController extends Controller
      */
     public function index(): Response
     {
-        $settings = SystemSetting::whereIn('group', ['master_api', 'general', 'ai_settings', 'storage_settings'])->get();
+        Gate::authorize('manage-settings');
+        $this->initializeDefaults();
 
-        // Ensure default settings exist if none found
-        if ($settings->isEmpty() || !$settings->contains('group', 'storage_settings')) {
-            $this->initializeDefaults();
-            $settings = SystemSetting::whereIn('group', ['master_api', 'general', 'ai_settings', 'storage_settings'])->get();
-        }
+        $settings = SystemSetting::whereIn('group', ['master_api', 'general', 'ai_settings', 'storage_settings', 'registration_rules'])->get();
 
         // Mask secret values for display (only show last 4 chars)
         $settings->transform(function ($setting) {
@@ -62,13 +61,46 @@ class SystemSettingController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
+        Gate::authorize('manage-settings');
+
         $validated = $request->validate([
             'settings' => 'required|array',
             'settings.*.id' => 'required|exists:kkn.system_settings,id',
             'settings.*.value' => 'nullable|string',
         ]);
 
-        foreach ($validated['settings'] as $item) {
+        $indexedSettings = collect($validated['settings'])->values();
+        $settingModels = SystemSetting::query()
+            ->whereIn('id', $indexedSettings->pluck('id'))
+            ->get()
+            ->keyBy('id');
+
+        $valueIndexByKey = [];
+
+        foreach ($indexedSettings as $index => $item) {
+            $setting = $settingModels->get($item['id']);
+            if (! $setting) {
+                continue;
+            }
+
+            $this->validateSettingValue($setting, (string) ($item['value'] ?? ''), $index);
+            $valueIndexByKey[$setting->config_key] = $index;
+        }
+
+        $minKey = 'group_male_min_ratio';
+        $targetKey = 'group_male_target_ratio';
+        if (isset($valueIndexByKey[$minKey], $valueIndexByKey[$targetKey])) {
+            $minValue = (float) ($indexedSettings[$valueIndexByKey[$minKey]]['value'] ?? 0);
+            $targetValue = (float) ($indexedSettings[$valueIndexByKey[$targetKey]]['value'] ?? 0);
+
+            if ($targetValue < $minValue) {
+                throw ValidationException::withMessages([
+                    "settings.{$valueIndexByKey[$targetKey]}.value" => 'Target ideal laki-laki harus lebih besar atau sama dengan minimum laki-laki.',
+                ]);
+            }
+        }
+
+        foreach ($indexedSettings as $item) {
             $setting = SystemSetting::find($item['id']);
             if ($setting) {
                 $value = $item['value'];
@@ -177,6 +209,69 @@ class SystemSettingController extends Controller
                 'type' => 'text',
                 'group' => 'storage_settings',
             ],
+            [
+                'config_key' => 'cooling_period_hours',
+                'label' => 'Cooling Period Keluar Kelompok (Jam)',
+                'value' => '24',
+                'type' => 'text',
+                'group' => 'registration_rules',
+            ],
+            [
+                'config_key' => 'max_group_moves',
+                'label' => 'Maksimal Pindah Kelompok',
+                'value' => '2',
+                'type' => 'text',
+                'group' => 'registration_rules',
+            ],
+            [
+                'config_key' => 'group_leave_penalty_points',
+                'label' => 'Penalti Keluar Kelompok',
+                'value' => '10',
+                'type' => 'text',
+                'group' => 'registration_rules',
+            ],
+            [
+                'config_key' => 'group_lock_days_before_start',
+                'label' => 'Kunci Keluar Kelompok Sebelum Pelaksanaan (Hari)',
+                'value' => '7',
+                'type' => 'text',
+                'group' => 'registration_rules',
+            ],
+            [
+                'config_key' => 'registration_snapshot_cache_seconds',
+                'label' => 'Cache Snapshot Portal Pendaftaran (Detik)',
+                'value' => '3',
+                'type' => 'text',
+                'group' => 'registration_rules',
+            ],
+            [
+                'config_key' => 'registration_lock_ttl_seconds',
+                'label' => 'Masa Hidup Lock Pendaftaran (Detik)',
+                'value' => '8',
+                'type' => 'text',
+                'group' => 'registration_rules',
+            ],
+            [
+                'config_key' => 'registration_lock_wait_seconds',
+                'label' => 'Waktu Tunggu Lock Pendaftaran (Detik)',
+                'value' => '6',
+                'type' => 'text',
+                'group' => 'registration_rules',
+            ],
+            [
+                'config_key' => 'group_male_min_ratio',
+                'label' => 'Minimum Persentase Laki-laki per Kelompok',
+                'value' => '20',
+                'type' => 'text',
+                'group' => 'registration_rules',
+            ],
+            [
+                'config_key' => 'group_male_target_ratio',
+                'label' => 'Target Ideal Persentase Laki-laki per Kelompok',
+                'value' => '30',
+                'type' => 'text',
+                'group' => 'registration_rules',
+            ],
         ];
 
         foreach ($defaults as $data) {
@@ -184,7 +279,39 @@ class SystemSettingController extends Controller
             if (in_array($data['config_key'], self::SECRET_KEYS) && $data['value']) {
                 $data['value'] = Crypt::encryptString($data['value']);
             }
-            SystemSetting::updateOrCreate(['config_key' => $data['config_key']], $data);
+            SystemSetting::firstOrCreate(['config_key' => $data['config_key']], $data);
+        }
+    }
+
+    private function validateSettingValue(SystemSetting $setting, string $value, int $index): void
+    {
+        $rules = [
+            'cooling_period_hours' => ['nullable', 'integer', 'min:0', 'max:720'],
+            'max_group_moves' => ['nullable', 'integer', 'min:0', 'max:20'],
+            'group_leave_penalty_points' => ['nullable', 'integer', 'min:0', 'max:1000'],
+            'group_lock_days_before_start' => ['nullable', 'integer', 'min:0', 'max:60'],
+            'registration_snapshot_cache_seconds' => ['nullable', 'integer', 'min:1', 'max:30'],
+            'registration_lock_ttl_seconds' => ['nullable', 'integer', 'min:3', 'max:30'],
+            'registration_lock_wait_seconds' => ['nullable', 'integer', 'min:1', 'max:10'],
+            'group_male_min_ratio' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'group_male_target_ratio' => ['nullable', 'numeric', 'min:0', 'max:100'],
+        ];
+
+        if (! isset($rules[$setting->config_key])) {
+            return;
+        }
+
+        $validator = validator(
+            ['value' => $value],
+            ['value' => $rules[$setting->config_key]],
+            [],
+            ['value' => $setting->label]
+        );
+
+        if ($validator->fails()) {
+            throw ValidationException::withMessages([
+                "settings.{$index}.value" => $validator->errors()->first('value'),
+            ]);
         }
     }
 }

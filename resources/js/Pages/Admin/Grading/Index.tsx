@@ -2,21 +2,24 @@ import React, { useState, useMemo } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Head, useForm, router } from '@inertiajs/react';
 import {
-    ChartBarIcon,
-    CheckCircleIcon,
-    ClockIcon,
-    PencilSquareIcon,
-    AcademicCapIcon,
-    HomeModernIcon,
-    ShieldCheckIcon,
-    CalculatorIcon,
-    MagnifyingGlassIcon,
-    XMarkIcon,
-    BeakerIcon,
-    BoltIcon
-} from '@heroicons/react/24/outline';
+    Activity,
+    CheckCircle,
+    Clock,
+    GraduationCap,
+    Home,
+    ShieldCheck,
+    Calculator,
+    Search,
+    Cpu,
+    Scale,
+    FileText,
+    Bolt,
+    X,
+    Info,
+    Save
+} from 'lucide-react';
 import { route } from 'ziggy-js';
-import { Modal, Button, FormInput } from '@/Components/ui';
+import { clsx } from 'clsx';
 
 interface StudentGrade {
     id: number;
@@ -42,9 +45,15 @@ interface Summary {
     students: StudentGrade[];
 }
 
+interface GroupOption {
+    id: number;
+    code?: string;
+    name: string;
+}
+
 interface Props {
     summary: Summary | null;
-    groups: any[];
+    groups: GroupOption[];
     selectedGroupId: number | string | null;
     error?: string;
 }
@@ -161,30 +170,33 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
 
     if (error || !summary) {
         return (
-            <AppLayout title="Merit Analytics Hub">
-                <div className="flex h-[70vh] items-center justify-center p-8 animate-in fade-in duration-1000">
-                    <div className="text-center p-16 glass rounded-[3.5rem] border-white/10 max-w-xl shadow-2xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-10 opacity-[0.03] text-white group-hover:rotate-12 transition-transform duration-700">
-                            <ChartBarIcon className="h-48 w-48" />
+            <AppLayout title="Protokol Penilaian">
+                <div className="flex h-[75vh] items-center justify-center p-8">
+                    <div className="text-center p-14 bg-white rounded-[4rem] border border-slate-100 max-w-2xl relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-14 opacity-[0.02] text-slate-900 group-hover:rotate-12 transition-transform">
+                            <GraduationCap className="h-64 w-64" />
                         </div>
-                        <div className="mx-auto mb-10 h-24 w-24 text-accent-gold bg-accent-gold/10 rounded-3xl border border-accent-gold/20 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
-                            <BeakerIcon className="h-12 w-12" />
+                        <div className="mx-auto mb-10 h-24 w-24 text-primary bg-primary/5rounded-lg border border-primary/10 flex items-center justify-center
+                            <FileText className="h-10 w-10" />
                         </div>
-                        <h2 className="text-3xl font-black text-white mb-6 tracking-tighter uppercase italic">Select Target Brigade</h2>
-                        <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed mb-10 italic italic">
-                            {error || 'INITIALIZE MERIT ANALYSIS BY SELECTING A SCHOLASTIC BRIGADE FROM THE COMMAND CONSOLE.'}
+                        <h2 className="text-3xl font-black text-slate-900 mb-6  uppercase italic">Seleksi_Unit_Operasional</h2>
+                        <p className="text-slate-400 text-sm font-bold leading-relaxed mb-12 max-w-md mx-auto italic opacity-70">
+                            {error || 'Silakan pilih kelompok untuk memulai sinkronisasi data mahasiswa dan eksekusi parameter penilaian akademik.'}
                         </p>
 
-                        <div className="grid grid-cols-1 gap-4">
+                        <div className="relative group/select">
+                            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-primary z-10">
+                                <Cpu className="h-5 w-5" />
+                            </div>
                             <select
                                 value={selectedGroupId || ''}
                                 onChange={(e) => handleGroupChange(e.target.value)}
-                                className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-white text-xs font-black uppercase tracking-widest focus:ring-2 focus:ring-accent-gold/50 transition-all outline-none"
+                                className="w-full bg-slate-50 border border-slate-100 rounded-[1.5rem] py-5 pl-16 pr-8 text-slate-900 text-[11px] font-black uppercase  focus:bg-white focus:border-primary/40 transition-all outline-none cursor-pointer italic"
                             >
-                                <option value="" className="bg-slate-900">SELECT OPERATIONAL BRIGADE</option>
+                                <option value="">PILIH IDENTITAS KELOMPOK...</option>
                                 {groups.map(g => (
-                                    <option key={g.id} value={g.id} className="bg-slate-900 text-white">
-                                        BRIGADE {g.code || g.name}
+                                    <option key={g.id} value={g.id}>
+                                        KELOMPOK: {g.code || g.name}
                                     </option>
                                 ))}
                             </select>
@@ -198,326 +210,402 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
     const preview = calculatePreview();
 
     return (
-        <AppLayout title="Merit Analytics Hub">
-            <Head title="Quantum Merit Analysis" />
+        <AppLayout title="Evaluasi & Capaian Akademik">
+            <Head title="Evaluasi & Penilaian" />
 
-            <div className="space-y-12 pb-16 animate-in fade-in duration-1000">
-                {/* Elite Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-white/5 relative">
-                    <div className="absolute -left-12 top-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
-                    <div className="relative">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="px-3 py-1 rounded-full bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-[10px] font-black uppercase tracking-[0.3em]">SCHOLASTIC QUANTUM ANALYSIS</div>
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary-light animate-pulse" />
+            <div className="space-y-12 pb-24">
+                
+                {/* 
+                    Emerald Premium Header 
+                    Refining from basic header to lush tactical emerald gradient
+                */}
+                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group transition-all">
+                    {/* Background decorations */}
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+                    
+                    <div className="relative z-10 space-y-5 flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                             <div className="p-2.5 bg-white/10 rounded-xl border border-white/20 backdrop-blur-md">
+                                <Activity className="h-4 w-4 text-emerald-300" />
+                             </div>
+                            <span className="text-[10px] font-black text-emerald-100 uppercase  leading-none italic">
+                                ACADEMIC_GRADING_CENTER_V3
+                            </span>
                         </div>
-                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic line-height-1">
-                            Merit <span className="text-accent-gold text-glow-gold">Analytics</span>
+                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                            Analisis <span className="text-emerald-300 text-glow-emerald italic">Nilai Mahasiswa</span>
                         </h1>
-                        <p className="text-white/40 text-sm mt-4 font-medium uppercase tracking-[0.15em]">Calibrated merit evaluation hub utilizing LPPM unified weighting (50:30:20).</p>
+                        <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
+                             Orkestrasi pembobotan nilai multisumber: DPL (50%) | Mitra/Desa (30%) | Admin/Hub (20%). Evaluasi presisi untuk integritas capaian pengabdian.
+                        </p>
                     </div>
 
-                    <div className="flex items-center gap-6 px-10 py-6 glass rounded-[2.5rem] border-white/5 shadow-2xl">
-                        <div className="text-center px-4">
-                            <p className="text-[10px] text-white/20 font-black uppercase tracking-widest mb-2">AVG QUANTUM</p>
-                            <p className="text-3xl font-black text-accent-gold leading-none italic">{Math.round(summary.average_score)}</p>
-                        </div>
-                        <div className="w-px h-10 bg-white/10" />
-                        <div className="text-center px-4">
-                            <p className="text-[10px] text-white/20 font-black uppercase tracking-widest mb-2">FINALIZED</p>
-                            <p className="text-3xl font-black text-primary-light leading-none italic">{summary.fully_graded} <span className="text-[10px] text-white/10 uppercase">/ {summary.total_students}</span></p>
+                    <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
+                        <div className="bg-white/10 p-6 rounded-lg border border-white/20 flex items-center gap-8 min-w-[280px] group/stat">
+                            <div className="flex items-center gap-6 border-r border-white/10 pr-6">
+                                <div className="text-center">
+                                    <span className="text-[9px] font-black text-emerald-200/60 uppercase  block mb-1.5 italic leading-none">RATA-RATA</span>
+                                    <span className="text-3xl font-black text-white tabular-nums italic leading-none">{Math.round(summary.average_score)}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <span className="text-[9px] font-black text-emerald-200/60 uppercase  block mb-1.5 italic leading-none">PROGRES_INPUT</span>
+                                <span className="text-2xl font-black text-white tabular-nums italic leading-none">
+                                    {summary.fully_graded} <span className="text-[10px] text-white/30 lowercase italic  font-medium ml-1">/ {summary.total_students}</span>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Tactical Console Bar */}
-                <div className="flex flex-col md:flex-row gap-6 items-center justify-between glass p-6 rounded-[3rem] border-white/5 shadow-2xl backdrop-blur-md">
+                {/* Operations Bar */}
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-20 lg:mx-2">
                     <div className="flex flex-col md:flex-row gap-6 w-full md:w-auto flex-1">
-                        <div className="relative group flex-1 max-w-md">
-                            <MagnifyingGlassIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-accent-gold transition-colors" />
+                        <div className="relative group/search flex-1 max-w-lg">
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within/search:text-primary transition-colors z-10" />
                             <input
-                                placeholder="SCAN SCHOLAR IDENTIFIERS..."
+                                placeholder="Cari berdasarkan NIM atau Identitas Nama..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="w-full pl-16 pr-8 py-5 bg-black/40 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-accent-gold/50 shadow-2xl transition-all"
+                                className="w-full pl-16 pr-8 py-5.5 bg-white border border-slate-100rounded-lg text-sm font-black text-slate-900  outline-none transition-all focus:border-primary/50 italic uppercase placeholder:opacity-30"
                             />
                         </div>
-                        <select
-                            value={selectedGroupId || ''}
-                            onChange={(e) => handleGroupChange(e.target.value)}
-                            className="bg-black/40 border border-white/5 rounded-2xl py-4 px-8 text-[10px] font-black uppercase tracking-widest text-accent-gold outline-none focus:border-accent-gold/50 transition-all cursor-pointer shadow-2xl"
-                        >
-                            {groups.map(g => (
-                                <option key={g.id} value={g.id} className="bg-slate-900 text-white">BRIGADE {g.code || g.name}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="flex items-center gap-6 px-10">
-                        <div className="flex -space-x-4">
-                            {[1, 2, 3, 4, 5].map(i => (
-                                <div key={i} className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark border border-white/10 flex items-center justify-center text-[10px] font-black text-white shadow-2xl ring-2 ring-luxury-dark">
-                                    {String.fromCharCode(64 + i)}
-                                </div>
-                            ))}
+                        <div className="relative group/select">
+                             <div className="absolute left-6 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-primary pointer-events-none z-10">
+                                <Cpu className="h-full w-full" />
+                            </div>
+                            <select
+                                value={selectedGroupId || ''}
+                                onChange={(e) => handleGroupChange(e.target.value)}
+                                className="bg-white border border-slate-100 rounded-[1.75rem] h-17 pl-14 pr-12 text-[10px] font-black uppercase  text-slate-600 outline-none focus:border-primary/50 transition-all cursor-pointer italic"
+                            >
+                                {groups.map(g => (
+                                    <option key={g.id} value={g.id}>KELOMPOK: {g.code || g.name}</option>
+                                ))}
+                            </select>
                         </div>
-                        <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] italic">Active Analysts</span>
+                    </div>
+
+                    <div className="flex items-center gap-3 px-6 overflow-hidden bg-slate-50 border border-slate-100 rounded-lg h-14">
+                        {[1, 2, 3, 4, 5].map(i => (
+                            <div key={i} className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-[9px] font-black text-slate-300 first:z-40 italic">
+                                {String.fromCharCode(64 + i)}
+                            </div>
+                        ))}
                     </div>
                 </div>
 
-                {/* Analysis Ledger (Table) */}
-                <div className="bg-white/[0.02] rounded-[3.5rem] border border-white/10 shadow-2xl overflow-hidden backdrop-blur-xxl relative">
-                    <div className="absolute top-0 right-0 p-10 opacity-[0.02] pointer-events-none text-white">
-                        <BoltIcon className="h-64 w-64" />
-                    </div>
-                    <div className="overflow-x-auto relative z-10">
-                        <table className="min-w-full divide-y divide-white/5">
-                            <thead className="bg-white/[0.02]">
+                {/* Table Section */}
+                <div className="bg-white rounded-[3.5rem] border border-slate-100 overflow-hidden relative group mx-1">
+                    <div className="overflow-x-auto relative z-10 custom-scrollbar pr-1">
+                        <table className="min-w-full divide-y divide-slate-50 text-left italic">
+                            <thead className="bg-slate-50/50">
                                 <tr>
-                                    <th className="px-10 py-8 text-left text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Scholar Module</th>
-                                    <th className="px-8 py-8 text-center text-[10px] font-black uppercase tracking-[0.4em] text-white/30 italic">Module A (DPL)</th>
-                                    <th className="px-8 py-8 text-center text-[10px] font-black uppercase tracking-[0.4em] text-white/30 italic">Module B (SECTOR)</th>
-                                    <th className="px-8 py-8 text-center text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Quantum</th>
-                                    <th className="px-8 py-8 text-center text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Grade Index</th>
-                                    <th className="px-10 py-8 text-right text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Operation</th>
+                                    <th className="px-10 py-7 text-[11px] font-black uppercase  text-slate-400 italic">Entitas_Mahasiswa</th>
+                                    <th className="px-6 py-7 text-center text-[11px] font-black uppercase  text-slate-400 italic">Status_DPL</th>
+                                    <th className="px-6 py-7 text-center text-[11px] font-black uppercase  text-slate-400 italic">Status_Sektor</th>
+                                    <th className="px-6 py-7 text-center text-[11px] font-black uppercase  text-slate-400 italic">Skor_Total</th>
+                                    <th className="px-6 py-7 text-center text-[11px] font-black uppercase  text-slate-400 italic">Indeks_Akhir</th>
+                                    <th className="px-10 py-7 text-right text-[11px] font-black uppercase  text-slate-400 italic pr-14">Operasi_Lppm</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-white/[0.03]">
+                            <tbody className="divide-y divide-slate-50 bg-white">
                                 {filteredStudents.map((student) => (
-                                    <tr key={student.id} className="group hover:bg-white/[0.04] transition-all duration-300">
-                                        <td className="px-10 py-10">
+                                    <tr key={student.id} className="group/row hover:bg-slate-50/20 transition-all cursor-default">
+                                        <td className="px-10 py-8">
                                             <div className="flex items-center gap-6">
-                                                <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary-dark/20 border border-white/10 flex items-center justify-center text-primary-light font-black text-2xl group-hover:scale-110 transition-transform shadow-2xl uppercase italic">
+                                                <div className="h-14 w-14 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-primary font-black text-lg group-hover/row:scale-110 transition-all italic">
                                                     {student.user.name.charAt(0)}
                                                 </div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-base font-black text-white uppercase tracking-widest italic leading-none group-hover:text-accent-gold transition-colors">{student.user.name}</span>
-                                                    <span className="text-[10px] font-mono font-black text-white/20 mt-2 tracking-widest uppercase">ID // {student.user.nim}</span>
+                                                <div className="flex flex-col gap-1.5 min-w-0">
+                                                    <span className="text-[15px] font-black text-slate-900 uppercase  italic group-hover/row:text-primary transition-colors truncate leading-none">{student.user.name}</span>
+                                                    <span className="text-[9px] font-black text-slate-300 uppercase  italic opacity-60 leading-none">NIM: {student.user.nim}</span>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-8 py-10 text-center">
+                                        <td className="px-6 py-8 text-center">
                                             {student.execution_score ? (
-                                                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[8px] font-black tracking-widest uppercase shadow-2xl">
-                                                    <CheckCircleIcon className="h-3 w-3" /> ANALYZED
+                                                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 text-emerald-600 text-[9px] font-black  uppercase border border-emerald-100 italic
+                                                    <CheckCircle className="h-3.5 w-3.5" /> DONE
                                                 </div>
                                             ) : (
-                                                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/5 border border-white/5 text-white/20 text-[8px] font-black tracking-widest uppercase italic">
-                                                    <ClockIcon className="h-3 w-3" /> PENDING
+                                                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 text-slate-400 text-[9px] font-black  uppercase border border-slate-100 italic">
+                                                    <Clock className="h-3.5 w-3.5" /> PENDING
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="px-8 py-10 text-center">
+                                        <td className="px-6 py-8 text-center">
                                             {student.attitude_score ? (
-                                                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[8px] font-black tracking-widest uppercase shadow-2xl">
-                                                    <CheckCircleIcon className="h-3 w-3" /> ANALYZED
+                                                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 text-emerald-600 text-[9px] font-black  uppercase border border-emerald-100 italic
+                                                    <CheckCircle className="h-3.5 w-3.5" /> DONE
                                                 </div>
                                             ) : (
-                                                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/5 border border-white/5 text-white/20 text-[8px] font-black tracking-widest uppercase italic">
-                                                    <ClockIcon className="h-3 w-3" /> PENDING
+                                                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 text-slate-400 text-[9px] font-black  uppercase border border-slate-100 italic">
+                                                    <Clock className="h-3.5 w-3.5" /> PENDING
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="px-8 py-10 text-center">
-                                            <span className="text-3xl font-black text-white tabular-nums italic leading-none">{student.total_score || '—'}</span>
+                                        <td className="px-6 py-8 text-center">
+                                            <span className="text-3xl font-black text-slate-900 italic tabular-nums leading-none">{student.total_score || '—'}</span>
                                         </td>
-                                        <td className="px-8 py-10 text-center">
-                                            <div className={`inline-flex px-6 py-2 rounded-2xl border text-sm font-black tracking-[0.3em] uppercase italic shadow-2xl backdrop-blur-md transition-all ${student.letter_grade === 'A' ? 'bg-emerald-500 text-white border-emerald-400 shadow-glow' :
-                                                    student.letter_grade?.startsWith('B') ? 'bg-primary text-white border-primary-light' :
-                                                        'bg-white/5 text-white/10 border-white/10'
-                                                }`}>
-                                                {student.letter_grade || 'Ø'}
+                                        <td className="px-6 py-8 text-center">
+                                            <div className={clsx(
+                                                "inline-flex px-8 py-2.5 rounded-lg border text-[14px] font-black  uppercase italic transition-all",
+                                                student.letter_grade === 'A' ? "bg-slate-900 text-emerald-400 border-emerald-500/20 :
+                                                student.letter_grade?.startsWith('B') ? "bg-slate-900 text-primary border-primary/20 :
+                                                "bg-slate-50 text-slate-300 border-slate-100
+                                            )}>
+                                                {student.letter_grade || '-'}
                                             </div>
                                         </td>
-                                        <td className="px-10 py-10 text-right">
+                                        <td className="px-10 py-8 text-right pr-14">
                                             <button
                                                 onClick={() => openGradingModal(student)}
                                                 disabled={student.is_finalized}
-                                                className="px-8 py-4 bg-gradient-to-br from-primary to-primary-dark text-white rounded-2xl font-black text-[9px] uppercase tracking-widest transition-all italic flex items-center gap-3 ml-auto shadow-xl shadow-primary/20 active:scale-95 disabled:opacity-20 border border-white/10"
+                                                className="inline-flex items-center gap-3 px-8 py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-[1.25rem] font-black text-[10px] uppercase  transition-all italic hover:-translate-y-1 active:scale-95 disabled:opacity-20 disabled:translate-y-0"
                                             >
-                                                <BoltIcon className="h-5 w-5 text-accent-gold" />
-                                                INGEST QUANTUM
+                                                <Bolt className="h-4 w-4 text-primary" />
+                                                Input_Nilai
                                             </button>
                                         </td>
                                     </tr>
                                 ))}
+                                {summary.students.length === 0 && (
+                                    <tr>
+                                        <td colSpan={6} className="py-40 text-center">
+                                            <p className="text-slate-300 font-black uppercase  text-[12px] italic opacity-40">TIDAK ADA DATA ENTITAS DALAM KELOMPOK INI</p>
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
                 </div>
-            </div>
 
-            {/* Ingestion Modal */}
-            <Modal
-                open={!!selectedStudent}
-                onClose={() => setSelectedStudent(null)}
-                maxWidth="3xl"
-            >
-                <div className="p-0 overflow-hidden glass rounded-[3.5rem] border-white/10 relative">
-                    <div className="absolute -top-32 -right-32 w-80 h-80 bg-primary/10 blur-[100px] rounded-full pointer-events-none" />
+                {/* Tactical Emerald Footer Monitor */}
+                <div className="p-12 bg-slate-900 rounded-[3.5rem] border border-slate-800 relative overflow-hidden group mx-1">
+                     {/* Decorative Elements */}
+                     <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
 
-                    <div className="p-12 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-8 bg-white/[0.01]">
-                        <div>
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary-light text-[8px] font-black uppercase tracking-[0.3em]">QUANTUM CALIBRATION</div>
+                     <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-12">
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-5">
+                                <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                                    <Scale className="h-7 w-7 text-primary" />
+                                </div>
+                                <div>
+                                    <h4 className="text-[11px] font-black text-white uppercase  italic leading-none">GRADING_GOVERNANCE_PROTOCOL_V3</h4>
+                                    <p className="text-[10px] text-emerald-400 font-bold  mt-2 italic whitespace-nowrap">STATUS: CALIBRATION_ENGINE_READY</p>
+                                </div>
                             </div>
-                            <h3 className="text-3xl font-black text-white tracking-tighter uppercase italic">{selectedStudent?.user.name}</h3>
-                            <p className="text-white/30 text-xs font-black uppercase tracking-[0.2em] mt-2 italic flex items-center gap-3">
-                                <IdentificationIcon className="h-4 w-4" /> ID // {selectedStudent?.user.nim}
+                            <p className="text-[14px] text-slate-400 font-bold leading-relaxed max-w-4xl italic opacity-80">
+                                Seluruh parameter penilaian yang diinjeksikan akan diolah secara herarkis untuk mendapatkan skor akhir absolut. 
+                                Protokol evaluasi LPPM menjamin objektivitas melalui pembobotan multisumber yang tervalidasi oleh sistem inti. 
+                                Gunakan fitur <span className="text-primary font-black uppercase italic">"Input Nilai"</span> untuk mengaktifkan antarmuka kalibrasi manual.
                             </p>
                         </div>
-                        <div className="flex items-center gap-8 px-10 py-6 bg-black/40 rounded-[2.5rem] border border-white/5 shadow-2xl">
-                            <div className="text-right">
-                                <p className="text-[10px] text-white/20 font-black uppercase tracking-widest mb-1 italic text-right">LIVE PROJECTION</p>
-                                <div className="flex items-center gap-6">
-                                    <span className="text-5xl font-black text-accent-gold tabular-nums italic text-glow-gold leading-none">{preview.score}</span>
-                                    <div className="w-px h-8 bg-white/10" />
-                                    <span className="text-2xl font-black px-5 py-2 bg-white/10 text-white rounded-2xl border border-white/10 italic">{preview.grade}</span>
+                        <div className="flex flex-col items-end gap-5 shrink-0 border-l border-slate-800 pl-12 hidden lg:flex">
+                             <div className="flex items-center gap-3 mb-1 px-5 py-2.5 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
+                                <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="text-[11px] font-black text-slate-100 uppercase  italic">CALCULATION_SYNC_OK</span>
+                             </div>
+                             <div className="flex gap-5">
+                                <div className="h-14 w-14 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
+                                    <Info className="h-7 w-7" />
                                 </div>
-                            </div>
+                             </div>
                         </div>
-                    </div>
-
-                    <div className="p-3 bg-white/[0.02] flex gap-3 border-b border-white/5">
-                        <button
-                            onClick={() => setActiveTab('dpl')}
-                            className={`flex-1 py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all duration-300 italic ${activeTab === 'dpl' ? 'bg-primary text-white shadow-glow' : 'text-white/20 hover:text-white/60 hover:bg-white/5'}`}
-                        >
-                            <AcademicCapIcon className="h-5 w-5" /> MODULE ALPHA (DPL)
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('village')}
-                            className={`flex-1 py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all duration-300 italic ${activeTab === 'village' ? 'bg-primary text-white shadow-glow' : 'text-white/20 hover:text-white/60 hover:bg-white/5'}`}
-                        >
-                            <HomeModernIcon className="h-5 w-5" /> MODULE BETA (SECTOR)
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('admin')}
-                            className={`flex-1 py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all duration-300 italic ${activeTab === 'admin' ? 'bg-primary text-white shadow-glow' : 'text-white/20 hover:text-white/60 hover:bg-white/5'}`}
-                        >
-                            <ShieldCheckIcon className="h-5 w-5" /> MODULE GAMMA (HUB)
-                        </button>
-                    </div>
-
-                    <div className="p-12">
-                        {/* Tab DPL */}
-                        {activeTab === 'dpl' && (
-                            <form onSubmit={submitDpl} className="space-y-10 animate-in slide-in-from-bottom-8 duration-500">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                    <div className="space-y-3">
-                                        <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">FIELD REPORT (30%)</label>
-                                        <FormInput
-                                            type="number"
-                                            value={dplForm.data.final_report_score}
-                                            onChange={e => dplForm.setData('final_report_score', e.target.value)}
-                                            placeholder="0-100"
-                                            className="bg-black/40 border-white/10 text-lg font-black tracking-widest text-accent-gold h-16 rounded-2xl focus:border-accent-gold/50 text-center"
-                                        />
-                                    </div>
-                                    <div className="space-y-3">
-                                        <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">EXECUTION (40%)</label>
-                                        <FormInput
-                                            type="number"
-                                            value={dplForm.data.execution_score}
-                                            onChange={e => dplForm.setData('execution_score', e.target.value)}
-                                            placeholder="0-100"
-                                            className="bg-black/40 border-white/10 text-lg font-black tracking-widest text-accent-gold h-16 rounded-2xl focus:border-accent-gold/50 text-center"
-                                        />
-                                    </div>
-                                    <div className="space-y-3">
-                                        <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">PUBLICATION (30%)</label>
-                                        <FormInput
-                                            type="number"
-                                            value={dplForm.data.article_score}
-                                            onChange={e => dplForm.setData('article_score', e.target.value)}
-                                            placeholder="0-100"
-                                            className="bg-black/40 border-white/10 text-lg font-black tracking-widest text-accent-gold h-16 rounded-2xl focus:border-accent-gold/50 text-center"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex justify-end pt-10 border-t border-white/5">
-                                    <button type="submit" disabled={dplForm.processing} className="px-16 py-6 bg-gradient-to-br from-primary-light to-primary text-white text-[11px] font-black uppercase tracking-widest rounded-[2rem] shadow-2xl shadow-primary/40 hover:scale-[1.05] active:scale-95 transition-all border border-white/10 italic">
-                                        COMMIT ALPHA PARAMETERS
-                                    </button>
-                                </div>
-                            </form>
-                        )}
-
-                        {/* Tab Village */}
-                        {activeTab === 'village' && (
-                            <form onSubmit={submitVillage} className="space-y-10 animate-in slide-in-from-bottom-8 duration-500">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                    <div className="space-y-3">
-                                        <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">ATTITUDE ANALYSIS (50%)</label>
-                                        <FormInput
-                                            type="number"
-                                            value={villageForm.data.attitude_score}
-                                            onChange={e => villageForm.setData('attitude_score', e.target.value)}
-                                            placeholder="0-100"
-                                            className="bg-black/40 border-white/10 text-2xl font-black tracking-widest text-primary-light h-20 rounded-[2rem] focus:border-primary-light/50 text-center"
-                                        />
-                                    </div>
-                                    <div className="space-y-3">
-                                        <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">DISCIPLINE METRICS (50%)</label>
-                                        <FormInput
-                                            type="number"
-                                            value={villageForm.data.discipline_score}
-                                            onChange={e => villageForm.setData('discipline_score', e.target.value)}
-                                            placeholder="0-100"
-                                            className="bg-black/40 border-white/10 text-2xl font-black tracking-widest text-primary-light h-20 rounded-[2rem] focus:border-primary-light/50 text-center"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex justify-end pt-10 border-t border-white/5">
-                                    <button type="submit" disabled={villageForm.processing} className="px-16 py-6 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white text-[11px] font-black uppercase tracking-widest rounded-[2rem] shadow-2xl shadow-indigo-500/40 hover:scale-[1.05] active:scale-95 transition-all border border-white/10 italic">
-                                        COMMIT BETA PARAMETERS
-                                    </button>
-                                </div>
-                            </form>
-                        )}
-
-                        {/* Tab Admin */}
-                        {activeTab === 'admin' && (
-                            <form onSubmit={submitAdmin} className="space-y-10 animate-in slide-in-from-bottom-8 duration-500">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                    <div className="space-y-3">
-                                        <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">TRAINING PERFORMANCE (50%)</label>
-                                        <FormInput
-                                            type="number"
-                                            value={adminForm.data.workshop_score}
-                                            onChange={e => adminForm.setData('workshop_score', e.target.value)}
-                                            placeholder="0-100"
-                                            className="bg-white/5 border-white/10 text-2xl font-black tracking-widest text-white h-20 rounded-[2rem] focus:border-white/40 text-center"
-                                        />
-                                    </div>
-                                    <div className="space-y-3">
-                                        <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">ADMINISTRATIVE STATUS (50%)</label>
-                                        <FormInput
-                                            type="number"
-                                            value={adminForm.data.administration_score}
-                                            onChange={e => adminForm.setData('administration_score', e.target.value)}
-                                            placeholder="0-100"
-                                            className="bg-white/5 border-white/10 text-2xl font-black tracking-widest text-white h-20 rounded-[2rem] focus:border-white/40 text-center"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex justify-end pt-10 border-t border-white/5">
-                                    <button type="submit" disabled={adminForm.processing} className="px-16 py-6 bg-white text-luxury-dark text-[11px] font-black uppercase tracking-widest rounded-[2rem] shadow-2xl hover:bg-slate-100 transition-all border border-white/10 italic">
-                                        COMMIT GAMMA PARAMETERS
-                                    </button>
-                                </div>
-                            </form>
-                        )}
-                    </div>
-
-                    <div className="px-12 py-8 bg-black/40 border-t border-white/5 flex items-center gap-4">
-                        <div className="p-3 bg-accent-gold/10 rounded-xl text-accent-gold">
-                            <CalculatorIcon className="h-6 w-6" />
-                        </div>
-                        <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] italic">
-                            QUANTUM ENGINE IS AUTOMATICALLY COMPUTING FINAL MERIT INDICES BASED ON PERSISTED PARAMETERS (A:50% | B:30% | C:20%).
-                        </p>
                     </div>
                 </div>
-            </Modal>
+            </div>
+
+            {/* Ingestion Modal - Emerald Tactical Overhaul */}
+            {selectedStudent && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/80">
+                    <div className="bg-white rounded-[4rem] w-full max-w-5xl border border-white/10 overflow-hidden zoom-in-95 group/modal relative">
+                        {/* Modal Header Section */}
+                        <div className="px-12 py-14 border-b border-slate-50 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-10 bg-slate-50/50 relative overflow-hidden">
+                             <div className="absolute top-0 right-0 p-14 opacity-[0.03] text-slate-900 pointer-events-none group-hover/modal:rotate-12 group-hover/modal:scale-125 transition-transform">
+                                <Calculator className="h-64 w-64" />
+                            </div>
+                            
+                            <div className="relative z-10 flex-1">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="p-2 bg-primary/20 text-primary rounded-xl
+                                        <Bolt className="h-4.5 w-4.5" />
+                                    </div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase  italic">MODUL_KALIBRASI_AKADEMIK_V3</span>
+                                </div>
+                                <h3 className="text-4xl font-black text-slate-900  uppercase italic leading-none">{selectedStudent?.user.name}</h3>
+                                <div className="flex items-center gap-4 mt-6">
+                                    <div className="px-4 py-1.5 bg-slate-900 text-primary rounded-lg text-[10px] font-black uppercase  italic {selectedStudent?.user.nim}</div>
+                                    <div className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-black uppercase  italic border border-emerald-100
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-10 px-12 py-8 bg-white rounded-lg border border-slate-100 relative z-10 group/preview hover:-translate-y-1 transition-transform">
+                                <div className="text-right">
+                                    <p className="text-[10px] font-black text-slate-300 uppercase  mb-4 italic leading-none">ESTIMASI_AKHIR_ABSOLUT</p>
+                                    <div className="flex items-center gap-10">
+                                        <div className="flex flex-col items-end">
+                                            <span className="text-6xl font-black text-primary tabular-nums italic  leading-none text-glow-emerald">{preview.score}</span>
+                                            <span className="text-[9px] font-black text-slate-400 uppercase italic mt-2  opacity-60">SKOR NUMERIK</span>
+                                        </div>
+                                        <div className="w-px h-16 bg-slate-100" />
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-4xl font-black px-6 py-3 bg-slate-900 text-white rounded-lg italic leading-none
+                                             <span className="text-[9px] font-black text-slate-400 uppercase italic mt-2  opacity-60">INDEKS</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button onClick={() => setSelectedStudent(null)} className="absolute -top-4 -right-4 h-12 w-12 bg-white text-slate-400 hover:text-rose-500 rounded-full flex items-center justify-center border border-slate-100 hover:rotate-90 transition-all active:scale-90">
+                                    <X className="h-6 w-6" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Modal Navigation Tabs */}
+                        <div className="px-10 py-6 bg-slate-50 flex gap-4 border-b border-slate-100">
+                            {([
+                                { id: 'dpl', icon: GraduationCap, label: 'Evaluasi DPL' },
+                                { id: 'village', icon: Home, label: 'Laporan Mitra' },
+                                { id: 'admin', icon: ShieldCheck, label: 'Kapasitas Hub' }
+                            ] as const).map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={clsx(
+                                        "flex-1 py-5 px-8 rounded-lg font-black text-[11px] uppercase  flex items-center justify-center gap-4 transition-all italic border hover:shadow-md",
+                                        activeTab === tab.id 
+                                            ? "bg-slate-900 text-white border-slate-900 -translate-y-1" 
+                                            : "bg-white text-slate-400 border-slate-100 hover:text-slate-900 hover:border-slate-200"
+                                    )}
+                                >
+                                    <tab.icon className={clsx("h-5 w-5", activeTab === tab.id ? "text-primary" : "text-slate-300")} />
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Ingestion Form Area */}
+                        <div className="p-14 min-h-[400px] flex items-center justify-center">
+                            {activeTab === 'dpl' && (
+                                <form onSubmit={submitDpl} className="w-full space-y-12">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                                        {[
+                                            { id: 'final_report_score' as const, label: 'LAPO_AKHIR (30%)', sub: 'Submission Final' },
+                                            { id: 'execution_score' as const, label: 'EKSEKUSI (40%)', sub: 'Lapangan & Aksi' },
+                                            { id: 'article_score' as const, label: 'ARTIKEL (30%)', sub: 'Karya Ilmiah' }
+                                        ].map((field) => (
+                                            <div key={field.id} className="space-y-4 text-center">
+                                                <label className="block text-[10px] font-black text-slate-400 uppercase  italic">{field.label}</label>
+                                                <div className="relative group/input">
+                                                    <input
+                                                        type="number"
+                                                        value={dplForm.data[field.id]}
+                                                        onChange={e => dplForm.setData(field.id, e.target.value)}
+                                                        className="w-full bg-slate-50 border border-slate-100 text-5xl font-black text-slate-900 h-28rounded-lg focus:bg-white focus:border-primary/40 transition-all outline-none text-center italic tabular-nums placeholder:opacity-20"
+                                                        placeholder="00"
+                                                    />
+                                                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[8px] font-black text-slate-300 uppercase  italic opacity-0 group-focus-within/input:opacity-100 transition-opacity">{field.sub}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex justify-end pt-12 border-t border-slate-50 gap-6">
+                                        <button type="button" onClick={() => setSelectedStudent(null)} className="px-10 py-5 bg-white border border-slate-200 text-slate-400 text-[11px] font-black uppercase  rounded-lg hover:bg-slate-50 transition-all italic leading-none hover:text-slate-600">MENUNDA_SESI</button>
+                                        <button type="submit" disabled={dplForm.processing} className="px-12 py-5 bg-slate-900 text-white text-[11px] font-black uppercase  rounded-lg hover:bg-slate-800 transition-all italic leading-none hover:-translate-y-1 active:scale-95 flex items-center gap-4 group/submit">
+                                            <Save className="h-4.5 w-4.5 text-primary group-hover/submit:rotate-12 transition-transform" />
+                                            COMMIT_NILAI_DPL
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+
+                            {activeTab === 'village' && (
+                                <form onSubmit={submitVillage} className="w-full space-y-12">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto">
+                                         {[
+                                            { id: 'attitude_score' as const, label: 'ETIKA_PERILAKU (50%)', sub: 'Observasi Mitra' },
+                                            { id: 'discipline_score' as const, label: 'KEDISIPLINAN (50%)', sub: 'Absensi & Kepatuhan' },
+                                        ].map((field) => (
+                                            <div key={field.id} className="space-y-4 text-center">
+                                                <label className="block text-[10px] font-black text-slate-400 uppercase  italic">{field.label}</label>
+                                                <div className="relative group/input">
+                                                    <input
+                                                        type="number"
+                                                        value={villageForm.data[field.id]}
+                                                        onChange={e => villageForm.setData(field.id, e.target.value)}
+                                                        className="w-full bg-slate-50 border border-slate-100 text-6xl font-black text-slate-900 h-32 rounded-[2.5rem] focus:bg-white focus:border-primary/40 transition-all outline-none text-center italic tabular-nums placeholder:opacity-20"
+                                                        placeholder="00"
+                                                    />
+                                                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[8px] font-black text-slate-300 uppercase  italic opacity-0 group-focus-within/input:opacity-100 transition-opacity">{field.sub}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex justify-end pt-12 border-t border-slate-50 gap-6 max-w-4xl mx-auto w-full">
+                                        <button type="button" onClick={() => setSelectedStudent(null)} className="px-10 py-5 bg-white border border-slate-200 text-slate-400 text-[11px] font-black uppercase  rounded-lg hover:bg-slate-50 transition-all italic leading-none hover:text-slate-600">MENUNDA_SESI</button>
+                                        <button type="submit" disabled={villageForm.processing} className="px-12 py-5 bg-slate-900 text-white text-[11px] font-black uppercase  rounded-lg hover:bg-slate-800 transition-all italic leading-none hover:-translate-y-1 active:scale-95 flex items-center gap-4 group/submit">
+                                            <Save className="h-4.5 w-4.5 text-primary group-hover/submit:rotate-12 transition-transform" />
+                                            COMMIT_NILAI_SEKTOR
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+
+                            {activeTab === 'admin' && (
+                                <form onSubmit={submitAdmin} className="w-full space-y-12">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto">
+                                         {[
+                                            { id: 'workshop_score' as const, label: 'PEMBEKALAN (50%)', sub: 'Monitoring Workshop' },
+                                            { id: 'administration_score' as const, label: 'ADMINISTRASI (50%)', sub: 'Audit Kelengkapan' },
+                                        ].map((field) => (
+                                            <div key={field.id} className="space-y-4 text-center">
+                                                <label className="block text-[10px] font-black text-slate-400 uppercase  italic">{field.label}</label>
+                                                <div className="relative group/input">
+                                                    <input
+                                                        type="number"
+                                                        value={adminForm.data[field.id]}
+                                                        onChange={e => adminForm.setData(field.id, e.target.value)}
+                                                        className="w-full bg-slate-50 border border-slate-100 text-6xl font-black text-slate-900 h-32 rounded-[2.5rem] focus:bg-white focus:border-primary/40 transition-all outline-none text-center italic tabular-nums placeholder:opacity-20"
+                                                        placeholder="00"
+                                                    />
+                                                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[8px] font-black text-slate-300 uppercase  italic opacity-0 group-focus-within/input:opacity-100 transition-opacity">{field.sub}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex justify-end pt-12 border-t border-slate-50 gap-6 max-w-4xl mx-auto w-full">
+                                        <button type="button" onClick={() => setSelectedStudent(null)} className="px-10 py-5 bg-white border border-slate-200 text-slate-400 text-[11px] font-black uppercase  rounded-lg hover:bg-slate-50 transition-all italic leading-none hover:text-slate-600">MENUNDA_SESI</button>
+                                        <button type="submit" disabled={adminForm.processing} className="px-12 py-5 bg-slate-900 text-white text-[11px] font-black uppercase  rounded-lg hover:bg-slate-800 transition-all italic leading-none hover:-translate-y-1 active:scale-95 flex items-center gap-4 group/submit">
+                                            <Save className="h-4.5 w-4.5 text-primary group-hover/submit:rotate-12 transition-transform" />
+                                            COMMIT_NILAI_ADMIN
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+                        </div>
+
+                        {/* Tactical Ingestion Footer */}
+                        <div className="px-14 py-8 bg-slate-950 flex flex-col md:flex-row items-center justify-between gap-8">
+                             <div className="flex items-center gap-5">
+                                <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                                    <Calculator className="h-6 w-6 text-primary />
+                                </div>
+                                <div>
+                                    <span className="text-[10px] font-black text-white uppercase  italic leading-none">Automated_Calculation_Active</span>
+                                    <p className="text-[9px] text-slate-500 font-bold uppercase  italic mt-2">SINKRONISASI REALTIME KE BASIS DATA PUSAT</p>
+                                </div>
+                             </div>
+                             <div className="flex items-center gap-4 px-6 py-2.5 bg-emerald-500/5 rounded-lg border border-emerald-500/10 hidden md:flex">
+                                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="text-[9px] font-black text-slate-400 uppercase  italic leading-none">STREAMS_SECURED_BY_COMMAND_V3</span>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AppLayout>
     );
 }

@@ -19,6 +19,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Registration Hot Path Stores
+    |--------------------------------------------------------------------------
+    |
+    | Jalur rebutan kelompok sensitif terhadap performa lock dan snapshot.
+    | Dua opsi ini memungkinkan kita memindahkan hot path ke store khusus
+    | seperti Redis tanpa mengubah kode bisnis inti.
+    |
+    */
+
+    'registration_lock_store' => env('REGISTRATION_LOCK_CACHE_STORE', env('CACHE_STORE', 'database')),
+
+    'registration_snapshot_store' => env('REGISTRATION_SNAPSHOT_CACHE_STORE', env('CACHE_STORE', 'database')),
+
+    /*
+    |--------------------------------------------------------------------------
     | Cache Stores
     |--------------------------------------------------------------------------
     |

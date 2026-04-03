@@ -15,4 +15,8 @@ class KonfigurasiSertifikat extends Model
         'value',
         'type',
     ];
+
+    protected $casts = [
+        'value' => 'string',
+    ];
 }

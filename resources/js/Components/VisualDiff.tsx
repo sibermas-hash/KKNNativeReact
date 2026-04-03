@@ -22,7 +22,7 @@ export default function VisualDiff({ oldValues, newValues }: Props) {
 
     return (
         <div className="space-y-3">
-            <div className="grid grid-cols-12 px-4 py-2 text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-50/50 rounded-xl border border-slate-100">
+            <div className="grid grid-cols-12 px-4 py-2 text-[10px] font-black text-slate-500 uppercase  bg-slate-50/50 rounded-xl border border-slate-100">
                 <div className="col-span-4">Field</div>
                 <div className="col-span-4">Original</div>
                 <div className="col-span-4">Modified</div>
@@ -37,9 +37,9 @@ export default function VisualDiff({ oldValues, newValues }: Props) {
                     if (!hasChanged && oldValues && newValues) return null; // Only show changed in detailed diff
 
                     return (
-                        <div key={key} className="grid grid-cols-12 px-4 py-3 rounded-2xl border border-transparent hover:border-slate-100 hover:bg-slate-50/50 transition-all items-center gap-4">
+                        <div key={key} className="grid grid-cols-12 px-4 py-3 rounded-lg border border-transparent hover:border-slate-100 hover:bg-slate-50/50 transition-all items-center gap-4">
                             <div className="col-span-4">
-                                <span className="text-xs font-bold text-slate-500 uppercase tracking-tight">{key.replace(/_/g, ' ')}</span>
+                                <span className="text-xs font-bold text-slate-500 uppercase  ' ')}</span>
                             </div>
                             <div className="col-span-4">
                                 {oldVal !== undefined ? (

@@ -22,6 +22,11 @@ class Mahasiswa extends Model
         'faculty_id',
         'program_id',
         'batch_year',
+        'sks_completed',
+        'gpa',
+        'is_bta_ppi_passed',
+        'health_certificate_path',
+        'parent_permission_path',
         'gender',
         'birth_place',
         'birth_date',
@@ -31,6 +36,10 @@ class Mahasiswa extends Model
 
     protected $casts = [
         'birth_date' => 'date',
+        'sks_completed' => 'integer',
+        'gpa' => 'float',
+        'is_bta_ppi_passed' => 'boolean',
+        'master_synced_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

@@ -208,6 +208,9 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
     Route::get('/reports/{report}/download', [App\Http\Controllers\ReportController::class, 'download'])
         ->name('reports.download')
         ->middleware('role:superadmin|dpl|student');
+    Route::get('/posko/{posko}/photo', [Student\PoskoController::class, 'photo'])
+        ->name('posko.photo')
+        ->middleware('role:superadmin|dpl|student');
     Route::get('/scores/{score}/evidence', [\App\Http\Controllers\ReportController::class, 'showEvidence'])
         ->name('scores.evidence')
         ->middleware('role:superadmin|dpl');

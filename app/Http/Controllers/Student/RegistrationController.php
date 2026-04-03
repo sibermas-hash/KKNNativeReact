@@ -8,7 +8,7 @@ use App\Models\KKN\AntrianKkn;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\SystemSetting;
-use App\Services\GroupSelectionService;
+use App\Services\RegistrationPortalService;
 use App\Services\RegistrationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,40 +20,14 @@ class RegistrationController extends Controller
 {
     public function create(
         RegistrationService $registrationService,
-        GroupSelectionService $groupSelectionService
+        RegistrationPortalService $registrationPortalService
     ): Response {
         $today = now()->toDateString();
         $mahasiswa = auth()->user()?->mahasiswa;
 
-        $periodModels = Periode::query()
-            ->where('is_active', true)
-            ->whereDate('registration_start', '<=', $today)
-            ->whereDate('registration_end', '>=', $today)
-            ->with(['kelompok' => function ($query) {
-                $query->where('status', 'active')
-                    ->with(['lokasi', 'slotTerkunci.fakultas', 'slotTerkunci.prodi'])
-                    ->withCount([
-                        'peserta' => function ($participantQuery) {
-                            $participantQuery->whereIn('status', ['pending', 'document_submitted', 'approved']);
-                        },
-                        'peserta as male_member_count' => function ($participantQuery) {
-                            $participantQuery->whereIn('status', ['pending', 'document_submitted', 'approved'])
-                                ->whereHas('mahasiswa', function ($studentQuery) {
-                                    $studentQuery->where('gender', 'L');
-                                });
-                        },
-                        'peserta as female_member_count' => function ($participantQuery) {
-                            $participantQuery->whereIn('status', ['pending', 'document_submitted', 'approved'])
-                                ->whereHas('mahasiswa', function ($studentQuery) {
-                                    $studentQuery->where('gender', 'P');
-                                });
-                        },
-                    ]);
-            }])
-            ->orderByDesc('registration_start')
-            ->get();
+        $periods = $registrationPortalService->activePeriodsSnapshot($today);
 
-        $periodIds = $periodModels->pluck('id');
+        $periodIds = $periods->pluck('id');
 
         $registrations = $mahasiswa
             ? PesertaKkn::query()
@@ -72,59 +46,14 @@ class RegistrationController extends Controller
                 ->keyBy('period_id')
             : collect();
 
-        $periods = $periodModels
-            ->map(function (Periode $period) use ($registrations, $queues, $registrationService, $groupSelectionService) {
-                return [
-                    'id' => $period->id,
-                    'nama' => $period->name,
-                    'registration_start' => optional($period->registration_start)->format('Y-m-d'),
-                    'registration_end' => optional($period->registration_end)->format('Y-m-d'),
-                    'kelompok' => $period->kelompok->map(function ($group) use ($groupSelectionService) {
-                        $maleQuota = $groupSelectionService->maleQuotaRange((int) $group->capacity);
-                        $maleMemberCount = (int) ($group->male_member_count ?? 0);
+        $periods = $periods
+            ->map(function (array $period) use ($registrations, $queues, $registrationService) {
+                $period['registration'] = $registrationService->registrationSummaryForPeriod(
+                    $registrations->get($period['id']),
+                    $queues->get($period['id']),
+                );
 
-                        return [
-                            'id' => $group->id,
-                            'nama_kelompok' => $group->nama_kelompok,
-                            'capacity' => (int) $group->capacity,
-                            'peserta_count' => (int) ($group->peserta_count ?? 0),
-                            'remaining_seats' => max((int) $group->capacity - (int) ($group->peserta_count ?? 0), 0),
-                            'male_member_count' => $maleMemberCount,
-                            'female_member_count' => (int) ($group->female_member_count ?? 0),
-                            'male_min_required' => $maleQuota['minimum'],
-                            'male_target_maximum' => $maleQuota['maximum'],
-                            'requires_more_male_members' => $maleMemberCount < $maleQuota['minimum'],
-                            'male_target_reached' => $maleMemberCount >= $maleQuota['maximum'],
-                            'male_target_exceeded' => $maleMemberCount > $maleQuota['maximum'],
-                            'male_min_percentage' => $groupSelectionService->maleMinimumPercent(),
-                            'male_target_percentage' => $groupSelectionService->maleTargetPercent(),
-                            'reserved_male_slots' => max($maleQuota['minimum'] - $maleMemberCount, 0),
-                            'slot_terkunci' => $group->slotTerkunci->map(function ($slot) {
-                                return [
-                                    'id' => $slot->id,
-                                    'tipe_slot' => $slot->tipe_slot,
-                                    'label' => match ($slot->tipe_slot) {
-                                        'fakultas' => 'Fakultas ' . ($slot->fakultas?->nama ?? 'tidak diketahui'),
-                                        'prodi' => 'Program Studi ' . ($slot->prodi?->nama ?? 'tidak diketahui'),
-                                        default => 'Slot terkunci',
-                                    },
-                                    'kuota_slot' => (int) $slot->kuota_slot,
-                                ];
-                            })->values(),
-                            'lokasi' => $group->lokasi ? [
-                                'id' => $group->lokasi->id,
-                                'village_name' => $group->lokasi->village_name,
-                                'district_name' => $group->lokasi->district_name,
-                                'regency_name' => $group->lokasi->regency_name,
-                                'full_name' => $group->lokasi->full_name,
-                            ] : null,
-                        ];
-                    })->values(),
-                    'registration' => $registrationService->registrationSummaryForPeriod(
-                        $registrations->get($period->id),
-                        $queues->get($period->id),
-                    ),
-                ];
+                return $period;
             })
             ->values();
 

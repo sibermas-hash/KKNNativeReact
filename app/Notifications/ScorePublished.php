@@ -29,14 +29,14 @@ class ScorePublished extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $letterGrade = $this->score->letter_grade ?? 'N/A';
+        $letterGrade = $this->score->letter_grade ?? 'Tidak Ada';
         $totalScore = $this->score->total_score ?? 0;
 
         return (new MailMessage)
             ->subject('Nilai KKN Telah Dirilis - SIM-KKN UIN SAIZU')
             ->greeting("Assalamu'alaikum " . $notifiable->name)
             ->line('Nilai KKN Anda telah dirilis dan difinalisasi.')
-            ->line("Nilai Akhir: **{$totalScore}** ({$letterGrade})")
+            ->line('Silakan login untuk melihat detail nilai Anda.')
             ->action('Lihat Nilai', url('/student/evaluations'))
             ->line('Terima kasih atas partisipasi Anda dalam program KKN.')
             ->salutation("Wassalamu'alaikum, Tim LPPM UIN SAIZU");

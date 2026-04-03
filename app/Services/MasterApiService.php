@@ -187,6 +187,15 @@ class MasterApiService
         return $this->getAllPages('/organizations', [], 100);
     }
 
+    /**
+     * Get groups from Master API (stub for local development)
+     */
+    public function getGroups(): array
+    {
+        // Return empty for local development (not using master API)
+        return [];
+    }
+
     public function healthCheck(): array
     {
         try {

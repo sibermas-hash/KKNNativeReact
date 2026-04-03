@@ -20,6 +20,10 @@ class Fakultas extends Model
         'master_synced_at',
     ];
 
+    protected $casts = [
+        'master_synced_at' => 'datetime',
+    ];
+
     public function dosen(): HasMany
     {
         return $this->hasMany(Dosen::class, 'faculty_id');

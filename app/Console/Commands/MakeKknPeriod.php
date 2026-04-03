@@ -59,9 +59,9 @@ class MakeKknPeriod extends Command
 
         $period = Periode::create([
             'academic_year_id' => $ay->id,
-            'angkatan' => $angkatan,
+            'periode' => $angkatan,
             'jenis' => $jenis,
-            'name' => $name,
+            'name' => "Periode {$angkatan} - {$jenis}",
             'start_date' => $start,
             'end_date' => $end,
             'registration_start' => $regStart,

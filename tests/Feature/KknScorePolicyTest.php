@@ -9,14 +9,14 @@ use Spatie\Permission\Models\Role;
 beforeEach(function () {
     // Seed roles
     Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web']);
-    Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+    
     Role::firstOrCreate(['name' => 'dpl', 'guard_name' => 'web']);
     Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
 });
 
 test('admin can view any score', function () {
     $admin = User::factory()->create();
-    $admin->assignRole('admin');
+    $admin->assignRole('superadmin');
 
     $policy = new KknScorePolicy();
     expect($policy->viewAny($admin))->toBeTrue();
@@ -24,7 +24,7 @@ test('admin can view any score', function () {
 
 test('admin can create scores', function () {
     $admin = User::factory()->create();
-    $admin->assignRole('admin');
+    $admin->assignRole('superadmin');
 
     $policy = new KknScorePolicy();
     expect($policy->create($admin))->toBeTrue();
@@ -32,7 +32,7 @@ test('admin can create scores', function () {
 
 test('admin can finalize scores', function () {
     $admin = User::factory()->create();
-    $admin->assignRole('admin');
+    $admin->assignRole('superadmin');
 
     $score = new NilaiKkn(['is_finalized' => false]);
 
@@ -42,7 +42,7 @@ test('admin can finalize scores', function () {
 
 test('admin can bulk finalize scores', function () {
     $admin = User::factory()->create();
-    $admin->assignRole('admin');
+    $admin->assignRole('superadmin');
 
     $policy = new KknScorePolicy();
     expect($policy->bulkFinalize($admin))->toBeTrue();
@@ -50,7 +50,7 @@ test('admin can bulk finalize scores', function () {
 
 test('admin cannot update finalized scores', function () {
     $admin = User::factory()->create();
-    $admin->assignRole('admin');
+    $admin->assignRole('superadmin');
 
     $score = new NilaiKkn();
     $score->is_finalized = true;
@@ -61,7 +61,7 @@ test('admin cannot update finalized scores', function () {
 
 test('admin can update non-finalized scores', function () {
     $admin = User::factory()->create();
-    $admin->assignRole('admin');
+    $admin->assignRole('superadmin');
 
     $score = new NilaiKkn(['is_finalized' => false]);
 

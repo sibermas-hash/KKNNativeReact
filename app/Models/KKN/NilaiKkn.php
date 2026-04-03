@@ -15,6 +15,7 @@ class NilaiKkn extends Model
 
     protected $fillable = [
         'user_id',
+        'mahasiswa_id',
         'kelompok_id',
         'final_report_score',
         'execution_score',
@@ -48,8 +49,33 @@ class NilaiKkn extends Model
 
     public function mahasiswa(): BelongsTo
     {
-        // Column renamed from mahasiswa_id to user_id to reflect it stores users.id
         return $this->belongsTo(Mahasiswa::class, 'user_id', 'user_id');
+    }
+
+    public function getMahasiswaIdAttribute(): ?int
+    {
+        return $this->attributes['user_id'] ?? null;
+    }
+
+    public function setMahasiswaIdAttribute(mixed $value): void
+    {
+        if ($value === null || $value === '') {
+            $this->attributes['user_id'] = null;
+
+            return;
+        }
+
+        $resolvedUserId = Mahasiswa::query()
+            ->where('user_id', $value)
+            ->value('user_id');
+
+        if ($resolvedUserId === null) {
+            $resolvedUserId = Mahasiswa::query()
+                ->whereKey($value)
+                ->value('user_id');
+        }
+
+        $this->attributes['user_id'] = $resolvedUserId ?? $value;
     }
 
     public function kelompok(): BelongsTo

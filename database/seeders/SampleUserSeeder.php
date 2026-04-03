@@ -9,11 +9,21 @@ use App\Models\KKN\Mahasiswa as Student;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class SampleUserSeeder extends Seeder
 {
     public function run(): void
     {
+        if (! app()->environment('local')) {
+            $this->command?->warn('SampleUserSeeder dilewati karena hanya diizinkan pada environment local.');
+            return;
+        }
+
+        $defaultPassword = env('KKN_LOCAL_SEED_PASSWORD');
+        $studentPassword = $defaultPassword ?: Str::password(16);
+        $lecturerPassword = $defaultPassword ?: Str::password(16);
+
         $faculty = Faculty::first() ?? Faculty::create([
             'code' => 'F00',
             'nama' => 'Fakultas Umum',
@@ -31,9 +41,13 @@ class SampleUserSeeder extends Seeder
             'username' => 'student',
             'name' => 'Mahasiswa Contoh',
             'is_active' => true,
-            'password' => Hash::make('password'),
+            'password' => Hash::make($studentPassword),
         ]
         );
+
+        if ($studentUser->wasRecentlyCreated) {
+            $this->command?->warn("Akun student lokal dibuat. Password awal: {$studentPassword}");
+        }
 
         Student::firstOrCreate(
         ['user_id' => $studentUser->id],
@@ -57,9 +71,13 @@ class SampleUserSeeder extends Seeder
             'username' => 'dpl',
             'name' => 'DPL Contoh',
             'is_active' => true,
-            'password' => Hash::make('password'),
+            'password' => Hash::make($lecturerPassword),
         ]
         );
+
+        if ($lecturerUser->wasRecentlyCreated) {
+            $this->command?->warn("Akun DPL lokal dibuat. Password awal: {$lecturerPassword}");
+        }
 
         Lecturer::firstOrCreate(
         ['user_id' => $lecturerUser->id],

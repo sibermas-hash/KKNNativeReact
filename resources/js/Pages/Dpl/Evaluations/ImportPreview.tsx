@@ -51,7 +51,7 @@ export default function ImportPreview({ preview, group }: Props) {
                     </Button>
                     <div className="h-4 w-px bg-slate-200 mx-2" />
                     <div>
-                        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Konfirmasi Import Nilai</h1>
+                        <h1 className="text-2xl font-black text-slate-900  Import Nilai</h1>
                         <p className="text-slate-500 text-sm font-medium">Tinjau data dari file sebelum disimpan ke database.</p>
                     </div>
                 </div>
@@ -59,9 +59,9 @@ export default function ImportPreview({ preview, group }: Props) {
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Left side: Stats & Action */}
                     <div className="lg:col-span-1 space-y-6">
-                        <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 overflow-hidden relative">
+                        <div className="bg-whiterounded-lg p-6 border border-slate-100 overflow-hidden relative">
                             <div className="relative z-10">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Ringkasan File</p>
+                                <p className="text-[10px] font-black text-slate-400 uppercase  mb-4">Ringkasan File</p>
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-bold text-slate-600">Total Baris</span>
@@ -80,20 +80,20 @@ export default function ImportPreview({ preview, group }: Props) {
                             <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-50 rounded-full blur-3xl opacity-50" />
                         </div>
 
-                        <div className="bg-slate-900 rounded-[2rem] p-6 text-white shadow-xl">
+                        <div className="bg-slate-900rounded-lg p-6 text-white
                             <h4 className="text-sm font-black mb-4 flex items-center gap-2">
                                 <UserGroupIcon className="w-5 h-5 text-indigo-400" />
                                 Kelompok Target
                             </h4>
-                            <p className="text-2xl font-black tracking-tight mb-1">{group.name}</p>
-                            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{group.village_name}</p>
+                            <p className="text-2xl font-black  mb-1">{group.name}</p>
+                            <p className="text-xs text-slate-400 font-bold uppercase 
                         </div>
 
                         <Button
                             onClick={handleConfirm}
                             disabled={readyCount === 0}
                             size="lg"
-                            className="w-full h-14 rounded-2xl shadow-xl shadow-indigo-500/20 font-black tracking-tight"
+                            className="w-full h-14 rounded-lg font-black 
                         >
                             <CloudArrowUpIcon className="w-5 h-5 mr-2" />
                             Selesaikan Import
@@ -102,10 +102,10 @@ export default function ImportPreview({ preview, group }: Props) {
 
                     {/* Right side: Table Preview */}
                     <div className="lg:col-span-3">
-                        <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+                        <div className="bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-slate-50 border-b border-slate-100 font-black uppercase text-[10px] text-slate-500 tracking-widest">
+                                    <tr className="bg-slate-50 border-b border-slate-100 font-black uppercase text-[10px] text-slate-500 
                                         <th className="px-6 py-4">Mahasiswa</th>
                                         <th className="px-6 py-4 text-center">Kedisiplinan</th>
                                         <th className="px-6 py-4 text-center">Sikap</th>

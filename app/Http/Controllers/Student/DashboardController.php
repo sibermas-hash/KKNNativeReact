@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\PesertaKkn;
+use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\ProgramKerja;
 use App\Models\KKN\NilaiKkn;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -32,8 +32,8 @@ class DashboardController extends Controller
             : 0;
 
         // Track work programs for better progress visual
-        $workProgramCount = $mahasiswa
-            ? ProgramKerja::where('mahasiswa_id', $mahasiswa->id)->count()
+        $workProgramCount = $registrationModel?->kelompok_id
+            ? ProgramKerja::where('kelompok_id', $registrationModel->kelompok_id)->count()
             : 0;
 
         $finalReport = $mahasiswa
@@ -49,8 +49,7 @@ class DashboardController extends Controller
 
         // New: Workshop enrollment status (Mandatory phase in UIN SAIZU)
         $workshopRegistration = $mahasiswa
-            ? DB::connection('kkn')->table('peserta_workshop')
-                ->where('mahasiswa_id', $mahasiswa->id)
+            ? PesertaWorkshop::where('user_id', $user->id)
                 ->first()
             : null;
 

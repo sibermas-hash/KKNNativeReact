@@ -59,8 +59,8 @@ export default function BellDropdown() {
         <div ref={ref} className="relative">
             {/* Bell button */}
             <button onClick={() => setOpen(o => !o)}
-                className={`relative p-2.5 rounded-2xl transition-all active:scale-95
-          ${open ? 'bg-white/10 text-white shadow-inner' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
+                className={`relative p-2.5 rounded-lg transition-all active:scale-95
+          ${open ? 'bg-white/10 text-white : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
                 <BellIcon className="w-5 h-5" />
                 {count > 0 && (
                     <span className="absolute top-2 right-2 flex h-2 w-2">
@@ -72,14 +72,14 @@ export default function BellDropdown() {
 
             {/* Dropdown */}
             {open && (
-                <div className="absolute right-0 top-14 w-80 z-[100] rounded-[2rem] border border-white/10
-          shadow-2xl overflow-hidden glass-ui animate-in zoom-in-95 fade-in duration-200"
+                <div className="absolute right-0 top-14 w-80 z-[100] rounded-lg border border-white/10
+          overflow-hidden glass-ui zoom-in-95"
                     style={{ background: 'rgba(15, 23, 42, 0.95)', backdropFilter: 'blur(16px)' }}>
 
                     {/* Header */}
                     <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-white/2">
-                        <h3 className="text-white text-xs font-black uppercase tracking-widest">
-                            Notifications
+                        <h3 className="text-white text-xs font-black uppercase 
+                            Notifikasi
                             {count > 0 && (
                                 <span className="ml-2 px-2 py-0.5 rounded-md bg-red-500/20 text-red-500 text-[10px] font-black">
                                     {count > 99 ? '99+' : count}
@@ -88,8 +88,8 @@ export default function BellDropdown() {
                         </h3>
                         {count > 0 && (
                             <button onClick={markAllRead}
-                                className="text-[10px] font-black text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-tight flex items-center gap-1">
-                                <CheckBadgeIcon className="w-3 h-3" /> Mark all read
+                                className="text-[10px] font-black text-blue-400 hover:text-blue-300 transition-colors uppercase  flex items-center gap-1">
+                                <CheckBadgeIcon className="w-3 h-3" /> Tandai semua dibaca
                             </button>
                         )}
                     </div>
@@ -101,15 +101,15 @@ export default function BellDropdown() {
                                 <div className="w-12 h-12 rounded-full bg-slate-800/50 flex items-center justify-center mx-auto mb-3">
                                     <BellIcon className="w-6 h-6 text-slate-600" />
                                 </div>
-                                <p className="text-slate-500 text-xs font-medium">No new notifications</p>
+                                <p className="text-slate-500 text-xs font-medium">Belum ada notifikasi baru</p>
                             </div>
                         ) : items.map(item => (
                             <div key={item.id}
                                 className="px-6 py-4 border-b border-white/5 hover:bg-white/3 transition-colors flex gap-4 group">
-                                <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 shadow-lg
+                                <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5
                   ${priorityDot[item.priority] ?? 'bg-blue-400'}`} />
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-white text-[12px] font-black leading-tight tracking-tight">{item.title}</p>
+                                    <p className="text-white text-[12px] font-black leading-tight 
                                     <p className="text-slate-400 text-[11px] mt-1 leading-relaxed line-clamp-2 font-medium">
                                         {item.message}
                                     </p>
@@ -122,13 +122,13 @@ export default function BellDropdown() {
                                             {item.action && (
                                                 <a href={item.action}
                                                     onClick={() => markRead(item.id)}
-                                                    className="text-[10px] font-black text-blue-400 hover:text-blue-300 transition-all uppercase tracking-tighter">
-                                                    View →
+                                                    className="text-[10px] font-black text-blue-400 hover:text-blue-300 transition-all uppercase 
+                                                    Lihat →
                                                 </a>
                                             )}
                                             <button onClick={() => markRead(item.id)}
-                                                className="opacity-0 group-hover:opacity-100 text-[10px] font-black text-slate-500 hover:text-slate-300 transition-all uppercase tracking-tighter">
-                                                Mark read
+                                                className="opacity-0 group-hover:opacity-100 text-[10px] font-black text-slate-500 hover:text-slate-300 transition-all uppercase 
+                                                Tandai dibaca
                                             </button>
                                         </div>
                                     </div>
@@ -138,8 +138,8 @@ export default function BellDropdown() {
                     </div>
 
                     <div className="px-6 py-3 border-t border-white/5 bg-white/2">
-                        <button className="w-full text-center text-[10px] font-black text-slate-500 hover:text-white transition-colors uppercase tracking-widest">
-                            View archived notifications
+                        <button className="w-full text-center text-[10px] font-black text-slate-500 hover:text-white transition-colors uppercase 
+                            Lihat arsip notifikasi
                         </button>
                     </div>
                 </div>

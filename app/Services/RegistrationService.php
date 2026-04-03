@@ -8,6 +8,8 @@ use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Repositories\Contracts\RegistrationRepositoryInterface;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -16,12 +18,14 @@ class RegistrationService
     public function __construct(
         private readonly RegistrationRepositoryInterface $registrations,
         private readonly GroupSelectionService $groupSelectionService,
+        private readonly RegistrationPortalService $registrationPortalService,
     ) {
     }
 
     public function register(Mahasiswa $mahasiswa, int $periodeId, ?int $kelompokId, ?string $notes): PesertaKkn
     {
-        return $this->runAtomically(function () use ($mahasiswa, $periodeId, $kelompokId, $notes) {
+        $registration = $this->withRegistrationLocks($mahasiswa, $periodeId, $kelompokId, function () use ($mahasiswa, $periodeId, $kelompokId, $notes) {
+            return $this->runAtomically(function () use ($mahasiswa, $periodeId, $kelompokId, $notes) {
             $periode = Periode::query()->lockForUpdate()->findOrFail($periodeId);
 
             // 0. REGISTRATION WINDOW: Cek apakah masih dalam periode pendaftaran
@@ -128,12 +132,18 @@ class RegistrationService
             $updated->save();
 
             return $updated->fresh(['kelompok.lokasi', 'kelompok.dpl', 'periode']);
+            });
         });
+
+        $this->registrationPortalService->invalidateActivePeriodsSnapshot();
+
+        return $registration;
     }
 
     public function leaveGroup(Mahasiswa $mahasiswa, int $periodeId): PesertaKkn
     {
-        return $this->runAtomically(function () use ($mahasiswa, $periodeId) {
+        $registration = $this->withRegistrationLocks($mahasiswa, $periodeId, null, function () use ($mahasiswa, $periodeId) {
+            return $this->runAtomically(function () use ($mahasiswa, $periodeId) {
             $registration = PesertaKkn::query()
                 ->where('mahasiswa_id', $mahasiswa->id)
                 ->where('period_id', $periodeId)
@@ -147,7 +157,12 @@ class RegistrationService
             }
 
             return $this->groupSelectionService->leaveGroup($registration, $mahasiswa);
+            });
         });
+
+        $this->registrationPortalService->invalidateActivePeriodsSnapshot();
+
+        return $registration;
     }
 
     public function registrationSummaryForPeriod(?PesertaKkn $registration, ?AntrianKkn $queue): ?array
@@ -184,10 +199,76 @@ class RegistrationService
     {
         $connection = DB::connection('kkn');
 
-        if ($connection->getDriverName() === 'sqlite' || $connection->transactionLevel() > 0) {
+        if ($connection->transactionLevel() > 0 || $connection->getPdo()->inTransaction()) {
             return $callback();
         }
 
         return $connection->transaction($callback);
+    }
+
+    private function withRegistrationLocks(Mahasiswa $mahasiswa, int $periodeId, ?int $kelompokId, callable $callback): mixed
+    {
+        $ttl = max(3, (int) \App\Models\KKN\SystemSetting::get('registration_lock_ttl_seconds', 8));
+        $wait = max(1, (int) \App\Models\KKN\SystemSetting::get('registration_lock_wait_seconds', 6));
+        $store = Cache::store($this->lockStore());
+
+        try {
+            return $store->lock($this->studentLockKey($mahasiswa->id, $periodeId), $ttl)
+                ->block($wait, function () use ($periodeId, $kelompokId, $ttl, $wait, $callback) {
+                    if (! $kelompokId) {
+                        return $callback();
+                    }
+
+                    return Cache::store($this->lockStore())
+                        ->lock($this->groupLockKey($periodeId, $kelompokId), $ttl)
+                        ->block($wait, $callback);
+                });
+        } catch (LockTimeoutException) {
+            $this->throwRegistrationLockTimeout($kelompokId);
+        }
+    }
+
+    private function studentLockKey(int $mahasiswaId, int $periodeId): string
+    {
+        return "registration:student:{$mahasiswaId}:period:{$periodeId}";
+    }
+
+    private function groupLockKey(int $periodeId, int $kelompokId): string
+    {
+        return "registration:group:{$periodeId}:{$kelompokId}";
+    }
+
+    private function lockStore(): string
+    {
+        return (string) config('cache.registration_lock_store', config('cache.default'));
+    }
+
+    private function throwRegistrationLockTimeout(?int $kelompokId): never
+    {
+        if ($kelompokId) {
+            $group = KelompokKkn::query()
+                ->withCount([
+                    'peserta' => function ($query) {
+                        $query->whereIn('status', GroupSelectionService::activeRegistrationStatuses());
+                    },
+                ])
+                ->find($kelompokId);
+
+            if (! $group || $group->status !== 'active') {
+                throw ValidationException::withMessages([
+                    'kelompok_id' => 'Kelompok yang dipilih sudah tidak tersedia.',
+                ]);
+            }
+
+            if ((int) ($group->peserta_count ?? 0) >= (int) $group->capacity) {
+                throw ValidationException::withMessages([
+                    'kelompok_id' => "Kelompok {$group->nama_kelompok} sudah penuh.",
+                ]);
+            }
+        }
+
+        throw ValidationException::withMessages([
+            'kelompok_id' => 'Sistem sedang memproses lonjakan pendaftaran. Silakan tunggu beberapa detik lalu coba lagi.',
+        ]);
     }
 }

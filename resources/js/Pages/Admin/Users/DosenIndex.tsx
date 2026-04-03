@@ -1,13 +1,21 @@
 import { useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Badge } from '@/Components/ui';
-import { router } from '@inertiajs/react';
-import {
-    ShieldCheckIcon,
-    MagnifyingGlassIcon,
-    GlobeAltIcon,
-    BoltIcon
-} from '@heroicons/react/24/outline';
+import { Badge, Pagination } from '@/Components/ui';
+import { router, Link } from '@inertiajs/react';
+import { 
+    Users,
+    ShieldCheck, 
+    Search, 
+    UserCheck, 
+    UserMinus,
+    RefreshCw,
+    Building2,
+    Activity,
+    Fingerprint,
+    Briefcase,
+    Mail
+} from 'lucide-react';
+import { clsx } from 'clsx';
 
 interface User {
     id: number;
@@ -15,16 +23,22 @@ interface User {
     name: string;
     email: string;
     is_active: boolean;
-    lecturer?: {
+    dosen?: {
         nip: string;
-        faculty?: { name: string };
+        fakultas?: { nama: string };
     };
 }
 
 interface Props {
     users: {
         data: User[];
-        links: any[];
+        links: { url: string | null; label: string; active: boolean }[];
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        from: number | null;
+        to: number | null;
     };
     filters: {
         search: string;
@@ -36,121 +50,164 @@ export default function DosenIndex({ users, filters }: Props) {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        router.get('/admin/users/dosen', { search }, { preserveState: true });
+        router.get('/admin/dpl', { search }, { preserveState: true });
     };
 
     const toggleStatus = (id: number) => {
-        router.patch(`/admin/users/${id}/toggle`);
+        if (confirm('Apakah Anda yakin ingin mengubah status aktif akun DPL ini?')) {
+            router.patch(`/admin/users/${id}/toggle-active`);
+        }
+    };
+
+    const getInitials = (name: string) => {
+        return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
     };
 
     return (
-        <AppLayout title="Officer Commissioning Registry">
-            <div className="space-y-12 pb-16 animate-in fade-in duration-1000">
-                {/* Tactical Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-white/5 relative">
-                    <div className="absolute -left-12 top-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
-                    <div className="relative">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="px-3 py-1 rounded-full bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-[10px] font-black uppercase tracking-[0.3em]">FIELD COMMAND OVERSIGHT</div>
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary-light animate-pulse" />
+        <AppLayout title="Direktori DPL">
+            <div className="space-y-10 pb-16">
+                {/* 
+                    Emerald Premium Header 
+                    Refining from basic header to lush tactical emerald gradient
+                */}
+                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
+                    {/* Background decorations */}
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+                    
+                    <div className="relative z-10 space-y-5 flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                             <div className="p-2.5 bg-white/10 rounded-xl border border-white/20 backdrop-blur-md">
+                                <Users className="h-4 w-4 text-emerald-300" />
+                             </div>
+                            <span className="text-[10px] font-black text-emerald-100 uppercase  leading-none italic">
+                                DPL_REGISTRY_CORE_V3
+                            </span>
                         </div>
-                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic line-height-1">
-                            Officer <span className="text-accent-gold text-glow-gold">Registry</span>
+                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                            Direktori <span className="text-emerald-300 text-glow-emerald italic">DPL</span>
                         </h1>
-                        <p className="text-white/40 text-sm mt-4 font-medium uppercase tracking-[0.15em]">Managing commissioned field supervisors and academic officers.</p>
+                        <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
+                             Manajemen identitas, verifikasi penugasan, dan kontrol otorisasi Dosen Pembimbing Lapangan (DPL) secara tersentralisasi dalam ekosistem KKN UIN SAIZU.
+                        </p>
                     </div>
 
-                    <div className="px-8 py-5 glass rounded-[2rem] flex items-center gap-6 group hover:border-accent-gold/20 transition-all">
-                        <ShieldCheckIcon className="h-6 w-6 text-accent-gold group-hover:scale-110 transition-transform" />
-                        <div className="flex flex-col">
-                            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest leading-none">ACTIVE COMMANDERS</span>
-                            <span className="text-xl font-black text-white mt-1 tabular-nums">{users.data.filter(u => u.is_active).length} UNITS</span>
+                    <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
+                        <div className="bg-white/10 p-6 rounded-lg border border-white/20 flex items-center gap-6 min-w-[200px] group/stat hover:scale-105 transition-transform">
+                            <div className="p-3 bg-white rounded-lg text-primary group-hover/stat:rotate-6 transition-all">
+                                <ShieldCheck className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <span className="text-[9px] font-black text-emerald-200/60 uppercase  block mb-1.5 italic">Personel Aktif</span>
+                                <span className="text-2xl font-black text-white tabular-nums italic leading-none">{users.total} DPL</span>
+                            </div>
                         </div>
+
+                        <Link 
+                            href="/admin/dpl/sync" 
+                            className="flex items-center gap-4 px-10 py-5.5 bg-white hover:bg-emerald-50 text-primary rounded-[1.5rem] font-black text-xs uppercase  transition-all hover:-translate-y-1 active:scale-95 italic"
+                        >
+                            <RefreshCw className="w-5 h-5 text-primary" />
+                            Sinkronisasi Data
+                        </Link>
                     </div>
                 </div>
 
-                {/* Operations Control */}
-                <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-                    <form onSubmit={handleSearch} className="relative group w-full max-w-xl">
-                        <MagnifyingGlassIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-white/20 group-focus-within:text-accent-gold transition-colors" />
+                {/* Operations Toolbar */}
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-2">
+                    <form onSubmit={handleSearch} className="relative group max-w-lg w-full">
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
                         <input
-                            placeholder="SCAN OFFICER IDENTIFIERS OR NAMES..."
+                            placeholder="Cari NIP atau Nama Lengkap..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-16 pr-8 py-5 bg-white/[0.02] border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-white outline-none focus:border-accent-gold/40 shadow-2xl transition-all"
+                            className="w-full h-15 pl-14 pr-8 py-4.5 bg-white border border-slate-100 rounded-lg text-sm font-bold text-slate-900 outline-none focus:border-primary/50 transition-all italic
                         />
                     </form>
+                    
+                    <div className="flex items-center gap-4">
+                        <Link href="/admin/dpl/assignment" className="group flex items-center gap-3 px-6 py-4 bg-white border border-slate-100 text-slate-400 hover:text-primary hover:border-primary/30 rounded-lg font-black text-[11px] uppercase  transition-all italic overflow-hidden relative">
+                            <div className="absolute inset-0 bg-primary/5 translate-y-full group-hover:translate-y-0 transition-transform" />
+                            <Briefcase className="w-4 h-4 relative z-10" />
+                            <span className="relative z-10">Penugasan Lapangan</span>
+                        </Link>
+                    </div>
                 </div>
 
-                {/* Registry Ledger (Table) */}
-                <div className="bg-white/[0.02] rounded-[3.5rem] border border-white/10 shadow-2xl overflow-hidden backdrop-blur-xxl relative">
-                    <div className="overflow-x-auto relative z-10">
-                        <table className="min-w-full divide-y divide-white/5">
-                            <thead className="bg-white/[0.02]">
+                {/* Personnel Ledger (Table) */}
+                <div className="bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden group">
+                    <div className="overflow-x-auto relative z-10 custom-scrollbar pr-1">
+                        <table className="min-w-full divide-y divide-slate-50">
+                            <thead className="bg-slate-50/50">
                                 <tr>
-                                    <th className="px-10 py-8 text-left text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Officer Asset</th>
-                                    <th className="px-10 py-8 text-left text-[10px] font-black uppercase tracking-[0.4em] text-white/30">NIP Identifier</th>
-                                    <th className="px-10 py-8 text-left text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Academic Sector</th>
-                                    <th className="px-10 py-8 text-center text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Auth Status</th>
-                                    <th className="px-10 py-8 text-right text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Override</th>
+                                    <th className="px-10 py-6 text-left text-[10px] font-bold uppercase  text-slate-400 italic">Identitas DPL</th>
+                                    <th className="px-10 py-6 text-left text-[10px] font-bold uppercase  text-slate-400 italic">Otoritas Fakultas</th>
+                                    <th className="px-10 py-6 text-left text-[10px] font-bold uppercase  text-slate-400 italic">Kontak & Perangkat</th>
+                                    <th className="px-10 py-6 text-center text-[10px] font-bold uppercase  text-slate-400 italic">Otorisasi</th>
+                                    <th className="px-10 py-6 text-right text-[10px] font-bold uppercase  text-slate-400 italic">Tindakan</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-white/[0.03]">
+                            <tbody className="divide-y divide-slate-50">
                                 {users.data.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="px-10 py-32 text-center text-white/20">
-                                            <div className="flex flex-col items-center gap-6">
-                                                <ShieldCheckIcon className="h-16 w-16 opacity-10" />
-                                                <span className="text-[10px] font-black uppercase tracking-[0.4em] italic">No officer assets found in current sweep.</span>
+                                        <td colSpan={5} className="px-10 py-32 text-center">
+                                            <div className="flex flex-col items-center gap-5 opacity-30">
+                                                <Users className="h-14 w-14 text-slate-200" />
+                                                <p className="text-[11px] font-bold text-slate-400 uppercase  italic">Direktori personel masih kosong</p>
                                             </div>
                                         </td>
                                     </tr>
                                 ) : (
                                     users.data.map((user) => (
-                                        <tr key={user.id} className="group hover:bg-white/[0.04] transition-all duration-300">
-                                            <td className="px-10 py-10">
-                                                <div className="flex items-center gap-6">
-                                                    <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/20 to-transparent border border-white/10 flex items-center justify-center text-primary-light font-black group-hover:scale-110 transition-transform">
-                                                        {user.name.charAt(0)}
+                                        <tr key={user.id} className="group/row hover:bg-slate-50/30 transition-all">
+                                            <td className="px-10 py-7">
+                                                <div className="flex items-center gap-5">
+                                                    <div className="w-12 h-12 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-[14px] font-black text-slate-400 group-hover/row:bg-primary group-hover/row:text-white transition-all italic leading-none">
+                                                        {getInitials(user.name)}
                                                     </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-base font-black text-white tracking-widest uppercase italic group-hover:text-accent-gold transition-colors">{user.name}</span>
-                                                        <span className="text-[10px] font-black text-white/20 tracking-[0.2em] uppercase mt-2">{user.email || 'NO_ENCRYPTED_EMAIL'}</span>
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-[15px] font-black text-slate-900 group-hover/row:text-primary transition-colors italic uppercase leading-tight">{user.name}</span>
+                                                        <span className="text-[9px] font-bold text-slate-400 uppercase  italic">NIP: {user.dosen?.nip || 'N/A'}</span>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-10 py-10">
-                                                <span className="text-xs font-black text-white/40 tabular-nums tracking-[0.2em] font-mono uppercase">
-                                                    {user.lecturer?.nip || 'UNINITIALIZED'}
-                                                </span>
-                                            </td>
-                                            <td className="px-10 py-10">
-                                                <div className="flex items-center gap-3">
-                                                    <GlobeAltIcon className="w-4 h-4 text-primary-light opacity-30" />
-                                                    <span className="text-[10px] font-black text-white tracking-[0.1em] uppercase">
-                                                        {user.lecturer?.faculty?.name || 'GENERIC COMMAND'}
-                                                    </span>
+                                            <td className="px-10 py-7">
+                                                <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-100 text-[10px] font-bold text-slate-500 uppercase  italic">
+                                                    <Building2 className="w-3 h-3 text-primary/40" />
+                                                    {user.dosen?.fakultas?.nama || 'Fakultas Belum Ditentukan'}
                                                 </div>
                                             </td>
-                                            <td className="px-10 py-10 text-center">
+                                            <td className="px-10 py-7">
+                                                <div className="flex flex-col gap-2">
+                                                    <div className="flex items-center gap-2.5 text-[11px] font-bold text-slate-500 italic">
+                                                        <Mail className="h-3.5 w-3.5 text-primary/40" />
+                                                        {user.email || '-'}
+                                                    </div>
+                                                    <span className="text-[9px] font-black text-primary/60 uppercase  bg-primary/5 px-2 py-0.5 rounded-lg w-fit italic">@{user.username}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-10 py-7 text-center">
                                                 <Badge
                                                     variant={user.is_active ? 'success' : 'danger'}
-                                                    className="px-4 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-[0.2em] shadow-lg"
+                                                    className="px-4 py-1.5 rounded-xl text-[9px] font-black uppercase  italic border-none
                                                 >
-                                                    {user.is_active ? 'AUTHORIZED' : 'REVOKED'}
+                                                    {user.is_active ? 'Akses Aktif' : 'Terblokir'}
                                                 </Badge>
                                             </td>
-                                            <td className="px-10 py-10 text-right">
-                                                <button
-                                                    onClick={() => toggleStatus(user.id)}
-                                                    className={`p-3 rounded-xl border transition-all hover:scale-110 active:scale-90 ${user.is_active
-                                                            ? 'bg-rose-500/10 border-rose-500/20 text-rose-500 hover:bg-rose-500/20'
-                                                            : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20'
-                                                        }`}
-                                                    title={user.is_active ? 'REVOKE AUTHORITY' : 'GRANT AUTHORITY'}
-                                                >
-                                                    <BoltIcon className="w-5 h-5" />
-                                                </button>
+                                            <td className="px-10 py-7 text-right">
+                                                <div className="flex justify-end translate-x-2 group-hover/row:translate-x-0 transition-all opacity-0 group-hover/row:opacity-100">
+                                                    <button
+                                                        onClick={() => toggleStatus(user.id)}
+                                                        className={clsx(
+                                                            "p-3 rounded-lg transition-all active:scale-90",
+                                                            user.is_active 
+                                                                ? "bg-white border border-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white 
+                                                                : "bg-white border border-primary/20 text-primary hover:bg-primary hover:text-white
+                                                        )}
+                                                        title={user.is_active ? 'Cabut Otorisasi' : 'Berikan Otorisasi'}
+                                                    >
+                                                        {user.is_active ? <UserMinus className="w-5 h-5 /> : <UserCheck className="w-5 h-5 />}
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
@@ -158,20 +215,42 @@ export default function DosenIndex({ users, filters }: Props) {
                             </tbody>
                         </table>
                     </div>
+                    <div className="px-10 py-6 bg-slate-50/50 border-t border-slate-100">
+                        <Pagination meta={users as any} />
+                    </div>
                 </div>
 
-                {/* System Ledger Note */}
-                <div className="p-10 glass rounded-[3rem] border-white/5 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-8 opacity-[0.03] text-white pointer-events-none group-hover:scale-110 transition-transform duration-700">
-                        <BoltIcon className="h-24 w-24" />
+                {/* Tactical Footer Monitor */}
+                <div className="p-10 bg-slate-900 rounded-[3rem] border border-slate-800 relative overflow-hidden group">
+                     <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-10">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-primary/10 rounded-xl border border-primary/20">
+                                    <ShieldCheck className="h-5.5 w-5.5 text-primary" />
+                                </div>
+                                <h4 className="text-[11px] font-black text-white uppercase  italic leading-none">KEBIJAKAN_AKSES_PERSONEL_DPL</h4>
+                            </div>
+                            <p className="text-[12px] text-slate-400 font-bold leading-relaxed max-w-4xl italic opacity-70">
+                                Seluruh data Dosen Pembimbing Lapangan terhubung secara real-time dengan basis data kepegawaian pusat. 
+                                Status <span className="text-primary font-black">Akses Aktif</span> memberikan wewenang penuh untuk melakukan audit penilaian, 
+                                verifikasi logbook operasional, dan pendampingan lapangan kepada mahasiswa bimbingan terkait.
+                            </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-3 shrink-0 border-l border-slate-800 pl-10">
+                             <div className="flex items-center gap-2 mb-2">
+                                <div className="h-2 w-2 rounded-full bg-primary animate-pulse />
+                                <span className="text-[10px] font-black text-slate-100 uppercase  italic">SECURITY_LEDGER_ACTIVE</span>
+                             </div>
+                             <div className="flex gap-4">
+                                <div className="h-10 w-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-slate-600 hover:text-primary transition-colors cursor-help
+                                    <Fingerprint className="h-5 w-5" />
+                                </div>
+                                <div className="h-10 w-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-slate-600
+                                    <Activity className="h-5 w-5" />
+                                </div>
+                             </div>
+                        </div>
                     </div>
-                    <h4 className="text-[10px] font-black text-accent-gold flex items-center gap-3 uppercase tracking-[0.4em] mb-6 italic">
-                        <div className="w-2 h-2 rounded-full bg-accent-gold animate-pulse" />
-                        Oversight Protocol
-                    </h4>
-                    <p className="text-[11px] text-white/40 font-bold uppercase tracking-widest leading-[2] italic border-l-2 border-primary/30 pl-8 max-w-4xl">
-                        COMMAND OFFICERS (DPL) ARE RESPONSIBLE FOR FIELD VALIDATION AND MERIT ASSIGNMENT. REVOKING AUTHORITY WILL PREVENT OFFICER ACCESS TO OPERATIONAL HUBS. ALL CHANGES ARE LOGGED PERMANENTLY.
-                    </p>
                 </div>
             </div>
         </AppLayout>

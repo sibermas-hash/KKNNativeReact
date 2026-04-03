@@ -17,17 +17,27 @@ class LogbookService
         int $mahasiswaId,
         int $kelompokId,
         string $date,
-        string $location,
-        string $content,
+        string $title,
+        string $activity,
+        ?string $reflection = null,
+        ?string $output = null,
+        ?float $latitude = null,
+        ?float $longitude = null,
+        ?string $locationName = null,
         array $documentationFiles = []
     ): KegiatanKkn {
-        return DB::transaction(function () use ($mahasiswaId, $kelompokId, $date, $location, $content, $documentationFiles) {
+        return DB::transaction(function () use ($mahasiswaId, $kelompokId, $date, $title, $activity, $reflection, $output, $latitude, $longitude, $locationName, $documentationFiles) {
             $kegiatan = KegiatanKkn::create([
                 'mahasiswa_id' => $mahasiswaId,
                 'kelompok_id' => $kelompokId,
                 'date' => $date,
-                'location' => $location,
-                'content' => $content,
+                'title' => $title,
+                'activity' => $activity,
+                'reflection' => $reflection,
+                'output' => $output,
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'location_name' => $locationName,
                 'status' => 'submitted',
             ]);
 

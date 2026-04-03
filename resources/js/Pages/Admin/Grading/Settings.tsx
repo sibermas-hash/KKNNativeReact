@@ -2,13 +2,13 @@ import { Head, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 import {
+    Activity,
     Sliders,
     Beaker,
     CheckCircle2,
     Cpu,
     AlertTriangle,
-    Sparkles,
-    ShieldCheck
+    Sparkles
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -81,47 +81,59 @@ export default function GradingSettings({ sections }: Props) {
         <AppLayout title="Kalibrasi Algoritma Assessment">
             <Head title="Konfigurasi Algoritma Penilaian" />
 
-            <div className="space-y-12 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-10 border-b border-slate-100 relative">
-                    <div>
-                        <div className="flex items-center gap-3 mb-4">
-                            <ShieldCheck className="h-4 w-4 text-primary" />
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] leading-none italic">
-                                CORE_ENGINE_CALIBRATION_V1
+            <div className="space-y-12 pb-24">
+                {/* 
+                    Emerald Premium Header 
+                    Refining from basic header to lush tactical emerald gradient
+                */}
+                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
+                    {/* Background decorations */}
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+                    
+                    <div className="relative z-10 space-y-5 flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                             <div className="p-2.5 bg-white/10 rounded-xl border border-white/20 backdrop-blur-md">
+                                <Cpu className="h-4 w-4 text-emerald-300" />
+                             </div>
+                            <span className="text-[10px] font-black text-emerald-100 uppercase  leading-none italic">
+                                ASSESSMENT_CALIBRATION_ENGINE_V3
                             </span>
                         </div>
-                        <h1 className="text-4xl font-extrabold text-slate-900 tracking-tighter uppercase italic leading-none">
-                            Algoritma <span className="text-primary italic">Assessment</span>
+                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                            Algoritma <span className="text-emerald-300 text-glow-emerald italic">Assessment</span>
                         </h1>
-                        <p className="text-slate-500 text-sm mt-4 font-medium italic opacity-70 leading-relaxed max-w-2xl">
-                            Konfigurasi metrik pembobotan sistematis untuk kalkulasi nilai akhir mahasiswa secara real-time.
+                        <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
+                             Konfigurasi metrik pembobotan sistematis dan orkestrasi parameter penilaian akhir mahasiswa secara real-time berdasarkan protokol akademik LPPM.
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-5">
+                    <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
                         <div
                             className={clsx(
-                                'px-6 py-5 bg-white rounded-3xl border flex items-center gap-6 transition-all duration-500 shadow-sm min-w-[240px]',
-                                invalidSections.length === 0 ? 'border-emerald-100' : 'border-rose-100 bg-rose-50/30',
+                                'bg-white/10 p-6 rounded-lg border flex items-center gap-6 min-w-[240px] group/stat transition-all',
+                                invalidSections.length === 0 ? 'border-white/20' : 'border-rose-400/30 bg-rose-500/10',
                             )}
                         >
                             <div className={clsx(
-                                "p-3 rounded-2xl shadow-lg",
-                                invalidSections.length === 0 ? "bg-emerald-500 text-white shadow-emerald-500/10" : "bg-rose-500 text-white shadow-rose-500/10"
+                                "p-3 rounded-lg transition-all",
+                                invalidSections.length === 0 ? "bg-white text-primary" : "bg-rose-500 text-white
                             )}>
-                                <Cpu className="h-6 w-6" />
+                                <Activity className="h-6 w-6" />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5 italic">
+                                <span className={clsx(
+                                    "text-[9px] font-black uppercase  leading-none mb-1.5 italic",
+                                    invalidSections.length === 0 ? "text-emerald-200/60" : "text-rose-200"
+                                )}>
                                     STATUS VALIDASI
                                 </span>
                                 <span
                                     className={clsx(
-                                        'text-xl font-black uppercase italic tracking-tight',
-                                        invalidSections.length === 0 ? 'text-slate-900' : 'text-rose-600',
+                                        'text-xl font-black uppercase italic  leading-none',
+                                        invalidSections.length === 0 ? 'text-white' : 'text-rose-100',
                                     )}
                                 >
-                                    {invalidSections.length === 0 ? 'LOGIC_CLEAN' : `${invalidSections.length} CORE_ERROR`}
+                                    {invalidSections.length === 0 ? 'LOGIKA_BERSIH' : 'KESALAHAN_INTI'}
                                 </span>
                             </div>
                         </div>
@@ -137,23 +149,23 @@ export default function GradingSettings({ sections }: Props) {
                                 return (
                                     <section
                                         key={section.group}
-                                        className="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden group"
+                                        className="bg-white p-10 rounded-[2.5rem] border border-slate-200 relative overflow-hidden group"
                                     >
-                                        <div className="absolute top-0 right-0 p-10 opacity-[0.02] text-slate-900 pointer-events-none group-hover:rotate-12 transition-transform duration-1000">
+                                        <div className="absolute top-0 right-0 p-10 opacity-[0.02] text-slate-900 pointer-events-none group-hover:rotate-12 transition-transform">
                                             <Sliders className="h-32 w-32" />
                                         </div>
 
                                         <div className="relative z-10 space-y-8">
                                             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 border-b border-slate-50 pb-8">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="p-3 bg-primary/10 rounded-xl text-primary border border-primary/20 shadow-sm">
+                                                    <div className="p-3 bg-primary/10 rounded-xl text-primary border border-primary/20
                                                         <Beaker className="w-6 h-6 shrink-0" />
                                                     </div>
                                                     <div>
-                                                        <h3 className="text-lg font-extrabold text-slate-900 uppercase italic tracking-tight">
+                                                        <h3 className="text-lg font-extrabold text-slate-900 uppercase italic 
                                                             {section.title}
                                                         </h3>
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase  mt-1">
                                                             {section.description}
                                                         </p>
                                                     </div>
@@ -161,11 +173,11 @@ export default function GradingSettings({ sections }: Props) {
 
                                                 <div
                                                     className={clsx(
-                                                        'px-5 py-4 rounded-2xl border min-w-[11rem]',
+                                                        'px-5 py-4 rounded-lg border min-w-[11rem]',
                                                         isValid ? 'border-emerald-100 bg-emerald-50/50' : 'border-rose-100 bg-rose-50/60',
                                                     )}
                                                 >
-                                                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                                    <div className="text-[10px] font-bold uppercase  text-slate-400">
                                                         {section.enforce_total ? 'Total Bobot' : 'Nilai Default'}
                                                     </div>
                                                     <div
@@ -187,7 +199,7 @@ export default function GradingSettings({ sections }: Props) {
                                                         <div key={item.id} className="space-y-3">
                                                             <label
                                                                 htmlFor={`config-${item.id}`}
-                                                                className="text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1 block"
+                                                                className="text-[11px] font-bold text-slate-500 uppercase  ml-1 block"
                                                             >
                                                                 {item.label}
                                                             </label>
@@ -199,7 +211,7 @@ export default function GradingSettings({ sections }: Props) {
                                                                 step="0.01"
                                                                 value={currentValue}
                                                                 onChange={(e) => handlePercentageChange(item.id, e.target.value)}
-                                                                className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-lg font-extrabold h-16 rounded-2xl px-6 focus:bg-white focus:border-primary/50 outline-none transition-all"
+                                                                className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-lg font-extrabold h-16 rounded-lg px-6 focus:bg-white focus:border-primary/50 outline-none transition-all"
                                                             />
                                                             <p className="text-xs text-slate-500 leading-relaxed">
                                                                 {item.description || 'Konfigurasi penilaian.'}
@@ -210,9 +222,9 @@ export default function GradingSettings({ sections }: Props) {
                                             </div>
 
                                             {!isValid && (
-                                                <div className="p-6 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-4">
+                                                <div className="p-6 bg-rose-50 border border-rose-100 rounded-lg flex items-center gap-4">
                                                     <AlertTriangle className="h-6 w-6 text-rose-500 shrink-0" />
-                                                    <p className="text-[10px] font-bold text-rose-600 uppercase tracking-widest leading-relaxed italic">
+                                                    <p className="text-[10px] font-bold text-rose-600 uppercase  leading-relaxed italic">
                                                         Total untuk {section.title} harus tepat 100% sebelum bisa disimpan.
                                                     </p>
                                                 </div>
@@ -223,9 +235,9 @@ export default function GradingSettings({ sections }: Props) {
                             })}
 
                             {typeof errors.configs === 'string' && (
-                                <div className="p-6 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-4">
+                                <div className="p-6 bg-rose-50 border border-rose-100 rounded-lg flex items-center gap-4">
                                     <AlertTriangle className="h-6 w-6 text-rose-500 shrink-0" />
-                                    <p className="text-[10px] font-bold text-rose-600 uppercase tracking-widest leading-relaxed italic">
+                                    <p className="text-[10px] font-bold text-rose-600 uppercase  leading-relaxed italic">
                                         {errors.configs}
                                     </p>
                                 </div>
@@ -234,13 +246,13 @@ export default function GradingSettings({ sections }: Props) {
 
                         <div className="space-y-8">
                             <div className="bg-slate-50 p-10 rounded-[2.5rem] border border-slate-100 relative overflow-hidden group">
-                                <div className="absolute -top-10 -right-10 p-10 opacity-[0.05] text-primary group-hover:scale-110 transition-transform duration-1000">
+                                <div className="absolute -top-10 -right-10 p-10 opacity-[0.05] text-primary group-hover:scale-110 transition-transform">
                                     <Sparkles className="w-32 h-32" />
                                 </div>
 
                                 <div className="relative z-10 space-y-8">
                                     <div>
-                                        <h3 className="text-sm font-black text-slate-900 tracking-widest uppercase italic mb-3">
+                                        <h3 className="text-sm font-black text-slate-900  uppercase italic mb-3">
                                             Logika Penilaian
                                         </h3>
                                         <p className="text-sm text-slate-500 leading-relaxed">
@@ -259,19 +271,19 @@ export default function GradingSettings({ sections }: Props) {
                                 </div>
                             </div>
 
-                            <div className="p-8 bg-white rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden flex flex-col gap-6">
+                            <div className="p-8 bg-whiterounded-lg border border-slate-200 relative overflow-hidden flex flex-col gap-6">
                                 <div className="flex items-center gap-3">
                                     <Sparkles className="w-5 h-5 text-primary" />
-                                    <h4 className="text-[10px] font-extrabold text-slate-900 uppercase tracking-widest italic">
+                                    <h4 className="text-[10px] font-extrabold text-slate-900 uppercase  italic">
                                         Peringatan Sistem
                                     </h4>
                                 </div>
-                                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest leading-relaxed italic border-l-2 border-primary/30 pl-4">
+                                <p className="text-[10px] text-slate-400 font-medium uppercase  leading-relaxed italic border-l-2 border-primary/30 pl-4">
                                     Perubahan bobot akan langsung memengaruhi perhitungan nilai yang belum difinalisasi.
                                 </p>
 
                                 {recentlySuccessful && (
-                                    <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-widest">
+                                    <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-bold uppercase 
                                         Konfigurasi berhasil diperbarui.
                                     </div>
                                 )}
@@ -279,10 +291,10 @@ export default function GradingSettings({ sections }: Props) {
                                 <button
                                     type="submit"
                                     disabled={processing || invalidSections.length > 0}
-                                    className="inline-flex items-center justify-center gap-3 px-10 py-4 bg-primary text-white rounded-xl font-extrabold text-[11px] uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all active:scale-95 disabled:opacity-30 disabled:grayscale"
+                                    className="inline-flex items-center justify-center gap-3 px-10 py-4 bg-primary text-white rounded-xl font-extrabold text-[11px] uppercase  hover:bg-primary-dark transition-all active:scale-95 disabled:opacity-30 disabled:grayscale"
                                 >
                                     <CheckCircle2 className="w-5 h-5" />
-                                    {processing ? 'Menyimpan...' : 'Update Algoritma'}
+                                    {processing ? 'Menyimpan...' : 'Perbarui Algoritma'}
                                 </button>
                             </div>
                         </div>
@@ -297,7 +309,7 @@ function InfoRow({ title, value }: { title: string; value: string }) {
     return (
         <div className="flex items-start justify-between gap-4 border-b border-slate-200/70 pb-4">
             <div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{title}</div>
+                <div className="text-[10px] font-bold uppercase  text-slate-400">{title}</div>
                 <div className="text-sm font-semibold text-slate-700 mt-1">{value}</div>
             </div>
         </div>

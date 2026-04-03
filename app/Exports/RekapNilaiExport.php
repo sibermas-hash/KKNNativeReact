@@ -33,7 +33,7 @@ class RekapNilaiExport implements FromCollection, WithHeadings, WithStyles, With
             // Komponen B
             'Sikap (B1)', 'Kedisiplinan (B2)',
             // Komponen C
-            'Workshop (C1)', 'Administrasi (C2)',
+            'Pembekalan (C1)', 'Administrasi (C2)',
             // Output
             'Nilai Akhir', 'Huruf', 'Status',
         ];
@@ -61,7 +61,7 @@ class RekapNilaiExport implements FromCollection, WithHeadings, WithStyles, With
             $row->nilai_administrasi ?? '-',
             $row->nilai_akhir ?? '-',
             $row->huruf ?? '-',
-            $row->is_finalized ? 'Final' : 'Draft',
+            $row->is_finalized ? 'Final' : 'Draf',
         ];
     }
 

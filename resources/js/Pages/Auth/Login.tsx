@@ -1,147 +1,200 @@
-import { useForm, Link, usePage } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
-import type { FormEventHandler } from 'react';
+import { useState } from 'react';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { EyeIcon, EyeSlashIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import type { PageProps } from '@/types';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { route } from 'ziggy-js';
+import { 
+  User, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  RefreshCw, 
+  ShieldCheck,
+  KeyRound,
+  CheckCircle2,
+  AlertCircle
+} from 'lucide-react';
 
 export default function Login() {
-  const { captcha_question, flash } = usePage<any>().props;
-  const [showPassword, setShowPassword] = useState(false);
-  const [currentCaptcha, setCurrentCaptcha] = useState(captcha_question ?? '');
-
-  const { data, setData, post, processing, errors } = useForm({
+  const { captcha_question, flash } = usePage<PageProps & { captcha_question?: string }>().props;
+  const { data, setData, post, processing, errors, reset } = useForm({
     login: '',
     password: '',
-    remember: false,
     captcha_answer: '',
+    remember: false,
   });
 
-  // Update captcha question when it changes from server (after failed attempt)
-  useEffect(() => {
-    if (flash?.captcha_question) {
-      setCurrentCaptcha(flash.captcha_question);
-    }
-  }, [flash?.captcha_question]);
+  const [showPassword, setShowPassword] = useState(false);
+  const activeCaptchaQuestion = flash?.captcha_question || captcha_question || 'Silakan muat ulang captcha';
 
-  useEffect(() => {
-    if (captcha_question) {
-      setCurrentCaptcha(captcha_question);
-    }
-  }, [captcha_question]);
-
-  const submit: FormEventHandler = (event) => {
-    event.preventDefault();
-    post('/login', {
-      onError: () => {
-        setData('captcha_answer', '');
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    post(route('login'), {
+      onFinish: () => {
+        reset('password', 'captcha_answer');
       },
     });
   };
 
+  const refreshCaptcha = () => {
+    router.get(route('login'), {}, {
+      replace: true,
+      preserveScroll: true,
+    });
+  };
+
   return (
-    <GuestLayout title="Masuk">
-      <form onSubmit={submit} className="space-y-8 relative">
-        <div className="space-y-6">
-          <div className="group">
-            <label htmlFor="login" className="block text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-3 group-focus-within:text-accent-gold transition-colors">
-              Scholastic Identifier
+      <GuestLayout title="Masuk ke Sistem">
+      <Head title="Masuk ke Sistem" />
+
+      <form onSubmit={submit} className="space-y-6">
+        {/* WELCOME TEXT */}
+        <div className="mb-8">
+          <h1 className="text-xl font-bold text-slate-800">Selamat Datang</h1>
+          <p className="text-sm text-slate-500 font-medium">Silakan masuk ke akun Anda untuk melanjutkan.</p>
+        </div>
+
+        {/* ERROR SUMMARY */}
+        <AnimatePresence>
+          {Object.keys(errors).length > 0 && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="bg-red-50 border border-red-100 rounded-xl p-3 flex flex-col gap-2"
+            >
+              {Object.entries(errors).map(([key, message]) => (
+                <div key={key} className="flex items-start gap-3">
+                  <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                  <p className="text-xs text-red-600 font-bold leading-relaxed">
+                    {message}
+                  </p>
+                </div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="space-y-4">
+          {/* USERNAME */}
+          <div className="space-y-2">
+            <label className="text-[11px] font-black uppercase  text-slate-400 ml-1">
+              Username
             </label>
-            <div className="relative">
+            <div className="relative group">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+                <User size={18} />
+              </div>
               <input
-                id="login"
                 type="text"
-                placeholder="NIM / NIP / USERNAME"
                 value={data.login}
-                onChange={(event) => setData('login', event.target.value)}
-                className="w-full rounded-2xl bg-white/[0.03] border border-white/10 px-6 py-5 text-white font-medium shadow-2xl focus:bg-white/[0.05] focus:border-accent-gold/50 focus:ring-4 focus:ring-accent-gold/5 transition-all outline-none placeholder:text-white/10 uppercase tracking-widest text-sm"
-                autoComplete="username"
+                onChange={(e) => setData('login', e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg py-4 pl-12 pr-4 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
+                placeholder="Masukkan username Anda"
+                required
               />
             </div>
-            {errors.login && <p className="mt-2 text-[10px] font-bold text-rose-500 uppercase tracking-widest">{errors.login}</p>}
           </div>
 
-          <div className="group">
-            <div className="flex items-center justify-between mb-3">
-              <label htmlFor="password" className="block text-[10px] font-black text-white/30 uppercase tracking-[0.3em] group-focus-within:text-accent-gold transition-colors">
-                Security Protocol
-              </label>
-              <Link
-                href="/forgot-password"
-                className="text-[9px] font-black text-white/20 hover:text-accent-gold uppercase tracking-widest transition-colors"
-              >
-                RECOVER ACCESS?
-              </Link>
-            </div>
-            <div className="relative">
+          {/* PASSWORD */}
+          <div className="space-y-2">
+            <label className="text-[11px] font-black uppercase  text-slate-400 ml-1">
+              Kata Sandi
+            </label>
+            <div className="relative group">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+                <KeyRound size={18} />
+              </div>
               <input
-                id="password"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="••••••••"
                 value={data.password}
-                onChange={(event) => setData('password', event.target.value)}
-                className="w-full rounded-2xl bg-white/[0.03] border border-white/10 px-6 py-5 pr-16 text-white font-medium shadow-2xl focus:bg-white/[0.05] focus:border-accent-gold/50 focus:ring-4 focus:ring-accent-gold/5 transition-all outline-none placeholder:text-white/10"
-                autoComplete="current-password"
+                onChange={(e) => setData('password', e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg py-4 pl-12 pr-12 text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
+                placeholder="••••••••••••"
+                required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-5 top-1/2 -translate-y-1/2 p-2 rounded-xl text-white/20 hover:text-accent-gold hover:bg-white/5 transition-all"
-                tabIndex={-1}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                title={showPassword ? 'Sembunyikan' : 'Tampilkan'}
               >
-                {showPassword ? (
-                  <EyeSlashIcon className="h-5 w-5" />
-                ) : (
-                  <EyeIcon className="h-5 w-5" />
-                )}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {errors.password && <p className="mt-2 text-[10px] font-bold text-rose-500 uppercase tracking-widest">{errors.password}</p>}
           </div>
 
-          {/* Math Captcha - Branded */}
-          <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 group">
-            <label htmlFor="captcha_answer" className="flex items-center gap-2 text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4">
-              <ShieldCheckIcon className="h-4 w-4 text-accent-gold" />
-              INTEGRITY VERIFICATION
-            </label>
-            <div className="flex items-center gap-6">
-              <div className="flex-shrink-0 px-6 py-5 rounded-2xl bg-gradient-to-br from-primary to-primary-dark text-white font-black text-2xl tracking-tighter text-center min-w-[150px] select-none shadow-2xl border border-white/10 relative overflow-hidden group">
-                <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                {currentCaptcha || '...'}
+          {/* CAPTCHA TACTICAL */}
+          <div className="p-5 bg-primary/5 rounded-lg border border-primary/10 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="space-y-1">
+                <span className="text-[10px] font-black text-primary/60 uppercase  Manusia</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl font-black text-primary font-mono 
+                    {activeCaptchaQuestion}
+                  </span>
+                  <button 
+                    type="button" 
+                    onClick={refreshCaptcha}
+                    className="p-1.5 rounded-full hover:bg-primary/10 text-primary transition-transform active:rotate-180"
+                    title="Muat ulang captcha"
+                  >
+                    <RefreshCw size={14} />
+                  </button>
+                </div>
               </div>
-              <input
-                id="captcha_answer"
-                type="number"
-                placeholder="RESULT"
-                value={data.captcha_answer}
-                onChange={(event) => setData('captcha_answer', event.target.value)}
-                className="w-full rounded-2xl bg-white/[0.03] border border-white/10 px-6 py-5 text-white font-black text-2xl shadow-2xl focus:bg-white/[0.05] focus:border-accent-gold/50 focus:ring-4 focus:ring-accent-gold/5 transition-all outline-none text-center tabular-nums"
-                autoComplete="off"
-              />
+              <div className="w-20">
+                <input
+                  type="number"
+                  value={data.captcha_answer}
+                  onChange={(e) => setData('captcha_answer', e.target.value)}
+                  className="w-full bg-white border border-primary/20 rounded-xl py-3 px-3 text-center font-black text-primary text-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  placeholder="?"
+                  required
+                />
+              </div>
             </div>
-            {errors.captcha_answer && <p className="mt-3 text-[10px] font-bold text-rose-500 uppercase tracking-widest">{errors.captcha_answer}</p>}
+            <p className="mt-3 text-[11px] font-bold text-primary/70">
+              {activeCaptchaQuestion}
+            </p>
+            {/* Background pattern for captcha */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-primary/10 transition-colors" />
           </div>
+        </div>
 
-          <div className="flex items-center justify-between px-2">
-            <label className="flex items-center gap-3 text-[10px] font-black text-white/20 uppercase tracking-[0.2em] cursor-pointer group hover:text-white/40 transition-colors">
+        <div className="flex items-center justify-between px-1">
+          <label className="flex items-center gap-2 cursor-pointer group">
+            <div className="relative">
               <input
                 type="checkbox"
                 checked={data.remember}
-                onChange={(event) => setData('remember', event.target.checked)}
-                className="h-5 w-5 rounded-lg border-white/10 bg-white/5 text-primary focus:ring-primary/20 transition-all cursor-pointer"
+                onChange={(e) => setData('remember', e.target.checked)}
+                className="sr-only peer"
               />
-              PERSISTENT SESSION
-            </label>
-          </div>
+              <div className="w-5 h-5 border-2 border-slate-200 rounded-md bg-white peer-checked:bg-primary peer-checked:border-primary transition-all" />
+              <CheckCircle2 className="absolute inset-0 w-5 h-5 text-white scale-0 peer-checked:scale-75 transition-transform" />
+            </div>
+            <span className="text-xs font-bold text-slate-500 group-hover:text-slate-700 transition-colors">Ingat Saya</span>
+          </label>
+          <Link href={route('password.request')} className="text-xs font-bold text-primary hover:underline underline-offset-4">
+            Lupa Sandi?
+          </Link>
         </div>
 
         <button
           type="submit"
           disabled={processing}
-          className="group w-full rounded-2xl bg-gradient-to-br from-primary to-primary-dark py-6 text-[11px] font-black text-white uppercase tracking-[0.4em] shadow-2xl shadow-primary/20 transition-all hover:scale-[1.02] hover:-rotate-1 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 border border-white/10 relative overflow-hidden"
+          className="w-full bg-gradient-to-r from-primary to-emerald-600 text-white rounded-lg py-4 font-bold text-sm hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all disabled:opacity-50 disabled:translate-y-0 border border-white/10 flex items-center justify-center gap-3 relative overflow-hidden group"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-          {processing ? 'AUTHORIZING NEXUS...' : 'INITIALIZE ACCESS'}
+          {processing ? (
+             <RefreshCw className="w-5 h-5 animate-spin" />
+          ) : (
+            <>
+              <ShieldCheck className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+              <span className="tracking-widest">VERIFIKASI & MASUK</span>
+            </>
+          )}
         </button>
       </form>
     </GuestLayout>

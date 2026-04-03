@@ -44,7 +44,7 @@ class AuditService
 
     private static function determineSeverity(string $action): string
     {
-        $high = ['DELETE', 'FORCE_FINALIZE', 'UPDATE_SCORE_ADMIN', 'BYPASS_POLICY', 'MASS_FINALIZE'];
+        $high = ['DELETE', 'FORCE_FINALIZE', 'UPDATE_SCORE_ADMIN', 'BYPASS_POLICY', 'MASS_FINALIZE', 'GATE_BYPASS'];
         $medium = ['UPDATE', 'APPROVAL', 'REJECTION'];
 
         $actionUpper = strtoupper($action);

@@ -1,23 +1,25 @@
 import { useState, useEffect } from 'react';
-import { useForm, router } from '@inertiajs/react';
+import { useForm, router, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Button, FormInput, ConfirmDialog, Badge, Pagination } from '@/Components/ui';
+import { FormInput, ConfirmDialog, Pagination } from '@/Components/ui';
 import type { PageProps, AcademicYear } from '@/types';
 import type { PaginationMeta } from '@/Components/UI/Pagination';
-import {
-    CalendarIcon,
-    PlusIcon,
-    PencilSquareIcon,
-    TrashIcon,
-    MagnifyingGlassIcon,
-    ArrowPathIcon,
-    StopIcon
-} from '@heroicons/react/24/outline';
+import { 
+    Calendar, 
+    Plus, 
+    Edit2, 
+    Trash2, 
+    Search, 
+    RotateCcw, 
+    CheckCircle, 
+    Info
+} from 'lucide-react';
+import { clsx } from 'clsx';
 
 interface Props extends PageProps {
     academicYears: {
         data: AcademicYear[];
-        links: any[];
+        links: { url: string | null; label: string; active: boolean }[];
         meta: PaginationMeta;
     };
     filters: {
@@ -39,7 +41,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
             }
         }, 300);
         return () => clearTimeout(timer);
-    }, [search]);
+    }, [search, filters.search]);
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -74,64 +76,101 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
     }
 
     return (
-        <AppLayout title="Temporal Cycle Registry">
-            <div className="space-y-12 pb-16 animate-in fade-in duration-1000">
-                {/* Elite Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-white/5 relative">
-                    <div className="absolute -left-12 top-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
-                    <div className="relative">
+        <AppLayout title="Tahun Akademik">
+            <Head title="Manajemen Tahun Akademik" />
+
+            <div className="space-y-12 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                {/* Tactical Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-8 border-b border-slate-100">
+                    <div>
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="px-3 py-1 rounded-full bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-[10px] font-black uppercase tracking-[0.3em]">CHRONOS MANAGEMENT</div>
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary-light animate-pulse" />
+                            <Calendar className="h-4 w-4 text-primary" />
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] leading-none italic">
+                                ACADEMIC_CYCLE_MANAGEMENT_V1
+                            </span>
                         </div>
-                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic line-height-1">
-                            Temporal <span className="text-accent-gold text-glow-gold">Cycles</span>
+                        <h1 className="text-4xl font-extrabold text-slate-900 tracking-tighter uppercase italic leading-none">
+                            Kalender <span className="text-primary italic">Akademik</span>
                         </h1>
-                        <p className="text-white/40 text-sm mt-4 font-medium uppercase tracking-[0.15em]">Calibrating academic year boundaries and operational timelines.</p>
+                        <p className="text-slate-500 text-sm mt-4 font-medium italic opacity-70 leading-relaxed max-w-2xl">
+                            Konfigurasi siklus tahun ajaran aktif sebagai basis pendaftaran dan operasional unit KKN.
+                        </p>
                     </div>
 
-                    <div className="px-8 py-5 glass rounded-[2rem] flex items-center gap-6 group hover:border-accent-gold/20 transition-all">
-                        <ArrowPathIcon className="h-6 w-6 text-accent-gold group-hover:rotate-180 transition-all duration-1000" />
-                        <div className="flex flex-col">
-                            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest leading-none">IDENTIFIED CYCLES</span>
-                            <span className="text-xl font-black text-white mt-1 tabular-nums">{academicYears.meta?.total || 0}</span>
+                    <div className="flex items-center gap-5">
+                        <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-6 min-w-[200px] group hover:border-primary/30 transition-all">
+                            <div className="p-3 bg-slate-900 rounded-2xl text-primary shadow-lg shadow-slate-900/10 group-hover:scale-110 transition-transform">
+                                <RotateCcw className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5 italic">Total Archive</span>
+                                <span className="text-2xl font-black text-slate-900 tabular-nums italic leading-none">{academicYears.meta?.total || 0} Records</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                    {/* Command Console (Form) */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Form Section */}
                     <div className="lg:col-span-1">
-                        <div className="glass rounded-[2.5rem] p-10 border-white/10 shadow-2xl sticky top-8">
-                            <h2 className="text-2xl font-black text-white tracking-tighter uppercase italic mb-8 flex items-center gap-4">
-                                {editing ? <PencilSquareIcon className="h-6 w-6 text-accent-gold" /> : <PlusIcon className="h-6 w-6 text-primary-light" />}
-                                {editing ? 'Modify Cycle' : 'Initialize Cycle'}
+                        <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm sticky top-8">
+                            <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-3">
+                                <div className="p-2 bg-slate-50 rounded-lg">
+                                    {editing ? <Edit2 className="w-4 h-4 text-primary" /> : <Plus className="w-4 h-4 text-primary" />}
+                                </div>
+                                {editing ? 'Edit Tahun Akademik' : 'Tambah Tahun Akademik'}
                             </h2>
-                            <form onSubmit={handleSubmit} className="space-y-8">
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-white/40 uppercase tracking-widest pl-1">CYBERNETIC YEAR</label>
+                            
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-700 ml-1">Nama Tahun Akademik</label>
                                     <FormInput
-                                        placeholder="E.G. 2024/2025"
+                                        placeholder="Contoh: 2024/2025"
                                         value={form.data.year}
                                         onChange={(e) => form.setData('year', e.target.value)}
                                         error={form.errors.year}
-                                        className="bg-black/40 border-white/10 text-xs font-bold tracking-widest text-white h-14 rounded-2xl focus:border-accent-gold/50"
+                                        label=""
+                                        className="bg-slate-50 border-slate-200 text-sm font-medium rounded-2xl focus:bg-white transition-all h-12"
                                         required
                                     />
                                 </div>
-                                <div className="flex items-center gap-5 p-5 bg-white/[0.02] border border-white/5 rounded-2xl group cursor-pointer" onClick={() => form.setData('is_active', !form.data.is_active)}>
-                                    <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${form.data.is_active ? 'bg-primary border-primary shadow-lg shadow-primary/20' : 'border-white/10'}`}>
-                                        {form.data.is_active && <div className="w-2 h-2 rounded-sm bg-white" />}
+
+                                <div 
+                                    className={clsx(
+                                        "flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer group",
+                                        form.data.is_active ? 'bg-primary/5 border-primary/20' : 'bg-slate-50 border-slate-200 hover:bg-white'
+                                    )} 
+                                    onClick={() => form.setData('is_active', !form.data.is_active)}
+                                >
+                                    <div className={clsx(
+                                        "w-5 h-5 rounded-md border flex items-center justify-center transition-all",
+                                        form.data.is_active ? 'bg-primary border-primary' : 'bg-white border-slate-300'
+                                    )}>
+                                        {form.data.is_active && <CheckCircle className="w-3.5 h-3.5 text-white" />}
                                     </div>
-                                    <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${form.data.is_active ? 'text-primary-light' : 'text-white/20'}`}>OPERATIONAL STATUS: ACTIVE</span>
+                                    <div>
+                                        <span className={clsx("text-xs font-bold block", form.data.is_active ? 'text-primary' : 'text-slate-600')}>
+                                            {form.data.is_active ? 'Status Aktif' : 'Status Tidak Aktif'}
+                                        </span>
+                                        <span className="text-[10px] text-slate-400 font-medium">Beralih status aktif/nonaktif</span>
+                                    </div>
                                 </div>
-                                <div className="flex gap-4 pt-4">
-                                    <button type="submit" disabled={form.processing} className="flex-1 py-5 bg-gradient-to-br from-primary to-primary-dark text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all border border-white/10">
-                                        {editing ? 'COMMIT CHANGES' : 'DEPLOY CYCLE'}
+
+                                <div className="flex flex-col gap-3 pt-2">
+                                    <button 
+                                        type="submit" 
+                                        disabled={form.processing} 
+                                        className="w-full py-3.5 bg-slate-900 text-white text-sm font-bold rounded-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        {editing ? 'Simpan Perubahan' : 'Tambah Data'}
                                     </button>
                                     {editing && (
-                                        <button type="button" onClick={cancelEdit} className="px-8 py-5 bg-white/5 text-white/40 text-[10px] font-black uppercase tracking-widest rounded-2xl border border-white/5 hover:bg-white/10 transition-all">
-                                            ABORT
+                                        <button 
+                                            type="button" 
+                                            onClick={cancelEdit} 
+                                            className="w-full py-3.5 bg-white text-slate-500 text-sm font-bold rounded-2xl border border-slate-200 hover:bg-slate-50 transition-all"
+                                        >
+                                            Batal
                                         </button>
                                     )}
                                 </div>
@@ -139,64 +178,75 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                         </div>
                     </div>
 
-                    {/* Registry Ledger (Table) */}
-                    <div className="lg:col-span-2 space-y-8">
-                        <div className="relative group">
-                            <MagnifyingGlassIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-white/20 group-focus-within:text-accent-gold transition-colors" />
+                    {/* Table Section */}
+                    <div className="lg:col-span-2 space-y-6">
+                        <div className="relative max-w-md">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <input
-                                placeholder="SCAN CYCLES..."
+                                placeholder="Cari tahun akademik..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="w-full pl-16 pr-8 py-5 bg-white/[0.02] border border-white/10 rounded-2xl text-xs font-black uppercase tracking-widest text-white outline-none focus:border-accent-gold/40 shadow-2xl transition-all"
+                                className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-medium outline-none focus:border-primary/50 shadow-sm transition-all"
                             />
                         </div>
 
-                        <div className="bg-white/[0.02] rounded-[3rem] border border-white/10 shadow-2xl overflow-hidden backdrop-blur-xxl relative">
-                            <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none">
-                                <CalendarIcon className="h-64 w-64 text-white" />
-                            </div>
-                            <div className="overflow-x-auto relative z-10">
-                                <table className="min-w-full divide-y divide-white/5">
-                                    <thead className="bg-white/[0.02]">
+                        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-slate-100">
+                                    <thead className="bg-slate-50/50">
                                         <tr>
-                                            <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Temporal Identity</th>
-                                            <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30 text-center">Status</th>
-                                            <th className="px-8 py-6 text-right text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Operational Control</th>
+                                            <th className="px-8 py-5 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">Tahun Akademik</th>
+                                            <th className="px-8 py-5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Status</th>
+                                            <th className="px-8 py-5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500">Aksi</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-white/[0.03]">
+                                    <tbody className="divide-y divide-slate-100 bg-white">
                                         {academicYears.data.length === 0 ? (
                                             <tr>
-                                                <td colSpan={3} className="px-8 py-24 text-center">
-                                                    <div className="flex flex-col items-center">
-                                                        <StopIcon className="h-12 w-12 text-white/5 mb-4" />
-                                                        <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] italic">No temporal cycles detected in scans.</p>
+                                                <td colSpan={3} className="px-8 py-20 text-center">
+                                                    <div className="flex flex-col items-center gap-2 opacity-30">
+                                                        <Calendar className="h-12 w-12 text-slate-300" />
+                                                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest leading-none">Data Kosong</p>
                                                     </div>
                                                 </td>
                                             </tr>
                                         ) : (
                                             academicYears.data.map((ay) => (
-                                                <tr key={ay.id} className="group hover:bg-white/[0.04] transition-all duration-300">
-                                                    <td className="px-8 py-8">
-                                                        <div className="flex items-center gap-5">
-                                                            <div className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl font-black text-accent-gold group-hover:scale-110 group-hover:rotate-12 transition-all shadow-xl italic">
+                                                <tr key={ay.id} className="group hover:bg-slate-50/50 transition-all">
+                                                    <td className="px-8 py-6">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="h-10 w-10 rounded-xl bg-slate-900 flex items-center justify-center text-xs font-bold text-white">
                                                                 {ay.year.split('/')[0].slice(-2)}
                                                             </div>
-                                                            <span className="text-lg font-black text-white tracking-widest tabular-nums uppercase italic group-hover:text-accent-gold transition-colors">{ay.year}</span>
+                                                            <span className="text-sm font-bold text-slate-900">{ay.year}</span>
                                                         </div>
                                                     </td>
-                                                    <td className="px-8 py-8 text-center">
-                                                        <Badge variant={ay.is_active ? 'success' : 'default'} className="px-4 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-[0.2em] shadow-lg">
-                                                            {ay.is_active ? 'OPERATIONAL' : 'INERT'}
-                                                        </Badge>
+                                                    <td className="px-8 py-6 text-center">
+                                                        <span className={clsx(
+                                                            "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide",
+                                                            ay.is_active ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
+                                                        )}>
+                                                            {ay.is_active ? (
+                                                                <>
+                                                                    <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                                                                    Aktif
+                                                                </>
+                                                            ) : 'Nonaktif'}
+                                                        </span>
                                                     </td>
-                                                    <td className="px-8 py-8 text-right">
-                                                        <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                                                            <button onClick={() => startEdit(ay)} className="p-3 rounded-xl bg-white/5 border border-white/5 text-white/40 hover:text-accent-gold hover:bg-white/10 transition-all">
-                                                                <PencilSquareIcon className="h-5 w-5" />
+                                                    <td className="px-8 py-6 text-right">
+                                                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <button 
+                                                                onClick={() => startEdit(ay)} 
+                                                                className="p-2.5 rounded-xl border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all shadow-sm"
+                                                            >
+                                                                <Edit2 className="w-4 h-4" />
                                                             </button>
-                                                            <button onClick={() => setDeleting(ay)} className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-all">
-                                                                <TrashIcon className="h-5 w-5" />
+                                                            <button 
+                                                                onClick={() => setDeleting(ay)} 
+                                                                className="p-2.5 rounded-xl border border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-200 transition-all shadow-sm"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
                                                             </button>
                                                         </div>
                                                     </td>
@@ -207,17 +257,26 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                                 </table>
                             </div>
                             {academicYears.meta && (
-                                <div className="px-8 py-6 bg-white/[0.01] border-t border-white/5">
+                                <div className="px-8 py-5 bg-slate-50/30 border-t border-slate-100">
                                     <Pagination meta={academicYears.meta} />
                                 </div>
                             )}
                         </div>
-                    </div>
-                </div>
 
-                <div className="flex items-center justify-between px-8 text-white/10 font-black uppercase tracking-[0.5em] text-[9px]">
-                    <p>QUANTUM TIME ENGINE VER: 2.0.26</p>
-                    <p>UTC SYNCED: TRUE</p>
+                        {/* Info Card */}
+                        <div className="p-8 bg-blue-50/50 rounded-[2rem] border border-blue-100 flex gap-5 items-start">
+                             <div className="p-3 bg-white rounded-xl shadow-sm text-blue-500 border border-blue-100 shrink-0">
+                                 <Info className="w-5 h-5" />
+                             </div>
+                             <div>
+                                 <h4 className="text-xs font-bold text-blue-800 uppercase tracking-widest mb-1.5">Informasi Sistem</h4>
+                                 <p className="text-xs text-blue-700/70 leading-relaxed font-medium">
+                                     Tahun akademik yang berstatus <strong className="text-blue-900 italic">"Aktif"</strong> akan digunakan sebagai referensi utama 
+                                     saat mahasiswa melakukan pendaftaran KKN. Pastikan hanya ada satu tahun akademik aktif pada satu periode pelaksanaan.
+                                 </p>
+                             </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -225,9 +284,9 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                 open={!!deleting}
                 onClose={() => setDeleting(null)}
                 onConfirm={handleDelete}
-                title="TERMINATE CYCLE"
-                message={`YOU ARE ABOUT TO PERMANENTLY WIPE TEMPORAL CYCLE "${deleting?.year}" FROM THE CENTRAL REGISTRY. CONFIRM AUTHORIZATION?`}
-                confirmLabel="CONFIRM WIPE"
+                title="Hapus Data?"
+                message={`Apakah Anda yakin ingin menghapus data tahun akademik "${deleting?.year}"? Perubahan ini tidak dapat dibatalkan.`}
+                confirmLabel="Ya, Hapus"
                 processing={deleteForm.processing}
             />
         </AppLayout>

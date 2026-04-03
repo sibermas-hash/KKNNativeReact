@@ -1,180 +1,305 @@
-import { useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
+import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
-import { FormInput } from '@/Components/ui';
 import {
-    CpuChipIcon,
-    ShieldCheckIcon,
-    AdjustmentsHorizontalIcon,
-    BeakerIcon,
-    CubeTransparentIcon,
-    CheckBadgeIcon,
-    ExclamationTriangleIcon,
-    AcademicCapIcon
-} from '@heroicons/react/24/outline';
+    Sliders,
+    Beaker,
+    CheckCircle2,
+    Cpu,
+    AlertTriangle,
+    Sparkles,
+    ShieldCheck
+} from 'lucide-react';
+import { clsx } from 'clsx';
 
-interface Props {
-    settings: {
-        weight_main: number;
-        weight_dpl: number;
-        weight_village: number;
-        weight_lppm: number;
-    };
+interface ConfigItem {
+    id: number;
+    config_key: string;
+    label: string;
+    percentage: number;
+    description: string | null;
 }
 
-export default function GradingSettings({ settings }: Props) {
-    const form = useForm({
-        weight_main: settings.weight_main,
-        weight_dpl: settings.weight_dpl,
-        weight_village: settings.weight_village,
-        weight_lppm: settings.weight_lppm,
+interface Section {
+    group: string;
+    title: string;
+    description: string;
+    enforce_total: boolean;
+    total: number;
+    items: ConfigItem[];
+}
+
+interface Props {
+    sections: Section[];
+}
+
+export default function GradingSettings({ sections }: Props) {
+    const { data, setData, post, processing, errors, recentlySuccessful } = useForm({
+        configs: sections.flatMap((section) =>
+            section.items.map((item) => ({
+                id: item.id,
+                percentage: item.percentage,
+            })),
+        ),
     });
 
-    const total = Number(form.data.weight_main) +
-        Number(form.data.weight_dpl) +
-        Number(form.data.weight_village) +
-        Number(form.data.weight_lppm);
+    const percentageById = new Map(data.configs.map((item) => [item.id, Number(item.percentage)]));
 
-    function handleSubmit(e: React.FormEvent) {
+    const sectionsWithTotals = sections.map((section) => {
+        const total = section.items.reduce(
+            (sum, item) => sum + (percentageById.get(item.id) ?? Number(item.percentage)),
+            0,
+        );
+
+        return {
+            ...section,
+            currentTotal: Number(total.toFixed(2)),
+        };
+    });
+
+    const invalidSections = sectionsWithTotals.filter(
+        (section) => section.enforce_total && section.currentTotal !== 100,
+    );
+
+    const handlePercentageChange = (id: number, value: string) => {
+        const numericValue = value === '' ? 0 : Number(value);
+
+        setData(
+            'configs',
+            data.configs.map((config) =>
+                config.id === id ? { ...config, percentage: numericValue } : config,
+            ),
+        );
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        form.post('/admin/grading-settings');
-    }
+        post(route('admin.grading-settings.update'));
+    };
 
     return (
-        <AppLayout title="Merit Algorithm Forge">
-            <div className="space-y-12 pb-16 animate-in fade-in duration-1000">
-                {/* Tactical Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-white/5 relative">
-                    <div className="absolute -left-12 top-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
-                    <div className="relative">
+        <AppLayout title="Kalibrasi Algoritma Assessment">
+            <Head title="Konfigurasi Algoritma Penilaian" />
+
+            <div className="space-y-12 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-10 border-b border-slate-100 relative">
+                    <div>
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="px-3 py-1 rounded-full bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-[10px] font-black uppercase tracking-[0.3em]">LOGIC CALIBRATION</div>
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary-light animate-pulse" />
+                            <ShieldCheck className="h-4 w-4 text-primary" />
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] leading-none italic">
+                                CORE_ENGINE_CALIBRATION_V1
+                            </span>
                         </div>
-                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic line-height-1">
-                            Merit <span className="text-accent-gold text-glow-gold">Algorithm</span>
+                        <h1 className="text-4xl font-extrabold text-slate-900 tracking-tighter uppercase italic leading-none">
+                            Algoritma <span className="text-primary italic">Assessment</span>
                         </h1>
-                        <p className="text-white/40 text-sm mt-4 font-medium uppercase tracking-[0.15em]">Fine-tuning the weighted vectors for scholar assessment.</p>
+                        <p className="text-slate-500 text-sm mt-4 font-medium italic opacity-70 leading-relaxed max-w-2xl">
+                            Konfigurasi metrik pembobotan sistematis untuk kalkulasi nilai akhir mahasiswa secara real-time.
+                        </p>
                     </div>
 
-                    <div className="flex items-center gap-6">
-                        <div className={`px-8 py-5 glass rounded-[2rem] flex items-center gap-6 transition-colors duration-500 ${total === 100 ? 'border-emerald-500/20' : 'border-rose-500/20'}`}>
-                            <CpuChipIcon className={`h-6 w-6 ${total === 100 ? 'text-emerald-500' : 'text-rose-500'}`} />
+                    <div className="flex items-center gap-5">
+                        <div
+                            className={clsx(
+                                'px-6 py-5 bg-white rounded-3xl border flex items-center gap-6 transition-all duration-500 shadow-sm min-w-[240px]',
+                                invalidSections.length === 0 ? 'border-emerald-100' : 'border-rose-100 bg-rose-50/30',
+                            )}
+                        >
+                            <div className={clsx(
+                                "p-3 rounded-2xl shadow-lg",
+                                invalidSections.length === 0 ? "bg-emerald-500 text-white shadow-emerald-500/10" : "bg-rose-500 text-white shadow-rose-500/10"
+                            )}>
+                                <Cpu className="h-6 w-6" />
+                            </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-white/20 uppercase tracking-widest leading-none">TOTAL WEIGHT</span>
-                                <span className={`text-xl font-black mt-1 tabular-nums ${total === 100 ? 'text-white' : 'text-rose-500'}`}>{total}%</span>
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5 italic">
+                                    STATUS VALIDASI
+                                </span>
+                                <span
+                                    className={clsx(
+                                        'text-xl font-black uppercase italic tracking-tight',
+                                        invalidSections.length === 0 ? 'text-slate-900' : 'text-rose-600',
+                                    )}
+                                >
+                                    {invalidSections.length === 0 ? 'LOGIC_CLEAN' : `${invalidSections.length} CORE_ERROR`}
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    {/* Calibration Panel */}
-                    <form onSubmit={handleSubmit} className="space-y-10">
-                        <div className="glass p-10 rounded-[3rem] border-white/10 shadow-2xl relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-10 opacity-[0.02] text-white pointer-events-none group-hover:scale-110 transition-transform duration-1000">
-                                <AdjustmentsHorizontalIcon className="h-64 w-64" />
-                            </div>
+                <form onSubmit={handleSubmit} className="space-y-10">
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
+                        <div className="xl:col-span-2 space-y-8">
+                            {sectionsWithTotals.map((section) => {
+                                const isValid = !section.enforce_total || section.currentTotal === 100;
 
-                            <h3 className="text-2xl font-black text-white tracking-tighter uppercase italic mb-10 flex items-center gap-4">
-                                <BeakerIcon className="w-7 h-7 text-accent-gold" />
-                                Vector Calibration
-                            </h3>
+                                return (
+                                    <section
+                                        key={section.group}
+                                        className="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden group"
+                                    >
+                                        <div className="absolute top-0 right-0 p-10 opacity-[0.02] text-slate-900 pointer-events-none group-hover:rotate-12 transition-transform duration-1000">
+                                            <Sliders className="h-32 w-32" />
+                                        </div>
 
-                            <div className="space-y-8 relative z-10">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <FormInput
-                                        id="weight_main" label="Core Academic Weight (%)" type="number"
-                                        value={form.data.weight_main} onChange={(e) => form.setData('weight_main', Number(e.target.value))}
-                                        error={form.errors.weight_main} required
-                                        className="bg-black/40 border-white/10 text-white text-base font-black h-16 rounded-2xl p-6"
-                                    />
-                                    <FormInput
-                                        id="weight_dpl" label="Field Supervisor Weight (%)" type="number"
-                                        value={form.data.weight_dpl} onChange={(e) => form.setData('weight_dpl', Number(e.target.value))}
-                                        error={form.errors.weight_dpl} required
-                                        className="bg-black/40 border-white/10 text-white text-base font-black h-16 rounded-2xl p-6"
-                                    />
-                                    <FormInput
-                                        id="weight_village" label="Regional Authority Weight (%)" type="number"
-                                        value={form.data.weight_village} onChange={(e) => form.setData('weight_village', Number(e.target.value))}
-                                        error={form.errors.weight_village} required
-                                        className="bg-black/40 border-white/10 text-white text-base font-black h-16 rounded-2xl p-6"
-                                    />
-                                    <FormInput
-                                        id="weight_lppm" label="Institutional Oversight Weight (%)" type="number"
-                                        value={form.data.weight_lppm} onChange={(e) => form.setData('weight_lppm', Number(e.target.value))}
-                                        error={form.errors.weight_lppm} required
-                                        className="bg-black/40 border-white/10 text-white text-base font-black h-16 rounded-2xl p-6"
-                                    />
+                                        <div className="relative z-10 space-y-8">
+                                            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 border-b border-slate-50 pb-8">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="p-3 bg-primary/10 rounded-xl text-primary border border-primary/20 shadow-sm">
+                                                        <Beaker className="w-6 h-6 shrink-0" />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-lg font-extrabold text-slate-900 uppercase italic tracking-tight">
+                                                            {section.title}
+                                                        </h3>
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                                                            {section.description}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div
+                                                    className={clsx(
+                                                        'px-5 py-4 rounded-2xl border min-w-[11rem]',
+                                                        isValid ? 'border-emerald-100 bg-emerald-50/50' : 'border-rose-100 bg-rose-50/60',
+                                                    )}
+                                                >
+                                                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                                        {section.enforce_total ? 'Total Bobot' : 'Nilai Default'}
+                                                    </div>
+                                                    <div
+                                                        className={clsx(
+                                                            'text-2xl font-extrabold mt-1 tabular-nums',
+                                                            isValid ? 'text-slate-900' : 'text-rose-600',
+                                                        )}
+                                                    >
+                                                        {section.currentTotal}%
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                {section.items.map((item) => {
+                                                    const currentValue = percentageById.get(item.id) ?? item.percentage;
+
+                                                    return (
+                                                        <div key={item.id} className="space-y-3">
+                                                            <label
+                                                                htmlFor={`config-${item.id}`}
+                                                                className="text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1 block"
+                                                            >
+                                                                {item.label}
+                                                            </label>
+                                                            <input
+                                                                id={`config-${item.id}`}
+                                                                type="number"
+                                                                min={0}
+                                                                max={100}
+                                                                step="0.01"
+                                                                value={currentValue}
+                                                                onChange={(e) => handlePercentageChange(item.id, e.target.value)}
+                                                                className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-lg font-extrabold h-16 rounded-2xl px-6 focus:bg-white focus:border-primary/50 outline-none transition-all"
+                                                            />
+                                                            <p className="text-xs text-slate-500 leading-relaxed">
+                                                                {item.description || 'Konfigurasi penilaian.'}
+                                                            </p>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            {!isValid && (
+                                                <div className="p-6 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-4">
+                                                    <AlertTriangle className="h-6 w-6 text-rose-500 shrink-0" />
+                                                    <p className="text-[10px] font-bold text-rose-600 uppercase tracking-widest leading-relaxed italic">
+                                                        Total untuk {section.title} harus tepat 100% sebelum bisa disimpan.
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </section>
+                                );
+                            })}
+
+                            {typeof errors.configs === 'string' && (
+                                <div className="p-6 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-4">
+                                    <AlertTriangle className="h-6 w-6 text-rose-500 shrink-0" />
+                                    <p className="text-[10px] font-bold text-rose-600 uppercase tracking-widest leading-relaxed italic">
+                                        {errors.configs}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="space-y-8">
+                            <div className="bg-slate-50 p-10 rounded-[2.5rem] border border-slate-100 relative overflow-hidden group">
+                                <div className="absolute -top-10 -right-10 p-10 opacity-[0.05] text-primary group-hover:scale-110 transition-transform duration-1000">
+                                    <Sparkles className="w-32 h-32" />
                                 </div>
 
-                                {total !== 100 && (
-                                    <div className="p-6 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center gap-4 animate-pulse">
-                                        <ExclamationTriangleIcon className="h-6 w-6 text-rose-500 shrink-0" />
-                                        <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest leading-loose">
-                                            ALGORITHM CRITICAL ERROR: TOTAL WEIGHT VECTOR MUST EQUAL EXACTLY 100%. CURRENT DEVIATION DETECTED.
+                                <div className="relative z-10 space-y-8">
+                                    <div>
+                                        <h3 className="text-sm font-black text-slate-900 tracking-widest uppercase italic mb-3">
+                                            Logika Penilaian
+                                        </h3>
+                                        <p className="text-sm text-slate-500 leading-relaxed">
+                                            Halaman ini sekarang mengatur bobot asli yang dipakai mesin kalkulasi nilai, termasuk
+                                            komponen utama, rincian DPL, desa, dan LPPM.
                                         </p>
                                     </div>
+
+                                    <div className="space-y-5">
+                                        <InfoRow title="Bobot Nilai Akhir" value="Harus total 100%" />
+                                        <InfoRow title="Komponen DPL" value="Harus total 100%" />
+                                        <InfoRow title="Komponen Desa / Mitra" value="Harus total 100%" />
+                                        <InfoRow title="Komponen LPPM" value="Harus total 100%" />
+                                        <InfoRow title="Nilai Workshop" value="Bisa diatur mandiri" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-8 bg-white rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden flex flex-col gap-6">
+                                <div className="flex items-center gap-3">
+                                    <Sparkles className="w-5 h-5 text-primary" />
+                                    <h4 className="text-[10px] font-extrabold text-slate-900 uppercase tracking-widest italic">
+                                        Peringatan Sistem
+                                    </h4>
+                                </div>
+                                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest leading-relaxed italic border-l-2 border-primary/30 pl-4">
+                                    Perubahan bobot akan langsung memengaruhi perhitungan nilai yang belum difinalisasi.
+                                </p>
+
+                                {recentlySuccessful && (
+                                    <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-widest">
+                                        Konfigurasi berhasil diperbarui.
+                                    </div>
                                 )}
+
+                                <button
+                                    type="submit"
+                                    disabled={processing || invalidSections.length > 0}
+                                    className="inline-flex items-center justify-center gap-3 px-10 py-4 bg-primary text-white rounded-xl font-extrabold text-[11px] uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all active:scale-95 disabled:opacity-30 disabled:grayscale"
+                                >
+                                    <CheckCircle2 className="w-5 h-5" />
+                                    {processing ? 'Menyimpan...' : 'Update Algoritma'}
+                                </button>
                             </div>
-                        </div>
-
-                        <div className="flex justify-end">
-                            <button
-                                type="submit"
-                                disabled={form.processing || total !== 100}
-                                className="px-16 py-6 bg-primary text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl shadow-primary/20 hover:scale-[1.05] active:scale-95 transition-all border border-white/10 flex items-center gap-4 disabled:opacity-30 disabled:grayscale"
-                            >
-                                <CheckBadgeIcon className="w-6 h-6 text-accent-gold" />
-                                COMMIT ALGORITHM
-                            </button>
-                        </div>
-                    </form>
-
-                    {/* Operational Docs */}
-                    <div className="space-y-10">
-                        <div className="glass p-10 rounded-[3rem] border-white/10 shadow-2xl relative overflow-hidden bg-gradient-to-br from-primary/10 via-transparent to-transparent">
-                            <div className="absolute -top-10 -right-10 p-10 opacity-10 text-primary-light">
-                                <AcademicCapIcon className="w-48 h-48" />
-                            </div>
-
-                            <h3 className="text-xl font-black text-white tracking-widest uppercase italic mb-10 border-b border-white/10 pb-6 flex items-center gap-3">
-                                <CubeTransparentIcon className="w-5 h-5 text-accent-gold" />
-                                Assessment Logic Hub
-                            </h3>
-
-                            <div className="space-y-10 relative z-10">
-                                <LogicNote title="Core Academic" desc="System-generated metrics from digital presence and submission timelines." />
-                                <LogicNote title="Field Supervisor" desc="Qualitative assessment from designated command officers on-site." />
-                                <LogicNote title="Regional Authority" desc="Impact factor based on village-level integration and leadership." />
-                                <LogicNote title="Institutional Oversight" desc="Final audit and strategic alignment by LPPM directorate." />
-                            </div>
-                        </div>
-
-                        <div className="p-10 glass rounded-[3rem] border-white/5 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-8 opacity-[0.03] text-white pointer-events-none group-hover:scale-110 transition-transform duration-700">
-                                <ShieldCheckIcon className="h-24 w-24" />
-                            </div>
-                            <h4 className="text-[10px] font-black text-accent-gold flex items-center gap-3 uppercase tracking-[0.4em] mb-6 italic">
-                                <div className="w-2 h-2 rounded-full bg-accent-gold animate-pulse" />
-                                Security Protocol
-                            </h4>
-                            <p className="text-[11px] text-white/40 font-bold uppercase tracking-widest leading-[2] italic border-l-2 border-primary/30 pl-8">
-                                CHANGES TO THE MERIT ALGORITHM WILL RETROACTIVELY IMPACT ALL NON-FINALIZED GRADE CALCULATIONS. COMMIT WITH EXTREME CAUTION.
-                            </p>
                         </div>
                     </div>
-                </div>
+                </form>
             </div>
         </AppLayout>
     );
 }
 
-function LogicNote({ title, desc }: { title: string; desc: string }) {
+function InfoRow({ title, value }: { title: string; value: string }) {
     return (
-        <div className="group/note">
-            <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em] mb-4 group-hover/note:text-accent-gold transition-colors">{title}</h4>
-            <p className="text-sm font-bold text-white/60 uppercase tracking-widest leading-relaxed border-l border-white/10 pl-6 group-hover/note:border-primary transition-all italic">{desc}</p>
+        <div className="flex items-start justify-between gap-4 border-b border-slate-200/70 pb-4">
+            <div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{title}</div>
+                <div className="text-sm font-semibold text-slate-700 mt-1">{value}</div>
+            </div>
         </div>
     );
 }

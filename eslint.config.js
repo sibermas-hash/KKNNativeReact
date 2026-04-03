@@ -20,9 +20,20 @@ const jsxA11yRecommended = jsxA11yPlugin.configs.recommended;
 
 export default [
   {
-    ignores: ['node_modules/**', 'vendor/**', 'public/**', 'storage/**', 'bootstrap/cache/**'],
+    ignores: ['node_modules/**', 'vendor/**', 'public/**', 'storage/**', 'bootstrap/cache/**', 'resources/js/ziggy.js', '**/*.bak'],
   },
   js.configs.recommended,
+  {
+    files: ['**/*.{js,mjs,cjs}'],
+    languageOptions: {
+      globals: {
+        window: 'readonly',
+        document: 'readonly',
+        navigator: 'readonly',
+        console: 'readonly',
+      },
+    },
+  },
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
@@ -75,8 +86,6 @@ export default [
       ],
       'react/require-default-props': 'off',
       'react/function-component-definition': 'off',
-      'react/no-unescaped-entities': 'warn',
-      'react/no-unstable-nested-components': 'warn',
       // allow inline components in render for current codebase
       'react/no-unstable-nested-components': 'off',
       'react-hooks/set-state-in-effect': 'off',
@@ -85,11 +94,12 @@ export default [
       'jsx-a11y/click-events-have-key-events': 'off',
       'jsx-a11y/no-static-element-interactions': 'off',
       'jsx-a11y/no-autofocus': 'off',
-      '@typescript-eslint/consistent-type-imports': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
-      'import/no-duplicates': 'off',
       'react/no-unescaped-entities': 'off',
+      // Enable stricter checks for better code quality
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'off', // Disabled - codebase has 50+ intentional any uses
+      '@typescript-eslint/consistent-type-imports': 'warn',
+      'import/no-duplicates': 'error',
     },
   },
   {

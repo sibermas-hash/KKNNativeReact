@@ -1,21 +1,25 @@
 import { useMemo, useState, useEffect } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Button, FormSelect } from '@/Components/ui';
+import { FormSelect } from '@/Components/ui';
 import {
-    ArchiveBoxArrowDownIcon,
-    CalculatorIcon,
-    ArrowPathIcon,
-    CheckCircleIcon,
-    CloudArrowUpIcon,
-    DocumentArrowDownIcon,
-    FolderArrowDownIcon,
-    ShieldCheckIcon,
-    CpuChipIcon,
-    BeakerIcon,
-    IdentificationIcon
-} from '@heroicons/react/24/outline';
-import { router } from '@inertiajs/react';
+    FileArchive,
+    Calculator,
+    RefreshCw,
+    CloudUpload,
+    FileDown,
+    FolderDown,
+    ShieldCheck,
+    Cpu,
+    Beaker,
+    IdCard,
+    Sparkles,
+    BadgeCheck
+} from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
+import { clsx } from 'clsx';
+import { route } from 'ziggy-js';
+import { useToast } from '@/Contexts/ToastContext';
 
 type Period = {
     id: number;
@@ -78,6 +82,7 @@ function computeTotal({ discipline, attitude }: StudentRow): number {
 }
 
 export default function GradeGenerator({ periods, groups }: Props) {
+    const { toast } = useToast();
     const [selectedPeriodId, setSelectedPeriodId] = useState<number | ''>('');
     const [selectedGroupId, setSelectedGroupId] = useState<number | 'all' | ''>('');
     const [meta, setMeta] = useState<Meta>(defaultMeta);
@@ -95,16 +100,15 @@ export default function GradeGenerator({ periods, groups }: Props) {
 
     const dropdownOptions = useMemo(() => {
         const options = [
-            { value: 'all', label: '📋 ALL BRIGADES (AGGREGATED)' },
+            { value: 'all', label: '📋 SEMUA KELOMPOK (AGREGASI)' },
             ...filteredGroups.map(g => ({
                 value: g.id,
-                label: `BRIGADE ${g.code} [${g.name}]`
+                label: `KELOMPOK ${g.code} [${g.name}]`
             }))
         ];
         return options;
     }, [filteredGroups]);
 
-    // Fetch students when group changes
     useEffect(() => {
         if (!selectedGroupId) {
             setStudents([]);
@@ -117,7 +121,7 @@ export default function GradeGenerator({ periods, groups }: Props) {
             setMeta({
                 ...defaultMeta,
                 angkatan: period ? period.name.replace('Angkatan ', '') : '57',
-                kelompok: 'ALL BRIGADES'
+                kelompok: 'SEMUA KELOMPOK'
             });
         } else {
             const group = groups.find(g => g.id === selectedGroupId);
@@ -136,22 +140,25 @@ export default function GradeGenerator({ periods, groups }: Props) {
         }
 
         setLoading(true);
+        const controller = new AbortController();
         const url = isAllGroups
-            ? '/admin/grade-generator/groups/all/students'
-            : `/admin/grade-generator/groups/${selectedGroupId}/students`;
+            ? route('admin.grade-generator.students-all')
+            : route('admin.grade-generator.students', selectedGroupId);
 
-        axios.get(url)
+        axios.get(url, { signal: controller.signal })
             .then(res => {
                 setStudents(res.data);
             })
             .catch(err => {
-                console.error(err);
-                alert('Gagal mengambil data mahasiswa');
+                if (axios.isCancel(err)) return;
+                toast({ title: 'Gagal mengambil data', message: 'Tidak dapat memuat data mahasiswa.', priority: 'error' });
             })
             .finally(() => {
                 setLoading(false);
             });
-    }, [selectedGroupId, groups, periods, selectedPeriodId, isAllGroups]);
+
+        return () => controller.abort();
+    }, [selectedGroupId, groups, periods, selectedPeriodId, isAllGroups, toast]);
 
     const summary = useMemo(() => {
         if (!students.length) return { avg: 0, count: 0 };
@@ -197,59 +204,61 @@ export default function GradeGenerator({ periods, groups }: Props) {
             if (s.attitude !== null) formData.append(`scores[${index}][attitude]`, String(s.attitude));
         });
 
-        router.post('/admin/grade-generator/scores', formData, {
+        router.post(route('admin.grade-generator.save-scores'), formData, {
             forceFormData: true,
             onSuccess: () => {
                 setSaving(false);
                 setEvidenceFile(null);
+                toast({ title: 'Berhasil', message: 'Nilai berhasil disimpan.', priority: 'success' });
             },
             onError: () => {
                 setSaving(false);
-                alert('Gagal menyimpan nilai');
+                toast({ title: 'Gagal menyimpan', message: 'Terjadi kesalahan saat menyimpan nilai.', priority: 'error' });
             }
         });
     };
 
     const handleExport = () => {
         if (!selectedGroupId || !selectedPeriodId) return;
-        window.location.href = `/admin/grade-generator/export/${selectedGroupId}?period_id=${selectedPeriodId}`;
+        window.location.href = route('admin.grade-generator.export', { id: selectedGroupId, period_id: selectedPeriodId });
     };
 
     const handleExportPdf = () => {
         if (!selectedGroupId || !selectedPeriodId) return;
-        window.location.href = `/admin/grade-generator/export-pdf/${selectedGroupId}?period_id=${selectedPeriodId}`;
+        window.location.href = route('admin.grade-generator.export-pdf', { id: selectedGroupId, period_id: selectedPeriodId });
     };
 
     const handleExportZip = () => {
         if (!selectedPeriodId) return;
-        window.location.href = `/admin/grade-generator/export-zip?period_id=${selectedPeriodId}`;
+        window.location.href = route('admin.grade-generator.export-zip', { period_id: selectedPeriodId });
     };
 
     return (
-        <AppLayout title="Merit Injection Nexus">
-            <div className="space-y-12 pb-16 animate-in fade-in duration-1000">
-                {/* Elite Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-white/5 relative">
-                    <div className="absolute -left-12 top-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
-                    <div className="relative">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="px-3 py-1 rounded-full bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-[10px] font-black uppercase tracking-[0.3em]">MERIT PARAMETER INJECTION</div>
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary-light animate-pulse" />
+        <AppLayout title="Generator Nilai KKN">
+            <Head title="Laboratorium Nilai Merit" />
+
+            <div className="space-y-10 pb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                {/* Professional Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-slate-100">
+                    <div>
+                        <div className="flex items-center gap-2 mb-3 font-bold">
+                            <Sparkles className="h-3.5 w-3.5 text-primary" />
+                            <span className="text-[10px] text-slate-400 uppercase tracking-widest">Injeksi Parameter Merit</span>
                         </div>
-                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic line-height-1">
-                            Merit <span className="text-accent-gold text-glow-gold">Nexus</span>
+                        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight italic uppercase leading-none">
+                            Nexus <span className="text-primary italic">Penilaian</span>
                         </h1>
-                        <p className="text-white/40 text-sm mt-4 font-medium uppercase tracking-[0.15em]">Calibrating discipline and attitude vectors for field operatives.</p>
+                        <p className="text-slate-500 text-sm mt-3 font-medium italic opacity-70">Kalibrasi vektor kedisiplinan dan sikap untuk operasional lapangan mahasiswa KKN.</p>
                     </div>
 
                     <div className="flex items-center gap-4">
                         {selectedPeriodId && periods.find(p => p.id === selectedPeriodId)?.grading_start && (
-                            <div className="px-6 py-4 glass rounded-2xl border-accent-gold/20 flex items-center gap-4 group">
-                                <CalculatorIcon className="h-6 w-6 text-accent-gold group-hover:rotate-12 transition-transform" />
+                            <div className="px-6 py-4 bg-white rounded-2xl border border-slate-200 flex items-center gap-4 group shadow-sm-soft italic">
+                                <Calculator className="h-6 w-6 text-primary" />
                                 <div className="flex flex-col">
-                                    <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">OPERATIONAL WINDOW</span>
-                                    <span className="text-[10px] font-bold text-accent-gold mt-1 uppercase tracking-widest">
-                                        {new Date(periods.find(p => p.id === selectedPeriodId)!.grading_start!).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })} - {new Date(periods.find(p => p.id === selectedPeriodId)!.grading_end!).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Jendela Operasional</span>
+                                    <span className="text-[10px] font-extrabold text-slate-900 mt-0.5 uppercase tracking-tight tabular-nums italic">
+                                        {new Date(periods.find(p => p.id === selectedPeriodId)!.grading_start!).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} - {new Date(periods.find(p => p.id === selectedPeriodId)!.grading_end!).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                                     </span>
                                 </div>
                             </div>
@@ -260,30 +269,26 @@ export default function GradeGenerator({ periods, groups }: Props) {
                 {/* Selection & Meta Console */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                     <div className="lg:col-span-2 space-y-8">
-                        <div className="glass p-10 rounded-[2.5rem] border-white/5 shadow-2xl relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none">
-                                <BeakerIcon className="h-32 w-32 text-white" />
-                            </div>
-
-                            <div className="grid gap-8 md:grid-cols-2 relative z-10">
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] ml-1">TEMPORAL CYCLE</label>
+                        <div className="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden group">
+                           <div className="grid gap-8 md:grid-cols-2">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1 italic">Siklus Periode</label>
                                     <FormSelect
-                                        placeholder="SELECT OPERATIONAL CYCLE..."
+                                        placeholder="Pilih Siklus Periode..."
                                         value={selectedPeriodId}
                                         onChange={(e) => {
                                             setSelectedPeriodId(Number(e.target.value) || '');
                                             setSelectedGroupId('');
                                         }}
                                         options={periods.map(p => ({ value: p.id, label: p.name }))}
-                                        className="bg-black/40 border-white/10 text-[10px] font-black tracking-widest text-white h-14 rounded-2xl focus:border-accent-gold/50"
+                                        className="bg-slate-50 border-slate-200 text-xs font-bold tracking-tight text-slate-800 h-14 rounded-2xl focus:border-primary/50 italic"
                                     />
                                 </div>
 
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] ml-1">BRIGADE TARGET</label>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1 italic">Target Kelompok</label>
                                     <FormSelect
-                                        placeholder="SELECT TARGET BRIGADE..."
+                                        placeholder="Pilih Target Kelompok..."
                                         value={selectedGroupId}
                                         onChange={(e) => {
                                             const val = e.target.value;
@@ -291,31 +296,31 @@ export default function GradeGenerator({ periods, groups }: Props) {
                                         }}
                                         options={dropdownOptions}
                                         disabled={!selectedPeriodId}
-                                        className="bg-black/40 border-white/10 text-[10px] font-black tracking-widest text-white h-14 rounded-2xl focus:border-accent-gold/50"
+                                        className="bg-slate-50 border-slate-200 text-xs font-bold tracking-tight text-slate-800 h-14 rounded-2xl focus:border-primary/50 italic"
                                     />
                                 </div>
                             </div>
                         </div>
 
                         {selectedGroupId && !isAllGroups && (
-                            <div className="glass p-10 rounded-[2.5rem] border-white/5 shadow-2xl relative overflow-hidden">
-                                <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-8">
-                                    <MetaItem label="CYCLE COHORT" value={meta.angkatan} />
-                                    <MetaItem label="BRIGADE IDENTITY" value={meta.kelompok} />
-                                    <MetaItem label="DEPLOYMENT SECTOR" value={meta.desa} />
-                                    <MetaItem label="TACTICAL DISTRICT" value={meta.kecamatan} />
-                                    <MetaItem label="REGIONAL REGISTRY" value={meta.kabupaten} />
-                                    <div className="col-span-full">
-                                        <MetaItem label="FIELD COMMAND OFFICER (DPL)" value={meta.dpl} primary />
+                            <div className="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                                <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-8">
+                                    <MetaItem label="Angkatan" value={meta.angkatan} />
+                                    <MetaItem label="ID Kelompok" value={meta.kelompok} />
+                                    <MetaItem label="Sektor Lokasi" value={meta.desa} />
+                                    <MetaItem label="Wilayah" value={meta.kecamatan} />
+                                    <MetaItem label="Kabupaten" value={meta.kabupaten} />
+                                    <div className="col-span-full border-t border-slate-50 pt-6">
+                                        <MetaItem label="Petugas Lapangan (DPL)" value={meta.dpl} primary />
                                     </div>
                                 </div>
 
-                                <div className="mt-10 pt-10 border-t border-white/5">
-                                    <label className="text-[10px] font-black text-accent-gold uppercase tracking-[0.4em] mb-4 block italic flex items-center gap-3">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-accent-gold animate-pulse" />
+                                <div className="mt-10 pt-10 border-t border-slate-100">
+                                    <label className="text-[10px] font-bold text-primary uppercase tracking-[0.3em] mb-4 block flex items-center gap-3 italic">
+                                        <CloudUpload className="w-4 h-4" />
                                         Evidence Ingestion (Scan Blanko Nilai)
                                     </label>
-                                    <div className="flex items-center gap-6">
+                                    <div className="flex items-center gap-4">
                                         <div className="relative group/upload flex-1">
                                             <input
                                                 type="file"
@@ -323,50 +328,50 @@ export default function GradeGenerator({ periods, groups }: Props) {
                                                 onChange={handleFileChange}
                                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                             />
-                                            <div className="px-8 py-5 bg-black/40 border border-dashed border-white/10 rounded-2xl group-hover/upload:border-accent-gold/50 transition-all flex items-center justify-between">
-                                                <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">
-                                                    {evidenceFile ? evidenceFile.name : 'SELECT PDF/IMAGE ARTIFACT...'}
+                                            <div className="px-6 py-4 bg-slate-50 border border-dashed border-slate-200 rounded-2xl group-hover/upload:border-primary/50 transition-all flex items-center justify-between shadow-inner-sm italic">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate max-w-[200px]">
+                                                    {evidenceFile ? evidenceFile.name : 'Pilih Artifact PDF/IMG...'}
                                                 </span>
-                                                <div className="p-2 bg-white/5 rounded-lg text-white/40">
-                                                    <CloudArrowUpIcon className="h-5 w-5" />
-                                                </div>
+                                                <CloudUpload className="h-5 w-5 text-slate-300" />
                                             </div>
                                         </div>
                                         {evidenceFile && (
-                                            <div className="flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest animate-pulse">
-                                                <CheckCircleIcon className="w-5 h-5" /> READY
+                                            <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-50 text-emerald-500 border border-emerald-100 text-[9px] font-bold uppercase tracking-widest animate-pulse italic">
+                                                <BadgeCheck className="w-4 h-4" /> READY
                                             </div>
                                         )}
                                     </div>
-                                    <p className="text-[9px] text-white/20 font-black uppercase tracking-widest mt-4 italic">
-                                        * UPLOAD PHYSICAL FIELD ASSESSMENT MANUSCRIPTS. NEW DATA OVERWRITES EXISTING ARTIFACTS.
-                                    </p>
                                 </div>
                             </div>
                         )}
                     </div>
 
-                    <div className="lg:col-span-1 space-y-8">
-                        <div className="glass p-10 rounded-[2.5rem] border-white/5 shadow-2xl bg-gradient-to-br from-primary/5 to-transparent h-full flex flex-col justify-between">
-                            <div className="space-y-4">
-                                <CpuChipIcon className="h-12 w-12 text-primary-light" />
-                                <h3 className="text-2xl font-black text-white tracking-tighter uppercase italic">Merit Analytics</h3>
-                                <p className="text-[10px] text-white/30 font-black tracking-widest uppercase italic leading-relaxed">
-                                    Real-time aggregation of candidate performance vectors within the selected hub.
+                    <div className="lg:col-span-1">
+                        <div className="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm h-full flex flex-col justify-between group overflow-hidden relative italic">
+                             <div className="absolute top-0 right-0 p-8 opacity-[0.03] text-slate-900 group-hover:rotate-12 transition-transform duration-1000">
+                                <Cpu className="h-32 w-32" />
+                            </div>
+                            <div className="space-y-4 relative z-10">
+                                <div className="p-3.5 bg-primary/10 rounded-2xl text-primary border border-primary/20 w-fit">
+                                    <Beaker className="h-7 w-7" />
+                                </div>
+                                <h3 className="text-xl font-extrabold text-slate-900 tracking-tight uppercase italic leading-none">Merit Analytics</h3>
+                                <p className="text-[10px] text-slate-500 font-bold tracking-widest uppercase italic mt-2 opacity-70">
+                                    Agregasi real-time performa kandidat dalam hub yang terpilih saat ini.
                                 </p>
                             </div>
 
-                            <div className="space-y-8 pt-10">
-                                <div className="flex justify-between items-end">
-                                    <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">AGGREGATE MEAN</span>
-                                    <span className="text-5xl font-black text-white tabular-nums tracking-tighter drop-shadow-glow">
+                            <div className="space-y-8 pt-10 relative z-10 italic">
+                                <div className="flex justify-between items-end border-b border-slate-50 pb-6">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Rerata Agregat</span>
+                                    <span className="text-4xl font-black text-slate-900 tabular-nums italic tracking-tighter">
                                         {summary.avg}
                                     </span>
                                 </div>
-                                <div className="flex justify-between items-end border-t border-white/5 pt-6">
-                                    <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">SCHOLAR COUNT</span>
-                                    <span className="text-2xl font-black text-white/60 tabular-nums uppercase">
-                                        {summary.count} UNIT
+                                <div className="flex justify-between items-end">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kapasitas Unit</span>
+                                    <span className="text-xl font-bold text-slate-400 tabular-nums uppercase">
+                                        {summary.count} PERSORANGAN
                                     </span>
                                 </div>
                             </div>
@@ -375,30 +380,30 @@ export default function GradeGenerator({ periods, groups }: Props) {
                 </div>
 
                 {/* Ingestion Table */}
-                <div className="bg-white/[0.02] rounded-[3.5rem] border border-white/10 shadow-2xl overflow-hidden backdrop-blur-xxl relative">
-                    <div className="p-10 border-b border-white/5 flex flex-wrap gap-8 items-center justify-between bg-white/[0.01]">
-                        <div className="flex items-center gap-6">
-                            <div className="p-4 bg-primary/10 rounded-2xl border border-primary/20 text-primary-light">
-                                <IdentificationIcon className="h-7 w-7" />
+                <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden relative italic">
+                    <div className="px-10 py-8 border-b border-slate-100 flex flex-wrap gap-8 items-center justify-between bg-slate-50/50">
+                        <div className="flex items-center gap-5">
+                            <div className="p-3 bg-white rounded-xl text-slate-400 border border-slate-200">
+                                <IdCard className="h-6 w-6" />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-black text-white tracking-tighter uppercase italic">Scholar Loadout</h3>
-                                <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mt-1">Injection interface for merit parameters.</p>
+                                <h3 className="text-lg font-extrabold text-slate-900 tracking-tight uppercase italic leading-none">Loadout Nilai</h3>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2 opacity-70">Interface ingest untuk parameter merit individu.</p>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             {(selectedGroupId || isAllGroups) && (
-                                <div className="flex gap-4 pr-6 border-r border-white/10">
-                                    <button onClick={handleExport} className="p-4 rounded-xl bg-white/5 hover:bg-white/10 text-white/40 hover:text-accent-gold transition-all" title="EXPORT EXCEL">
-                                        <ArchiveBoxArrowDownIcon className="h-6 w-6" />
+                                <div className="flex gap-2 pr-4 border-r border-slate-200">
+                                    <button onClick={handleExport} className="p-3 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all shadow-sm" title="EXPORT EXCEL">
+                                        <FileArchive className="h-5 w-5" />
                                     </button>
-                                    <button onClick={handleExportPdf} className="p-4 rounded-xl bg-white/5 hover:bg-white/10 text-white/40 hover:text-accent-gold transition-all" title="EXPORT PDF">
-                                        <DocumentArrowDownIcon className="h-6 w-6" />
+                                    <button onClick={handleExportPdf} className="p-3 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all shadow-sm" title="EXPORT PDF">
+                                        <FileDown className="h-5 w-5" />
                                     </button>
                                     {isAllGroups && (
-                                        <button onClick={handleExportZip} className="p-4 rounded-xl bg-white/5 hover:bg-white/10 text-white/40 hover:text-accent-gold transition-all" title="EXPORT ZIP">
-                                            <FolderArrowDownIcon className="h-6 w-6" />
+                                        <button onClick={handleExportZip} className="p-3 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all shadow-sm" title="EXPORT ZIP">
+                                            <FolderDown className="h-5 w-5" />
                                         </button>
                                     )}
                                 </div>
@@ -407,74 +412,76 @@ export default function GradeGenerator({ periods, groups }: Props) {
                             <button
                                 onClick={handleSave}
                                 disabled={saving || !selectedGroupId || isAllGroups || students.length === 0}
-                                className="group flex items-center gap-4 px-10 py-5 bg-gradient-to-br from-primary to-primary-dark text-white rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all border border-white/10 relative overflow-hidden disabled:opacity-50 disabled:grayscale"
+                                className="inline-flex items-center gap-3 px-8 py-4 bg-primary text-white rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all disabled:opacity-50 italic"
                             >
-                                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                                <CloudArrowUpIcon className="h-6 w-6 text-accent-gold" />
-                                <span className="text-[10px] font-black uppercase tracking-widest italic">COMMIT MERIT DATA</span>
+                                <CloudUpload className="h-5 w-5" />
+                                KOMIT NILAI MERIT
                             </button>
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto relative z-10">
-                        <table className="min-w-full divide-y divide-white/5">
-                            <thead className="bg-white/[0.02]">
+                    <div className="overflow-x-auto relative z-10 pr-1">
+                        <table className="min-w-full divide-y divide-slate-100">
+                            <thead className="bg-slate-50/20">
                                 <tr>
-                                    <th className="px-10 py-8 text-left text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Candidate</th>
-                                    {isAllGroups && <th className="px-10 py-8 text-left text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Brigade HUB</th>}
-                                    <th className="px-10 py-8 text-center text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Discipline (0-100)</th>
-                                    <th className="px-10 py-8 text-center text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Attitude (0-100)</th>
-                                    <th className="px-10 py-8 text-right text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Mean Merit</th>
+                                    <th className="px-10 py-6 text-left text-[10px] font-bold uppercase tracking-widest text-slate-400 italic">Identitas Mahasiswa</th>
+                                    {isAllGroups && <th className="px-10 py-6 text-left text-[10px] font-bold uppercase tracking-widest text-slate-400 italic">Hub Kelompok</th>}
+                                    <th className="px-10 py-6 text-center text-[10px] font-bold uppercase tracking-widest text-slate-400 italic">Kedisiplinan (0-100)</th>
+                                    <th className="px-10 py-6 text-center text-[10px] font-bold uppercase tracking-widest text-slate-400 italic">Sikap (0-100)</th>
+                                    <th className="px-10 py-6 text-right text-[10px] font-bold uppercase tracking-widest text-slate-400 italic">Mean Result</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-white/[0.03]">
+                            <tbody className="divide-y divide-slate-100">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={isAllGroups ? 5 : 4} className="px-10 py-32 text-center text-white/20">
-                                            <div className="flex flex-col items-center gap-6">
-                                                <ArrowPathIcon className="h-16 w-16 animate-spin" />
-                                                <span className="text-[10px] font-black uppercase tracking-widest italic animate-pulse">Scanning operational datastream...</span>
+                                        <td colSpan={isAllGroups ? 5 : 4} className="px-10 py-24 text-center">
+                                            <div className="flex flex-col items-center gap-4">
+                                                <RefreshCw className="h-10 w-10 animate-spin text-primary" />
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 animate-pulse italic">Mencari aliran data operasional...</span>
                                             </div>
                                         </td>
                                     </tr>
                                 ) : students.length > 0 ? (
                                     students.map((s, idx) => (
-                                        <tr key={`${s.user_id}-${idx}`} className="group hover:bg-white/[0.04] transition-all duration-300">
-                                            <td className="px-10 py-10">
+                                        <tr key={`${s.user_id}-${idx}`} className="group hover:bg-slate-50/50 transition-all duration-300">
+                                            <td className="px-10 py-6">
                                                 <div className="flex flex-col">
-                                                    <span className="text-base font-black text-white tracking-widest uppercase italic group-hover:text-accent-gold transition-colors">{s.name}</span>
-                                                    <span className="text-[10px] font-black text-white/20 tracking-[0.2em] uppercase mt-2">NIM // {s.nim}</span>
+                                                    <span className="text-sm font-extrabold text-slate-900 group-hover:text-primary transition-colors tracking-tight uppercase italic leading-none">{s.name}</span>
+                                                    <span className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-tighter tabular-nums italic">NIM. {s.nim}</span>
                                                 </div>
                                             </td>
                                             {isAllGroups && (
-                                                <td className="px-10 py-10">
-                                                    <span className="text-[10px] font-black text-primary-light uppercase tracking-widest bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20">{s.group_code}</span>
+                                                <td className="px-10 py-6">
+                                                    <span className="px-3 py-1 rounded-lg bg-primary/5 text-primary text-[10px] font-bold border border-primary/10 italic">{s.group_code}</span>
                                                 </td>
                                             )}
-                                            <td className="px-10 py-10 text-center">
+                                            <td className="px-10 py-6 text-center">
                                                 <input
                                                     type="number"
                                                     min="0"
                                                     max="100"
-                                                    className="w-24 px-4 py-3 bg-black/40 border border-white/5 rounded-xl text-center text-sm font-black text-white outline-none focus:border-accent-gold/50 transition-all font-mono shadow-2xl disabled:opacity-20"
+                                                    className="w-20 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-center text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-primary/50 transition-all shadow-inner-sm disabled:opacity-30 italic"
                                                     value={s.discipline ?? ''}
                                                     onChange={(e) => updateStudent(s.user_id, 'discipline', e.target.value)}
                                                     disabled={isAllGroups}
                                                 />
                                             </td>
-                                            <td className="px-10 py-10 text-center">
+                                            <td className="px-10 py-6 text-center">
                                                 <input
                                                     type="number"
                                                     min="0"
                                                     max="100"
-                                                    className="w-24 px-4 py-3 bg-black/40 border border-white/5 rounded-xl text-center text-sm font-black text-white outline-none focus:border-accent-gold/50 transition-all font-mono shadow-2xl disabled:opacity-20"
+                                                    className="w-20 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-center text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-primary/50 transition-all shadow-inner-sm disabled:opacity-30 italic"
                                                     value={s.attitude ?? ''}
                                                     onChange={(e) => updateStudent(s.user_id, 'attitude', e.target.value)}
                                                     disabled={isAllGroups}
                                                 />
                                             </td>
-                                            <td className="px-10 py-10 text-right">
-                                                <span className={`text-xl font-black italic tabular-nums group-hover:scale-110 transition-transform inline-block ${computeTotal(s) > 0 ? 'text-accent-gold text-glow-gold' : 'text-white/10'}`}>
+                                            <td className="px-10 py-6 text-right">
+                                                <span className={clsx(
+                                                    "text-xl font-black italic tabular-nums transition-all group-hover:scale-110",
+                                                    computeTotal(s) > 0 ? "text-primary" : "text-slate-200"
+                                                )}>
                                                     {computeTotal(s) || '--'}
                                                 </span>
                                             </td>
@@ -482,11 +489,11 @@ export default function GradeGenerator({ periods, groups }: Props) {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={isAllGroups ? 5 : 4} className="px-10 py-40 text-center">
-                                            <div className="flex flex-col items-center gap-6">
-                                                <ShieldCheckIcon className="h-16 w-16 text-white/5" />
-                                                <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] italic">
-                                                    {selectedGroupId ? 'NO UNIT DATA LOCATED.' : 'TARGET HUB SELECTION REQUIRED.'}
+                                        <td colSpan={isAllGroups ? 5 : 4} className="px-10 py-24 text-center">
+                                            <div className="flex flex-col items-center gap-4 opacity-40 italic">
+                                                <ShieldCheck className="h-12 w-12 text-slate-300" />
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">
+                                                    {selectedGroupId ? 'DATA UNIT TIDAK DITEMUKAN.' : 'PILIH HUB TARGET UNTUK INGESTI.'}
                                                 </p>
                                             </div>
                                         </td>
@@ -497,18 +504,16 @@ export default function GradeGenerator({ periods, groups }: Props) {
                     </div>
                 </div>
 
-                {/* Strategic Intel */}
-                <div className="p-10 glass rounded-[3rem] border-white/5 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-8 opacity-[0.03] text-white pointer-events-none group-hover:scale-110 transition-transform duration-700">
-                        <CpuChipIcon className="h-24 w-24" />
+                {/* Performance Intelligence */}
+                <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 flex items-start gap-5 italic shadow-inner-sm">
+                    <Cpu className="w-8 h-8 text-slate-300 shrink-0" />
+                    <div className="space-y-2">
+                        <h4 className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest leading-none">Protokol Merit Akademik</h4>
+                        <p className="text-[11px] text-slate-400 font-medium leading-relaxed italic max-w-4xl mt-2 opacity-80">
+                            Semua parameter yang diinjeksikan dicatat dalam sistem audit secara real-time. 
+                            Rerata nilai merit dihitung otomatis oleh mesin nexus. Pastikan bukti fisik telah didigitalisasi untuk keperluan verifikasi audit.
+                        </p>
                     </div>
-                    <h4 className="text-[10px] font-black text-accent-gold flex items-center gap-3 uppercase tracking-[0.4em] mb-6 italic">
-                        <div className="w-2 h-2 rounded-full bg-accent-gold animate-pulse" />
-                        Operational Merit Protocol
-                    </h4>
-                    <p className="text-[11px] text-white/40 font-bold uppercase tracking-widest leading-[2] italic border-l-2 border-primary/30 pl-8 max-w-4xl">
-                        ALL INJECTED PARAMETERS ARE LOGGED IN THE AUDIT NEXUS. MEAN MERIT IS CALCULATED AUTOMATICALLY. ENSURE PHYSICAL ARTIFACTS ARE DIGITIZED FOR AUDIT COMPLIANCE.
-                    </p>
                 </div>
             </div>
         </AppLayout>
@@ -517,12 +522,14 @@ export default function GradeGenerator({ periods, groups }: Props) {
 
 function MetaItem({ label, value, primary = false }: { label: string; value: string; primary?: boolean }) {
     return (
-        <div className="space-y-2">
-            <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">{label}</span>
-            <p className={`text-xs font-black uppercase tracking-widest leading-none ${primary ? 'text-primary-light' : 'text-white/80'} italic`}>
+        <div className="space-y-2 flex flex-col group/meta italic">
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest group-hover/meta:text-primary transition-colors leading-none">{label}</span>
+            <p className={clsx(
+                "text-xs font-extrabold uppercase tracking-tight truncate max-w-full",
+                primary ? "text-primary" : "text-slate-800"
+            )}>
                 {value || '---'}
             </p>
         </div>
     );
 }
-

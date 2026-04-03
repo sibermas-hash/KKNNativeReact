@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback, useRef, ReactNode } from 'react'
+import type { ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useRef } from 'react'
 import {
     CheckCircleIcon, ExclamationTriangleIcon, XCircleIcon,
     InformationCircleIcon, XMarkIcon,
@@ -30,8 +31,10 @@ const ToastContext = createContext<ToastContextValue>({
 export const useToast = () => useContext(ToastContext)
 
 // ── Config ─────────────────────────────────────────────────────────────────────
+type IconComponent = React.ComponentType<React.SVGProps<SVGSVGElement>>;
+
 const toastConfig: Record<ToastPriority, {
-    icon: any; border: string; bg: string; iconColor: string
+    icon: IconComponent; border: string; bg: string; iconColor: string
 }> = {
     success: { icon: CheckCircleIcon, border: 'border-emerald-500/40', bg: 'bg-emerald-500/15', iconColor: 'text-emerald-400' },
     warning: { icon: ExclamationTriangleIcon, border: 'border-amber-500/40', bg: 'bg-amber-500/15', iconColor: 'text-amber-400' },
@@ -42,7 +45,7 @@ const toastConfig: Record<ToastPriority, {
 // ── Provider ───────────────────────────────────────────────────────────────────
 export function ToastProvider({ children }: { children: ReactNode }) {
     const [toasts, setToasts] = useState<Toast[]>([])
-    const timers = useRef<Record<string, any>>({})
+    const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
 
     const dismiss = useCallback((id: string) => {
         clearTimeout(timers.current[id])

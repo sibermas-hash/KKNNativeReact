@@ -1,8 +1,8 @@
 import { Badge } from '@/Components/ui';
 
 interface Props {
-    oldValues: any;
-    newValues: any;
+    oldValues: Record<string, unknown>;
+    newValues: Record<string, unknown>;
 }
 
 export default function VisualDiff({ oldValues, newValues }: Props) {
@@ -13,7 +13,7 @@ export default function VisualDiff({ oldValues, newValues }: Props) {
         ...Object.keys(newValues || {})
     ])).filter(key => key !== 'updated_at' && key !== 'id');
 
-    const formatValue = (val: any) => {
+    const formatValue = (val: unknown): string => {
         if (val === null) return 'null';
         if (typeof val === 'boolean') return val ? 'true' : 'false';
         if (typeof val === 'object') return JSON.stringify(val);

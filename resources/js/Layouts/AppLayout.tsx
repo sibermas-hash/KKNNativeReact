@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
-import {
-  Bars3Icon,
-  ArrowRightOnRectangleIcon,
-  ChevronDownIcon,
-  SparklesIcon
-} from '@heroicons/react/24/outline';
+import type { User } from '@/types';
+import { 
+  Menu, 
+  ChevronDown, 
+  LogOut, 
+  Bell, 
+  Search
+} from 'lucide-react';
 import Sidebar from '@/Components/Sidebar';
-import PeriodSelector from '@/Components/PeriodSelector';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -17,88 +18,114 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children, title, breadcrumbs }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { auth } = usePage().props as any;
+  const { auth } = usePage<{ auth: { user: User | null } }>().props;
 
   return (
-    <div className="min-h-screen bg-surface-base font-sans selection:bg-primary/20 selection:text-primary text-white/90">
+    <div className="min-h-screen bg-[#fcfdfe] font-sans text-slate-700">
       <Head title={title ? `${title} - KKN UIN SAIZU` : 'SIM-KKN UIN SAIZU'} />
 
-      {/* Design System Injection for Outfit Font */}
-      <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+      {/* Google Fonts - Refined Selection */}
+      <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+      <style>{`
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+      `}</style>
 
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="lg:pl-72 flex flex-col min-h-screen">
-        {/* Header - Glassmorphism Dark */}
-        <header className="sticky top-0 z-30 flex h-20 items-center gap-4 border-b border-white/5 bg-surface-base/60 px-8 backdrop-blur-xl">
+        {/* TOP NAVBAR - CLEAN & AIRY */}
+        <header className="sticky top-0 z-30 flex h-20 items-center gap-4 bg-white/70 backdrop-blur-md px-8 border-b border-slate-100">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="rounded-xl p-2.25 text-white/40 transition-all hover:bg-white/5 lg:hidden"
+            className="rounded-xl p-2.5 text-slate-400 hover:bg-slate-50 lg:hidden transition-colors"
           >
-            <Bars3Icon className="h-6 w-6" />
+            <Menu className="h-6 w-6" />
           </button>
 
-          <div className="hidden lg:flex items-center gap-2">
-            <div className="w-1.5 h-6 bg-accent-gold rounded-full shadow-[0_0_10px_rgba(212,175,55,0.4)]" />
-            <h1 className="text-xl font-black text-white tracking-tight leading-none px-2 uppercase">{title}</h1>
+          {/* Page Info Area */}
+          <div className="hidden lg:flex flex-col">
+            <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">{title}</h1>
+            
+            {/* Breadcrumbs - Inline & Subtle */}
+            {breadcrumbs && breadcrumbs.length > 0 && (
+              <div className="flex items-center gap-2 mt-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                {breadcrumbs.map((bc, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    {bc.href ? (
+                      <Link href={bc.href} className="hover:text-primary transition-colors">{bc.label}</Link>
+                    ) : (
+                      <span>{bc.label}</span>
+                    )}
+                    {i < breadcrumbs.length - 1 && <span className="text-slate-300">/</span>}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="ml-auto flex items-center gap-6">
-            {/* Global Dynamic Period Selector */}
-            <div className="hidden sm:block">
-              <PeriodSelector />
+          <div className="ml-auto flex items-center gap-4 sm:gap-6">
+            {/* SEARCH BOX - MINIMAL */}
+            <div className="hidden md:flex items-center relative group">
+                <Search className="absolute left-3 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                <input 
+                    type="text" 
+                    placeholder="Search system..." 
+                    className="bg-slate-50 border-none rounded-2xl py-2.5 pl-10 pr-4 text-xs font-semibold focus:ring-2 focus:ring-primary/10 transition-all w-64"
+                />
             </div>
 
-            <div className="h-8 w-[1px] bg-white/10 hidden sm:block" />
+            <div className="h-6 w-px bg-slate-100 hidden sm:block" />
 
-            <div className="flex items-center gap-3 group px-4 py-2 rounded-2xl transition-all hover:bg-white/5 border border-transparent hover:border-white/10 cursor-pointer">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-dark text-white text-xs font-black shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">
+            {/* NOTIFICATIONS */}
+            <button className="relative p-2.5 rounded-xl border border-slate-100 hover:bg-slate-50 transition-all text-slate-500">
+                <Bell className="w-5 h-5" />
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+            </button>
+
+            {/* USER PROFILE - CLEAN */}
+            <div className="flex items-center gap-3 pl-2 cursor-pointer group">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 text-primary text-sm font-black border border-primary/20 shadow-sm transition-transform group-hover:scale-105 duration-300">
                 {auth?.user?.name?.charAt(0)}
               </div>
               <div className="hidden md:block text-left">
-                <p className="text-xs font-black text-white tracking-tight leading-none uppercase">{auth?.user?.name}</p>
-                <p className="text-[9px] font-bold text-accent-gold mt-1 uppercase tracking-widest">{auth?.user?.roles?.[0] || 'User'}</p>
+                <p className="text-xs font-extrabold text-slate-900 leading-none">{auth?.user?.name}</p>
+                <p className="text-[10px] font-bold text-primary mt-1 uppercase tracking-tight">{auth?.user?.roles?.[0] || 'Member'}</p>
               </div>
-              <ChevronDownIcon className="h-3.5 w-3.5 text-white/20 group-hover:text-accent-gold transition-colors" />
+              <ChevronDown className="h-4 w-4 text-slate-300 group-hover:text-slate-500 transition-colors" />
             </div>
 
+            {/* QUICK LOGOUT */}
             <Link
               href="/logout"
               method="post"
               as="button"
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-white/40 transition-all hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-500 active:scale-95"
-              title="Sign Out"
+              className="hidden sm:flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all border border-slate-100 hover:border-red-100"
+              title="Logout"
             >
-              <ArrowRightOnRectangleIcon className="h-5 w-5" />
+              <LogOut className="h-5 w-5" />
             </Link>
           </div>
         </header>
 
-        <main className="flex-1 px-8 py-10 max-w-[1600px] mx-auto w-full transition-all duration-500">
-          {/* Page Breadcrumbs - Minimalist */}
-          {breadcrumbs && breadcrumbs.length > 0 && (
-            <div className="flex items-center gap-2 mb-8 animate-in fade-in slide-in-from-left-4 duration-500">
-              {breadcrumbs.map((bc, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  {bc.href ? (
-                    <Link href={bc.href} className="text-[10px] font-black uppercase tracking-widest text-white/30 hover:text-accent-gold transition-colors">{bc.label}</Link>
-                  ) : (
-                    <span className="text-[10px] font-black uppercase tracking-widest text-accent-gold">{bc.label}</span>
-                  )}
-                  {i < breadcrumbs.length - 1 && <span className="text-white/10 text-xs">/</span>}
-                </div>
-              ))}
-            </div>
-          )}
-          {children}
+        {/* MAIN BACKGROUND WITH TEXTURE */}
+        <main className="flex-1 px-8 py-10 w-full relative">
+          {/* Subtle Decorative Gradient */}
+          <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-slate-50 to-transparent -z-10" />
+          
+          <div className="max-w-[1400px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {children}
+          </div>
         </main>
 
-        {/* Footer - Subtle */}
-        <footer className="px-8 py-6 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4 text-white/20">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em]">© 2026 LPPM UIN SAIZU • <span className="text-accent-gold/40">ELITE MANAGEMENT HUB</span></p>
+        {/* REFINED FOOTER */}
+        <footer className="px-10 py-6 border-t border-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4 text-slate-400">
+          <p className="text-[11px] font-bold uppercase tracking-widest leading-none">
+            © 2026 UIN SAIZU <span className="mx-2 text-slate-200">|</span> <span className="text-primary italic">Manajemen KKN</span>
+          </p>
           <div className="flex gap-4">
-            <span className="px-3 py-1 bg-white/5 rounded-lg text-[9px] font-black text-white/40 uppercase tracking-widest border border-white/5 italic">Quantifiable Impact</span>
-            <span className="px-3 py-1 bg-primary/20 rounded-lg text-[9px] font-black text-primary-light uppercase tracking-widest border border-primary/20">SYSTEM v3.0-JOSS</span>
+            <Link href="#" className="text-[11px] font-black hover:text-slate-600 transition-colors">HELP DESK</Link>
+            <div className="w-1 h-1 rounded-full bg-slate-200 mt-1" />
+            <span className="text-[11px] font-black">V3.1.2</span>
           </div>
         </footer>
       </div>

@@ -1,57 +1,87 @@
-import { useState, useEffect } from 'react';
-import { useForm, router } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
+import { router, useForm, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Button, FormInput, FormSelect, Badge, ConfirmDialog, Pagination } from '@/Components/ui';
-import type { PageProps, AcademicYear, Period } from '@/types';
+import { ConfirmDialog, FormInput, FormSelect, Pagination } from '@/Components/ui';
+import type { PageProps } from '@/types';
 import type { PaginationMeta } from '@/Components/UI/Pagination';
-import {
-    ClockIcon,
-    CalendarDaysIcon,
-    QueueListIcon,
-    PlusIcon,
-    DocumentDuplicateIcon,
-    PencilSquareIcon,
-    TrashIcon,
-    MagnifyingGlassIcon,
-    MapIcon,
-    UsersIcon,
-    ShieldCheckIcon
-} from '@heroicons/react/24/outline';
+import { 
+    Plus, 
+    Search, 
+    Calendar, 
+    Edit2,
+    Trash2,
+    ShieldCheck,
+    Database,
+    Fingerprint,
+    Info,
+    Copy,
+    Map
+} from "lucide-react";
+import { clsx } from 'clsx';
 
-interface PeriodData extends Omit<Period, 'academic_year'> {
-    academic_year: AcademicYear;
+interface AcademicYearOption {
+    id: number;
+    year: string;
+}
+
+interface PeriodData {
+    id: number;
+    academic_year: AcademicYearOption | null;
+    periode: number | null;
+    jenis: string | null;
+    name: string;
+    start_date: string;
+    end_date: string;
+    registration_start: string;
+    registration_end: string;
+    grading_start: string | null;
+    grading_end: string | null;
+    kuota: number | null;
+    is_active: boolean;
+    groups_count: number;
+    participants_count: number;
+    dpl_periods_count: number;
+    can_delete: boolean;
+    delete_blocker: string | null;
 }
 
 interface Props extends PageProps {
     periods: {
         data: PeriodData[];
-        links: any[];
+        links: unknown[];
         meta: PaginationMeta;
     };
-    academicYears: AcademicYear[];
+    academicYears: AcademicYearOption[];
     filters: {
         search?: string;
     };
 }
 
+const initialFormData = {
+    academic_year_id: '',
+    periode: '',
+    jenis: '',
+    name: '',
+    start_date: '',
+    end_date: '',
+    registration_start: '',
+    registration_end: '',
+    grading_start: '',
+    grading_end: '',
+    kuota: '2000',
+    is_active: false,
+};
+
 export default function PeriodsIndex({ periods, academicYears, filters }: Props) {
     const [editing, setEditing] = useState<PeriodData | null>(null);
     const [showForm, setShowForm] = useState(false);
     const [deleting, setDeleting] = useState<PeriodData | null>(null);
+    const [duplicating, setDuplicating] = useState<PeriodData | null>(null);
     const [search, setSearch] = useState(filters.search || '');
 
-    const form = useForm({
-        academic_year_id: '',
-        angkatan: '',
-        jenis: '',
-        name: '',
-        start_date: '',
-        end_date: '',
-        registration_start: '',
-        registration_end: '',
-        kuota: '2000',
-        is_active: false,
-    });
+    const form = useForm(initialFormData);
+    const deleteForm = useForm({});
+    const duplicateForm = useForm({});
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -59,204 +89,231 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                 router.get('/admin/periods', { search }, { preserveState: true, replace: true });
             }
         }, 300);
+
         return () => clearTimeout(timer);
-    }, [search]);
+    }, [search, filters.search]);
 
     useEffect(() => {
-        if (!editing) {
-            const name = `[Angkatan ${form.data.angkatan}] ${form.data.jenis}`;
-            if (form.data.angkatan && form.data.jenis && form.data.name !== name) {
-                form.setData('name', name);
-            }
+        if (!editing && form.data.periode && form.data.jenis) {
+            const name = `Periode ${form.data.periode} - ${form.data.jenis}`;
+            form.setData('name', name);
         }
-    }, [form.data.angkatan, form.data.jenis]);
-
-    function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        if (editing) {
-            form.put(`/admin/periods/${editing.id}`, {
-                onSuccess: () => { setEditing(null); setShowForm(false); form.reset(); },
-            });
-        } else {
-            form.post('/admin/periods', {
-                onSuccess: () => { setShowForm(false); form.reset(); },
-            });
-        }
-    }
-
-    function startEdit(p: PeriodData) {
-        setEditing(p);
-        setShowForm(true);
-        form.setData({
-            academic_year_id: String(p.academic_year.id),
-            angkatan: String(p.angkatan),
-            jenis: p.jenis,
-            name: p.name,
-            start_date: p.start_date,
-            end_date: p.end_date,
-            registration_start: p.registration_start,
-            registration_end: p.registration_end,
-            kuota: String(p.kuota),
-            is_active: p.is_active,
-        });
-    }
+    }, [form, form.data.periode, form.data.jenis, editing]);
 
     function cancelForm() {
         setEditing(null);
         setShowForm(false);
         form.reset();
+        form.clearErrors();
     }
 
-    const deleteForm = useForm({});
+    function openCreateForm() {
+        cancelForm();
+        setShowForm(true);
+    }
+
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        form.clearErrors();
+
+        if (editing) {
+            form.put(`/admin/periods/${editing.id}`, {
+                onSuccess: () => cancelForm(),
+            });
+            return;
+        }
+
+        form.post('/admin/periods', {
+            onSuccess: () => cancelForm(),
+        });
+    }
+
+    function startEdit(period: PeriodData) {
+        setEditing(period);
+        setShowForm(true);
+        form.clearErrors();
+        form.setData({
+            academic_year_id: period.academic_year ? String(period.academic_year.id) : '',
+            periode: period.periode?.toString() ?? '',
+            jenis: period.jenis ?? '',
+            name: period.name,
+            start_date: period.start_date,
+            end_date: period.end_date,
+            registration_start: period.registration_start,
+            registration_end: period.registration_end,
+            grading_start: period.grading_start ?? '',
+            grading_end: period.grading_end ?? '',
+            kuota: period.kuota?.toString() ?? '',
+            is_active: period.is_active,
+        });
+    }
 
     return (
-        <AppLayout title="Operational Deployment HUB">
-            <div className="space-y-12 pb-16 animate-in fade-in duration-1000">
-                {/* Elite Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-white/5 relative">
-                    <div className="absolute -left-12 top-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
-                    <div className="relative">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="px-3 py-1 rounded-full bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-[10px] font-black uppercase tracking-[0.3em]">DEPLOYMENT SCHEDULER</div>
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary-light animate-pulse" />
+        <AppLayout title="Manajemen Periode KKN">
+            <Head title="Manajemen Periode KKN" />
+            
+            <div className="space-y-10 pb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                {/* Header Section */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-primary font-bold tracking-wider uppercase text-[10px] bg-primary/10 w-fit px-3 py-1 rounded-full mb-3">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                            </span>
+                            Manajemen Data KKN
                         </div>
-                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic line-height-1">
-                            Operational <span className="text-accent-gold text-glow-gold">Cycles</span>
+                        <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
+                            Periode <span className="text-primary italic">KKN</span>
                         </h1>
-                        <p className="text-white/40 text-sm mt-4 font-medium uppercase tracking-[0.15em]">Configuring tactical windows for student registration and field operations.</p>
+                        <p className="text-slate-500 font-medium max-w-xl leading-relaxed">
+                            Kelola jadwal pendaftaran, kuota, dan siklus pelaksanaan pengabdian masyarakat.
+                        </p>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <div className="px-6 py-3 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col items-center">
-                            <span className="text-[9px] font-black text-white/20 uppercase tracking-widest leading-none">TOTAL CYCLES</span>
-                            <span className="text-xl font-black text-white mt-1">{periods.meta?.total || 0}</span>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 px-6 h-16">
+                            <div className="flex flex-col items-center">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Total Periode</span>
+                                <span className="text-2xl font-black text-slate-900 leading-none">{periods.data.length}</span>
+                            </div>
                         </div>
                         {!showForm && (
-                            <button onClick={() => setShowForm(true)} className="group flex items-center gap-3 px-8 py-5 bg-gradient-to-br from-primary to-primary-dark text-white rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all border border-white/10 relative overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                                <PlusIcon className="w-5 h-5 text-accent-gold" />
-                                <span className="text-[10px] font-black uppercase tracking-widest leading-none">INITIALIZE CYCLE</span>
+                            <button
+                                onClick={openCreateForm}
+                                className="h-16 px-8 bg-primary hover:bg-primary/90 text-white rounded-2xl font-bold transition-all shadow-lg shadow-primary/20 flex items-center gap-3 group"
+                            >
+                                <div className="p-2 bg-white/20 rounded-xl group-hover:rotate-90 transition-transform duration-500">
+                                    <Plus className="h-5 w-5" />
+                                </div>
+                                <span>Tambah Periode</span>
                             </button>
                         )}
                     </div>
                 </div>
 
+                {/* Entry Form */}
                 {showForm && (
-                    <div className="p-10 glass rounded-[2.5rem] shadow-2xl animate-in zoom-in-95 duration-500 relative overflow-hidden border-accent-gold/20">
-                        <div className="absolute -top-24 -right-24 w-64 h-64 bg-accent-gold/5 blur-[80px] rounded-full pointer-events-none" />
-
-                        <div className="flex items-center justify-between mb-10">
-                            <h2 className="text-2xl font-black text-white tracking-tighter uppercase italic flex items-center gap-4">
-                                <div className="p-3 rounded-xl bg-accent-gold/10 text-accent-gold border border-accent-gold/20 shadow-xl">
-                                    {editing ? <PencilSquareIcon className="h-6 w-6" /> : <PlusIcon className="h-6 w-6" />}
+                    <div className="animate-in slide-in-from-top-4 rounded-[2.5rem] border border-slate-200 bg-white p-10 shadow-xl duration-700 relative overflow-hidden group mb-10">
+                        <div className="mb-10 flex items-center justify-between relative z-10">
+                            <div className="flex items-center gap-5">
+                                <div className="rounded-2xl bg-primary/10 p-4 text-primary shadow-inner-sm">
+                                    {editing ? <Edit2 className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
                                 </div>
-                                {editing ? 'Modify Deployment Protocol' : 'New Deployment Strategy'}
-                            </h2>
+                                <div>
+                                    <h2 className="text-xl font-bold tracking-tight text-slate-900 leading-none">
+                                        {editing ? 'Ubah Data Periode' : 'Tambah Periode Baru'}
+                                    </h2>
+                                    <p className="text-xs text-slate-400 mt-2 font-medium">Lengkapi parameter periode KKN di bawah ini.</p>
+                                </div>
+                            </div>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-10">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                <div className="space-y-2.5">
-                                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">TEMPORAL SOURCE</label>
+                        <form onSubmit={handleSubmit} className="space-y-12 relative z-10">
+                            <div className="grid grid-cols-1 gap-10 md:grid-cols-4">
+                                <div className="space-y-3">
+                                    <label className="text-xs font-bold text-slate-700">Tahun Akademik</label>
                                     <FormSelect
                                         options={academicYears.map((ay) => ({ value: ay.id, label: ay.year }))}
-                                        placeholder="SELECT TEMPORAL YEAR"
                                         value={form.data.academic_year_id}
                                         onChange={(e) => form.setData('academic_year_id', e.target.value)}
-                                        className="bg-black/40 border-white/10 text-[10px] font-black tracking-widest text-accent-gold h-14 rounded-2xl focus:border-accent-gold/50"
                                         required
                                     />
                                 </div>
-                                <div className="space-y-2.5">
-                                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">BRIGADE BATCH</label>
+                                <div className="space-y-3">
+                                    <label className="text-xs font-bold text-slate-700">Nomor Periode</label>
                                     <FormInput
                                         type="number"
-                                        placeholder="E.G. 57"
-                                        value={form.data.angkatan}
-                                        onChange={(e) => form.setData('angkatan', e.target.value)}
-                                        className="bg-black/40 border-white/10 text-xs font-bold tracking-widest text-white h-14 rounded-2xl focus:border-accent-gold/50"
+                                        placeholder="Misal: 53"
+                                        value={form.data.periode}
+                                        onChange={(e) => form.setData('periode', e.target.value)}
                                         required
                                     />
                                 </div>
-                                <div className="space-y-2.5">
-                                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">MISSION TYPE</label>
+                                <div className="space-y-3">
+                                    <label className="text-xs font-bold text-slate-700">Jenis KKN</label>
                                     <FormInput
-                                        placeholder="KKN REGULER"
+                                        placeholder="Misal: KKN REGULER"
                                         value={form.data.jenis}
                                         onChange={(e) => form.setData('jenis', e.target.value)}
-                                        className="bg-black/40 border-white/10 text-xs font-bold tracking-widest text-white h-14 rounded-2xl focus:border-accent-gold/50"
                                         required
                                     />
                                 </div>
-                                <div className="md:col-span-2 space-y-2.5">
-                                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">STRATEGIC IDENTIFIER (AUTO-GEN)</label>
-                                    <FormInput
-                                        value={form.data.name}
-                                        onChange={(e) => form.setData('name', e.target.value)}
-                                        className="bg-white/5 border-white/5 text-[11px] font-black italic tracking-widest text-white/60 h-14 rounded-2xl cursor-not-allowed"
-                                        readOnly
-                                    />
-                                </div>
-                                <div className="space-y-2.5">
-                                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">SCHOLAR CAPACITY</label>
+                                <div className="space-y-3">
+                                    <label className="text-xs font-bold text-slate-700">Kuota Mahasiswa</label>
                                     <FormInput
                                         type="number"
+                                        min={1}
+                                        placeholder="Misal: 2000"
                                         value={form.data.kuota}
                                         onChange={(e) => form.setData('kuota', e.target.value)}
-                                        className="bg-black/40 border-white/10 text-xs font-bold tracking-widest text-accent-gold h-14 rounded-2xl focus:border-accent-gold/50"
                                         required
                                     />
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 p-10 bg-white/[0.01] border border-white/5 rounded-[2.5rem]">
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <div className="w-1.5 h-6 bg-primary-light rounded-full" />
-                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">REGISTRATION PROTOCOL</h3>
+                            <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
+                                <div className="p-8 bg-slate-50/50 rounded-3xl border border-slate-100 space-y-6">
+                                    <div className="flex items-center gap-3 pb-4 border-b border-slate-200">
+                                        <Calendar className="h-4 w-4 text-primary" />
+                                        <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Jadwal Pendaftaran</h3>
                                     </div>
                                     <div className="grid grid-cols-2 gap-6">
-                                        <div className="space-y-2.5">
-                                            <label className="text-[9px] font-black text-white/20 uppercase tracking-widest ml-1 italic">UPLINK OPEN</label>
-                                            <FormInput type="date" value={form.data.registration_start} onChange={(e) => form.setData('registration_start', e.target.value)} className="bg-black/40 border-white/10 text-[10px] text-white h-12 rounded-xl" required />
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Mulai</label>
+                                            <FormInput type="date" value={form.data.registration_start} onChange={(e) => form.setData('registration_start', e.target.value)} required />
                                         </div>
-                                        <div className="space-y-2.5">
-                                            <label className="text-[9px] font-black text-white/20 uppercase tracking-widest ml-1 italic">UPLINK CLOSE</label>
-                                            <FormInput type="date" value={form.data.registration_end} onChange={(e) => form.setData('registration_end', e.target.value)} className="bg-black/40 border-white/10 text-[10px] text-white h-12 rounded-xl" required />
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Selesai</label>
+                                            <FormInput type="date" value={form.data.registration_end} onChange={(e) => form.setData('registration_end', e.target.value)} required />
                                         </div>
                                     </div>
                                 </div>
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <div className="w-1.5 h-6 bg-accent-gold rounded-full" />
-                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">TACTICAL EXECUTION</h3>
+                                <div className="p-8 bg-slate-50/50 rounded-3xl border border-slate-100 space-y-6">
+                                    <div className="flex items-center gap-3 pb-4 border-b border-slate-200">
+                                        <Map className="h-4 w-4 text-primary" />
+                                        <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Pelaksanaan Lapangan</h3>
                                     </div>
                                     <div className="grid grid-cols-2 gap-6">
-                                        <div className="space-y-2.5">
-                                            <label className="text-[9px] font-black text-white/20 uppercase tracking-widest ml-1 italic">MISSION START</label>
-                                            <FormInput type="date" value={form.data.start_date} onChange={(e) => form.setData('start_date', e.target.value)} className="bg-black/40 border-white/10 text-[10px] text-white h-12 rounded-xl" required />
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Mulai</label>
+                                            <FormInput type="date" value={form.data.start_date} onChange={(e) => form.setData('start_date', e.target.value)} required />
                                         </div>
-                                        <div className="space-y-2.5">
-                                            <label className="text-[9px] font-black text-white/20 uppercase tracking-widest ml-1 italic">MISSION END</label>
-                                            <FormInput type="date" value={form.data.end_date} onChange={(e) => form.setData('end_date', e.target.value)} className="bg-black/40 border-white/10 text-[10px] text-white h-12 rounded-xl" required />
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Selesai</label>
+                                            <FormInput type="date" value={form.data.end_date} onChange={(e) => form.setData('end_date', e.target.value)} required />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between pt-6 border-t border-white/5">
-                                <div className="flex items-center gap-6 group cursor-pointer" onClick={() => form.setData('is_active', !form.data.is_active)}>
-                                    <div className={`w-14 h-7 rounded-full transition-all duration-500 relative flex items-center p-1 border border-white/10 ${form.data.is_active ? 'bg-primary shadow-lg shadow-primary/20' : 'bg-white/5'}`}>
-                                        <div className={`w-5 h-5 rounded-full bg-white transition-all duration-500 shadow-xl ${form.data.is_active ? 'translate-x-7' : 'translate-x-0'}`} />
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pt-6 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    onClick={() => form.setData('is_active', !form.data.is_active)}
+                                    className="flex items-center gap-4 group"
+                                >
+                                    <div className={clsx(
+                                        "w-14 h-7 rounded-full p-1 transition-all duration-300",
+                                        form.data.is_active ? 'bg-primary' : 'bg-slate-200'
+                                    )}>
+                                        <div className={clsx(
+                                            "w-5 h-5 bg-white rounded-full transition-all duration-300 transform",
+                                            form.data.is_active ? 'translate-x-7' : 'translate-x-0'
+                                        )} />
                                     </div>
-                                    <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${form.data.is_active ? 'text-primary-light' : 'text-white/20'}`}>OPERATIONAL DEPLOYMENT STATUS: ACTIVE</span>
-                                </div>
+                                    <span className={clsx("text-xs font-bold uppercase tracking-wider", form.data.is_active ? 'text-primary' : 'text-slate-400')}>
+                                        Status: {form.data.is_active ? 'Aktif' : 'Non-Aktif'}
+                                    </span>
+                                </button>
                                 <div className="flex gap-4">
-                                    <button type="submit" disabled={form.processing} className="px-12 py-5 bg-gradient-to-br from-primary to-primary-dark text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all border border-white/10">
-                                        {editing ? 'COMMIT DEPLOYMENT' : 'INITIALIZE MISSION'}
-                                    </button>
-                                    <button type="button" onClick={cancelForm} className="px-8 py-5 bg-white/5 text-white/40 text-[10px] font-black uppercase tracking-widest rounded-2xl border border-white/5 hover:bg-white/10 transition-all">
-                                        ABORT
+                                    <button type="button" onClick={cancelForm} className="px-8 py-4 text-slate-400 font-bold hover:text-slate-600 transition-colors">Batal</button>
+                                    <button 
+                                        type="submit" 
+                                        disabled={form.processing}
+                                        className="px-10 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-lg"
+                                    >
+                                        {editing ? 'Perbarui Periode' : 'Simpan Periode'}
                                     </button>
                                 </div>
                             </div>
@@ -264,145 +321,191 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                     </div>
                 )}
 
-                {/* Registry Ledger (Table) */}
-                <div className="space-y-8">
-                    <div className="relative group max-w-xl">
-                        <MagnifyingGlassIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-white/20 group-focus-within:text-accent-gold transition-colors" />
-                        <input
-                            placeholder="SCAN MISSION CYCLES..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-16 pr-8 py-5 bg-white/[0.02] border border-white/10 rounded-2xl text-xs font-black uppercase tracking-widest text-white outline-none focus:border-accent-gold/40 shadow-2xl transition-all"
-                        />
+                {/* Operations Table */}
+                <div className="bg-white rounded-[2.5rem] border border-slate-200/60 shadow-sm overflow-hidden mb-10">
+                    <div className="p-8 border-b border-slate-100 bg-slate-50/50">
+                        <div className="relative group max-w-md w-full">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                            <input
+                                placeholder="Cari nama atau jenis..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="w-full pl-12 pr-6 py-4 bg-white border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all font-medium text-slate-600 shadow-sm"
+                            />
+                        </div>
                     </div>
 
-                    <div className="bg-white/[0.02] rounded-[3rem] border border-white/10 shadow-2xl overflow-hidden backdrop-blur-xxl relative">
-                        <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none">
-                            <QueueListIcon className="h-64 w-64 text-white" />
-                        </div>
-                        <div className="overflow-x-auto relative z-10">
-                            <table className="min-w-full divide-y divide-white/5">
-                                <thead className="bg-white/[0.02]">
+                    <div className="overflow-x-auto">
+                        <table className="w-full border-collapse">
+                            <thead>
+                                <tr className="bg-slate-50/50">
+                                    <th className="px-8 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Identitas Periode</th>
+                                    <th className="px-8 py-5 text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Tahun Akademik</th>
+                                    <th className="px-8 py-5 text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider">Kuota Mahasiswa</th>
+                                    <th className="px-8 py-5 text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pendaftaran</th>
+                                    <th className="px-8 py-5 text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pelaksanaan</th>
+                                    <th className="px-8 py-5 text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                                    <th className="px-8 py-5 text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider">Opsi</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                                {periods.data.length === 0 ? (
                                     <tr>
-                                        <th className="px-6 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Msn Identity</th>
-                                        <th className="px-6 py-6 text-left text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Temporal Source</th>
-                                        <th className="px-6 py-6 text-center text-[10px] font-black uppercase tracking-[0.3em] text-white/30 border-x border-white/5">Enrolment Phase</th>
-                                        <th className="px-6 py-6 text-center text-[10px] font-black uppercase tracking-[0.3em] text-white/30 border-r border-white/5">Active Mission</th>
-                                        <th className="px-6 py-6 text-center text-[10px] font-black uppercase tracking-[0.3em] text-white/30 px-8">Scholar Qty</th>
-                                        <th className="px-6 py-6 text-center text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Protocol</th>
-                                        <th className="px-6 py-6 text-right text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Control</th>
+                                        <td colSpan={7} className="px-8 py-24 text-center">
+                                            <div className="flex flex-col items-center gap-4 opacity-40">
+                                                <div className="p-8 bg-slate-50 rounded-full">
+                                                     <Info className="h-14 w-14 text-slate-200" />
+                                                </div>
+                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-slate-500">Belum ada data periode.</p>
+                                            </div>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/[0.03]">
-                                    {periods.data.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={7} className="px-8 py-24 text-center">
-                                                <div className="flex flex-col items-center">
-                                                    <MapIcon className="h-12 w-12 text-white/5 mb-4" />
-                                                    <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] italic">No active deployment cycles located in scans.</p>
+                                ) : (
+                                    periods.data.map((period) => (
+                                        <tr key={period.id} className="group transition-all duration-300 hover:bg-slate-50/50">
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 text-primary font-bold">
+                                                        {period.periode ?? '--'}
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-bold text-slate-900 group-hover:text-primary transition-colors">{period.jenis ?? 'N/A'}</span>
+                                                        <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">{period.name}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6 text-center">
+                                                <span className="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-600 border border-slate-200">
+                                                    {period.academic_year?.year || '--'}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-6 text-center">
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <span className="text-sm font-bold text-slate-900">{period.kuota ?? '--'}</span>
+                                                    <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
+                                                        Terdaftar {period.participants_count}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <span className="text-xs font-semibold text-emerald-600">{period.registration_start}</span>
+                                                    <div className="h-3 w-[1px] bg-slate-200" />
+                                                    <span className="text-[10px] font-medium text-slate-400">{period.registration_end}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <span className="text-xs font-semibold text-primary">{period.start_date}</span>
+                                                    <div className="h-3 w-[1px] bg-slate-200" />
+                                                    <span className="text-[10px] font-medium text-slate-400">{period.end_date}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6 text-center">
+                                                <span className={clsx(
+                                                    "px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider",
+                                                    period.is_active ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-50 text-slate-400 border border-slate-100'
+                                                )}>
+                                                    {period.is_active ? 'Aktif' : 'Non-Aktif'}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-6 text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    <button
+                                                        onClick={() => setDuplicating(period)}
+                                                        className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-emerald-500 hover:border-emerald-200 rounded-xl transition-all shadow-sm group-hover:bg-emerald-50/50"
+                                                        title="Duplikasi Periode"
+                                                    >
+                                                        <Copy className="h-4 w-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => startEdit(period)}
+                                                        className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary/20 rounded-xl transition-all shadow-sm"
+                                                        title="Edit Periode"
+                                                    >
+                                                        <Edit2 className="h-4 w-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setDeleting(period)}
+                                                        disabled={!period.can_delete}
+                                                        className={clsx(
+                                                            "p-2.5 bg-white border border-slate-200 rounded-xl transition-all shadow-sm",
+                                                            period.can_delete ? "text-slate-400 hover:text-red-500 hover:border-red-200" : "opacity-20 cursor-not-allowed"
+                                                        )}
+                                                        title={period.can_delete ? 'Hapus Periode' : (period.delete_blocker ?? 'Sedang digunakan')}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
-                                    ) : (
-                                        periods.data.map((p, idx) => (
-                                            <tr key={p.id} className="group hover:bg-white/[0.04] transition-all duration-300">
-                                                <td className="px-6 py-8">
-                                                    <div className="flex flex-col max-w-[200px]">
-                                                        <span className="text-base font-black text-white tracking-tight leading-none italic group-hover:text-accent-gold transition-colors">{p.name}</span>
-                                                        <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em] mt-2">ANGKATAN: {p.angkatan}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-8">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black text-accent-gold">
-                                                            {p.academic_year?.year.split('/')[0].slice(-2)}
-                                                        </div>
-                                                        <span className="text-[10px] font-bold text-white/60 tracking-widest">{p.academic_year?.year || '-'}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-8 border-x border-white/5 bg-white/[0.01]">
-                                                    <div className="flex flex-col items-center gap-1.5">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-1 h-1 rounded-full bg-primary-light" />
-                                                            <span className="text-[9px] font-mono font-bold text-white/40">{p.registration_start}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-1 h-1 rounded-full bg-rose-500" />
-                                                            <span className="text-[9px] font-mono font-bold text-white/40">{p.registration_end}</span>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-8 border-r border-white/5">
-                                                    <div className="flex flex-col items-center gap-1.5">
-                                                        <div className="flex items-center gap-2 text-primary-light">
-                                                            <ClockIcon className="h-3 w-3" />
-                                                            <span className="text-[9px] font-mono font-bold">{p.start_date}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-2 text-white/20">
-                                                            <StopIcon className="h-3 w-3" />
-                                                            <span className="text-[9px] font-mono font-bold">{p.end_date}</span>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-8 text-center bg-white/[0.01]">
-                                                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-white/5 text-[11px] font-black text-accent-gold shadow-xl italic tracking-tighter">
-                                                        <UsersIcon className="h-4 w-4 text-white/10" />
-                                                        {p.kuota}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-8 text-center">
-                                                    <Badge variant={p.is_active ? 'success' : 'default'} className="px-4 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-[0.2em] shadow-lg">
-                                                        {p.is_active ? 'OPERATIONAL' : 'INERT'}
-                                                    </Badge>
-                                                </td>
-                                                <td className="px-6 py-8 text-right">
-                                                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                                                        <button
-                                                            onClick={() => { if (confirm(`AUTHORIZE STRUCTURAL DUPLICATION FOR "${p.name}"?`)) router.post(`/admin/periods/${p.id}/duplicate`) }}
-                                                            className="p-2.5 rounded-xl bg-primary/10 border border-primary/10 text-primary-light hover:bg-primary/20 transition-all"
-                                                            title="PROTOCOL DUPLICATION"
-                                                        >
-                                                            <DocumentDuplicateIcon className="h-5 w-5" />
-                                                        </button>
-                                                        <button onClick={() => startEdit(p)} className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-white/40 hover:text-accent-gold hover:bg-white/10 transition-all" title="MODIFY">
-                                                            <PencilSquareIcon className="h-5 w-5" />
-                                                        </button>
-                                                        <button onClick={() => setDeleting(p)} className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-all" title="TERMINATE">
-                                                            <TrashIcon className="h-5 w-5" />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                        {periods.meta && (
-                            <div className="px-8 py-6 bg-white/[0.01] border-t border-white/5 font-black uppercase text-[10px] tracking-widest text-white/20">
-                                <Pagination meta={periods.meta} />
-                            </div>
-                        )}
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
                     </div>
+                    {periods.meta && (
+                        <div className="border-t border-slate-100 bg-slate-50/50 px-10 py-6">
+                            <Pagination meta={periods.meta} />
+                        </div>
+                    )}
                 </div>
 
-                <div className="flex items-center justify-between px-8 text-white/5 font-black uppercase tracking-[0.5em] text-[9px]">
-                    <div className="flex items-center gap-4">
-                        <ShieldCheckIcon className="h-4 w-4" />
-                        <span>TACTICAL SCHEDULER ACTIVE</span>
+                {/* Professional Advisory Footer */}
+                <div className="p-10 bg-emerald-50 rounded-[2.5rem] border border-emerald-100/50 shadow-sm relative overflow-hidden group">
+                     <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-primary/20 rounded-xl">
+                                    <ShieldCheck className="h-5 w-5 text-primary" />
+                                </div>
+                                <h4 className="text-[11px] font-bold text-primary uppercase tracking-[0.2em] leading-none">Informasi Tata Kelola</h4>
+                            </div>
+                            <p className="text-[13px] text-slate-600 font-medium leading-relaxed max-w-3xl">
+                                Pengaturan Periode: Periode KKN merupakan unit waktu utama yang mengatur penugasan mahasiswa dan DPL. 
+                                Mengaktifkan periode akan membuka akses pendaftaran bagi mahasiswa. 
+                                Pastikan kuota dan rentang waktu telah divalidasi oleh bagian akademik sebelum menggeser status ke 'AKTIF'.
+                            </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-3 shrink-0">
+                             <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-primary/40 animate-pulse" />
+                                <span className="text-[10px] font-bold text-primary uppercase tracking-widest italic">Integritas Data Terjamin</span>
+                             </div>
+                             <div className="flex gap-4">
+                                <div className="h-10 w-10 bg-white border border-emerald-100 rounded-xl flex items-center justify-center text-emerald-300">
+                                    <Database className="h-5 w-5" />
+                                </div>
+                                <div className="h-10 w-10 bg-white border border-emerald-100 rounded-xl flex items-center justify-center text-emerald-300">
+                                    <Fingerprint className="h-5 w-5" />
+                                </div>
+                             </div>
+                        </div>
                     </div>
-                    <p>ENCRYPTION: QUANTUM-D-LEDGER</p>
                 </div>
             </div>
 
             <ConfirmDialog
+                open={!!duplicating}
+                onClose={() => !duplicateForm.processing && setDuplicating(null)}
+                onConfirm={() => duplicating && duplicateForm.post(`/admin/periods/${duplicating.id}/duplicate`, { onSuccess: () => setDuplicating(null) })}
+                title="Konfirmasi Duplikasi"
+                message={`Apakah Anda yakin ingin menduplikasi periode "${duplicating?.name}"? Ini akan membuat periode baru berbasis data ini.`}
+                processing={duplicateForm.processing}
+                confirmLabel="Ya, Duplikasikan"
+                confirmVariant="primary"
+            />
+
+            <ConfirmDialog
                 open={!!deleting}
-                onClose={() => setDeleting(null)}
-                onConfirm={() => { if (deleting) deleteForm.delete(`/admin/periods/${deleting.id}`, { onSuccess: () => setDeleting(null) }); }}
-                title="TERMINATE MISSION CYCLE"
-                message={`CRITICAL: YOU ARE ABOUT TO ERASE THE DEPLOYMENT DATA FOR "${deleting?.name}". THIS ACTION PERSISTS ACROSS THE CENTRAL NEXUS. CONFIRM?`}
+                onClose={() => !deleteForm.processing && setDeleting(null)}
+                onConfirm={() => deleting && deleteForm.delete(`/admin/periods/${deleting.id}`, { onSuccess: () => setDeleting(null) })}
+                title="Konfirmasi Penghapusan"
+                message={deleting?.can_delete
+                    ? `Apakah Anda yakin ingin menghapus periode "${deleting.name}"? Tindakan ini tidak dapat dibatalkan.`
+                    : (deleting?.delete_blocker ?? 'Data tidak dapat dihapus karena masih digunakan.')}
                 processing={deleteForm.processing}
-                confirmLabel="CONFIRM WIPE"
+                confirmLabel="Ya, Hapus"
             />
         </AppLayout>
     );

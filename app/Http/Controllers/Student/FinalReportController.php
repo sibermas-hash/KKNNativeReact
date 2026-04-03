@@ -47,7 +47,8 @@ class FinalReportController extends Controller
         ]);
 
         $file = $request->file('file');
-        $path = $file->store('final-reports', 'public');
+        // Fix: Store in private storage instead of public
+        $path = $file->store('final-reports', 'local');
 
         LaporanAkhir::updateOrCreate(
             ['kelompok_id' => $pendaftaran->kelompok_id],

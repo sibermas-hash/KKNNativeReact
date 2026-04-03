@@ -45,7 +45,11 @@ class FinalReportController extends Controller
     public function approve(LaporanAkhir $report): RedirectResponse
     {
         $dosen = auth()->user()->dosen;
-        abort_if(!$dosen || $report->kelompok->dpl_id !== $dosen->id, 403);
+        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        
+        // Fix: Use pivot table check instead of flat dpl_id column
+        $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
+        abort_if(!$groupIds->contains($report->kelompok_id), 403, 'Anda tidak memiliki akses ke laporan ini.');
 
         $report->update([
             'status' => 'approved',
@@ -70,7 +74,11 @@ class FinalReportController extends Controller
     public function revision(Request $request, LaporanAkhir $report): RedirectResponse
     {
         $dosen = auth()->user()->dosen;
-        abort_if(!$dosen || $report->kelompok->dpl_id !== $dosen->id, 403);
+        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        
+        // Fix: Use pivot table check instead of flat dpl_id column
+        $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
+        abort_if(!$groupIds->contains($report->kelompok_id), 403, 'Anda tidak memiliki akses ke laporan ini.');
 
         $validated = $request->validate([
             'notes' => ['required', 'string', 'max:1000'],

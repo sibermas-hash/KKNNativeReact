@@ -44,9 +44,9 @@ class KknScorePolicy extends BasePolicy
             return (int) ($score->mahasiswa?->faculty_id ?? 0) === (int) ($user->faculty_id ?? 0);
         }
 
-        // Student only views their own score
+        // Student only views their own FINALIZED score
         if ($user->hasRole('student')) {
-            return $score->user_id === $user->id;
+            return $score->user_id === $user->id && $score->is_finalized;
         }
 
         return $user->hasRole('superadmin');

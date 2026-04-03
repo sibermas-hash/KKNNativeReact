@@ -39,6 +39,11 @@ class PublicDataController extends Controller
         'tahun_akademik' => ['year'],
     ];
 
+    /**
+     * Tables that can be deleted via public API (empty by default for safety).
+     */
+    private const DELETABLE_TABLES = [];
+
     private function getModel(string $table)
     {
         $class = self::MODEL_MAP[$table] ?? null;
@@ -174,6 +179,11 @@ class PublicDataController extends Controller
     {
         if ($error = $this->validateAccess($request, $table, 'delete')) {
             return $error;
+        }
+
+        // Fix: Prevent deletion of reference tables via API
+        if (!in_array($table, self::DELETABLE_TABLES, true)) {
+            return response()->json(['error' => "Penghapusan data '{$table}' tidak diizinkan melalui API."], 403);
         }
 
         $modelClass = self::MODEL_MAP[$table] ?? null;

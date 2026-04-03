@@ -14,7 +14,7 @@ class KknThrottleMiddleware extends ThrottleRequests
      */
     protected function resolveRequestSignature($request)
     {
-        return sha1(implode('|', [
+        return hash('xxh128', implode('|', [
             $request->user()?->id ?: $request->ip(),
             $request->route()?->getName() ?: $request->path(),
             $request->ip(),
@@ -31,6 +31,8 @@ class KknThrottleMiddleware extends ThrottleRequests
             'login',
             'password.email',
             'password.update',
+            'student.registration.store',
+            'student.registration.leave',
             'admin.rekap-nilai.finalize-mass',
             'admin.audit-log.index',
             'dpl.evaluations.import',
@@ -38,8 +40,9 @@ class KknThrottleMiddleware extends ThrottleRequests
 
         $routeName = $request->route()->getName();
         
-        // Bypass strict limits for local environment
-        if (config('app.env') === 'local') {
+        // ISSUE-MIDDLEWARE-004 Fix: Only bypass in local with debug enabled
+        // This prevents production misconfiguration from bypassing rate limits
+        if (config('app.env') === 'local' && config('app.debug') === true) {
             return parent::handle($request, $next, $maxAttempts, $decayMinutes, $prefix);
         }
 
@@ -47,6 +50,27 @@ class KknThrottleMiddleware extends ThrottleRequests
         if (in_array($routeName, $criticalEndpoints)) {
             $maxAttempts = 10;
             $decayMinutes = 5;
+        }
+
+        // ISSUE-ROUTE-001 Fix: Stricter password reset rate limiting
+        if ($routeName === 'password.email') {
+            $maxAttempts = 3;
+            $decayMinutes = 60; // 3 attempts per hour
+        }
+
+        if ($routeName === 'password.update') {
+            $maxAttempts = 5;
+            $decayMinutes = 60; // 5 attempts per hour
+        }
+
+        if ($routeName === 'student.registration.store') {
+            $maxAttempts = 20;
+            $decayMinutes = 1;
+        }
+
+        if ($routeName === 'student.registration.leave') {
+            $maxAttempts = 10;
+            $decayMinutes = 1;
         }
 
         // Extremely strict for bulk operations: 5 per hour

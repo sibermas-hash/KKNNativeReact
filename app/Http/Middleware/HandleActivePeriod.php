@@ -28,13 +28,18 @@ class HandleActivePeriod
         if ($request->has('period_id')) {
             $periodId = (int) $request->input('period_id');
             try {
-                // Only admins can freely switch periods; students/DPL stay on their enrolled period
+                // Only superadmin can freely switch periods; students/DPL stay on their enrolled period
                 $user = auth()->user();
-                if ($user->hasRole('superadmin') || $user->hasRole('admin')) {
+                if ($user->hasRole('superadmin')) {
                     $this->contextService->setActivePeriod($periodId);
                 }
             } catch (\Throwable $e) {
-                // Silently fail if period doesn't exist
+                // ISSUE-MIDDLEWARE-002 Fix: Log failure instead of silent fail
+                \Illuminate\Support\Facades\Log::warning('Period switch failed', [
+                    'user_id' => $user->id ?? null,
+                    'period_id' => $periodId,
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
 

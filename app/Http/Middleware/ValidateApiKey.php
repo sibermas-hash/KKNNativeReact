@@ -23,7 +23,7 @@ class ValidateApiKey
             ], 401);
         }
 
-        $apiKey = ApiKey::where('key', $key)->first();
+        $apiKey = ApiKey::findByPlaintext($key);
 
         if (!$apiKey) {
             return response()->json([
@@ -37,8 +37,11 @@ class ValidateApiKey
             ], 403);
         }
 
-        // Record usage (fire-and-forget, don't block the request)
-        $apiKey->recordUsage();
+        // Record usage asynchronously (fire-and-forget)
+        // ISSUE-MIDDLEWARE-003 Fix: Use queue to prevent blocking
+        dispatch(function () use ($apiKey) {
+            $apiKey->recordUsage();
+        })->onQueue('low-priority')->afterResponse();
 
         // Inject apiKey into request for downstream use
         $request->attributes->set('api_key', $apiKey);

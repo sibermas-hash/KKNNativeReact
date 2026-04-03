@@ -14,7 +14,7 @@ class AuthenticatedSessionController extends Controller
     public function create(Request $request): Response
     {
         $captcha = $this->generateCaptcha();
-        $request->session()->put('captcha_answer', $captcha['answer']);
+        $request->session()->put('captcha_hash', $this->hashCaptchaAnswer($captcha['answer']));
 
         return Inertia::render('Auth/Login', [
             'captcha_question' => $captcha['question'],
@@ -23,25 +23,32 @@ class AuthenticatedSessionController extends Controller
 
     public function store(LoginRequest $request): RedirectResponse
     {
-        // Validate captcha
-        $userAnswer = (int)$request->input('captcha_answer');
-        $correctAnswer = (int)$request->session()->get('captcha_answer');
+        // Validate captcha using hashed comparison
+        $userAnswer = $request->input('captcha_answer');
+        $captchaHash = $request->session()->get('captcha_hash');
 
-        if ($userAnswer !== $correctAnswer) {
+        if (!$captchaHash || !$this->verifyCaptchaAnswer($userAnswer, $captchaHash)) {
             // Regenerate captcha for next attempt
             $captcha = $this->generateCaptcha();
-            $request->session()->put('captcha_answer', $captcha['answer']);
+            $request->session()->put('captcha_hash', $this->hashCaptchaAnswer($captcha['answer']));
 
             return back()->withErrors([
                 'captcha_answer' => 'Jawaban verifikasi keamanan salah.',
             ])->with('captcha_question', $captcha['question']);
         }
 
-        $request->authenticate();
+        try {
+            $request->authenticate();
+        } catch (\Exception $e) {
+            return back()->withErrors([
+                'login' => 'Gagal Otentikasi: Kredensial tidak valid.',
+            ]);
+        }
+
         $request->session()->regenerate();
 
         // Clean up captcha from session
-        $request->session()->forget('captcha_answer');
+        $request->session()->forget('captcha_hash');
 
         return redirect()->intended(route('dashboard'));
     }
@@ -90,5 +97,27 @@ class AuthenticatedSessionController extends Controller
             'question' => "{$a} {$operator} {$b} = ?",
             'answer' => $answer,
         ];
+    }
+
+    /**
+     * Hash captcha answer using HMAC-SHA256.
+     * ISSUE-LOGIN-002 Fix: Prevent session-based captcha bypass
+     */
+    private function hashCaptchaAnswer(int $answer): string
+    {
+        return hash_hmac('sha256', (string) $answer, config('app.key'));
+    }
+
+    /**
+     * Verify captcha answer using constant-time comparison.
+     */
+    private function verifyCaptchaAnswer(?string $userAnswer, string $captchaHash): bool
+    {
+        if ($userAnswer === null) {
+            return false;
+        }
+        
+        $userHash = $this->hashCaptchaAnswer((int) $userAnswer);
+        return hash_equals($captchaHash, $userHash);
     }
 }

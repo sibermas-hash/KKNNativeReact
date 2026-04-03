@@ -22,15 +22,24 @@ class CspHeaders
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)');
 
+        // HSTS — enforce HTTPS in production
+        if (config('app.env') === 'production') {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+        }
+
         // Only apply CSP in non-local environments to avoid Vite dev server friction
         if (config('app.env') !== 'local') {
+            $nonce = base64_encode(random_bytes(16));
+            $appHost = parse_url(config('app.url'), PHP_URL_HOST) ?: 'localhost';
+
             $csp = implode('; ', [
                 "default-src 'self'",
-                "script-src 'self' 'unsafe-inline'",
-                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+                "script-src 'self' 'nonce-{$nonce}'",
+                "style-src 'self' https://fonts.googleapis.com 'nonce-{$nonce}'",
                 "font-src 'self' https://fonts.gstatic.com",
-                "img-src 'self' data: blob: https://*.tile.openstreetmap.org",
-                "connect-src 'self' ws: wss:",
+                "img-src 'self' https://*.tile.openstreetmap.org",
+                "connect-src 'self' https://{$appHost} wss://{$appHost}",
+                "object-src 'none'",
                 "frame-ancestors 'self'",
                 "base-uri 'self'",
                 "form-action 'self'",

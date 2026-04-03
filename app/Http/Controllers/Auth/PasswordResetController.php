@@ -27,6 +27,7 @@ class PasswordResetController extends Controller
 
     /**
      * Send the password reset link.
+     * ISSUE-LOGIN-003 Fix: Prevent email enumeration
      */
     public function sendResetLink(Request $request): RedirectResponse
     {
@@ -34,13 +35,12 @@ class PasswordResetController extends Controller
             'email' => ['required', 'email'],
         ]);
 
-        $status = Password::sendResetLink(
+        Password::sendResetLink(
             $request->only('email')
         );
 
-        return $status === Password::RESET_LINK_SENT
-            ? back()->with('status', __($status))
-            : back()->withErrors(['email' => __($status)]);
+        // Always return same message to prevent email enumeration
+        return back()->with('status', 'Jika email terdaftar, link reset password telah dikirim.');
     }
 
     /**

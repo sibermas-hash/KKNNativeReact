@@ -42,7 +42,7 @@ export default function DataTable<T extends { id: number | string }>({
                             <tr>
                                 <td
                                     colSpan={columns.length}
-                                    className="px-4 py-12 text-center text-sm text-slate-500"
+                                    className="px-4 py-6 text-center text-sm text-slate-500"
                                 >
                                     {emptyMessage}
                                 </td>

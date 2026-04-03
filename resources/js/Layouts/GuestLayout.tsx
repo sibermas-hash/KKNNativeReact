@@ -22,7 +22,7 @@ export default function GuestLayout({
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-white border border-slate-100 mb-6 mx-auto">
             <Globe className="w-9 h-9 text-primary" />
           </div>
-          <h2 className="text-3xl font-black text-slate-900  leading-none">
+          <h2 className="text-3xl font-semibold text-slate-900  leading-none">
             UIN <span className="text-primary italic">SAIZU</span>
           </h2>
           <div className="flex items-center justify-center gap-3 mt-3">
@@ -35,7 +35,7 @@ export default function GuestLayout({
         </div>
 
         {/* CONTENT CARD - RE-STABILIZED */}
-        <div className="bg-white rounded-lg p-8 sm:p-12 border border-slate-100 relative z-50 transition-all">
+        <div className="bg-white rounded-lg p-8 sm:p-12 border border-slate-100 relative z-50">
           <div className="relative z-10">
             {children}
           </div>

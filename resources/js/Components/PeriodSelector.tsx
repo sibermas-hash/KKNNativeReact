@@ -57,14 +57,14 @@ export default function PeriodSelector({ className = '' }: PeriodSelectorProps) 
         <div ref={dropdownRef} className={`relative ${className}`}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="group flex items-center gap-3 px-5 py-2.5 rounded-lg transition-all
+                className="group flex items-center gap-3 px-5 py-2.5 rounded-lg
                            bg-white border border-slate-200 hover:border-primary/30 hover:shadow-md active:scale-95"
             >
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/5 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
                     <CalendarDaysIcon className="w-5 h-5 flex-shrink-0" />
                 </div>
                 <div className="flex flex-col items-start min-w-0">
-                    <span className="text-[9px] text-slate-400 font-black  uppercase leading-tight">
+                    <span className="text-[9px] text-slate-400 font-semibold  uppercase leading-tight">
                         Periode KKN
                     </span>
                     <span className="font-bold text-sm text-slate-900 truncate max-w-[140px]">
@@ -83,7 +83,7 @@ export default function PeriodSelector({ className = '' }: PeriodSelectorProps) 
                                 border border-slate-100 overflow-hidden z-50
                                 zoom-in-95
                     <div className="px-6 py-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-                        <p className="text-[10px] font-black text-slate-500 uppercase 
+                        <p className="text-[10px] font-semibold text-slate-500 uppercase 
                             Pilih Angkatan KKN
                         </p>
                         <SparklesIcon className="w-4 h-4 text-primary opacity-50" />
@@ -93,7 +93,7 @@ export default function PeriodSelector({ className = '' }: PeriodSelectorProps) 
                             .sort(([a], [b]) => Number(b) - Number(a))
                             .map(([angkatan, periods]) => (
                                 <div key={angkatan} className="mb-2">
-                                    <div className="px-6 py-2.5 bg-white text-[10px] font-black text-primary/60 uppercase  sticky top-0 z-10 border-b border-slate-50">
+                                    <div className="px-6 py-2.5 bg-white text-[10px] font-semibold text-primary/60 uppercase  sticky top-0 z-10 border-b border-slate-50">
                                         Angkatan {angkatan}
                                     </div>
                                     <div className="p-2 space-y-1">
@@ -104,10 +104,10 @@ export default function PeriodSelector({ className = '' }: PeriodSelectorProps) 
                                                     key={period.id}
                                                     onClick={() => handlePeriodChange(period.id)}
                                                     className={`w-full px-4 py-3.5 flex items-center gap-4 rounded-lg
-                                                           transition-all group/item
+                                                           group/item
                                                            ${isSelected ? 'bg-primary/5 border border-primary/10' : 'hover:bg-slate-50 border border-transparent'}`}
                                                 >
-                                                    <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl transition-all ${isSelected
+                                                    <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${isSelected
                                                         ? 'bg-primary text-white scale-110
                                                         : 'bg-white text-slate-400 border border-slate-100 group-hover/item:border-primary/20 group-hover/item:text-primary group-hover/item:scale-105'
                                                         }`}>

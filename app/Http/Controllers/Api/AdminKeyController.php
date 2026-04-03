@@ -20,10 +20,10 @@ class AdminKeyController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        // Validate admin secret
+        // Validate admin secret - use constant-time comparison to prevent timing attacks
         $adminSecret = config('api_keys.admin_secret');
 
-        if (!$adminSecret || $request->header('x-admin-secret') !== $adminSecret) {
+        if (!$adminSecret || !hash_equals($adminSecret, $request->header('x-admin-secret') ?? '')) {
             return response()->json(['error' => 'Unauthorized. Admin secret tidak valid.'], 401);
         }
 

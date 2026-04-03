@@ -158,8 +158,14 @@ class DailyReportController extends Controller
 
     public function destroy(KegiatanKkn $dailyReport): RedirectResponse
     {
-        $mahasiswa = auth()->user()->mahasiswa;
+        $mahasiswa = auth()->user()?->mahasiswa;
+        abort_if(!$mahasiswa, 403, 'Profil mahasiswa tidak ditemukan.');
+        
+        // VULN-008 Fix: Verify ownership
         abort_if($dailyReport->mahasiswa_id !== $mahasiswa->id, 403);
+        
+        // VULN-008 Fix: Prevent deletion of approved reports
+        abort_if($dailyReport->status === 'approved', 403, 'Laporan yang sudah disetujui tidak dapat dihapus.');
 
         foreach ($dailyReport->fileKegiatan as $file) {
             Storage::disk('public')->delete($file->file_path);

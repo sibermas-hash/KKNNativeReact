@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Hash;
 
 class ApiKey extends Model
 {
@@ -28,12 +29,25 @@ class ApiKey extends Model
         'key',
     ];
 
+    protected static function booted()
+    {
+        static::saved(fn() => self::clearCache());
+        static::deleted(fn() => self::clearCache());
+    }
+
     /**
      * Scope to only active keys.
      */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    public function setKeyAttribute(string $value): void
+    {
+        $this->attributes['key'] = $this->looksHashed($value)
+            ? $value
+            : Hash::make($value);
     }
 
     /**
@@ -50,5 +64,57 @@ class ApiKey extends Model
     public function recordUsage(): void
     {
         $this->update(['last_used_at' => now()]);
+    }
+
+    public function matchesKey(string $candidate): bool
+    {
+        $stored = (string) $this->getRawOriginal('key');
+
+        if ($this->looksHashed($stored)) {
+            return Hash::check($candidate, $stored);
+        }
+
+        return hash_equals($stored, $candidate);
+    }
+
+    /**
+     * Find API key by plaintext value.
+     * Uses caching to prevent N+1 query DoS attacks.
+     */
+    public static function findByPlaintext(string $candidate): ?self
+    {
+        // Cache active keys to prevent loading all keys on every request
+        $keys = \Illuminate\Support\Facades\Cache::remember(
+            'api_keys_active',
+            3600, // 1 hour cache
+            function () {
+                return static::where('is_active', true)->get();
+            }
+        );
+
+        foreach ($keys as $apiKey) {
+            if ($apiKey->matchesKey($candidate)) {
+                return $apiKey;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Clear the API key cache when keys are created/updated/deleted.
+     */
+    public static function clearCache(): void
+    {
+        \Illuminate\Support\Facades\Cache::forget('api_keys_active');
+    }
+
+    private function looksHashed(string $value): bool
+    {
+        return str_starts_with($value, '$2y$')
+            || str_starts_with($value, '$2a$')
+            || str_starts_with($value, '$2b$')
+            || str_starts_with($value, '$argon2i$')
+            || str_starts_with($value, '$argon2id$');
     }
 }

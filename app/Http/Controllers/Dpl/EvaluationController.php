@@ -168,6 +168,21 @@ class EvaluationController extends Controller
             foreach ($request->data as $item) {
                 if ($item['status'] !== 'READY') continue;
 
+                // VULN-005 Fix: Verify student is actually a member of this group
+                $isMember = \App\Models\KKN\PesertaKkn::where('mahasiswa_id', $item['id'])
+                    ->where('kelompok_id', $groupId)
+                    ->whereIn('status', ['approved', 'pending'])
+                    ->exists();
+                
+                if (!$isMember) {
+                    \Illuminate\Support\Facades\Log::warning("DPL attempted to grade non-member student", [
+                        'student_id' => $item['id'],
+                        'group_id' => $groupId,
+                        'dpl_id' => $lecturerId,
+                    ]);
+                    continue; // Skip non-members
+                }
+
                 $eval = Evaluasi::updateOrCreate([
                     'mahasiswa_id' => $item['id'],
                     'kelompok_id' => $groupId,
@@ -214,18 +229,14 @@ class EvaluationController extends Controller
         return 'D';
     }
 
-    public function create(Request $request): Response
+    public function create(Request $request): RedirectResponse
     {
-        $dosen = auth()->user()->dosen;
-        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
-        $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
-        $groups = KelompokKkn::whereIn('id', $groupIds)->with('peserta.mahasiswa')->get();
-
-        return Inertia::render('Dpl/Evaluations/Form', [
-            'groups' => $groups,
-            'selectedGroupId' => $request->input('group_id'),
-            'selectedStudentId' => $request->input('student_id'),
-        ]);
+        return redirect()
+            ->route('dpl.evaluations.index', array_filter([
+                'group_id' => $request->input('group_id'),
+                'student_id' => $request->input('student_id'),
+            ]))
+            ->with('info', 'Form input manual tersedia di halaman evaluasi utama.');
     }
 
     public function store(Request $request): RedirectResponse

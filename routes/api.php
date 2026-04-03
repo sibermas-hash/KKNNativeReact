@@ -30,8 +30,8 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('notifications')->n
     Route::post('/read-all', [NotificationController::class , 'markAllRead'])->name('mark-all-read');
 });
 
-// Webhooks from Master Data
-Route::prefix('webhooks')->middleware('throttle:30,1')->group(function () {
+// Webhooks from Master Data - stricter rate limit to prevent abuse
+Route::prefix('webhooks')->middleware('throttle:10,1')->group(function () {
     Route::post('/master-data', [WebhookController::class , 'handle'])
         ->middleware(\App\Http\Middleware\VerifyWebhookSignature::class)
         ->name('webhooks.master-data');

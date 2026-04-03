@@ -49,13 +49,15 @@ class CertificateController extends Controller
             ->first();
 
         if ($matchedScore) {
+            // Return masked data to protect student privacy
+            $mahasiswa = $matchedScore->mahasiswa;
             return view('public.verify-certificate', [
                 'token' => e($token),
                 'is_valid' => true,
                 'verified_at' => now(),
                 'certificate_data' => [
-                    'name' => $matchedScore->mahasiswa->nama ?? $matchedScore->mahasiswa->user->name,
-                    'nim' => $matchedScore->mahasiswa->nim,
+                    'name' => substr($mahasiswa->nama ?? $mahasiswa->user->name, 0, 3) . '***',
+                    'nim' => substr($mahasiswa->nim, 0, 6) . '***',
                     'period' => $matchedScore->kelompok->periode->name ?? '-',
                     'location' => $matchedScore->kelompok->lokasi->village_name ?? '-',
                     'grade' => $matchedScore->letter_grade,

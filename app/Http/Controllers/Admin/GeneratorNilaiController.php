@@ -150,10 +150,19 @@ class GeneratorNilaiController extends Controller
         $evidencePath = null;
         if ($request->hasFile('evidence_file')) {
             $file = $request->file('evidence_file');
+            
+            // VULN-010 Fix: Validate extension against allowlist (not client-provided)
+            $allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
+            $extension = strtolower($file->getClientOriginalExtension());
+            
+            if (!in_array($extension, $allowedExtensions)) {
+                return back()->withErrors(['evidence_file' => 'Ekstensi file tidak diizinkan. Hanya PDF, JPG, dan PNG yang diperbolehkan.']);
+            }
+            
             // Store in private storage (local disk) for security
             $evidencePath = $file->storeAs(
                 "evidence/{$data['kelompok_id']}",
-                "blanko_" . time() . ".{$file->getClientOriginalExtension()}"
+                "blanko_" . time() . ".{$extension}"
             );
         }
 
@@ -397,9 +406,9 @@ class GeneratorNilaiController extends Controller
         // Pre-load all scores for this group in one query to avoid N+1
         $userIds = $registrations->pluck('mahasiswa.user_id')->filter();
         $scores = NilaiKkn::where('kelompok_id', $group->id)
-            ->whereIn('mahasiswa_id', $userIds)
+            ->whereIn('user_id', $userIds)
             ->get()
-            ->keyBy('mahasiswa_id');
+            ->keyBy('user_id');
 
         return $registrations->map(function ($reg) use ($scores) {
             $userId = $reg->mahasiswa->user_id;
@@ -421,7 +430,7 @@ class GeneratorNilaiController extends Controller
             ->join('peserta_kkn as r', 's.id', '=', 'r.mahasiswa_id')
             ->join('kelompok_kkn as g', 'r.kelompok_id', '=', 'g.id')
             ->leftJoin('nilai_kkn as ks', function ($join) {
-                $join->on('ks.mahasiswa_id', '=', 'u.id')
+                $join->on('ks.user_id', '=', 'u.id')
                      ->on('ks.kelompok_id', '=', 'g.id');
             })
             ->where('g.period_id', $periodId)

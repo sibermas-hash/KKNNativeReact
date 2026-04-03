@@ -194,7 +194,13 @@ class RekapNilaiController extends Controller
 
         $zip = new \ZipArchive();
         $zipName = "Sertifikat_Massal_KKN_Periode_{$periodeId}.zip";
-        $zipPath = storage_path("app/public/{$zipName}");
+        // VULN-014 Fix: Store ZIP in non-public directory to prevent unauthorized access
+        $zipPath = storage_path("app/tmp/{$zipName}");
+        
+        // Ensure tmp directory exists
+        if (!is_dir(dirname($zipPath))) {
+            mkdir(dirname($zipPath), 0755, true);
+        }
 
         if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
             // Eager load all required relationships to avoid N+1 queries in the loop

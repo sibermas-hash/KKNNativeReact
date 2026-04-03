@@ -174,7 +174,7 @@ export default function Register({ periods, student_gender, student_academic }: 
 
         <form onSubmit={submit} className="space-y-12">
             {/* Academic Checklist Card */}
-            <section className="bg-white rounded-[3rem] border border-slate-100 p-10">
+            <section className="bg-white rounded-lg border border-slate-100 p-10">
                 <div className="flex items-center gap-4 mb-10 border-b border-slate-50 pb-8">
                     <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-100 text-slate-400">
                         <GraduationCap className="h-6 w-6" />
@@ -240,7 +240,7 @@ export default function Register({ periods, student_gender, student_academic }: 
 
             {/* Period Selection Card */}
             <section className={clsx(
-                "bg-white rounded-[3rem] border border-slate-100 p-10 group overflow-hidden relative transition-opacity",
+                "bg-white rounded-lg border border-slate-100 p-10 group overflow-hidden relative transition-opacity",
                 !isAcademicQualified && "opacity-50 pointer-events-none"
             )}>
                 <div className="absolute top-0 right-0 p-12 opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-110 transition-transform[2000ms]">
@@ -271,7 +271,7 @@ export default function Register({ periods, student_gender, student_academic }: 
                         {errors.period_id && <p className="text-[10px] text-rose-500 font-black uppercase  italic ml-2">{errors.period_id}</p>}
                     </div>
 
-                    <div className="bg-slate-50 border border-slate-100 rounded-[2.5rem] p-8 space-y-4 relative group-hover:bg-slate-900 transition-colors overflow-hidden">
+                    <div className="bg-slate-50 border border-slate-100 rounded-lg p-8 space-y-4 relative group-hover:bg-slate-900 transition-colors overflow-hidden">
                         <div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-5 transition-opacity" />
                         <div className="flex items-center gap-4 relative z-10">
                             <div className="h-12 w-12 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-primary group-hover:bg-slate-800 group-hover:border-slate-700 transition-colors">
@@ -290,7 +290,7 @@ export default function Register({ periods, student_gender, student_academic }: 
 
             {/* Registration Summary & Actions */}
             {selectedPeriod && currentRegistration && (
-                <section className="bg-white rounded-[3rem] border border-slate-100 p-10 relative overflow-hidden group italic">
+                <section className="bg-white rounded-lg border border-slate-100 p-10 relative overflow-hidden group italic">
                     <div className="absolute top-0 right-0 p-12 opacity-[0.05] text-primary pointer-events-none group-hover:rotate-12 transition-transform">
                         <ShieldCheck className="h-64 w-64" />
                     </div>
@@ -361,7 +361,7 @@ export default function Register({ periods, student_gender, student_academic }: 
                                     key={group.id}
                                     onClick={() => !isUnavailable && setData('kelompok_id', String(group.id))}
                                     className={clsx(
-                                        "relative group/card cursor-pointer rounded-[2.5rem] p-8 border-2 transition-all flex flex-col h-full space-y-6 overflow-hidden",
+                                        "relative group/card cursor-pointer rounded-lg p-8 border-2 transition-all flex flex-col h-full space-y-6 overflow-hidden",
                                         isSelected 
                                             ? "border-primary bg-primary/5 scale-[1.03] 
                                             : "border-slate-100 bg-white hover:border-primary/30 hover:shadow-xl",
@@ -446,7 +446,7 @@ export default function Register({ periods, student_gender, student_academic }: 
 
             {/* Notes Section */}
             {selectedPeriod && requirementsMet && (
-                <section className="bg-white rounded-[3rem] border border-slate-100 p-10 space-y-8">
+                <section className="bg-white rounded-lg border border-slate-100 p-10 space-y-8">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-slate-50 rounded-lg text-slate-400 italic font-black
                             <ArrowRight className="h-6 w-6" />
@@ -473,7 +473,7 @@ export default function Register({ periods, student_gender, student_academic }: 
                     type="submit"
                     disabled={processing || periods.length === 0 || !data.period_id || !requirementsMet}
                     className={clsx(
-                        "w-full h-24 rounded-[2.5rem] text-xl font-black uppercase  transition-all italic active:scale-95 group",
+                        "w-full h-24 rounded-lg text-xl font-black uppercase  transition-all italic active:scale-95 group",
                         processing || periods.length === 0 || !data.period_id || !requirementsMet
                             ? "bg-slate-50 text-slate-300 cursor-not-allowed"
                             : "bg-slate-900 text-white hover:bg-black hover:scale-[1.01]

@@ -57,9 +57,9 @@ export default function GroupShow({ group }: Props) {
                     Emerald Premium Header 
                     Replacing basic header with tactical emerald gradient monitor
                 */}
-                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group transition-all">
+                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group transition-all">
                     {/* Background decorations */}
-                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full  -translate-y-1/2 translate-x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
                         <Link href="/admin/groups" className="inline-flex items-center gap-3 px-4 py-2 bg-white/10 rounded-xl border border-white/20 text-[10px] font-black text-emerald-100 uppercase  hover:bg-white/20 transition-all italic mb-2">
@@ -74,7 +74,7 @@ export default function GroupShow({ group }: Props) {
                                 SECTOR_ANALYSIS_UNIT_V3
                             </span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none ">
                              Kelompok <span className="text-emerald-300 text-glow-emerald italic">{group.code}</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl flex items-center gap-3">
@@ -84,7 +84,7 @@ export default function GroupShow({ group }: Props) {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-6 shrink-0 relative z-10">
-                        <div className="px-8 py-6 bg-white/10 rounded-[2.5rem] border border-white/20 flex items-center gap-8 min-w-[240px] group/token">
+                        <div className="px-8 py-6 bg-white/10 rounded-lg border border-white/20 flex items-center gap-8 min-w-[240px] group/token">
                             <div className="p-4 bg-white rounded-lg text-primary group-hover/token:rotate-12 transition-transform">
                                 <QrCode className="h-7 w-7" />
                             </div>
@@ -101,7 +101,7 @@ export default function GroupShow({ group }: Props) {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:mx-2">
                     <div className="lg:col-span-2 space-y-12">
                         {/* Location Details - High Density */}
-                        <div className="bg-white p-12 rounded-[3.5rem] border border-slate-100 relative overflow-hidden group">
+                        <div className="bg-white p-12 rounded-lg border border-slate-100 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-14 opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-110 group-hover:rotate-6 transition-transform">
                                 <MapPin className="h-80 w-80" />
                             </div>
@@ -127,7 +127,7 @@ export default function GroupShow({ group }: Props) {
                         </div>
 
                         {/* Posko Details - Tactical Multimedia */}
-                        <div className="bg-white p-12 rounded-[3.5rem] border border-slate-100 relative overflow-hidden group">
+                        <div className="bg-white p-12 rounded-lg border border-slate-100 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-12 opacity-[0.03] text-primary pointer-events-none group-hover:rotate-12 transition-transform">
                                 <ShieldCheck className="h-64 w-64" />
                             </div>
@@ -171,13 +171,13 @@ export default function GroupShow({ group }: Props) {
                                                 href={`https://www.google.com/maps?q=${group.posko.latitude},${group.posko.longitude}`}
                                                 target="_blank"
                                                 rel="noreferrer"
-                                                className="inline-flex items-center justify-center gap-4 w-full py-6 bg-slate-900 text-white rounded-[1.5rem] text-[11px] font-black uppercase  hover:bg-slate-800 transition-all active:scale-95 italic group/map"
+                                                className="inline-flex items-center justify-center gap-4 w-full py-6 bg-slate-900 text-white rounded-lg text-[11px] font-black uppercase  hover:bg-slate-800 transition-all active:scale-95 italic group/map"
                                             >
                                                 <MapIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                                                 OPEN_MAPS_GATEWAY
                                             </a>
                                         </div>
-                                        <div className="relative aspect-square rounded-[3rem] overflow-hidden border border-slate-100 group/img">
+                                        <div className="relative aspect-square rounded-lg overflow-hidden border border-slate-100 group/img">
                                             <img 
                                                 src={group.posko.photo_url} 
                                                 alt="Foto Posko" 
@@ -196,7 +196,7 @@ export default function GroupShow({ group }: Props) {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="py-24 border-3 border-dashed border-slate-50 rounded-[3.5rem] bg-slate-50/30 flex flex-col items-center justify-center text-center px-12 group/empty">
+                                <div className="py-24 border-3 border-dashed border-slate-50 rounded-lg bg-slate-50/30 flex flex-col items-center justify-center text-center px-12 group/empty">
                                     <div className="p-8 bg-white rounded-full text-slate-100 group-hover/empty:scale-110 transition-transform animate-pulse">
                                         <CloudUpload className="w-16 h-16" />
                                     </div>
@@ -207,13 +207,13 @@ export default function GroupShow({ group }: Props) {
                         </div>
 
                         {/* Student Manifest - Tactical Emerald Table */}
-                        <div className="bg-slate-900 rounded-[3.5rem] border border-slate-800 overflow-hidden relative">
+                        <div className="bg-slate-900 rounded-lg border border-slate-800 overflow-hidden relative">
                              {/* Decorative Elements */}
                              <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
 
                             <div className="p-12 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-8 relative z-10">
                                 <div className="flex items-center gap-8">
-                                    <div className="p-4 bg-primary text-white rounded-[1.5rem] relative overflow-hidden group/m">
+                                    <div className="p-4 bg-primary text-white rounded-lg relative overflow-hidden group/m">
                                         <Users className="h-8 w-8 stroke-[2.5px] relative z-10" />
                                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/m:translate-y-0 transition-transform" />
                                     </div>
@@ -278,7 +278,7 @@ export default function GroupShow({ group }: Props) {
                     {/* Secondary Intelligence Panel (Right) */}
                     <div className="space-y-12">
                         {/* Lecturer Panel - Tactical Profile */}
-                        <div className="bg-white p-12 rounded-[3.5rem] border border-slate-100 relative overflow-hidden group">
+                        <div className="bg-white p-12 rounded-lg border border-slate-100 relative overflow-hidden group">
                             <div className="absolute -top-12 -right-12 p-12 opacity-[0.02] text-primary pointer-events-none group-hover:scale-125 transition-transform">
                                 <GraduationCap className="w-64 h-64" />
                             </div>
@@ -297,7 +297,7 @@ export default function GroupShow({ group }: Props) {
                                 <div className="space-y-10 relative z-10">
                                     <div className="flex flex-col gap-6 items-center text-center">
                                         <div className="relative">
-                                            <div className="h-32 w-32 rounded-[2.5rem] bg-slate-900 text-primary border-4 border-white flex items-center justify-center text-5xl font-black italic leading-none ring-1 ring-slate-100">
+                                            <div className="h-32 w-32 rounded-lg bg-slate-900 text-primary border-4 border-white flex items-center justify-center text-5xl font-black italic leading-none ring-1 ring-slate-100">
                                                 {group.lecturer.name.charAt(0)}
                                             </div>
                                             <div className="absolute -bottom-2 -right-2 p-3 bg-emerald-500 text-white rounded-lg border-4 border-white">
@@ -311,13 +311,13 @@ export default function GroupShow({ group }: Props) {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="p-8 bg-slate-50 border border-slate-100 rounded-[2.5rem] group/nip transition-all hover:bg-white hover:shadow-lg">
+                                    <div className="p-8 bg-slate-50 border border-slate-100 rounded-lg group/nip transition-all hover:bg-white hover:shadow-lg">
                                         <p className="text-[9px] font-black text-slate-400 uppercase  mb-3 italic group-hover/nip:text-primary">Identitas_NIP</p>
                                         <p className="text-lg font-black text-slate-900 tabular-nums italic uppercase  leading-none">{group.lecturer.nip}</p>
                                     </div>
                                 </div>
                             ) : (
-                                <div className="py-16 flex flex-col items-center justify-center border-3 border-dashed border-slate-50 rounded-[3rem] bg-slate-50/50 group/dpl">
+                                <div className="py-16 flex flex-col items-center justify-center border-3 border-dashed border-slate-50 rounded-lg bg-slate-50/50 group/dpl">
                                     <div className="p-6 bg-white rounded-full mb-6 text-slate-100 group-hover/dpl:rotate-12 transition-transform">
                                         <GraduationCap className="w-12 h-12" />
                                     </div>
@@ -338,7 +338,7 @@ export default function GroupShow({ group }: Props) {
                         </div>
 
                         {/* Program Statistics - High Contrast Emerald */}
-                        <div className="bg-gradient-to-br from-primary-DEFAULT to-primary-dark p-12 rounded-[3.5rem] relative overflow-hidden group hover:-translate-y-2 transition-all border border-white/10">
+                        <div className="bg-white from-primary-DEFAULT to-primary-dark p-12 rounded-lg relative overflow-hidden group hover:-translate-y-2 transition-all border border-white/10">
                              <div className="absolute -bottom-8 -right-8 p-12 opacity-[0.1] text-white pointer-events-none group-hover:scale-110 group-hover:-rotate-12 transition-transform">
                                 <Briefcase className="w-64 h-64" />
                             </div>
@@ -352,12 +352,12 @@ export default function GroupShow({ group }: Props) {
                                 </h3>
                                 <div className="flex items-end justify-between">
                                     <div className="space-y-3">
-                                        <span className="text-8xl font-black text-white tabular-nums  italic block leading-none drop-shadow-2xl">
+                                        <span className="text-8xl font-black text-white tabular-nums  italic block leading-none ">
                                             {group.work_programs.length}
                                         </span>
                                         <span className="text-[11px] font-black text-emerald-200 uppercase  italic leading-none ml-2">PROKER_AKTIF_SEKTOR</span>
                                     </div>
-                                    <div className="p-8 bg-white/10 rounded-[2.5rem] border border-white/20 group-hover:bg-white group-hover:text-primary transition-all">
+                                    <div className="p-8 bg-white/10 rounded-lg border border-white/20 group-hover:bg-white group-hover:text-primary transition-all">
                                          <Activity className="w-12 h-12 stroke-[2.5px]" />
                                     </div>
                                 </div>

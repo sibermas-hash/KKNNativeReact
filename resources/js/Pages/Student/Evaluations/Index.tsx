@@ -64,7 +64,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
                 </div>
 
                 {evaluations.length === 0 ? (
-                    <div className="bg-white rounded-[3.5rem] border border-slate-100 p-32 text-center group overflow-hidden relative italic">
+                    <div className="bg-white rounded-lg border border-slate-100 p-32 text-center group overflow-hidden relative italic">
                          <div className="absolute top-0 left-0 w-full h-full opacity-[0.01] text-slate-900 pointer-events-none group-hover:scale-105 transition-transform[2000ms]">
                             <GraduationCap className="h-[400px] w-[400px] -translate-x-1/2 -translate-y-1/2" />
                         </div>
@@ -81,7 +81,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                         {evaluations.map((ev) => (
-                            <div key={ev.id} className="group bg-white rounded-[3rem] border border-slate-100 overflow-hidden transition-all hover:shadow-2xl hover:border-primary/20 relative">
+                            <div key={ev.id} className="group bg-white rounded-lg border border-slate-100 overflow-hidden transition-all hover:shadow-2xl hover:border-primary/20 relative">
                                 <div className="absolute top-0 right-0 p-10 opacity-[0.02] text-slate-900 pointer-events-none group-hover:rotate-12 group-hover:scale-110 transition-transform">
                                     <Sparkles className="h-40 w-40" />
                                 </div>
@@ -131,7 +131,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
 
                                     {ev.notes && (
                                         <div className="mt-8 p-6 bg-slate-900rounded-lg relative overflow-hidden group/notes italic">
-                                            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent pointer-events-none" />
+                                            <div className="absolute inset-0 bg-white from-primary/10 to-transparent pointer-events-none" />
                                             <div className="relative z-10 flex gap-4">
                                                 <Info className="h-5 w-5 text-primary shrink-0 opacity-60" />
                                                 <div>

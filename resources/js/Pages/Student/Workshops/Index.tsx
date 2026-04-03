@@ -77,7 +77,7 @@ export default function StudentWorkshopsIndex({ workshops }: Props) {
                 </div>
 
                 {workshops.length === 0 ? (
-                    <div className="bg-white rounded-[3rem] border border-slate-100 p-20 text-center
+                    <div className="bg-white rounded-lg border border-slate-100 p-20 text-center
                         <div className="inline-flex p-8 bg-slate-50 rounded-full border border-slate-100 mb-6">
                             <Calendar className="h-12 w-12 text-slate-200" />
                         </div>
@@ -99,7 +99,7 @@ export default function StudentWorkshopsIndex({ workshops }: Props) {
                             return (
                                 <article
                                     key={workshop.id}
-                                    className="bg-white rounded-[2.5rem] border border-slate-100 p-8 hover:border-primary/20 transition-all"
+                                    className="bg-white rounded-lg border border-slate-100 p-8 hover:border-primary/20 transition-all"
                                 >
                                     <div className="flex items-start justify-between gap-5 mb-8">
                                         <div className="space-y-3">

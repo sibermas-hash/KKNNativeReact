@@ -61,9 +61,9 @@ export default function RegistrationShow({ registration }: Props) {
                     Emerald Premium Header 
                     Refining from basic header to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group transition-all">
+                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group transition-all">
                     {/* Background decorations */}
-                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full  -translate-y-1/2 translate-x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
                         <Link href="/admin/registrations" className="inline-flex items-center gap-3 px-4 py-2 bg-white/10 rounded-xl border border-white/20 text-[10px] font-black text-emerald-100 uppercase  hover:bg-white/20 transition-all italic mb-2">
@@ -78,7 +78,7 @@ export default function RegistrationShow({ registration }: Props) {
                                 REGISTRATION_AUDIT_PROTOCOL_V3
                             </span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none ">
                              Profil <span className="text-emerald-300 text-glow-emerald italic">Entitas Peserta</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
@@ -103,7 +103,7 @@ export default function RegistrationShow({ registration }: Props) {
                     {/* Primary Data Panel (Left) */}
                     <div className="lg:col-span-2 space-y-12">
                         {/* Student Core Profile - Tactical Overhaul */}
-                        <div className="bg-white rounded-[3.5rem] border border-slate-100 p-12 relative overflow-hidden group">
+                        <div className="bg-white rounded-lg border border-slate-100 p-12 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-14 opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-110 group-hover:rotate-6 transition-transform">
                                 <User className="w-80 h-80" />
                             </div>
@@ -111,7 +111,7 @@ export default function RegistrationShow({ registration }: Props) {
                             <div className="relative z-10">
                                 <div className="flex flex-col md:flex-row md:items-center gap-10 mb-14">
                                     <div className="relative shrink-0">
-                                        <div className="h-28 w-28 rounded-[2.5rem] bg-slate-900 text-primary flex items-center justify-center text-5xl font-black italic leading-none border border-slate-800 relative z-10">
+                                        <div className="h-28 w-28 rounded-lg bg-slate-900 text-primary flex items-center justify-center text-5xl font-black italic leading-none border border-slate-800 relative z-10">
                                             {registration.student.name.charAt(0)}
                                         </div>
                                         <div className="absolute -bottom-2 -right-2 p-2.5 bg-primary text-white rounded-lg border-4 border-white z-20">
@@ -139,7 +139,7 @@ export default function RegistrationShow({ registration }: Props) {
                         </div>
 
                         {/* Documents & Assets - Tactical Grid */}
-                        <div className="bg-white rounded-[3.5rem] border border-slate-100 p-12 relative group">
+                        <div className="bg-white rounded-lg border border-slate-100 p-12 relative group">
                             <div className="absolute top-0 right-0 p-12 opacity-[0.03] text-primary rotate-12 group-hover:rotate-45 transition-transform">
                                  <FileSearch className="w-48 h-48" />
                             </div>
@@ -158,7 +158,7 @@ export default function RegistrationShow({ registration }: Props) {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
                                 {registration.documents.length > 0 ? registration.documents.map((doc) => (
-                                    <div key={doc.id} className="group/doc relative bg-slate-50 border border-slate-100 rounded-[2.5rem] p-8 hover:bg-white hover:shadow-2xl hover:border-primary/30 transition-all cursor-default">
+                                    <div key={doc.id} className="group/doc relative bg-slate-50 border border-slate-100 rounded-lg p-8 hover:bg-white hover:shadow-2xl hover:border-primary/30 transition-all cursor-default">
                                         <div className="flex items-center justify-between mb-6">
                                             <div className="p-3.5 bg-white rounded-lg border border-slate-100 group-hover/doc:bg-slate-900 group-hover/doc:border-slate-800 transition-colors">
                                                 <FileText className="w-6 h-6 text-primary" />
@@ -180,7 +180,7 @@ export default function RegistrationShow({ registration }: Props) {
                                         </div>
                                     </div>
                                 )) : (
-                                    <div className="md:col-span-2 py-24 text-center border-[3px] border-dashed border-slate-50 rounded-[3rem] bg-slate-50/30 flex flex-col items-center justify-center gap-6">
+                                    <div className="md:col-span-2 py-24 text-center border-[3px] border-dashed border-slate-50 rounded-lg bg-slate-50/30 flex flex-col items-center justify-center gap-6">
                                         <div className="p-6 bg-white rounded-full text-slate-200">
                                             <FileSearch className="h-12 w-12" />
                                         </div>
@@ -194,7 +194,7 @@ export default function RegistrationShow({ registration }: Props) {
                     {/* Secondary Intel Panel (Right) */}
                     <div className="space-y-12">
                         {/* Enrolment Metadata - Tactical Dark */}
-                        <div className="bg-slate-900 rounded-[3.5rem] p-12 border border-slate-800 relative overflow-hidden group">
+                        <div className="bg-slate-900 rounded-lg p-12 border border-slate-800 relative overflow-hidden group">
                              {/* Decorative Elements */}
                              <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
 
@@ -218,7 +218,7 @@ export default function RegistrationShow({ registration }: Props) {
 
                         {/* Decision Nexus - Emerald Tactical */}
                         {isPending && (
-                            <div className="bg-white rounded-[3rem] border border-slate-100 p-12 relative overflow-hidden group/nexus">
+                            <div className="bg-white rounded-lg border border-slate-100 p-12 relative overflow-hidden group/nexus">
                                 <div className="absolute top-0 right-0 p-10 opacity-[0.02] text-slate-900 pointer-events-none group-hover/nexus:scale-110 transition-transform">
                                      <Cpu className="h-40 w-40" />
                                 </div>
@@ -239,14 +239,14 @@ export default function RegistrationShow({ registration }: Props) {
                                             <button
                                                 onClick={() => approveForm.patch(`/admin/registrations/${registration.id}/approve`)}
                                                 disabled={approveForm.processing}
-                                                className="w-full py-6 bg-slate-900 hover:bg-slate-800 text-white rounded-[1.5rem] text-[11px] font-black uppercase  active:scale-95 transition-all flex items-center justify-center gap-4 italic disabled:opacity-50 group/approve"
+                                                className="w-full py-6 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-[11px] font-black uppercase  active:scale-95 transition-all flex items-center justify-center gap-4 italic disabled:opacity-50 group/approve"
                                             >
                                                 <CheckCircle2 className="w-6 h-6 text-primary group-hover/approve:rotate-12 transition-transform" />
                                                 SETUJUI_ENTITAS
                                             </button>
                                             <button
                                                 onClick={() => setShowReject(true)}
-                                                className="w-full py-6 bg-white hover:bg-rose-50 text-rose-500 rounded-[1.5rem] text-[11px] font-black uppercase  border-2 border-slate-100 hover:border-rose-200 transition-all active:scale-95 flex items-center justify-center gap-4 italic
+                                                className="w-full py-6 bg-white hover:bg-rose-50 text-rose-500 rounded-lg text-[11px] font-black uppercase  border-2 border-slate-100 hover:border-rose-200 transition-all active:scale-95 flex items-center justify-center gap-4 italic
                                             >
                                                 <XCircle className="w-6 h-6" />
                                                 TOLAK_PENDAFTARAN
@@ -254,7 +254,7 @@ export default function RegistrationShow({ registration }: Props) {
                                         </div>
                                     ) : (
                                         <div className="space-y-8">
-                                            <div className="p-8 bg-rose-50 rounded-[2.5rem] border border-rose-100
+                                            <div className="p-8 bg-rose-50 rounded-lg border border-rose-100
                                                 <FormTextarea
                                                     label="JUSTIFIKASI PENOLAKAN"
                                                     placeholder="Berikan alasan mengapa pendaftaran ini ditolak..."
@@ -269,7 +269,7 @@ export default function RegistrationShow({ registration }: Props) {
                                                 <button
                                                     onClick={() => rejectForm.patch(`/admin/registrations/${registration.id}/reject`)}
                                                     disabled={rejectForm.processing}
-                                                    className="w-full py-6 bg-rose-600 hover:bg-rose-500 text-white rounded-[1.5rem] text-[11px] font-black uppercase  active:scale-95 transition-all italic leading-none"
+                                                    className="w-full py-6 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-[11px] font-black uppercase  active:scale-95 transition-all italic leading-none"
                                                 >
                                                     KONFIRMASI_REJECT_AKSI
                                                 </button>
@@ -287,7 +287,7 @@ export default function RegistrationShow({ registration }: Props) {
                         )}
                         
                         {registration.notes && (
-                             <div className="p-10 bg-amber-50 rounded-[3rem] border border-amber-100 relative overflow-hidden group">
+                             <div className="p-10 bg-amber-50 rounded-lg border border-amber-100 relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 p-8 opacity-[0.03] text-amber-600 pointer-events-none group-hover:rotate-12 transition-transform">
                                      <MessageSquare className="h-40 w-40" />
                                 </div>

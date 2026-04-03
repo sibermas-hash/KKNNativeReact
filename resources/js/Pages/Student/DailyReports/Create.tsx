@@ -69,7 +69,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
             <AppLayout title="Akses Ditolak">
                 <Head title="Error - Laporan Harian" />
                 <div className="flex flex-col items-center justify-center py-32">
-                    <div className="p-12 bg-rose-50 border-2 border-dashed border-rose-100 rounded-[3.5rem] text-center max-w-sm
+                    <div className="p-12 bg-rose-50 border-2 border-dashed border-rose-100 rounded-lg text-center max-w-sm
                         <AlertTriangle className="w-16 h-16 text-rose-300 mx-auto mb-8 />
                         <h2 className="text-2xl font-black text-rose-900 uppercase  mb-4 italic leading-none">Akses Terkunci</h2>
                         <p className="text-[11px] font-bold text-rose-600 uppercase  leading-relaxed opacity-70 italic p-4 bg-white/50 rounded-lg">Identitas Anda belum terhubung dengan kelompok manapun. Hubungi Admin untuk aktivasi unit.</p>
@@ -144,7 +144,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
                             </div>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="bg-white rounded-[3.5rem] border border-slate-100 p-12 space-y-12 relative overflow-hidden group">
+                        <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-slate-100 p-12 space-y-12 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-16 opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-110 transition-transform[2000ms]">
                                 <FileText className="h-96 w-96" />
                             </div>
@@ -191,7 +191,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
                                     placeholder="Jelaskan secara detail proses, rintangan, dan pencapaian hari ini..."
                                     value={form.data.activity}
                                     onChange={(e) => form.setData('activity', e.target.value)}
-                                    className="w-full bg-slate-50 border-slate-100 rounded-[2.5rem] p-8 text-sm font-bold text-slate-700 placeholder:text-slate-300 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all italic leading-relaxed outline-none"
+                                    className="w-full bg-slate-50 border-slate-100 rounded-lg p-8 text-sm font-bold text-slate-700 placeholder:text-slate-300 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all italic leading-relaxed outline-none"
                                     required
                                 />
                                 {form.errors.activity && <p className="text-[10px] font-black text-rose-500 uppercase  ml-2 italic">{form.errors.activity}</p>}
@@ -222,7 +222,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
                     </div>
 
                     <aside className="space-y-12">
-                        <section className="bg-white rounded-[3rem] border border-slate-100 p-10 h-fit">
+                        <section className="bg-white rounded-lg border border-slate-100 p-10 h-fit">
                             <div className="flex items-center gap-4 mb-10 pb-8 border-b border-slate-50">
                                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 text-slate-400 italic">
                                     <ImageIcon className="w-6 h-6" />
@@ -235,7 +235,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
                             
                             <div className="space-y-8">
                                 <div className="relative group/dropzone">
-                                    <div className="group relative flex flex-col items-center justify-center p-10 border-2 border-dashed border-slate-200 rounded-[2.5rem] bg-slate-50 hover:bg-white hover:border-primary/20 transition-all cursor-pointer">
+                                    <div className="group relative flex flex-col items-center justify-center p-10 border-2 border-dashed border-slate-200 rounded-lg bg-slate-50 hover:bg-white hover:border-primary/20 transition-all cursor-pointer">
                                         <input 
                                             type="file" 
                                             multiple
@@ -255,7 +255,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
                                 </div>
 
                                 {form.data.files.length > 0 && (
-                                    <div className="p-8 bg-slate-900 rounded-[2.5rem] border border-slate-900 zoom-in relative overflow-hidden italic">
+                                    <div className="p-8 bg-slate-900 rounded-lg border border-slate-900 zoom-in relative overflow-hidden italic">
                                         <div className="absolute top-0 right-0 p-4 opacity-[0.05] text-primary">
                                             <Activity className="h-16 w-16" />
                                         </div>
@@ -276,7 +276,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
                             </div>
                         </section>
 
-                        <section className="p-10 bg-slate-950 rounded-[3rem] text-white relative overflow-hidden border border-slate-900 italic">
+                        <section className="p-10 bg-slate-950 rounded-lg text-white relative overflow-hidden border border-slate-900 italic">
                              <div className="absolute top-0 right-0 p-8 opacity-[0.03] text-primary pointer-events-none group-hover:scale-110 transition-transform">
                                 <Sparkles className="w-40 h-40" />
                              </div>

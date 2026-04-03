@@ -131,9 +131,9 @@ export default function GroupsIndex({ groups, periods, locations, lecturers }: P
                     Emerald Premium Header 
                     Refining from heavy black to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
+                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
                     {/* Background decorations */}
-                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full  -translate-y-1/2 translate-x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
                         <div className="flex items-center gap-3 mb-2">
@@ -144,7 +144,7 @@ export default function GroupsIndex({ groups, periods, locations, lecturers }: P
                                 UNIT_ORCHESTRATION_V3
                             </span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none ">
                             Arsip <span className="text-emerald-300 text-glow-emerald italic">Kelompok</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
@@ -165,7 +165,7 @@ export default function GroupsIndex({ groups, periods, locations, lecturers }: P
                         {!showForm && (
                             <button
                                 onClick={() => { setEditing(null); reset(); setShowForm(true); }}
-                                className="flex items-center gap-4 px-10 py-5.5 bg-white hover:bg-emerald-50 text-primary rounded-[1.5rem] font-black text-xs uppercase  transition-all hover:-translate-y-1 active:scale-95 italic"
+                                className="flex items-center gap-4 px-10 py-5.5 bg-white hover:bg-emerald-50 text-primary rounded-lg font-black text-xs uppercase  transition-all hover:-translate-y-1 active:scale-95 italic"
                             >
                                 <Plus className="w-5 h-5 stroke-[2px]" />
                                 Inisialisasi Kelompok
@@ -175,7 +175,7 @@ export default function GroupsIndex({ groups, periods, locations, lecturers }: P
                 </div>
 
                 {showForm && (
-                    <div className="bg-white rounded-[3rem] border border-slate-100 p-10 overflow-hidden relative group zoom-in-95 mx-2">
+                    <div className="bg-white rounded-lg border border-slate-100 p-10 overflow-hidden relative group zoom-in-95 mx-2">
                          <div className="absolute top-0 right-0 p-12 opacity-[0.02] text-slate-900 pointer-events-none group-hover:rotate-6 transition-transform">
                              <Users className="h-64 w-64" />
                          </div>
@@ -235,7 +235,7 @@ export default function GroupsIndex({ groups, periods, locations, lecturers }: P
                                         </div>
                                     </div>
 
-                                    <div className="space-y-8 p-8 bg-slate-50/50 rounded-[2.5rem] border border-slate-100">
+                                    <div className="space-y-8 p-8 bg-slate-50/50 rounded-lg border border-slate-100">
                                         <div className="space-y-3 group/field">
                                             <label className="text-[10px] font-black text-slate-400 uppercase  ml-2 italic group-focus-within/field:text-primary transition-colors">Periode KKN</label>
                                             <FormSelect id="period_id" options={periods.map(p => ({ value: p.id, label: p.name }))} value={data.period_id} onChange={(e) => setData('period_id', e.target.value)} error={errors.period_id} required className="h-14 font-black bg-white" />
@@ -268,12 +268,12 @@ export default function GroupsIndex({ groups, periods, locations, lecturers }: P
 
                                     <div className="space-y-6 max-h-[450px] overflow-y-auto pr-4 custom-scrollbar">
                                         {data.lecturers.length === 0 && (
-                                            <div className="py-20 text-center border-2 border-dashed border-slate-100 rounded-[3rem] bg-slate-50/50 group/empty hover:border-primary/20 transition-all">
+                                            <div className="py-20 text-center border-2 border-dashed border-slate-100 rounded-lg bg-slate-50/50 group/empty hover:border-primary/20 transition-all">
                                                  <p className="text-[11px] font-black text-slate-300 group-hover:text-primary/40 transition-colors uppercase  italic leading-none">Belum ada Dosen ditugaskan</p>
                                             </div>
                                         )}
                                         {data.lecturers.map((l, index) => (
-                                            <div key={index} className="bg-slate-50/50 border border-slate-100 p-8 rounded-[2.5rem] relative group/item transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/40">
+                                            <div key={index} className="bg-slate-50/50 border border-slate-100 p-8 rounded-lg relative group/item transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/40">
                                                 <div className="space-y-6">
                                                     <div className="space-y-2 group/field">
                                                         <label className="text-[9px] font-black text-slate-400 uppercase  ml-1 italic group-focus-within/field:text-primary transition-colors">Identitas Akademik Dosen</label>
@@ -384,7 +384,7 @@ export default function GroupsIndex({ groups, periods, locations, lecturers }: P
                 {/* Group Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mx-2">
                     {filteredGroups.map((g) => (
-                        <div key={g.id} className="group bg-white rounded-[3.5rem] border border-slate-100 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2 transition-all overflow-hidden relative flex flex-col">
+                        <div key={g.id} className="group bg-white rounded-lg border border-slate-100 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2 transition-all overflow-hidden relative flex flex-col">
                             <div className={clsx(
                                 "h-2 w-full",
                                 g.status === 'active' ? 'bg-primary' : (g.status === 'closed' ? 'bg-slate-300' : 'bg-amber-400')
@@ -457,7 +457,7 @@ export default function GroupsIndex({ groups, periods, locations, lecturers }: P
                                     <div className="grid grid-cols-1 gap-3.5">
                                         {g.lecturers.length > 0 ? (
                                             g.lecturers.map(l => (
-                                                <div key={l.id} className="flex items-center justify-between bg-white border border-slate-100 rounded-[1.5rem] px-6 py-4 group/officer hover:border-primary/40 hover:bg-emerald-50/10 transition-all">
+                                                <div key={l.id} className="flex items-center justify-between bg-white border border-slate-100 rounded-lg px-6 py-4 group/officer hover:border-primary/40 hover:bg-emerald-50/10 transition-all">
                                                     <div className="flex items-center gap-4">
                                                         <div className={clsx("w-2.5 h-2.5 rounded-full", l.role === 'Ketua' ? 'bg-primary : 'bg-slate-200')} />
                                                         <div className="flex flex-col">
@@ -523,7 +523,7 @@ export default function GroupsIndex({ groups, periods, locations, lecturers }: P
                 </div>
 
                 {/* Tactical Emerald Footer */}
-                <div className="p-12 bg-slate-900 rounded-[3.5rem] border border-slate-800 relative overflow-hidden group mx-4">
+                <div className="p-12 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group mx-4">
                      {/* Decorative Elements */}
                      <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
                      

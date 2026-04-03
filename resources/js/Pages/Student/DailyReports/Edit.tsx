@@ -70,7 +70,7 @@ export default function StudentDailyReportEdit({ report }: Props) {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                     <div className="lg:col-span-2">
-                        <form onSubmit={handleSubmit} className="bg-white rounded-[3.5rem] border border-slate-100 p-12 space-y-12 relative overflow-hidden group">
+                        <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-slate-100 p-12 space-y-12 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-16 opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-110 transition-transform[2000ms]">
                                 <FileText className="h-96 w-96" />
                             </div>
@@ -117,7 +117,7 @@ export default function StudentDailyReportEdit({ report }: Props) {
                                     placeholder="Jelaskan secara detail proses, rintangan, dan pencapaian hari ini..."
                                     value={form.data.activity}
                                     onChange={(e) => form.setData('activity', e.target.value)}
-                                    className="w-full bg-slate-50 border-slate-100 rounded-[2.5rem] p-8 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all italic leading-relaxed outline-none"
+                                    className="w-full bg-slate-50 border-slate-100 rounded-lg p-8 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all italic leading-relaxed outline-none"
                                     required
                                 />
                                 {form.errors.activity && <p className="text-[10px] font-black text-rose-500 uppercase  ml-2 italic">{form.errors.activity}</p>}
@@ -155,7 +155,7 @@ export default function StudentDailyReportEdit({ report }: Props) {
                     </div>
 
                     <aside className="space-y-12">
-                        <section className="bg-slate-900 rounded-[3rem] p-12 border border-slate-900 text-white relative overflow-hidden group">
+                        <section className="bg-slate-900 rounded-lg p-12 border border-slate-900 text-white relative overflow-hidden group">
                              <div className="absolute top-0 right-0 p-8 opacity-[0.05] text-primary group-hover:scale-125 transition-transform[2000ms] pointer-events-none">
                                 <Activity className="h-40 w-40" />
                              </div>
@@ -175,7 +175,7 @@ export default function StudentDailyReportEdit({ report }: Props) {
                              </div>
                         </section>
 
-                        <div className="bg-white border border-slate-100 rounded-[3rem] p-10 relative overflow-hidden italic group">
+                        <div className="bg-white border border-slate-100 rounded-lg p-10 relative overflow-hidden italic group">
                              <div className="absolute top-0 right-0 p-4 opacity-[0.02] text-slate-900 group-hover:rotate-12 transition-transform">
                                 <Zap className="h-[200px] w-[200px]" />
                             </div>

@@ -49,9 +49,9 @@ export default function CertificateSettings({ configs }: Props) {
                     Emerald Premium Header 
                     Refining from heavy black to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
+                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
                     {/* Background decorations */}
-                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full  -translate-y-1/2 translate-x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
                         <div className="flex items-center gap-3 mb-2">
@@ -62,7 +62,7 @@ export default function CertificateSettings({ configs }: Props) {
                                 CREDENTIAL_ENGINE_V3
                             </span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none ">
                             Arsitektur <span className="text-emerald-300 text-glow-emerald italic">Sertifikat</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
@@ -72,7 +72,7 @@ export default function CertificateSettings({ configs }: Props) {
 
                     <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
                         {recentlySuccessful && (
-                            <div className="flex items-center gap-4 bg-white/20 text-white px-8 py-5.5 rounded-[1.5rem] border border-white/20 zoom-in-95 italic">
+                            <div className="flex items-center gap-4 bg-white/20 text-white px-8 py-5.5 rounded-lg border border-white/20 zoom-in-95 italic">
                                 <CheckCircle2 className="w-6 h-6 text-emerald-400 stroke-[3px]" />
                                 <span className="text-[11px] font-black uppercase  leading-none">CONFIG_SYNC_SUCCESS</span>
                             </div>
@@ -83,7 +83,7 @@ export default function CertificateSettings({ configs }: Props) {
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:mx-2">
                     {/* Main Settings Area */}
                     <div className="lg:col-span-2 space-y-10">
-                        <section className="bg-white rounded-[3.5rem] p-12 border border-slate-100 relative overflow-hidden group">
+                        <section className="bg-white rounded-lg p-12 border border-slate-100 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-12 opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-110 transition-transform">
                                 <Layout className="h-48 w-48" />
                             </div>
@@ -108,7 +108,7 @@ export default function CertificateSettings({ configs }: Props) {
                                             {config.type === 'longtext' ? (
                                                 <div className="space-y-5">
                                                     <textarea
-                                                        className="w-full min-h-[250px] rounded-[2.5rem] bg-slate-50 border border-slate-100 focus:bg-white focus:border-primary/50 transition-all p-10 text-slate-700 text-sm font-bold leading-relaxed italic outline-none
+                                                        className="w-full min-h-[250px] rounded-lg bg-slate-50 border border-slate-100 focus:bg-white focus:border-primary/50 transition-all p-10 text-slate-700 text-sm font-bold leading-relaxed italic outline-none
                                                         value={data.configs.find(c => c.id === config.id)?.value || ''}
                                                         onChange={e => handleValueChange(config.id, e.target.value)}
                                                         placeholder={`Masukkan konten record untuk ${config.label.toLowerCase()}...`}
@@ -150,7 +150,7 @@ export default function CertificateSettings({ configs }: Props) {
                     {/* Aesthetic Control Sidebar */}
                     <div className="space-y-10">
                         {/* Visual Assets Card */}
-                        <section className="bg-white rounded-[3.5rem] p-10 border border-slate-100 group">
+                        <section className="bg-white rounded-lg p-10 border border-slate-100 group">
                             <div className="flex items-center gap-5 border-b border-slate-50 pb-8 mb-10">
                                 <div className="p-4 bg-slate-50 rounded-lg text-slate-300 border border-slate-100 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all
                                     <ImageIcon className="h-6 w-6 stroke-[2px]" />
@@ -161,7 +161,7 @@ export default function CertificateSettings({ configs }: Props) {
                             <div className="space-y-12">
                                 {configs.filter(c => c.type === 'image').map((config) => (
                                     <div key={config.id} className="space-y-5">
-                                        <div className="aspect-[1.6/1] bg-slate-50 border-2 border-dashed border-slate-100 rounded-[2.5rem] flex flex-col items-center justify-center p-10 text-center hover:bg-emerald-50/10 hover:border-primary/20 transition-all group/preview relative overflow-hidden cursor-help">
+                                        <div className="aspect-[1.6/1] bg-slate-50 border-2 border-dashed border-slate-100 rounded-lg flex flex-col items-center justify-center p-10 text-center hover:bg-emerald-50/10 hover:border-primary/20 transition-all group/preview relative overflow-hidden cursor-help">
                                             <ImageIcon className="w-12 h-12 text-slate-200 mb-5 group-hover/preview:scale-110 group-hover/preview:text-primary/30 transition-all" />
                                             <p className="text-[11px] font-black text-slate-300 uppercase  italic leading-tight group-hover/preview:text-primary transition-colors">{config.label}</p>
                                         </div>
@@ -180,7 +180,7 @@ export default function CertificateSettings({ configs }: Props) {
                         </section>
 
                         {/* Tactical Guidelines Emerald */}
-                        <section className="bg-slate-900 rounded-[3.5rem] p-12 border border-slate-800 space-y-12 relative overflow-hidden">
+                        <section className="bg-slate-900 rounded-lg p-12 border border-slate-800 space-y-12 relative overflow-hidden">
                              {/* Decorative Elements */}
                              <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
 
@@ -210,7 +210,7 @@ export default function CertificateSettings({ configs }: Props) {
                             <button
                                 type="submit"
                                 disabled={processing}
-                                className="group relative w-full h-20 bg-primary hover:bg-primary-dark text-white rounded-[1.5rem] flex items-center justify-center gap-5 font-black text-xs uppercase  hover:-translate-y-1 active:scale-95 transition-all disabled:opacity-50 overflow-hidden italic relative z-10"
+                                className="group relative w-full h-20 bg-primary hover:bg-primary-dark text-white rounded-lg flex items-center justify-center gap-5 font-black text-xs uppercase  hover:-translate-y-1 active:scale-95 transition-all disabled:opacity-50 overflow-hidden italic relative z-10"
                             >
                                 {processing ? (
                                     <>

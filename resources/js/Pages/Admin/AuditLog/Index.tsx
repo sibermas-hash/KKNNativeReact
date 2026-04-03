@@ -59,9 +59,9 @@ export default function AuditLogIndex({ logs, stats, filters }: { logs: any; sta
                     Emerald Premium Header 
                     Refining from heavy black to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
+                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
                     {/* Background decorations */}
-                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full  -translate-y-1/2 translate-x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
                         <div className="flex items-center gap-3 mb-2">
@@ -72,7 +72,7 @@ export default function AuditLogIndex({ logs, stats, filters }: { logs: any; sta
                                 SYSTEM_AUDIT_LEDGER_V3
                             </span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none ">
                             Jejak <span className="text-emerald-300 text-glow-emerald italic">Audit</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
@@ -130,14 +130,14 @@ export default function AuditLogIndex({ logs, stats, filters }: { logs: any; sta
                     </div>
                     <button 
                         onClick={() => applyFilters()} 
-                        className="px-12 h-18 bg-primary text-white rounded-[1.5rem] font-black text-xs uppercase  hover:bg-primary-dark hover:-translate-y-1 transition-all active:scale-95 italic shrink-0"
+                        className="px-12 h-18 bg-primary text-white rounded-lg font-black text-xs uppercase  hover:bg-primary-dark hover:-translate-y-1 transition-all active:scale-95 italic shrink-0"
                     >
                         Terapkan Protokol
                     </button>
                 </div>
 
                 {/* Audit Ledger */}
-                <div className="bg-white rounded-[3.5rem] border border-slate-100 overflow-hidden group lg:mx-2">
+                <div className="bg-white rounded-lg border border-slate-100 overflow-hidden group lg:mx-2">
                     <div className="overflow-x-auto relative z-10 custom-scrollbar pr-1">
                         <table className="min-w-full divide-y divide-slate-50">
                             <thead className="bg-slate-50/50">
@@ -223,7 +223,7 @@ export default function AuditLogIndex({ logs, stats, filters }: { logs: any; sta
                 </div>
 
                 {/* Tactical Emerald Footer Monitor */}
-                <div className="p-12 bg-slate-900 rounded-[3.5rem] border border-slate-800 relative overflow-hidden group mx-2">
+                <div className="p-12 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group mx-2">
                      {/* Decorative Elements */}
                      <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
 
@@ -280,7 +280,7 @@ function StatCard({ label, value, icon: Icon, color }: any) {
     };
 
     return (
-        <div className="bg-white p-10 rounded-[3rem] border border-slate-100 flex flex-col justify-between group hover:border-primary/30 hover:-translate-y-2 transition-all overflow-hidden relative">
+        <div className="bg-white p-10 rounded-lg border border-slate-100 flex flex-col justify-between group hover:border-primary/30 hover:-translate-y-2 transition-all overflow-hidden relative">
             <div className="absolute top-0 right-0 p-8 opacity-[0.03] text-slate-900 pointer-events-none group-hover:rotate-12 transition-transform">
                 <Icon className="h-24 w-24" />
             </div>

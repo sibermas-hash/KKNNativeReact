@@ -185,7 +185,7 @@ export default function Login() {
         <button
           type="submit"
           disabled={processing}
-          className="w-full bg-gradient-to-r from-primary to-emerald-600 text-white rounded-lg py-4 font-bold text-sm hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all disabled:opacity-50 disabled:translate-y-0 border border-white/10 flex items-center justify-center gap-3 relative overflow-hidden group"
+          className="w-full bg-white from-primary to-emerald-600 text-white rounded-lg py-4 font-bold text-sm hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all disabled:opacity-50 disabled:translate-y-0 border border-white/10 flex items-center justify-center gap-3 relative overflow-hidden group"
         >
           {processing ? (
              <RefreshCw className="w-5 h-5 animate-spin" />

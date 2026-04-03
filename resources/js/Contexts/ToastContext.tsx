@@ -78,7 +78,7 @@ function ToastContainer({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id
                 const Icon = cfg.icon
                 return (
                     <div key={t.id}
-                        className={`relative rounded-3xl border backdrop-blur-3xl p-5 shadow-2xl overflow-hidden
+                        className={`relative rounded-lg border backdrop-blur-3xl p-5 shadow-2xl overflow-hidden
               ${cfg.border} ${cfg.bg}
               animate-in slide-in-from-right-8 fade-in duration-500 transition-all`}
                         style={{ background: 'rgba(15, 23, 42, 0.9)' }}>

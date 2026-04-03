@@ -40,7 +40,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
         return (
             <AppLayout title="Laporan Akhir">
                 <Head title="Akses Ditolak - Laporan Akhir" />
-                <div className="bg-white rounded-[3.5rem] border border-slate-100 p-24 text-center group max-w-4xl mx-auto mt-20 relative overflow-hidden">
+                <div className="bg-white rounded-lg border border-slate-100 p-24 text-center group max-w-4xl mx-auto mt-20 relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-12 opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-110 transition-transform[2000ms]">
                         <AlertTriangle className="h-64 w-64" />
                     </div>
@@ -97,7 +97,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                     <div className="lg:col-span-2 space-y-12">
                         {existingReport && (
-                            <section className="bg-white rounded-[3rem] border border-slate-100 p-10 relative overflow-hidden group">
+                            <section className="bg-white rounded-lg border border-slate-100 p-10 relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 p-12 opacity-[0.02] text-slate-900 pointer-events-none group-hover:rotate-12 transition-transform">
                                     <Sparkles className="h-40 w-40" />
                                 </div>
@@ -126,7 +126,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
                         )}
 
                         {isLeader ? (
-                            <section className="bg-white rounded-[3.5rem] border border-slate-100 p-12 relative overflow-hidden group">
+                            <section className="bg-white rounded-lg border border-slate-100 p-12 relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 p-16 opacity-[0.02] text-primary group-hover:scale-125 transition-transform[2000ms] pointer-events-none">
                                     <UploadCloud className="h-96 w-96" />
                                 </div>
@@ -141,7 +141,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
                                             onChange={(e) => form.setData('title', e.target.value)} 
                                             placeholder="Judul lengkap sesuai draf final..."
                                             required 
-                                            className="w-full bg-slate-50 border-slate-100 rounded-[1.5rem] h-16 px-8 text-base font-black text-slate-900 uppercase italic  focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all placeholder:text-slate-300"
+                                            className="w-full bg-slate-50 border-slate-100 rounded-lg h-16 px-8 text-base font-black text-slate-900 uppercase italic  focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all placeholder:text-slate-300"
                                         />
                                         {form.errors.title && <p className="text-[10px] font-black text-rose-500 uppercase  ml-2 italic">{form.errors.title}</p>}
                                     </div>
@@ -154,7 +154,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
                                             onChange={(e) => form.setData('abstract', e.target.value)} 
                                             rows={6} 
                                             placeholder="Tuliskan ringkasan singkat hasil pelaksanaan pengabdian..."
-                                            className="w-full bg-slate-50 border-slate-100 rounded-[2.5rem] p-8 text-sm font-medium leading-relaxed italic focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all placeholder:text-slate-300"
+                                            className="w-full bg-slate-50 border-slate-100 rounded-lg p-8 text-sm font-medium leading-relaxed italic focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all placeholder:text-slate-300"
                                         />
                                     </div>
                                     
@@ -171,7 +171,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
                                             <label 
                                                 htmlFor="final-file-upload"
                                                 className={clsx(
-                                                    "flex flex-col items-center justify-center p-20 rounded-[3rem] border-2 border-dashed transition-all cursor-pointer text-center relative z-10",
+                                                    "flex flex-col items-center justify-center p-20 rounded-lg border-2 border-dashed transition-all cursor-pointer text-center relative z-10",
                                                     form.data.file 
                                                         ? "bg-primary/5 border-primary/30 text-primary 
                                                         : "bg-slate-50 border-slate-100 text-slate-300 hover:bg-white hover:border-primary/40"
@@ -207,7 +207,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
                                 </form>
                             </section>
                         ) : (
-                            <section className="bg-white rounded-[3.5rem] border border-slate-100 p-16 text-center relative overflow-hidden group">
+                            <section className="bg-white rounded-lg border border-slate-100 p-16 text-center relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 p-12 opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-110 transition-transform[2000ms]">
                                     <Lock className="h-64 w-64" />
                                 </div>
@@ -225,7 +225,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
                     </div>
 
                     <div className="space-y-12">
-                        <section className="bg-primary/5 rounded-[3rem] p-12 border border-primary/10 relative overflow-hidden group">
+                        <section className="bg-primary/5 rounded-lg p-12 border border-primary/10 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-10 opacity-[0.05] text-primary group-hover:scale-125 transition-transform pointer-events-none">
                                 <Info className="h-40 w-40" />
                             </div>
@@ -255,7 +255,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
                         </section>
                         
                         <div className="rounded-[3rem] bg-slate-950 p-12 text-white relative overflow-hidden group italic border border-slate-900">
-                             <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-transparent pointer-events-none" />
+                             <div className="absolute inset-0 bg-white from-primary/20 via-transparent to-transparent pointer-events-none" />
                              <h4 className="text-[10px] font-black mb-8 uppercase  opacity-40 italic">Audit Alur Evaluasi</h4>
                              <p className="text-[13px] font-bold leading-relaxed uppercase italic  relative z-10 opacity-80">
                                 Laporan akhir kelompok Anda akan melewati proses verifikasi bertahap oleh Dosen Pembimbing Lapangan sebelum disetujui secara permanen dalam basis data Universitas.

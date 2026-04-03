@@ -91,9 +91,9 @@ export default function Index({ groups }: Props) {
             Emerald Premium Header 
             Refining from heavy rose to lush tactical emerald/rose gradient hybrid
         */}
-        <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-rose-900 via-primary-dark to-[#043d23] p-10 md:p-14 border border-white/10 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
+        <div className="relative overflow-hidden rounded-lg bg-white from-rose-900 via-primary-dark to-[#043d23] p-10 md:p-14 border border-white/10 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
             {/* Background decorations */}
-            <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+            <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full  -translate-y-1/2 translate-x-1/2 opacity-50" />
             
             <div className="relative z-10 space-y-5 flex-1">
                 <div className="flex items-center gap-3 mb-2">
@@ -104,7 +104,7 @@ export default function Index({ groups }: Props) {
                         MANUAL_OVERRIDE_PROTOCOL_V3
                     </span>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none ">
                     Koreksi <span className="text-rose-300 text-glow-rose italic">Parameter Nilai</span>
                 </h1>
                 <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
@@ -128,7 +128,7 @@ export default function Index({ groups }: Props) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:mx-2">
             {/* Warning Policy Section */}
             <div className="lg:col-span-1 space-y-8">
-                <div className="bg-white rounded-[3rem] p-10 border border-slate-100 sticky top-12 group overflow-hidden">
+                <div className="bg-white rounded-lg p-10 border border-slate-100 sticky top-12 group overflow-hidden">
                     <div className="absolute top-0 right-0 p-12 opacity-[0.02] text-rose-600 pointer-events-none group-hover:rotate-6 transition-transform">
                         <TriangleAlert className="h-64 w-64" />
                     </div>
@@ -145,7 +145,7 @@ export default function Index({ groups }: Props) {
                         </div>
 
                         <div className="space-y-6">
-                            <div className="p-8 bg-rose-50 rounded-[2.5rem] border border-rose-100
+                            <div className="p-8 bg-rose-50 rounded-lg border border-rose-100
                                 <p className="text-[13px] font-bold text-rose-900 leading-relaxed italic opacity-80">
                                     <strong className="uppercase">Peringatan:</strong> Injeksi manual akan melewati alur evaluasi standar (DPL & Desa). Tindakan ini hanya diperuntukkan bagi admin dengan otorisasi khusus.
                                 </p>
@@ -176,7 +176,7 @@ export default function Index({ groups }: Props) {
 
             {/* Form Section */}
             <div className="lg:col-span-2 space-y-10">
-                <form onSubmit={handleSubmit} className="bg-white rounded-[3.5rem] p-12 border border-slate-100 relative overflow-hidden group mx-1">
+                <form onSubmit={handleSubmit} className="bg-white rounded-lg p-12 border border-slate-100 relative overflow-hidden group mx-1">
                     <div className="absolute top-0 right-0 p-12 opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-110 transition-transform">
                         <Sparkles className="h-64 w-64" />
                     </div>
@@ -263,7 +263,7 @@ export default function Index({ groups }: Props) {
                             <button
                                 type="submit"
                                 disabled={processing || loadingStudents}
-                                className="px-14 py-6 bg-rose-600 text-white text-[11px] font-black uppercase  rounded-[1.5rem] hover:bg-rose-700 hover:-translate-y-1 active:scale-95 transition-all italic flex items-center gap-4"
+                                className="px-14 py-6 bg-rose-600 text-white text-[11px] font-black uppercase  rounded-lg hover:bg-rose-700 hover:-translate-y-1 active:scale-95 transition-all italic flex items-center gap-4"
                             >
                                 <Save className="w-5 h-5" />
                                 Otorisasi_Overide_Manual
@@ -272,7 +272,7 @@ export default function Index({ groups }: Props) {
                     </div>
                 </form>
 
-                <div className="p-12 bg-slate-900 rounded-[3.5rem] border border-slate-800 relative overflow-hidden group mx-1">
+                <div className="p-12 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group mx-1">
                      <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
 
                      <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-12">

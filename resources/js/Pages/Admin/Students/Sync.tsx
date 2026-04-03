@@ -35,9 +35,9 @@ export default function StudentSync(_props: Props) {
                     Emerald Premium Header 
                     Refining from basic header to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
+                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
                     {/* Background decorations */}
-                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full  -translate-y-1/2 translate-x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
                         <div className="flex items-center gap-6 mb-2">
@@ -51,7 +51,7 @@ export default function StudentSync(_props: Props) {
                                 MASTER_STUDENT_DATA_SYNC_V3
                             </span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none ">
                             Integrasi <span className="text-emerald-300 text-glow-emerald italic">Master Data</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
@@ -73,14 +73,14 @@ export default function StudentSync(_props: Props) {
                 </div>
 
                 {/* Main Sync Interface */}
-                <div className="bg-white rounded-[3.5rem] border border-slate-100 overflow-hidden relative group">
+                <div className="bg-white rounded-lg border border-slate-100 overflow-hidden relative group">
                     <div className="absolute top-0 right-0 p-16 opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-110 transition-transform">
                         <Database className="h-96 w-96" />
                     </div>
 
                     <div className="p-12 md:p-24 flex flex-col items-center text-center space-y-16 relative z-10">
                         <div className="space-y-6 max-w-2xl">
-                            <div className="inline-flex p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100 text-slate-400 relative group-hover:text-primary transition-colors">
+                            <div className="inline-flex p-8 rounded-lg bg-slate-50 border border-slate-100 text-slate-400 relative group-hover:text-primary transition-colors">
                                 <Cpu className="w-14 h-14" />
                                 <div className="absolute -top-2 -right-2 h-6 w-6 bg-primary rounded-full border-4 border-white animate-pulse" />
                             </div>
@@ -99,7 +99,7 @@ export default function StudentSync(_props: Props) {
                                     "w-full h-24rounded-lg text-[13px] font-black uppercase  flex items-center justify-center gap-6 transition-all italic active:scale-95 group/sync",
                                     processing 
                                         ? "bg-slate-50 text-slate-400 cursor-not-allowed border border-slate-100" 
-                                        : "bg-gradient-to-r from-primary-dark to-[#043d23] text-white border border-primary/20 hover:scale-[1.02]
+                                        : "bg-white from-primary-dark to-[#043d23] text-white border border-primary/20 hover:scale-[1.02]
                                 )}
                             >
                                 {processing ? (
@@ -131,7 +131,7 @@ export default function StudentSync(_props: Props) {
 
                     {/* Status Footer */}
                     <div className="px-12 py-10 bg-slate-900 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-8 relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                        <div className="absolute top-0 left-0 w-full h-1 bg-white from-transparent via-primary/30 to-transparent" />
                         <div className="flex items-center gap-5">
                             <div className="p-3 bg-white/5 rounded-lg border border-white/10 group-hover:bg-primary/10 transition-colors">
                                 <Activity className="w-6 h-6 text-primary" />
@@ -150,7 +150,7 @@ export default function StudentSync(_props: Props) {
 
                 {/* Intelligence Modules */}
                 <div className="grid md:grid-cols-2 gap-10">
-                    <div className="p-10 bg-white rounded-[3rem] border border-slate-100 space-y-6 hover:shadow-md transition-all group">
+                    <div className="p-10 bg-white rounded-lg border border-slate-100 space-y-6 hover:shadow-md transition-all group">
                         <div className="flex items-center gap-4">
                             <div className="p-3.5 bg-primary/10 rounded-lg text-primary border border-primary/20">
                                 <ShieldCheck className="w-7 h-7" />
@@ -165,12 +165,12 @@ export default function StudentSync(_props: Props) {
                         </p>
                     </div>
 
-                    <div className="p-10 bg-white rounded-[3rem] border border-slate-100 space-y-8 hover:shadow-2xl hover:border-primary/20 transition-all group/module overflow-hidden relative">
+                    <div className="p-10 bg-white rounded-lg border border-slate-100 space-y-8 hover:shadow-2xl hover:border-primary/20 transition-all group/module overflow-hidden relative">
                          <div className="absolute top-0 right-0 p-10 opacity-[0.02] text-slate-900 pointer-events-none group-hover/module:rotate-12 transition-transform">
                                 <Lock className="h-32 w-32" />
                             </div>
                         <div className="flex items-center gap-5 relative z-10">
-                            <div className="p-4 bg-primary/5 rounded-[1.5rem] text-primary border border-primary/10 group-hover/module:bg-primary group-hover/module:text-white transition-all">
+                            <div className="p-4 bg-primary/5 rounded-lg text-primary border border-primary/10 group-hover/module:bg-primary group-hover/module:text-white transition-all">
                                 <Lock className="w-8 h-8 stroke-[2.5px]" />
                             </div>
                             <div>

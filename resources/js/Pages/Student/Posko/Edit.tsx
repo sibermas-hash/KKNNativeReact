@@ -128,7 +128,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                     <div className="lg:col-span-1 space-y-10">
-                        <section className="bg-white rounded-[2.5rem] border border-slate-100 p-10 relative overflow-hidden group">
+                        <section className="bg-white rounded-lg border border-slate-100 p-10 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-10 opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-110 transition-transform[2000ms]">
                                 <Map className="h-64 w-64" />
                             </div>
@@ -157,7 +157,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
                             </div>
                         </section>
 
-                        <section className="bg-white rounded-[2.5rem] p-10 border border-slate-100 overflow-hidden group">
+                        <section className="bg-white rounded-lg p-10 border border-slate-100 overflow-hidden group">
                             <div className="flex items-center gap-4 mb-8">
                                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 text-emerald-500">
                                     <Camera className="h-6 w-6" />
@@ -182,7 +182,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
 
                     <div className="lg:col-span-2">
                         {isLeader ? (
-                            <form onSubmit={handleSubmit} className="bg-white rounded-[3.5rem] border border-slate-100 p-12 space-y-12 relative overflow-hidden group">
+                            <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-slate-100 p-12 space-y-12 relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 p-16 opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-110 transition-transform[2000ms]">
                                     <Settings2 className="h-96 w-96" />
                                 </div>
@@ -221,7 +221,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
 
                                 <div className="space-y-6 relative z-10">
                                     <label className="text-[10px] font-black text-slate-400 uppercase  ml-2 italic">Dokumentasi Foto</label>
-                                    <div className="relative h-48 border-2 border-dashed border-slate-100 rounded-[2.5rem] bg-slate-50/50 hover:bg-white transition-all cursor-pointer overflow-hidden group/upload">
+                                    <div className="relative h-48 border-2 border-dashed border-slate-100 rounded-lg bg-slate-50/50 hover:bg-white transition-all cursor-pointer overflow-hidden group/upload">
                                         <input type="file" accept="image/*" onChange={handlePhotoChange} className="absolute inset-0 opacity-0 cursor-pointer z-20" />
                                         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                                             <ImageIcon className="w-8 h-8 text-slate-200 group-hover/upload:text-primary transition-colors" />
@@ -238,7 +238,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
                                 </button>
                             </form>
                         ) : (
-                            <section className="bg-white rounded-[3.5rem] border border-slate-100 p-20 text-center relative overflow-hidden group">
+                            <section className="bg-white rounded-lg border border-slate-100 p-20 text-center relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 p-12 opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-110 transition-transform[2000ms]">
                                     <Lock className="h-64 w-64" />
                                 </div>

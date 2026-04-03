@@ -264,7 +264,7 @@ export default function AdminDashboard({ auth, stats, sdg_distribution, recentRe
                 </div>
 
                 {/* Tactical Global Monitor - COMPACT */}
-                <div className="p-8 bg-[#043d23] rounded-[2.5rem] border border-primary/20 relative overflow-hidden group">
+                <div className="p-8 bg-[#043d23] rounded-lg border border-primary/20 relative overflow-hidden group">
                      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
                         <div className="space-y-4">
                             <div className="flex items-center gap-3">
@@ -306,7 +306,7 @@ function MetricCard({ label, value, icon: Icon, color, description }: any) {
     };
 
     return (
-        <div className="bg-white rounded-[1.5rem] p-5 border border-slate-100 hover:shadow-2xl hover:-translate-y-1 transition-all group relative overflow-hidden">
+        <div className="bg-white rounded-lg p-5 border border-slate-100 hover:shadow-2xl hover:-translate-y-1 transition-all group relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-[0.03] text-slate-900 transition-transform group-hover:scale-125">
                  <Icon className="w-16 h-16" />
             </div>

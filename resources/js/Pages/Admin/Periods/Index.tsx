@@ -158,9 +158,9 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                     Emerald Premium Header 
                     Refining from heavy black to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
+                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
                     {/* Background decorations */}
-                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full  -translate-y-1/2 translate-x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
                         <div className="flex items-center gap-3 mb-2">
@@ -171,7 +171,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                                 CYCLE_ORCHESTRATION_V3
                             </span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none ">
                             Manajemen <span className="text-emerald-300 text-glow-emerald italic">Periode</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
@@ -192,7 +192,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                         {!showForm && (
                             <button
                                 onClick={openCreateForm}
-                                className="flex items-center gap-4 px-10 py-5.5 bg-white hover:bg-emerald-50 text-primary rounded-[1.5rem] font-black text-xs uppercase  transition-all hover:-translate-y-1 active:scale-95 italic"
+                                className="flex items-center gap-4 px-10 py-5.5 bg-white hover:bg-emerald-50 text-primary rounded-lg font-black text-xs uppercase  transition-all hover:-translate-y-1 active:scale-95 italic"
                             >
                                 <Plus className="w-5 h-5" />
                                 Inisiasi Periode
@@ -203,7 +203,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
 
                 {/* Entry Form */}
                 {showForm && (
-                    <div className="animate-in rounded-[3rem] border border-slate-100 bg-white p-10 relative overflow-hidden group mb-10 mx-2">
+                    <div className="animate-in rounded-lg border border-slate-100 bg-white p-10 relative overflow-hidden group mb-10 mx-2">
                         <div className="mb-10 flex items-center justify-between relative z-10">
                             <div className="flex items-center gap-5">
                                 <div className="rounded-[1.25rem] bg-primary/10 p-4 text-primary
@@ -266,7 +266,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                             </div>
 
                             <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
-                                <div className="p-10 bg-slate-50/50 rounded-[2.5rem] border border-slate-100 space-y-8">
+                                <div className="p-10 bg-slate-50/50 rounded-lg border border-slate-100 space-y-8">
                                     <div className="flex items-center gap-4 pb-4 border-b border-white">
                                         <Calendar className="h-5 w-5 text-primary" />
                                         <h3 className="text-[11px] font-black uppercase  text-slate-400 italic">Jadwal Pendaftaran</h3>
@@ -282,7 +282,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                                         </div>
                                     </div>
                                 </div>
-                                <div className="p-10 bg-slate-50/50 rounded-[2.5rem] border border-slate-100 space-y-8">
+                                <div className="p-10 bg-slate-50/50 rounded-lg border border-slate-100 space-y-8">
                                     <div className="flex items-center gap-4 pb-4 border-b border-white">
                                         <Map className="h-5 w-5 text-primary" />
                                         <h3 className="text-[11px] font-black uppercase  text-slate-400 italic">Pelaksanaan Lapangan</h3>
@@ -338,7 +338,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                 )}
 
                 {/* Operations Table */}
-                <div className="bg-white rounded-[3rem] border border-slate-100 overflow-hidden mb-10 mx-2">
+                <div className="bg-white rounded-lg border border-slate-100 overflow-hidden mb-10 mx-2">
                     <div className="p-10 border-b border-slate-50 bg-slate-50/50">
                         <div className="relative group max-w-md w-full">
                             <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-primary transition-all z-10" />
@@ -468,7 +468,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
                 </div>
 
                 {/* Tactical Emerald Footer */}
-                <div className="p-12 bg-slate-900 rounded-[3.5rem] border border-slate-800 relative overflow-hidden group mx-4">
+                <div className="p-12 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group mx-4">
                      {/* Decorative Elements */}
                      <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
                      

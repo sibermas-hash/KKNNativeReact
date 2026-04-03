@@ -80,7 +80,7 @@ export default function DplDailyReportShow({ report }: Props) {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                     <div className="lg:col-span-2 space-y-10">
                         {/* Main Content Card */}
-                        <section className="bg-white rounded-[3rem] border border-slate-100 p-10 relative overflow-hidden group">
+                        <section className="bg-white rounded-lg border border-slate-100 p-10 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-12 opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-110 transition-transform[2000ms]">
                                 <FileText className="h-64 w-64" />
                             </div>
@@ -105,7 +105,7 @@ export default function DplDailyReportShow({ report }: Props) {
                                         <h3 className="text-[10px] font-black uppercase  text-primary flex items-center gap-2">
                                             <Activity className="w-4 h-4" /> Uraian Operasional
                                         </h3>
-                                        <p className="text-sm font-medium text-slate-600 leading-relaxed bg-slate-50 p-8 rounded-[2.5rem] italic
+                                        <p className="text-sm font-medium text-slate-600 leading-relaxed bg-slate-50 p-8 rounded-lg italic
                                             {report.activity}
                                         </p>
                                     </div>
@@ -126,7 +126,7 @@ export default function DplDailyReportShow({ report }: Props) {
 
                         {/* Attachments Section */}
                         {report.file_kegiatan.length > 0 && (
-                            <section className="bg-white rounded-[3rem] border border-slate-100 p-10 italic">
+                            <section className="bg-white rounded-lg border border-slate-100 p-10 italic">
                                 <h3 className="text-xs font-black uppercase  text-slate-900 mb-8 flex items-center gap-3">
                                     <ImageIcon className="w-5 h-5 text-slate-400" /> Bukti Dokumentasi Lapangan
                                 </h3>
@@ -155,7 +155,7 @@ export default function DplDailyReportShow({ report }: Props) {
 
                     <aside className="space-y-10 italic">
                         {/* Geotagging Verification Card */}
-                        <section className="bg-slate-900 rounded-[2.5rem] p-10 border border-slate-800 relative overflow-hidden group">
+                        <section className="bg-slate-900 rounded-lg p-10 border border-slate-800 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-8 opacity-10 text-primary group-hover:scale-125 transition-transform pointer-events-none">
                                 <Navigation className="h-32 w-32" />
                             </div>
@@ -192,7 +192,7 @@ export default function DplDailyReportShow({ report }: Props) {
 
                         {/* Review Action Card */}
                         {canReview && (
-                            <section className="bg-white rounded-[2.5rem] border border-slate-100 p-10 italic">
+                            <section className="bg-white rounded-lg border border-slate-100 p-10 italic">
                                 <h3 className="text-xs font-black uppercase  text-slate-900 mb-8 border-b border-slate-50 pb-6 italic">Otoritas Verifikasi</h3>
                                 <div className="space-y-5 italic">
                                     <button 
@@ -234,7 +234,7 @@ export default function DplDailyReportShow({ report }: Props) {
                         )}
 
                         {report.review_notes && (
-                            <section className="bg-amber-50 rounded-[2.5rem] border border-amber-100 p-8 italic">
+                            <section className="bg-amber-50 rounded-lg border border-amber-100 p-8 italic">
                                 <div className="flex items-center gap-3 mb-4">
                                     <AlertCircle className="w-4 h-4 text-amber-600" />
                                     <h4 className="text-[10px] font-black text-amber-800 uppercase  Revisi Aktif</h4>

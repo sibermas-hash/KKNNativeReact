@@ -61,7 +61,7 @@ export default function DplGroupShow({ group }: Props) {
             
             <div className="space-y-10 pb-16">
                 {/* Modern Header */}
-                <div className="bg-white rounded-[2.5rem] border border-slate-200 p-10 flex flex-col md:flex-row items-center gap-10 relative overflow-hidden group">
+                <div className="bg-white rounded-lg border border-slate-200 p-10 flex flex-col md:flex-row items-center gap-10 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-10 opacity-[0.03] text-primary group-hover:scale-110 transition-transform pointer-events-none">
                         <SparklesIcon className="h-48 w-48" />
                     </div>
@@ -99,7 +99,7 @@ export default function DplGroupShow({ group }: Props) {
                 {/* Info Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                     <div className="lg:col-span-1 space-y-10">
-                        <section className="bg-white rounded-[2.5rem] border border-slate-200 p-10 relative overflow-hidden group h-fit">
+                        <section className="bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group h-fit">
                             <div className="flex items-center gap-4 mb-10 border-b border-slate-50 pb-6">
                                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
                                     <InformationCircleIcon className="h-5 w-5 text-slate-400" />
@@ -135,7 +135,7 @@ export default function DplGroupShow({ group }: Props) {
                         </section>
 
                         {/* Data Posko Lapangan */}
-                        <section className="bg-white rounded-[2.5rem] border border-slate-200 p-10 relative overflow-hidden group h-fit">
+                        <section className="bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group h-fit">
                             <div className="flex items-center gap-4 mb-8 border-b border-slate-50 pb-6">
                                 <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
                                     <ShieldCheckIcon className="h-5 w-5 text-emerald-600" />
@@ -190,7 +190,7 @@ export default function DplGroupShow({ group }: Props) {
                         </section>
                     </div>
 
-                    <section className="lg:col-span-2 bg-white rounded-[2.5rem] border border-slate-200 p-10 relative overflow-hidden group">
+                    <section className="lg:col-span-2 bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group">
                         <div className="flex items-center justify-between mb-10 border-b border-slate-50 pb-6 px-2">
                             <div className="flex items-center gap-4">
                                 <div className="p-3 bg-primary/10 rounded-xl border border-primary/20">
@@ -230,7 +230,7 @@ export default function DplGroupShow({ group }: Props) {
                 </div>
 
                 {/* Member Ledger */}
-                <section className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden">
+                <section className="bg-white rounded-lg border border-slate-200 overflow-hidden">
                     <div className="p-10 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-50/50">
                         <div className="flex items-center gap-4">
                             <div className="p-3 bg-white rounded-xl border border-slate-100

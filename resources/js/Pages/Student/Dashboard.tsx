@@ -157,7 +157,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                 </div>
 
                 {/* Road to Success - Progress Viz */}
-                <div className="bg-white rounded-[3.5rem] p-12 border border-slate-100 relative group overflow-hidden">
+                <div className="bg-white rounded-lg p-12 border border-slate-100 relative group overflow-hidden">
                     <div className="flex items-center gap-4 mb-16 relative z-10">
                         <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-100 group-hover:text-primary transition-colors">
                             <Activity className="h-6 w-6 text-primary" />
@@ -208,7 +208,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                     <div className="lg:col-span-2 space-y-12">
                         {isGroupPinned ? (
-                            <section className="bg-white rounded-[3.5rem] p-12 border border-slate-100 relative overflow-hidden group">
+                            <section className="bg-white rounded-lg p-12 border border-slate-100 relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 p-16 opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-125 transition-transform">
                                     <MapPin className="h-64 w-64" />
                                 </div>
@@ -230,7 +230,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                                             {registration.group.location?.name ?? 'Lokasi Belum Ditetapkan'}
                                         </h2>
                                         <div className="mt-8 flex items-center gap-4">
-                                            <span className="text-slate-900 text-xl font-black uppercase  bg-slate-50 border border-slate-100 px-8 py-3.5 rounded-[1.5rem] tabular-nums italic
+                                            <span className="text-slate-900 text-xl font-black uppercase  bg-slate-50 border border-slate-100 px-8 py-3.5 rounded-lg tabular-nums italic
                                                 {registration.group.name}
                                             </span>
                                             <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
@@ -239,7 +239,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10 pt-12 border-t border-slate-50">
-                                        <div className="flex items-center gap-6 p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100 group/item hover:bg-white hover:border-primary/20 transition-all cursor-default
+                                        <div className="flex items-center gap-6 p-8 rounded-lg bg-slate-50 border border-slate-100 group/item hover:bg-white hover:border-primary/20 transition-all cursor-default
                                             <div className="h-16 w-16 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover/item:text-primary group-hover/item:border-primary/20 transition-all
                                                 <User className="h-8 w-8" />
                                             </div>
@@ -248,7 +248,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                                                 <p className="font-black text-base text-slate-900  uppercase italic">{registration.group.lecturer?.name ?? 'Belum Ditetapkan'}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-6 p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100 group/item hover:bg-white hover:border-primary/20 transition-all cursor-default
+                                        <div className="flex items-center gap-6 p-8 rounded-lg bg-slate-50 border border-slate-100 group/item hover:bg-white hover:border-primary/20 transition-all cursor-default
                                             <div className="h-16 w-16 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover/item:text-primary group-hover/item:border-primary/20 transition-all
                                                 <Calendar className="h-8 w-8" />
                                             </div>
@@ -261,7 +261,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                                 </div>
                             </section>
                         ) : (
-                            <section className="bg-white rounded-[3.5rem] border-2 border-dashed border-slate-100 p-24 text-center group transition-all hover:border-primary/40 hover:bg-primary/5
+                            <section className="bg-white rounded-lg border-2 border-dashed border-slate-100 p-24 text-center group transition-all hover:border-primary/40 hover:bg-primary/5
                                 <div className="relative inline-block mb-10">
                                     <MapPin className={clsx("h-20 w-20 transition-all", isPending ? "text-amber-200" : "text-slate-100")} />
                                     <div className={clsx("absolute top-0 right-0 h-5 w-5 rounded-full animate-ping", isPending ? "bg-amber-400" : "bg-primary")} />
@@ -311,7 +311,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
 
                     {/* Navigation Sidebar */}
                     <div className="space-y-12">
-                        <section className="bg-white rounded-[3rem] border border-slate-100 p-10 h-fit">
+                        <section className="bg-white rounded-lg border border-slate-100 p-10 h-fit">
                             <div className="flex items-center gap-4 mb-12 border-b border-slate-50 pb-8">
                                 <div className="p-3 bg-slate-50 rounded-lg text-slate-400 border border-slate-100">
                                     <Zap className="h-6 w-6" />
@@ -354,7 +354,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                             </div>
                         </section>
 
-                        <section className="bg-white rounded-[3rem] p-10 border border-slate-100 relative overflow-hidden group italic">
+                        <section className="bg-white rounded-lg p-10 border border-slate-100 relative overflow-hidden group italic">
                             <div className="absolute top-0 right-0 p-10 opacity-[0.02] text-primary group-hover:scale-125 transition-transform pointer-events-none">
                                 <Info className="h-40 w-40" />
                             </div>
@@ -409,7 +409,7 @@ function StatCard({ title, value, unit, icon: Icon, color }: any) {
     };
 
     return (
-        <div className="bg-white border border-slate-100 rounded-[3rem] p-10 hover:shadow-2xl hover:-translate-y-1.5 transition-all group overflow-hidden relative">
+        <div className="bg-white border border-slate-100 rounded-lg p-10 hover:shadow-2xl hover:-translate-y-1.5 transition-all group overflow-hidden relative">
             <div className="absolute top-0 right-0 p-6 opacity-[0.02] text-slate-900 transition-transform group-hover:scale-150 group-hover:rotate-12">
                 <Icon className="h-24 w-24" />
             </div>
@@ -435,7 +435,7 @@ function StatCard({ title, value, unit, icon: Icon, color }: any) {
 function QuickActionButton({ href, icon: Icon, label, desc, disabled }: any) {
     if (disabled) {
         return (
-            <div className="flex items-center gap-6 p-7 rounded-[2.5rem] bg-slate-50 border border-slate-100 opacity-40 cursor-not-allowed">
+            <div className="flex items-center gap-6 p-7 rounded-lg bg-slate-50 border border-slate-100 opacity-40 cursor-not-allowed">
                 <div className="h-16 w-16 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-200
                     <Icon className="h-8 w-8" />
                 </div>
@@ -450,7 +450,7 @@ function QuickActionButton({ href, icon: Icon, label, desc, disabled }: any) {
     return (
         <Link
             href={href}
-            className="flex items-center gap-6 p-7 rounded-[2.5rem] bg-white border border-slate-100 transition-all hover:bg-slate-50 hover:border-primary/20 hover:shadow-xl group active:scale-95
+            className="flex items-center gap-6 p-7 rounded-lg bg-white border border-slate-100 transition-all hover:bg-slate-50 hover:border-primary/20 hover:shadow-xl group active:scale-95
         >
             <div className="h-16 w-16 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:bg-white group-hover:border-primary/20 transition-all
                 <Icon className="h-8 w-8" />

@@ -182,9 +182,9 @@ export default function WorkshopIndex({ workshops }: Props) {
                     Emerald Premium Header 
                     Replacing light header with a premium emerald tactical gradient
                 */}
-                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
+                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
                     {/* Background decorations */}
-                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full  -translate-y-1/2 translate-x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
                         <div className="flex items-center gap-3 mb-2">
@@ -195,7 +195,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                                 WORKSHOP_STRATEGY_UNIT_V3
                             </span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none ">
                             Pusat <span className="text-emerald-300 text-glow-emerald italic">Pembekalan</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
@@ -207,7 +207,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                         <button
                             onClick={() => (showForm ? resetWorkshopForm() : openCreateForm())}
                             className={clsx(
-                                "flex items-center gap-4 px-10 py-5.5 rounded-[1.5rem] font-black text-xs uppercase  italic transition-all active:scale-95",
+                                "flex items-center gap-4 px-10 py-5.5 rounded-lg font-black text-xs uppercase  italic transition-all active:scale-95",
                                 showForm 
                                     ? "bg-white/20 text-white border border-white/20 
                                     : "bg-white text-primary hover:bg-emerald-50 hover:-translate-y-1"
@@ -220,7 +220,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                 </div>
 
                 {showForm && (
-                    <div className="bg-white rounded-[3rem] border border-slate-100 overflow-hidden zoom-in-95 relative group mx-2">
+                    <div className="bg-white rounded-lg border border-slate-100 overflow-hidden zoom-in-95 relative group mx-2">
                         <div className="absolute top-0 right-0 p-16 opacity-[0.02] text-slate-900 pointer-events-none group-hover:rotate-12 transition-transform">
                              <GraduationCap className="h-80 w-80" />
                         </div>
@@ -374,7 +374,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                 {/* Modules Grid - Tactical Card Engine */}
                 <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:mx-2">
                     {workshops.length > 0 ? workshops.map((workshop) => (
-                        <div key={workshop.id} className="bg-white rounded-[3rem] border border-slate-100 group hover:border-primary/30 hover:shadow-2xl hover:-translate-y-2 transition-all overflow-hidden relative flex flex-col">
+                        <div key={workshop.id} className="bg-white rounded-lg border border-slate-100 group hover:border-primary/30 hover:shadow-2xl hover:-translate-y-2 transition-all overflow-hidden relative flex flex-col">
                             <div className={clsx(
                                 "h-2 w-full",
                                 workshop.is_full ? "bg-rose-500" : "bg-primary"
@@ -429,7 +429,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                                 <button
                                     type="button"
                                     onClick={() => openParticipants(workshop)}
-                                    className="flex-1 py-4 bg-white border border-slate-200 text-[10px] font-black text-slate-400 uppercase  rounded-[1.5rem] hover:text-primary hover:border-primary transition-all italic hover:scale-105 active:scale-95 leading-none"
+                                    className="flex-1 py-4 bg-white border border-slate-200 text-[10px] font-black text-slate-400 uppercase  rounded-lg hover:text-primary hover:border-primary transition-all italic hover:scale-105 active:scale-95 leading-none"
                                 >
                                     LIHAT DAFTAR PESERTA
                                 </button>
@@ -437,7 +437,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                                     type="button"
                                     onClick={() => openAttendance(workshop)}
                                     disabled={workshop.participants.length === 0 || workshop.status === 'cancelled'}
-                                    className="flex-1 py-4 bg-primary text-white text-[10px] font-black uppercase  rounded-[1.5rem] hover:bg-primary-dark transition-all italic hover:scale-105 active:scale-95 leading-none disabled:opacity-50 disabled:hover:scale-100"
+                                    className="flex-1 py-4 bg-primary text-white text-[10px] font-black uppercase  rounded-lg hover:bg-primary-dark transition-all italic hover:scale-105 active:scale-95 leading-none disabled:opacity-50 disabled:hover:scale-100"
                                 >
                                     INPUT PRESENSI
                                 </button>
@@ -445,7 +445,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                                     type="button"
                                     onClick={() => openEditForm(workshop)}
                                     disabled={!workshop.can_edit}
-                                    className="flex-1 py-4 bg-white border border-slate-200 text-[10px] font-black text-slate-400 uppercase  rounded-[1.5rem] hover:text-primary hover:border-primary transition-all italic hover:scale-105 active:scale-95 leading-none disabled:opacity-50 disabled:hover:scale-100"
+                                    className="flex-1 py-4 bg-white border border-slate-200 text-[10px] font-black text-slate-400 uppercase  rounded-lg hover:text-primary hover:border-primary transition-all italic hover:scale-105 active:scale-95 leading-none disabled:opacity-50 disabled:hover:scale-100"
                                 >
                                     UBAH DATA
                                 </button>
@@ -453,7 +453,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                                     type="button"
                                     onClick={() => cancelWorkshop(workshop)}
                                     disabled={!workshop.can_cancel}
-                                    className="flex-1 py-4 bg-rose-50 border border-rose-100 text-[10px] font-black text-rose-500 uppercase  rounded-[1.5rem] hover:bg-rose-100 transition-all italic hover:scale-105 active:scale-95 leading-none disabled:opacity-50 disabled:hover:scale-100"
+                                    className="flex-1 py-4 bg-rose-50 border border-rose-100 text-[10px] font-black text-rose-500 uppercase  rounded-lg hover:bg-rose-100 transition-all italic hover:scale-105 active:scale-95 leading-none disabled:opacity-50 disabled:hover:scale-100"
                                 >
                                     BATALKAN KEGIATAN
                                 </button>
@@ -473,7 +473,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                 </div>
 
                 {/* Tactical Emerald Footer */}
-                <div className="p-12 bg-slate-900 rounded-[3.5rem] border border-slate-800 relative overflow-hidden group mx-4">
+                <div className="p-12 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group mx-4">
                      {/* Decorative Elements */}
                      <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
                      
@@ -512,13 +512,13 @@ export default function WorkshopIndex({ workshops }: Props) {
                 {/* Attendance Ingestion Modal */}
                 {showAttendanceModal && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-slate-900/60">
-                        <div className="bg-white rounded-[3.5rem] w-full max-w-xl p-12 border border-slate-100 relative zoom-in-95 overflow-hidden group/modal">
+                        <div className="bg-white rounded-lg w-full max-w-xl p-12 border border-slate-100 relative zoom-in-95 overflow-hidden group/modal">
                             <div className="absolute top-0 right-0 p-12 opacity-[0.05] text-slate-900 pointer-events-none group-hover/modal:rotate-12 transition-transform">
                                  <BadgeCheck className="h-40 w-40" />
                             </div>
 
                             <div className="flex items-center justify-between mb-10 relative z-10">
-                                <div className="p-4 rounded-[1.5rem] bg-primary text-white
+                                <div className="p-4 rounded-lg bg-primary text-white
                                     <Zap className="h-8 w-8 stroke-[2.5px]" />
                                 </div>
                                 <button onClick={() => setShowAttendanceModal(false)} className="p-3 bg-slate-50 rounded-lg hover:bg-slate-100 text-slate-300 hover:text-rose-500 transition-all hover:rotate-90">
@@ -534,7 +534,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                             </div>
 
                             <form onSubmit={submitAttendance} className="space-y-10 relative z-10">
-                                <div className="p-8 bg-slate-900 rounded-[2.5rem] border border-slate-800 flex gap-6 group hover:border-primary/30 transition-all">
+                                <div className="p-8 bg-slate-900 rounded-lg border border-slate-800 flex gap-6 group hover:border-primary/30 transition-all">
                                     <div className="p-3 bg-white/5 rounded-lg text-primary shrink-0 group-hover:scale-110 transition-transform">
                                          <Fingerprint className="h-8 w-8 stroke-[2px]" />
                                     </div>
@@ -584,7 +584,7 @@ export default function WorkshopIndex({ workshops }: Props) {
                                                 </div>
 
                                                 {modalMode === 'attendance' ? (
-                                                    <label className="flex shrink-0 items-center gap-3 rounded-[1.5rem] border border-slate-200 bg-white px-4 py-3 cursor-pointer group/check">
+                                                    <label className="flex shrink-0 items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 cursor-pointer group/check">
                                                         <input
                                                             type="checkbox"
                                                             checked={selected}

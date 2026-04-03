@@ -39,7 +39,7 @@ export default function AuditLogShow({ log }: { log: any }) {
                 <div className="flex items-center gap-6">
                     <Link
                         href={route('admin.audit-log.index')}
-                        className="p-4 bg-white border border-slate-200 rounded-[1.5rem] text-slate-400 hover:text-primary transition-all group hover:-translate-x-1 active:scale-95"
+                        className="p-4 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary transition-all group hover:-translate-x-1 active:scale-95"
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </Link>
@@ -53,7 +53,7 @@ export default function AuditLogShow({ log }: { log: any }) {
                 </div>
 
                 {/* Main Hero Summary Card */}
-                <div className="relative bg-white rounded-[3rem] border border-slate-100 overflow-hidden group">
+                <div className="relative bg-white rounded-lg border border-slate-100 overflow-hidden group">
                     <div className="absolute top-0 right-0 p-12 opacity-[0.02] text-slate-900 pointer-events-none transition-transform group-hover:rotate-12 group-hover:scale-110">
                         <Activity className="h-64 w-64" />
                     </div>
@@ -114,7 +114,7 @@ export default function AuditLogShow({ log }: { log: any }) {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                     {/* Technical Specification */}
                     <div className="lg:col-span-1 space-y-8">
-                        <section className="bg-white rounded-[2.5rem] p-10 border border-slate-100 relative overflow-hidden group/spec">
+                        <section className="bg-white rounded-lg p-10 border border-slate-100 relative overflow-hidden group/spec">
                              <div className="absolute -bottom-6 -left-6 opacity-[0.02] text-slate-900 pointer-events-none group-hover/spec:scale-110 transition-transform">
                                 <Terminal className="h-32 w-32" />
                             </div>
@@ -148,8 +148,8 @@ export default function AuditLogShow({ log }: { log: any }) {
                             </div>
                         </section>
 
-                        <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white relative overflow-hidden group/policy">
-                            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent pointer-events-none" />
+                        <div className="bg-slate-900 rounded-lg p-10 text-white relative overflow-hidden group/policy">
+                            <div className="absolute inset-0 bg-white from-primary/20 to-transparent pointer-events-none" />
                             <div className="relative z-10 flex flex-col items-center text-center">
                                 <ShieldCheck className="w-12 h-12 text-primary mb-4 opacity-80" />
                                 <h4 className="text-lg font-bold  uppercase mb-2">Keamanan Sistem</h4>
@@ -161,7 +161,7 @@ export default function AuditLogShow({ log }: { log: any }) {
                     </div>
 
                     {/* Mutation Inspector */}
-                    <div className="lg:col-span-2 bg-white rounded-[3rem] p-10 border border-slate-100 group/mut relative overflow-hidden">
+                    <div className="lg:col-span-2 bg-white rounded-lg p-10 border border-slate-100 group/mut relative overflow-hidden">
                         <div className="absolute -top-10 -right-10 opacity-[0.01] text-slate-900 pointer-events-none transition-transform group-hover/mut:-rotate-12">
                             <Cpu className="h-64 w-64" />
                         </div>

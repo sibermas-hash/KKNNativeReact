@@ -107,7 +107,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
                         {progress.map((item) => (
                             <article
                                 key={item.type}
-                                className="bg-white rounded-[2.5rem] border border-slate-100 p-8 hover:border-primary/20 transition-all"
+                                className="bg-white rounded-lg border border-slate-100 p-8 hover:border-primary/20 transition-all"
                             >
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                     <div className="flex items-start gap-5">
@@ -152,7 +152,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
                         ))}
                     </section>
 
-                    <section className="bg-white rounded-[2.5rem] border border-slate-100 p-8 h-fit">
+                    <section className="bg-white rounded-lg border border-slate-100 p-8 h-fit">
                         <div className="flex items-center gap-4 mb-8">
                             <div className="p-3 bg-primary/10 rounded-lg text-primary">
                                 <UploadCloud className="h-6 w-6" />

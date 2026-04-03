@@ -90,7 +90,7 @@ export default function ProfileShow() {
                                         className="h-32 w-32 rounded-full border-4 border-white/10 object-cover
                                     />
                                 ) : (
-                                    <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-white/10 bg-gradient-to-br from-emerald-500/30 to-blue-500/30 text-4xl font-bold text-white
+                                    <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-white/10 bg-white from-emerald-500/30 to-blue-500/30 text-4xl font-bold text-white
                                         {user.name.charAt(0).toUpperCase()}
                                     </div>
                                 )}
@@ -178,7 +178,7 @@ export default function ProfileShow() {
                                 <button
                                     type="submit"
                                     disabled={processing}
-                                    className="rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 px-6 py-2 text-sm font-semibold text-white transition hover:from-emerald-700 hover:to-emerald-600 disabled:opacity-60"
+                                    className="rounded-lg bg-white from-emerald-600 to-emerald-500 px-6 py-2 text-sm font-semibold text-white transition hover:from-emerald-700 hover:to-emerald-600 disabled:opacity-60"
                                 >
                                     {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
                                 </button>
@@ -239,7 +239,7 @@ export default function ProfileShow() {
                                 <button
                                     type="submit"
                                     disabled={passwordForm.processing}
-                                    className="rounded-lg bg-gradient-to-r from-rose-600 to-rose-500 px-6 py-2 text-sm font-semibold text-white transition hover:from-rose-700 hover:to-rose-600 disabled:opacity-60"
+                                    className="rounded-lg bg-white from-rose-600 to-rose-500 px-6 py-2 text-sm font-semibold text-white transition hover:from-rose-700 hover:to-rose-600 disabled:opacity-60"
                                 >
                                     {passwordForm.processing ? 'Mengubah...' : 'Ubah Password'}
                                 </button>

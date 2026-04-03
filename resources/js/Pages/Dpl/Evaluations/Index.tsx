@@ -233,7 +233,7 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
                                 </div>
                             )}
 
-                            <div className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden">
+                            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left border-collapse">
                                         <thead>
@@ -300,7 +300,7 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
                     </div>
 
                     <div className="space-y-10">
-                        <section className="bg-white rounded-[2.5rem] border border-slate-200 p-10 relative overflow-hidden group h-fit">
+                        <section className="bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group h-fit">
                             <div className="absolute top-0 right-0 p-8 opacity-[0.02] text-primary group-hover:scale-125 transition-transform pointer-events-none">
                                 <CloudArrowUpIcon className="h-32 w-32" />
                             </div>
@@ -359,7 +359,7 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
                             </form>
                         </section>
 
-                        <section className="bg-primary/5 rounded-[2.5rem] p-10 border border-primary/10 relative overflow-hidden group">
+                        <section className="bg-primary/5 rounded-lg p-10 border border-primary/10 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-8 opacity-[0.05] text-primary group-hover:scale-125 transition-transform pointer-events-none">
                                 <InformationCircleIcon className="h-32 w-32" />
                             </div>

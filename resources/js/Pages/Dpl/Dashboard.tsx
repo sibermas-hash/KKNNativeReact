@@ -117,7 +117,7 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
                     {/* Activity Heatmap & Unit List */}
                     <div className="lg:col-span-2 space-y-10">
                         {/* Heatmap Section */}
-                        <div className="bg-white rounded-[2.5rem] border border-slate-200 p-10 relative overflow-hidden group">
+                        <div className="bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-8 opacity-[0.02] text-slate-900 pointer-events-none group-hover:rotate-12 transition-transform">
                                 <Cpu className="h-32 w-32" />
                             </div>
@@ -156,7 +156,7 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
                         </div>
 
                         {/* Groups Registry */}
-                        <div className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden">
+                        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
                             <div className="px-10 py-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                                 <div>
                                     <h3 className="text-xl font-black text-slate-900  uppercase italic leading-none">Daftar Unit Bimbingan</h3>
@@ -223,7 +223,7 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
 
                     {/* Operational Intelligence Sidebar */}
                     <div className="lg:col-span-1 space-y-10">
-                        <section className="bg-white rounded-[2.5rem] p-10 border border-slate-200 relative overflow-hidden group h-fit">
+                        <section className="bg-white rounded-lg p-10 border border-slate-200 relative overflow-hidden group h-fit">
                             <div className="absolute top-0 right-0 p-8 opacity-[0.03] text-rose-500 pointer-events-none group-hover:scale-110 transition-transform">
                                 <Zap className="h-32 w-32" />
                             </div>
@@ -243,7 +243,7 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
                                         
                                         <div className="space-y-4">
                                             {atRiskStudents.slice(0, 5).map((s) => (
-                                                <div key={s.id} className="p-5 rounded-[1.5rem] bg-slate-50 border border-slate-100 hover:border-rose-100 hover:bg-white transition-all group/item hover:shadow-md">
+                                                <div key={s.id} className="p-5 rounded-lg bg-slate-50 border border-slate-100 hover:border-rose-100 hover:bg-white transition-all group/item hover:shadow-md">
                                                     <div className="flex justify-between items-start mb-2">
                                                         <p className="text-sm font-extrabold text-slate-900 group-hover/item:text-rose-500 transition-colors  uppercase italic">{s.user?.name}</p>
                                                     </div>
@@ -301,7 +301,7 @@ function AnalyticsCard({ title, value, unit, icon: Icon, color, delay, mounted }
     return (
         <div
             className={clsx(
-                "bg-white border border-slate-200 rounded-[2.5rem] p-10 hover:shadow-xl transition-all group relative overflow-hidden",
+                "bg-white border border-slate-200 rounded-lg p-10 hover:shadow-xl transition-all group relative overflow-hidden",
                 mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
             )}
             style={{ transitionDelay: `${delay}ms` }}

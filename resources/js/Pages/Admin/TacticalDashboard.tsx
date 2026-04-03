@@ -21,7 +21,7 @@ export default function TacticalDashboard() {
       <div className="space-y-12 pb-24">
         
         {/* Simple & Powerful Hero Banner */}
-        <section className="relative overflow-hidden rounded-[3.5rem] bg-gradient-to-br from-[#10a853] via-[#0d8c45] to-[#043d23] p-12 md:p-20 border border-white/20 group">
+        <section className="relative overflow-hidden rounded-lg bg-white from-[#10a853] via-[#0d8c45] to-[#043d23] p-12 md:p-20 border border-white/20 group">
           <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.1),transparent_50%)]" />
           
           <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-16">
@@ -33,7 +33,7 @@ export default function TacticalDashboard() {
                  </span>
               </div>
               
-              <h1 className="text-6xl md:text-8xl font-black italic uppercase  text-white leading-[0.85] drop-shadow-2xl">
+              <h1 className="text-6xl md:text-8xl font-black italic uppercase  text-white leading-[0.85] ">
                 Pusat <br /> 
                 <span className="text-emerald-300 text-glow-emerald italic">KOMANDO</span>
               </h1>
@@ -50,7 +50,7 @@ export default function TacticalDashboard() {
               </div>
             </div>
 
-            <div className="relative z-10 p-1.5 bg-white/10 rounded-[3.5rem] border border-white/20 hidden xl:block">
+            <div className="relative z-10 p-1.5 bg-white/10 rounded-lg border border-white/20 hidden xl:block">
                <div className="bg-slate-900/40 p-12 rounded-[3.3rem] border border-white/10 flex flex-col items-center gap-8 text-center min-w-[320px]">
                   <div className="p-7 bg-white/10rounded-lg border border-white/20 text-emerald-300 animate-pulse">
                       <Activity className="w-16 h-16 stroke-[3px]" />
@@ -74,7 +74,7 @@ export default function TacticalDashboard() {
 
         {/* Intelligence Split View */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          <div className="lg:col-span-2 bg-white rounded-[3.5rem] border border-slate-100 p-12">
+          <div className="lg:col-span-2 bg-white rounded-lg border border-slate-100 p-12">
             <div className="flex items-center justify-between mb-12">
                <div className="flex items-center gap-6">
                   <div className="p-5 bg-primary/5 rounded-[1.75rem] text-primary">
@@ -97,7 +97,7 @@ export default function TacticalDashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-[3.5rem] border border-slate-100 p-12 space-y-10 relative overflow-hidden">
+          <div className="bg-white rounded-lg border border-slate-100 p-12 space-y-10 relative overflow-hidden">
              <div className="relative z-10">
                 <h3 className="text-2xl font-black text-slate-900  uppercase italic leading-none mb-10">Feed Aktivitas</h3>
                 <div className="space-y-8">
@@ -138,7 +138,7 @@ function MetricCard({ label, value, icon: Icon, color, unit, trend }: any) {
   };
 
   return (
-    <div className="bg-white rounded-[3.5rem] p-10 border border-slate-100 hover:shadow-3xl hover:-translate-y-2 transition-all group cursor-default">
+    <div className="bg-white rounded-lg p-10 border border-slate-100 hover:shadow-3xl hover:-translate-y-2 transition-all group cursor-default">
       <div className="flex items-center gap-5 mb-8">
         <div className={clsx("p-5 rounded-[1.75rem] group-hover:rotate-12 transition-all", colorMap[color])}>
            <Icon className="w-7 h-7 stroke-[2.5px]" />

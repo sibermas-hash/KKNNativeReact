@@ -52,7 +52,7 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
                     </div>
 
                     <Link href="/student/daily-reports/create">
-                        <button className="h-16 px-10 rounded-[1.5rem] bg-slate-900 text-white font-black text-[10px] uppercase  flex items-center gap-4 group transition-all hover:bg-black hover:scale-[1.02] active:scale-95 italic">
+                        <button className="h-16 px-10 rounded-lg bg-slate-900 text-white font-black text-[10px] uppercase  flex items-center gap-4 group transition-all hover:bg-black hover:scale-[1.02] active:scale-95 italic">
                             <PlusCircle className="h-5.5 w-5.5 text-primary group-hover:rotate-90 transition-transform" />
                             Buat Laporan Baru
                         </button>
@@ -109,7 +109,7 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
 
                 <div className="space-y-8">
                     {reportList.length === 0 ? (
-                        <div className="bg-white rounded-[3.5rem] border border-slate-100 p-32 text-center group overflow-hidden relative">
+                        <div className="bg-white rounded-lg border border-slate-100 p-32 text-center group overflow-hidden relative">
                              <div className="absolute top-0 left-0 w-full h-full opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-105 transition-transform[2000ms]">
                                 <Search className="h-[400px] w-[400px] -translate-x-1/2 -translate-y-1/2" />
                             </div>
@@ -125,7 +125,7 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
                         reportList.map((r) => (
                             <div 
                                 key={r.id} 
-                                className="group bg-white rounded-[2.5rem] border border-slate-100 p-10 transition-all hover:shadow-2xl hover:border-primary/20 relative overflow-hidden flex flex-col md:flex-row md:items-center gap-10"
+                                className="group bg-white rounded-lg border border-slate-100 p-10 transition-all hover:shadow-2xl hover:border-primary/20 relative overflow-hidden flex flex-col md:flex-row md:items-center gap-10"
                             >
                                 <div className="absolute top-0 right-0 p-12 opacity-[0.02] text-slate-900 pointer-events-none group-hover:rotate-6 group-hover:scale-110 transition-transform">
                                     <Sparkles className="h-40 w-40" />

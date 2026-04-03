@@ -99,7 +99,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                     <div className="lg:col-span-2">
-                        <form onSubmit={handleSubmit} className="bg-white rounded-[3.5rem] border border-slate-100 p-12 space-y-12 relative overflow-hidden group">
+                        <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-slate-100 p-12 space-y-12 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-16 opacity-[0.02] text-slate-900 pointer-events-none group-hover:scale-110 transition-transform[2000ms]">
                                 <FileText className="h-96 w-96" />
                             </div>
@@ -120,7 +120,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
                                                 value={form.data.title} 
                                                 onChange={(e) => form.setData('title', e.target.value)} 
                                                 placeholder="Contoh: Pemberdayaan UMKM Digital..."
-                                                className="w-full bg-slate-50 border-slate-100 rounded-[1.5rem] h-16 px-8 text-base font-black text-slate-900 uppercase italic focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all outline-none italic placeholder:text-slate-200"
+                                                className="w-full bg-slate-50 border-slate-100 rounded-lg h-16 px-8 text-base font-black text-slate-900 uppercase italic focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all outline-none italic placeholder:text-slate-200"
                                                 required 
                                             />
                                             {form.errors.title && <p className="text-[10px] text-rose-500 font-black uppercase  italic ml-2">{form.errors.title}</p>}
@@ -162,7 +162,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
                                                     type="button"
                                                     onClick={() => toggleSdg(sdg.id)}
                                                     className={clsx(
-                                                        "flex items-center gap-4 p-5 rounded-[1.5rem] border transition-all text-left group/sdg relative overflow-hidden",
+                                                        "flex items-center gap-4 p-5 rounded-lg border transition-all text-left group/sdg relative overflow-hidden",
                                                         isSelected
                                                             ? `${sdg.color} text-white border-transparent ring-4 ring-white/10`
                                                             : 'bg-slate-50 border-slate-100 text-slate-400 hover:bg-white hover:border-primary/20'
@@ -208,7 +208,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
                                                     value={form.data.target_participants} 
                                                     onChange={(e) => form.setData('target_participants', e.target.value)} 
                                                     placeholder="Contoh: 50"
-                                                    className="w-full bg-slate-50 border-slate-100 rounded-[1.5rem] h-16 px-8 text-base font-black text-slate-900 tabular-nums focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all outline-none italic"
+                                                    className="w-full bg-slate-50 border-slate-100 rounded-lg h-16 px-8 text-base font-black text-slate-900 tabular-nums focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all outline-none italic"
                                                 />
                                             </div>
                                             <div className="space-y-4">
@@ -218,7 +218,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
                                                     value={form.data.budget} 
                                                     onChange={(e) => form.setData('budget', e.target.value)} 
                                                     placeholder="Contoh: 500000"
-                                                    className="w-full bg-slate-50 border-slate-100 rounded-[1.5rem] h-16 px-8 text-base font-black text-slate-900 tabular-nums focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all outline-none italic"
+                                                    className="w-full bg-slate-50 border-slate-100 rounded-lg h-16 px-8 text-base font-black text-slate-900 tabular-nums focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all outline-none italic"
                                                     required 
                                                 />
                                             </div>
@@ -241,7 +241,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
                     </div>
 
                     <div className="space-y-12">
-                        <section className="bg-slate-900 rounded-[3rem] p-10 border border-slate-800 relative overflow-hidden group
+                        <section className="bg-slate-900 rounded-lg p-10 border border-slate-800 relative overflow-hidden group
                             <div className="absolute top-0 right-0 p-8 opacity-[0.05] text-primary group-hover:scale-125 transition-transform pointer-events-none">
                                 <Sparkles className="h-32 w-32" />
                             </div>
@@ -270,7 +270,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
                             </div>
                         </section>
 
-                        <div className="bg-white border border-slate-100 rounded-[3rem] p-10 relative overflow-hidden group italic">
+                        <div className="bg-white border border-slate-100 rounded-lg p-10 relative overflow-hidden group italic">
                              <div className="absolute top-0 right-0 p-4 opacity-[0.02] text-slate-900 group-hover:rotate-12 transition-transform[2000ms]">
                                 <Activity className="h-[200px] w-[200px]" />
                             </div>

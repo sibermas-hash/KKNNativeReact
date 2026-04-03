@@ -191,7 +191,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
                             <select
                                 value={selectedGroupId || ''}
                                 onChange={(e) => handleGroupChange(e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-100 rounded-[1.5rem] py-5 pl-16 pr-8 text-slate-900 text-[11px] font-black uppercase  focus:bg-white focus:border-primary/40 transition-all outline-none cursor-pointer italic"
+                                className="w-full bg-slate-50 border border-slate-100 rounded-lg py-5 pl-16 pr-8 text-slate-900 text-[11px] font-black uppercase  focus:bg-white focus:border-primary/40 transition-all outline-none cursor-pointer italic"
                             >
                                 <option value="">PILIH IDENTITAS KELOMPOK...</option>
                                 {groups.map(g => (
@@ -219,9 +219,9 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
                     Emerald Premium Header 
                     Refining from basic header to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group transition-all">
+                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group transition-all">
                     {/* Background decorations */}
-                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full  -translate-y-1/2 translate-x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
                         <div className="flex items-center gap-3 mb-2">
@@ -232,7 +232,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
                                 ACADEMIC_GRADING_CENTER_V3
                             </span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none ">
                             Analisis <span className="text-emerald-300 text-glow-emerald italic">Nilai Mahasiswa</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
@@ -296,7 +296,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
                 </div>
 
                 {/* Table Section */}
-                <div className="bg-white rounded-[3.5rem] border border-slate-100 overflow-hidden relative group mx-1">
+                <div className="bg-white rounded-lg border border-slate-100 overflow-hidden relative group mx-1">
                     <div className="overflow-x-auto relative z-10 custom-scrollbar pr-1">
                         <table className="min-w-full divide-y divide-slate-50 text-left italic">
                             <thead className="bg-slate-50/50">
@@ -383,7 +383,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
                 </div>
 
                 {/* Tactical Emerald Footer Monitor */}
-                <div className="p-12 bg-slate-900 rounded-[3.5rem] border border-slate-800 relative overflow-hidden group mx-1">
+                <div className="p-12 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group mx-1">
                      {/* Decorative Elements */}
                      <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
 
@@ -536,7 +536,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
                                                         type="number"
                                                         value={villageForm.data[field.id]}
                                                         onChange={e => villageForm.setData(field.id, e.target.value)}
-                                                        className="w-full bg-slate-50 border border-slate-100 text-6xl font-black text-slate-900 h-32 rounded-[2.5rem] focus:bg-white focus:border-primary/40 transition-all outline-none text-center italic tabular-nums placeholder:opacity-20"
+                                                        className="w-full bg-slate-50 border border-slate-100 text-6xl font-black text-slate-900 h-32 rounded-lg focus:bg-white focus:border-primary/40 transition-all outline-none text-center italic tabular-nums placeholder:opacity-20"
                                                         placeholder="00"
                                                     />
                                                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[8px] font-black text-slate-300 uppercase  italic opacity-0 group-focus-within/input:opacity-100 transition-opacity">{field.sub}</div>
@@ -568,7 +568,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
                                                         type="number"
                                                         value={adminForm.data[field.id]}
                                                         onChange={e => adminForm.setData(field.id, e.target.value)}
-                                                        className="w-full bg-slate-50 border border-slate-100 text-6xl font-black text-slate-900 h-32 rounded-[2.5rem] focus:bg-white focus:border-primary/40 transition-all outline-none text-center italic tabular-nums placeholder:opacity-20"
+                                                        className="w-full bg-slate-50 border border-slate-100 text-6xl font-black text-slate-900 h-32 rounded-lg focus:bg-white focus:border-primary/40 transition-all outline-none text-center italic tabular-nums placeholder:opacity-20"
                                                         placeholder="00"
                                                     />
                                                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[8px] font-black text-slate-300 uppercase  italic opacity-0 group-focus-within/input:opacity-100 transition-opacity">{field.sub}</div>

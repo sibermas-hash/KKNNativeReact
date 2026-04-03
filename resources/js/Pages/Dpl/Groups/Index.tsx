@@ -59,7 +59,7 @@ export default function DplGroupsIndex({ groups }: Props) {
                 </div>
 
                 {groups.length === 0 ? (
-                    <div className="bg-white rounded-[2.5rem] border border-slate-200 p-24 text-center group
+                    <div className="bg-white rounded-lg border border-slate-200 p-24 text-center group
                         <div className="relative inline-block mb-6">
                             <IdentificationIcon className="h-16 w-16 text-slate-100 group-hover:scale-110 transition-transform" />
                             <div className="absolute top-0 right-0 h-4 w-4 bg-slate-200 rounded-full animate-ping" />
@@ -73,7 +73,7 @@ export default function DplGroupsIndex({ groups }: Props) {
                             <Link 
                                 key={g.id} 
                                 href={`/dpl/groups/${g.id}`} 
-                                className="group block bg-white rounded-[2.5rem] border border-slate-200 p-8 transition-all hover:shadow-xl hover:border-primary/30 relative overflow-hidden"
+                                className="group block bg-white rounded-lg border border-slate-200 p-8 transition-all hover:shadow-xl hover:border-primary/30 relative overflow-hidden"
                             >
                                 <div className="absolute top-0 right-0 p-8 opacity-[0.02] text-slate-900 pointer-events-none group-hover:rotate-12 transition-transform">
                                     <SparklesIcon className="h-32 w-32" />

@@ -102,7 +102,7 @@ export default function ImportPreview({ preview, group }: Props) {
 
                     {/* Right side: Table Preview */}
                     <div className="lg:col-span-3">
-                        <div className="bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden">
+                        <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-slate-50 border-b border-slate-100 font-black uppercase text-[10px] text-slate-500 

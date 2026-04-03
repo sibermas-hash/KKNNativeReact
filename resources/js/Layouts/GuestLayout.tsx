@@ -12,7 +12,7 @@ export default function GuestLayout({
 
       {/* STATIC BACKGROUND OVERLAY - NO ANIMATION FOR STABILITY */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-DEFAULT/5 via-white to-emerald-500/10" />
+        <div className="absolute inset-0 bg-white from-primary-DEFAULT/5 via-white to-emerald-500/10" />
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4" />
       </div>
 
@@ -41,7 +41,7 @@ export default function GuestLayout({
           </div>
           
           {/* Accent Bottom */}
-          <div className="absolute bottom-0 inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+          <div className="absolute bottom-0 inset-x-0 h-1.5 bg-white from-transparent via-primary/30 to-transparent" />
         </div>
 
         {/* CLEAN FOOTER */}

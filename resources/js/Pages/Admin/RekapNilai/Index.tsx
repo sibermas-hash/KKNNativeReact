@@ -160,9 +160,9 @@ export default function RekapNilaiIndex({
                     Emerald Premium Header 
                     Refining from basic header to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
+                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
                     {/* Background decorations */}
-                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full  -translate-y-1/2 translate-x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
                         <div className="flex items-center gap-3 mb-2">
@@ -173,7 +173,7 @@ export default function RekapNilaiIndex({
                                 ACADEMIC_SCORE_AGGREGATOR_V3
                             </span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none ">
                             Rekapitulasi <span className="text-emerald-300 text-glow-emerald italic">Nilai KKN</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
@@ -217,7 +217,7 @@ export default function RekapNilaiIndex({
                         <RekapStatCard label="DATA TERKUNCI" value={stats.finalized} icon={CheckCircle} color="text-emerald-500" bg="bg-emerald-50/50" border="border-emerald-100" />
                         <RekapStatCard label="BELUM FINAL" value={stats.pending} icon={AlertCircle} color="text-rose-500" bg="bg-rose-50/50" border="border-rose-100" />
 
-                        <div className="p-6 bg-gradient-to-br from-primary-dark to-[#043d23]rounded-lg border border-primary/20 flex flex-col justify-between group overflow-hidden relative">
+                        <div className="p-6 bg-white from-primary-dark to-[#043d23]rounded-lg border border-primary/20 flex flex-col justify-between group overflow-hidden relative">
                              <div className="absolute top-0 right-0 p-6 opacity-10 text-emerald-300 pointer-events-none group-hover:scale-110 transition-transform">
                                 <ShieldCheck className="h-16 w-16" />
                             </div>
@@ -244,7 +244,7 @@ export default function RekapNilaiIndex({
                             placeholder="Cari berdasarkan NIM atau Nama..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-14 pr-8 py-4 bg-white border border-slate-200 rounded-[1.5rem] text-sm font-bold text-slate-900 italic  outline-none focus:border-primary/50 transition-all"
+                            className="w-full pl-14 pr-8 py-4 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-900 italic  outline-none focus:border-primary/50 transition-all"
                         />
                     </div>
 
@@ -285,7 +285,7 @@ export default function RekapNilaiIndex({
                     </div>
                 </div>
 
-                <div className="bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden relative">
+                <div className="bg-white rounded-lg border border-slate-100 overflow-hidden relative">
                     <div className="overflow-x-auto relative z-10 custom-scrollbar">
                         <table className="min-w-full divide-y divide-slate-50">
                             <thead className="bg-slate-50/50">
@@ -363,7 +363,7 @@ export default function RekapNilaiIndex({
                     </div>
                 </div>
 
-                <div className="p-10 bg-slate-900 rounded-[3rem] border border-slate-800 relative overflow-hidden group">
+                <div className="p-10 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group">
                      {/* Decorative Elements */}
                      <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
                      
@@ -401,7 +401,7 @@ export default function RekapNilaiIndex({
 
             {selectedStudent && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60">
-                    <div className="bg-white rounded-[3rem] w-full max-w-2xl border border-slate-100 overflow-hidden zoom-in-95 relative">
+                    <div className="bg-white rounded-lg w-full max-w-2xl border border-slate-100 overflow-hidden zoom-in-95 relative">
                         <div className="px-10 py-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
                             <div className="flex items-center gap-5">
                                 <div className="h-14 w-14 rounded-lg bg-slate-900 text-primary flex items-center justify-center text-xl font-bold italic
@@ -429,7 +429,7 @@ export default function RekapNilaiIndex({
                             </div>
 
                             <div className="bg-slate-900rounded-lg p-8 flex items-center justify-between relative overflow-hidden group
-                                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent pointer-events-none" />
+                                <div className="absolute inset-0 bg-white from-primary/5 to-transparent pointer-events-none" />
                                 <div className="relative z-10">
                                     <p className="text-[9px] font-bold text-slate-400 uppercase  mb-3 italic flex items-center gap-2">
                                         <Bolt className="h-3.5 w-3.5 text-primary" />

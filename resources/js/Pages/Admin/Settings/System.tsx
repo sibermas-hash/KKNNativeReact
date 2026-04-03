@@ -72,9 +72,9 @@ export default function SystemSettings({ settings }: Props) {
                     Emerald Premium Header 
                     Refining from basic header to lush tactical emerald gradient
                 */}
-                <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
+                <div className="relative overflow-hidden rounded-lg bg-white from-primary-DEFAULT via-primary-dark to-[#043d23] p-10 md:p-14 border border-primary/20 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group">
                     {/* Background decorations */}
-                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-50" />
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full  -translate-y-1/2 translate-x-1/2 opacity-50" />
                     
                     <div className="relative z-10 space-y-5 flex-1">
                         <div className="flex items-center gap-3 mb-2">
@@ -85,7 +85,7 @@ export default function SystemSettings({ settings }: Props) {
                                 CORE_SYSTEM_GOVERNANCE_V3
                             </span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none drop-shadow-2xl">
+                        <h1 className="text-4xl md:text-5xl font-black text-white  uppercase italic leading-none ">
                             Arsitektur <span className="text-emerald-300 text-glow-emerald italic">Sistem</span>
                         </h1>
                         <p className="text-emerald-50/70 text-sm font-medium italic leading-relaxed max-w-2xl">
@@ -108,7 +108,7 @@ export default function SystemSettings({ settings }: Props) {
 
                 <form onSubmit={submit} className="space-y-12">
                     {Object.entries(settings).map(([group, items]) => (
-                        <div key={group} className="bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden group/card">
+                        <div key={group} className="bg-white rounded-lg border border-slate-100 overflow-hidden group/card">
                             <div className="px-10 py-6 bg-slate-50/50 border-b border-slate-50 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="p-2.5 bg-white rounded-xl text-slate-400 border border-slate-100 group-hover/card:text-primary transition-all
@@ -172,7 +172,7 @@ export default function SystemSettings({ settings }: Props) {
                     {/* 
                         Emerald Tactical Footer Monitor 
                     */}
-                    <div className="p-12 bg-slate-900 rounded-[3.5rem] border border-slate-800 relative overflow-hidden group">
+                    <div className="p-12 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group">
                          {/* Decorative Elements */}
                          <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
                          

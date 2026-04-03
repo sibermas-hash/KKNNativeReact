@@ -207,10 +207,10 @@ class RekapNilaiController extends Controller
                 'kelompok.lokasi',
                 'kelompok.dosen.user',
             ])
-            ->whereIn('mahasiswa_id', $studentIds)
+            ->whereIn('user_id', $studentIds)
             ->whereHas('kelompok', fn($q) => $q->whereIn('code', $groupCodes))
             ->get()
-            ->groupBy(fn($s) => $s->mahasiswa_id . '|' . $s->kelompok->code);
+            ->groupBy(fn($s) => $s->user_id . '|' . $s->kelompok->code);
 
             foreach ($finalized as $row) {
                 $lookupKey = $row->user_id . '|' . $row->kode_kelompok;

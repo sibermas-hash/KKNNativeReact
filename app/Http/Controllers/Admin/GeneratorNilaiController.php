@@ -167,7 +167,7 @@ class GeneratorNilaiController extends Controller
                 }
 
                 $score = NilaiKkn::firstOrNew([
-                    'mahasiswa_id' => $row['user_id'],
+                    'user_id' => $row['user_id'],
                     'kelompok_id'  => $data['kelompok_id'],
                 ]);
 

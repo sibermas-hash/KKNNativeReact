@@ -42,14 +42,11 @@ class CertificateController extends Controller
         // Sanitize token - only allow alphanumeric characters
         $token = preg_replace('/[^A-Za-z0-9]/', '', $token);
 
-        // Reverse-lookup: find score by computing token for each finalized score
-        // Token formula: strtoupper(substr(hash('sha256', "CERT-{id}-{mahasiswa_id}-{APP_KEY}"), 0, 16)))
-        $matchedScore = NilaiKkn::where('is_finalized', true)
+        // O(1) lookup with indexed verification token
+        $matchedScore = NilaiKkn::where('verification_token', $token)
+            ->where('is_finalized', true)
             ->with(['mahasiswa.user', 'kelompok.periode', 'kelompok.lokasi'])
-            ->get()
-            ->first(function ($score) use ($token) {
-                return CertificateService::generateVerificationToken($score) === $token;
-            });
+            ->first();
 
         if ($matchedScore) {
             return view('public.verify-certificate', [

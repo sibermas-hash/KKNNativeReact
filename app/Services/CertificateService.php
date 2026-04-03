@@ -91,7 +91,8 @@ class CertificateService
     public static function generateVerificationToken(NilaiKkn $score): string
     {
         $secret = config('app.key');
-        $payload = "CERT-{$score->id}-{$score->mahasiswa_id}";
+        // Use user_id (renamed from mahasiswa_id) which stores users.id
+        $payload = "CERT-{$score->id}-{$score->user_id}";
 
         return strtoupper(substr(hash_hmac('sha256', $payload, $secret), 0, 16));
     }

@@ -19,6 +19,8 @@ class GradeController extends Controller
     ) {}
     public function index()
     {
+        $this->authorize('viewAny', NilaiKkn::class);
+
         $groups = KelompokKkn::with(['dpl.user:id,name'])->orderBy('code')->get(['id','code','nama_kelompok','dpl_id']);
         return Inertia::render('Admin/Grades/Index', [
             'groups' => $groups,
@@ -27,6 +29,7 @@ class GradeController extends Controller
 
     public function students(KelompokKkn $group)
     {
+        $this->authorize('viewAny', NilaiKkn::class);
         $students = PesertaKkn::with(['mahasiswa:id,user_id,nim,nama', 'mahasiswa.user:id,username,email,name'])
             ->where('kelompok_id', $group->id)
             ->where('status', 'approved')
@@ -48,9 +51,11 @@ class GradeController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', NilaiKkn::class);
+
         $data = $request->validate([
             'kelompok_id' => ['required','exists:kelompok_kkn,id'],
-            'mahasiswa_id' => ['required','exists:mahasiswa,id'],
+            'student_id' => ['required','exists:users,id'],
             'execution_score' => ['nullable','numeric','between:0,100'],
             'article_score' => ['nullable','numeric','between:0,100'],
             'discipline_score' => ['nullable','numeric','between:0,100'],
@@ -59,7 +64,7 @@ class GradeController extends Controller
 
         $score = NilaiKkn::updateOrCreate(
             [
-                'mahasiswa_id' => $data['mahasiswa_id'],
+                'user_id' => $data['student_id'],
                 'kelompok_id' => $data['kelompok_id'],
             ],
             [

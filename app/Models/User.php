@@ -3,7 +3,9 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\KKN\Fakultas;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -30,6 +32,7 @@ class User extends Authenticatable
         'avatar',
         'phone',
         'address',
+        'faculty_id',
     ];
 
     /**
@@ -52,6 +55,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'is_active' => 'boolean',
+            'faculty_id' => 'integer',
             'password' => 'hashed',
         ];
     }
@@ -69,6 +73,11 @@ class User extends Authenticatable
     public function dosen(): HasOne
     {
         return $this->hasOne(\App\Models\KKN\Dosen::class);
+    }
+
+    public function fakultas(): BelongsTo
+    {
+        return $this->belongsTo(Fakultas::class, 'faculty_id');
     }
 
     public function approvedPeserta(): HasMany
@@ -103,7 +112,7 @@ class User extends Authenticatable
 
     public function nilaiKkn(): HasMany
     {
-        return $this->hasMany(\App\Models\KKN\NilaiKkn::class, 'mahasiswa_id');
+        return $this->hasMany(\App\Models\KKN\NilaiKkn::class, 'user_id');
     }
 
     /**

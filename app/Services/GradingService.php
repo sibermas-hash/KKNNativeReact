@@ -41,7 +41,7 @@ class GradingService
         return DB::transaction(function () use ($userId, $groupId, $reportScore, $executionScore, $articleScore, $dplId) {
             $score = NilaiKkn::updateOrCreate(
                 [
-                    'mahasiswa_id' => $userId,
+                    'user_id' => $userId,
                     'kelompok_id' => $groupId,
                 ],
                 [
@@ -72,7 +72,7 @@ class GradingService
         return DB::transaction(function () use ($userId, $groupId, $disciplineScore, $attitudeScore, $villageHeadId) {
             $score = NilaiKkn::updateOrCreate(
                 [
-                    'mahasiswa_id' => $userId,
+                    'user_id' => $userId,
                     'kelompok_id' => $groupId,
                 ],
                 [
@@ -102,7 +102,7 @@ class GradingService
         return DB::transaction(function () use ($userId, $groupId, $workshopScore, $adminScore, $adminId) {
             $score = NilaiKkn::updateOrCreate(
                 [
-                    'mahasiswa_id' => $userId,
+                    'user_id' => $userId,
                     'kelompok_id' => $groupId,
                 ],
                 [
@@ -227,7 +227,7 @@ class GradingService
         ->whereNotNull('total_score')
         ->chunkById(50, function ($scores) use (&$count, &$failed) {
             // Bulk check Laporan Akhir to avoid N+1 queries
-            $studentIds = $scores->pluck('mahasiswa_id');
+            $studentIds = $scores->map(fn ($score) => $score->mahasiswa?->id)->filter()->unique();
             $groupIds = $scores->pluck('kelompok_id')->unique();
             
             $reports = \App\Models\KKN\LaporanAkhir::whereIn('mahasiswa_id', $studentIds)
@@ -236,7 +236,12 @@ class GradingService
                 ->groupBy(fn($r) => $r->mahasiswa_id . '|' . $r->kelompok_id);
 
             foreach ($scores as $score) {
-                $lookupKey = $score->mahasiswa_id . '|' . $score->kelompok_id;
+                if (!$score->mahasiswa) {
+                    $failed++;
+                    continue;
+                }
+
+                $lookupKey = $score->mahasiswa->id . '|' . $score->kelompok_id;
                 $report = $reports->get($lookupKey)?->first();
 
                 if (!$report || $report->status !== 'approved') {
@@ -289,7 +294,7 @@ class GradingService
 
         return DB::transaction(function () use ($userId, $groupId, $components, $adminId) {
             $score = NilaiKkn::updateOrCreate(
-                ['mahasiswa_id' => $userId, 'kelompok_id' => $groupId],
+                ['user_id' => $userId, 'kelompok_id' => $groupId],
                 array_merge($components, [
                     'admin_graded_by' => $adminId,
                     'admin_graded_at' => now(),

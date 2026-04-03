@@ -5,7 +5,6 @@ namespace App\Models\KKN;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
 
 class NilaiKkn extends Model
 {
@@ -15,7 +14,7 @@ class NilaiKkn extends Model
     protected $table = 'nilai_kkn';
 
     protected $fillable = [
-        'mahasiswa_id',
+        'user_id',
         'kelompok_id',
         'final_report_score',
         'execution_score',
@@ -36,7 +35,8 @@ class NilaiKkn extends Model
         'admin_graded_by',
         'admin_graded_at',
         'evidence_file',
-        'dpl_score_1',
+        'verification_token',
+        'is_finalized',
     ];
 
     protected $casts = [
@@ -48,7 +48,8 @@ class NilaiKkn extends Model
 
     public function mahasiswa(): BelongsTo
     {
-        return $this->belongsTo(Mahasiswa::class , 'mahasiswa_id');
+        // Column renamed from mahasiswa_id to user_id to reflect it stores users.id
+        return $this->belongsTo(Mahasiswa::class, 'user_id', 'user_id');
     }
 
     public function kelompok(): BelongsTo

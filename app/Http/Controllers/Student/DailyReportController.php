@@ -107,11 +107,12 @@ class DailyReportController extends Controller
 
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
-                $path = $file->store('daily-reports', 'public');
+                // Issue 7 Fix: Store in private storage instead of public
+                $path = $file->store('daily-reports', 'local');
                 FileKegiatanKkn::create([
                     'kegiatan_kkn_id' => $kegiatan->id,
                     'file_path' => $path,
-                    'file_name' => $file->getClientOriginalName(),
+                    'file_name' => strip_tags($file->getClientOriginalName()),
                 ]);
             }
         }

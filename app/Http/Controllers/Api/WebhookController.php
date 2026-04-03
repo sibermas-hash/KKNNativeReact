@@ -72,6 +72,16 @@ class WebhookController extends Controller
     }
 
     // Helper to map IDs if master uses different IDs than local
-    protected function resolveProdi($masterId) { return $masterId; } // Simple pass-through for now
-    protected function resolveFakultas($masterId) { return $masterId; }
+    // Issue 11 Fix: Validate IDs exist in local database instead of pass-through
+    protected function resolveProdi($masterId)
+    {
+        if (!$masterId) return null;
+        return \App\Models\KKN\Prodi::where('master_id', $masterId)->value('id');
+    }
+    
+    protected function resolveFakultas($masterId)
+    {
+        if (!$masterId) return null;
+        return \App\Models\KKN\Fakultas::where('master_id', $masterId)->value('id');
+    }
 }

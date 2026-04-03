@@ -7,6 +7,7 @@ use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\PoskoKelompok;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -75,30 +76,36 @@ class PoskoController extends Controller
 
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
-            $newPhotoPath = $file->store('posko-photos', 'public');
+            // Issue 8 Fix: Store in private storage instead of public
+            $newPhotoPath = $file->store('posko-photos', 'local');
             $newPhotoName = $file->getClientOriginalName();
             $newPhotoSize = $file->getSize();
+            $connection = DB::connection('kkn');
+            $persist = function () use ($existingPosko, $validated, $newPhotoPath, $newPhotoName, $newPhotoSize, $request, $registration) {
+                if ($existingPosko?->photo_path) {
+                    Storage::disk('public')->delete($existingPosko->photo_path);
+                }
+
+                PoskoKelompok::updateOrCreate(
+                    ['kelompok_id' => $registration->kelompok_id],
+                    [
+                        'latitude' => $validated['latitude'],
+                        'longitude' => $validated['longitude'],
+                        'gmaps_link' => $validated['gmaps_link'] ?? null,
+                        'photo_path' => $newPhotoPath,
+                        'photo_name' => $newPhotoName,
+                        'photo_size' => $newPhotoSize,
+                        'uploaded_by' => $request->user()?->id,
+                    ],
+                );
+            };
 
             try {
-                \Illuminate\Support\Facades\DB::transaction(function () use ($existingPosko, $validated, $newPhotoPath, $newPhotoName, $newPhotoSize, $request) {
-                    // Delete old photo after successful DB operation
-                    if ($existingPosko?->photo_path) {
-                        Storage::disk('public')->delete($existingPosko->photo_path);
-                    }
-
-                    PoskoKelompok::updateOrCreate(
-                        ['kelompok_id' => $registration->kelompok_id],
-                        [
-                            'latitude' => $validated['latitude'],
-                            'longitude' => $validated['longitude'],
-                            'gmaps_link' => $validated['gmaps_link'] ?? null,
-                            'photo_path' => $newPhotoPath,
-                            'photo_name' => $newPhotoName,
-                            'photo_size' => $newPhotoSize,
-                            'uploaded_by' => $request->user()?->id,
-                        ],
-                    );
-                });
+                if ($connection->transactionLevel() > 0 || $connection->getPdo()->inTransaction()) {
+                    $persist();
+                } else {
+                    $connection->transaction($persist);
+                }
             } catch (\Exception $e) {
                 // Cleanup uploaded file if DB operation fails
                 Storage::disk('public')->delete($newPhotoPath);

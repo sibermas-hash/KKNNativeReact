@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\DashboardStatisticsService;
 use App\Services\MasterApiService;
 use App\Services\PeriodContextService;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,6 +19,8 @@ class DashboardController extends Controller
 
     public function index(): Response
     {
+        Gate::authorize('view-admin-dashboard');
+        
         $periodId = $this->contextService->getActivePeriodId();
         $user = auth()->user();
         $isFacultyAdmin = $user?->hasRole('faculty_admin');

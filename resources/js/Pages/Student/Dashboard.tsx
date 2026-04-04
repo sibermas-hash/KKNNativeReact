@@ -22,8 +22,8 @@ import {
  Presentation,
  BadgeCheck,
  UserCircle,
- LucideIcon
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { PageProps } from '@/types';
 
@@ -95,7 +95,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  const phases = [
  {
  id: 1,
- label: 'Pendaftaran',
+ label: 'Plotting KKN',
  desc: 'Registrasi & Plotting',
  icon: Rocket,
  isCompleted: isApproved,
@@ -191,13 +191,6 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  {isApproved ? <ShieldCheck className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
  </div>
  </div>
- 
- <Link 
- href="/student/register" 
- className="h-12 px-6 bg-slate-900 text-white rounded-lg text-xs font-semibold flex items-center justify-center hover:bg-primary transition-all active:scale-95"
- >
- Detail Pendaftaran
- </Link>
  </div>
  </div>
 
@@ -249,10 +242,33 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
  </div>
 
- {/* Contextual Stats & Info */}
+ {/* Conditional Content: Phased UI */}
+ {!isGroupPinned ? (
+ /* PHASE 1: Registration/Plotting Focus */
+ <section className="bg-white rounded-lg border-2 border-dashed border-slate-200 p-16 md:p-24 text-center group transition-all hover:border-primary/40 hover:bg-primary/5">
+ <div className="relative inline-block mb-8">
+ <MapPin className={clsx("h-16 w-16 transition-all", isPending ? "text-amber-200" : "text-slate-100")} />
+ <div className={clsx("absolute top-0 right-0 h-4 w-4 rounded-full", isPending ? "bg-amber-400" : "bg-primary")} />
+ </div>
+ <h3 className="text-2xl font-semibold text-slate-900 mb-3">
+ {isPending ? 'Verifikasi Berlangsung' : 'Penempatan Menunggu'}
+ </h3>
+ <p className="text-slate-400 font-semibold text-xs mb-10  max-w-sm mx-auto">
+ {isPending 
+ ? 'Data plotting Anda sedang dalam tahap peninjauan oleh Admin LPPM.' 
+ : 'Sistem belum menetapkan lokasi penempatan untuk profil Anda. Silakan pilih kelompok terlebih dahulu.'}
+ </p>
+ <Link
+ href="/student/register"
+ className="inline-flex items-center gap-4 px-8 py-4 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-primary transition-all active:scale-95"
+ >
+ {isPending ? 'Ubah Pilihan' : 'Pilih Kelompok'} <ArrowRight className="h-4 w-4 group-hover:translate-x-2 transition-transform" />
+ </Link>
+ </section>
+ ) : (
+ /* PHASE 2: Full Operational Dashboard */
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
  <div className="lg:col-span-2 space-y-8">
- {isGroupPinned ? (
  <section className="bg-white rounded-lg p-10 border border-slate-100 relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-16 text-slate-900 pointer-events-none group-hover:scale-110 transition-transform duration-500">
  <MapPin className="h-64 w-64" />
@@ -305,28 +321,6 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
  </div>
  </section>
- ) : (
- <section className="bg-white rounded-lg border-2 border-dashed border-slate-200 p-16 md:p-24 text-center group transition-all hover:border-primary/40 hover:bg-primary/5">
- <div className="relative inline-block mb-8">
- <MapPin className={clsx("h-16 w-16 transition-all", isPending ? "text-amber-200" : "text-slate-100")} />
- <div className={clsx("absolute top-0 right-0 h-4 w-4 rounded-full", isPending ? "bg-amber-400" : "bg-primary")} />
- </div>
- <h3 className="text-2xl font-semibold text-slate-900 mb-3">
- {isPending ? 'Verifikasi Berlangsung' : 'Penempatan Menunggu'}
- </h3>
- <p className="text-slate-400 font-semibold text-xs mb-10  max-w-sm mx-auto">
- {isPending 
- ? 'Data pendaftaran Anda sedang dalam tahap peninjauan oleh Admin LPPM.' 
- : 'Sistem belum menetapkan lokasi penempatan untuk profil Anda.'}
- </p>
- <Link
- href="/student/register"
- className="inline-flex items-center gap-4 px-8 py-4 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-primary transition-all active:scale-95"
- >
- {isPending ? 'Ubah Pilihan' : 'Daftar Kelompok'} <ArrowRight className="h-4 w-4 group-hover:translate-x-2 transition-transform" />
- </Link>
- </section>
- )}
 
  {/* Visual Metrics */}
  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -376,7 +370,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  disabled={!isApproved}
  />
  <QuickActionButton
- href="/student/daily-reports"
+ href={route('student.laporan-harian.index')}
  icon={ClipboardList}
  label="Laporan Harian"
  desc="Catat aktivitas lapangan"
@@ -435,6 +429,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </section>
  </div>
  </div>
+ )}
 
  <div className="text-center pt-8">
  <p className="text-xs font-semibold text-slate-300">

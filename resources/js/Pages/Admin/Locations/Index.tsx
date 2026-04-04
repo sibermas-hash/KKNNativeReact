@@ -150,15 +150,14 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  </div>
 
  <div className="space-y-4 relative z-10">
- <div className="p-8 border-2 border-dashed border-slate-100 rounded-lg bg-slate-50/50 hover:bg-slate-50 hover:border-primary/20 transition-all group/drop text-center relative">
- <input
- type="berkas"
- onChange={handleFileChange}
- accept=".xlsx,.xls,.csv"
- className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
- disabled={importForm.processing}
- />
- <div className="space-y-2">
+   <div className="p-8 border-2 border-dashed border-slate-100 rounded-lg bg-slate-50/50 hover:bg-slate-50 hover:border-primary/20 transition-all group/drop text-center relative">
+     <input
+       type="file"
+       onChange={handleFileChange}
+       accept=".xlsx,.xls,.csv"
+       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+       disabled={importForm.processing}
+     /> <div className="space-y-2">
  <div className="h-8 w-8 text-slate-200 mx-auto group-hover/drop:text-primary transition-colors flex items-center justify-center">
  <UploadCloud className="h-6 w-6" />
  </div>

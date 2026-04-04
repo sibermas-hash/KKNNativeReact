@@ -3,6 +3,7 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import type { User } from '@/types';
 import { Menu } from 'lucide-react';
 import Sidebar from '@/Components/Sidebar';
+import { ErrorBoundary } from '@/Components/ErrorBoundary';
 
 interface AppLayoutProps {
  children: React.ReactNode;
@@ -15,6 +16,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
  const { auth } = usePage<{ auth: { user: User | null } }>().props;
 
  return (
+ <ErrorBoundary>
  <div className="min-h-screen bg-white text-slate-700">
  <Head title={title ? `${title} - KKN UIN SAIZU` : 'SIM-KKN UIN SAIZU'} />
 
@@ -61,5 +63,6 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
  </footer>
  </div>
  </div>
+ </ErrorBoundary>
  );
 }

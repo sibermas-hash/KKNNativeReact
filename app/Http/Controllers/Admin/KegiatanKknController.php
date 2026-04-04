@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\KegiatanKkn;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -12,6 +13,7 @@ class KegiatanKknController extends Controller
 {
     public function index(Request $request): Response
     {
+        Gate::authorize('view-reports');
         $status = $request->input('status');
 
         $reports = KegiatanKkn::with(['mahasiswa', 'kelompok'])

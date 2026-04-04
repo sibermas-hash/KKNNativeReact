@@ -2,6 +2,7 @@ import { Head, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { FormInput } from '@/Components/ui';
 import { useMemo, useState } from 'react';
+import { route } from 'ziggy-js';
 
 interface Setting {
  id: number;
@@ -16,6 +17,35 @@ interface Props {
  settings: Record<string, Setting[]>;
  title: string;
 }
+
+const GROUP_TITLES: Record<string, string> = {
+ master_api: 'Integrasi Master Kampus',
+ general: 'Pengaturan Umum',
+ ai_settings: 'Layanan AI',
+ storage_settings: 'Penyimpanan Berkas',
+ registration_rules: 'Aturan Operasional Mahasiswa',
+ content_settings: 'Konten Publik',
+};
+
+const GROUP_DESCRIPTIONS: Record<string, string> = {
+ master_api: 'Kelola koneksi dan kredensial ke sumber data kampus.',
+ general: 'Atur parameter umum yang memengaruhi perilaku sistem secara global.',
+ ai_settings: 'Aktifkan atau nonaktifkan fitur berbasis AI dan kredensial pendukungnya.',
+ storage_settings: 'Atur lokasi penyimpanan berkas lokal maupun cloud.',
+ registration_rules: 'Atur aturan pendaftaran, perpindahan kelompok, serta validasi GPS laporan harian.',
+ content_settings: 'Kelola teks konten publik yang tampil di halaman depan dan profil.',
+};
+
+const SETTING_HELPERS: Record<string, string> = {
+ daily_report_geo_radius_meters:
+  'Mahasiswa hanya dapat mengirim laporan jika titik GPS masih berada dalam radius ini dari posko atau lokasi KKN.',
+ daily_report_geo_max_accuracy_meters:
+  'Semakin kecil nilainya, semakin ketat sistem menerima GPS. Nilai terlalu besar akan membuat lokasi yang tidak presisi tetap lolos.',
+ registration_lock_ttl_seconds:
+  'Menentukan berapa lama lock pendaftaran kelompok dipertahankan saat rebutan slot berlangsung.',
+ registration_lock_wait_seconds:
+  'Menentukan berapa lama mahasiswa menunggu lock rebutan kelompok sebelum sistem memberi respons gagal.',
+};
 
 export default function SystemSettings({ settings }: Props) {
  const form = useForm({
@@ -33,7 +63,7 @@ export default function SystemSettings({ settings }: Props) {
 
  const updateValue = (id: number, value: string) => {
  form.setData(
- 'pengaturan',
+ 'settings',
  form.data.settings.map((item) => (item.id === id ? { ...item, value } : item)),
  );
  };
@@ -47,7 +77,7 @@ export default function SystemSettings({ settings }: Props) {
 
  const handleSubmit = (event: React.FormEvent) => {
  event.preventDefault();
- form.post('/admin/settings/system');
+ form.post(route('admin.settings.system.update'));
  };
 
  return (
@@ -67,16 +97,16 @@ export default function SystemSettings({ settings }: Props) {
  {Object.entries(settings).map(([group, items]) => (
  <section key={group} className="rounded-lg border border-slate-200 bg-white">
  <div className="border-b border-slate-200 px-6 py-4">
- <h2 className="text-lg font-semibold text-slate-900">{group.replace(/_/g, ' ')}</h2>
+ <h2 className="text-lg font-semibold text-slate-900">{GROUP_TITLES[group] ?? group.replace(/_/g, ' ')}</h2>
  <p className="mt-1 text-sm text-slate-500">
- {items.length} pengaturan pada kelompok ini.
+ {GROUP_DESCRIPTIONS[group] ?? `${items.length} pengaturan pada kelompok ini.`}
  </p>
  </div>
 
  <div className="grid gap-6 px-6 py-6 md:grid-cols-2">
  {items.map((setting) => {
- const isSecret = setting.type === 'kata sandi';
- const isLongText = setting.type === 'longtext';
+ const isSecret = setting.type === 'password';
+ const isLongText = setting.type === 'textarea';
 
  return (
  <div key={setting.id} className="space-y-2">
@@ -113,7 +143,7 @@ export default function SystemSettings({ settings }: Props) {
  <div className="flex gap-2">
  <FormInput
  id={`setting-${setting.id}`}
- type={isSecret && !visiblePasswords[setting.id] ? 'kata sandi' : 'text'}
+ type={isSecret && !visiblePasswords[setting.id] ? 'password' : 'text'}
  value={getValue(setting.id)}
  onChange={(event) => updateValue(setting.id, event.target.value)}
  error={getError(setting.id)}
@@ -134,6 +164,9 @@ export default function SystemSettings({ settings }: Props) {
  </button>
  )}
  </div>
+ {SETTING_HELPERS[setting.config_key] ? (
+ <p className="text-xs leading-5 text-slate-500">{SETTING_HELPERS[setting.config_key]}</p>
+ ) : null}
  </div>
  )}
  </div>

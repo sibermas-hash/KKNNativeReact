@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Globe2, Layers, Navigation, Zap } from 'lucide-react';
+import { ArrowRight, Globe2, Layers, Navigation, Zap, Sparkles, Star, Target } from 'lucide-react';
 import { route } from 'ziggy-js';
 import PublicLayout from '@/Layouts/PublicLayout';
 
@@ -25,26 +25,42 @@ export default function Schemes({ content }: Props) {
         <PublicLayout>
             <Head title="Skema KKN | LPPM UIN Prof. K.H. Saifuddin Zuhri" />
 
-            <section className="min-h-screen bg-slate-50 py-24 lg:py-48">
+            <section className="relative pt-44 lg:pt-60 pb-48 bg-white overflow-hidden">
                 <div className="container relative z-10 mx-auto px-6 lg:px-12">
-                    <div className="mb-24 flex flex-col gap-12 text-center lg:flex-row lg:items-end lg:justify-between lg:text-left">
-                        <div className="max-w-3xl">
-                            <div className="mb-8 flex items-center justify-center gap-4 lg:justify-start">
-                                <div className="h-1.5 w-16 rounded-full bg-emerald-600" />
-                                <span className="text-[12px] font-black uppercase tracking-[0.4em] text-emerald-600">
-                                    Skema Distribusi
-                                </span>
-                            </div>
-                            <h3 className="mb-8 text-5xl font-black tracking-tighter text-slate-950 lg:text-7xl">
-                                {content.title}
-                            </h3>
-                            <p className="max-w-2xl text-lg font-bold italic text-slate-500">
-                                {content.intro}
-                            </p>
-                        </div>
+                    
+                    {/* PAGE HEADER */}
+                    <div className="max-w-4xl space-y-12 mb-32">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="inline-flex items-center gap-3 px-5 py-2 bg-emerald-50 border border-emerald-100 rounded-full"
+                        >
+                            <Target size={16} className="text-emerald-500" />
+                            <span className="text-[11px] font-black text-emerald-800 uppercase tracking-[0.3em]">Program & Skema Pengabdian</span>
+                        </motion.div>
+                        
+                        <motion.h1 
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="text-6xl lg:text-[100px] font-black tracking-tighter text-slate-900 leading-[0.85] uppercase"
+                        >
+                            Opsi <br /> 
+                            <span className="text-emerald-500 italic lowercase font-medium">intervensi.</span>
+                        </motion.h1>
+
+                        <motion.p 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="text-xl lg:text-3xl text-slate-400 font-bold max-w-2xl leading-relaxed italic border-l-8 border-emerald-500 pl-10"
+                        >
+                            {content.intro}
+                        </motion.p>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
+                    {/* GRID SCHEMES */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
                         {content.items.map((scheme, i) => {
                             const Icon = icons[i % icons.length];
 
@@ -52,41 +68,55 @@ export default function Schemes({ content }: Props) {
                                 <motion.div
                                     key={scheme.title}
                                     initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ delay: i * 0.1, duration: 0.5 }}
-                                    className="group rounded-[4rem] border-2 border-slate-100 bg-white p-16 transition-all hover:border-emerald-500 hover:shadow-2xl"
+                                    whileInView={{ opacity: 1, scale: 1 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: i * 0.1 }}
+                                    className="group relative bg-white p-16 lg:p-20 rounded-[4rem] border border-slate-100 hover:border-emerald-500 transition-all hover:shadow-[0_80px_160px_rgba(0,0,0,0.06)] cursor-pointer"
                                 >
-                                    <div
-                                        className={`mb-12 flex h-28 w-28 items-center justify-center rounded-[2.5rem] transition-all duration-500 group-hover:-rotate-6 group-hover:scale-110 ${
-                                            scheme.color === 'emerald' ? 'bg-emerald-500 text-white' : ''
-                                        } ${
-                                            scheme.color === 'blue' ? 'bg-blue-600 text-white' : ''
-                                        } ${
-                                            scheme.color === 'amber' ? 'bg-amber-400 text-slate-950' : ''
-                                        } ${
-                                            scheme.color === 'slate' ? 'bg-slate-950 text-white' : ''
-                                        }`}
-                                    >
-                                        <Icon className="h-10 w-10" />
+                                    <div className="absolute top-0 right-0 p-12 opacity-[0.03] rotate-12 group-hover:rotate-0 transition-transform duration-700 pointer-events-none">
+                                        <Icon size={240} />
                                     </div>
-                                    <h4 className="mb-6 text-4xl font-black uppercase tracking-tighter text-slate-950">
-                                        {scheme.title}
-                                    </h4>
-                                    <p className="mb-14 text-xl font-bold italic leading-relaxed text-slate-500">
-                                        {scheme.description}
-                                    </p>
-                                    <Link
-                                        href={route('login')}
-                                        className="group inline-flex items-center gap-4 rounded-3xl bg-emerald-500 px-10 py-5 text-sm font-black uppercase tracking-widest text-white transition-all hover:bg-slate-950"
-                                    >
-                                        Daftar Sekarang
-                                        <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-2" />
-                                    </Link>
+                                    
+                                    <div className="flex items-center gap-6 mb-12 relative z-10">
+                                        <div className="p-6 bg-emerald-50 text-emerald-600 rounded-[2rem] group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500 shadow-sm">
+                                            <Icon size={36} />
+                                        </div>
+                                        <div className="flex-1 h-[1px] bg-slate-50" />
+                                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">{`SCHEME_${i+1}`}</span>
+                                    </div>
+
+                                    <div className="space-y-8 relative z-10">
+                                        <h4 className="text-4xl lg:text-5xl font-black text-slate-900 uppercase tracking-tighter leading-none italic group-hover:text-emerald-600 transition-colors">
+                                            {scheme.title}
+                                        </h4>
+                                        <p className="text-slate-500 text-lg lg:text-xl font-bold leading-relaxed italic opacity-80 line-clamp-3">
+                                            {scheme.description}
+                                        </p>
+                                    </div>
+
+                                    <div className="mt-16 pt-12 border-t border-slate-50 relative z-10 flex items-center justify-between">
+                                        <Link
+                                            href={route('login')}
+                                            className="px-10 py-5 bg-slate-900 text-white rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-slate-900/10 flex items-center gap-4"
+                                        >
+                                            Daftar Skema
+                                            <ArrowRight size={16} />
+                                        </Link>
+                                        <div className="flex gap-2">
+                                            <Star size={14} className="text-amber-300 fill-amber-300" />
+                                            <Star size={14} className="text-amber-300 fill-amber-300" />
+                                            <Star size={14} className="text-amber-300 fill-amber-300" />
+                                        </div>
+                                    </div>
                                 </motion.div>
                             );
                         })}
                     </div>
                 </div>
+
+                {/* BACKGROUND DECORATIVE */}
+                <div className="absolute top-1/4 -right-1/4 w-[800px] h-[800px] bg-emerald-50 rounded-full blur-[160px] animate-pulse-slow -z-10" />
+                <div className="absolute bottom-0 -left-1/4 w-[600px] h-[600px] bg-emerald-50/50 rounded-full blur-[140px] -z-10" />
             </section>
         </PublicLayout>
     );

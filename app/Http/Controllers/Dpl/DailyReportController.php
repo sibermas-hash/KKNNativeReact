@@ -14,6 +14,42 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DailyReportController extends Controller
 {
+    private function resolveReferenceCoordinates(KegiatanKkn $dailyReport): ?array
+    {
+        if ($dailyReport->kelompok?->posko?->latitude !== null && $dailyReport->kelompok?->posko?->longitude !== null) {
+            return [
+                'label' => 'Posko Kelompok',
+                'latitude' => (float) $dailyReport->kelompok->posko->latitude,
+                'longitude' => (float) $dailyReport->kelompok->posko->longitude,
+            ];
+        }
+
+        if ($dailyReport->kelompok?->lokasi?->latitude !== null && $dailyReport->kelompok?->lokasi?->longitude !== null) {
+            return [
+                'label' => $dailyReport->kelompok->lokasi->full_name ?: $dailyReport->kelompok->lokasi->village_name ?: 'Lokasi KKN',
+                'latitude' => (float) $dailyReport->kelompok->lokasi->latitude,
+                'longitude' => (float) $dailyReport->kelompok->lokasi->longitude,
+            ];
+        }
+
+        return null;
+    }
+
+    private function calculateDistanceMeters(float $latitude, float $longitude, float $referenceLatitude, float $referenceLongitude): float
+    {
+        $earthRadius = 6371000;
+
+        $latitudeDelta = deg2rad($referenceLatitude - $latitude);
+        $longitudeDelta = deg2rad($referenceLongitude - $longitude);
+
+        $a = sin($latitudeDelta / 2) ** 2
+            + cos(deg2rad($latitude)) * cos(deg2rad($referenceLatitude)) * sin($longitudeDelta / 2) ** 2;
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadius * $c;
+    }
+
     private function assignedGroupIds(): \Illuminate\Support\Collection
     {
         $dosen = auth()->user()->dosen;
@@ -62,7 +98,22 @@ class DailyReportController extends Controller
         $groupIds = $this->assignedGroupIds();
         abort_if(!$groupIds->contains($dailyReport->kelompok_id), 403, 'Anda tidak memiliki akses ke laporan ini.');
 
-        $dailyReport->load(['mahasiswa', 'kelompok.lokasi', 'fileKegiatan', 'reviewer']);
+        $dailyReport->load(['mahasiswa', 'kelompok.lokasi', 'kelompok.posko', 'fileKegiatan', 'reviewer']);
+        $reference = $this->resolveReferenceCoordinates($dailyReport);
+        $distance = null;
+
+        if (
+            $reference
+            && $dailyReport->latitude !== null
+            && $dailyReport->longitude !== null
+        ) {
+            $distance = round($this->calculateDistanceMeters(
+                (float) $dailyReport->latitude,
+                (float) $dailyReport->longitude,
+                $reference['latitude'],
+                $reference['longitude'],
+            ));
+        }
 
         return Inertia::render('Dpl/DailyReports/Show', [
             'report' => [
@@ -73,6 +124,13 @@ class DailyReportController extends Controller
                 'output' => $dailyReport->output,
                 'latitude' => $dailyReport->latitude,
                 'longitude' => $dailyReport->longitude,
+                'gps' => [
+                    'accuracy' => $dailyReport->gps_accuracy,
+                    'captured_at' => optional($dailyReport->captured_at)->toIso8601String(),
+                    'source' => $dailyReport->location_source,
+                    'reference_label' => $reference['label'] ?? null,
+                    'distance_to_reference_meters' => $distance,
+                ],
                 'status' => $dailyReport->status,
                 'can_review' => $this->canReview($dailyReport),
                 'review_notes' => $dailyReport->review_notes,
@@ -139,7 +197,7 @@ class DailyReportController extends Controller
                 'title' => 'Laporan Harian Disetujui',
                 'message' => "Laporan harian Anda tanggal " . $dailyReport->date->format('d/m/Y') . " telah disetujui.",
                 'icon' => 'check-circle',
-                'url' => route('student.daily-reports.index'),
+                'url' => route('student.laporan-harian.index'),
             ]));
         }
 
@@ -173,7 +231,7 @@ class DailyReportController extends Controller
                 'title' => 'Revisi Laporan Harian',
                 'message' => "Laporan harian Anda tanggal " . $dailyReport->date->format('d/m/Y') . " memerlukan revisi.",
                 'icon' => 'exclamation-circle',
-                'url' => route('student.daily-reports.index'),
+                'url' => route('student.laporan-harian.index'),
             ]));
         }
 
@@ -181,11 +239,33 @@ class DailyReportController extends Controller
     }
     public function batchApprove(Request $request): RedirectResponse
     {
+        // ADDED: Proper validation
+        $validated = $request->validate([
+            'group_ids' => ['nullable', 'array'],
+            'group_ids.*' => ['integer', 'exists:kelompok_kkn,id'],
+            'date_from' => ['nullable', 'date'],
+            'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
+        ]);
+
         $groupIds = $this->assignedGroupIds();
 
-        $count = KegiatanKkn::whereIn('kelompok_id', $groupIds)
-            ->where('status', 'submitted')
-            ->update([
+        // If specific groups provided, filter by DPL's groups
+        if (!empty($validated['group_ids'])) {
+            $groupIds = $groupIds->intersect($validated['group_ids']);
+        }
+
+        // Build query with optional date range
+        $query = KegiatanKkn::whereIn('kelompok_id', $groupIds)
+            ->where('status', 'submitted');
+
+        if (!empty($validated['date_from'])) {
+            $query->where('date', '>=', $validated['date_from']);
+        }
+        if (!empty($validated['date_to'])) {
+            $query->where('date', '<=', $validated['date_to']);
+        }
+
+        $count = $query->update([
             'status' => 'approved',
             'reviewed_by' => auth()->id(),
             'reviewed_at' => now(),

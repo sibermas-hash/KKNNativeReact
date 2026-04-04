@@ -68,13 +68,13 @@ export default function RekapNilaiIndex({ grades, stats, filters }: Props) {
 
     const handleLock = (id: number) => {
         if (confirm('Apakah Anda yakin ingin mengunci nilai ini? Nilai yang dikunci tidak dapat diubah oleh pembimbing.')) {
-            router.patch(route('admin.rekap-nilai.lock', id));
+            router.patch(route('admin.rekap-nilai.finalize', id));
         }
     };
 
     const handleBulkLock = () => {
         if (confirm('Apakah Anda yakin ingin mengunci seluruh nilai yang telah terinput pada periode ini?')) {
-            router.post(route('admin.rekap-nilai.bulk-lock'), { period_id: filters.period_id });
+            router.post(route('admin.rekap-nilai.finalize-mass'), { period_id: filters.period_id });
         }
     };
 

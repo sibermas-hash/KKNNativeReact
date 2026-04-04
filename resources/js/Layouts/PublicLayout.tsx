@@ -1,6 +1,6 @@
-import { Link, usePage } from '@inertiajs/react';
-import { Globe, ArrowRight, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { Globe, ArrowRight, Menu, X, Landmark, GraduationCap, Users2, ShieldCheck } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { route } from 'ziggy-js';
 import type { PageProps } from '@/types';
 
@@ -13,141 +13,184 @@ export default function PublicLayout({ children }: Props) {
     const { auth } = page.props;
     const currentUrl = page.url;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => setIsScrolled(window.scrollY > 20);
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     const navLinks = [
         { name: 'Profil', href: route('public.about') },
         { name: 'Skema KKN', href: route('public.schemes') },
-        { name: 'Warta Utama', href: route('public.announcements') },
+        { name: 'Warta', href: route('public.announcements') },
         { name: 'Repositori', href: route('public.downloads') },
     ];
 
     return (
-        <div className="min-h-screen bg-white font-sans text-slate-950 selection:bg-emerald-500/20 selection:text-emerald-900">
-            {/* NAVBAR - MINIMALIST UNIVERSITY PORTAL */}
-            <nav className="fixed top-0 left-0 right-0 z-[100] h-20 bg-white/95 backdrop-blur-md border-b border-slate-200 px-6 lg:px-12 flex items-center justify-between shadow-sm">
-                <div className="flex items-center gap-4">
-                    <div className="p-3 bg-emerald-500 rounded-xl text-white shadow-lg shadow-emerald-500/30">
-                        <Globe className="w-8 h-8" />
-                    </div>
-                    <div>
-                        <Link href="/" className="flex items-center gap-4">
-                            <h1 className="text-xl font-bold tracking-tight text-slate-900 group whitespace-nowrap">
-                                SIM-KKN <span className="text-emerald-600 font-medium">UIN SAIZU</span>
+        <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-emerald-500/10 selection:text-emerald-700">
+            {/* NAVBAR - EDUCATEX INSPIRED (CLEAN & FLOATING) */}
+            <nav 
+                className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${
+                    isScrolled 
+                    ? 'h-20 bg-white/95 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.02)] border-b border-slate-50' 
+                    : 'h-24 bg-transparent'
+                }`}
+            >
+                <div className="container mx-auto h-full px-6 lg:px-12 flex items-center justify-between">
+                    <div className="flex items-center gap-4 group">
+                        <Link href="/" className="flex items-center gap-3">
+                            <div className="p-3 bg-emerald-500 rounded-2xl text-white shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform duration-500">
+                                <Landmark className="w-7 h-7" />
+                            </div>
+                            <h1 className="text-xl lg:text-2xl font-extrabold tracking-tighter text-slate-900 leading-none">
+                                SIM<span className="text-emerald-500">KKN</span>
+                                <span className="block text-[10px] font-bold text-slate-400 tracking-[0.2em] mt-1 uppercase">UIN SAIZU</span>
                             </h1>
                         </Link>
                     </div>
-                </div>
 
-                {/* Desktop Nav */}
-                <div className="hidden lg:flex items-center gap-10">
-                    {navLinks.map((link) => (
-                        <Link 
-                            key={link.name} 
-                            href={link.href} 
-                            className={`text-sm font-semibold transition-colors ${
-                                currentUrl === link.href ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600'
-                            }`}
-                        >
-                            {link.name}
-                        </Link>
-                    ))}
-                    
-                    <Link 
-                        href="/login" 
-                        className="ml-6 px-6 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-all shadow-md shadow-emerald-600/20"
-                    >
-                        Masuk
-                    </Link>
-                </div>
-
-                <div className="flex items-center gap-4">
-                    {auth.user ? (
-                        <Link 
-                            href={route('dashboard')}
-                            className="bg-slate-950 text-white px-8 py-3 rounded-xl text-xs font-black hover:bg-emerald-600 transition-all flex items-center gap-3 group shadow-xl"
-                        >
-                            <span>PANEL DASHBOARD</span>
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </Link>
-                    ) : (
-                        <Link 
-                            href={route('login')}
-                            className="bg-slate-950 text-white px-8 py-3 rounded-xl text-xs font-black hover:bg-emerald-600 transition-all shadow-xl uppercase tracking-[0.2em]"
-                        >MASUK</Link>
-                    )}
-                    
-                    {/* Mobile Menu Toggle */}
-                    <button 
-                        className="lg:hidden p-2 text-slate-600"
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    >
-                        {isMenuOpen ? <X /> : <Menu />}
-                    </button>
-                </div>
-
-                {/* Mobile Menu */}
-                {isMenuOpen && (
-                    <div className="absolute top-24 left-0 right-0 bg-white border-b-4 border-emerald-500 p-6 flex flex-col gap-6 lg:hidden shadow-2xl animate-in slide-in-from-top duration-300">
+                    {/* Desktop Nav */}
+                    <div className="hidden lg:flex items-center gap-10">
                         {navLinks.map((link) => (
                             <Link 
                                 key={link.name} 
                                 href={link.href} 
-                                onClick={() => setIsMenuOpen(false)}
-                                className="text-sm font-black text-slate-600 hover:text-emerald-500 uppercase tracking-widest"
+                                className={`text-[13px] font-bold uppercase tracking-widest transition-all hover:text-emerald-500 ${
+                                    currentUrl === link.href ? 'text-emerald-500' : 'text-slate-600'
+                                }`}
                             >
                                 {link.name}
                             </Link>
                         ))}
                     </div>
+
+                    <div className="flex items-center gap-6">
+                        {auth.user ? (
+                            <Link 
+                                href={route('dashboard')}
+                                className="hidden sm:flex items-center gap-3 px-8 py-3.5 bg-slate-900 text-white rounded-full text-xs font-bold tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-slate-900/10"
+                            >
+                                PANEL KONTROL
+                                <ArrowRight size={14} />
+                            </Link>
+                        ) : (
+                            <Link 
+                                href={route('login')}
+                                className="hidden sm:flex items-center gap-3 px-10 py-4 bg-emerald-500 text-white rounded-full text-[13px] font-bold tracking-widest hover:bg-slate-900 transition-all shadow-xl shadow-emerald-500/20"
+                            >
+                                MASUK PORTAL
+                            </Link>
+                        )}
+                        
+                        <button 
+                            className="lg:hidden p-3 bg-slate-50 rounded-xl text-slate-600"
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        >
+                            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Mobile Menu */}
+                {isMenuOpen && (
+                    <div className="absolute top-full left-0 right-0 bg-white border-b-8 border-emerald-500 p-8 flex flex-col gap-8 lg:hidden shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+                        {navLinks.map((link) => (
+                            <Link 
+                                key={link.name} 
+                                href={link.href} 
+                                onClick={() => setIsMenuOpen(false)}
+                                className="text-sm font-bold text-slate-800 uppercase tracking-[0.2em] hover:text-emerald-500"
+                            >
+                                {link.name}
+                            </Link>
+                        ))}
+                        <Link 
+                            href={route('login')}
+                            className="w-full py-5 bg-emerald-500 text-white rounded-2xl text-center font-black tracking-widest text-xs"
+                        >
+                            MASUK SEKARANG
+                        </Link>
+                    </div>
                 )}
             </nav>
 
-            <main className="pt-24 min-h-[calc(100vh-400px)]">
+            <main className="min-h-screen">
                 {children}
             </main>
 
-            {/* FOOTER - PROFESSIONAL CLEAN */}
-            <footer className="py-20 bg-slate-50 border-t border-slate-200">
+            {/* FOOTER - EDUCATEX INSPIRED (BRIGHT & STRUCTURED) */}
+            <footer className="bg-slate-50 pt-32 pb-20 border-t border-slate-100">
                 <div className="container mx-auto px-6 lg:px-12">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-12 sm:gap-20">
-                        <div className="col-span-1 md:col-span-2 space-y-6">
-                            <h1 className="text-2xl font-bold text-slate-900">
-                                Lembaga Penelitian dan <br /> Pengabdian Masyarakat (LPPM)
-                            </h1>
-                            <p className="text-slate-500 text-sm leading-relaxed max-w-sm">
-                                Pusat koordinasi pengabdian masyarakat UIN Prof. K.H. Saifuddin Zuhri Purwokerto. Menyelenggarakan KKN yang akuntabel, berdampak, dan moderat.
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-16 lg:gap-24">
+                        <div className="col-span-1 md:col-span-1 space-y-10">
+                            <Link href="/" className="flex items-center gap-3">
+                                <div className="p-3 bg-emerald-500 rounded-2xl text-white">
+                                    <Landmark className="w-6 h-6" />
+                                </div>
+                                <h2 className="text-2xl font-black tracking-tighter text-slate-950 capitalize">SIM<span className="text-emerald-500">KKN</span></h2>
+                            </Link>
+                            <p className="text-slate-500 text-sm leading-relaxed font-medium">
+                                Sistem Informasi Manajemen Pengabdian Masyarakat UIN Prof. K.H. Saifuddin Zuhri Purwokerto.
                             </p>
-                            <div className="space-y-2 text-sm text-slate-600">
-                                <p>Jl. Jend. A. Yani No.40-A, Karanganjing, Purwanegara</p>
-                                <p>Purwokerto Utara, Kabupaten Banyumas, Jawa Tengah</p>
+                            <div className="flex gap-4">
+                               <div className="w-10 h-10 bg-white rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-500 transition-colors cursor-pointer"><Globe size={18}/></div>
                             </div>
                         </div>
                         
-                        <div className="space-y-6">
-                            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Tautan Cepat</h4>
-                            <div className="flex flex-col gap-3 text-sm text-slate-600">
-                                <Link href={route('public.about')} className="hover:text-emerald-600">Profil KKN</Link>
-                                <Link href={route('public.schemes')} className="hover:text-emerald-600">Skema Pengabdian</Link>
-                                <Link href={route('public.announcements')} className="hover:text-emerald-600">Warta Utama</Link>
-                                <Link href={route('public.downloads')} className="hover:text-emerald-600">Repositori Dokumen</Link>
+                        <div className="space-y-8">
+                            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-[0.2em] relative inline-block">
+                                Navigasi
+                                <div className="absolute -bottom-2 left-0 w-8 h-1 bg-emerald-500 rounded-full" />
+                            </h4>
+                            <div className="flex flex-col gap-4 text-[13px] text-slate-500 font-bold">
+                                <Link href={route('public.about')} className="hover:text-emerald-500 transition-colors">Profil LPPM</Link>
+                                <Link href={route('public.schemes')} className="hover:text-emerald-600 transition-colors">Skema KKN</Link>
+                                <Link href={route('public.announcements')} className="hover:text-emerald-600 transition-colors">Warta & Berita</Link>
+                                <Link href={route('public.downloads')} className="hover:text-emerald-600 transition-colors">Pusat Unduhan</Link>
                             </div>
                         </div>
 
-                        <div className="space-y-6">
-                            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Akses Pengguna</h4>
-                            <div className="flex flex-col gap-3 text-sm text-slate-600">
-                                <Link href="/login" className="hover:text-emerald-600">Portal Mahasiswa</Link>
-                                <Link href="/login" className="hover:text-emerald-600">Portal DPL</Link>
-                                <Link href="/login" className="hover:text-emerald-600">Portal Admin</Link>
+                        <div className="space-y-8">
+                            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-[0.2em] relative inline-block">
+                                Informasi
+                                <div className="absolute -bottom-2 left-0 w-8 h-1 bg-emerald-500 rounded-full" />
+                            </h4>
+                            <div className="flex flex-col gap-4 text-[13px] text-slate-500 font-bold uppercase tracking-widest">
+                                <Link href="/login" className="hover:text-emerald-500">Cek Kelayakan</Link>
+                                <Link href="/login" className="hover:text-emerald-500">Pendaftaran</Link>
+                                <Link href="/login" className="hover:text-emerald-500">Syarat & Ketentuan</Link>
+                            </div>
+                        </div>
+
+                        <div className="space-y-8">
+                             <h4 className="text-sm font-bold text-slate-900 uppercase tracking-[0.2em] relative inline-block">
+                                Hubungi LPPM
+                                <div className="absolute -bottom-2 left-0 w-8 h-1 bg-emerald-500 rounded-full" />
+                            </h4>
+                            <div className="space-y-6 text-sm text-slate-600 font-medium leading-relaxed">
+                                <div className="flex gap-4">
+                                    <div className="p-3 bg-emerald-100 rounded-xl text-emerald-600 h-fit"><Landmark size={18}/></div>
+                                    <p>Jl. Jend. A. Yani No.40-A, Karanganjing, Purwokerto Utara.</p>
+                                </div>
+                                <div className="p-4 bg-white rounded-2xl border border-dashed border-slate-200">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Email Resmi</p>
+                                    <p className="text-xs font-bold text-slate-900">lppm@uinsaizu.ac.id</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div className="mt-20 pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-slate-400">
-                         <p>&copy; 2026 UIN Prof. K.H. Saifuddin Zuhri. All rights reserved.</p>
-                         <div className="flex gap-6 uppercase tracking-widest">
-                             <a href="#" className="hover:text-slate-600">Sitemap</a>
-                             <a href="#" className="hover:text-slate-600">Internal Unit</a>
+                    <div className="mt-20 pt-10 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6">
+                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                             &copy; 2026 Universitas Islam Negeri Prof. K.H. Saifuddin Zuhri.
+                         </p>
+                         <div className="flex gap-10 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                             <span className="flex items-center gap-2 hover:text-emerald-500 cursor-pointer">
+                                 <ShieldCheck size={14}/> Keamanan Data
+                             </span>
+                             <span>Versi 4.0.1</span>
                          </div>
                     </div>
                 </div>

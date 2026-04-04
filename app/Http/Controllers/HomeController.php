@@ -26,7 +26,7 @@ class HomeController extends Controller
                 'locations' => Lokasi::count(),
             ],
             'announcements' => $announcements->take(5)->values(),
-            'downloads' => Download::active()->orderBy('created_at', 'desc')->get(),
+            'downloads' => $downloads->isNotEmpty() ? $downloads : Download::active()->orderBy('created_at', 'desc')->limit(10)->get(),
             'featuredAnnouncements' => $announcements->isNotEmpty()
                 ? $this->transformAnnouncements($announcements, false)
                 : $this->fallbackAnnouncements(),
@@ -96,7 +96,10 @@ class HomeController extends Controller
 
     public function downloads()
     {
-        $downloads = Download::active()->orderBy('created_at', 'desc')->get();
+        $downloads = Download::active()
+            ->orderBy('created_at', 'desc')
+            ->limit(1000)
+            ->get();
 
         return Inertia::render('Public/Downloads', [
             'downloads' => $downloads->isNotEmpty()

@@ -62,24 +62,25 @@ class PesertaKknController extends Controller
             ];
         });
 
-        // Statistics
+        // Statistics - OPTIMIZED: Use database-level aggregation instead of loading all records
         $stats = [
             'total' => PesertaKkn::count(),
             'pending' => PesertaKkn::where('status', 'pending')->count(),
             'approved' => PesertaKkn::where('status', 'approved')->count(),
             'rejected' => PesertaKkn::where('status', 'rejected')->count(),
-            'by_faculty' => PesertaKkn::with('mahasiswa.fakultas')
+            'by_faculty' => PesertaKkn::selectRaw('mahasiswa.faculty_id, COUNT(*) as count')
+                ->join('mahasiswa', 'peserta_kkn.mahasiswa_id', '=', 'mahasiswa.id')
+                ->leftJoin('fakultas', 'mahasiswa.faculty_id', '=', 'fakultas.id')
+                ->selectRaw('COALESCE(fakultas.nama, \'Tidak Diketahui\') as faculty_name')
+                ->groupBy('mahasiswa.faculty_id', 'fakultas.nama')
+                ->orderByDesc('count')
                 ->get()
-                ->groupBy('mahasiswa.faculty_id')
-                ->map(function ($group) {
+                ->map(function ($row) {
                     return [
-                        'faculty_name' => $group->first()->mahasiswa?->fakultas?->nama ?? 'Tidak Diketahui',
-                        'count' => $group->count(),
+                        'faculty_name' => $row->faculty_name,
+                        'count' => $row->count,
                     ];
-                })
-                ->values()
-                ->sortByDesc('count')
-                ->values(),
+                }),
         ];
 
         return Inertia::render('Admin/Registrations/Index', [
@@ -99,14 +100,18 @@ class PesertaKknController extends Controller
             'ids.*' => ['required', 'integer', 'exists:peserta_kkn,id'],
         ]);
 
-        $count = PesertaKkn::whereIn('id', $validated['ids'])
-            ->where('status', 'pending')
-            ->update([
-                'status' => 'approved',
-                'approved_at' => now(),
-                'approved_by' => auth()->id(),
-            ]);
+        // WRAP IN TRANSACTION for atomicity
+        \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
+            PesertaKkn::whereIn('id', $validated['ids'])
+                ->where('status', 'pending')
+                ->update([
+                    'status' => 'approved',
+                    'approved_at' => now(),
+                    'approved_by' => auth()->id(),
+                ]);
+        });
 
+        $count = count($validated['ids']);
         return redirect()->back()->with('success', "{$count} pendaftaran berhasil disetujui.");
     }
 
@@ -121,13 +126,17 @@ class PesertaKknController extends Controller
             'notes' => ['required', 'string', 'max:1000'],
         ]);
 
-        $count = PesertaKkn::whereIn('id', $validated['ids'])
-            ->where('status', 'pending')
-            ->update([
-                'status' => 'rejected',
-                'notes' => $validated['notes'],
-            ]);
+        // WRAP IN TRANSACTION for atomicity
+        \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
+            PesertaKkn::whereIn('id', $validated['ids'])
+                ->where('status', 'pending')
+                ->update([
+                    'status' => 'rejected',
+                    'notes' => $validated['notes'],
+                ]);
+        });
 
+        $count = count($validated['ids']);
         return redirect()->back()->with('success', "{$count} pendaftaran ditolak.");
     }
 
@@ -271,18 +280,21 @@ class PesertaKknController extends Controller
         if (!$registration->kelompok_id) {
             return redirect()->back()->withErrors(['error' => 'Mahasiswa harus ditempatkan di kelompok terlebih dahulu.']);
         }
-        
+
         if ($registration->status !== 'approved') {
             return redirect()->back()->withErrors(['error' => 'Hanya mahasiswa yang sudah disetujui yang dapat menjadi ketua kelompok.']);
         }
 
-        // Reset all other members in the SAME group to 'Anggota'
-        PesertaKkn::where('kelompok_id', $registration->kelompok_id)
-            ->where('id', '!=', $registration->id)
-            ->update(['role' => 'Anggota']);
+        // WRAP IN TRANSACTION: Ensure atomicity
+        \Illuminate\Support\Facades\DB::transaction(function () use ($registration) {
+            // Reset all other members in the SAME group to 'Anggota'
+            PesertaKkn::where('kelompok_id', $registration->kelompok_id)
+                ->where('id', '!=', $registration->id)
+                ->update(['role' => 'Anggota']);
 
-        // Set this student as 'Ketua'
-        $registration->update(['role' => 'Ketua']);
+            // Set this student as 'Ketua'
+            $registration->update(['role' => 'Ketua']);
+        });
 
         return redirect()->back()->with('success', "{$registration->mahasiswa->nama} kini resmi menjadi Ketua Kelompok.");
     }

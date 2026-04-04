@@ -9,42 +9,67 @@ use App\Models\KKN\Lokasi;
 use App\Models\KKN\Periode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class KelompokKknController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $groups = KelompokKkn::with('periode', 'lokasi', 'dosen') // Load 'dosen' (pivot) instead of 'dpl'
+        Gate::authorize('manage-groups');
+        
+        $groups = KelompokKkn::with('periode', 'lokasi', 'dosen')
             ->withCount('peserta')
+            ->when($request->input('search'), function ($query, $search) {
+                $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+                $query->where(function ($q) use ($s) {
+                    $q->where('nama_kelompok', 'like', "%{$s}%")
+                      ->orWhere('code', 'like', "%{$s}%")
+                      ->orWhereHas('lokasi', function ($locQuery) use ($s) {
+                          $locQuery->where('village_name', 'like', "%{$s}%")
+                                   ->orWhere('district_name', 'like', "%{$s}%");
+                      })
+                      ->orWhereHas('dosen', function ($dplQuery) use ($s) {
+                          $dplQuery->where('nama', 'like', "%{$s}%");
+                      });
+                });
+            })
+            ->when($request->input('period_id'), function ($query, $periodId) {
+                $query->where('period_id', $periodId);
+            })
+            ->when($request->input('status'), function ($query, $status) {
+                $query->where('status', $status);
+            })
             ->orderByDesc('created_at')
-            ->get()
-            ->map(function ($g) {
-            // Determine main DPL (Ketua)
+            ->paginate(15)
+            ->withQueryString();
+
+        // Transform for frontend
+        $groups->getCollection()->transform(function ($g) {
             $mainDpl = $g->dosen->where('pivot.role', 'Ketua')->first();
             $allDpls = $g->dosen->map(fn($d) => [
-            'id' => $d->id,
-            'name' => $d->nama,
-            'role' => $d->pivot->role
+                'id' => $d->id,
+                'name' => $d->nama,
+                'role' => $d->pivot->role
             ])->values();
 
             return [
-            'id' => $g->id,
-            'code' => $g->code,
-            'name' => $g->nama_kelompok,
-            'capacity' => $g->capacity,
-            'status' => $g->status,
-            'registrations_count' => $g->peserta_count,
-            'period' => $g->periode ? ['id' => $g->periode->id, 'name' => $g->periode->name] : null,
-            'location' => $g->lokasi ? [
-                'id' => $g->lokasi->id,
-                'village_name' => $g->lokasi->village_name,
-                'full_name' => $g->lokasi->full_name,
-            ] : null,
-            'main_lecturer' => $mainDpl ? ['id' => $mainDpl->id, 'name' => $mainDpl->nama] : null,
-            'lecturers' => $allDpls,
+                'id' => $g->id,
+                'code' => $g->code,
+                'name' => $g->nama_kelompok,
+                'capacity' => $g->capacity,
+                'status' => $g->status,
+                'registrations_count' => $g->peserta_count,
+                'period' => $g->periode ? ['id' => $g->periode->id, 'name' => $g->periode->name] : null,
+                'location' => $g->lokasi ? [
+                    'id' => $g->lokasi->id,
+                    'village_name' => $g->lokasi->village_name,
+                    'full_name' => $g->lokasi->full_name,
+                ] : null,
+                'main_lecturer' => $mainDpl ? ['id' => $mainDpl->id, 'name' => $mainDpl->nama] : null,
+                'lecturers' => $allDpls,
             ];
         });
 
@@ -64,6 +89,7 @@ class KelompokKknController extends Controller
             'periods' => $periods,
             'locations' => $locations,
             'lecturers' => $lecturers,
+            'filters' => $request->only('search', 'period_id', 'status'),
         ]);
     }
 

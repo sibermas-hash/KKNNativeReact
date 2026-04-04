@@ -156,17 +156,16 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  />
  </div>
  <div className="md:col-span-2 space-y-2">
- <label className="block text-sm font-medium text-slate-700">Foto posko</label>
- <input
- type="berkas"
- accept=".jpg,.jpeg,.png,.webp"
- onChange={handlePhotoChange}
- className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary"
- />
- {selectedFileName && <p className="text-sm text-slate-500">{selectedFileName}</p>}
- {form.errors.photo && <p className="text-xs text-red-600">{form.errors.photo}</p>}
- </div>
- </div>
+   <label className="block text-sm font-medium text-slate-700">Foto posko</label>
+   <input
+     type="file"
+     accept=".jpg,.jpeg,.png,.webp"
+     onChange={handlePhotoChange}
+     className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary"
+   />
+   {selectedFileName && <p className="text-sm text-slate-500">{selectedFileName}</p>}
+   {form.errors.photo && <p className="text-xs text-red-600">{form.errors.photo}</p>}
+ </div> </div>
 
  <div className="mt-6 flex justify-end gap-3">
  <Link

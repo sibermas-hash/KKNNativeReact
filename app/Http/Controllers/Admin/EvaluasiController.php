@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\Evaluasi;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -11,6 +12,7 @@ class EvaluasiController extends Controller
 {
     public function index(): Response
     {
+        Gate::authorize('view-admin-dashboard');
         $evaluations = Evaluasi::with(['mahasiswa', 'kelompok', 'evaluator', 'item'])
             ->orderByDesc('evaluated_at')
             ->paginate(20);

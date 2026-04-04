@@ -199,27 +199,42 @@ Run these to verify data is correct:
 
 ```bash
 # Check dosen linked to users
-sqlite3 database/database.sqlite << 'EOF'
-SELECT u.username, d.nama FROM users u
-JOIN dosen d ON u.id = d.user_id
-WHERE u.username LIKE 'dpl%';
-EOF
+php artisan tinker --execute="
+echo json_encode(
+    \App\Models\User::query()
+        ->where('username', 'like', 'dpl%')
+        ->with('dosen')
+        ->get()
+        ->map(fn (\$user) => ['username' => \$user->username, 'nama_dosen' => \$user->dosen?->nama])
+        ->all(),
+    JSON_PRETTY_PRINT
+);
+"
 
 # Check DPL assignments to periods
-sqlite3 database/database.sqlite << 'EOF'
-SELECT d.nama, p.name, dp.max_groups FROM dpl_periods dp
-JOIN dosen d ON dp.dosen_id = d.id
-JOIN periode p ON dp.period_id = p.id;
-EOF
+php artisan tinker --execute="
+echo json_encode(
+    \App\Models\KKN\DplPeriod::query()
+        ->with(['dosen:id,nama', 'period:id,name'])
+        ->get()
+        ->map(fn (\$item) => ['dosen' => \$item->dosen?->nama, 'periode' => \$item->period?->name, 'max_groups' => \$item->max_groups])
+        ->all(),
+    JSON_PRETTY_PRINT
+);
+"
 
 # Check groups and assignments
-sqlite3 database/database.sqlite << 'EOF'
-SELECT k.code, d.nama as dpl, COUNT(pe.id) as student_count
-FROM kelompok_kkn k
-LEFT JOIN dosen d ON k.dpl_id = d.id
-LEFT JOIN peserta_kkn pe ON k.id = pe.kelompok_id
-GROUP BY k.id;
-EOF
+php artisan tinker --execute="
+echo json_encode(
+    \App\Models\KKN\KelompokKkn::query()
+        ->withCount('participants')
+        ->with('dosen:id,nama')
+        ->get()
+        ->map(fn (\$item) => ['kelompok' => \$item->code, 'dpl' => \$item->dosen?->nama, 'student_count' => \$item->participants_count])
+        ->all(),
+    JSON_PRETTY_PRINT
+);
+"
 ```
 
 ---

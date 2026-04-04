@@ -16,6 +16,13 @@ interface ReportDetail {
  output?: string | null;
  latitude?: number | null;
  longitude?: number | null;
+ gps?: {
+ accuracy?: number | null;
+ captured_at?: string | null;
+ source?: string | null;
+ reference_label?: string | null;
+ distance_to_reference_meters?: number | null;
+ };
  status: string;
  can_review: boolean;
  review_notes?: string | null;
@@ -111,6 +118,17 @@ export default function DplDailyReportShow({ report }: Props) {
  <>
  <p>Latitude: {report.latitude}</p>
  <p>Longitude: {report.longitude}</p>
+ {report.gps?.accuracy !== null && report.gps?.accuracy !== undefined ? (
+ <p>Akurasi GPS: {Math.round(report.gps.accuracy)} meter</p>
+ ) : null}
+ {report.gps?.captured_at ? (
+ <p>Diambil pada: {new Date(report.gps.captured_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+ ) : null}
+ {report.gps?.reference_label && report.gps?.distance_to_reference_meters !== null && report.gps?.distance_to_reference_meters !== undefined ? (
+ <p>
+ Jarak ke {report.gps.reference_label}: {report.gps.distance_to_reference_meters.toLocaleString('id-ID')} meter
+ </p>
+ ) : null}
  <a
  href={`https://www.google.com/maps?q=${report.latitude},${report.longitude}`}
  target="_blank"

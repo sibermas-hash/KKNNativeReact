@@ -11,6 +11,7 @@ use App\Models\KKN\Mahasiswa;
 use App\Services\GradingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -48,7 +49,12 @@ class GeneratorNilaiController extends Controller
 
     public function index(): Response
     {
-        $periods = Periode::with('tahunAkademik')->orderByDesc('id')->get()->map(fn($p) => [
+        Gate::authorize('manage-grades');
+        $periods = Periode::with('tahunAkademik')
+            ->orderByDesc('id')
+            ->limit(50)
+            ->get()
+            ->map(fn($p) => [
             'id' => $p->id,
             'name' => "Angkatan " . ($p->name ?? '-') . " (" . ($p->tahunAkademik?->year ?? '-') . ")",
             'grading_start' => $p->grading_start?->format('Y-m-d'),
@@ -96,24 +102,53 @@ class GeneratorNilaiController extends Controller
 
     public function students(KelompokKkn $kelompokKkn)
     {
+        Gate::authorize('manage-grades');
         $this->authorizeDplGroup($kelompokKkn->id);
         return response()->json($this->getStudentsForGroup($kelompokKkn));
     }
 
     public function studentsAll()
     {
+        Gate::authorize('manage-grades');
         abort_if(auth()->user()->hasRole('dpl'), 403, 'DPL hanya dapat mengakses kelompok yang ditugaskan.');
 
-        $allStudents = [];
+        // PERBAIKAN N+1: Batch load semua data sekaligus, bukan per-group loop
         $groups = KelompokKkn::orderBy('code')->get();
+        $groupIds = $groups->pluck('id')->toArray();
 
+        // Batch load semua registrasi
+        $registrations = PesertaKkn::with(['mahasiswa:id,user_id,nim,nama'])
+            ->whereIn('kelompok_id', $groupIds)
+            ->whereIn('status', ['approved', 'pending'])
+            ->get()
+            ->groupBy('kelompok_id');
+
+        // Batch load semua nilai
+        $userIds = $registrations->flatten()->pluck('mahasiswa.user_id')->filter()->unique()->toArray();
+        $scores = NilaiKkn::whereIn('kelompok_id', $groupIds)
+            ->whereIn('user_id', $userIds)
+            ->get()
+            ->groupBy(fn($s) => "{$s->kelompok_id}:{$s->user_id}");
+
+        // Map sekaligus tanpa loop N+1
+        $allStudents = [];
         foreach ($groups as $group) {
-            $groupStudents = $this->getStudentsForGroup($group);
-            foreach ($groupStudents as &$s) {
-                $s['group_code'] = $group->code;
-                $s['group_name'] = $group->nama_kelompok;
+            $groupRegs = $registrations[$group->id] ?? collect();
+            foreach ($groupRegs as $reg) {
+                $userId = $reg->mahasiswa->user_id;
+                $scoreKey = "{$group->id}:{$userId}";
+                $score = $scores[$scoreKey]?->first();
+
+                $allStudents[] = [
+                    'user_id'    => $userId,
+                    'name'       => $reg->mahasiswa->nama,
+                    'nim'        => $reg->mahasiswa->nim,
+                    'group_code' => $group->code,
+                    'group_name' => $group->nama_kelompok,
+                    'discipline' => $score?->discipline_score ? (int)$score->discipline_score : null,
+                    'attitude'   => $score?->attitude_score ? (int)$score->attitude_score : null,
+                ];
             }
-            $allStudents = array_merge($allStudents, $groupStudents);
         }
 
         return response()->json($allStudents);
@@ -441,6 +476,7 @@ class GeneratorNilaiController extends Controller
             ])
             ->orderBy('g.code')
             ->orderBy('u.name')
+            ->limit(50000)
             ->get()
             ->map(fn($s) => [
                 'user_id'    => $s->user_id,

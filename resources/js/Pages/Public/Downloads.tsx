@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react';
 import PublicLayout from '@/Layouts/PublicLayout';
 import { motion } from 'framer-motion';
-import { Download as DownloadIcon, ArrowRight, FileText, Globe } from 'lucide-react';
+import { Download as DownloadIcon, ArrowRight, FileText, Globe, Star, Sparkles, FolderDown } from 'lucide-react';
 
 interface Download {
     id: number;
@@ -23,70 +23,101 @@ export default function Downloads({ downloads }: Props) {
         <PublicLayout>
             <Head title="Repositori | LPPM UIN Prof. K.H. Saifuddin Zuhri" />
             
-            <section className="py-24 lg:py-48 bg-slate-50 min-h-screen">
-                <div className="container mx-auto px-6 lg:px-12 grid grid-cols-1 gap-24">
-                    <div className="mb-12">
-                         <div className="flex items-center gap-4 mb-4">
-                            <div className="h-1.5 w-16 bg-amber-400 rounded-full" />
-                            <span className="text-[12px] font-black text-emerald-600 uppercase tracking-[0.5em]">OPERATIONAL_HUB</span>
-                        </div>
-                        <h3 className="text-5xl lg:text-7xl font-black text-slate-950 tracking-tighter leading-[0.9]">Repositori File.</h3>
-                        <p className="text-lg text-slate-500 font-bold max-w-2xl mt-8 italic">
+            <section className="relative pt-44 lg:pt-60 pb-48 bg-white overflow-hidden min-h-screen">
+                <div className="container relative z-10 mx-auto px-6 lg:px-12">
+                    
+                    {/* PAGE HEADER */}
+                    <div className="max-w-4xl space-y-12 mb-32">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="inline-flex items-center gap-3 px-5 py-2 bg-emerald-50 border border-emerald-100 rounded-full"
+                        >
+                            <FolderDown size={16} className="text-emerald-500" />
+                            <span className="text-[11px] font-black text-emerald-800 uppercase tracking-[0.3em]">Pusat Dokumentasi Operasional</span>
+                        </motion.div>
+                        
+                        <motion.h1 
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="text-6xl lg:text-[100px] font-black tracking-tighter text-slate-900 leading-[0.85] uppercase"
+                        >
+                            Repositori <br /> 
+                            <span className="text-emerald-500 italic lowercase font-medium">dokumen.</span>
+                        </motion.h1>
+
+                        <motion.p 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="text-xl lg:text-3xl text-slate-400 font-bold max-w-2xl leading-relaxed italic border-l-8 border-emerald-500 pl-10"
+                        >
                             Unduh dokumen panduan, berkas administrasi, dan referensi akademik untuk kemudahan operasional KKN Anda.
-                        </p>
-                        {previewMode && (
-                            <div className="mt-6 inline-flex rounded-full bg-amber-100 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-amber-700">
-                                Contoh Tampilan Saat Repositori Masih Kosong
-                            </div>
-                        )}
+                        </motion.p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    {/* GRID DOWNLOADS */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
                         {downloads.map((d, i) => (
                             <motion.div
                                 key={d.id}
                                 initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
                                 transition={{ delay: i * 0.05 }}
-                                className="group bg-white p-16 rounded-[4rem] border-2 border-slate-100 hover:border-emerald-500 hover:shadow-2xl transition-all relative overflow-hidden"
+                                className="group relative bg-white p-12 lg:p-16 rounded-[4rem] border border-slate-100 hover:border-emerald-500 hover:shadow-[0_80px_160px_rgba(0,0,0,0.06)] transition-all cursor-pointer"
                             >
-                                <div className="absolute top-0 right-0 p-12 opacity-5 text-emerald-500">
-                                    <FileText className="w-32 h-32" />
+                                <div className="absolute top-0 right-0 p-12 opacity-[0.03] rotate-12 group-hover:rotate-0 transition-transform duration-700 pointer-events-none">
+                                    <FileText size={200} />
                                 </div>
-                                <div className="flex flex-col items-start gap-10 relative z-10">
-                                    <div className="p-6 bg-emerald-50 text-emerald-600 rounded-[2rem] shadow-xl group-hover:bg-emerald-500 group-hover:text-white transition-all transform group-hover:-rotate-12 group-hover:scale-110">
-                                        <DownloadIcon className="w-12 h-12" />
-                                    </div>
-                                    <h4 className="text-3xl font-black text-slate-950 leading-tight uppercase italic tracking-tighter">
-                                        {d.title}
-                                    </h4>
-                                    {d.is_demo ? (
-                                        <div className="inline-flex items-center gap-4 px-10 py-5 bg-slate-200 text-slate-700 rounded-3xl font-black text-xs uppercase tracking-widest">
-                                            CONTOH DOKUMEN
+
+                                <div className="space-y-12 relative z-10">
+                                    <div className="flex items-center justify-between">
+                                        <div className="p-6 bg-emerald-50 text-emerald-600 rounded-[2rem] group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500 shadow-sm">
+                                            <FileText size={32} />
                                         </div>
-                                    ) : (
+                                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">{d.file_type || 'PDF'}</span>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <h4 className="text-3xl lg:text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none italic group-hover:text-emerald-600 transition-colors">
+                                            {d.title}
+                                        </h4>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">PUBLIKASI_RESMI_LPPM</p>
+                                    </div>
+
+                                    <div className="pt-10 border-t border-slate-50 flex items-center justify-between">
                                         <a 
                                             href={d.external_url || d.file_path || '#'}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-4 px-10 py-5 bg-slate-950 text-white rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl group-hover:translate-x-2"
+                                            className="px-10 py-5 bg-slate-900 text-white rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-slate-900/10 flex items-center gap-4"
                                         >
-                                            UNDUH SEKARANG
-                                            <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+                                            Unduh Berkas
+                                            <DownloadIcon size={16} />
                                         </a>
-                                    )}
+                                        <div className="flex gap-2">
+                                            <Sparkles size={14} className="text-emerald-400" />
+                                        </div>
+                                    </div>
                                 </div>
                             </motion.div>
                         ))}
                         
+                        {/* EMPTY STATE */}
                         {downloads.length === 0 && (
-                            <div className="md:col-span-2 py-40 text-center bg-white rounded-[3rem] border-2 border-dashed border-slate-200">
-                                <Globe className="w-20 h-20 text-slate-200 mx-auto mb-8" />
-                                <p className="text-slate-400 font-black uppercase tracking-[0.2em] italic">Tidak ada file dalam repositori publik.</p>
+                            <div className="md:col-span-2 py-40 text-center bg-white rounded-[5rem] border border-dashed border-slate-200">
+                                <Globe size={80} className="text-slate-100 mx-auto mb-10" />
+                                <p className="text-slate-300 font-bold italic text-2xl uppercase tracking-tighter">Repositori saat ini sedang dalam pemeliharaan.</p>
                             </div>
                         )}
                     </div>
                 </div>
+
+                {/* BACKGROUND DECORATIVE */}
+                <div className="absolute top-1/4 -right-1/4 w-[800px] h-[800px] bg-emerald-50 rounded-full blur-[160px] animate-pulse-slow -z-10" />
+                <div className="absolute bottom-0 -left-1/4 w-[600px] h-[600px] bg-emerald-50/50 rounded-full blur-[140px] -z-10" />
             </section>
         </PublicLayout>
     );

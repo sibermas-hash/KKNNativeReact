@@ -7,8 +7,8 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\PesertaKkn;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 use App\Services\GradingService;
 
@@ -19,6 +19,7 @@ class GradeController extends Controller
     ) {}
     public function index()
     {
+        Gate::authorize('manage-grades');
         $this->authorize('viewAny', NilaiKkn::class);
 
         $groups = KelompokKkn::with(['dpl.user:id,name'])->orderBy('code')->get(['id','code','nama_kelompok','dpl_id']);
@@ -29,6 +30,7 @@ class GradeController extends Controller
 
     public function students(KelompokKkn $group)
     {
+        Gate::authorize('manage-grades');
         $this->authorize('viewAny', NilaiKkn::class);
         $students = PesertaKkn::with(['mahasiswa:id,user_id,nim,nama', 'mahasiswa.user:id,username,email,name'])
             ->where('kelompok_id', $group->id)

@@ -273,6 +273,20 @@ class SystemSettingController extends Controller
                 'group' => 'registration_rules',
             ],
             [
+                'config_key' => 'daily_report_geo_radius_meters',
+                'label' => 'Radius Validasi GPS Laporan Harian (Meter)',
+                'value' => '5000',
+                'type' => 'text',
+                'group' => 'registration_rules',
+            ],
+            [
+                'config_key' => 'daily_report_geo_max_accuracy_meters',
+                'label' => 'Batas Maksimal Akurasi GPS Laporan Harian (Meter)',
+                'value' => '250',
+                'type' => 'text',
+                'group' => 'registration_rules',
+            ],
+            [
                 'config_key' => 'site_about',
                 'label' => 'Tentang LPPM (About)',
                 'value' => 'Lembaga Penelitian dan Pengabdian kepada Masyarakat (LPPM) UIN Profesor Kiai Haji Saifuddin Zuhri Purwokerto.',
@@ -316,6 +330,8 @@ class SystemSettingController extends Controller
             'registration_lock_wait_seconds' => ['nullable', 'integer', 'min:1', 'max:10'],
             'group_male_min_ratio' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'group_male_target_ratio' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'daily_report_geo_radius_meters' => ['nullable', 'integer', 'min:100', 'max:50000'],
+            'daily_report_geo_max_accuracy_meters' => ['nullable', 'integer', 'min:10', 'max:5000'],
         ];
 
         if (! isset($rules[$setting->config_key])) {

@@ -4,6 +4,12 @@
 .env.backup
 .env.production
 .env.testing
+
+# Sensitive data files (Excel, CSV containing PII)
+*.xlsx
+*.xls
+!template.xlsx
+
 .phpactor.json
 .phpunit.result.cache
 /.fleet
@@ -37,9 +43,6 @@ check_users.php
 create_test_accounts.php
 setup_sample_data.php
 
-# Database files
-database.sqlite
-*.sqlite
 *.bak
 
 # Test files in public

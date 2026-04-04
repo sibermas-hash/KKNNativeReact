@@ -7,6 +7,7 @@ use App\Models\KKN\Workshop;
 use App\Services\WorkshopService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,6 +19,8 @@ class WorkshopController extends Controller
 
     public function index(): Response
     {
+        Gate::authorize('manage-workshops');
+        
         return Inertia::render('Admin/Workshops/Index', [
             'workshops' => $this->workshopService->getUpcomingWorkshops(null, true, true),
         ]);
@@ -25,6 +28,8 @@ class WorkshopController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        Gate::authorize('manage-workshops');
+        
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],

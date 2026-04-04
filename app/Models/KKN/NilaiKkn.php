@@ -13,9 +13,9 @@ class NilaiKkn extends Model
     protected $connection = 'kkn';
     protected $table = 'nilai_kkn';
 
+    // FIXED: Remove confusing mahasiswa_id - only use user_id
     protected $fillable = [
         'user_id',
-        'mahasiswa_id',
         'kelompok_id',
         'final_report_score',
         'execution_score',
@@ -45,41 +45,55 @@ class NilaiKkn extends Model
         'village_graded_at' => 'datetime',
         'admin_graded_at' => 'datetime',
         'is_finalized' => 'boolean',
+        'final_report_score' => 'decimal:2',
+        'execution_score' => 'decimal:2',
+        'article_score' => 'decimal:2',
+        'discipline_score' => 'decimal:2',
+        'attitude_score' => 'decimal:2',
+        'workshop_score' => 'decimal:2',
+        'administration_score' => 'decimal:2',
+        'dpl_weighted_score' => 'decimal:2',
+        'village_weighted_score' => 'decimal:2',
+        'lppm_weighted_score' => 'decimal:2',
+        'total_score' => 'decimal:2',
     ];
 
-    public function mahasiswa(): BelongsTo
+    /**
+     * FIXED: Proper relationship - nilai_kkn.user_id → users.id
+     */
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Mahasiswa::class, 'user_id', 'user_id');
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
     }
 
+    /**
+     * Get Mahasiswa record through user
+     */
+    public function mahasiswa(): ?Mahasiswa
+    {
+        return $this->user?->mahasiswa;
+    }
+
+    /**
+     * Get mahasiswa_id for compatibility
+     */
     public function getMahasiswaIdAttribute(): ?int
     {
-        return $this->attributes['user_id'] ?? null;
-    }
-
-    public function setMahasiswaIdAttribute(mixed $value): void
-    {
-        if ($value === null || $value === '') {
-            $this->attributes['user_id'] = null;
-
-            return;
-        }
-
-        $resolvedUserId = Mahasiswa::query()
-            ->where('user_id', $value)
-            ->value('user_id');
-
-        if ($resolvedUserId === null) {
-            $resolvedUserId = Mahasiswa::query()
-                ->whereKey($value)
-                ->value('user_id');
-        }
-
-        $this->attributes['user_id'] = $resolvedUserId ?? $value;
+        return $this->user?->mahasiswa?->id;
     }
 
     public function kelompok(): BelongsTo
     {
-        return $this->belongsTo(KelompokKkn::class , 'kelompok_id');
+        return $this->belongsTo(KelompokKkn::class, 'kelompok_id');
+    }
+
+    public function dplGradedBy(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'dpl_graded_by');
+    }
+
+    public function adminGradedBy(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'admin_graded_by');
     }
 }

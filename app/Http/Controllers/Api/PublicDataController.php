@@ -204,15 +204,30 @@ class PublicDataController extends Controller
 
     /**
      * Get allowed column names for a table to prevent SQL injection.
+     * SECURITY: Only returns explicitly defined fillable columns from models.
+     * Never falls back to schema introspection to prevent exposure of sensitive columns.
      */
     private function getTableColumns(string $table): array
     {
         $model = $this->getModel($table);
-        if ($model) {
-            return $model->getFillable();
+
+        // Require model to exist - never introspect schema directly
+        if (!$model) {
+            return [];
         }
 
-        return DB::getSchemaBuilder()->getColumnListing($table);
+        $fillable = $model->getFillable();
+
+        // Ensure model has explicitly defined fillable columns
+        if (empty($fillable)) {
+            \Illuminate\Support\Facades\Log::warning('API Security: Model has no fillable columns', [
+                'table' => $table,
+                'model' => get_class($model),
+            ]);
+            return [];
+        }
+
+        return $fillable;
     }
 
     private function validateAccess(Request $request, string $table, string $permission): ?JsonResponse

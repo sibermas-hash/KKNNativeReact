@@ -43,6 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\HandleActivePeriod::class,
             \App\Http\Middleware\CspHeaders::class,
             \App\Http\Middleware\EnsurePasswordChanged::class,
+            \App\Http\Middleware\EnsureAdminAuthorization::class,
         ]);
 
         $middleware->alias([
@@ -51,16 +52,59 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'kkn.throttle' => \App\Http\Middleware\KknThrottleMiddleware::class,
             'api.key' => \App\Http\Middleware\ValidateApiKey::class,
+            'restrict.debugbar' => \App\Http\Middleware\RestrictDebugbarAccess::class,
         ]);
 
         $middleware->redirectGuestsTo('/login');
         $middleware->redirectUsersTo('/');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Handle 419 CSRF errors for Inertia requests
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {
+            if ($request->header('X-Inertia')) {
+                return redirect()->route('login')->with('error', 'Sesi Anda telah berakhir. Silakan login kembali.');
+            }
+        });
+
+        // Handle 404 Not Found
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, $request) {
+            if ($request->header('X-Inertia') || $request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Halaman tidak ditemukan.',
+                ], 404);
+            }
+        });
+
+        // Handle 500 Internal Server Error (hide details in production)
+        $exceptions->render(function (\Throwable $e, $request) {
+            // Log the error
+            \Illuminate\Support\Facades\Log::error('Unhandled Exception', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            // For API requests, return JSON error
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => config('app.debug') ? $e->getMessage() : 'Terjadi kesalahan server.',
+                ], 500);
+            }
+
+            // For Inertia requests, redirect to error page
+            if ($request->header('X-Inertia')) {
+                if (!config('app.debug')) {
+                    return redirect()->back()->with('error', 'Terjadi kesalahan. Silakan coba lagi.');
+                }
+            }
+        });
     })
     ->withSchedule(function (Schedule $schedule): void {
         // Event-driven sync trigger (safe no-op when no trigger file exists).
         $schedule->command('master:webhook:sync')->everyMinute();
+        
+        // Daily database backup at 2 AM
+        $schedule->command('db:backup --keep=7')->dailyAt('02:00');
     })
     ->create();

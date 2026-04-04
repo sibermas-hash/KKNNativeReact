@@ -15,11 +15,11 @@ Route::middleware(['guest', 'kkn.throttle'])->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class , 'create'])->name('login');
     Route::post('/login', [AuthenticatedSessionController::class , 'store'])->name('login.store');
 
-    // Password Reset
-    Route::get('/forgot-password', [PasswordResetController::class , 'showForgotForm'])->name('password.request');
-    Route::post('/forgot-password', [PasswordResetController::class , 'sendResetLink'])->name('password.email');
-    Route::get('/reset-password/{token}', [PasswordResetController::class , 'showResetForm'])->name('password.reset');
-    Route::post('/reset-password', [PasswordResetController::class , 'reset'])->name('password.update');
+    // Lupa Kata Sandi
+    Route::get('/lupa-kata-sandi', [PasswordResetController::class , 'showForgotForm'])->name('password.request');
+    Route::post('/lupa-kata-sandi', [PasswordResetController::class , 'sendResetLink'])->name('password.email');
+    Route::get('/atur-ulang-kata-sandi/{token}', [PasswordResetController::class , 'showResetForm'])->name('password.reset');
+    Route::post('/atur-ulang-kata-sandi', [PasswordResetController::class , 'reset'])->name('password.update');
 });
 
 // Home / Landing Page
@@ -55,34 +55,34 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         })->name('tactical-preview');
 
         // Master Data
-        Route::resource('academic-years', Admin\TahunAkademikController::class)
+        Route::resource('tahun-akademik', Admin\TahunAkademikController::class)
             ->only(['index', 'store', 'update', 'destroy'])
-            ->parameters(['academic-years' => 'tahunAkademik']);
-        Route::resource('periods', Admin\PeriodeController::class)
+            ->parameters(['tahun-akademik' => 'tahunAkademik']);
+        Route::resource('periode', Admin\PeriodeController::class)
             ->only(['index', 'store', 'update', 'destroy'])
-            ->parameters(['periods' => 'periode']);
-        Route::post('periods/{periode}/duplicate', [Admin\PeriodeController::class , 'duplicate'])->name('periods.duplicate');
-        Route::get('periods/export', [Admin\PeriodeController::class, 'export'])->name('periods.export');
-        Route::resource('faculties', Admin\FakultasController::class)
+            ->parameters(['periode' => 'periode']);
+        Route::post('periode/{periode}/duplicate', [Admin\PeriodeController::class , 'duplicate'])->name('periods.duplicate');
+        Route::get('periode/export', [Admin\PeriodeController::class, 'export'])->name('periods.export');
+        Route::resource('fakultas', Admin\FakultasController::class)
             ->only(['index', 'store', 'update', 'destroy'])
-            ->parameters(['faculties' => 'fakultas']);
-        Route::resource('programs', Admin\ProdiController::class)
+            ->parameters(['fakultas' => 'fakultas']);
+        Route::resource('program-studi', Admin\ProdiController::class)
             ->only(['index', 'store', 'update', 'destroy'])
-            ->parameters(['programs' => 'prodi']);
-        Route::post('locations/import', [Admin\LokasiController::class, 'import'])->name('locations.import');
-        Route::resource('locations', Admin\LokasiController::class)
+            ->parameters(['program-studi' => 'prodi']);
+        Route::post('lokasi/import', [Admin\LokasiController::class, 'import'])->name('locations.import');
+        Route::resource('lokasi', Admin\LokasiController::class)
             ->only(['index', 'store', 'update', 'destroy'])
-            ->parameters(['locations' => 'lokasi']);
-        Route::get('workshops', [App\Http\Controllers\WorkshopController::class , 'index'])->name('workshops.index');
+            ->parameters(['lokasi' => 'lokasi']);
+        Route::get('workshop', [App\Http\Controllers\WorkshopController::class , 'index'])->name('workshops.index');
 
         // Groups & Operations
-        Route::resource('groups', Admin\KelompokKknController::class)
+        Route::resource('kelompok', Admin\KelompokKknController::class)
             ->only(['index', 'show', 'store', 'update', 'destroy'])
-            ->parameters(['groups' => 'kelompokKkn']);
-        Route::get('users', [Admin\UserController::class , 'index'])->name('users.index');
-        Route::get('users/create', [Admin\UserController::class , 'create'])->name('users.create');
-        Route::post('users', [Admin\UserController::class , 'store'])->name('users.store');
-        Route::patch('users/{user}/toggle-active', [Admin\UserController::class , 'toggleActive'])->name('users.toggle-active');
+            ->parameters(['kelompok' => 'kelompokKkn']);
+        Route::get('pengguna', [Admin\UserController::class , 'index'])->name('users.index');
+        Route::get('pengguna/create', [Admin\UserController::class , 'create'])->name('users.create');
+        Route::post('pengguna', [Admin\UserController::class , 'store'])->name('users.store');
+        Route::patch('pengguna/{user}/toggle-active', [Admin\UserController::class , 'toggleActive'])->name('users.toggle-active');
         Route::get('dpl', [Admin\UserController::class , 'dosenIndex'])->name('dpl.index');
         Route::get('mahasiswa', [Admin\UserController::class , 'mahasiswaIndex'])->name('mahasiswa.index');
         Route::get('mahasiswa/sync', [Admin\StudentSyncController::class , 'index'])->name('mahasiswa.sync');
@@ -101,46 +101,46 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::get('peserta/transfer', [Admin\StudentTransferController::class , 'index'])->name('peserta.transfer.index');
         Route::post('peserta/transfer', [Admin\StudentTransferController::class , 'transfer'])->name('peserta.transfer');
         
-        Route::resource('announcements', Admin\AnnouncementController::class)->except(['create', 'edit', 'show']);
-        Route::resource('downloads', Admin\DownloadController::class);
-        Route::prefix('content')->name('content.')->group(function () {
-            Route::get('profile', [PublicContentController::class, 'profile'])->name('profile.index');
-            Route::post('profile', [PublicContentController::class, 'updateProfile'])->name('profile.update');
-            Route::get('schemes', [PublicContentController::class, 'schemes'])->name('schemes.index');
-            Route::post('schemes', [PublicContentController::class, 'updateSchemes'])->name('schemes.update');
+        Route::resource('warta-utama', Admin\AnnouncementController::class)->except(['create', 'edit', 'show']);
+        Route::resource('unduhan', Admin\DownloadController::class);
+        Route::prefix('konten-publik')->name('content.')->group(function () {
+            Route::get('profil', [PublicContentController::class, 'profile'])->name('profile.index');
+            Route::post('profil', [PublicContentController::class, 'updateProfile'])->name('profile.update');
+            Route::get('skema', [PublicContentController::class, 'schemes'])->name('schemes.index');
+            Route::post('skema', [PublicContentController::class, 'updateSchemes'])->name('schemes.update');
         });
 
-        Route::get('registrations', [Admin\PesertaKknController::class , 'index'])->name('registrations.index');
-        Route::get('registrations/documents/download', [Admin\PesertaKknController::class, 'downloadDocument'])->name('registrations.document.download');
-        Route::get('registrations/{pesertaKkn}', [Admin\PesertaKknController::class , 'show'])->name('registrations.show');
-        Route::get('registrations/export', [Admin\PesertaKknController::class , 'export'])->name('registrations.export');
-        Route::patch('registrations/{pesertaKkn}/approve', [Admin\PesertaKknController::class , 'approve'])->name('registrations.approve');
-        Route::patch('registrations/{pesertaKkn}/reject', [Admin\PesertaKknController::class , 'reject'])->name('registrations.reject');
-        Route::patch('registrations/{pesertaKkn}/assign-group', [Admin\PesertaKknController::class , 'assignGroup'])->name('registrations.assign-group');
-        Route::post('registrations/{registration}/make-leader', [Admin\PesertaKknController::class , 'makeLeader'])->name('admin.registrations.make-leader');
-        Route::post('registrations/bulk-approve', [Admin\PesertaKknController::class , 'bulkApprove'])->name('registrations.bulk-approve');
-        Route::post('registrations/bulk-reject', [Admin\PesertaKknController::class , 'bulkReject'])->name('registrations.bulk-reject');
+        Route::get('pendaftaran', [Admin\PesertaKknController::class , 'index'])->name('registrations.index');
+        Route::get('pendaftaran/berkas/unduh', [Admin\PesertaKknController::class, 'downloadDocument'])->name('registrations.document.download');
+        Route::get('pendaftaran/{pesertaKkn}', [Admin\PesertaKknController::class , 'show'])->name('registrations.show');
+        Route::get('pendaftaran/export', [Admin\PesertaKknController::class , 'export'])->name('registrations.export');
+        Route::patch('pendaftaran/{pesertaKkn}/approve', [Admin\PesertaKknController::class , 'approve'])->name('registrations.approve');
+        Route::patch('pendaftaran/{pesertaKkn}/reject', [Admin\PesertaKknController::class , 'reject'])->name('registrations.reject');
+        Route::patch('pendaftaran/{pesertaKkn}/assign-group', [Admin\PesertaKknController::class , 'assignGroup'])->name('registrations.assign-group');
+        Route::post('pendaftaran/{registration}/make-leader', [Admin\PesertaKknController::class , 'makeLeader'])->name('admin.registrations.make-leader');
+        Route::post('pendaftaran/bulk-approve', [Admin\PesertaKknController::class , 'bulkApprove'])->name('registrations.bulk-approve');
+        Route::post('pendaftaran/bulk-reject', [Admin\PesertaKknController::class , 'bulkReject'])->name('registrations.bulk-reject');
 
         // Eligibility Checker
-        Route::get('eligibility', [Admin\EligibilityController::class , 'index'])->name('eligibility.index');
-        Route::get('eligibility/export', [Admin\EligibilityController::class , 'export'])->name('eligibility.export');
-        Route::get('eligibility/{mahasiswa}/check', [Admin\EligibilityController::class , 'checkStudent'])->name('eligibility.check');
-        Route::post('eligibility/bulk-update-sks', [Admin\EligibilityController::class , 'bulkUpdateSks'])->name('eligibility.bulk-update-sks');
+        Route::get('cek-kelayakan', [Admin\EligibilityController::class , 'index'])->name('eligibility.index');
+        Route::get('cek-kelayakan/export', [Admin\EligibilityController::class , 'export'])->name('eligibility.export');
+        Route::get('cek-kelayakan/{mahasiswa}/periksa', [Admin\EligibilityController::class , 'checkStudent'])->name('eligibility.check');
+        Route::post('cek-kelayakan/bulk-update-sks', [Admin\EligibilityController::class , 'bulkUpdateSks'])->name('eligibility.bulk-update-sks');
 
         // Settings
-        Route::prefix('settings')->name('settings.')->group(function () {
-            Route::get('certificate', [Admin\CertificateConfigController::class , 'index'])->name('certificate.index');
-            Route::post('certificate', [Admin\CertificateConfigController::class , 'update'])->name('certificate.update');
-            Route::get('system', [Admin\SystemSettingController::class , 'index'])->name('system.index');
-            Route::post('system', [Admin\SystemSettingController::class , 'update'])->name('system.update');
+        Route::prefix('pengaturan')->name('settings.')->group(function () {
+            Route::get('sertifikat', [Admin\CertificateConfigController::class , 'index'])->name('certificate.index');
+            Route::post('sertifikat', [Admin\CertificateConfigController::class , 'update'])->name('certificate.update');
+            Route::get('sistem', [Admin\SystemSettingController::class , 'index'])->name('system.index');
+            Route::post('sistem', [Admin\SystemSettingController::class , 'update'])->name('system.update');
         });
 
         // Grading Master
-        Route::get('grades', [Admin\GradeController::class , 'index'])->name('grades.index');
-        Route::get('groups/{group}/students', [Admin\GradeController::class , 'students'])->name('groups.students');
-        Route::post('grades', [Admin\GradeController::class , 'store'])->name('grades.store');
-        Route::get('grading-settings', [Admin\KonfigurasiPenilaianController::class , 'index'])->name('grading-settings.index');
-        Route::post('grading-settings', [Admin\KonfigurasiPenilaianController::class , 'update'])->name('grading-settings.update');
+        Route::get('nilai', [Admin\GradeController::class , 'index'])->name('grades.index');
+        Route::get('kelompok/{group}/mahasiswa', [Admin\GradeController::class , 'students'])->name('groups.students');
+        Route::post('nilai', [Admin\GradeController::class , 'store'])->name('grades.store');
+        Route::get('konfigurasi-penilaian', [Admin\KonfigurasiPenilaianController::class , 'index'])->name('grading-settings.index');
+        Route::post('konfigurasi-penilaian', [Admin\KonfigurasiPenilaianController::class , 'update'])->name('grading-settings.update');
         Route::get('rekap-nilai/export', [Admin\RekapNilaiController::class , 'export'])->name('rekap-nilai.export');
         Route::get('rekap-nilai/export/ledger', [Admin\RekapNilaiController::class , 'exportLedger'])->name('rekap-nilai.export-ledger');
         Route::post('rekap-nilai/bulk-lock', [Admin\RekapNilaiController::class , 'bulkLock'])->name('rekap-nilai.bulk-lock');
@@ -163,12 +163,12 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
     // SHARED ADMIN AREA (Admin & DPL)
     // ==========================================
     Route::middleware(['role:superadmin|dpl'])->prefix('admin')->name('admin.')->group(function () {
-        // Shared Activity Reports
-        Route::get('reports', [App\Http\Controllers\ReportController::class , 'index'])->name('reports.index');
-        Route::get('reports/daily', [Admin\KegiatanKknController::class , 'index'])->name('reports.daily.index');
-        Route::get('reports/daily/export-pdf/{studentId}', [App\Http\Controllers\ReportExportController::class , 'downloadStudentDailyReports'])->name('reports.daily.export-pdf');
-        Route::get('reports/work-programs', [Admin\ProgramKerjaController::class , 'index'])->name('reports.work-programs.index');
-        Route::get('reports/final', [Admin\LaporanAkhirController::class , 'index'])->name('reports.final.index');
+        // Laporan Aktivitas
+        Route::get('laporan', [App\Http\Controllers\ReportController::class , 'index'])->name('reports.index');
+        Route::get('laporan/harian', [Admin\KegiatanKknController::class , 'index'])->name('reports.daily.index');
+        Route::get('laporan/harian/export-pdf/{studentId}', [App\Http\Controllers\ReportExportController::class , 'downloadStudentDailyReports'])->name('reports.daily.export-pdf');
+        Route::get('laporan/program-kerja', [Admin\ProgramKerjaController::class , 'index'])->name('reports.work-programs.index');
+        Route::get('laporan/akhir', [Admin\LaporanAkhirController::class , 'index'])->name('reports.final.index');
 
         // Grade Generator & Exports
         Route::get('grade-generator', [Admin\GeneratorNilaiController::class , 'index'])->name('grade-generator.index');
@@ -190,60 +190,60 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
     });
 
     // ==========================================
-    // DPL AREA (DPL Only)
+    // AREA DPL
     // ==========================================
     Route::middleware(['role:dpl'])->prefix('dpl')->name('dpl.')->group(function () {
         Route::get('/', [Dpl\DashboardController::class , 'index'])->name('dashboard');
-        Route::get('groups', [Dpl\GroupController::class , 'index'])->name('groups.index');
-        Route::get('groups/{group}', [Dpl\GroupController::class , 'show'])->name('groups.show');
-        Route::get('daily-reports', [Dpl\DailyReportController::class , 'index'])->name('daily-reports.index');
-        Route::get('daily-reports/{dailyReport}', [Dpl\DailyReportController::class , 'show'])->name('daily-reports.show');
-        Route::get('daily-reports/files/{fileKegiatan}', [Dpl\DailyReportController::class , 'downloadFile'])->name('daily-reports.files.download');
-        Route::post('daily-reports/approve-all', [Dpl\DailyReportController::class , 'batchApprove'])->name('daily-reports.approve-all');
-        Route::patch('daily-reports/{dailyReport}/approve', [Dpl\DailyReportController::class , 'approve'])->name('daily-reports.approve');
-        Route::patch('daily-reports/{dailyReport}/revision', [Dpl\DailyReportController::class , 'revision'])->name('daily-reports.revision');
-        Route::patch('daily-reports/{dailyReport}/reject', [Dpl\DailyReportController::class , 'revision'])->name('daily-reports.reject');
-        Route::get('evaluations', [Dpl\EvaluationController::class , 'index'])->name('evaluations.index');
-        Route::post('evaluations/validate-import', [Dpl\EvaluationController::class , 'validateImport'])->name('evaluations.validate-import');
-        Route::post('evaluations/import', [Dpl\EvaluationController::class , 'import'])->name('evaluations.import');
-        Route::get('evaluations/create', [Dpl\EvaluationController::class , 'create'])->name('evaluations.create');
-        Route::post('evaluations', [Dpl\EvaluationController::class , 'store'])->name('evaluations.store');
-        Route::get('final-reports', [Dpl\FinalReportController::class , 'index'])->name('final-reports.index');
-        Route::get('final-reports/{report}', [Dpl\FinalReportController::class , 'show'])->name('final-reports.show');
-        Route::get('final-reports/{report}/download', [Dpl\FinalReportController::class , 'download'])->name('final-reports.download');
-        Route::patch('final-reports/{report}/approve', [Dpl\FinalReportController::class , 'approve'])->name('final-reports.approve');
-        Route::patch('final-reports/{report}/revision', [Dpl\FinalReportController::class , 'revision'])->name('final-reports.revision');
+        Route::get('kelompok', [Dpl\GroupController::class , 'index'])->name('groups.index');
+        Route::get('kelompok/{group}', [Dpl\GroupController::class , 'show'])->name('groups.show');
+        Route::get('laporan-harian', [Dpl\DailyReportController::class , 'index'])->name('daily-reports.index');
+        Route::get('laporan-harian/{dailyReport}', [Dpl\DailyReportController::class , 'show'])->name('daily-reports.show');
+        Route::get('laporan-harian/berkas/{fileKegiatan}', [Dpl\DailyReportController::class , 'downloadFile'])->name('daily-reports.files.download');
+        Route::post('laporan-harian/setujui-semua', [Dpl\DailyReportController::class , 'batchApprove'])->name('daily-reports.approve-all');
+        Route::patch('laporan-harian/{dailyReport}/setujui', [Dpl\DailyReportController::class , 'approve'])->name('daily-reports.approve');
+        Route::patch('laporan-harian/{dailyReport}/revisi', [Dpl\DailyReportController::class , 'revision'])->name('daily-reports.revision');
+        Route::patch('laporan-harian/{dailyReport}/tolak', [Dpl\DailyReportController::class , 'revision'])->name('daily-reports.reject');
+        Route::get('evaluasi', [Dpl\EvaluationController::class , 'index'])->name('evaluations.index');
+        Route::post('evaluasi/validasi-impor', [Dpl\EvaluationController::class , 'validateImport'])->name('evaluations.validate-import');
+        Route::post('evaluasi/impor', [Dpl\EvaluationController::class , 'import'])->name('evaluations.import');
+        Route::get('evaluasi/buat', [Dpl\EvaluationController::class , 'create'])->name('evaluations.create');
+        Route::post('evaluasi', [Dpl\EvaluationController::class , 'store'])->name('evaluations.store');
+        Route::get('laporan-akhir', [Dpl\FinalReportController::class , 'index'])->name('final-reports.index');
+        Route::get('laporan-akhir/{report}', [Dpl\FinalReportController::class , 'show'])->name('final-reports.show');
+        Route::get('laporan-akhir/{report}/unduh', [Dpl\FinalReportController::class , 'download'])->name('final-reports.download');
+        Route::patch('laporan-akhir/{report}/setujui', [Dpl\FinalReportController::class , 'approve'])->name('final-reports.approve');
+        Route::patch('laporan-akhir/{report}/revisi', [Dpl\FinalReportController::class , 'revision'])->name('final-reports.revision');
     });
 
     // ==========================================
     // STUDENT AREA (Student Only)
     // ==========================================
-    Route::middleware(['role:student'])->prefix('student')->name('student.')->group(function () {
+    Route::middleware(['role:student'])->prefix('mahasiswa')->name('student.')->group(function () {
         Route::get('/', [Student\DashboardController::class , 'index'])->name('dashboard');
-        Route::get('register', [Student\RegistrationController::class , 'create'])->name('registration.create');
-        Route::post('register', [Student\RegistrationController::class , 'store'])->name('registration.store');
-        Route::delete('register/{periode}/group', [Student\RegistrationController::class, 'leave'])->name('registration.leave');
+        Route::get('pendaftaran', [Student\RegistrationController::class , 'create'])->name('registration.create');
+        Route::post('pendaftaran', [Student\RegistrationController::class , 'store'])->name('registration.store');
+        Route::delete('pendaftaran/{periode}/kelompok', [Student\RegistrationController::class, 'leave'])->name('registration.leave');
         Route::get('posko', [Student\PoskoController::class, 'edit'])->name('posko.edit');
         Route::post('posko', [Student\PoskoController::class, 'store'])->name('posko.store');
 
-        Route::resource('daily-reports', Student\DailyReportController::class)
+        Route::resource('laporan-harian', Student\DailyReportController::class)
             ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
-            ->parameters(['daily-reports' => 'dailyReport']);
-        Route::get('daily-reports/download-compilation', [App\Http\Controllers\ReportExportController::class , 'downloadMyDailyReports'])->name('daily-reports.download-compilation');
+            ->parameters(['laporan-harian' => 'dailyReport']);
+        Route::get('laporan-harian/unduh-rekap', [App\Http\Controllers\ReportExportController::class , 'downloadMyDailyReports'])->name('daily-reports.download-compilation');
 
-        Route::get('work-programs', [Student\WorkProgramController::class , 'index'])->name('work-programs.index');
-        Route::get('work-programs/create', [Student\WorkProgramController::class , 'create'])->name('work-programs.create');
-        Route::post('work-programs', [Student\WorkProgramController::class , 'store'])->name('work-programs.store');
+        Route::get('program-kerja', [Student\WorkProgramController::class , 'index'])->name('work-programs.index');
+        Route::get('program-kerja/buat', [Student\WorkProgramController::class , 'create'])->name('work-programs.create');
+        Route::post('program-kerja', [Student\WorkProgramController::class , 'store'])->name('work-programs.store');
 
-        Route::get('final-report', [Student\FinalReportController::class , 'create'])->name('final-report.create');
-        Route::post('final-report', [Student\FinalReportController::class , 'store'])->name('final-report.store');
-        Route::get('evaluations', [Student\EvaluationController::class , 'index'])->name('evaluations.index');
+        Route::get('laporan-akhir', [Student\FinalReportController::class , 'create'])->name('final-report.create');
+        Route::post('laporan-akhir', [Student\FinalReportController::class , 'store'])->name('final-report.store');
+        Route::get('evaluasi', [Student\EvaluationController::class , 'index'])->name('evaluations.index');
 
         // Additional Shared Student routes
-        Route::get('reports', [App\Http\Controllers\ReportController::class , 'index'])->name('reports.index');
-        Route::post('reports/upload', [App\Http\Controllers\ReportController::class , 'upload'])->name('reports.upload');
-        Route::get('workshops', [App\Http\Controllers\WorkshopController::class , 'index'])->name('workshops.index');
-        Route::post('workshops/{workshop}/register', [App\Http\Controllers\WorkshopController::class , 'register'])->name('workshops.register');
+        Route::get('laporan-umum', [App\Http\Controllers\ReportController::class , 'index'])->name('reports.index');
+        Route::post('laporan-umum/unggah', [App\Http\Controllers\ReportController::class , 'upload'])->name('reports.upload');
+        Route::get('workshop', [App\Http\Controllers\WorkshopController::class , 'index'])->name('workshops.index');
+        Route::post('workshop/{workshop}/daftar', [App\Http\Controllers\WorkshopController::class , 'register'])->name('workshops.register');
     });
 
     // protected global routes (with role-based access)

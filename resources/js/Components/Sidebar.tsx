@@ -46,22 +46,22 @@ const adminNav: NavGroup[] = [
  {
  title: 'Data Master',
  items: [
- { label: 'Tahun Akademik', href: '/admin/academic-years', icon: Calendar },
- { label: 'Periode KKN', href: '/admin/periods', icon: Calendar },
- { label: 'Lokasi KKN', href: '/admin/locations', icon: MapPin },
+ { label: 'Tahun Akademik', href: '/admin/tahun-akademik', icon: Calendar },
+ { label: 'Periode KKN', href: '/admin/periode', icon: Calendar },
+ { label: 'Lokasi KKN', href: '/admin/lokasi', icon: MapPin },
  { label: 'Dosen (DPL)', href: '/admin/dpl', icon: Users },
  { label: 'Mahasiswa', href: '/admin/mahasiswa', icon: GraduationCap },
- { label: 'Cek Eligibility', href: '/admin/eligibility', icon: ShieldCheck },
+ { label: 'Cek Eligibility', href: '/admin/cek-kelayakan', icon: ShieldCheck },
  ],
  },
  {
  title: 'Operasional',
  items: [
- { label: 'Kelompok', href: '/admin/groups', icon: Users2 },
+ { label: 'Kelompok', href: '/admin/kelompok', icon: Users2 },
  { label: 'Penugasan DPL', href: '/admin/dpl/assignment', icon: Users },
  { label: 'Transfer Peserta', href: '/admin/peserta/transfer', icon: Shuffle },
- { label: 'Pengguna', href: '/admin/users', icon: Users },
- { label: 'Pendaftaran', href: '/admin/registrations', icon: ClipboardList },
+ { label: 'Pengguna', href: '/admin/pengguna', icon: Users },
+ { label: 'Pendaftaran', href: '/admin/pendaftaran', icon: ClipboardList },
  ],
  },
  {
@@ -74,33 +74,33 @@ const adminNav: NavGroup[] = [
  {
  title: 'Aktivitas & Laporan',
  items: [
- { label: 'Pusat Laporan', href: '/admin/reports', icon: FileText },
- { label: 'Laporan Harian', href: '/admin/reports/daily', icon: FileText },
- { label: 'Proker', href: '/admin/reports/work-programs', icon: FolderKanban },
- { label: 'Laporan Akhir', href: '/admin/reports/final', icon: FileText },
+ { label: 'Pusat Laporan', href: '/admin/laporan', icon: FileText },
+ { label: 'Laporan Harian', href: '/admin/laporan/harian', icon: FileText },
+ { label: 'Proker', href: '/admin/laporan/program-kerja', icon: FolderKanban },
+ { label: 'Laporan Akhir', href: '/admin/laporan/akhir', icon: FileText },
  { label: 'Evaluasi & Nilai', href: '/admin/evaluations', icon: BarChart3 },
  { label: 'Generator Nilai', href: '/admin/grade-generator', icon: FileSpreadsheet },
  { label: 'Rekap Nilai', href: '/admin/rekap-nilai', icon: Award },
- { label: 'Input Nilai Manual', href: '/admin/grades', icon: BarChart3 },
- { label: 'Pembekalan', href: '/admin/workshops', icon: Calendar },
+ { label: 'Input Nilai Manual', href: '/admin/nilai', icon: BarChart3 },
+ { label: 'Pembekalan', href: '/admin/workshop', icon: Calendar },
  { label: 'Log Audit', href: '/admin/audit-log', icon: ShieldCheck },
  ],
  },
  {
  title: 'Manajemen Konten',
  items: [
- { label: 'Profil LPPM', href: '/admin/content/profile', icon: Globe },
- { label: 'Skema KKN', href: '/admin/content/schemes', icon: FolderKanban },
- { label: 'Warta', href: '/admin/announcements', icon: Megaphone },
- { label: 'Repositori', href: '/admin/downloads', icon: Download },
+ { label: 'Profil LPPM', href: '/admin/konten-publik/profil', icon: Globe },
+ { label: 'Skema KKN', href: '/admin/konten-publik/skema', icon: FolderKanban },
+ { label: 'Warta', href: '/admin/warta-utama', icon: Megaphone },
+ { label: 'Repositori', href: '/admin/unduhan', icon: Download },
  ],
  },
  {
  title: 'Pengaturan',
  items: [
- { label: 'Sistem Nilai', href: '/admin/grading-settings', icon: Hammer },
- { label: 'Sertifikat', href: '/admin/settings/certificate', icon: Award },
- { label: 'Pengaturan Sistem', href: '/admin/settings/system', icon: SlidersHorizontal },
+ { label: 'Sistem Nilai', href: '/admin/konfigurasi-penilaian', icon: Hammer },
+ { label: 'Sertifikat', href: '/admin/pengaturan/sertifikat', icon: Award },
+ { label: 'Pengaturan Sistem', href: '/admin/pengaturan/sistem', icon: SlidersHorizontal },
  ],
  },
 ];
@@ -110,15 +110,15 @@ const dplNav: NavGroup[] = [
  title: 'Dasbor',
  items: [
  { label: 'Dasbor DPL', href: '/dpl', icon: LayoutDashboard },
- { label: 'Kelompok Saya', href: '/dpl/groups', icon: Users2 },
+ { label: 'Kelompok Saya', href: '/dpl/kelompok', icon: Users2 },
  ],
  },
  {
  title: 'Kegiatan Bimbingan',
  items: [
- { label: 'Laporan Harian', href: '/dpl/daily-reports', icon: FileText },
- { label: 'Laporan Akhir', href: '/dpl/final-reports', icon: FileText },
- { label: 'Evaluasi Mahasiswa', href: '/dpl/evaluations', icon: Star },
+ { label: 'Laporan Harian', href: '/dpl/laporan-harian', icon: FileText },
+ { label: 'Laporan Akhir', href: '/dpl/laporan-akhir', icon: FileText },
+ { label: 'Evaluasi Mahasiswa', href: '/dpl/evaluasi', icon: Star },
  { label: 'Generator Nilai', href: '/admin/grade-generator', icon: FileSpreadsheet },
  ],
  },
@@ -138,18 +138,18 @@ const studentNav: NavGroup[] = [
  {
  title: 'Dasbor',
  items: [
- { label: 'Dasbor Saya', href: '/student', icon: LayoutDashboard },
- { label: 'Pendaftaran', href: '/student/register', icon: ClipboardList },
+ { label: 'Dasbor Saya', href: '/mahasiswa', icon: LayoutDashboard },
+ { label: 'Pendaftaran', href: '/mahasiswa/pendaftaran', icon: ClipboardList },
  ],
  },
  {
  title: 'Kegiatan KKN',
  items: [
- { label: 'Posko Kelompok', href: '/student/posko', icon: MapPin },
- { label: 'Laporan Harian', href: '/student/daily-reports', icon: FileText },
- { label: 'Program Kerja', href: '/student/work-programs', icon: FolderKanban },
- { label: 'Laporan Akhir', href: '/student/final-report', icon: FileText },
- { label: 'Cek Nilai', href: '/student/evaluations', icon: Award },
+ { label: 'Posko Kelompok', href: '/mahasiswa/posko', icon: MapPin },
+ { label: 'Laporan Harian', href: '/mahasiswa/laporan-harian', icon: FileText },
+ { label: 'Program Kerja', href: '/mahasiswa/program-kerja', icon: FolderKanban },
+ { label: 'Laporan Akhir', href: '/mahasiswa/laporan-akhir', icon: FileText },
+ { label: 'Cek Nilai', href: '/mahasiswa/evaluasi', icon: Award },
  ],
  },
 ];

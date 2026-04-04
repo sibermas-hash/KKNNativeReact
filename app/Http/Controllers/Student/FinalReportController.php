@@ -6,11 +6,44 @@ use App\Http\Controllers\Controller;
 use App\Models\KKN\LaporanAkhir;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class FinalReportController extends Controller
 {
+    /**
+     * Validate file magic bytes to prevent MIME spoofing.
+     */
+    private function validateFileMagicBytes($file, array $allowedSignatures = null): void
+    {
+        if ($allowedSignatures === null) {
+            $allowedSignatures = [
+                'pdf' => [0x25, 0x50, 0x44], // %PD
+                'docx' => [0x50, 0x4B, 0x03, 0x04], // PK (ZIP)
+            ];
+        }
+
+        try {
+            $stream = fopen($file->getRealPath(), 'rb');
+            $bytes = array_values(unpack('C4', fread($stream, 4)));
+            fclose($stream);
+
+            $valid = false;
+            foreach ($allowedSignatures as $signature) {
+                if (count($bytes) >= count($signature)) {
+                    if (array_slice($bytes, 0, count($signature)) === array_values($signature)) {
+                        $valid = true;
+                        break;
+                    }
+                }
+            }
+
+            abort_if(!$valid, 422, 'File format tidak valid atau tidak sesuai dengan type yang dideklarasikan.');
+        } catch (\Exception $e) {
+            abort(422, 'Gagal memvalidasi file.');
+        }
+    }
     public function create(): Response
     {
         $mahasiswa = auth()->user()?->mahasiswa;
@@ -47,17 +80,25 @@ class FinalReportController extends Controller
         ]);
 
         $file = $request->file('file');
-        // Fix: Store in private storage instead of public
-        $path = $file->store('final-reports', 'local');
+
+        // Security: Validate magic bytes to prevent MIME spoofing
+        $this->validateFileMagicBytes($file);
+
+        // Security: Store with UUID filename - prevents path traversal and filename injection
+        $originalName = $file->getClientOriginalName();
+        $extension = strtolower($file->getClientOriginalExtension());
+        $safeFilename = Str::uuid() . '.' . $extension;
+
+        $path = $file->storeAs('final-reports', $safeFilename, 'local');
 
         LaporanAkhir::updateOrCreate(
             ['kelompok_id' => $pendaftaran->kelompok_id],
             [
-                'mahasiswa_id' => $mahasiswa->id, // Who uploaded it
+                'mahasiswa_id' => $mahasiswa->id,
                 'title' => $validated['title'],
                 'abstract' => $validated['abstract'] ?? null,
                 'file_path' => $path,
-                'file_name' => strip_tags($file->getClientOriginalName()),
+                'file_name' => Str::limit($originalName, 255),
                 'status' => 'submitted',
                 'submitted_at' => now(),
             ],

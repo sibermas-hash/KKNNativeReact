@@ -202,18 +202,17 @@ export default function DplEvaluationsPage({ groups, evaluations, dplWeights }: 
 
  <div>
  <label htmlFor="import_file" className="mb-1 block text-sm font-medium text-slate-700">
- File Excel
- </label>
- <input
- id="import_file"
- type="berkas"
- accept=".xlsx,.xls"
- onChange={(event) => importForm.setData('berkas', event.target.files?.[0] ?? null)}
- className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700"
- required
- />
- </div>
-
+          File Excel
+        </label>
+        <input
+          id="import_file"
+          type="file"
+          accept=".xlsx,.xls"
+          onChange={(event) => importForm.setData('berkas', event.target.files?.[0] ?? null)}
+          className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700"
+          required
+        />
+      </div>
  <button
  type="submit"
  disabled={importForm.processing}

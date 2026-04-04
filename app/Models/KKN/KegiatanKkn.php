@@ -25,6 +25,9 @@ class KegiatanKkn extends Model
         'output',
         'latitude',
         'longitude',
+        'gps_accuracy',
+        'captured_at',
+        'location_source',
         'location_name',
         'status',
         'reviewed_at',
@@ -34,6 +37,8 @@ class KegiatanKkn extends Model
 
     protected $casts = [
         'date' => 'date',
+        'captured_at' => 'datetime',
+        'gps_accuracy' => 'float',
         'reviewed_at' => 'datetime',
     ];
 

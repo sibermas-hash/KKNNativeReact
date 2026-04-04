@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\ProgramKerja;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -12,6 +13,7 @@ class ProgramKerjaController extends Controller
 {
     public function index(Request $request): Response
     {
+        Gate::authorize('view-reports');
         $status = $request->input('status');
 
         $workPrograms = ProgramKerja::with(['kelompok.lokasi'])

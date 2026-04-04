@@ -14,6 +14,7 @@ use App\Models\KKN\Periode;
 use App\Services\DplAssignmentService;
 use App\Services\PeriodContextService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -43,6 +44,8 @@ class DplAssignmentController extends Controller
      */
     public function index(Request $request)
     {
+        Gate::authorize('manage-master-data');
+        
         $search = trim((string) $request->input('search', ''));
         $escapedSearch = str_replace(['%', '_'], ['\\%', '\\_'], $search);
 

@@ -157,7 +157,6 @@ export default function Login() {
  </div>
  </div>
  </div>
- </div>
 
  <div className="flex items-center justify-between px-1">
  <label className="flex items-center gap-2 cursor-pointer group">

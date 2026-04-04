@@ -167,7 +167,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  {posko?.photo_url ? (
  <div className="relative aspect-videorounded-lg overflow-hidden border border-slate-200">
  <img src={posko.photo_url} alt={posko.photo_name ?? 'Foto posko kelompok'} className="w-full h-full object-cover" />
- <div className="absolute inset-0 bg-gradient-flex flex-col justify-end p-6">
+ <div className="absolute inset-0  flex-col justify-end p-6">
  <p className="text-[10px] font-semibold text-white/80 truncate">{posko.photo_name}</p>
  </div>
  </div>

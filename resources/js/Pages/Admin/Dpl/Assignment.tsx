@@ -136,7 +136,7 @@ export default function DplAssignment({ groups, availableDosen, filters }: Props
                             </form>
                         </div>
 
-                        <div className="bg-slate-900 p-8 rounded-[2rem] border border-slate-800 relative overflow-hidden group/footer shadow-lg shadow-slate-900/10">
+                        <div className="bg-slate-900 p-8 rounded-lg border border-slate-800 relative overflow-hidden group/footer shadow-lg shadow-slate-900/10">
                             <div className="absolute top-0 right-0 p-8 text-emerald-500 opacity-5 group-hover/footer:rotate-12 transition-transform duration-1000">
                                 <ShieldCheck className="w-32 h-32" />
                             </div>

@@ -1,246 +1,174 @@
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { format, formatDistanceToNow } from 'date-fns';
-import { id } from 'date-fns/locale';
-import {
- ArrowLeft,
- Terminal,
- Cpu,
- Globe,
- User,
- Clock,
- ShieldCheck,
- Fingerprint,
- Scale,
- FileText,
- History,
- Activity,
- Zap,
- ChevronLeft,
-} from 'lucide-react';
 import { route } from 'ziggy-js';
-import VisualDiff from '@/Components/VisualDiff';
+import {
+    History,
+    ChevronLeft,
+    Clock,
+    User,
+    Activity,
+    ShieldCheck,
+    Database,
+    Zap,
+    Cpu,
+    ArrowRight,
+    Terminal,
+} from 'lucide-react';
 import { clsx } from 'clsx';
 
-export default function AuditLogShow({ log }: { log: any }) {
- const severityMap: any = {
- high: 'bg-rose-50 text-rose-600 border-rose-100',
- critical: 'bg-rose-100 text-rose-700 border-rose-200',
- default: 'bg-emerald-50 text-emerald-600 border-emerald-100'
- };
-
- const currentSeverity = log.severity === 'high' || log.action === 'DELETE' || log.action === 'GATE_BYPASS' ? 'high' : 'default';
-
- return (
- <AppLayout title="Detail Log Aktivitas">
- <Head title={`Detail Aktivitas #${log.id}`} />
-
- <div className="space-y-8 pb-24">
- {/* Minimalist Tactical Header Strip */}
- <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-100 pb-8">
- <div className="space-y-1">
- <div className="flex items-center gap-3">
- <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
- <span className="text-[9px] font-semibold text-emerald-600">
- AUDIT_INSPECTION_CORE_V3.2
- </span>
- </div>
- <div className="flex items-center gap-3">
- <Link href={route('admin.audit-log.index')} className="p-2 bg-white border border-slate-100 rounded-lg text-slate-400 hover:text-primary transition-all ">
- <ChevronLeft className="h-4 w-4" />
- </Link>
- <h1 className="text-2xl font-semibold text-slate-900 leading-none">
- Detail <span className="text-primary">Aktivitas</span>
- </h1>
- </div>
- </div>
-
- <div className="flex items-center gap-4">
- <div className="px-4 py-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-4">
- <div className="flex items-center gap-3">
- <div className="p-1.5 bg-emerald-50 rounded-lg text-emerald-600">
- <Clock className="h-3 w-3" />
- </div>
- <div className="text-left">
- <span className="block text-[8px] font-semibold text-slate-400 leading-none mb-0.5">Recorded_Stamp</span>
- <span className="text-xs font-semibold text-slate-900 leading-none">
- {formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: id })}
- </span>
- </div>
- </div>
- </div>
- </div>
- </div>
-
- {/* Main Hero Summary Card */}
- <div className="bg-white rounded-lg border border-slate-100 overflow-hidden relative group">
- <div className="absolute top-0 right-0 p-16 text-slate-900 opacity-[0.02] pointer-events-none ">
- <Activity className="h-[30rem] w-[30rem]" />
- </div>
- 
- <div className="p-8 md:p-12 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-8 relative z-10">
- <div className="flex items-center gap-8">
- <div className="h-20 w-20 rounded-lg bg-slate-900 border border-slate-800 text-primary text-3xl font-semibold flex items-center justify-center">
- {log.action === 'DELETE' ? '🗑️' : log.action === 'LOGIN' ? '🔐' : '📝'}
- </div>
- <div className="space-y-4">
- <div className="flex items-center gap-6">
- <h2 className="text-4xl font-semibold text-slate-900 leading-none">{log.action || 'ACTIVITY'}</h2>
- <span className={clsx("px-4 py-1.5 rounded-lg text-[10px] font-semibold border", severityMap[currentSeverity])}>
- {currentSeverity === 'high' ? 'CRITICAL_ALERT' : 'STABLE_PROTOCOL'}
- </span>
- </div>
- <div className="flex items-center gap-4 text-[10px] font-semibold text-slate-400 opacity-50">
- <span>STAMP_ID: #{log.id}</span>
- <div className="h-1 w-1 rounded-full bg-slate-200" />
- <span>STATUS: AUDIT_LOCKED</span>
- </div>
- </div>
- </div>
-
- <div className="flex items-center gap-4 px-6 py-4 bg-slate-50 rounded-lg border border-slate-100">
- <History className="w-5 h-5 text-primary" />
- <div className="text-left min-w-[150px]">
- <span className="block text-[8px] font-semibold text-slate-400 leading-none mb-1.5">Registry_Reference</span>
- <span className="text-[11px] font-semibold text-slate-700 leading-none block">
- {log.model_type?.split('\\').pop() || 'SYSTEM'} :: {log.model_id || 'LOCAL'}
- </span>
- </div>
- </div>
- </div>
-
- <div className="p-8 md:p-12 grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10 bg-slate-50/20">
- <AttributeItem 
- label="ACTOR_IDENTITY" 
- title={log.user?.name ?? 'SYSTEM_KERNEL'} 
- subtitle={log.user?.email ?? 'INTERNAL_SYSCALL_PROCESS'} 
- icon={User} 
- />
- <AttributeItem 
- label="CHRONO_STAMP" 
- title={format(new Date(log.created_at), 'dd MMM yyyy', { locale: id }).toUpperCase()} 
- subtitle={format(new Date(log.created_at), 'HH:mm:ss')} 
- icon={Clock} 
- />
- <AttributeItem 
- label="ORIGIN_VECTOR" 
- title={log.ip_address} 
- subtitle={log.user_agent?.split(' ')[0] || 'UNDEFINED_PROTOCOL'} 
- icon={Globe} 
- />
- </div>
- </div>
-
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
- {/* Technical Specification */}
- <div className="lg:col-span-1 space-y-8">
- <section className="bg-white rounded-lg p-8 border border-slate-100 relative overflow-hidden group/spec">
- <div className="absolute -bottom-6 -left-6 text-slate-900 opacity-[0.02] pointer-events-none transition-transform">
- <Terminal className="h-48 w-48" />
- </div>
- 
- <div className="flex items-center gap-4 mb-8">
- <div className="p-3 bg-slate-50 rounded-lg text-slate-400 border border-slate-100">
- <Terminal className="w-5 h-5" />
- </div>
- <h3 className="text-[11px] font-semibold text-slate-900">TECHNICAL_MANIFEST</h3>
- </div>
- <div className="space-y-8 relative z-10">
- <div className="space-y-3">
- <span className="text-[9px] font-semibold text-slate-400 ml-1">AUTHORIZATION_ABILITY</span>
- <code className="block px-5 py-4 rounded-lg bg-slate-900 text-primary font-mono text-[11px] font-semibold border border-slate-800">
- {log.ability ?? 'SYSCALL_LEVEL_0'}
- </code>
- </div>
- <div className="h-px bg-slate-50" />
- <div className="space-y-3">
- <span className="text-[9px] font-semibold text-slate-400 ml-1">OPERATION_DESCRIPTION</span>
- <p className="text-[11px] text-slate-500 font-semibold leading-relaxed pl-2 border-l-2 border-primary/20">
- {log.description || 'NO_ADDITIONAL_MANIFEST_PROVIDED'}
- </p>
- </div>
- <div className="pt-4 border-t border-slate-50">
- <div className="flex items-center gap-3 px-4 py-2 bg-emerald-50 rounded-lg border border-emerald-100">
- <Fingerprint className="h-3.5 w-3.5 text-emerald-500" />
- <span className="text-[9px] font-semibold text-emerald-600">INTEGRITY_VERIFIED</span>
- </div>
- </div>
- </div>
- </section>
-
- <div className="bg-slate-900 rounded-lg p-8 text-white relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-10 opacity-10 text-primary ">
- <ShieldCheck className="w-64 h-64" />
- </div>
- <div className="relative z-10 flex flex-col items-center text-center space-y-6">
- <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
- <ShieldCheck className="w-8 h-8 text-primary shadow-[0_0_15px_rgba(16,168,83,0.3)]" />
- </div>
- <div>
- <h4 className="text-[11px] font-semibold text-white mb-2">SECURITY_ENFORCEMENT</h4>
- <p className="text-[10px] text-slate-500 font-semibold leading-relaxed opacity-75">
- Seluruh perubahan mutasi data dicatat secara mutlak dalam lapisan enkripsi demi menjamin transparansi kedaulatan informasi akademik KKN UIN SAIZU.
- </p>
- </div>
- </div>
- </div>
- </div>
-
- {/* Mutation Inspector */}
- <div className="lg:col-span-2 bg-white rounded-lg p-8 border border-slate-100 group relative overflow-hidden">
- <div className="absolute -top-10 -right-10 text-slate-900 opacity-[0.02] pointer-events-none transition-transform group-hover:-rotate-12">
- <Cpu className="h-96 w-96" />
- </div>
-
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10 relative z-10">
- <div className="flex items-center gap-4">
- <div className="p-3 bg-primary/10 text-primary rounded-lg border border-primary/20">
- <FileText className="w-6 h-6" />
- </div>
- <div className="flex flex-col">
- <h3 className="text-[11px] font-semibold text-slate-900 leading-none mb-1.5">Mutation_Inspector</h3>
- <span className="text-[9px] font-semibold text-slate-400 opacity-50 leading-none">DATA_VARIANCE_DIFF_ENGINE</span>
- </div>
- </div>
- </div>
-
- <div className="bg-slate-50 rounded-lg border border-slate-100 p-8 relative z-10">
- <div className="max-h-[600px] overflow-y-auto pr-4 custom-scrollbar">
- <VisualDiff oldValues={log.old_values} newValues={log.new_values} />
- </div>
- </div>
- 
- <div className="mt-8 p-8 bg-slate-50/50 rounded-lg border border-slate-100 relative z-10">
- <div className="flex flex-col md:flex-row md:items-center gap-6">
- <div className="p-3 bg-white rounded-lg border border-slate-100 text-primary ">
- <Scale className="h-5 w-5" />
- </div>
- <div className="space-y-1">
- <h4 className="text-[11px] font-semibold text-slate-900 leading-none">ANALYTIC_INSIGHT</h4>
- <p className="text-[9px] font-semibold text-slate-400 leading-relaxed opacity-75 max-w-2xl">
- Perbandingan diferensial di atas menunjukkan perbedaan antara kondisi record sebelum (MANIFEST_OLD) dan sesudah (MANIFEST_NEW) tindakan dieksekusi.
- </p>
- </div>
- </div>
- </div>
- </div>
- </div>
- </div>
- </AppLayout>
- );
+interface AuditLog {
+    id: number;
+    description: string;
+    subject_type: string | null;
+    subject_id: number | null;
+    causer_type: string | null;
+    causer_id: number | null;
+    causer?: { name: string; };
+    properties: any;
+    created_at: string;
 }
 
-function AttributeItem({ label, title, subtitle, icon: Icon }: any) {
- return (
- <div className="space-y-4 group/attr">
- <div className="flex items-center gap-3">
- <Icon className="w-3.5 h-3.5 text-primary " />
- <span className="text-[9px] font-semibold text-slate-400 leading-none">{label}</span>
- </div>
- <div className="pl-6 border-l-2 border-slate-100 group-hover/attr:border-primary transition-all">
- <p className="text-slate-900 font-semibold text-xl mb-1 truncate">{title}</p>
- <p className="text-[10px] font-semibold text-slate-400 opacity-50 leading-none">{subtitle}</p>
- </div>
- </div>
- );
+interface Props {
+    log: AuditLog;
+}
+
+export default function AuditLogShow({ log }: Props) {
+    return (
+        <AppLayout title="Detail Inspeksi Audit">
+            <Head title="Inspeksi Jejak Keamanan" />
+
+            <div className="space-y-8 pb-20">
+                {/* Clean Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
+                    <div className="flex items-center gap-6">
+                        <Link 
+                            href={route('admin.audit-logs.index')}
+                            className="h-12 w-12 bg-white border border-slate-200 text-slate-400 hover:text-emerald-600 rounded-xl flex items-center justify-center transition-all shadow-sm active:scale-95"
+                        >
+                            <ChevronLeft className="w-5 h-5" />
+                        </Link>
+                        <div>
+                            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Audit_Inspection: #{log.id.toString().padStart(6, '0')}</h1>
+                            <p className="text-sm text-slate-500 mt-1 uppercase italic tracking-widest font-black opacity-50">Log_Manifest_Surveillance_Protocol</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+                    {/* Primary Manifest - Main Column */}
+                    <div className="xl:col-span-8 space-y-8">
+                        <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-2xl shadow-slate-200/5 overflow-hidden group">
+                            <div className="p-10 border-b border-slate-50 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-12 text-slate-900 opacity-[0.02] pointer-events-none group-hover:rotate-12 transition-transform duration-1000">
+                                    <History className="h-48 w-48" />
+                                </div>
+                                <div className="flex items-center gap-6 relative z-10">
+                                    <div className="p-4 bg-slate-900 rounded-3xl text-primary shadow-2xl shadow-slate-900/40 italic">
+                                        <ShieldCheck className="h-8 w-8" />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <h2 className="text-3xl font-black text-slate-900 uppercase italic tracking-tighter leading-none mb-2">{log.description}</h2>
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-[10px] font-black text-emerald-500 bg-emerald-500/5 px-2 py-0.5 rounded border border-emerald-500/10 uppercase tracking-widest italic leading-none">INTEGRITY_OK</span>
+                                            <div className="h-1 w-1 rounded-full bg-slate-200" />
+                                            <div className="flex items-center gap-2">
+                                                <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                                <span className="text-[11px] font-black text-slate-400 uppercase italic tracking-widest">{log.created_at}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-10 bg-slate-50/50 space-y-10 relative">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <ManifestItem label="CAUSER_ENTITY" value={log.causer?.name || 'SYSTEM_INTERNAL'} icon={User} color="primary" />
+                                    <ManifestItem label="SUBJECT_RESOURCE" value={log.subject_type?.split('\\').pop() || 'UNDEFINED_RESOURCE'} icon={Activity} color="emerald" />
+                                </div>
+
+                                <div className="p-8 bg-slate-900 rounded-[2rem] border border-slate-800 shadow-2xl shadow-slate-900/40 space-y-6">
+                                    <div className="flex items-center gap-4 border-b border-slate-800 pb-4">
+                                        <Terminal className="h-5 w-5 text-emerald-400" />
+                                        <h3 className="text-[11px] font-black text-white uppercase italic tracking-widest leading-none">Payload_Properties_Matrix</h3>
+                                    </div>
+                                    <div className="overflow-x-auto">
+                                        <pre className="text-[11px] font-mono text-emerald-500 leading-relaxed font-bold p-6 bg-slate-950/50 rounded-2xl border border-slate-800/50 shadow-inner">
+                                            {JSON.stringify(log.properties, null, 4)}
+                                        </pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Operational Guard - Side Column */}
+                    <div className="xl:col-span-4 space-y-8">
+                        <section className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/5 space-y-8 group/guard relative overflow-hidden">
+                            <div className="absolute -bottom-6 -right-6 text-slate-900 opacity-[0.02] pointer-events-none group-hover/guard:rotate-12 transition-transform duration-1000">
+                                <ShieldCheck className="h-32 w-32" />
+                            </div>
+                            <div className="flex items-center gap-4 border-b border-slate-50 pb-6">
+                                <div className="h-10 w-10 flex items-center justify-center bg-emerald-50 rounded-xl border border-emerald-100 text-emerald-600 shadow-sm">
+                                    <Database className="w-5 h-5 shadow-sm" />
+                                </div>
+                                <h3 className="text-[11px] font-black text-slate-900 uppercase italic tracking-widest">Metadata_Trace</h3>
+                            </div>
+                            <div className="space-y-6">
+                                <MetadataItem label="SUBJECT_ID" value={`#${log.subject_id?.toString().padStart(4, '0') || 'N/A'}`} color="emerald" />
+                                <MetadataItem label="CAUSER_TYPE" value={log.causer_type?.split('\\').pop() || 'SYSTEM'} color="slate" />
+                                <MetadataItem label="LOG_EVENT" value={log.description.split(' ')[0].toUpperCase()} color="primary" />
+                            </div>
+                        </section>
+
+                        <div className="p-8 bg-slate-900 rounded-[2.5rem] border border-slate-800 relative overflow-hidden group/notice shadow-2xl shadow-slate-900/40">
+                             <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
+                             <div className="relative z-10 flex flex-col items-center text-center space-y-6">
+                                <div className="p-4 bg-primary/10 rounded-3xl border border-primary/20">
+                                    <Zap className="h-10 w-10 text-primary shadow-[0_0_15px_rgba(16,168,83,0.3)] animate-pulse" />
+                                </div>
+                                <div>
+                                    <h4 className="text-[11px] font-black text-white uppercase italic tracking-widest leading-none mb-3">Protocol_Integrity</h4>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase italic leading-relaxed opacity-75">
+                                        Seluruh rekaman audit bersifat permanen dan terenkripsi dalam ledger kedaulatan data. Rekaman ini tidak dapat dimanipulasi atau dihapus secara operasional.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </AppLayout>
+    );
+}
+
+function ManifestItem({ label, value, icon: Icon, color }: any) {
+    const colors: Record<string, string> = {
+        primary: 'text-primary bg-primary/5 border-primary/10',
+        emerald: 'text-emerald-500 bg-emerald-500/5 border-emerald-500/10'
+    };
+    return (
+        <div className="p-6 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-4 hover:border-primary/20 transition-all group/manifest">
+            <div className="flex items-center gap-3">
+                <div className={clsx("p-2 rounded-xl border flex items-center justify-center transition-all group-hover/manifest:rotate-12", colors[color])}>
+                    <Icon className="w-4 h-4" />
+                </div>
+                <span className="text-[10px] font-black text-slate-400 uppercase italic tracking-widest">{label}</span>
+            </div>
+            <p className="text-sm font-black text-slate-900 uppercase italic tracking-tighter truncate">{value}</p>
+        </div>
+    );
+}
+
+function MetadataItem({ label, value, color }: { label: string, value: string, color: 'emerald' | 'primary' | 'slate' }) {
+    const colors: Record<string, string> = {
+        emerald: 'text-emerald-500',
+        primary: 'text-primary',
+        slate: 'text-slate-400'
+    };
+    return (
+        <div className="flex items-center justify-between group/meta">
+            <span className="text-[10px] font-black text-slate-400 uppercase italic tracking-widest group-hover/meta:text-primary transition-colors">{label}:</span>
+            <span className={clsx("text-[10px] font-black italic tracking-tighter uppercase", colors[color])}>{value}</span>
+        </div>
+    );
 }

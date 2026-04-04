@@ -64,8 +64,28 @@ class EvaluationController extends Controller
             ->get();
 
         return Inertia::render('Dpl/Evaluations/Index', [
-            'evaluations' => $evaluations,
-            'groups' => $groups,
+            'evaluations' => $evaluations->map(fn (Evaluasi $evaluation) => [
+                'id' => $evaluation->id,
+                'student' => [
+                    'name' => $evaluation->mahasiswa?->nama ?? 'Mahasiswa tidak ditemukan',
+                    'nim' => $evaluation->mahasiswa?->nim ?? '-',
+                ],
+                'group' => [
+                    'name' => $evaluation->kelompok?->nama_kelompok ?? $evaluation->kelompok?->code ?? '-',
+                ],
+                'total_score' => $evaluation->total_score,
+                'grade' => $evaluation->grade,
+            ])->values(),
+            'groups' => $groups->map(fn (KelompokKkn $group) => [
+                'id' => $group->id,
+                'name' => $group->nama_kelompok,
+                'period_name' => $group->periode?->name ?? '-',
+                'students' => $group->peserta->map(fn ($registration) => [
+                    'id' => $registration->mahasiswa?->id,
+                    'nim' => $registration->mahasiswa?->nim ?? '-',
+                    'name' => $registration->mahasiswa?->nama ?? 'Mahasiswa tidak ditemukan',
+                ])->filter(fn ($student) => $student['id'] !== null)->values(),
+            ])->values(),
         ]);
     }
 
@@ -140,7 +160,11 @@ class EvaluationController extends Controller
 
         return Inertia::render('Dpl/Evaluations/ImportPreview', [
             'preview' => $preview,
-            'group' => $group,
+            'group' => [
+                'id' => $group->id,
+                'name' => $group->nama_kelompok,
+                'period_name' => $group->periode?->name ?? '-',
+            ],
             'mapping' => $colMapping // Send mapping for transparency
         ]);
     }

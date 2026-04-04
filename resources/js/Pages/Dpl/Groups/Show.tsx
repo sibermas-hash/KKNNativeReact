@@ -151,7 +151,7 @@ export default function DplGroupShow({ group }: Props) {
  alt="Verifikasi Posko" 
  className="w-full h-full object-cover group-hover/img:transition-transform"
  />
- <div className="absolute inset-0 bg-gradient-transition-opacity flex flex-col justify-end p-6">
+ <div className="absolute inset-0  flex flex-col justify-end p-6">
  <p className="text-[9px] font-semibold text-white/60 mb-1">Sumber Visual</p>
  <p className="text-xs font-semibold text-white truncate">{group.posko.photo_name}</p>
  </div>

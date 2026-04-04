@@ -1,187 +1,182 @@
-import { useForm, Link, Head } from '@inertiajs/react';
+import { useState } from 'react';
+import { useForm, router, Link, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import {
- RefreshCw,
- ShieldCheck,
- Cpu,
- ChevronLeft,
- Database,
- Lock,
- Server,
- Activity,
- Zap,
- ChevronRight,
-} from 'lucide-react';
 import { route } from 'ziggy-js';
+import {
+    CloudDownload,
+    UserPlus,
+    Search,
+    RefreshCw,
+    Cpu,
+    Fingerprint,
+    ShieldCheck,
+    Terminal,
+    ChevronLeft,
+} from 'lucide-react';
 import { clsx } from 'clsx';
 
-interface Props {
- title: string;
+interface AvailableStudent {
+    id?: number | null;
+    nim: string;
+    name: string;
+    email: string | null;
 }
 
-export default function StudentSync(_props: Props) {
- const { post, processing } = useForm({});
+interface Props {
+    availableStudents: AvailableStudent[];
+    filters: {
+        search?: string;
+    };
+}
 
- const handleSync = () => {
- if (confirm('Konfirmasi Sinkronisasi: Anda akan memperbarui data mahasiswa dari sistem informasi akademik pusat. Proses ini dapat memakan waktu beberapa menit. Lanjutkan?')) {
- post(route('admin.mahasiswa.sync.store'));
- }
- };
+export default function StudentSync({ availableStudents, filters }: Props) {
+    const [search, setSearch] = useState(filters.search || '');
+    const { processing } = useForm({});
 
- return (
- <AppLayout title="Sinkronisasi Data Mahasiswa">
- <Head title="Pusat Integrasi Data" />
- 
- <div className="space-y-8 pb-24">
- {/* Minimalist Tactical Header Strip */}
- <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-100 pb-8">
- <div className="space-y-1">
- <div className="flex items-center gap-3">
- <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
- <span className="text-[9px] font-semibold text-emerald-600">
- MASTER_STUDENT_SYNC_V3.2
- </span>
- </div>
- <div className="flex items-center gap-3">
- <Link href="/admin/users/mahasiswa" className="p-2 bg-white border border-slate-100 rounded-lg text-slate-400 hover:text-primary transition-all ">
- <ChevronLeft className="h-4 w-4" />
- </Link>
- <h1 className="text-2xl font-semibold text-slate-900 leading-none">
- Integrasi <span className="text-primary">Master Data</span>
- </h1>
- </div>
- </div>
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        router.get(route('admin.students.sync'), { search }, { preserveState: true });
+    };
 
- <div className="flex items-center gap-4">
- <div className="px-4 py-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-4">
- <div className="flex items-center gap-3">
- <div className="p-1.5 bg-emerald-50 rounded-lg text-emerald-600">
- <Server className="h-3 w-3" />
- </div>
- <div className="text-left">
- <span className="block text-[8px] font-semibold text-slate-400 leading-none mb-0.5">Gateway_Status</span>
- <span className="text-xs font-semibold text-emerald-600 leading-none">
- ACTIVE_CLUSTER
- </span>
- </div>
- </div>
- </div>
- </div>
- </div>
+    const handleSync = (student: AvailableStudent) => {
+        router.post(route('admin.students.sync.store'), {
+            master_id: student.id,
+            nim: student.nim,
+            name: student.name,
+            email: student.email,
+        });
+    };
 
- {/* Main Sync Interface */}
- <div className="bg-white rounded-lg border border-slate-100 overflow-hidden relative group min-h-[500px] flex items-center justify-center">
- <div className="absolute top-0 right-0 p-16 text-slate-900 opacity-[0.03] pointer-events-none ">
- <Database className="h-[40rem] w-[40rem]" />
- </div>
+    return (
+        <AppLayout title="Protokol Sinkronisasi">
+            <Head title="Integrasi Data Mahasiswa" />
+            
+            <div className="space-y-8 pb-20">
+                {/* Clean Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight text-emerald-600">Integrasi Data Mahasiswa</h1>
+                        <p className="text-sm text-slate-500 mt-1">Injeksi relasi data mahasiswa dari kanal feeder eksternal ke basis data lokal.</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                         <button 
+                            onClick={() => router.reload()}
+                            className="px-6 py-3 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-all flex items-center gap-3"
+                        >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                            RESCAN_FEEDER
+                        </button>
+                    </div>
+                </div>
 
- <div className="p-12 flex flex-col items-center text-center space-y-8 relative z-10 max-w-2xl">
- <div className="space-y-6">
- <div className="inline-flex p-8 rounded-lg bg-slate-50 border border-slate-100 text-slate-300 relative group-hover:text-primary transition-colors">
- <Cpu className="w-16 h-16" />
- <div className="absolute -top-2 -right-2 h-6 w-6 bg-primary rounded-full border-4 border-white" />
- </div>
- <h2 className="text-xl font-semibold text-slate-900">OTORISASI_PEMBARUAN_INTI</h2>
- <p className="text-slate-400 text-[12px] font-semibold leading-relaxed opacity-75">
- Sistem akan memanggil data terbaru dari server akademik untuk melakukan verifikasi NIM, memperbarui profil mahasiswa, dan menginisialisasi kredensial login secara otomatis.
- </p>
- </div>
+                {/* Operations Toolbar */}
+                <form onSubmit={handleSearch} className="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="relative group flex-1 w-full max-w-2xl">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
+                        <input
+                            type="search"
+                            placeholder="SEARCH_CACHE_REGISTRY (NIM / NAME)..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full pl-12 pr-6 py-3 bg-white border border-slate-200 rounded-xl text-sm transition-all focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 outline-none shadow-sm"
+                        />
+                    </div>
+                    <div className="px-6 py-3 bg-emerald-50 border border-emerald-100 rounded-xl text-xs font-bold text-emerald-600 shadow-sm flex items-center gap-3">
+                        <CloudDownload className="w-4 h-4" />
+                        {availableStudents.length} Detected Personnel
+                    </div>
+                </form>
 
- <div className="flex flex-col items-center gap-6 w-full max-w-sm">
- <button
- onClick={handleSync}
- disabled={processing}
- className={clsx(
- "w-full py-8 rounded-lg text-[11px] font-semibold flex items-center justify-center gap-4 transition-all",
- processing 
- ? "bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed" 
- : "bg-slate-900 text-white hover:-translate-y-2 group/sync"
- )}
- >
- <RefreshCw className={clsx("w-6 h-6 text-primary transition-all", processing ? "animate-spin" : "")} />
- {processing ? 'COMMITTING_SYNC_STREAM...' : 'EXECUTE_MASTER_SYNC'}
- </button>
+                {/* Registry Ledger (Table) */}
+                <div className="bg-white rounded-xl border border-slate-100 shadow-xl shadow-slate-200/5 overflow-hidden group">
+                    <div className="overflow-x-auto relative z-10 custom-scrollbar pr-1">
+                        <table className="min-w-full divide-y divide-slate-50">
+                            <thead className="bg-slate-50/50">
+                                <tr>
+                                    <th className="px-8 py-6 text-left text-[9px] font-black text-slate-400 uppercase italic tracking-widest leading-none">Feeder_Identity_Token</th>
+                                    <th className="px-8 py-6 text-right text-[9px] font-black text-slate-400 uppercase italic tracking-widest leading-none pr-12">Initialize_Aquisition</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                                {availableStudents.map((student) => (
+                                    <tr key={student.nim} className="group/row hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-8 py-6">
+                                            <div className="flex items-center gap-6">
+                                                <div className="h-12 w-12 rounded-xl bg-slate-900 border border-slate-800 text-primary text-[14px] font-black flex items-center justify-center italic shadow-lg group-hover/row:scale-110 transition-transform">
+                                                    {student.name.charAt(0)}
+                                                </div>
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="text-sm font-black text-slate-900 uppercase italic tracking-tighter truncate max-w-[400px] group-hover/row:text-primary transition-colors leading-none mb-1.5">{student.name}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">NIM: {student.nim}</span>
+                                                        <span className="text-[9px] font-bold text-slate-300 italic opacity-40 lowercase">[{student.email || 'NO_EMAIL_RECORDED'}]</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6 text-right pr-12">
+                                            <button
+                                                onClick={() => handleSync(student)}
+                                                disabled={processing}
+                                                className="group/btn h-12 px-8 bg-white border border-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl text-[10px] font-black uppercase italic tracking-widest transition-all shadow-sm active:scale-95 disabled:opacity-20 flex items-center justify-center gap-3 ml-auto"
+                                            >
+                                                <UserPlus className="w-4 h-4 text-emerald-400 group-hover/btn:text-white" />
+                                                Ingest_Personnel
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {availableStudents.length === 0 && (
+                                    <tr>
+                                        <td colSpan={2} className="px-8 py-32 text-center">
+                                            <div className="flex flex-col items-center gap-6 opacity-20 italic">
+                                                <CloudDownload className="h-12 w-12 text-slate-900" />
+                                                <span className="text-[10px] font-black text-slate-900 uppercase italic tracking-[0.4em]">NO_RECORDS_DETECTED_IN_CACHE</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
- <div className="flex flex-wrap justify-center items-center gap-6">
- <div className="flex items-center gap-2">
- <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
- <span className="text-[9px] font-semibold text-slate-300">TLS_ENCRYPTION_ACTIVE</span>
- </div>
- <div className="flex items-center gap-2">
- <div className="h-1.5 w-1.5 rounded-full bg-primary" />
- <span className="text-[9px] font-semibold text-slate-300">API_VECTOR_VERIFIED</span>
- </div>
- </div>
- </div>
- </div>
- </div>
+                {/* Tactical Acquisition Monitor */}
+                <div className="p-8 bg-slate-900 rounded-xl border border-slate-800 relative overflow-hidden group shadow-2xl shadow-slate-900/10">
+                    <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_50%,rgba(16,168,83,0.05),transparent_50%)]" />
 
- {/* Intelligence Modules */}
- <div className="grid md:grid-cols-2 gap-8">
- <div className="p-8 bg-white rounded-lg border border-slate-100 space-y-6 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-8 text-emerald-500 opacity-[0.03] pointer-events-none transition-transform">
- <ShieldCheck className="h-32 w-32" />
- </div>
- <div className="flex items-center gap-4 relative z-10">
- <div className="p-3 bg-emerald-500/5 rounded-lg text-emerald-600 border border-emerald-500/10">
- <ShieldCheck className="w-6 h-6" />
- </div>
- <div>
- <h3 className="text-[11px] font-semibold text-slate-900">DATA_INTEGRITY_SAFE</h3>
- <span className="text-[9px] font-semibold text-emerald-500 mt-1.5 leading-none">VERIFIED_SOURCE</span>
- </div>
- </div>
- <p className="text-[12px] text-slate-400 font-semibold leading-relaxed opacity-75 relative z-10 border-l-2 border-emerald-500/20 pl-6">
- Proses ini dirancang untuk memperbarui informasi tanpa merusak data pendaftaran yang sudah ada. Setiap record mahasiswa dipetakan akurat menggunakan NIM sebagai identitas unik.
- </p>
- </div>
-
- <div className="p-8 bg-white rounded-lg border border-slate-100 space-y-8 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-8 text-primary opacity-[0.03] pointer-events-none transition-transform">
- <Lock className="h-32 w-32" />
- </div>
- <div className="flex items-center gap-4 relative z-10">
- <div className="p-3 bg-primary/5 rounded-lg text-primary border border-primary/10">
- <Lock className="w-6 h-6" />
- </div>
- <div>
- <h3 className="text-[11px] font-semibold text-slate-900">AUTH_ENCRYPTION_LAYER</h3>
- <span className="text-[9px] font-semibold text-primary mt-1.5 leading-none">SECURE_CREDENTIALS</span>
- </div>
- </div>
- <p className="text-[12px] text-slate-400 font-semibold leading-relaxed opacity-75 relative z-10 border-l-2 border-primary/20 pl-6">
- Setiap personel akan mendapatkan kredensial otorisasi standar berdasarkan data otentik universitas. Wajib mengarahkan personel untuk pembaruan kata sandi segera.
- </p>
- </div>
- </div>
-
- {/* Operations Footer */}
- <div className="p-8 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group">
- <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_50%,rgba(16,168,83,0.05),transparent_50%)]" />
- <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-8">
- <div className="space-y-4">
- <div className="flex items-center gap-4">
- <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
- <Activity className="h-6 w-6 text-primary" />
- </div>
- <div>
- <h4 className="text-[11px] font-semibold text-white leading-none">CORE_SYNC_PROTOCOL_V3.2</h4>
- <p className="text-[10px] font-semibold text-emerald-500 mt-2">STATUS: GATEWAY_SECURE</p>
- </div>
- </div>
- <p className="text-[12px] text-slate-400 text-sm leading-relaxed max-w-4xl opacity-75">
- Sumber: Pangkalan Data Akademik (SIAKAD). Sinkronisasi ini memastikan data NIM dan Fakultas selalu akurat dalam ekosistem KKN UIN SAIZU.
- </p>
- </div>
- <div className="flex flex-col items-end gap-5 shrink-0 hidden lg:flex border-l border-slate-800 pl-10">
- <div className="flex items-center gap-3 px-4 py-2 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
- <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(16,168,83,0.5)]" />
- <span className="text-[9px] font-semibold text-slate-100">TLS_CHANNEL_SECURE</span>
- </div>
- </div>
- </div>
- </div>
- </div>
- </AppLayout>
- );
+                    <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-primary/10 rounded-2xl border border-primary/20">
+                                    <ShieldCheck className="h-6 w-6 text-primary" />
+                                </div>
+                                <div>
+                                    <h4 className="text-[11px] font-black text-white italic tracking-widest uppercase leading-none">DATA_ACQUISITION_PROTOCOL_V3.2</h4>
+                                    <p className="text-[10px] font-bold text-emerald-400 italic mt-2 uppercase">STATUS: SYSTEM_READY_FOR_INJECTION</p>
+                                </div>
+                            </div>
+                            <p className="text-[12px] text-slate-400 text-sm leading-relaxed max-w-4xl opacity-75 uppercase">
+                                Protokol Akusisi: Injeksi data akan secara otomatis menciptakan relasi entitas peserta dalam basis data lokal. Keamanan transmisi dijaga melalui lapisan otentikasi kedaulatan data.
+                            </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-5 shrink-0 hidden lg:flex border-l border-slate-800 pl-10">
+                            <div className="flex items-center gap-3 px-4 py-2 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
+                                <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(16,168,83,0.5)]" />
+                                <span className="text-[9px] font-black text-slate-100 uppercase italic tracking-widest">GATEWAY_ENCRYPTED</span>
+                            </div>
+                            <div className="flex gap-4 opacity-50">
+                                <div className="h-10 w-10 bg-white/5 border border-slate-200 rounded-xl flex items-center justify-center text-slate-400 transition-colors">
+                                    <Cpu className="h-5 w-5" />
+                                </div>
+                                <div className="h-10 w-10 bg-white/5 border border-slate-200 rounded-xl flex items-center justify-center text-slate-400 transition-colors">
+                                    <Terminal className="h-5 w-5" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </AppLayout>
+    );
 }

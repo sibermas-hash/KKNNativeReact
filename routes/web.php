@@ -163,14 +163,22 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::get('groups', [Dpl\GroupController::class , 'index'])->name('groups.index');
         Route::get('groups/{group}', [Dpl\GroupController::class , 'show'])->name('groups.show');
         Route::get('daily-reports', [Dpl\DailyReportController::class , 'index'])->name('daily-reports.index');
+        Route::get('daily-reports/{dailyReport}', [Dpl\DailyReportController::class , 'show'])->name('daily-reports.show');
+        Route::get('daily-reports/files/{fileKegiatan}', [Dpl\DailyReportController::class , 'downloadFile'])->name('daily-reports.files.download');
         Route::post('daily-reports/approve-all', [Dpl\DailyReportController::class , 'batchApprove'])->name('daily-reports.approve-all');
         Route::patch('daily-reports/{dailyReport}/approve', [Dpl\DailyReportController::class , 'approve'])->name('daily-reports.approve');
-        Route::patch('daily-reports/{dailyReport}/reject', [Dpl\DailyReportController::class , 'reject'])->name('daily-reports.reject');
+        Route::patch('daily-reports/{dailyReport}/revision', [Dpl\DailyReportController::class , 'revision'])->name('daily-reports.revision');
+        Route::patch('daily-reports/{dailyReport}/reject', [Dpl\DailyReportController::class , 'revision'])->name('daily-reports.reject');
         Route::get('evaluations', [Dpl\EvaluationController::class , 'index'])->name('evaluations.index');
         Route::post('evaluations/validate-import', [Dpl\EvaluationController::class , 'validateImport'])->name('evaluations.validate-import');
         Route::post('evaluations/import', [Dpl\EvaluationController::class , 'import'])->name('evaluations.import');
         Route::get('evaluations/create', [Dpl\EvaluationController::class , 'create'])->name('evaluations.create');
         Route::post('evaluations', [Dpl\EvaluationController::class , 'store'])->name('evaluations.store');
+        Route::get('final-reports', [Dpl\FinalReportController::class , 'index'])->name('final-reports.index');
+        Route::get('final-reports/{report}', [Dpl\FinalReportController::class , 'show'])->name('final-reports.show');
+        Route::get('final-reports/{report}/download', [Dpl\FinalReportController::class , 'download'])->name('final-reports.download');
+        Route::patch('final-reports/{report}/approve', [Dpl\FinalReportController::class , 'approve'])->name('final-reports.approve');
+        Route::patch('final-reports/{report}/revision', [Dpl\FinalReportController::class , 'revision'])->name('final-reports.revision');
     });
 
     // ==========================================

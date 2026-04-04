@@ -91,7 +91,7 @@ export default function Index({ groups }: Props) {
  Emerald Premium Header 
  Refining from heavy rose to lush tactical emerald/rose gradient hybrid
  */}
- <div className="relative overflow-hidden rounded-lg bg-whitep-10 md:p-14 border border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+ <div className="relative overflow-hidden rounded-lg bg-whitep-6 border border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
  <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
  
  <div className="relative z-10 space-y-5 flex-1">

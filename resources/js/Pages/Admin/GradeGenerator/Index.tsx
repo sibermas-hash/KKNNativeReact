@@ -1,557 +1,230 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useForm, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { FormSelect } from '@/Components/ui';
 import {
- FileArchive,
- Calculator,
- RefreshCw,
- CloudUpload,
- FileDown,
- FolderDown,
- ShieldCheck,
- Cpu,
- Beaker,
- IdCard,
- BadgeCheck,
- Activity,
- Fingerprint,
- Scale,
- Search,
- X,
- ChevronRight,
- Zap,
+    Activity,
+    Cpu,
+    RefreshCw,
+    ShieldCheck,
+    History,
+    Zap,
+    Download,
+    Calculator,
+    ShieldAlert,
+    AlertCircle,
 } from 'lucide-react';
-import { Head, router } from '@inertiajs/react';
-import axios from 'axios';
 import { clsx } from 'clsx';
-import { route } from 'ziggy-js';
-import { useToast } from '@/Contexts/ToastContext';
 
-type Period = {
- id: number;
- name: string;
- grading_start?: string;
- grading_end?: string;
-};
+interface Stats {
+    total_eligible: number;
+    generated_count: number;
+    pending_count: number;
+}
 
-type Group = {
- id: number;
- period_id: number;
- code: string;
- name: string;
- desa: string;
- kecamatan: string;
- kabupaten: string;
- dpl: string;
-};
-
-type Meta = {
- angkatan: string;
- tahun: string;
- kelompok: string;
- desa: string;
- kecamatan: string;
- kabupaten: string;
- dpl: string;
-};
-
-type StudentRow = {
- user_id: string | number;
- name: string;
- nim: string;
- discipline: number | null;
- attitude: number | null;
- group_code?: string;
- group_name?: string;
-};
-
-const defaultMeta: Meta = {
- angkatan: '57',
- tahun: '2026',
- kelompok: '',
- desa: '',
- kecamatan: '',
- kabupaten: '',
- dpl: '',
-};
+interface Log {
+    id: number;
+    message: string;
+    type: 'success' | 'info' | 'warning';
+    created_at: string;
+}
 
 interface Props {
- periods: Period[];
- groups: Group[];
+    stats: Stats;
+    recentLogs: Log[];
 }
 
-function computeTotal({ discipline, attitude }: StudentRow): number {
- const d = Number(discipline) || 0;
- const a = Number(attitude) || 0;
- if (discipline === null || attitude === null) return 0;
- return Math.round((d + a) / 2);
+export default function GradeGeneratorIndex({ stats, recentLogs }: Props) {
+    const { post, processing } = useForm({});
+    const [progress, setProgress] = useState(0);
+
+    const generate = () => {
+        if (confirm('Apakah Anda yakin ingin mengeksekusi generator nilai periode ini? Seluruh data yang belum ter-generate akan dikalkulasi sesuai bobot algoritma terkini.')) {
+            post(route('admin.grade-generator.generate'));
+        }
+    };
+
+    const progressPercentage = (stats.generated_count / stats.total_eligible) * 100 || 0;
+
+    return (
+        <AppLayout title="Generator Nilai">
+            <Head title="Kalkulasi Nilai Otomatis" />
+
+            <div className="space-y-8 pb-20">
+                {/* Clean Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight text-emerald-600">Generator Nilai Otomatis</h1>
+                        <p className="text-sm text-slate-500 mt-1">Eksekusi kalkulasi agregat nilai akhir berbasis pembobotan matriks komponen.</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+                    {/* Execution Panel - Main Column */}
+                    <div className="xl:col-span-8 space-y-8">
+                        <div className="bg-white rounded-lg border border-slate-100 shadow-2xl shadow-slate-200/5 overflow-hidden group/gen">
+                            <div className="px-10 py-12 border-b border-slate-50 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-12 text-primary opacity-[0.02] pointer-events-none group-hover/gen:rotate-12 transition-transform duration-1000">
+                                    <Cpu className="h-64 w-64" />
+                                </div>
+                                
+                                <div className="flex items-center gap-6 relative z-10">
+                                    <div className="p-4 bg-slate-900 rounded-3xl text-emerald-400 shadow-2xl shadow-slate-900/40 italic">
+                                        <Zap className="h-8 w-8 animate-pulse" />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <h3 className="text-2xl font-black text-slate-900 uppercase italic tracking-tighter leading-none mb-2">Grade Ingestion Core</h3>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic opacity-50">ENGINE_BUILD: 3.2.0</span>
+                                            <div className="h-1 w-1 rounded-full bg-slate-200" />
+                                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest italic">READY_TO_RUN</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-10 space-y-10 relative z-10">
+                                <div className="p-10 bg-slate-50 rounded-lg border border-slate-100 space-y-10 relative">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                                        <div className="space-y-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,168,83,0.5)]" />
+                                                <span className="text-[11px] font-black text-slate-400 uppercase italic tracking-widest">REALTIME_PROGRESS_MONITOR</span>
+                                            </div>
+                                            <div className="flex items-baseline gap-4">
+                                                <span className="text-5xl font-black italic italic tracking-tighter leading-none text-slate-900">{progressPercentage.toFixed(1)}%</span>
+                                                <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest italic">TOTAL_INGESTED</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-end">
+                                            <span className="text-[11px] font-black text-slate-900 italic tracking-widest mb-1.5">{stats.generated_count} / {stats.total_eligible}</span>
+                                            <span className="text-[9px] font-bold text-slate-300 uppercase italic tracking-widest opacity-50">ACADEMIC_RECORDS</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="h-4 w-full bg-white rounded-full border border-slate-200 p-1 relative overflow-hidden group/bar">
+                                        <div 
+                                            className="h-full bg-emerald-500 rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(16,168,83,0.4)]" 
+                                            style={{ width: `${progressPercentage}%` }} 
+                                        />
+                                        <div className="absolute top-0 right-0 h-full w-full bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)] animate-[shimmer_2s_infinite]" />
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col md:flex-row gap-6">
+                                    <button
+                                        onClick={generate}
+                                        disabled={processing || stats.pending_count === 0}
+                                        className="flex-1 h-20 bg-slate-900 text-white rounded-lg font-black uppercase italic tracking-[0.25em] text-[11px] shadow-2xl shadow-slate-900/40 relative active:scale-95 group/btn transition-all hover:bg-emerald-600 disabled:opacity-20 flex items-center justify-center gap-4"
+                                    >
+                                        <RefreshCw className={clsx("w-5 h-5 text-primary group-hover/btn:text-white", processing && "animate-spin")} />
+                                        EXECUTE_INGESTION_CORE
+                                    </button>
+                                    <button 
+                                        className="h-20 px-10 bg-white border border-slate-100 text-slate-900 rounded-lg font-black uppercase italic tracking-widest text-[10px] shadow-sm active:scale-95 transition-all hover:bg-slate-50 flex items-center justify-center gap-4"
+                                    >
+                                        <Download className="w-5 h-5 text-emerald-600" />
+                                        EXPORT_RAW_LEDGER
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Recent Execution Logs */}
+                        <div className="bg-white rounded-lg border border-slate-100 shadow-sm overflow-hidden">
+                            <div className="px-10 py-6 border-b border-slate-50 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <History className="w-5 h-5 text-slate-400" />
+                                    <h3 className="text-[11px] font-black text-slate-900 uppercase italic tracking-widest leading-none mb-1">Execution_Logs</h3>
+                                </div>
+                            </div>
+                            <div className="divide-y divide-slate-50">
+                                {recentLogs.length > 0 ? recentLogs.map((log) => (
+                                    <div key={log.id} className="px-10 py-5 hover:bg-slate-50 transition-colors flex items-center justify-between group">
+                                        <div className="flex items-center gap-4 min-w-0">
+                                            <div className={clsx(
+                                                "h-8 w-8 rounded-xl flex items-center justify-center italic text-[10px] font-black italic border",
+                                                log.type === 'success' ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                                                log.type === 'warning' ? "bg-amber-50 text-amber-600 border-amber-100" :
+                                                "bg-slate-50 text-slate-400 border-slate-100"
+                                            )}>
+                                                {log.type === 'success' ? 'OK' : log.type === 'warning' ? 'WRN' : 'INF'}
+                                            </div>
+                                            <p className="text-[11px] font-bold text-slate-500 uppercase italic tracking-tighter truncate max-w-[400px] group-hover:text-slate-900 transition-colors">{log.message}</p>
+                                        </div>
+                                        <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest italic whitespace-nowrap">{log.created_at}</span>
+                                    </div>
+                                )) : (
+                                    <div className="p-20 text-center opacity-20 italic">
+                                        <Activity className="h-10 w-10 mx-auto mb-4" />
+                                        <span className="text-[10px] font-black text-slate-900 uppercase italic tracking-[0.4em]">NO_LOGS_ON_CURRENT_CYCLE</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Stats Summary - Side Column */}
+                    <div className="xl:col-span-4 space-y-8">
+                        <section className="bg-white p-10 rounded-lg border border-slate-100 shadow-xl shadow-slate-200/5 space-y-10 relative overflow-hidden group/summ">
+                            <div className="absolute -bottom-6 -right-6 text-slate-900 opacity-[0.02] pointer-events-none group-hover/summ:scale-110 transition-transform">
+                                <Calculator className="h-32 w-32" />
+                            </div>
+                            
+                            <div className="flex items-center gap-4 pb-6 border-b border-slate-50">
+                                <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600 border border-emerald-100 shadow-sm">
+                                    <Calculator className="w-5 h-5" />
+                                </div>
+                                <h3 className="text-[11px] font-black text-slate-900 uppercase italic tracking-widest">Cycle_Summary</h3>
+                            </div>
+
+                            <div className="space-y-6 relative z-10">
+                                <StatItem label="ELIGIBLE_RECORDS" value={stats.total_eligible} color="slate" />
+                                <StatItem label="INGESTED_RECORDS" value={stats.generated_count} color="emerald" />
+                                <StatItem label="PENDING_CYCLES" value={stats.pending_count} color="amber" />
+                            </div>
+                        </section>
+
+                        <div className="bg-slate-900 p-10 rounded-lg border border-slate-800 relative overflow-hidden group shadow-2xl shadow-slate-900/40">
+                            <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
+                            <div className="relative z-10 flex flex-col items-center text-center space-y-6">
+                                <div className="p-4 bg-primary/10 rounded-3xl border border-primary/20">
+                                    <ShieldAlert className="w-10 h-10 text-primary shadow-[0_0_15px_rgba(16,168,83,0.3)]" />
+                                </div>
+                                <div>
+                                    <h4 className="text-[11px] font-black text-white uppercase italic tracking-widest leading-none mb-4">CRITICAL_GOVERNANCE</h4>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase italic leading-relaxed opacity-75">
+                                        Pastikan konfigurasi bobot pembobotan telah dikalibrasi secara presisi sebelum melakukan eksekusi pada ingestion core.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <style>{`
+                @keyframes shimmer {
+                    100% { transform: translateX(100%); }
+                }
+            `}</style>
+        </AppLayout>
+    );
 }
 
-export default function GradeGenerator({ periods, groups }: Props) {
- const { toast } = useToast();
- const [selectedPeriodId, setSelectedPeriodId] = useState<number | ''>('');
- const [selectedGroupId, setSelectedGroupId] = useState<number | 'all' | ''>('');
- const [meta, setMeta] = useState<Meta>(defaultMeta);
- const [students, setStudents] = useState<StudentRow[]>([]);
- const [loading, setLoading] = useState(false);
- const [saving, setSaving] = useState(false);
- const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
+function StatItem({ label, value, color }: { label: string, value: number, color: 'emerald' | 'amber' | 'slate' }) {
+    const colors: Record<string, string> = {
+        emerald: 'text-emerald-500',
+        amber: 'text-amber-500',
+        slate: 'text-slate-400'
+    };
 
- const isAllGroups = selectedGroupId === 'all';
-
- const filteredGroups = useMemo(() => {
- if (!selectedPeriodId) return [];
- return groups.filter(g => g.period_id === selectedPeriodId);
- }, [groups, selectedPeriodId]);
-
- const dropdownOptions = useMemo(() => {
- const options = [
- { value: 'all', label: 'ALL_UNITS (ORCHESTRATED)' },
- ...filteredGroups.map(g => ({
- value: g.id,
- label: `KELOMPOK ${g.code} [${g.name}]`
- }))
- ];
- return options;
- }, [filteredGroups]);
-
- useEffect(() => {
- if (!selectedGroupId) {
- setStudents([]);
- setMeta(defaultMeta);
- return;
- }
-
- if (isAllGroups) {
- const period = periods.find(p => p.id === selectedPeriodId);
- setMeta({
- ...defaultMeta,
- angkatan: period ? period.name.replace('Angkatan ', '') : '57',
- kelompok: 'ALL_UNITS_ACTIVE'
- });
- } else {
- const group = groups.find(g => g.id === selectedGroupId);
- const period = periods.find(p => p.id === selectedPeriodId);
- if (group) {
- setMeta({
- ...defaultMeta,
- angkatan: period ? period.name.replace('Angkatan ', '') : '57',
- kelompok: group.code,
- desa: group.desa,
- kecamatan: group.kecamatan,
- kabupaten: group.kabupaten,
- dpl: group.dpl
- });
- }
- }
-
- setLoading(true);
- const controller = new AbortController();
- const url = isAllGroups
- ? route('admin.grade-generator.students-all')
- : route('admin.grade-generator.students', selectedGroupId);
-
- axios.get(url, { signal: controller.signal })
- .then(res => {
- setStudents(res.data);
- })
- .catch(err => {
- if (axios.isCancel(err)) return;
- toast({ title: 'SYNC_ERROR', message: 'Failed to access personnel records.', priority: 'error' });
- })
- .finally(() => {
- setLoading(false);
- });
-
- return () => controller.abort();
- }, [selectedGroupId, groups, periods, selectedPeriodId, isAllGroups, toast]);
-
- const summary = useMemo(() => {
- if (!students.length) return { avg: 0, count: 0 };
- const scoredStudents = students.filter(s => s.discipline !== null && s.attitude !== null);
- if (!scoredStudents.length) return { avg: 0, count: students.length };
-
- const avg = scoredStudents.reduce((sum, s) => sum + computeTotal(s), 0) / scoredStudents.length;
- return { avg: Number(avg.toFixed(2)), count: students.length };
- }, [students]);
-
- const updateStudent = (id: string | number, field: keyof Omit<StudentRow, 'user_id' | 'name' | 'nim' | 'group_code' | 'group_name'>, value: string) => {
- setStudents((prev) =>
- prev.map((s) =>
- s.user_id === id
- ? {
- ...s,
- [field]: value === '' ? null : Math.max(0, Math.min(100, Number(value) || 0)),
- }
- : s,
- ),
- );
- };
-
- const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
- if (e.target.files && e.target.files[0]) {
- setEvidenceFile(e.target.files[0]);
- }
- };
-
- const handleSave = () => {
- if (!selectedGroupId || isAllGroups) return;
-
- setSaving(true);
- const formData = new FormData();
- formData.append('kelompok_id', String(selectedGroupId));
- if (evidenceFile) {
- formData.append('evidence_file', evidenceFile);
- }
-
- students.forEach((s, index) => {
- formData.append(`scores[${index}][user_id]`, String(s.user_id));
- if (s.discipline !== null) formData.append(`scores[${index}][discipline]`, String(s.discipline));
- if (s.attitude !== null) formData.append(`scores[${index}][attitude]`, String(s.attitude));
- });
-
- router.post(route('admin.grade-generator.save-scores'), formData, {
- forceFormData: true,
- onSuccess: () => {
- setSaving(false);
- setEvidenceFile(null);
- toast({ title: 'COMMIT_SUCCESS', message: 'Evaluation records committed to primary ledger.', priority: 'success' });
- },
- onError: () => {
- setSaving(false);
- toast({ title: 'ORCHESTRATION_ERROR', message: 'Failed to finalize score injection.', priority: 'error' });
- }
- });
- };
-
- return (
- <AppLayout title="Generator Nilai KKN">
- <Head title="Laboratorium Analisis Nilai" />
-
- <div className="space-y-8 pb-24">
- {/* Minimalist Tactical Header Strip */}
- <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-100 pb-8">
- <div className="space-y-1">
- <div className="flex items-center gap-3">
- <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
- <span className="text-[9px] font-semibold text-emerald-600">
- GRADE_INGESTION_SYSTEM_V3.2
- </span>
- </div>
- <div className="flex items-center gap-3">
- <div className="p-2 bg-slate-50 rounded-lg border border-slate-100 text-slate-400">
- <Calculator className="h-4 w-4" />
- </div>
- <h1 className="text-2xl font-semibold text-slate-900 leading-none">
- Grade <span className="text-primary">Generator</span>
- </h1>
- </div>
- </div>
-
- <div className="flex items-center gap-4">
- <div className="px-4 py-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-4">
- <div className="flex items-center gap-3">
- <div className="p-1.5 bg-emerald-50 rounded-lg text-emerald-600">
- <Activity className="h-3 w-3" />
- </div>
- <div className="text-left">
- <span className="block text-[8px] font-semibold text-slate-400 leading-none mb-0.5">Aggregate_Avg</span>
- <span className="text-xs font-semibold text-slate-900 leading-none">
- {summary.avg} SCALE
- </span>
- </div>
- </div>
- </div>
-
- <button 
- onClick={handleSave}
- disabled={saving || !selectedGroupId || isAllGroups || students.length === 0}
- className="px-6 py-3 bg-slate-900 text-white text-[10px] font-semibold rounded-lg transition-all flex items-center gap-3 disabled:opacity-30"
- >
- <CloudUpload className="w-3.5 h-3.5 text-emerald-400" />
- {saving ? 'COMMITTING...' : 'COMMIT_RECORDS'}
- </button>
- </div>
- </div>
-
- {/* Selection & Meta Console */}
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
- <div className="lg:col-span-2 space-y-8">
- <div className="bg-white p-8 rounded-lg border border-slate-100">
- <div className="grid gap-6 md:grid-cols-2">
- <div className="space-y-4">
- <label className="flex items-center gap-2 text-[9px] font-semibold text-slate-400 ml-1">
- <History className="h-3 w-3 text-primary/60" /> OPERATIONAL_CYCLE
- </label>
- <FormSelect
- placeholder="SELECT_PERIOD..."
- value={selectedPeriodId}
- onChange={(e) => {
- setSelectedPeriodId(Number(e.target.value) || '');
- setSelectedGroupId('');
- }}
- options={periods.map(p => ({ value: p.id, label: p.name.toUpperCase() }))}
- className="bg-slate-50 border-slate-100 h-12 rounded-lg text-[10px] font-semibold text-slate-900 focus:bg-white transition-all appearance-none"
- />
- </div>
-
- <div className="space-y-4">
- <label className="flex items-center gap-2 text-[9px] font-semibold text-slate-400 ml-1">
- <IdCard className="h-3 w-3 text-primary/60" /> TARGET_UNIT_VECTOR
- </label>
- <FormSelect
- placeholder="SELECT_UNIT..."
- value={selectedGroupId}
- onChange={(e) => {
- const val = e.target.value;
- setSelectedGroupId(val === 'all' ? 'all' : val ? Number(val) : '');
- }}
- options={dropdownOptions}
- disabled={!selectedPeriodId}
- className="bg-slate-50 border-slate-100 h-12 rounded-lg text-[10px] font-semibold text-slate-900 focus:bg-white transition-all appearance-none disabled:opacity-30"
- />
- </div>
- </div>
- </div>
-
- {selectedGroupId && !isAllGroups && (
- <div className="bg-white p-8 rounded-lg border border-slate-100 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-10 text-slate-900/5 pointer-events-none ">
- <IdCard className="h-48 w-48" />
- </div>
-
- <div className="grid grid-cols-2 md:grid-cols-3 gap-8 relative z-10">
- <MetaItem label="CYCLE_BATCH" value={meta.angkatan} />
- <MetaItem label="UNIT_CODE" value={meta.kelompok} />
- <MetaItem label="DEPLOYMENT_ZONE" value={meta.desa} />
- <MetaItem label="DISTRICT_SECTOR" value={meta.kecamatan} />
- <MetaItem label="REGENCY_AREA" value={meta.kabupaten} />
- <MetaItem label="OFFICER_IN_CHARGE" value={meta.dpl} primary />
- </div>
-
- <div className="mt-8 pt-8 border-t border-slate-50 relative z-10">
- <label className="flex items-center gap-2 text-[9px] font-semibold text-slate-400 ml-1 mb-4">
- <CloudUpload className="h-3 w-3 text-primary/60" /> EVIDENCE_SCAN_UPLOAD (PDF/JPG)
- </label>
- <div className="flex flex-col md:flex-row items-center gap-4">
- <div className="relative group/upload flex-1 w-full">
- <input
- type="file"
- accept=".pdf,.jpg,.jpeg,.png"
- onChange={handleFileChange}
- className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
- />
- <div className="px-6 py-4 bg-slate-50 border border-slate-100 rounded-lg group-hover/upload:border-primary/30 transition-all flex items-center justify-between">
- <span className="text-[10px] font-semibold text-slate-300 truncate pr-4">
- {evidenceFile ? evidenceFile.name : 'SELECT_FILE_PAYLOAD...'}
- </span>
- <CloudUpload className="h-5 w-5 text-slate-200 group-hover/upload:text-primary transition-colors" />
- </div>
- </div>
- {evidenceFile && (
- <div className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 text-[9px] font-semibold flex items-center gap-2">
- <BadgeCheck className="w-3.5 h-3.5" /> ATTACHED
- </div>
- )}
- </div>
- </div>
- </div>
- )}
- </div>
-
- <div className="lg:col-span-1">
- <div className="bg-slate-900 p-8 rounded-lg border border-slate-800 h-full flex flex-col justify-between group overflow-hidden relative">
- <div className="absolute top-0 right-0 p-8 opacity-10 text-primary ">
- <Cpu className="h-48 w-48" />
- </div>
- 
- <div className="space-y-4 relative z-10">
- <div className="p-3 bg-primary/10 rounded-lg border border-primary/20 w-fit">
- <Beaker className="h-6 w-6 text-primary" />
- </div>
- <div>
- <h3 className="text-[11px] font-semibold text-white leading-none">ANALYTIC_CORE_V3</h3>
- <p className="text-[9px] font-semibold text-slate-500 mt-1.5 opacity-50 leading-none">REALTIME_WEIGHT_CALCULATION</p>
- </div>
- </div>
-
- <div className="pt-8 relative z-10 space-y-8">
- <div className="flex justify-between items-end border-b border-white/5 pb-4">
- <span className="text-[9px] font-semibold text-slate-500">UNIT_AVG</span>
- <span className="text-4xl font-semibold text-white leading-none">{summary.avg}</span>
- </div>
- <div className="flex justify-between items-end">
- <span className="text-[9px] font-semibold text-slate-500">RECORD_COUNT</span>
- <span className="text-xl font-semibold text-slate-400 leading-none">{summary.count}</span>
- </div>
- <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
- <div 
- className="h-full bg-emerald-500 transition-all" 
- style={{ width: `${(summary.avg / 100) * 100}%` }} 
- />
- </div>
- </div>
- </div>
- </div>
- </div>
-
- {/* Ingestion Table */}
- <div className="bg-white rounded-lg border border-slate-100 overflow-hidden relative group">
- <div className="overflow-x-auto relative z-10 custom-scrollbar">
- <table className="min-w-full divide-y divide-slate-50">
- <thead className="bg-slate-50/50">
- <tr>
- <th className="px-8 py-6 text-left text-[9px] font-semibold text-slate-400">ENTITY_MEMBER</th>
- {isAllGroups && <th className="px-8 py-6 text-left text-[9px] font-semibold text-slate-400">UNIT_VECTOR</th>}
- <th className="px-8 py-6 text-center text-[9px] font-semibold text-slate-400">DISCIPLINE_VAL</th>
- <th className="px-8 py-6 text-center text-[9px] font-semibold text-slate-400">ATTITUDE_VAL</th>
- <th className="px-8 py-6 text-right text-[9px] font-semibold text-slate-400">AGGREGATE</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-slate-50">
- {loading ? (
- <tr>
- <td colSpan={isAllGroups ? 5 : 4} className="px-8 py-32 text-center">
- <div className="flex flex-col items-center gap-4 opacity-50">
- <RefreshCw className="h-10 w-10 text-primary" />
- <span className="text-[10px] font-semibold text-slate-300">RECORDS_SYNCING...</span>
- </div>
- </td>
- </tr>
- ) : students.length > 0 ? (
- students.map((s, idx) => (
- <tr key={`${s.user_id}-${idx}`} className="group/row hover:bg-slate-50/50 transition-colors">
- <td className="px-8 py-6">
- <div className="flex items-center gap-4">
- <div className="h-10 w-10 rounded-lg bg-slate-900 border border-slate-800 text-primary text-[11px] font-semibold flex items-center justify-center ">
- {s.name.charAt(0)}
- </div>
- <div className="flex flex-col min-w-0">
- <span className="text-xs font-semibold text-slate-900 truncate max-w-[200px] group-hover/row:text-primary transition-colors">
- {s.name}
- </span>
- <div className="flex items-center gap-2 mt-0.5">
- <Fingerprint className="h-3 w-3 text-slate-300" />
- <span className="text-[9px] font-semibold text-slate-400 opacity-50 font-mono">
- NIM: {s.nim}
- </span>
- </div>
- </div>
- </div>
- </td>
- {isAllGroups && (
- <td className="px-8 py-6">
- <div className="px-3 py-1 bg-white border border-primary/20 rounded-lg text-[9px] font-semibold text-primary inline-block">
- {s.group_code}
- </div>
- </td>
- )}
- <td className="px-8 py-6 text-center">
- <div className="flex justify-center">
- <input
- type="number"
- min="0"
- max="100"
- value={s.discipline ?? ''}
- onChange={(e) => updateStudent(s.user_id, 'discipline', e.target.value)}
- disabled={isAllGroups}
- className="w-20 px-3 py-2 bg-slate-50 border border-slate-100 rounded-lg text-center text-xs font-semibold text-slate-900 focus:bg-white focus:ring-4 focus:ring-primary/5 outline-none transition-all disabled:opacity-30"
- />
- </div>
- </td>
- <td className="px-8 py-6 text-center">
- <div className="flex justify-center">
- <input
- type="number"
- min="0"
- max="100"
- value={s.attitude ?? ''}
- onChange={(e) => updateStudent(s.user_id, 'attitude', e.target.value)}
- disabled={isAllGroups}
- className="w-20 px-3 py-2 bg-slate-50 border border-slate-100 rounded-lg text-center text-xs font-semibold text-slate-900 focus:bg-white focus:ring-4 focus:ring-primary/5 outline-none transition-all disabled:opacity-30"
- />
- </div>
- </td>
- <td className="px-8 py-6 text-right">
- <div className="flex flex-col items-end">
- <span className={clsx(
- "text-2xl font-semibold leading-none transition-colors",
- computeTotal(s) > 0 ? "text-slate-900 group-hover/row:text-primary" : "text-slate-100"
- )}>
- {computeTotal(s) || '--'}
- </span>
- {computeTotal(s) > 0 && <span className="text-[8px] font-semibold text-emerald-500 mt-1 opacity-50">SYNC_READY</span>}
- </div>
- </td>
- </tr>
- ))
- ) : (
- <tr>
- <td colSpan={isAllGroups ? 5 : 4} className="px-8 py-32 text-center">
- <div className="flex flex-col items-center gap-4 opacity-20">
- <ShieldCheck className="h-12 w-12 text-slate-900" />
- <span className="text-[10px] font-semibold text-slate-900">INIT_VECTOR_SELECT_TARGET</span>
- </div>
- </td>
- </tr>
- )}
- </tbody>
- </table>
- </div>
- </div>
-
- {/* Operational Governance Footer */}
- <div className="p-8 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group">
- <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_50%,rgba(16,168,83,0.05),transparent_50%)]" />
- <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-8">
- <div className="space-y-4">
- <div className="flex items-center gap-4">
- <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
- <Scale className="h-6 w-6 text-primary" />
- </div>
- <div>
- <h4 className="text-[11px] font-semibold text-white leading-none">GRADE_GOVERNANCE_PROTOCOL_V3.2</h4>
- <p className="text-[10px] font-semibold text-emerald-500 mt-2">STATUS: SECURE_INJECTION_AUTHORIZED</p>
- </div>
- </div>
- <p className="text-[12px] text-slate-400 text-sm leading-relaxed max-w-4xl opacity-75">
- Protokol Penilaian: Seluruh parameter yang dikomit akan masuk ke dalam orkestrasi rekam jejak akademik mahasiswa secara absolut. 
- Pastikan Evidence_Payload telah diunggah sebagai lampiran autentikasi material demi transparansi audit LPPM.
- </p>
- </div>
- <div className="flex flex-col items-end gap-5 shrink-0 hidden lg:flex border-l border-slate-800 pl-10">
- <div className="flex items-center gap-3 px-4 py-2 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
- <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(16,168,83,0.5)]" />
- <span className="text-[9px] font-semibold text-slate-100">INGESTION_SYNC_OK</span>
- </div>
- <div className="flex gap-4 opacity-50">
- <button onClick={handleExport} className="h-10 w-10 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 transition-colors hover:text-primary">
- <FileArchive className="h-5 w-5" />
- </button>
- <button onClick={handleExportPdf} className="h-10 w-10 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 transition-colors hover:text-primary">
- <FileDown className="h-5 w-5" />
- </button>
- </div>
- </div>
- </div>
- </div>
- </div>
- </AppLayout>
- );
+    return (
+        <div className="flex items-center justify-between group/item">
+            <span className="text-[10px] font-black text-slate-400 uppercase italic tracking-widest group-hover/item:text-primary transition-colors">{label}</span>
+            <div className="flex items-center gap-3">
+                <span className={clsx("text-lg font-black italic italic tracking-tighter", colors[color])}>{value.toLocaleString()}</span>
+                <div className={clsx("h-1.5 w-1.5 rounded-full", color === 'emerald' ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,168,83,0.5)]" : "bg-slate-200")} />
+            </div>
+        </div>
+    );
 }
-
-function MetaItem({ label, value, primary = false }: { label: string; value: string; primary?: boolean }) {
- return (
- <div className="space-y-2 group/meta min-w-0">
- <span className="text-[9px] font-semibold text-slate-400 group-hover/meta:text-primary transition-colors leading-none block">{label}</span>
- <p className={clsx(
- "text-sm font-semibold truncate leading-none",
- primary ? "text-primary" : "text-slate-900"
- )}>
- {value || 'DATA_PENDING'}
- </p>
- </div>
- );
-}
-
-import { History } from 'lucide-react';

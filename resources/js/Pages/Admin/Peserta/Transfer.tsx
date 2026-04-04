@@ -154,7 +154,7 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
                         </div>
 
                         {/* Transfer Governance Protocol */}
-                        <div className="bg-slate-900 p-8 rounded-[2.5rem] border border-slate-800 relative overflow-hidden group shadow-xl shadow-slate-900/20">
+                        <div className="bg-slate-900 p-8 rounded-lg border border-slate-800 relative overflow-hidden group shadow-xl shadow-slate-900/20">
                             <div className="absolute top-0 right-0 p-8 text-emerald-500 opacity-5 group-hover:rotate-12 transition-transform duration-1000">
                                 <ShieldAlert className="w-32 h-32" />
                             </div>
@@ -173,12 +173,12 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
                     {/* Transfer Command Center - Main Column */}
                     <div className="xl:col-span-8">
                         {selectedStudent ? (
-                            <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/5 overflow-hidden">
+                            <div className="bg-white rounded-lg border border-slate-100 shadow-2xl shadow-slate-200/5 overflow-hidden">
                                 <div className="p-10 border-b border-slate-50 space-y-8">
                                     <div className="flex items-center gap-8 justify-center">
                                         <div className="flex flex-col items-center gap-4 group">
                                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest italic">Source_Vector</span>
-                                            <div className="w-20 h-20 rounded-[2rem] bg-slate-900 flex items-center justify-center text-primary text-3xl font-black italic shadow-2xl group-hover:scale-110 transition-transform">
+                                            <div className="w-20 h-20 rounded-lg bg-slate-900 flex items-center justify-center text-primary text-3xl font-black italic shadow-2xl group-hover:scale-110 transition-transform">
                                                 {selectedStudent.user.name.charAt(0)}
                                             </div>
                                             <div className="text-center">
@@ -200,7 +200,7 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
 
                                         <div className="flex flex-col items-center gap-4">
                                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest italic">Target_Vector</span>
-                                            <div className="w-20 h-20 rounded-[2rem] bg-white border-2 border-dashed border-slate-200 flex items-center justify-center animate-pulse">
+                                            <div className="w-20 h-20 rounded-lg bg-white border-2 border-dashed border-slate-200 flex items-center justify-center animate-pulse">
                                                 <ArrowRight className="w-10 h-10 text-slate-200" />
                                             </div>
                                             <span className="text-[10px] font-black text-slate-900 uppercase italic tracking-widest opacity-20 italic">AWAITING_SIGNAL</span>
@@ -258,8 +258,8 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
                                 </div>
                             </div>
                         ) : (
-                            <div className="h-full min-h-[500px] flex flex-col items-center justify-center bg-white rounded-[2.5rem] border border-dashed border-slate-200 p-10 space-y-8 italic">
-                                <div className="p-12 bg-slate-50 rounded-[2.5rem] text-slate-100">
+                            <div className="h-full min-h-[500px] flex flex-col items-center justify-center bg-white rounded-lg border border-dashed border-slate-200 p-10 space-y-8 italic">
+                                <div className="p-12 bg-slate-50 rounded-lg text-slate-100">
                                     <ArrowRightLeft className="w-24 h-24 stroke-[1.5px]" />
                                 </div>
                                 <div className="text-center space-y-3">

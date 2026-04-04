@@ -104,6 +104,7 @@ const dplNav: NavGroup[] = [
  title: 'Kegiatan Bimbingan',
  items: [
  { label: 'Laporan Harian', href: '/dpl/daily-reports', icon: FileText },
+ { label: 'Laporan Akhir', href: '/dpl/final-reports', icon: FileText },
  { label: 'Evaluasi Mahasiswa', href: '/dpl/evaluations', icon: Star },
  { label: 'Generator Nilai', href: '/admin/grade-generator', icon: FileSpreadsheet },
  ],

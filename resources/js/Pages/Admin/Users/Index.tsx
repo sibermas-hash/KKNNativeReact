@@ -1,304 +1,197 @@
-import { useState, useEffect } from 'react';
-import { Link, useForm, router, Head } from '@inertiajs/react';
+import { useState } from 'react';
+import { useForm, router, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Badge, FormSelect, Pagination } from '@/Components/ui';
-import type { PageProps } from '@/types';
-import type { PaginationMeta } from '@/Components/UI/Pagination';
+import { route } from 'ziggy-js';
 import {
- Users,
- UserPlus,
- Search,
- ShieldCheck,
- Mail,
- Activity,
- Power,
- Fingerprint,
- Zap,
- ChevronLeft,
- ShieldAlert,
- Cpu,
+    Users,
+    Search,
+    RefreshCw,
+    UserPlus,
+    Mail,
+    ShieldCheck,
+    Lock,
+    Unlock,
+    Trash2,
+    Filter,
+    ArrowRight,
+    ShieldAlert,
+    Fingerprint,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { Pagination } from '@/Components/ui';
 
-interface UserData {
- id: number;
- username: string;
- name: string;
- email: string;
- is_active: boolean;
- roles: { name: string }[];
- mahasiswa?: { nim: string };
- dosen?: { nip: string };
- fakultas?: { nama: string };
+interface User {
+    id: number;
+    name: string;
+    email: string;
+    roles: string[];
+    email_verified_at: string | null;
 }
 
-interface Props extends PageProps {
- users: {
- data: UserData[];
- meta: PaginationMeta;
- };
- filters: { search?: string; role?: string };
+interface Props {
+    users: {
+        data: User[];
+        meta: any;
+    };
+    filters: { search?: string };
 }
 
 export default function UsersIndex({ users, filters }: Props) {
- const [search, setSearch] = useState(filters.search || '');
- const [role, setRole] = useState(filters.role || '');
- const toggleForm = useForm({});
+    const [search, setSearch] = useState(filters.search || '');
 
- useEffect(() => {
- const timer = setTimeout(() => {
- if (search !== (filters.search || '') || role !== (filters.role || '')) {
- router.get('/admin/users', { search, role }, { preserveState: true, replace: true });
- }
- }, 300);
- return () => clearTimeout(timer);
- }, [search, role, filters.search, filters.role]);
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        router.get(route('admin.users.index'), { search }, { preserveState: true });
+    };
 
- const toggleStatus = (id: number) => {
- if (confirm('KONFIRMASI_KEAMANAN: Apakah Anda yakin ingin mengubah status otorisasi akun ini? Pencabutan status akan memutus seluruh sesi aktif terminal.')) {
- toggleForm.patch(`/admin/users/${id}/toggle-active`, {
- preserveScroll: true
- });
- }
- };
+    const destroy = (id: number) => {
+        if (confirm('AUDIT_CONFIRMATION: Apakah Anda yakin ingin mencabut hak akses bagi personel ini secara permanen?')) {
+            router.delete(route('admin.users.destroy', id));
+        }
+    };
 
- const getInitials = (name: string) => {
- return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
- };
+    return (
+        <AppLayout title="Manajemen Pengguna">
+            <Head title="Ledger Otoritas Personel" />
 
- const roleMap: Record<string, string> = {
- 'superadmin': 'ADMIN_PUSAT',
- 'faculty_admin': 'ADMIN_FAKULTAS',
- 'dpl': 'PERSONEL_DPL',
- 'student': 'PESERTA_MAHASISWA',
- 'admin_prodi': 'KOORDINATOR_PRODI'
- };
+            <div className="space-y-8 pb-20">
+                {/* Clean Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight text-emerald-600">Direktori Personel</h1>
+                        <p className="text-sm text-slate-500 mt-1">Otorisasi dan administrasi hak akses seluruh entitas pengguna sistem.</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <div className="px-4 py-2 bg-emerald-50 rounded-lg border border-emerald-100 flex items-center gap-3">
+                            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                            <span className="text-sm font-semibold text-emerald-700">
+                                {users.meta?.total || 0} Akun Terdaftar
+                            </span>
+                        </div>
+                    </div>
+                </div>
 
- return (
- <AppLayout title="Manajemen Akses Pengguna">
- <Head title="Direktori Pengguna" />
+                {/* Operations Toolbar */}
+                <div className="flex flex-col xl:flex-row gap-4 items-center justify-between">
+                    <form onSubmit={handleSearch} className="flex-1 w-full xl:max-w-2xl relative group">
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-300 group-focus-within:text-emerald-500 transition-colors z-10" />
+                        <input
+                            type="search"
+                            placeholder="SEARCH_ACCOUNT_LEDGER (NAME / EMAIL)..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full h-15 pl-16 pr-8 py-2 bg-white border border-slate-100 rounded-xl text-[11px] font-black italic uppercase tracking-[0.2em] text-slate-900 placeholder:text-slate-200 focus:outline-none focus:ring-8 focus:ring-emerald-500/5 transition-all shadow-sm focus:border-emerald-500 outline-none placeholder:italic placeholder:font-black placeholder:uppercase placeholder:tracking-widest"
+                        />
+                    </form>
 
- <div className="space-y-8 pb-24">
- {/* Minimalist Tactical Header Strip */}
- <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-100 pb-8">
- <div className="space-y-1">
- <div className="flex items-center gap-3">
- <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
- <span className="text-[9px] font-semibold text-emerald-600">
- DIRECTORY_AUTHORIZATION_V3.2
- </span>
- </div>
- <div className="flex items-center gap-3">
- <div className="p-2 bg-slate-50 rounded-lg border border-slate-100 text-slate-400">
- <Users className="h-4 w-4" />
- </div>
- <h1 className="text-2xl font-semibold text-slate-900 leading-none">
- Direktori <span className="text-primary">Pengguna</span>
- </h1>
- </div>
- </div>
+                    <div className="flex flex-wrap gap-4 w-full xl:w-auto">
+                        <button className="flex-1 xl:w-auto h-15 px-8 bg-slate-900 border border-slate-800 text-primary text-[10px] font-black uppercase italic tracking-[0.25em] rounded-xl shadow-2xl shadow-slate-900/40 active:scale-95 transition-all hover:bg-emerald-600 hover:text-white flex items-center justify-center gap-4 group/add">
+                            <UserPlus className="w-5 h-5 shadow-sm group-hover/add:scale-110 transition-transform" />
+                            Provision_New_Account
+                        </button>
+                         <button className="h-15 w-15 bg-white border border-slate-100 text-slate-400 hover:text-emerald-600 rounded-xl flex items-center justify-center shadow-sm active:scale-95 transition-all">
+                            <Filter className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
 
- <div className="flex items-center gap-4">
- <div className="px-4 py-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-4">
- <div className="flex items-center gap-3">
- <div className="p-1.5 bg-emerald-50 rounded-lg text-emerald-600">
- <Activity className="h-3 w-3" />
- </div>
- <div className="text-left">
- <span className="block text-[8px] font-semibold text-slate-400 leading-none mb-0.5">Active_Directory</span>
- <span className="text-xs font-semibold text-slate-900 leading-none">
- {users.meta?.total || 0} ACCOUNTS
- </span>
- </div>
- </div>
- </div>
+                {/* Users Registry List */}
+                <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/5 overflow-hidden group relative">
+                    <div className="divide-y divide-slate-50 relative z-10">
+                        {users.data.map((user) => (
+                            <div key={user.id} className="p-8 hover:bg-slate-50/50 transition-all flex flex-col md:flex-row md:items-center justify-between gap-8 group/row">
+                                <div className="flex items-start gap-6">
+                                    <div className="h-14 w-14 rounded-2xl bg-slate-900 border border-slate-800 text-primary flex items-center justify-center shadow-lg group-hover/row:scale-110 transition-transform italic font-black text-lg">
+                                        {user.name.charAt(0)}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-3">
+                                            <span className={clsx(
+                                                "text-[9px] font-black uppercase italic tracking-widest leading-none px-2 py-0.5 rounded border transition-colors",
+                                                user.roles[0]?.toLowerCase() === 'superadmin' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-primary/10 text-primary border-primary/20"
+                                            )}>
+                                                {user.roles[0]?.toUpperCase() || 'NO_ROLE'}
+                                            </span>
+                                            <div className="h-1 w-1 rounded-full bg-slate-200" />
+                                            <span className="text-[10px] font-bold text-slate-300 uppercase italic tracking-widest font-mono">ACCOUNT_ID: #{user.id.toString().padStart(4, '0')}</span>
+                                        </div>
+                                        <h3 className="font-black text-slate-900 uppercase italic tracking-tighter text-sm leading-none group-hover/row:text-primary transition-colors">{user.name}</h3>
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex items-center gap-2">
+                                                <Mail className="h-3 w-3 text-slate-400" />
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase italic tracking-widest opacity-50">{user.email}</span>
+                                            </div>
+                                            {user.email_verified_at && (
+                                                <div className="flex items-center gap-2 px-2 py-0.5 bg-emerald-50 rounded-lg border border-emerald-100">
+                                                    <ShieldCheck className="h-2.5 w-2.5 text-emerald-500 shadow-sm" />
+                                                    <span className="text-[8px] font-black text-emerald-600 uppercase italic tracking-widest">VERIFIED</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col items-end gap-5">
+                                    <div className="flex items-center gap-3 opacity-0 group-hover/row:opacity-100 translate-x-3 group-hover/row:translate-x-0 transition-all">
+                                        <button className="h-12 w-12 bg-white border border-slate-100 text-slate-300 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl flex items-center justify-center transition-all shadow-sm">
+                                            <Lock className="w-4 h-4 shadow-sm" />
+                                        </button>
+                                        <button 
+                                            onClick={() => destroy(user.id)}
+                                            className="h-12 w-12 bg-white border border-rose-100 text-rose-300 hover:text-white hover:bg-rose-500 rounded-xl flex items-center justify-center transition-all shadow-sm"
+                                        >
+                                            <Trash2 className="w-4 h-4 shadow-sm" />
+                                        </button>
+                                        <button className="h-12 px-6 bg-slate-900 text-white rounded-xl font-bold uppercase italic tracking-widest tracking-[0.2em] text-[9px] shadow-lg shadow-slate-900/10 flex items-center gap-3 transition-all active:scale-95 group/btn border border-slate-800 hover:bg-emerald-600">
+                                            <ArrowRight className="w-4 h-4" />
+                                            CREDENTIAL_INSPECT
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
 
- <Link 
- href="/admin/users/create" 
- className="px-6 py-3 bg-slate-900 text-white text-[10px] font-semibold rounded-lg transition-all flex items-center gap-3"
- >
- <UserPlus className="w-3.5 h-3.5 text-emerald-400" />
- REGISTER_RECORD
- </Link>
- </div>
- </div>
+                <div className="mt-8">
+                    <Pagination meta={users.meta} />
+                </div>
 
- {/* Operations Toolbar */}
- <div className="flex flex-col xl:flex-row gap-6 items-center justify-between">
- <div className="flex-1 w-full xl:max-w-2xl relative group">
- <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-primary transition-colors" />
- <input
- type="search"
- placeholder="SEARCH_IDENTITY (NAME / ID / EMAIL)..."
- value={search}
- onChange={(e) => setSearch(e.target.value)}
- className="w-full h-12 pl-12 pr-6 bg-white border border-slate-100 rounded-lg text-[11px] font-semibold text-slate-900 placeholder:text-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 "
- />
- </div>
+                {/* Tactical Command Authorization Monitor */}
+                <div className="p-8 bg-slate-900 rounded-xl border border-slate-800 relative overflow-hidden group shadow-2xl shadow-slate-900/40">
+                    <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_50%,rgba(16,168,83,0.05),transparent_50%)]" />
 
- <div className="flex flex-wrap gap-4 w-full xl:w-auto">
- <div className="relative flex-1 xl:w-56 group">
- <select
- value={role}
- onChange={(e) => setRole(e.target.value)}
- className="w-full bg-white border border-slate-100 rounded-lg px-4 py-3 text-[10px] font-semibold text-slate-900 focus:outline-none focus:ring-4 focus:ring-primary/5 appearance-none cursor-pointer"
- >
- <option value="">ALL_AUTHORITIES</option>
- <option value="superadmin">ADMIN_PUSAT</option>
- <option value="faculty_admin">ADMIN_FAKULTAS</option>
- <option value="dpl">PERSONEL_DPL</option>
- <option value="student">PESERTA_MAHASISWA</option>
- </select>
- </div>
- </div>
- </div>
-
- {/* Account Ledger (Table) */}
- <div className="bg-white rounded-lg border border-slate-100 overflow-hidden relative group">
- <div className="overflow-x-auto relative z-10 custom-scrollbar">
- <table className="min-w-full divide-y divide-slate-50">
- <thead className="bg-slate-50/50">
- <tr>
- <th className="px-8 py-6 text-left text-[9px] font-semibold text-slate-400">PERSONNEL_IDENTITY</th>
- <th className="px-8 py-6 text-left text-[9px] font-semibold text-slate-400">AFFILIATION_VECTOR</th>
- <th className="px-8 py-6 text-center text-[9px] font-semibold text-slate-400">AUTHORITY_LEVEL</th>
- <th className="px-8 py-6 text-center text-[9px] font-semibold text-slate-400">STATUS</th>
- <th className="px-8 py-6 text-right text-[9px] font-semibold text-slate-400">COMMAND</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-slate-50">
- {users.data.length === 0 ? (
- <tr>
- <td colSpan={5} className="px-8 py-32 text-center">
- <div className="flex flex-col items-center gap-4 opacity-20">
- <Users className="h-12 w-12 text-slate-900" />
- <span className="text-[10px] font-semibold text-slate-900">NO_RECORDS_DETECTED</span>
- </div>
- </td>
- </tr>
- ) : (
- users.data.map((u) => (
- <tr key={u.id} className="group/row hover:bg-slate-50/50 transition-colors">
- <td className="px-8 py-6">
- <div className="flex items-center gap-4">
- <div className="relative">
- <div className="h-10 w-10 rounded-lg bg-slate-900 border border-slate-800 text-primary text-[11px] font-semibold flex items-center justify-center ">
- {getInitials(u.name)}
- </div>
- {u.is_active && <div className="absolute -top-1 -right-1 h-3.5 w-3.5 bg-primary rounded-full border-2 border-white " />}
- </div>
- <div className="flex flex-col min-w-0">
- <span className="text-xs font-semibold text-slate-900 truncate max-w-[200px] group-hover/row:text-primary transition-colors">
- {u.name}
- </span>
- <div className="flex items-center gap-2 mt-0.5">
- <Fingerprint className="h-3 w-3 text-slate-300" />
- <span className="text-[9px] font-semibold text-slate-400 opacity-50 font-mono">
- RID: #{u.username}
- </span>
- </div>
- </div>
- </div>
- </td>
- <td className="px-8 py-6">
- <div className="flex flex-col gap-1.5 min-w-0">
- <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-500 lowercase truncate max-w-[200px]">
- <Mail className="h-3 w-3 text-primary/40" />
- {u.email}
- </div>
- <span className="text-[9px] font-semibold text-slate-300">
- {u.mahasiswa?.nim || u.dosen?.nip || 'INTERNAL_SYS_ENTRY'}
- </span>
- </div>
- </td>
- <td className="px-8 py-6 text-center">
- <div className="flex flex-wrap justify-center gap-2">
- {u.roles.map((r) => (
- <span 
- key={r.name} 
- className={clsx(
- "px-3 py-1 rounded-lg text-[9px] font-semibold ",
- r.name === 'superadmin' ? "bg-amber-50 text-amber-600 border border-amber-100" :
- r.name === 'faculty_admin' ? "bg-sky-50 text-sky-600 border border-sky-100" :
- r.name === 'dpl' ? "bg-indigo-50 text-indigo-600 border border-indigo-100" :
- "bg-emerald-50 text-emerald-600 border border-emerald-100"
- )}
- >
- {roleMap[r.name] || r.name.toUpperCase()}
- </span>
- ))}
- </div>
- </td>
- <td className="px-8 py-6 text-center">
- <span className={clsx(
- "px-3 py-1 rounded-lg text-[9px] font-semibold ",
- u.is_active ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"
- )}>
- {u.is_active ? 'ACTIVE_AUTH' : 'REVOKED_ACCESS'}
- </span>
- </td>
- <td className="px-8 py-6 text-right">
- <button
- onClick={() => toggleStatus(u.id)}
- disabled={toggleForm.processing}
- className={clsx(
- "h-9 w-9 rounded-lg flex items-center justify-center transition-all group/btn",
- u.is_active 
- ? "bg-white border border-rose-100 text-rose-400 hover:bg-rose-500 hover:text-white" 
- : "bg-white border border-primary text-primary hover:bg-primary hover:text-white"
- )}
- >
- <Power className="w-4 h-4 " />
- </button>
- </td>
- </tr>
- ))
- )}
- </tbody>
- </table>
- </div>
- {users.meta && (
- <div className="px-8 py-6 bg-slate-50/50 border-t border-slate-50">
- <Pagination meta={users.meta} />
- </div>
- )}
- </div>
-
- {/* Operations Footer */}
- <div className="p-8 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group">
- <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_50%,rgba(16,168,83,0.05),transparent_50%)]" />
- <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-8">
- <div className="space-y-4">
- <div className="flex items-center gap-4">
- <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
- <ShieldAlert className="h-6 w-6 text-primary" />
- </div>
- <div>
- <h4 className="text-[11px] font-semibold text-white leading-none">AUTH_CONTROL_LEDGER_V3.2</h4>
- <p className="text-[10px] font-semibold text-emerald-500 mt-2">STATUS: ACTIVE_ENCRYPTED_AUTH</p>
- </div>
- </div>
- <p className="text-[12px] text-slate-400 text-sm leading-relaxed max-w-4xl opacity-75">
- Manajemen identitas Administrator Pusat memiliki wewenang absolut untuk menangguhkan akses personel secara instan demi menjaga integritas data nasional KKN UIN SAIZU.
- </p>
- </div>
- <div className="flex flex-col items-end gap-5 shrink-0 hidden lg:flex border-l border-slate-800 pl-10">
- <div className="flex items-center gap-3 px-4 py-2 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
- <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(16,168,83,0.5)]" />
- <span className="text-[9px] font-semibold text-slate-100">MONITOR_SYNCHRONIZED</span>
- </div>
- <div className="flex gap-4 opacity-50">
- <div className="h-10 w-10 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 transition-colors">
- <Cpu className="h-5 w-5" />
- </div>
- <div className="h-10 w-10 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 transition-colors">
- <Zap className="h-5 w-5" />
- </div>
- </div>
- </div>
- </div>
- </div>
- </div>
- </AppLayout>
- );
+                    <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-primary/10 rounded-2xl border border-primary/20">
+                                    <ShieldAlert className="h-6 w-6 text-primary shadow-[0_0_15px_rgba(16,168,83,0.3)] animate-pulse" />
+                                </div>
+                                <div>
+                                    <h4 className="text-[11px] font-black text-white italic tracking-widest uppercase leading-none">ADMINISTRATIVE_AUTHORITY_SURVEILLANCE_V3.2</h4>
+                                    <p className="text-[10px] font-bold text-emerald-400 italic mt-2 uppercase">STATUS: IDENTITY_FEDERATION_SECURED</p>
+                                </div>
+                            </div>
+                            <p className="text-[12px] text-slate-400 text-sm leading-relaxed max-w-4xl opacity-75 uppercase italic font-bold">
+                                Seluruh modifikasi terhadap ledger otoritas personel dipantau secara real-time oleh protokol keamanan kedaulatan data. Penyalahgunaan hak akses akan memicu pembekuan identitas secara otomatis.
+                            </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-5 shrink-0 hidden lg:flex border-l border-slate-800 pl-10">
+                            <div className="flex items-center gap-3 px-4 py-2 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
+                                <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(16,168,83,0.5)]" />
+                                <span className="text-[9px] font-black text-slate-100 uppercase italic tracking-widest">IDENTITY_ORCHESTRATION_OK</span>
+                            </div>
+                            <div className="flex gap-4 opacity-50">
+                                <div className="h-10 w-10 bg-white/5 border border-slate-200 rounded-xl flex items-center justify-center text-slate-400 transition-colors">
+                                    <Fingerprint className="h-5 w-5" />
+                                </div>
+                                <div className="h-10 w-10 bg-white/5 border border-slate-200 rounded-xl flex items-center justify-center text-slate-400 transition-colors">
+                                    <ShieldCheck className="h-5 w-5" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </AppLayout>
+    );
 }

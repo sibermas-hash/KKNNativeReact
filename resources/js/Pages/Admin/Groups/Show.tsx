@@ -57,7 +57,7 @@ export default function GroupShow({ group }: Props) {
  Emerald Premium Header 
  Replacing basic header with tactical emerald gradient monitor
  */}
- <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+ <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
  <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
  
  <div className="relative z-10 space-y-5 flex-1">
@@ -182,7 +182,7 @@ export default function GroupShow({ group }: Props) {
  alt="Foto Posko" 
  className="w-full h-full object-cover group-hover/img:transition-transform[2000ms]"
  />
- <div className="absolute inset-0 bg-gradient-transition-opacity flex flex-col justify-end p-10
+ <div className="absolute inset-0  flex flex-col justify-end p-10
  <div className="transformy-4 group-hover/img:transition-transform">
  <p className="text-[10px] font-semibold text-primary/80 mb-2">Capture_Visual_Report</p>
  <p className="text-lg font-semibold text-white line-clamp-2 leading-normal">{group.posko.photo_name}</p>

@@ -72,11 +72,27 @@ class DashboardController extends Controller
             ->get();
 
         return Inertia::render('Dpl/Dashboard', [
-            'groups' => $kelompok,
+            'groups' => $kelompok->map(fn (KelompokKkn $group) => [
+                'id' => $group->id,
+                'code' => $group->code,
+                'name' => $group->nama_kelompok,
+                'period_name' => $group->periode?->name ?? '-',
+                'village_name' => $group->lokasi?->village_name ?? '-',
+                'member_count' => $group->peserta_count,
+                'daily_report_count' => $group->kegiatan_count,
+            ])->values(),
             'pendingReports' => $pendingReports,
             'gradingProgress' => "{$gradingProgress}%",
-            'atRiskStudents' => $atRiskStudents,
-            'activityTrend' => $activityTrend,
+            'atRiskStudents' => $atRiskStudents->map(fn (Mahasiswa $student) => [
+                'id' => $student->id,
+                'name' => $student->user?->name ?? $student->nama,
+                'nim' => $student->nim,
+                'group_code' => $student->peserta->first()?->kelompok?->code ?? '-',
+            ])->values(),
+            'activityTrend' => $activityTrend->map(fn ($item) => [
+                'date' => (string) $item->date,
+                'count' => (int) $item->count,
+            ])->values(),
         ]);
     }
 }

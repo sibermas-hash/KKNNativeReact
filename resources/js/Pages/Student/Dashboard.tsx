@@ -118,7 +118,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <div className="space-y-1">
  <div className="flex items-center gap-3">
  <span className="text-xs font-semibold text-emerald-600">
- STUDENT_TERMINAL_V3.2
+ 
  </span>
  </div>
  <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 ">
@@ -126,7 +126,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </h1>
  <p className="text-slate-400 font-semibold text-xs flex items-center gap-2">
  <Sparkles className="w-3 h-3 text-emerald-400 fill-emerald-100" />
- Anda sedang dalam tahap <span className="text-slate-600 underline decoration-emerald-200 decoration-2 underline-offset-4">{isPending ? 'VERIFIKASI_ADMIN' : currentPhase.label.toUpperCase()}</span>.
+ Anda sedang dalam tahap <span className="text-slate-600 underline decoration-emerald-200 decoration-2 underline-offset-4">{isPending ? 'Verifikasi Admin' : currentPhase.label.toUpperCase()}</span>.
  </p>
  </div>
  </div>
@@ -139,7 +139,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  "text-sm font-semibold  block",
  isApproved ? "text-emerald-600" : "text-amber-500"
  )}>
- {isApproved ? 'AKTIF_VERIFIED' : isPending ? 'PENDING' : 'DATA_KOSONG'}
+ {isApproved ? 'Terverifikasi' : isPending ? 'Menunggu' : 'Belum Terdaftar'}
  </span>
  </div>
  <div className={clsx(
@@ -152,7 +152,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  
  <Link 
  href="/student/register" 
- className="h-12 px-6 bg-slate-900 text-white rounded-lg text-xs font-semibold flex items-center justify-center hover:bg-primary transition-all active:"
+ className="h-12 px-6 bg-slate-900 text-white rounded-lg text-xs font-semibold flex items-center justify-center hover:bg-primary transition-all active:scale-95"
  >
  Detail Pendaftaran
  </Link>
@@ -167,7 +167,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
  <div>
  <h3 className="text-sm font-semibold text-slate-900 ">Alur Pelaksanaan KKN</h3>
- <p className="text-xs font-semibold text-slate-400 mt-1 opacity-60">Progress Perjalanan Anda (SOP UIN SAIZU)</p>
+ <p className="text-xs font-semibold text-slate-400 mt-1">Progress Perjalanan Anda (SOP UIN SAIZU)</p>
  </div>
  </div>
 
@@ -194,7 +194,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  )}>
  {phase.label}
  </p>
- <p className="text-xs font-semibold text-slate-400 opacity-60 ">{phase.desc}</p>
+ <p className="text-xs font-semibold text-slate-400 ">{phase.desc}</p>
  </div>
  {!phase.isCompleted && !phase.isActive && (
  <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-white p-1.5 rounded-lg border border-slate-100">
@@ -272,14 +272,14 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <h3 className="text-2xl font-semibold text-slate-900 mb-3">
  {isPending ? 'Verifikasi Berlangsung' : 'Penempatan Menunggu'}
  </h3>
- <p className="text-slate-400 font-semibold text-xs mb-10  max-w-sm mx-auto opacity-70">
+ <p className="text-slate-400 font-semibold text-xs mb-10  max-w-sm mx-auto">
  {isPending 
  ? 'Data pendaftaran Anda sedang dalam tahap peninjauan oleh Admin LPPM.' 
  : 'Sistem belum menetapkan lokasi penempatan untuk profil Anda.'}
  </p>
  <Link
  href="/student/register"
- className="inline-flex items-center gap-4 px-8 py-4 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-primary transition-all active:group/btn -200"
+ className="inline-flex items-center gap-4 px-8 py-4 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-primary transition-all active:scale-95"
  >
  {isPending ? 'Ubah Pilihan' : 'Daftar Kelompok'} <ArrowRight className="h-4 w-4 group-hover:translate-x-2 transition-transform" />
  </Link>
@@ -304,7 +304,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  />
  <StatCard
  title="Status Akun"
- value={isApproved ? 'VERIFIED' : isPending ? 'PENDING' : 'NULL'}
+ value={isApproved ? 'Terverifikasi' : isPending ? 'Menunggu' : 'NULL'}
  unit="Status"
  icon={GraduationCap}
  color="slate"
@@ -321,7 +321,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
  <div>
  <h3 className="text-sm font-semibold text-slate-900 ">Menu Cepat</h3>
- <p className="text-xs font-semibold text-slate-400 mt-0.5 opacity-60">Akses Aktivitas Utama</p>
+ <p className="text-xs font-semibold text-slate-400 mt-0.5">Akses Aktivitas Utama</p>
  </div>
  </div>
  
@@ -412,13 +412,13 @@ function StatCard({ title, value, unit, icon: Icon, color }: any) {
  };
 
  return (
- <div className="bg-white border border-slate-100 rounded-lg p-8 hover:-transition-all group overflow-hidden relative">
- <div className="absolute top-0 right-0 p-6 text-slate-900 transition-transform group-">
+ <div className="bg-white border border-slate-100 rounded-lg p-8 transition-all group overflow-hidden relative">
+ <div className="absolute top-0 right-0 p-6 text-slate-900 transition-transform group-hover:opacity-0">
  <Icon className="h-24 w-24" />
  </div>
  
  <div className={clsx(
- "h-14 w-14 rounded-lg flex items-center justify-center mb-8 border transition-all group-relative z-10",
+ "h-14 w-14 rounded-lg flex items-center justify-center mb-8 border transition-all relative z-10",
  colorClasses[color]
  )}>
  <Icon className="h-7 w-7" />
@@ -428,7 +428,7 @@ function StatCard({ title, value, unit, icon: Icon, color }: any) {
  <p className="text-xs font-semibold text-slate-400 mb-2 group-hover:text-primary transition-colors ">{title}</p>
  <div className="flex items-baseline gap-1.5">
  <span className="text-3xl font-semibold text-slate-900">{value}</span>
- {unit && <span className="text-xs font-semibold text-slate-400 opacity-60">{unit}</span>}
+ {unit && <span className="text-xs font-semibold text-slate-400">{unit}</span>}
  </div>
  </div>
  </div>
@@ -444,7 +444,7 @@ function QuickActionButton({ href, icon: Icon, label, desc, disabled }: any) {
  </div>
  <div>
  <p className="font-semibold text-xs text-slate-400 ">{label}</p>
- <p className="text-xs text-slate-300 font-semibold mt-2  opacity-60">{desc}</p>
+ <p className="text-xs text-slate-300 font-semibold mt-2 ">{desc}</p>
  </div>
  </div>
  );
@@ -453,7 +453,7 @@ function QuickActionButton({ href, icon: Icon, label, desc, disabled }: any) {
  return (
  <Link
  href={href}
- className="flex items-center gap-5 p-5 rounded-lg bg-white border border-slate-100 transition-all hover:bg-slate-50 hover:border-primary/20 group active:"
+ className="flex items-center gap-5 p-5 rounded-lg bg-white border border-slate-100 transition-all hover:bg-slate-50 hover:border-primary/20 group cursor-pointer"
  >
  <div className="h-12 w-12 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:bg-white group-hover:border-primary/20 transition-all">
  <Icon className="h-6 w-6" />

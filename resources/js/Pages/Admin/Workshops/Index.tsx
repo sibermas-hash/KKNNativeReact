@@ -251,7 +251,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <FormTextarea
  label="Deskripsi"
  value={workshopForm.data.description}
- onChange={(event) => workshopForm.setData('deskripsi', event.target.value)}
+ onChange={(event) => workshopForm.setData('description', event.target.value)}
  error={workshopForm.errors.description}
  />
  </div>

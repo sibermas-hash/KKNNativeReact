@@ -54,7 +54,7 @@ export default function RegistrationShow({ registration }: Props) {
  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
  <div>
  <Link
- href="/admin/registrations"
+ href="/admin/pendaftaran"
  className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
  >
  Kembali ke daftar pendaftaran
@@ -171,7 +171,7 @@ export default function RegistrationShow({ registration }: Props) {
  <button
  type="button"
  onClick={() =>
- approveForm.patch(`/admin/registrations/${registration.id}/approve`, {
+ approveForm.patch(`/admin/pendaftaran/${registration.id}/approve`, {
  preserveScroll: true,
  })
  }
@@ -192,7 +192,7 @@ export default function RegistrationShow({ registration }: Props) {
  <form
  onSubmit={(event) => {
  event.preventDefault();
- rejectForm.patch(`/admin/registrations/${registration.id}/reject`, {
+ rejectForm.patch(`/admin/pendaftaran/${registration.id}/reject`, {
  preserveScroll: true,
  onSuccess: () => setShowRejectForm(false),
  });

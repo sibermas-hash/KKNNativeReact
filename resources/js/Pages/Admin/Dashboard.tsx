@@ -1,4 +1,5 @@
-import { Link, Head } from '@inertiajs/react';
+import { Link, Head, Deferred } from '@inertiajs/react';
+import GisMap from '@/Components/GisMap';
 import AppLayout from '@/Layouts/AppLayout';
 import type { LucideIcon } from 'lucide-react';
 import { 
@@ -49,6 +50,14 @@ interface Props {
     stats?: DashboardStats;
     sdg_distribution?: SdgDistributionItem[];
     recentRegistrations?: Registration[];
+    gis_locations?: Array<{
+        id: number;
+        name: string;
+        lat: number;
+        lng: number;
+        members_count: number;
+        village: string;
+    }>;
     demoPreview?: {
         stats: {
             total_students: number;
@@ -152,19 +161,19 @@ function StatCard({
     return Card;
 }
 
-export default function AdminDashboard({ stats, sdg_distribution, recentRegistrations }: Props) {
+export default function AdminDashboard({ stats, sdg_distribution, recentRegistrations, gis_locations }: Props) {
     const quickActions = [
-        { label: 'Kelola Pendaftaran', href: '/admin/registrations', icon: Users, color: 'blue' },
-        { label: 'Kelola Kelompok', href: '/admin/groups', icon: Users2, color: 'green' },
-        { label: 'Input Nilai', href: '/admin/grades', icon: GraduationCap, color: 'orange' },
+        { label: 'Kelola Pendaftaran', href: '/admin/pendaftaran', icon: Users, color: 'blue' },
+        { label: 'Kelola Kelompok', href: '/admin/kelompok', icon: Users2, color: 'green' },
+        { label: 'Input Nilai', href: '/admin/nilai', icon: GraduationCap, color: 'orange' },
         { label: 'Rekap Nilai', href: '/admin/rekap-nilai', icon: FileText, color: 'purple' },
     ];
 
     const publicContentActions = [
-        { label: 'Profil LPPM', href: '/admin/content/profile', icon: Globe },
-        { label: 'Skema KKN', href: '/admin/content/schemes', icon: FolderKanban },
-        { label: 'Warta', href: '/admin/announcements', icon: Megaphone },
-        { label: 'Repositori', href: '/admin/downloads', icon: Download },
+        { label: 'Profil LPPM', href: '/admin/konten-publik/profil', icon: Globe },
+        { label: 'Skema KKN', href: '/admin/konten-publik/skema', icon: FolderKanban },
+        { label: 'Warta', href: '/admin/warta-utama', icon: Megaphone },
+        { label: 'Repositori', href: '/admin/unduhan', icon: Download },
     ];
 
     return (
@@ -183,7 +192,7 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                         )}
                     </div>
                     <Link 
-                        href="/admin/dashboard/tactical" 
+                        href="/admin/pratinjau-taktis" 
                         className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
                     >
                         <BarChart3 className="w-4 h-4" />
@@ -233,7 +242,7 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                         value={stats?.total_students || 0}
                         icon={Users}
                         color="blue"
-                        link="/admin/users/mahasiswa"
+                        link="/admin/mahasiswa"
                         subtitle={`${stats?.assigned_students || 0} sudah punya kelompok`}
                     />
                     <StatCard 
@@ -241,21 +250,21 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                         value={stats?.total_groups || 0}
                         icon={Users2}
                         color="green"
-                        link="/admin/groups"
+                        link="/admin/kelompok"
                     />
                     <StatCard 
                         title="Laporan Masuk"
                         value={stats?.total_reports || 0}
                         icon={FileText}
                         color="orange"
-                        link="/admin/daily-reports"
+                        link="/admin/laporan/harian"
                     />
                     <StatCard 
                         title="Laporan Akhir"
                         value={stats?.total_final_reports || 0}
                         icon={ClipboardList}
                         color="purple"
-                        link="/admin/final-reports"
+                        link="/admin/laporan/akhir"
                     />
                 </div>
 
@@ -269,7 +278,7 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                                     <div>
                                         <p className="text-sm text-amber-700 font-medium">Pendaftaran Menunggu</p>
                                         <p className="text-2xl font-bold text-amber-900">{stats?.pending_registrations}</p>
-                                        <Link href="/admin/registrations?filter=pending" className="text-xs text-amber-600 hover:text-amber-700 mt-1 inline-block">
+                                        <Link href="/admin/pendaftaran?filter=pending" className="text-xs text-amber-600 hover:text-amber-700 mt-1 inline-block">
                                             Lihat semua →
                                         </Link>
                                     </div>
@@ -281,7 +290,7 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                             value={stats?.total_work_programs || 0}
                             icon={Target}
                             color="cyan"
-                            link="/admin/work-programs"
+                            link="/admin/laporan/program-kerja"
                         />
                         <StatCard 
                             title="Posko Terlapor"
@@ -292,13 +301,36 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                     </div>
                 ) : null}
 
+                {/* GIS Mapping */}
+                <div className="border border-slate-200 rounded-lg overflow-hidden bg-white shadow-sm">
+                    <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Globe className="w-5 h-5 text-emerald-600" />
+                            <h2 className="font-semibold text-slate-900 uppercase tracking-tight italic">Peta Sebaran Kelompok <span className="text-slate-400 font-medium text-[0.8em]">KKN.</span></h2>
+                        </div>
+                        <div className="flex items-center gap-2">
+                             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                             <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Visualisasi Real-time</span>
+                        </div>
+                    </div>
+                    <div className="p-1">
+                        <Deferred data="gis_locations" fallback={
+                            <div className="h-[500px] bg-slate-50 flex items-center justify-center animate-pulse rounded-[1.5rem]">
+                                <Globe size={48} className="text-slate-200 animate-spin-slow" />
+                            </div>
+                        }>
+                            <GisMap locations={gis_locations || []} className="h-[500px] w-full rounded-[1.5rem]" />
+                        </Deferred>
+                    </div>
+                </div>
+
                 {/* SDG Distribution */}
                 {sdg_distribution && sdg_distribution.length > 0 && (
                     <div className="border border-slate-200 rounded-lg overflow-hidden">
                         <div className="p-4 border-b border-slate-200 bg-slate-50">
                             <div className="flex items-center justify-between">
                                 <h2 className="font-semibold text-slate-900">Distribusi Tujuan SDGs</h2>
-                                <Link href="/admin/work-programs" className="text-xs text-blue-600 hover:text-blue-700">
+                                <Link href="/admin/laporan/program-kerja" className="text-xs text-blue-600 hover:text-blue-700">
                                     Lihat Detail →
                                 </Link>
                             </div>
@@ -332,7 +364,7 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                                 <Clock className="w-4 h-4 text-slate-600" />
                                 <h2 className="font-semibold text-slate-900">Pendaftaran Terbaru</h2>
                             </div>
-                            <Link href="/admin/registrations" className="text-xs text-blue-600 hover:text-blue-700">
+                            <Link href="/admin/pendaftaran" className="text-xs text-blue-600 hover:text-blue-700">
                                 Lihat Semua →
                             </Link>
                         </div>
@@ -366,7 +398,7 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                                             </td>
                                             <td className="px-4 py-2">
                                                 <Link 
-                                                    href={`/admin/registrations/${reg.id}`}
+                                                    href={`/admin/pendaftaran/${reg.id}`}
                                                     className="text-xs text-blue-600 hover:text-blue-700 font-medium"
                                                 >Detail</Link>
                                             </td>
@@ -404,7 +436,7 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                                 </div>
                             </div>
                             <Link 
-                                href="/admin/registrations"
+                                href="/admin/pendaftaran"
                                 className="px-3 py-1.5 bg-orange-600 text-white text-sm font-medium rounded hover:bg-orange-700 transition-colors"
                             >
                                 Assign Sekarang

@@ -58,7 +58,7 @@ export default function SchemeContentPage({ content }: Props) {
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
-        form.post('/admin/content/schemes');
+        form.post('/admin/konten-publik/skema');
     };
 
     return (

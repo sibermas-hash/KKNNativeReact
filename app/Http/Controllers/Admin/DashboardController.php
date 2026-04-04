@@ -19,7 +19,7 @@ class DashboardController extends Controller
 
     public function index(): Response
     {
-        Gate::authorize('view-admin-dashboard');
+        Gate::authorize('access-admin-panel');
         
         $periodId = $this->contextService->getActivePeriodId();
         $user = auth()->user();
@@ -109,6 +109,28 @@ class DashboardController extends Controller
                 return $query->latest()
                     ->take(5)
                     ->get();
+            }),
+            'gis_locations' => Inertia::defer(function () use ($periodId, $facultyId) {
+                if (!$periodId) return [];
+                
+                $query = \App\Models\KKN\KelompokKkn::query()
+                    ->where('period_id', $periodId)
+                    ->with('lokasi')
+                    ->whereHas('lokasi', fn($q) => $q->whereNotNull('latitude')->whereNotNull('longitude'));
+
+                if ($facultyId) {
+                    $query->whereHas('lokasi', fn($q) => $q->where('faculty_id', $facultyId));
+                }
+
+                return $query->get()
+                    ->map(fn($group) => [
+                        'id' => $group->id,
+                        'name' => $group->nama_kelompok,
+                        'lat' => (float) $group->lokasi->latitude,
+                        'lng' => (float) $group->lokasi->longitude,
+                        'members_count' => $group->peserta_count ?? 0,
+                        'village' => $group->lokasi->village_name,
+                    ]);
             }),
         ]);
     }

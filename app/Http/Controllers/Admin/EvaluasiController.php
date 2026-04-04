@@ -12,7 +12,7 @@ class EvaluasiController extends Controller
 {
     public function index(): Response
     {
-        Gate::authorize('view-admin-dashboard');
+        Gate::authorize('access-admin-panel');
         $evaluations = Evaluasi::with(['mahasiswa', 'kelompok', 'evaluator', 'item'])
             ->orderByDesc('evaluated_at')
             ->paginate(20);

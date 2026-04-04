@@ -75,7 +75,7 @@ export default function GroupShow({ group }: Props) {
  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
  <div>
  <Link
- href="/admin/groups"
+ href="/admin/kelompok"
  className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
  >
  Kembali ke daftar kelompok

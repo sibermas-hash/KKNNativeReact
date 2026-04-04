@@ -19,7 +19,7 @@ export default function ProfileContentPage({ content }: Props) {
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
-        form.post('/admin/content/profile');
+        form.post('/admin/konten-publik/profil');
     };
 
     return (

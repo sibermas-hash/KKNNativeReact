@@ -200,7 +200,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  label="Judul"
  required
  value={workshopForm.data.title}
- onChange={(event) => workshopForm.setData('judul', event.target.value)}
+ onChange={(event) => workshopForm.setData('title', event.target.value)}
  error={workshopForm.errors.title}
  />
  </div>
@@ -215,7 +215,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <FormInput
  label="Lokasi"
  value={workshopForm.data.location}
- onChange={(event) => workshopForm.setData('lokasi', event.target.value)}
+ onChange={(event) => workshopForm.setData('location', event.target.value)}
  error={workshopForm.errors.location}
  />
  <FormInput

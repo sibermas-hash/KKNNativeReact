@@ -64,7 +64,7 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/10 rounded-xl border border-slate-200
+ <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <School className="h-4 w-4 text-emerald-300" />
  </div>
  <span className="text-[10px] font-semibold text-emerald-100 ">
@@ -119,12 +119,12 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  </div>
 
  <div className="grid grid-cols-1 gap-6">
- <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 group/card hover:bg-white hover:border-primary">
+ <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 group/card hover:bg-white hover:border-primary">
  <span className="block text-[9px] font-semibold text-slate-400 mb-2">Source_Gateway_ID</span>
  <span className="block text-[15px] font-semibold text-slate-900 ">{syncInfo.source}</span>
  </div>
 
- <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 group/card hover:bg-white hover:border-primary">
+ <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 group/card hover:bg-white hover:border-primary">
  <span className="block text-[9px] font-semibold text-slate-400 mb-2">Last_Sync_Timestamp</span>
  <span className="block text-[15px] font-semibold text-slate-900 ">{syncInfo.last_synced_at || 'PENDING_INITIAL_SYNC'}</span>
  </div>
@@ -132,7 +132,7 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
 
  <div className="space-y-5 pt-4">
  <div className="flex items-start gap-4 p-5 bg-slate-50 rounded-lg border border-slate-200">
- <div className="p-2 bg-white rounded-xl
+ <div className="p-2 bg-white rounded-lg
  <Zap className="h-4 w-4 text-emerald-500" />
  </div>
  <p className="text-[11px] text-slate-500 text-sm leading-normal opacity-50">
@@ -140,7 +140,7 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  </p>
  </div>
  <div className="flex items-start gap-4 p-5 bg-slate-50 rounded-lg border border-slate-200">
- <div className="p-2 bg-white rounded-xl
+ <div className="p-2 bg-white rounded-lg
  <Fingerprint className="h-4 w-4 text-primary" />
  </div>
  <p className="text-[11px] text-slate-500 text-sm leading-normal opacity-50">

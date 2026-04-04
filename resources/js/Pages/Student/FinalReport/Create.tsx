@@ -200,7 +200,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  disabled={form.processing}
  className="h-20 px-16rounded-lg bg-slate-900 hover:bg-black text-white font-semibold text-xs w-full sm:w-auto flex items-center justify-center gap-4 group/btn"
  >
- <Zap className={clsx("h-6 w-6 text-primary", form.processing ?  : "group-hover/btn:rotate-12")} />
+ <Zap className={clsx("h-6 w-6 text-primary", form.processing ? : "group-hover/btn:rotate-12")} />
  {existingReport ? 'Simpan Perubahan Laporan' : 'Kirim Laporan Akhir'}
  </button>
  </div>
@@ -277,7 +277,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
 function GuideItem({ icon: Icon, title, desc }: any) {
  return (
  <div className="flex gap-6 items-start">
- <div className="h-10 w-10 rounded-xl bg-white border border-primary/10 flex items-center justify-center shrink-0 text-primary">
+ <div className="h-10 w-10 rounded-lg bg-white border border-primary/10 flex items-center justify-center shrink-0 text-primary">
  <Icon className="h-5 w-5" />
  </div>
  <div className="min-w-0">

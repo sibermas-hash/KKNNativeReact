@@ -58,7 +58,7 @@ export default function UserForm({ faculties, programs }: Props) {
  <div className="flex items-center gap-6 mb-2">
  <Link 
  href="/admin/users"
- className="group/back flex items-center gap-2.5 px-4 py-2 bg-white/10 hover:bg-white/20 border border-slate-200 rounded-xl
+ className="group/back flex items-center gap-2.5 px-4 py-2 bg-white/10 hover:bg-white/20 border border-slate-200 rounded-lg
  >
  <ChevronLeft className="w-4 h-4 text-emerald-300 group-hover/back:-translate-x-1 transition-transform" />
  <span className="text-[10px] font-semibold text-white ">Kembali</span>
@@ -134,7 +134,7 @@ export default function UserForm({ faculties, programs }: Props) {
 
  <div className="relative z-10">
  <div className="flex items-center gap-4 mb-10 border-b border-slate-200 pb-6">
- <div className="p-3 bg-slate-900 text-primary rounded-xl
+ <div className="p-3 bg-slate-900 text-primary rounded-lg
  <UserCircle className="w-6 h-6" />
  </div>
  <div>
@@ -156,7 +156,7 @@ export default function UserForm({ faculties, programs }: Props) {
  {isStudent && (
  <div className="bg-white p-10 rounded-lg border border-slate-200 group">
  <div className="flex items-center gap-4 mb-10 border-b border-slate-200 pb-6">
- <div className="p-3 bg-primary text-white rounded-xl
+ <div className="p-3 bg-primary text-white rounded-lg
  <GraduationCap className="w-6 h-6" />
  </div>
  <div>
@@ -194,7 +194,7 @@ export default function UserForm({ faculties, programs }: Props) {
  {isDpl && (
  <div className="bg-white p-10 rounded-lg border border-slate-200 group">
  <div className="flex items-center gap-4 mb-10 border-b border-slate-200 pb-6">
- <div className="p-3 bg-slate-900 text-primary rounded-xl
+ <div className="p-3 bg-slate-900 text-primary rounded-lg
  <Briefcase className="w-6 h-6" />
  </div>
  <div>
@@ -213,7 +213,7 @@ export default function UserForm({ faculties, programs }: Props) {
  {isFacultyAdmin && (
  <div className="bg-white p-10 rounded-lg border border-slate-200 group">
  <div className="flex items-center gap-4 mb-10 border-b border-slate-200 pb-6">
- <div className="p-3 bg-primary text-white rounded-xl
+ <div className="p-3 bg-primary text-white rounded-lg
  <Briefcase className="w-6 h-6" />
  </div>
  <div>

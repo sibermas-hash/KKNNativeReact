@@ -103,7 +103,7 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
  </div>
 
  <div className="flex items-center gap-4 bg-white p-4 rounded-lg border border-slate-200
- <div className="p-3 bg-primary/10 rounded-xl">
+ <div className="p-3 bg-primary/10 rounded-lg">
  <IdentificationIcon className="h-5 w-5 text-primary" />
  </div>
  <div>
@@ -126,7 +126,7 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
  {!showForm && (
  <Button 
  onClick={() => setShowForm(true)}
- className="h-12 px-6 rounded-xl bg-primary hover:bg-primary-dark flex items-center gap-3 group/btnactive:"
+ className="h-12 px-6 rounded-lg bg-primary hover:bg-primary-dark flex items-center gap-3 group/btnactive:"
  >
  <PlusIcon className="h-4 w-4 group-hover/btn:rotate-90 transition-transform" />
  <span className="text-[9px] font-semibold text-white">Input Nilai Manual</span>
@@ -141,7 +141,7 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
  </div>
 
  <div className="flex items-center gap-4 mb-10 border-b border-slate-200 pb-6 relative z-10">
- <div className="p-3 bg-primary/5 rounded-xl border border-primary/10">
+ <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
  <PlusIcon className="h-5 w-5 text-primary" />
  </div>
  <div>
@@ -159,7 +159,7 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
  onChange={(e) => manualForm.setData('group_id', e.target.value)}
  error={manualForm.errors.group_id}
  required
- className="bg-slate-50 border-slate-200 rounded-xl"
+ className="bg-slate-50 border-slate-200 rounded-lg"
  />
  <FormSelect
  label="Subjek Mahasiswa"
@@ -169,7 +169,7 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
  onChange={(e) => manualForm.setData('student_id', e.target.value)}
  error={manualForm.errors.student_id}
  required
- className="bg-slate-50 border-slate-200 rounded-xl"
+ className="bg-slate-50 border-slate-200 rounded-lg"
  />
  </div>
 
@@ -249,7 +249,7 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
  <tr key={ev.id} className="group/row hover:bg-slate-50/50 transition-colors border-b border-slate-200 last:border-0">
  <td className="px-6 py-3">
  <div className="flex items-center gap-4">
- <div className="h-10 w-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 group-hover/row:bg-primary/5 group-hover/row:text-primary group-hover/row:border-primary/10">
+ <div className="h-10 w-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 group-hover/row:bg-primary/5 group-hover/row:text-primary group-hover/row:border-primary/10">
  <AcademicCapIcon className="h-5 w-5" />
  </div>
  <div>
@@ -273,7 +273,7 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
  <td className="px-6 py-3 text-right">
  <Badge 
  variant={ev.grade === 'A' || ev.grade === 'B' ? 'success' : ev.grade === 'C' ? 'warning' : 'danger'}
- className="h-10 w-10 rounded-xl flex items-center justify-center text-sm font-semibold ml-auto"
+ className="h-10 w-10 rounded-lg flex items-center justify-center text-sm font-semibold ml-auto"
  >
  {ev.grade ?? '-'}
  </Badge>
@@ -306,7 +306,7 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
  </div>
 
  <div className="flex items-center gap-4 mb-10 border-b border-slate-200 pb-6">
- <div className="p-3 bg-primary/5 rounded-xl border border-primary/10">
+ <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
  <CloudArrowUpIcon className="h-5 w-5 text-primary" />
  </div>
  <h3 className="text-sm font-semibold text-slate-900">Impor Batch</h3>
@@ -320,7 +320,7 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
  onChange={(e) => importForm.setData('group_id', e.target.value)}
  error={importForm.errors.group_id}
  required
- className="bg-slate-50 border-slate-200 rounded-xl"
+ className="bg-slate-50 border-slate-200 rounded-lg"
  />
  
  <div className="space-y-4">

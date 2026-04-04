@@ -172,7 +172,13 @@ const SIDEBAR_SCROLL_KEY = 'kkn-sidebar-scroll-top';
 
 export default function Sidebar({ open, onClose }: SidebarProps) {
  const { auth, url } = usePage<PageProps & { url: string }>().props;
- const roles = (auth.user?.roles as unknown as string[]) ?? [];
+ 
+ // Handle different role formats from Spatie (sometimes objects, sometimes strings)
+ const rawRoles = auth.user?.roles ?? [];
+ const roles = Array.isArray(rawRoles) 
+ ? rawRoles.map(r => typeof r === 'object' ? (r as any).name : String(r))
+ : [];
+
  const navGroups = getNavForRole(roles);
  const currentPath = typeof url === 'string' ? url : window.location.pathname;
  const navRef = useRef<HTMLElement | null>(null);
@@ -217,7 +223,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
  {/* Logo */}
  <div className="h-16 flex items-center gap-2 px-4 border-b border-slate-200">
- <div className="h-8 w-8 bg-primary rounded flex items-center justify-center text-white text-sm font-bold">U</div>
+ <div className="h-8 w-8 bg-primary rounded flex items-center justify-center text-white text-sm font-semibold">U</div>
  <span className="font-bold text-sm text-slate-900">KKN Portal</span>
  </div>
 
@@ -225,7 +231,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
  <nav ref={navRef} className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
  {navGroups.map((group) => (
  <div key={group.title} className="space-y-1">
- <h3 className="px-3 text-xs font-semibold text-slate-500 uppercase">
+ <h3 className="px-3 text-xs font-semibold text-slate-500">
  {group.title}
  </h3>
  <div className="space-y-1">
@@ -263,7 +269,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
  {/* User Card */}
  <div className="p-3 border-t border-slate-200">
  <div className="flex items-center gap-2 p-2 rounded bg-slate-100">
- <div className="w-8 h-8 rounded bg-slate-200 flex items-center justify-center text-slate-600 text-xs font-bold">
+ <div className="w-8 h-8 rounded bg-slate-200 flex items-center justify-center text-slate-600 text-xs font-semibold">
  {auth.user?.name?.charAt(0)}
  </div>
  <div className="flex flex-col min-w-0 flex-1">

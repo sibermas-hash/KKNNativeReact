@@ -54,7 +54,7 @@ export default function CertificateSettings({ configs }: Props) {
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/10 rounded-xl border border-slate-200
+ <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <FileText className="h-4 w-4 text-emerald-300" />
  </div>
  <span className="text-[10px] font-semibold text-emerald-100 ">
@@ -112,7 +112,7 @@ export default function CertificateSettings({ configs }: Props) {
  onChange={e => handleValueChange(config.id, e.target.value)}
  placeholder={`Masukkan konten record untuk ${config.label.toLowerCase()}...`}
  />
- <div className="flex items-center gap-3 px-5 py-2.5 bg-emerald-50 rounded-xl border border-emerald-100 w-fit">
+ <div className="flex items-center gap-3 px-5 py-2.5 bg-emerald-50 rounded-lg border border-emerald-100 w-fit">
  <Code2 className="w-4 h-4 text-primary" />
  <span className="text-[10px] font-semibold text-primary opacity-75">SCRIPT_ENGINE: HTML_SUPPORT_ENABLED</span>
  </div>
@@ -132,7 +132,7 @@ export default function CertificateSettings({ configs }: Props) {
  <button 
  key={tag} 
  type="button"
- className="px-4 py-1.5 bg-white border border-slate-200 text-slate-500 text-xs font-semibold rounded-xl group-hover/item:border-primary/40 group-hover/item:text-primarylowercase"
+ className="px-4 py-1.5 bg-white border border-slate-200 text-slate-500 text-xs font-semibold rounded-lg group-hover/item:border-primary/40 group-hover/item:text-primarylowercase"
  >
  {tag}
  </button>
@@ -184,7 +184,7 @@ export default function CertificateSettings({ configs }: Props) {
 
  <div className="space-y-8 relative z-10">
  <div className="flex items-center gap-5">
- <div className="p-3 bg-primary/10 rounded-xl border border-primary">
+ <div className="p-3 bg-primary/10 rounded-lg border border-primary">
  <ShieldCheck className="h-6 w-6 text-primary" />
  </div>
  <p className="text-[11px] font-semibold text-white ">Petunjuk_Otoritas</p>

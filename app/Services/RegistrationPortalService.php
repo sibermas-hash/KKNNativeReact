@@ -37,7 +37,8 @@ class RegistrationPortalService
                         $query->select(['id', 'period_id', 'location_id', 'nama_kelompok', 'capacity', 'status'])
                             ->where('status', 'active')
                             ->with([
-                                'lokasi:id,village_name,district_name,regency_name',
+                                'lokasi:id,village_name,district_name,regency_name,faculty_id',
+                                'lokasi.fakultas:id,nama',
                                 'slotTerkunci:id,kelompok_id,tipe_slot,fakultas_id,prodi_id,kuota_slot',
                                 'slotTerkunci.fakultas:id,nama',
                                 'slotTerkunci.prodi:id,nama',
@@ -108,6 +109,8 @@ class RegistrationPortalService
                                     'district_name' => $group->lokasi->district_name,
                                     'regency_name' => $group->lokasi->regency_name,
                                     'full_name' => $group->lokasi->full_name,
+                                    'faculty_id' => $group->lokasi->faculty_id,
+                                    'fakultas_name' => $group->lokasi->fakultas?->nama,
                                 ] : null,
                             ];
                         })->values()->all(),

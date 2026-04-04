@@ -107,7 +107,7 @@ export default function DplFinalReportsShow({ report }: Props) {
 
  <div className="space-y-6">
  <div className="grid gap-4 md:grid-cols-2">
- <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+ <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
  <div className="mb-2 flex items-center gap-2 text-slate-500">
  <User className="h-4 w-4" />
  <span className="text-xs font-semibold 
@@ -116,7 +116,7 @@ export default function DplFinalReportsShow({ report }: Props) {
  <p className="text-xs font-medium text-slate-500">{report.mahasiswa?.nim ?? '-'}</p>
  </div>
 
- <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+ <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
  <div className="mb-2 flex items-center gap-2 text-slate-500">
  <Users className="h-4 w-4" />
  <span className="text-xs font-semibold 
@@ -127,7 +127,7 @@ export default function DplFinalReportsShow({ report }: Props) {
  </div>
  </div>
 
- <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+ <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
  <div className="mb-2 flex items-center gap-2 text-slate-500">
  <MapPin className="h-4 w-4" />
  <span className="text-xs font-semibold KKN</span>
@@ -137,7 +137,7 @@ export default function DplFinalReportsShow({ report }: Props) {
  </p>
  </div>
 
- <div className="rounded-2xl border border-slate-200 bg-white p-5">
+ <div className="rounded-lg border border-slate-200 bg-white p-5">
  <p className="mb-3 text-xs font-semibold text-slate-500">
  Ringkasan / Abstrak
  </p>

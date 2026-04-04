@@ -147,7 +147,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  <h3 className="text-xl font-semibold text-slate-900 SDG</h3>
  </div>
  <span className={clsx(
- "text-[10px] font-semibold px-5 py-2 rounded-xl",
+ "text-[10px] font-semibold px-5 py-2 rounded-lg",
  form.data.sdg_goals.length > 0 ? "bg-primary text-white : "bg-slate-50 text-slate-400"
  )}>
  {form.data.sdg_goals.length} Target Terpilih
@@ -169,7 +169,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  )}
  >
  <div className={clsx(
- "flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center font-semibold text-xs",
+ "flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center font-semibold text-xs",
  isSelected ? "bg-white/20" : "bg-white border border-slate-200 text-slate-300 group-hover/sdg:text-primary transition-colors"
  )}>
  {sdg.id}
@@ -232,7 +232,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  disabled={form.processing}
  className="h-20 px-16rounded-lg bg-slate-900 hover:bg-black text-white font-semibold text-xs w-full md:w-auto flex items-center justify-center gap-4 group/submit"
  >
- <PlusCircle className={clsx("h-6 w-6 text-primary", form.processing ?  : "group-hover/submit:rotate-90")} />
+ <PlusCircle className={clsx("h-6 w-6 text-primary", form.processing ? : "group-hover/submit:rotate-90")} />
  {form.processing ? 'Sedang Memproses...' : 'Luncurkan Program'}
  </button>
  </div>
@@ -295,7 +295,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
 function InfoItem({ icon: Icon, title, desc }: any) {
  return (
  <div className="flex gap-6 items-start">
- <div className="h-10 w-10 rounded-xl bg-white/5 border border-slate-200 flex items-center justify-center shrink-0 text-primary">
+ <div className="h-10 w-10 rounded-lg bg-white/5 border border-slate-200 flex items-center justify-center shrink-0 text-primary">
  <Icon className="h-5 w-5" />
  </div>
  <div className="min-w-0">

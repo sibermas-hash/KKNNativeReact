@@ -6,7 +6,7 @@ interface Props {
 }
 
 export default function VisualDiff({ oldValues, newValues }: Props) {
- if (!oldValues && !newValues) return <div className="text-slate-500 italic text-sm p-4">No changes recorded.</div>;
+ if (!oldValues && !newValues) return <div className="text-slate-500 text-sm p-4">No changes recorded.</div>;
 
  const allKeys = Array.from(new Set([
  ...Object.keys(oldValues || {}),
@@ -22,7 +22,7 @@ export default function VisualDiff({ oldValues, newValues }: Props) {
 
  return (
  <div className="space-y-3">
- <div className="grid grid-cols-12 px-4 py-2 text-[10px] font-semibold text-slate-500 uppercase bg-slate-50/50 rounded-xl border border-slate-100">
+ <div className="grid grid-cols-12 px-4 py-2 text-[10px] font-semibold text-slate-500 bg-slate-50/50 rounded-lg border border-slate-100">
  <div className="col-span-4">Field</div>
  <div className="col-span-4">Original</div>
  <div className="col-span-4">Modified</div>
@@ -39,7 +39,7 @@ export default function VisualDiff({ oldValues, newValues }: Props) {
  return (
  <div key={key} className="grid grid-cols-12 px-4 py-3 rounded-lg border border-transparent hover:border-slate-100 hover:bg-slate-50/50 items-center gap-4">
  <div className="col-span-4">
- <span className="text-xs font-bold text-slate-500 uppercase ' ')}</span>
+ <span className="text-xs font-semibold text-slate-500 ' ')}</span>
  </div>
  <div className="col-span-4">
  {oldVal !== undefined ? (

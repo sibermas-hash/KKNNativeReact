@@ -224,7 +224,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/10 rounded-xl border border-slate-200
+ <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <Activity className="h-4 w-4 text-emerald-300" />
  </div>
  <span className="text-[10px] font-semibold text-emerald-100 ">
@@ -324,22 +324,22 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  </td>
  <td className="px-6 py-8 text-center">
  {student.execution_score ? (
- <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 text-emerald-600 text-[9px] font-semibold border border-emerald-100
+ <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-50 text-emerald-600 text-[9px] font-semibold border border-emerald-100
  <CheckCircle className="h-3.5 w-3.5" /> DONE
  </div>
  ) : (
- <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 text-slate-400 text-[9px] font-semibold border border-slate-200">
+ <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-50 text-slate-400 text-[9px] font-semibold border border-slate-200">
  <Clock className="h-3.5 w-3.5" /> PENDING
  </div>
  )}
  </td>
  <td className="px-6 py-8 text-center">
  {student.attitude_score ? (
- <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 text-emerald-600 text-[9px] font-semibold border border-emerald-100
+ <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-50 text-emerald-600 text-[9px] font-semibold border border-emerald-100
  <CheckCircle className="h-3.5 w-3.5" /> DONE
  </div>
  ) : (
- <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 text-slate-400 text-[9px] font-semibold border border-slate-200">
+ <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-50 text-slate-400 text-[9px] font-semibold border border-slate-200">
  <Clock className="h-3.5 w-3.5" /> PENDING
  </div>
  )}
@@ -429,7 +429,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  
  <div className="relative z-10 flex-1">
  <div className="flex items-center gap-3 mb-4">
- <div className="p-2 bg-primary/20 text-primary rounded-xl
+ <div className="p-2 bg-primary/20 text-primary rounded-lg
  <Bolt className="h-4.5 w-4.5" />
  </div>
  <span className="text-[10px] font-semibold text-slate-400 ">MODUL_KALIBRASI_AKADEMIK_V3</span>

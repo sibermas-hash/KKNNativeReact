@@ -23,11 +23,11 @@ export default function GuestLayout({
  <Globe className="w-9 h-9 text-primary" />
  </div>
  <h2 className="text-3xl font-semibold text-slate-900 leading-none">
- UIN <span className="text-primary italic">SAIZU</span>
+ UIN <span className="text-primary">SAIZU</span>
  </h2>
  <div className="flex items-center justify-center gap-3 mt-3">
  <div className="h-px w-8 bg-slate-200" />
- <p className="text-[11px] font-bold text-slate-400 uppercase 
+ <p className="text-[11px] font-semibold text-slate-400 
  Portal KKN
  </p>
  <div className="h-px w-8 bg-slate-200" />
@@ -46,10 +46,10 @@ export default function GuestLayout({
 
  {/* CLEAN FOOTER */}
  <div className="mt-12 text-center space-y-4">
- <p className="text-[10px] text-slate-400 font-bold uppercase 
+ <p className="text-[10px] text-slate-400 font-semibold 
  Lembaga Penelitian dan Pengabdian kepada Masyarakat
  </p>
- <div className="flex justify-center items-center gap-3 text-[10px] text-slate-300 font-bold">
+ <div className="flex justify-center items-center gap-3 text-[10px] text-slate-300 font-semibold">
  <span>v3.2 EMERALD</span>
  <div className="w-1 h-1 rounded-full bg-slate-200" />
  <span>SECURE_SESSION_ACTIVE</span>

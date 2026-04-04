@@ -63,7 +63,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/10 rounded-xl border border-slate-200
+ <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <BarChart3 className="h-4 w-4 text-emerald-300" />
  </div>
  <span className="text-[10px] font-semibold text-emerald-100 ">
@@ -161,7 +161,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  </td>
  <td className="px-6 py-3 text-right pr-14">
  <div className="flex flex-col items-end gap-2 group-hover/row:translate-x-[-4px] transition-transform">
- <div className="flex items-center gap-3 text-slate-400 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+ <div className="flex items-center gap-3 text-slate-400 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
  <Calendar className="h-3.5 w-3.5 opacity-50" />
  <span className="text-[9px] font-semibold ">
  {ev.evaluated_at ?? 'LOG_PENDING'}

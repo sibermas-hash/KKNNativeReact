@@ -117,16 +117,16 @@ export default function StudentWorkshopsIndex({ workshops }: Props) {
  </div>
 
  {workshop.is_registered ? (
- <span className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 text-emerald-600 text-xs font-semibold 
+ <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-semibold 
  <CheckCircle2 className="h-4 w-4" />
  Terdaftar
  </span>
  ) : workshop.is_full ? (
- <span className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-50 text-rose-500 text-xs font-semibold 
+ <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-50 text-rose-500 text-xs font-semibold 
  Penuh
  </span>
  ) : (
- <span className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary text-xs font-semibold 
+ <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 text-primary text-xs font-semibold 
  Tersedia
  </span>
  )}
@@ -207,7 +207,7 @@ function Metric({
 }) {
  return (
  <div className="rounded-lg bg-slate-50 border border-slate-200 p-5 flex items-start gap-4">
- <div className="h-11 w-11 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400">
+ <div className="h-11 w-11 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400">
  <Icon className="h-5 w-5" />
  </div>
  <div>

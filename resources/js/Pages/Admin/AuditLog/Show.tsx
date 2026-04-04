@@ -14,7 +14,9 @@ import {
  Scale,
  FileText,
  History,
- Activity
+ Activity,
+ Zap,
+ ChevronLeft,
 } from 'lucide-react';
 import { route } from 'ziggy-js';
 import VisualDiff from '@/Components/VisualDiff';
@@ -24,7 +26,7 @@ export default function AuditLogShow({ log }: { log: any }) {
  const severityMap: any = {
  high: 'bg-rose-50 text-rose-600 border-rose-100',
  critical: 'bg-rose-100 text-rose-700 border-rose-200',
- default: 'bg-slate-50 text-slate-600 border-slate-200'
+ default: 'bg-emerald-50 text-emerald-600 border-emerald-100'
  };
 
  const currentSeverity = log.severity === 'high' || log.action === 'DELETE' || log.action === 'GATE_BYPASS' ? 'high' : 'default';
@@ -33,172 +35,190 @@ export default function AuditLogShow({ log }: { log: any }) {
  <AppLayout title="Detail Log Aktivitas">
  <Head title={`Detail Aktivitas #${log.id}`} />
 
- <div className="max-w-7xl mx-auto space-y-6 pb-24">
- 
- {/* Header Section */}
- <div className="flex items-center gap-6">
- <Link
- href={route('admin.audit-log.index')}
- className="p-4 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primarygroup hover:-translate-x-1"
- >
- <ArrowLeft className="w-5 h-5" />
- </Link>
- <div>
- <div className="flex items-center gap-2 mb-1.5 text-sm">
- <History className="w-3.5 h-3.5 text-primary" />
- <p className="text-[10px] text-slate-400 ">Riwayat Sistem</p>
+ <div className="space-y-8 pb-24">
+ {/* Minimalist Tactical Header Strip */}
+ <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-100 pb-8">
+ <div className="space-y-1">
+ <div className="flex items-center gap-3">
+ <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+ <span className="text-[9px] font-semibold text-emerald-600">
+ AUDIT_INSPECTION_CORE_V3.2
+ </span>
  </div>
- <h1 className="text-3xl font-extrabold text-slate-900 ">Detail <span className="text-primary">Aktivitas</span></h1>
+ <div className="flex items-center gap-3">
+ <Link href={route('admin.audit-log.index')} className="p-2 bg-white border border-slate-100 rounded-lg text-slate-400 hover:text-primary transition-all ">
+ <ChevronLeft className="h-4 w-4" />
+ </Link>
+ <h1 className="text-2xl font-semibold text-slate-900 leading-none">
+ Detail <span className="text-primary">Aktivitas</span>
+ </h1>
+ </div>
+ </div>
+
+ <div className="flex items-center gap-4">
+ <div className="px-4 py-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-4">
+ <div className="flex items-center gap-3">
+ <div className="p-1.5 bg-emerald-50 rounded-lg text-emerald-600">
+ <Clock className="h-3 w-3" />
+ </div>
+ <div className="text-left">
+ <span className="block text-[8px] font-semibold text-slate-400 leading-none mb-0.5">Recorded_Stamp</span>
+ <span className="text-xs font-semibold text-slate-900 leading-none">
+ {formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: id })}
+ </span>
+ </div>
+ </div>
+ </div>
  </div>
  </div>
 
  {/* Main Hero Summary Card */}
- <div className="relative bg-white rounded-lg border border-slate-200 overflow-hidden group">
- <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none transition-transform group-hover:rotate-12 group-">
- <Activity className="h-64 w-64" />
+ <div className="bg-white rounded-lg border border-slate-100 overflow-hidden relative group">
+ <div className="absolute top-0 right-0 p-16 text-slate-900 opacity-[0.02] pointer-events-none group-hover:rotate-12 transition-transform duration-1000">
+ <Activity className="h-[30rem] w-[30rem]" />
  </div>
  
- <div className="p-10 flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-b border-slate-200">
+ <div className="p-8 md:p-12 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-8 relative z-10">
  <div className="flex items-center gap-8">
- <div className="w-20 h-20 rounded-lg bg-slate-50 flex items-center justify-center text-4xl border border-slate-200">
+ <div className="h-20 w-20 rounded-lg bg-slate-900 border border-slate-800 text-primary text-3xl font-semibold flex items-center justify-center">
  {log.action === 'DELETE' ? '🗑️' : log.action === 'LOGIN' ? '🔐' : '📝'}
  </div>
- <div className="space-y-3">
- <div className="flex items-center gap-4">
- <h2 className="text-3xl font-semibold text-slate-900 ">{log.action || 'AKTIVITAS'}</h2>
- <div className={clsx("px-4 py-1.5 rounded-xl text-xs text-sm border", severityMap[currentSeverity])}>
- {currentSeverity === 'high' ? 'PENTING' : 'REGULER'}
+ <div className="space-y-4">
+ <div className="flex items-center gap-6">
+ <h2 className="text-4xl font-semibold text-slate-900 leading-none">{log.action || 'ACTIVITY'}</h2>
+ <span className={clsx("px-4 py-1.5 rounded-lg text-[10px] font-semibold border", severityMap[currentSeverity])}>
+ {currentSeverity === 'high' ? 'CRITICAL_ALERT' : 'STABLE_PROTOCOL'}
+ </span>
  </div>
- </div>
- <div className="flex items-center gap-4 text-slate-400 text-sm text-xs 
- <span>ID LOG: #{log.id}</span>
- <span className="h-1 w-1 rounded-lg bg-slate-200" />
- <span>STATUS: TERCATAT</span>
- </div>
- </div>
- </div>
-
- <div className="flex flex-col items-end gap-2 shrink-0">
- <div className="flex items-center gap-4 px-6 py-4 bg-primary/5 rounded-lg border border-primary/10">
- <Clock className="w-5 h-5 text-primary" />
- <div className="text-left">
- <p className="text-[9px] text-sm text-slate-400 mb-1">Durasi Terakhir</p>
- <p className="text-sm text-sm text-slate-700">{formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: id })}</p>
- </div>
+ <div className="flex items-center gap-4 text-[10px] font-semibold text-slate-400 opacity-50">
+ <span>STAMP_ID: #{log.id}</span>
+ <div className="h-1 w-1 rounded-full bg-slate-200" />
+ <span>STATUS: AUDIT_LOCKED</span>
  </div>
  </div>
  </div>
 
- <div className="p-10 grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10 bg-slate-50/30">
+ <div className="flex items-center gap-4 px-6 py-4 bg-slate-50 rounded-lg border border-slate-100">
+ <History className="w-5 h-5 text-primary" />
+ <div className="text-left min-w-[150px]">
+ <span className="block text-[8px] font-semibold text-slate-400 leading-none mb-1.5">Registry_Reference</span>
+ <span className="text-[11px] font-semibold text-slate-700 leading-none block">
+ {log.model_type?.split('\\').pop() || 'SYSTEM'} :: {log.model_id || 'LOCAL'}
+ </span>
+ </div>
+ </div>
+ </div>
+
+ <div className="p-8 md:p-12 grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10 bg-slate-50/20">
  <AttributeItem 
- label="Pelaku Aktivitas" 
- title={log.user?.name ?? 'SISTEM OTOMATIS'} 
- subtitle={log.user?.email ?? 'INTERNAL_SYSTEM_PROCESS'} 
+ label="ACTOR_IDENTITY" 
+ title={log.user?.name ?? 'SYSTEM_KERNEL'} 
+ subtitle={log.user?.email ?? 'INTERNAL_SYSCALL_PROCESS'} 
  icon={User} 
  />
  <AttributeItem 
- label="Waktu Kejadian" 
- title={format(new Date(log.created_at), 'dd MMMM yyyy', { locale: id })} 
+ label="CHRONO_STAMP" 
+ title={format(new Date(log.created_at), 'dd MMM yyyy', { locale: id }).toUpperCase()} 
  subtitle={format(new Date(log.created_at), 'HH:mm:ss')} 
  icon={Clock} 
  />
  <AttributeItem 
- label="Asal Perangkat" 
+ label="ORIGIN_VECTOR" 
  title={log.ip_address} 
- subtitle={log.user_agent?.split(' ')[0] || 'UNDEFINED'} 
+ subtitle={log.user_agent?.split(' ')[0] || 'UNDEFINED_PROTOCOL'} 
  icon={Globe} 
  />
  </div>
  </div>
 
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+ <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
  {/* Technical Specification */}
  <div className="lg:col-span-1 space-y-8">
- <section className="bg-white rounded-lg p-10 border border-slate-200 relative overflow-hidden group/spec">
- <div className="absolute -bottom-6 -left-6 text-slate-900 pointer-events-none group-hover/spec:transition-transform">
- <Terminal className="h-32 w-32" />
+ <section className="bg-white rounded-lg p-8 border border-slate-100 relative overflow-hidden group/spec">
+ <div className="absolute -bottom-6 -left-6 text-slate-900 opacity-[0.02] pointer-events-none group-hover:scale-110 transition-transform">
+ <Terminal className="h-48 w-48" />
  </div>
  
  <div className="flex items-center gap-4 mb-8">
- <div className="p-3 bg-slate-50 text-slate-400 rounded-xl border border-slate-200">
+ <div className="p-3 bg-slate-50 rounded-lg text-slate-400 border border-slate-100">
  <Terminal className="w-5 h-5" />
  </div>
- <h3 className="text-sm text-sm text-slate-900 Teknis</h3>
+ <h3 className="text-[11px] font-semibold text-slate-900">TECHNICAL_MANIFEST</h3>
  </div>
  <div className="space-y-8 relative z-10">
- <div>
- <p className="text-[10px] text-sm text-slate-400 mb-3">Otorisasi / Kemampuan</p>
- <code className="block px-4 py-3 rounded-xl bg-slate-50 text-slate-600 font-mono text-xs text-sm border border-slate-200">
- {log.ability ?? 'SISTEM_GLOBAL'}
+ <div className="space-y-3">
+ <span className="text-[9px] font-semibold text-slate-400 ml-1">AUTHORIZATION_ABILITY</span>
+ <code className="block px-5 py-4 rounded-lg bg-slate-900 text-primary font-mono text-[11px] font-semibold border border-slate-800">
+ {log.ability ?? 'SYSCALL_LEVEL_0'}
  </code>
  </div>
  <div className="h-px bg-slate-50" />
- <div>
- <p className="text-[10px] text-sm text-slate-400 mb-3">Deskripsi Operasi</p>
- <p className="text-xs text-slate-600 leading-normal font-medium">
- {log.description || 'Tidak ada deskripsi tambahan yang disediakan.'}
+ <div className="space-y-3">
+ <span className="text-[9px] font-semibold text-slate-400 ml-1">OPERATION_DESCRIPTION</span>
+ <p className="text-[11px] text-slate-500 font-semibold leading-relaxed pl-2 border-l-2 border-primary/20">
+ {log.description || 'NO_ADDITIONAL_MANIFEST_PROVIDED'}
  </p>
  </div>
- <div className="pt-4 border-t border-slate-200">
- <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+ <div className="pt-4 border-t border-slate-50">
+ <div className="flex items-center gap-3 px-4 py-2 bg-emerald-50 rounded-lg border border-emerald-100">
  <Fingerprint className="h-3.5 w-3.5 text-emerald-500" />
- <p className="text-[9px] text-emerald-600 text-sm Data Terverifikasi</p>
+ <span className="text-[9px] font-semibold text-emerald-600">INTEGRITY_VERIFIED</span>
  </div>
  </div>
  </div>
  </section>
 
- <div className="bg-slate-900 rounded-lg p-10 text-white relative overflow-hidden group/policy">
- <div className="absolute inset-0 bg-whitepointer-events-none" />
- <div className="relative z-10 flex flex-col items-center text-center">
- <ShieldCheck className="w-12 h-12 text-primary mb-4 opacity-75" />
- <h4 className="text-lg text-sm mb-2">Keamanan Sistem</h4>
- <p className="text-[10px] text-slate-400 font-medium leading-normal">
- Seluruh perubahan data dicatat secara otomatis untuk transparansi sistem.
+ <div className="bg-slate-900 rounded-lg p-8 text-white relative overflow-hidden group">
+ <div className="absolute top-0 right-0 p-10 opacity-10 text-primary group-hover:rotate-12 transition-transform duration-1000">
+ <ShieldCheck className="w-64 h-64" />
+ </div>
+ <div className="relative z-10 flex flex-col items-center text-center space-y-6">
+ <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
+ <ShieldCheck className="w-8 h-8 text-primary shadow-[0_0_15px_rgba(16,168,83,0.3)]" />
+ </div>
+ <div>
+ <h4 className="text-[11px] font-semibold text-white mb-2">SECURITY_ENFORCEMENT</h4>
+ <p className="text-[10px] text-slate-500 font-semibold leading-relaxed opacity-75">
+ Seluruh perubahan mutasi data dicatat secara mutlak dalam lapisan enkripsi demi menjamin transparansi kedaulatan informasi akademik KKN UIN SAIZU.
  </p>
+ </div>
  </div>
  </div>
  </div>
 
  {/* Mutation Inspector */}
- <div className="lg:col-span-2 bg-white rounded-lg p-10 border border-slate-200 group/mut relative overflow-hidden">
- <div className="absolute -top-10 -right-10 text-slate-900 pointer-events-none transition-transform group-hover/mut:-rotate-12">
- <Cpu className="h-64 w-64" />
+ <div className="lg:col-span-2 bg-white rounded-lg p-8 border border-slate-100 group relative overflow-hidden">
+ <div className="absolute -top-10 -right-10 text-slate-900 opacity-[0.02] pointer-events-none transition-transform group-hover:-rotate-12 duration-1000">
+ <Cpu className="h-96 w-96" />
  </div>
 
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10 relative z-10">
  <div className="flex items-center gap-4">
- <div className="p-3 bg-primary/10 text-primary rounded-xl border border-primary">
- <FileText className="w-5 h-5" />
+ <div className="p-3 bg-primary/10 text-primary rounded-lg border border-primary/20">
+ <FileText className="w-6 h-6" />
  </div>
- <h3 className="text-xl font-extrabold text-slate-900 ">Perbandingan Perubahan</h3>
+ <div className="flex flex-col">
+ <h3 className="text-[11px] font-semibold text-slate-900 leading-none mb-1.5">Mutation_Inspector</h3>
+ <span className="text-[9px] font-semibold text-slate-400 opacity-50 leading-none">DATA_VARIANCE_DIFF_ENGINE</span>
  </div>
- 
- {log.model_type && (
- <div className="flex flex-col items-end gap-1">
- <span className="text-[9px] text-sm text-slate-400 Referensi:</span>
- <span className="px-4 py-1.5 rounded-lg bg-slate-900 text-white font-mono text-xs text-sm 
- {log.model_type.split('\\').pop()} :: {log.model_id}
- </span>
  </div>
- )}
  </div>
 
- <div className="bg-slate-50/50rounded-lg border border-slate-200 p-8
- <div className="max-h-[600px] overflow-y-auto pr-2 scrollbar-none">
+ <div className="bg-slate-50 rounded-lg border border-slate-100 p-8 relative z-10">
+ <div className="max-h-[600px] overflow-y-auto pr-4 custom-scrollbar">
  <VisualDiff oldValues={log.old_values} newValues={log.new_values} />
  </div>
  </div>
  
- <div className="mt-10 p-8 bg-slate-50rounded-lg border border-slate-200">
+ <div className="mt-8 p-8 bg-slate-50/50 rounded-lg border border-slate-100 relative z-10">
  <div className="flex flex-col md:flex-row md:items-center gap-6">
- <div className="p-3 bg-white rounded-xl border border-slate-200 text-primary">
+ <div className="p-3 bg-white rounded-lg border border-slate-100 text-primary ">
  <Scale className="h-5 w-5" />
  </div>
  <div className="space-y-1">
- <h4 className="text-[10px] text-sm text-slate-400 ">Insight Analitik</h4>
- <p className="text-[10px] text-slate-500 font-medium leading-normal">
- Perbandingan di atas menunjukkan perbedaan antara kondisi data sebelum (Lama) dan sesudah (Baru) aksi dilakukan.
+ <h4 className="text-[11px] font-semibold text-slate-900 leading-none">ANALYTIC_INSIGHT</h4>
+ <p className="text-[9px] font-semibold text-slate-400 leading-relaxed opacity-75 max-w-2xl">
+ Perbandingan diferensial di atas menunjukkan perbedaan antara kondisi record sebelum (MANIFEST_OLD) dan sesudah (MANIFEST_NEW) tindakan dieksekusi.
  </p>
  </div>
  </div>
@@ -213,17 +233,14 @@ export default function AuditLogShow({ log }: { log: any }) {
 function AttributeItem({ label, title, subtitle, icon: Icon }: any) {
  return (
  <div className="space-y-4 group/attr">
- <div className="flex items-center gap-2">
- <Icon className="w-3.5 h-3.5 text-primary" />
- <p className="text-[10px] text-slate-400 text-sm 
- {label}
- </p>
+ <div className="flex items-center gap-3">
+ <Icon className="w-3.5 h-3.5 text-primary group-hover/attr:scale-125 transition-transform" />
+ <span className="text-[9px] font-semibold text-slate-400 leading-none">{label}</span>
  </div>
- <div className="pl-5 border-l-2 border-slate-200 group-hover/attr:border-primary transition-colors">
- <p className="text-slate-900 font-extrabold text-xl mb-1">{title}</p>
- <p className="text-slate-400 text-xs text-sm 
+ <div className="pl-6 border-l-2 border-slate-100 group-hover/attr:border-primary transition-all duration-500">
+ <p className="text-slate-900 font-semibold text-xl mb-1 truncate">{title}</p>
+ <p className="text-[10px] font-semibold text-slate-400 opacity-50 leading-none">{subtitle}</p>
  </div>
  </div>
  );
 }
-

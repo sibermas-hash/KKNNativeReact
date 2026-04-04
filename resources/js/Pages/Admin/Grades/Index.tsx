@@ -96,7 +96,7 @@ export default function Index({ groups }: Props) {
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/10 rounded-xl border border-slate-200
+ <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <ShieldAlert className="h-4 w-4 text-rose-300" />
  </div>
  <span className="text-[10px] font-semibold text-rose-100 ">
@@ -152,7 +152,7 @@ export default function Index({ groups }: Props) {
 
  <div className="space-y-5">
  <div className="flex items-start gap-4 p-5 bg-slate-50 rounded-lg border border-slate-200">
- <div className="p-2 bg-white rounded-xl text-rose-500">
+ <div className="p-2 bg-white rounded-lg text-rose-500">
  <Fingerprint className="h-4 w-4" />
  </div>
  <p className="text-[11px] text-slate-500 text-sm leading-normal opacity-50">
@@ -160,7 +160,7 @@ export default function Index({ groups }: Props) {
  </p>
  </div>
  <div className="flex items-start gap-4 p-5 bg-slate-50 rounded-lg border border-slate-200">
- <div className="p-2 bg-white rounded-xl text-primary">
+ <div className="p-2 bg-white rounded-lg text-primary">
  <Cpu className="h-4 w-4" />
  </div>
  <p className="text-[11px] text-slate-500 text-sm leading-normal opacity-50">

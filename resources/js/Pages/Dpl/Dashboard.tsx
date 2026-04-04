@@ -75,7 +75,7 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
  <span className="block text-[9px] font-semibold text-slate-400 mb-1">Status Otoritas</span>
  <span className="text-sm font-semibold text-slate-900 
  </div>
- <div className="h-10 w-10 bg-white rounded-xl border border-slate-200 flex items-center justify-center text-primary">
+ <div className="h-10 w-10 bg-white rounded-lg border border-slate-200 flex items-center justify-center text-primary">
  <ShieldCheck className="h-5 w-5 stroke-[2.5px]" />
  </div>
  </div>
@@ -127,7 +127,7 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
  <h3 className="text-xl font-semibold text-slate-900 ">Aktivitas Masuk</h3>
  <p className="text-[10px] text-sm text-slate-400 mt-2">Telemetri logbook 14 siklus terakhir</p>
  </div>
- <div className="p-3 bg-slate-50 rounded-xl text-slate-300 border border-slate-200
+ <div className="p-3 bg-slate-50 rounded-lg text-slate-300 border border-slate-200
  <BarChart3 className="h-6 w-6" />
  </div>
  </div>
@@ -177,7 +177,7 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
  <div className="px-3 py-1 bg-primary/5 rounded-lg border border-primary/10 text-primary text-[9px] font-semibold 
  {group.periode?.name || 'REGULER'}
  </div>
- <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:border-primary">
+ <div className="h-10 w-10 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:border-primary">
  <Users2 className="h-5 w-5" />
  </div>
  </div>

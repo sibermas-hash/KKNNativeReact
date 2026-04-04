@@ -22,7 +22,7 @@ export default function DataTable<T extends { id: number | string }>({
  emptyMessage = 'Tidak ada data.',
 }: DataTableProps<T>) {
  return (
- <div className="overflow-hidden rounded-xl border border-slate-200 bg-white
+ <div className="overflow-hidden rounded-lg border border-slate-200 bg-white
  <div className="overflow-x-auto">
  <table className="min-w-full divide-y divide-slate-200">
  <thead className="bg-slate-50">
@@ -30,7 +30,7 @@ export default function DataTable<T extends { id: number | string }>({
  {columns.map((col) => (
  <th
  key={col.key}
- className={`px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500 ${col.className ?? ''}`}
+ className={`px-4 py-3 text-left text-xs font-semibold text-slate-500 ${col.className ?? ''}`}
  >
  {col.label}
  </th>

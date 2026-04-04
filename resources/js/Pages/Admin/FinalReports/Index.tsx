@@ -50,7 +50,7 @@ export default function AdminFinalReportsIndex({ reports, filters }: Props) {
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/10 rounded-xl border border-slate-200
+ <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <FileCheck className="h-4 w-4 text-emerald-300" />
  </div>
  <span className="text-[10px] font-semibold text-emerald-100 ">
@@ -134,7 +134,7 @@ export default function AdminFinalReportsIndex({ reports, filters }: Props) {
  <span className="text-[17px] font-semibold text-slate-900 group-hover/row:text-primary transition-colors truncate pr-4">
  {r.title}
  </span>
- <div className="flex items-center gap-3 mt-1 px-3 py-1 bg-slate-50 w-fit rounded-xl border border-slate-200">
+ <div className="flex items-center gap-3 mt-1 px-3 py-1 bg-slate-50 w-fit rounded-lg border border-slate-200">
  <Calendar className="h-3.5 w-3.5 text-slate-300" />
  <span className="text-[9px] font-semibold text-slate-400 opacity-50">Log_Submit: {r.submitted_at ?? 'MENUNGGU_ENTRY'}</span>
  </div>

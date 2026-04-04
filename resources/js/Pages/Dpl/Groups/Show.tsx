@@ -101,7 +101,7 @@ export default function DplGroupShow({ group }: Props) {
  <div className="lg:col-span-1 space-y-6">
  <section className="bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group h-fit">
  <div className="flex items-center gap-4 mb-10 border-b border-slate-200 pb-6">
- <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+ <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
  <InformationCircleIcon className="h-5 w-5 text-slate-400" />
  </div>
  <h3 className="text-sm font-semibold text-slate-900">Spesifikasi Unit</h3>
@@ -137,7 +137,7 @@ export default function DplGroupShow({ group }: Props) {
  {/* Data Posko Lapangan */}
  <section className="bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group h-fit">
  <div className="flex items-center gap-4 mb-8 border-b border-slate-200 pb-6">
- <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+ <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
  <ShieldCheckIcon className="h-5 w-5 text-emerald-600" />
  </div>
  <h3 className="text-sm font-semibold text-slate-900">Data Posko Lapangan</h3>
@@ -158,11 +158,11 @@ export default function DplGroupShow({ group }: Props) {
  </div>
  <div className="space-y-4">
  <div className="grid grid-cols-2 gap-3">
- <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+ <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
  <p className="text-[9px] font-semibold text-slate-400 mb-1">LAT</p>
  <p className="font-mono text-xs font-semibold text-slate-900">{group.posko.latitude}</p>
  </div>
- <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+ <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
  <p className="text-[9px] font-semibold text-slate-400 mb-1">LONG</p>
  <p className="font-mono text-xs font-semibold text-slate-900">{group.posko.longitude}</p>
  </div>
@@ -193,7 +193,7 @@ export default function DplGroupShow({ group }: Props) {
  <section className="lg:col-span-2 bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group">
  <div className="flex items-center justify-between mb-10 border-b border-slate-200 pb-6 px-2">
  <div className="flex items-center gap-4">
- <div className="p-3 bg-primary/10 rounded-xl border border-primary">
+ <div className="p-3 bg-primary/10 rounded-lg border border-primary">
  <FlagIcon className="h-5 w-5 text-primary" />
  </div>
  <div>
@@ -216,7 +216,7 @@ export default function DplGroupShow({ group }: Props) {
  {group.work_programs.map((wp) => (
  <div key={wp.id} className="group/item flex items-center justify-between p-5 rounded-lg bg-slate-50 border border-slate-200 hover:bg-white hover:border-primary cursor-default">
  <div className="flex items-center gap-4 min-w-0">
- <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-300 group-hover/item:text-primary transition-colors">
+ <div className="h-10 w-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-300 group-hover/item:text-primary transition-colors">
  <FlagIcon className="h-5 w-5" />
  </div>
  <p className="text-xs text-sm text-slate-700 truncate">{wp.title}</p>
@@ -233,7 +233,7 @@ export default function DplGroupShow({ group }: Props) {
  <section className="bg-white rounded-lg border border-slate-200 overflow-hidden">
  <div className="p-10 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-50/50">
  <div className="flex items-center gap-4">
- <div className="p-3 bg-white rounded-xl border border-slate-200
+ <div className="p-3 bg-white rounded-lg border border-slate-200
  <UserGroupIcon className="h-5 w-5 text-slate-400" />
  </div>
  <div>
@@ -241,7 +241,7 @@ export default function DplGroupShow({ group }: Props) {
  <p className="text-[9px] text-sm text-slate-400 mt-0.5">Manajemen Profil Mahasiswa</p>
  </div>
  </div>
- <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-slate-200
+ <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-slate-200
  <span className="text-[9px] font-semibold text-slate-300 Aktif</span>
  <span className="h-4 w-full bg-slate-100 mx-2" />
  <span className="text-sm font-semibold text-slate-900">{group.registrations.length} <span className="text-[10px] text-slate-400">UNIT</span></span>
@@ -264,7 +264,7 @@ export default function DplGroupShow({ group }: Props) {
  <td className="px-6 py-8 text-xs font-semibold text-slate-300">{i + 1}</td>
  <td className="px-6 py-8">
  <div className="flex items-center gap-5">
- <div className="h-12 w-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 group-hover/row:bg-primary/5 group-hover/row:text-primary group-hover/row:border-primary
+ <div className="h-12 w-12 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 group-hover/row:bg-primary/5 group-hover/row:text-primary group-hover/row:border-primary
  <UserIcon className="h-6 w-6" />
  </div>
  <div>
@@ -280,7 +280,7 @@ export default function DplGroupShow({ group }: Props) {
  </div>
  </td>
  <td className="px-6 py-8 text-right">
- <StatusBadge status={r.status} className="px-4 py-1.5 rounded-xl text-[9px] font-extrabold />
+ <StatusBadge status={r.status} className="px-4 py-1.5 rounded-lg text-[9px] font-extrabold />
  </td>
  </tr>
  ))}

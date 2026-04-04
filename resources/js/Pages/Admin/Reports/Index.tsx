@@ -91,7 +91,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/10 rounded-xl border border-slate-200
+ <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <Archive className="h-4 w-4 text-emerald-300" />
  </div>
  <span className="text-[10px] font-semibold text-emerald-100 ">
@@ -213,13 +213,13 @@ export default function ReportsIndex({ reports, summary }: Props) {
  </div>
  </td>
  <td className="px-6 py-3 text-center">
- <StatusBadge status={report.status} className="px-4 py-1.5 rounded-xl text-[9px] text-sm border-none />
+ <StatusBadge status={report.status} className="px-4 py-1.5 rounded-lg text-[9px] text-sm border-none />
  </td>
  <td className="px-6 py-3">
  <div className="flex justify-end gap-2x-4 opacity-0 group-hover/row:opacity-100 group-hover/row:translate-x-0">
  <Link
  href={`/reports/${report.id}/download`}
- className="h-10 w-10 flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary/50 rounded-xlactive:group/btn"
+ className="h-10 w-10 flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary/50 rounded-lgactive:group/btn"
  >
  <Download className="h-4.5 w-4.5 group-hover/btn:transition-transform" />
  </Link>

@@ -61,12 +61,12 @@ export default function GroupShow({ group }: Props) {
  <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
  
  <div className="relative z-10 space-y-5 flex-1">
- <Link href="/admin/groups" className="inline-flex items-center gap-3 px-4 py-2 bg-white/10 rounded-xl border border-slate-200 text-xs font-semibold text-emerald-100 hover:bg-white/20mb-2">
+ <Link href="/admin/groups" className="inline-flex items-center gap-3 px-4 py-2 bg-white/10 rounded-lg border border-slate-200 text-xs font-semibold text-emerald-100 hover:bg-white/20mb-2">
  <ChevronLeft className="w-3.5 h-3.5" />
  KEMBALI KE DIREKTORI_GRUP
  </Link>
  <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/10 rounded-xl border border-slate-200
+ <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <Target className="h-4 w-4 text-emerald-300" />
  </div>
  <span className="text-[10px] font-semibold text-emerald-100 ">
@@ -158,7 +158,7 @@ export default function GroupShow({ group }: Props) {
  </div>
  </div>
  <div className="p-8 bg-emerald-50 border border-emerald-100rounded-lg flex items-start gap-5
- <div className="p-2.5 bg-white rounded-xl text-emerald-600">
+ <div className="p-2.5 bg-white rounded-lg text-emerald-600">
  <CheckCircle2 className="w-5 h-5 stroke-[2.5px]" />
  </div>
  <div className="space-y-1.5 pt-1">
@@ -252,7 +252,7 @@ export default function GroupShow({ group }: Props) {
  <tr key={reg.id} className="group hover:bg-white">
  <td className="px-12 py-8">
  <div className="flex items-center gap-4">
- <div className="h-10 w-10 rounded-xl bg-white/5 border border-slate-200 flex items-center justify-center text-emerald-400 font-semibold">
+ <div className="h-10 w-10 rounded-lg bg-white/5 border border-slate-200 flex items-center justify-center text-emerald-400 font-semibold">
  {reg.student.name.charAt(0)}
  </div>
  <span className="text-[16px] font-semibold text-slate-100 group-hover:text-primary transition-colors">{reg.student.name}</span>
@@ -305,7 +305,7 @@ export default function GroupShow({ group }: Props) {
  <div className="space-y-3">
  <p className="text-2xl font-semibold text-slate-900 leading-normal">{group.lecturer.name}</p>
  <div className="flex justify-center">
- <p className="text-[10px] font-semibold text-primary bg-primary/10 px-4 py-2 rounded-xl border border-primary/10">Pembimbing_Utama</p>
+ <p className="text-[10px] font-semibold text-primary bg-primary/10 px-4 py-2 rounded-lg border border-primary/10">Pembimbing_Utama</p>
  </div>
  </div>
  </div>
@@ -343,7 +343,7 @@ export default function GroupShow({ group }: Props) {
  
  <div className="relative z-10 space-y-6">
  <h3 className="text-xl font-semibold text-white flex items-center gap-4">
- <div className="p-2.5 bg-white/10 rounded-xl border border-slate-200">
+ <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200">
  <Briefcase className="w-5 h-5 text-emerald-300" />
  </div>
  Statistik_Agenda
@@ -372,7 +372,7 @@ function InfoItem({ icon: Icon, label, value, status }: { icon: any; label: stri
  return (
  <div className="group/item space-y-5">
  <div className="flex items-center gap-3.5">
- <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 group-hover/item:bg-primary/20 group-hover/item:border-primary/30">
+ <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 group-hover/item:bg-primary/20 group-hover/item:border-primary/30">
  <Icon className="w-4 h-4 text-primary group-hover/item:rotate-12 transition-transform" />
  </div>
  <span className="text-[10px] font-semibold text-slate-300 group-hover/item:text-primary transition-colors">{label}</span>

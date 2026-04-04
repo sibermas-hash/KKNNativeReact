@@ -80,7 +80,7 @@ export default function ProfileShow() {
  <div className="grid gap-6 md:grid-cols-3">
  {/* Avatar Section */}
  <div className="md:col-span-1">
- <div className="rounded-2xl border border-slate-200 bg-white/5 p-6
+ <div className="rounded-lg border border-slate-200 bg-white/5 p-6
  <div className="text-center">
  <div className="relative inline-block">
  {avatarSrc ? (
@@ -124,7 +124,7 @@ export default function ProfileShow() {
  {/* Forms Section */}
  <div className="space-y-6 md:col-span-2">
  {/* Profile Form */}
- <div className="rounded-2xl border border-slate-200 bg-white/5 p-6
+ <div className="rounded-lg border border-slate-200 bg-white/5 p-6
  <h2 className="mb-6 flex items-center gap-2 text-lg font-semibold text-white">
  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-500" viewBox="0 0 20 20" fill="currentColor">
  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
@@ -187,7 +187,7 @@ export default function ProfileShow() {
  </div>
 
  {/* Password Form */}
- <div className="rounded-2xl border border-slate-200 bg-white/5 p-6
+ <div className="rounded-lg border border-slate-200 bg-white/5 p-6
  <h2 className="mb-6 flex items-center gap-2 text-lg font-semibold text-white">
  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-rose-500" viewBox="0 0 20 20" fill="currentColor">
  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />

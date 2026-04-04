@@ -44,7 +44,7 @@ export default function ImportPreview({ preview, group }: Props) {
  variant="ghost"
  size="sm"
  onClick={() => window.history.back()}
- className="rounded-xl"
+ className="rounded-lg"
  >
  <ArrowLeftIcon className="w-4 h-4 mr-2" />
  Kembali

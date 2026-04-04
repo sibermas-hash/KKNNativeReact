@@ -47,6 +47,8 @@ interface Group {
  lokasi?: {
  village_name: string;
  full_name?: string;
+ faculty_id?: number | null;
+ fakultas_name?: string | null;
  };
 }
 
@@ -225,7 +227,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  onChange={handleFileChange}
  className="absolute inset-0 opacity-0 cursor-pointer z-10"
  />
- <div className="px-4 py-2 bg-white border border-slate-200 rounded-xl flex items-center justify-center gap-2 group-hover/file:border-primary">
+ <div className="px-4 py-2 bg-white border border-slate-200 rounded-lg flex items-center justify-center gap-2 group-hover/file:border-primary">
  <FilePlus className="w-3.5 h-3.5 text-primary" />
  <span className="text-[9px] font-semibold truncate max-w-[100px]">
  {certName || 'Unggah PDF'}
@@ -297,7 +299,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
  <div className="space-y-6 flex-1">
  <div className="flex items-center gap-3">
- <div className="p-2 bg-emerald-50 rounded-xl border border-emerald-100">
+ <div className="p-2 bg-emerald-50 rounded-lg border border-emerald-100">
  <CheckCircle2 className="h-5.5 w-5.5 text-emerald-500" />
  </div>
  <h3 className="text-[11px] font-semibold text-slate-400 ">Transmisi Data Berhasil</h3>
@@ -375,7 +377,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  <div>
  <div className="flex items-center gap-3 mb-4">
  <div className={clsx(
- "h-10 w-10 rounded-xl flex items-center justify-centerfont-semibold",
+ "h-10 w-10 rounded-lg flex items-center justify-centerfont-semibold",
  isSelected ? "bg-primary text-white" : "bg-slate-50 text-slate-400 group-hover/card:bg-primary/10 group-hover/card:text-primary"
  )}>
  {group.nama_kelompok.charAt(0)}
@@ -391,6 +393,15 @@ export default function Register({ periods, student_gender, student_academic }: 
  {group.lokasi?.full_name || group.lokasi?.village_name || 'Lokasi Belum Terverifikasi'}
  </p>
  </div>
+
+ {group.lokasi?.faculty_id && (
+ <div className="mt-3 flex items-center gap-2 px-3 py-1.5 bg-rose-50 border border-rose-100 rounded-lg">
+ <GraduationCap className="h-3 w-3 text-rose-500" />
+ <span className="text-[9px] font-semibold text-rose-600">
+ KHUSUS {group.lokasi.fakultas_name}
+ </span>
+ </div>
+ )}
  </div>
 
  <div className="mt-auto space-y-6">
@@ -413,7 +424,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  <CompositionMetric label="Sisa Quota" value={group.remaining_seats} color={isUnavailable ? 'text-rose-500' : 'text-slate-900'} />
  <CompositionMetric label="Gender L/P" value={`${group.male_member_count} / ${group.female_member_count}`} />
  {group.requires_more_male_members && (
- <div className="mt-3 p-3 bg-amber-50 rounded-xl border border-amber-100">
+ <div className="mt-3 p-3 bg-amber-50 rounded-lg border border-amber-100">
  <p className="text-[8px] font-semibold text-amber-700 leading-normal">
  Prioritas Laki-laki Aktif (+{group.reserved_male_slots} Slot)
  </p>
@@ -509,7 +520,7 @@ function AcademicItem({ icon: Icon, label, value, isSuccess }: { icon: any; labe
  isSuccess ? "bg-emerald-50/50 border-emerald-100" : "bg-rose-50/50 border-rose-100"
  )}>
  <div className="flex items-center justify-between mb-4">
- <div className={clsx("p-2.5 rounded-xl border", isSuccess ? "bg-white text-emerald-500 border-emerald-100" : "bg-white text-rose-500 border-rose-100")}>
+ <div className={clsx("p-2.5 rounded-lg border", isSuccess ? "bg-white text-emerald-500 border-emerald-100" : "bg-white text-rose-500 border-rose-100")}>
  <Icon className="w-5 h-5" />
  </div>
  {isSuccess ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <XCircle className="w-4 h-4 text-rose-500" />}

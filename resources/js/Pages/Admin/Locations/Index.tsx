@@ -88,225 +88,172 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  <AppLayout title="Pengaturan Wilayah KKN">
  <Head title="Master Wilayah KKN" />
  
- <div className="space-y-10 pb-16">
- {/* 
- Emerald Premium Header 
- Refining from basic header to lush tactical emerald gradient
- */}
- <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
- 
- <div className="relative z-10 space-y-5 flex-1">
- <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/10 rounded-xl border border-slate-200
- <Globe2 className="h-4 w-4 text-emerald-300" />
- </div>
- <span className="text-[10px] font-semibold text-emerald-100 ">
- GEOGRAPHIC_ORCHESTRATION_V3
+ <div className="space-y-8 pb-16">
+ {/* Minimalist Tactical Header Strip */}
+ <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-100 pb-8">
+ <div className="space-y-1">
+ <div className="flex items-center gap-3">
+ <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+ <span className="text-[9px] font-semibold text-emerald-600">
+ GEOGRAPHIC_ENTITY_DATABASE
  </span>
  </div>
- <h1 className="text-4xl md:text-5xl font-semibold text-white ">
- Master <span className="text-emerald-300">Wilayah</span>
+ <div className="flex items-center gap-3">
+ <div className="p-2 bg-slate-50 rounded-lg border border-slate-100 text-slate-400">
+ <MapPin className="h-4 w-4" />
+ </div>
+ <h1 className="text-2xl font-semibold text-slate-900 leading-none">
+ Master <span className="text-primary">Wilayah</span>
  </h1>
- <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
- Pusat pengelolaan basis data wilayah administratif untuk penempatan dan koordinasi unit pengabdian mahasiswa di seluruh sektor geografis KKN UIN SAIZU.
- </p>
- </div>
-
- <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
- <div className="bg-white/10 p-6 rounded-lg border border-slate-200 flex items-center gap-6 min-w-[200px] group/stattransition-transform">
- <div className="p-3 bg-white rounded-lg text-primary group-hover/stat:rotate-6">
- <MapPin className="h-6 w-6" />
- </div>
- <div>
- <span className="text-[9px] font-semibold text-emerald-200/60 block mb-1.5">Total Sektor</span>
- <span className="text-2xl font-semibold text-white">{summary.total_locations} Desa</span>
  </div>
  </div>
 
- <div className="bg-white/10 p-6 rounded-lg border border-slate-200 flex items-center gap-6 min-w-[200px] group/stattransition-transform">
- <div className="p-3 bg-white rounded-lg text-primary group-hover/stat:rotate-6">
- <Users className="h-6 w-6" />
+ <div className="flex items-center gap-4">
+ <div className="px-4 py-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-6 transition-all hover:border-slate-200">
+ <div className="flex items-center gap-3 pr-6 border-r border-slate-200">
+ <div className="p-1.5 bg-emerald-50 rounded-lg text-emerald-600">
+ <Globe2 className="h-3 w-3" />
  </div>
- <div>
- <span className="text-[9px] font-semibold text-emerald-200/60 block mb-1.5">Plotting Unit</span>
- <span className="text-2xl font-semibold text-white">{summary.assigned_groups} Kelompok</span>
+ <div className="text-left">
+ <span className="block text-[8px] font-semibold text-slate-400 leading-none mb-0.5">Sektor</span>
+ <span className="text-xs font-semibold text-slate-900 leading-none">
+ {summary.total_locations} DESA
+ </span>
+ </div>
+ </div>
+ <div className="flex items-center gap-3">
+ <div className="p-1.5 bg-blue-50 rounded-lg text-blue-600">
+ <Users className="h-3 w-3" />
+ </div>
+ <div className="text-left">
+ <span className="block text-[8px] font-semibold text-slate-400 leading-none mb-0.5">Plotting</span>
+ <span className="text-xs font-semibold text-slate-900 leading-none">
+ {summary.assigned_groups} UNIT
+ </span>
+ </div>
  </div>
  </div>
  </div>
  </div>
 
- <div className="grid gap-6 xl:grid-cols-5">
+ <div className="grid gap-8 xl:grid-cols-5">
  {/* Import Area */}
- <form onSubmit={handleImport} className="xl:col-span-3 rounded-lg border border-slate-200 bg-white p-10 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none group-hover:rotate-6 transition-transform">
- <Globe2 className="h-48 w-48" />
+ <div className="xl:col-span-2">
+ <form onSubmit={handleImport} className="bg-white p-6 border border-slate-100 rounded-lg space-y-6 relative overflow-hidden group">
+ <div className="absolute -top-4 -right-4 p-8 text-emerald-500/5 group-hover:rotate-12 transition-transform duration-700">
+ <UploadCloud className="h-32 w-32" />
  </div>
  
- <div className="flex items-start justify-between gap-4 relative z-10">
- <div>
- <h2 className="text-xl text-sm text-slate-900 ">Impor Data Wilayah</h2>
- <p className="mt-2 text-xs text-slate-400 text-sm opacity-50">
- Format berkas: <span className="text-primary">.xlsx, .xls, .csv</span>
- </p>
+ <div className="flex items-center gap-4 border-b border-slate-50 pb-4">
+ <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
+ <FileSpreadsheet className="h-4 w-4" />
  </div>
- <div className="rounded-2xl bg-slate-900 p-4 text-primary
- <UploadCloud className="h-6 w-6" />
- </div>
+ <h3 className="text-[11px] font-semibold text-slate-900">BATCH_GEOGRAPHIC_INGESTION</h3>
  </div>
 
- <div className="mt-10 rounded-lg border-2 border-dashed border-slate-200 bg-slate-50/50 p-8 hover:border-primary/30group/dropzone">
- <label className="block text-xs text-sm text-slate-400 mb-4">
- Pilih Berkas Excel/CSV
- </label>
+ <div className="space-y-4 relative z-10">
+ <div className="p-8 border-2 border-dashed border-slate-100 rounded-lg bg-slate-50/50 hover:bg-slate-50 hover:border-primary/20 transition-all group/drop text-center relative">
  <input
  type="file"
- accept=".xlsx,.xls,.csv"
  onChange={handleFileChange}
- className="block w-full text-xs text-sm text-slate-500 file:mr-6 file:rounded-xl file:border-0 file:bg-primary file:px-6 file:py-3 file:text-[10px] file:font-black file:uppercase file: file:text-white hover:file:bg-slate-900cursor-pointer"
+ accept=".xlsx,.xls,.csv"
+ className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+ disabled={importForm.processing}
  />
- {importForm.errors.file && (
- <p className="mt-4 text-xs text-sm text-rose-500 ">{importForm.errors.file}</p>
- )}
- {importForm.data.file && (
- <div className="mt-6 flex items-center gap-3 p-4 bg-white border border-slate-200 rounded-lg">
- <div className="p-2 bg-emerald-50 text-emerald-500 rounded-xl">
- <FileCheck className="h-4 w-4" />
- </div>
- <span className="text-[10px] text-sm text-slate-600 ">{importForm.data.file.name}</span>
- </div>
- )}
- </div>
-
- <div className="mt-8 rounded-lg bg-slate-900 p-6 flex items-start gap-4 border border-slate-800">
- <FileSpreadsheet className="h-5 w-5 text-primary shrink-0 mt-0.5" />
  <div className="space-y-2">
- <p className="text-[11px] font-semibold text-white">Panduan Format Kolom:</p>
- <p className="text-[10px] text-sm text-slate-400 leading-normal opacity-50">
- Pilar Utama: `desa`, `kecamatan`, `kabupaten` <br/>
- Opsional: `kode_desa`
+ <div className="h-8 w-8 text-slate-200 mx-auto group-hover/drop:text-primary transition-colors flex items-center justify-center">
+ <UploadCloud className="h-6 w-6" />
+ </div>
+ <p className="text-[11px] font-semibold text-slate-400 group-hover/drop:text-primary transition-colors">
+ {importForm.data.file ? importForm.data.file.name : 'SELECT_DATABASE_FILE'}
  </p>
+ <span className="text-[9px] font-semibold text-slate-200">.XLSX, .XLS, .CSV ONLY</span>
  </div>
  </div>
 
- <div className="mt-10 flex justify-end">
  <button
  type="submit"
- disabled={importForm.processing || !importForm.data.file}
- className="inline-flex items-center gap-3 rounded-lg bg-slate-900 px-6 py-5 text-xs font-semibold text-white hover:bg-slate-800disabled:opacity-50"
+ disabled={!importForm.data.file || importForm.processing}
+ className="w-full py-4 bg-primary text-white text-[10px] font-semibold rounded-lg transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50"
  >
- <UploadCloud className="h-4 w-4" />
- {importForm.processing ? 'Sedang Mengunggah...' : 'Proses Impor Data'}
+ {importForm.processing ? 'UPLOADING...' : 'START_IMPORT_PROTOCOL'}
  </button>
  </div>
+
+ <div className="p-4 bg-emerald-50 rounded-lg flex gap-3 border border-emerald-100">
+ <Info className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+ <p className="text-[9px] font-semibold text-emerald-800 leading-relaxed">
+ PROSES: Pastikan struktur kolom sesuai dengan template standar (Desa, Kecamatan, Kabupaten).
+ </p>
+ </div>
  </form>
-
- {/* SOP Area */}
- <div className="xl:col-span-2 rounded-lg bg-slate-50 border border-slate-200 p-10 overflow-hidden relative group">
- <div className="relative z-10">
- <div className="flex items-center gap-4 mb-10">
- <div className="rounded-2xl bg-primary/10 p-4 text-primary">
- <Info className="h-6 w-6" />
- </div>
- <div>
- <h2 className="text-xl font-semibold text-slate-900">Prosedur Wilayah</h2>
- <p className="text-[10px] text-sm text-slate-400 mt-1.5">Siklus Manajemen Geografis</p>
- </div>
  </div>
 
- <div className="space-y-5">
- <SOPStep step="01" text="Administrator mendefinisikan daftar desa/kelurahan yang menjadi target lokasi pengabdian." />
- <SOPStep step="02" text="Mahasiswa yang sudah terdaftar mengunggah rincian koordinat dan bukti visual posko." />
- <SOPStep step="03" text="Koordinator KKN memverifikasi integritas lokasi dan memantau perkembangan setiap unit." />
- </div>
- 
- <div className="mt-12 p-6 bg-white border border-slate-200 rounded-lg flex items-center gap-4">
- <ShieldCheck className="h-5 w-5 text-primary" />
- <p className="text-[11px] text-sm text-slate-500 leading-normal wilayah yang telah memiliki riwayat plotting tidak dapat dihapus demi integritas arsip.</p>
- </div>
- </div>
- </div>
- </div>
-
- {/* Table Area */}
- <div className="space-y-6">
- <div className="relative group max-w-lg">
- <Search className="absolute left-6 top-1/2 -/2 h-4.5 w-4.5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
+ {/* Operations Database Table */}
+ <div className="xl:col-span-3 space-y-6">
+ <div className="relative group">
+ <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-primary transition-colors" />
  <input
  type="search"
- placeholder="Cari berdasarkan nama desa atau kode..."
+ placeholder="SEARCH_LOCATION_DATABASE..."
  value={search}
- onChange={(event) => setSearch(event.target.value)}
- className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-14 pr-8 text-sm text-sm text-slate-900 outline-none focus:border-primary/50
+ onChange={(e) => setSearch(e.target.value)}
+ className="w-full pl-12 pr-6 py-4 bg-white border border-slate-100 rounded-lg text-[11px] font-semibold text-slate-900 placeholder:text-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 "
  />
  </div>
 
- <div className="bg-white rounded-lg border border-slate-200 overflow-hidden group">
- <div className="overflow-x-auto custom-scrollbar">
- <table className="min-w-full divide-y divide-slate-50">
+ <div className="bg-white border border-slate-100 rounded-lg overflow-hidden">
+ <div className="overflow-x-auto">
+ <table className="w-full border-collapse divide-y divide-slate-50">
  <thead className="bg-slate-50/50">
  <tr>
- <th className="px-6 py-6 text-left text-xs text-sm text-slate-400">Identitas Wilayah</th>
- <th className="px-6 py-6 text-left text-xs text-sm text-slate-400">Kode Desa</th>
- <th className="px-6 py-6 text-center text-xs text-sm text-slate-400">Kelompok Terdaftar</th>
- <th className="px-6 py-6 text-center text-xs text-sm text-slate-400">Bukti Posko</th>
- <th className="px-6 py-6 text-right text-xs text-sm text-slate-400">Aksi</th>
+ <th className="px-8 py-5 text-left text-[10px] font-semibold text-slate-400">IDENTITAS_WILAYAH</th>
+ <th className="px-8 py-5 text-center text-[10px] font-semibold text-slate-400">INFO_UNIT</th>
+ <th className="px-8 py-5 text-right text-[10px] font-semibold text-slate-400 pr-12">AKSI</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-slate-50">
+ <tbody className="divide-y divide-slate-50/50">
  {locations.data.length === 0 ? (
  <tr>
- <td colSpan={5} className="px-6 py-24 text-center">
- <div className="flex flex-col items-center gap-4 opacity-50">
- <MapPin className="h-14 w-14 text-slate-200" />
- <p className="text-[10px] text-sm text-slate-400 ">Belum ada data wilayah di sektor ini</p>
+ <td colSpan={3} className="px-8 py-24 text-center">
+ <div className="flex flex-col items-center gap-4 opacity-30">
+ <Globe2 className="h-10 w-10 text-slate-300" />
+ <p className="text-[10px] font-semibold text-slate-400">GEODATA_KOSONG</p>
  </div>
  </td>
  </tr>
  ) : (
- locations.data.map((location) => (
- <tr key={location.id} className="group/row hover:bg-slate-50/50">
- <td className="px-6 py-3">
- <div className="flex items-start gap-5">
- <div className="h-12 w-12 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover/row:bg-primary group-hover/row:text-white group-hover/row:border-primary
- <Map className="h-5 w-5" />
+ locations.data.map((loc) => (
+ <tr key={loc.id} className="group/row hover:bg-slate-50/50 transition-colors">
+ <td className="px-8 py-6">
+ <div className="flex items-center gap-4">
+ <div className="h-10 w-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 group-hover/row:bg-primary group-hover/row:text-white group-hover/row:border-primary transition-all">
+ <MapPin className="h-4 w-4" />
  </div>
- <div className="flex flex-col gap-1.5">
- <p className="text-[15px] font-semibold text-slate-900 ">{location.village_name}</p>
- <p className="text-[9px] text-sm text-slate-400 line-clamp-1 opacity-50">{location.full_name}</p>
+ <div className="flex flex-col">
+ <span className="text-sm font-semibold text-slate-900 group-hover/row:text-primary transition-colors">{loc.village_name}</span>
+ <span className="text-[9px] font-semibold text-slate-300">KEC. {loc.district_name} • {loc.regency_name}</span>
  </div>
- </div>
- </td>
- <td className="px-6 py-3 text-xs text-sm text-slate-500 font-mono ">
- {location.village_code || '---'}
- </td>
- <td className="px-6 py-3 text-center">
- <div className="flex flex-col items-center gap-2">
- <span className="inline-flex rounded-xl bg-slate-900 border border-slate-800 text-primary px-3.5 py-1.5 text-xs font-semibold
- {location.groups_count} Kelompok
- </span>
- {location.delete_blocker && (
- <p className="text-[8px] text-sm text-amber-500 ">{location.delete_blocker}</p>
- )}
  </div>
  </td>
- <td className="px-6 py-3 text-center">
- <span className={clsx(
- "inline-flex rounded-xl px-4 py-1.5 text-xs font-semibold",
- location.posko_count > 0 ? "bg-emerald-100 text-emerald-600" : "bg-slate-50 text-slate-300"
- )}>
- {location.posko_count} Berkas
- </span>
+ <td className="px-8 py-6 text-center">
+ <div className="flex flex-col items-center gap-1">
+ <span className="text-xs font-semibold text-slate-900 border-b border-primary/20 pb-0.5">{loc.groups_count} UNIT</span>
+ <span className="text-[8px] font-semibold text-slate-300">POSKO: {loc.posko_count}</span>
+ </div>
  </td>
- <td className="px-6 py-3">
- <div className="flex justify-endx-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-0">
+ <td className="px-8 py-6 text-right pr-12">
+ <div className="flex justify-end gap-2 opacity-30 group-hover/row:opacity-100 transition-opacity">
  <button
- type="button"
- onClick={() => setDeleting(location)}
- disabled={!location.can_delete}
- className="h-10 w-10 flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-100 rounded-xldisabled:opacity-20 disabled:grayscale"
+ onClick={() => setDeleting(loc)}
+ disabled={!loc.can_delete}
+ className={clsx(
+ "p-2.5 border border-slate-100 rounded-lg transition-all",
+ loc.can_delete ? "text-slate-400 hover:text-rose-500 hover:border-rose-100" : "opacity-10 cursor-not-allowed"
+ )}
+ title={loc.can_delete ? 'Hapus Wilayah' : (loc.delete_blocker ?? 'Sedang digunakan')}
  >
- <Trash2 className="h-4.5 w-4.5" />
+ <Trash2 className="w-4 h-4" />
  </button>
  </div>
  </td>
@@ -316,12 +263,32 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  </tbody>
  </table>
  </div>
+ </div>
 
  {locations.meta && (
- <div className="border-t border-slate-200 px-6 py-6 bg-slate-50/30">
+ <div className="p-4 bg-slate-50/50 border border-slate-100 rounded-lg">
  <Pagination meta={locations.meta} />
  </div>
  )}
+ </div>
+ </div>
+
+ {/* Tactical Resource Footer */}
+ <div className="p-8 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group">
+ <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
+ <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+ <div className="flex items-center gap-5">
+ <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+ <ShieldCheck className="h-6 w-6 text-primary" />
+ </div>
+ <div>
+ <h4 className="text-[11px] font-semibold text-white">GEOGRAPHIC_INTEL_PROTOCOL</h4>
+ <p className="text-[9px] font-semibold text-slate-500 mt-1 leading-relaxed max-w-2xl">
+ Data wilayah disinkronkan langsung dengan repositori pusat KKN. <br/>
+ STATUS: SECURE_CORE_SYNC_OK
+ </p>
+ </div>
+ </div>
  </div>
  </div>
  </div>
@@ -335,22 +302,22 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  onSuccess: () => setDeleting(null),
  });
  }}
- title="Hapus Wilayah"
- message={`Apakah Anda yakin ingin menghapus data wilayah "${deleting?.full_name}" secara permanen?`}
- confirmLabel="Hapus Data"
+ title="EKSEKUSI_PENGHAPUSAN_WILAYAH"
+ message={deleting?.can_delete 
+ ? `Apakah Anda yakin ingin menghapus "${deleting.full_name}"?` 
+ : (deleting?.delete_blocker ?? 'Wilayah ini terikat dengan entitas aktif.')}
  processing={deleteForm.processing}
+ confirmLabel="HAPUS_DATA"
  />
  </AppLayout>
  );
 }
 
-
-
 function SOPStep({ step, text }: { step: string; text: string }) {
  return (
  <div className="flex gap-5 group">
  <div className="flex flex-col items-center gap-2">
- <div className="h-10 w-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-xs font-semibold text-primary group-hover:bg-primary group-hover:text-white">
+ <div className="h-10 w-10 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-xs font-semibold text-primary group-hover:bg-primary group-hover:text-white">
  {step}
  </div>
  <div className="w-[1px] h-full bg-slate-200 group-last:hidden" />

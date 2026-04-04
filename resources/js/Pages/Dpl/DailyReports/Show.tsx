@@ -139,7 +139,7 @@ export default function DplDailyReportShow({ report }: Props) {
  rel="noreferrer"
  className="group flex items-center gap-5 p-5 rounded-lg bg-slate-50 border border-slate-200 hover:bg-white hover:border-primary/30
  >
- <div className="h-12 w-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white
+ <div className="h-12 w-12 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white
  <FileText className="h-6 w-6" />
  </div>
  <div className="min-w-0">
@@ -224,7 +224,7 @@ export default function DplDailyReportShow({ report }: Props) {
  <button 
  onClick={() => revisionForm.patch(`/dpl/daily-reports/${report.id}/revision`)}
  disabled={revisionForm.processing}
- className="w-full py-4 bg-amber-500 text-white rounded-xl text-[9px] font-semibold hover:bg-amber-600"
+ className="w-full py-4 bg-amber-500 text-white rounded-lg text-[9px] font-semibold hover:bg-amber-600"
  >
  Kirim Instruksi Revisi
  </button>
@@ -252,7 +252,7 @@ export default function DplDailyReportShow({ report }: Props) {
 function MetaInfo({ icon: Icon, label, value }: any) {
  return (
  <div className="flex items-start gap-4 group">
- <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
+ <div className="h-10 w-10 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
  <Icon className="h-5 w-5" />
  </div>
  <div className="min-w-0">

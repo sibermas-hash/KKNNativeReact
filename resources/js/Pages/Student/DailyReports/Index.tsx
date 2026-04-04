@@ -158,12 +158,12 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
  </div>
 
  <div className="flex items-center justify-between md:flex-col md:items-end md:justify-center gap-6 relative z-10 shrink-0 border-t border-slate-200 md:border-t-0 pt-8 md:pt-0">
- <StatusBadge status={r.status} className="px-6 py-2 rounded-xl text-[9px] font-semibold border-none" />
+ <StatusBadge status={r.status} className="px-6 py-2 rounded-lg text-[9px] font-semibold border-none" />
  
  {r.status === 'revision' ? (
  <Link 
  href={`/student/daily-reports/${r.id}/edit`} 
- className="h-12 px-6 bg-rose-600 text-white rounded-xl text-xs font-semibold hover:bg-rose-700active:flex items-center gap-2"
+ className="h-12 px-6 bg-rose-600 text-white rounded-lg text-xs font-semibold hover:bg-rose-700active:flex items-center gap-2"
  >
  <Edit3 className="h-4 w-4" />
  Perbaiki Laporan

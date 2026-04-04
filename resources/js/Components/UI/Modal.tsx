@@ -52,7 +52,7 @@ export default function Modal({
  leaveTo="opacity-0"
  >
  <DialogPanel
- className={`w-full ${widths[maxWidth]} rounded-xl bg-white p-6 ring-1 ring-slate-900/5`}
+ className={`w-full ${widths[maxWidth]} rounded-lg bg-white p-6 ring-1 ring-slate-900/5`}
  >
  {title && (
  <div className="mb-4 flex items-center justify-between">

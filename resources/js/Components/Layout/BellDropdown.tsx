@@ -78,7 +78,7 @@ export default function BellDropdown() {
 
  {/* Header */}
  <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-white/2">
- <h3 className="text-white text-xs font-semibold uppercase 
+ <h3 className="text-white text-xs font-semibold 
  Notifikasi
  {count > 0 && (
  <span className="ml-2 px-2 py-0.5 rounded-md bg-red-500/20 text-red-500 text-[10px] font-semibold">
@@ -88,7 +88,7 @@ export default function BellDropdown() {
  </h3>
  {count > 0 && (
  <button onClick={markAllRead}
- className="text-[10px] font-semibold text-blue-400 hover:text-blue-300 transition-colors uppercase flex items-center gap-1">
+ className="text-[10px] font-semibold text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">
  <CheckBadgeIcon className="w-3 h-3" /> Tandai semua dibaca
  </button>
  )}
@@ -114,7 +114,7 @@ export default function BellDropdown() {
  {item.message}
  </p>
  <div className="flex items-center justify-between mt-3">
- <span className="text-slate-600 text-[10px] font-bold flex items-center gap-1">
+ <span className="text-slate-600 text-[10px] font-semibold flex items-center gap-1">
  <ClockIcon className="w-3 h-3" />
  {item.created_at}
  </span>
@@ -122,12 +122,12 @@ export default function BellDropdown() {
  {item.action && (
  <a href={item.action}
  onClick={() => markRead(item.id)}
- className="text-[10px] font-semibold text-blue-400 hover:text-blue-300 uppercase 
+ className="text-[10px] font-semibold text-blue-400 hover:text-blue-300 
  Lihat →
  </a>
  )}
  <button onClick={() => markRead(item.id)}
- className="opacity-0 group-hover:opacity-100 text-[10px] font-semibold text-slate-500 hover:text-slate-300 uppercase 
+ className="opacity-0 group-hover:opacity-100 text-[10px] font-semibold text-slate-500 hover:text-slate-300 
  Tandai dibaca
  </button>
  </div>
@@ -138,7 +138,7 @@ export default function BellDropdown() {
  </div>
 
  <div className="px-6 py-3 border-t border-white/5 bg-white/2">
- <button className="w-full text-center text-[10px] font-semibold text-slate-500 hover:text-white transition-colors uppercase 
+ <button className="w-full text-center text-[10px] font-semibold text-slate-500 hover:text-white transition-colors 
  Lihat arsip notifikasi
  </button>
  </div>

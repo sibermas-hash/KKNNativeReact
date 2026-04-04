@@ -51,7 +51,7 @@ export default function DplFinalReportsIndex({ reports }: Props) {
  </p>
  </div>
 
- <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-right">
+ <div className="rounded-lg border border-slate-200 bg-slate-50 px-5 py-4 text-right">
  <p className="text-[10px] font-semibold text-slate-400">
  Total Laporan
  </p>
@@ -89,7 +89,7 @@ export default function DplFinalReportsIndex({ reports }: Props) {
  <tr key={report.id} className="hover:bg-slate-50/60 transition-colors">
  <td className="px-6 py-5 align-top">
  <div className="flex items-start gap-4">
- <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-slate-500">
+ <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-slate-500">
  <FileText className="h-5 w-5" />
  </div>
  <div className="space-y-2">
@@ -114,7 +114,7 @@ export default function DplFinalReportsIndex({ reports }: Props) {
  </div>
  </td>
  <td className="px-6 py-5 align-top">
- <div className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-sm text-slate-700">
+ <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-sm text-slate-700">
  <Users className="h-4 w-4 text-slate-400" />
  <span>{report.kelompok?.nama_kelompok ?? '-'}</span>
  </div>
@@ -125,7 +125,7 @@ export default function DplFinalReportsIndex({ reports }: Props) {
  <td className="px-6 py-5 align-top text-right">
  <Link
  href={`/dpl/final-reports/${report.id}`}
- className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 transition-colors hover:border-primary hover:text-primary"
+ className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 transition-colors hover:border-primary hover:text-primary"
  >
  Detail
  <ArrowRight className="h-4 w-4" />

@@ -134,7 +134,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  </div>
  <div className="relative z-10 space-y-6">
  <div className="flex items-center gap-4 border-b border-slate-200 pb-8">
- <div className="p-3.5 bg-primary/10 text-primary rounded-xl border border-primary">
+ <div className="p-3.5 bg-primary/10 text-primary rounded-lg border border-primary">
  <MapPin className="h-6 w-6" />
  </div>
  <div>
@@ -149,7 +149,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  <p className="text-xs font-semibold text-slate-900">LNG: {posko?.longitude ?? '---'}</p>
  </div>
  {posko?.gmaps_link && (
- <a href={posko.gmaps_link} target="_blank" rel="noreferrer" className="mt-6 flex items-center justify-center gap-2 py-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-primary hover:bg-primary hover:text-white
+ <a href={posko.gmaps_link} target="_blank" rel="noreferrer" className="mt-6 flex items-center justify-center gap-2 py-3 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-primary hover:bg-primary hover:text-white
  <MapIcon className="w-3.5 h-3.5" /> Buka Peta
  </a>
  )}
@@ -197,7 +197,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  <p className="text-[10px] font-semibold text-slate-400 mt-1.5">Panel Ketua Kelompok</p>
  </div>
  </div>
- <button type="button" onClick={detectLocation} className="flex items-center gap-2 px-6 py-3 bg-emerald-50 text-emerald-600 rounded-xl text-[9px] font-semibold border border-emerald-100 hover:bg-emerald-600 hover:text-white">
+ <button type="button" onClick={detectLocation} className="flex items-center gap-2 px-6 py-3 bg-emerald-50 text-emerald-600 rounded-lg text-[9px] font-semibold border border-emerald-100 hover:bg-emerald-600 hover:text-white">
  <Navigation className={clsx("w-3.5 h-3.5", geoStatus === 'detecting' && )} />
  {geoStatus === 'detecting' ? 'Mendeteksi...' : 'Deteksi Otomatis'}
  </button>

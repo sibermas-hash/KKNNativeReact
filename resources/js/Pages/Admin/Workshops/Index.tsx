@@ -187,7 +187,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/10 rounded-xl border border-slate-200
+ <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <Zap className="h-4 w-4 text-emerald-300" />
  </div>
  <span className="text-[10px] font-semibold text-emerald-100 ">
@@ -393,7 +393,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <h3 className="text-3xl font-semibold text-slate-900 group-hover:text-primary transition-colors">{workshop.title}</h3>
  </div>
  <div className={clsx(
- "px-5 py-2 rounded-xl border text-[9px] font-semibold shrink-0",
+ "px-5 py-2 rounded-lg border text-[9px] font-semibold shrink-0",
  workshop.status === 'cancelled'
  ? "bg-slate-200 text-slate-600 border-slate-300"
  : workshop.status === 'completed'

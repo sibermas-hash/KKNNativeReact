@@ -135,12 +135,12 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  <div className="flex items-center gap-3">
  <StatusBadge
  status={item.report?.status ?? item.status}
- className="px-5 py-2 rounded-xl text-[9px] font-semibold border-none
+ className="px-5 py-2 rounded-lg text-[9px] font-semibold border-none
  />
  {item.report && (
  <a
  href={`/reports/${item.report.id}/download`}
- className="h-11 px-5 rounded-xl border border-slate-200 text-slate-500 hover:text-primary hover:border-primary/30inline-flex items-center gap-2 text-xs font-semibold 
+ className="h-11 px-5 rounded-lg border border-slate-200 text-slate-500 hover:text-primary hover:border-primary/30inline-flex items-center gap-2 text-xs font-semibold 
  >
  <Download className="h-4 w-4" />
  Unduh

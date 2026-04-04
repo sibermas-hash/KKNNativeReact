@@ -77,7 +77,7 @@ export default function SystemSettings({ settings }: Props) {
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/10 rounded-xl border border-slate-200
+ <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <Settings className="h-4 w-4 text-emerald-300" />
  </div>
  <span className="text-[10px] font-semibold text-emerald-100 ">
@@ -110,7 +110,7 @@ export default function SystemSettings({ settings }: Props) {
  <div key={group} className="bg-white rounded-lg border border-slate-200 overflow-hidden group/card">
  <div className="px-6 py-6 bg-slate-50/50 border-b border-slate-200 flex items-center justify-between">
  <div className="flex items-center gap-4">
- <div className="p-2.5 bg-white rounded-xl text-slate-400 border border-slate-200 group-hover/card:text-primary
+ <div className="p-2.5 bg-white rounded-lg text-slate-400 border border-slate-200 group-hover/card:text-primary
  <Wrench className="w-5 h-5" />
  </div>
  <h2 className="text-sm font-semibold text-slate-900 ">

@@ -100,7 +100,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
  <div className="text-right">
  <p className="text-4xl font-semibold text-slate-900 ">{ev.total_score ?? '00'}</p>
  <div className={clsx(
- "mt-3 inline-flex px-4 py-1.5 rounded-xl text-xs font-semibold 
+ "mt-3 inline-flex px-4 py-1.5 rounded-lg text-xs font-semibold 
  ev.grade === 'A' || ev.grade === 'B' 
  ? "bg-emerald-500 text-white 
  : ev.grade === 'C' 

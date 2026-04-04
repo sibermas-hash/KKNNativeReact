@@ -13,7 +13,10 @@ import {
  Activity,
  Power,
  Fingerprint,
- Zap
+ Zap,
+ ChevronLeft,
+ ShieldAlert,
+ Cpu,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -64,184 +67,189 @@ export default function UsersIndex({ users, filters }: Props) {
  };
 
  const roleMap: Record<string, string> = {
- 'superadmin': 'Administrator Pusat',
- 'faculty_admin': 'Admin Fakultas',
- 'dpl': 'Personel DPL',
- 'student': 'Peserta Mahasiswa',
- 'admin_prodi': 'Koordinator Program'
+ 'superadmin': 'ADMIN_PUSAT',
+ 'faculty_admin': 'ADMIN_FAKULTAS',
+ 'dpl': 'PERSONEL_DPL',
+ 'student': 'PESERTA_MAHASISWA',
+ 'admin_prodi': 'KOORDINATOR_PRODI'
  };
 
  return (
  <AppLayout title="Manajemen Akses Pengguna">
  <Head title="Direktori Pengguna" />
 
- <div className="space-y-12 pb-24">
- {/* 
- Emerald Premium Header 
- Refining from heavy black to lush tactical emerald gradient
- */}
- <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col md:flex-row md:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
- 
- <div className="relative z-10 space-y-5 flex-1">
- <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/15 rounded-xl border border-slate-200
- <Activity className="h-4 w-4 text-emerald-300" />
- </div>
- <span className="text-[10px] font-semibold text-emerald-100 ">
- DIRECTORY_AUTHORIZATION_V3
+ <div className="space-y-8 pb-24">
+ {/* Minimalist Tactical Header Strip */}
+ <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-100 pb-8">
+ <div className="space-y-1">
+ <div className="flex items-center gap-3">
+ <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+ <span className="text-[9px] font-semibold text-emerald-600">
+ DIRECTORY_AUTHORIZATION_V3.2
  </span>
  </div>
- <h1 className="text-4xl md:text-5xl font-semibold text-white ">
- Direktori <span className="text-emerald-300">Pengguna</span>
+ <div className="flex items-center gap-3">
+ <div className="p-2 bg-slate-50 rounded-lg border border-slate-100 text-slate-400">
+ <Users className="h-4 w-4" />
+ </div>
+ <h1 className="text-2xl font-semibold text-slate-900 leading-none">
+ Direktori <span className="text-primary">Pengguna</span>
  </h1>
- <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
- Repositori manajemen identitas dan orkestrasi hak akses untuk seluruh personel fungsional dalam ekosistem KKN UIN SAIZU.
- </p>
+ </div>
  </div>
 
- <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
- <div className="bg-white/10 p-6 rounded-lg border border-slate-200 flex items-center gap-6 min-w-[200px] group/stat">
- <div className="p-3 bg-white rounded-lg text-primary group-hover/stat:transition-transform">
- <Users className="h-6 w-6" />
+ <div className="flex items-center gap-4">
+ <div className="px-4 py-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-4">
+ <div className="flex items-center gap-3">
+ <div className="p-1.5 bg-emerald-50 rounded-lg text-emerald-600">
+ <Activity className="h-3 w-3" />
  </div>
- <div>
- <span className="text-[9px] font-semibold text-emerald-200/60 block mb-1.5">Total Entri</span>
- <span className="text-2xl font-semibold text-white">{users.meta?.total || 0} Akun</span>
+ <div className="text-left">
+ <span className="block text-[8px] font-semibold text-slate-400 leading-none mb-0.5">Active_Directory</span>
+ <span className="text-xs font-semibold text-slate-900 leading-none">
+ {users.meta?.total || 0} ACCOUNTS
+ </span>
  </div>
  </div>
+ </div>
+
  <Link 
  href="/admin/users/create" 
- className="flex items-center gap-4 px-6 py-2 bg-white hover:bg-emerald-50 text-primary rounded-lg font-semibold text-xs"
+ className="px-6 py-3 bg-slate-900 text-white text-[10px] font-semibold rounded-lg transition-all hover:-translate-y-1 active:scale-95 flex items-center gap-3"
  >
- <UserPlus className="w-5 h-5" />
- Pendaftaran User
+ <UserPlus className="w-3.5 h-3.5 text-emerald-400" />
+ REGISTER_RECORD
  </Link>
  </div>
  </div>
 
  {/* Operations Toolbar */}
- <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-4">
- <div className="relative group max-w-lg w-full">
- <Search className="absolute left-6 top-1/2 -/2 w-4.5 h-4.5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
+ <div className="flex flex-col xl:flex-row gap-6 items-center justify-between">
+ <div className="flex-1 w-full xl:max-w-2xl relative group">
+ <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-primary transition-colors" />
  <input
- placeholder="Cari Identitas, Email, NIM/NIP..."
+ type="search"
+ placeholder="SEARCH_IDENTITY (NAME / ID / EMAIL)..."
  value={search}
  onChange={(e) => setSearch(e.target.value)}
- className="w-full h-15 pl-14 pr-8 py-2 bg-white border border-slate-200 rounded-lg text-sm text-sm text-slate-900 outline-none focus:border-primary/50
+ className="w-full h-12 pl-12 pr-6 bg-white border border-slate-100 rounded-lg text-[11px] font-semibold text-slate-900 placeholder:text-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 "
  />
  </div>
- 
- <div className="w-full md:w-72">
- <FormSelect
- options={[
- { value: '', label: 'Semua Otoritas' },
- { value: 'superadmin', label: 'Admin Pusat' },
- { value: 'faculty_admin', label: 'Admin Fakultas' },
- { value: 'dpl', label: 'Personel DPL' },
- { value: 'student', label: 'Peserta Mahasiswa' }
- ]}
+
+ <div className="flex flex-wrap gap-4 w-full xl:w-auto">
+ <div className="relative flex-1 xl:w-56 group">
+ <select
  value={role}
  onChange={(e) => setRole(e.target.value)}
- className="h-15 bg-white border-slate-200 rounded-lg text-xs font-semibold text-slate-500 focus:border-primary/30"
- />
+ className="w-full bg-white border border-slate-100 rounded-lg px-4 py-3 text-[10px] font-semibold text-slate-900 focus:outline-none focus:ring-4 focus:ring-primary/5 appearance-none cursor-pointer"
+ >
+ <option value="">ALL_AUTHORITIES</option>
+ <option value="superadmin">ADMIN_PUSAT</option>
+ <option value="faculty_admin">ADMIN_FAKULTAS</option>
+ <option value="dpl">PERSONEL_DPL</option>
+ <option value="student">PESERTA_MAHASISWA</option>
+ </select>
+ </div>
  </div>
  </div>
 
  {/* Account Ledger (Table) */}
- <div className="bg-white rounded-lg border border-slate-200 overflow-hidden group mx-2">
- <div className="overflow-x-auto relative z-10 custom-scrollbar pr-1">
- <table className="min-w-full divide-y divide-slate-100">
+ <div className="bg-white rounded-lg border border-slate-100 overflow-hidden relative group">
+ <div className="overflow-x-auto relative z-10 custom-scrollbar">
+ <table className="min-w-full divide-y divide-slate-50">
  <thead className="bg-slate-50/50">
  <tr>
- <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400">Personel & Kredensial</th>
- <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400">Afiliasi & Kontak</th>
- <th className="px-6 py-6 text-center text-xs font-semibold text-slate-400">Otoritas</th>
- <th className="px-6 py-6 text-center text-xs font-semibold text-slate-400">Status</th>
- <th className="px-6 py-6 text-right text-xs font-semibold text-slate-400 pr-12">Tindakan</th>
+ <th className="px-8 py-6 text-left text-[9px] font-semibold text-slate-400">PERSONNEL_IDENTITY</th>
+ <th className="px-8 py-6 text-left text-[9px] font-semibold text-slate-400">AFFILIATION_VECTOR</th>
+ <th className="px-8 py-6 text-center text-[9px] font-semibold text-slate-400">AUTHORITY_LEVEL</th>
+ <th className="px-8 py-6 text-center text-[9px] font-semibold text-slate-400">STATUS</th>
+ <th className="px-8 py-6 text-right text-[9px] font-semibold text-slate-400">COMMAND</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-slate-50">
  {users.data.length === 0 ? (
  <tr>
- <td colSpan={5} className="px-6 py-32 text-center">
- <div className="flex flex-col items-center gap-5 opacity-50">
- <Users className="h-16 w-16 text-slate-200" />
- <p className="text-[11px] font-semibold text-slate-400 ">Tidak ada rekam jejak pengguna ditemukan</p>
+ <td colSpan={5} className="px-8 py-32 text-center">
+ <div className="flex flex-col items-center gap-4 opacity-20">
+ <Users className="h-12 w-12 text-slate-900" />
+ <span className="text-[10px] font-semibold text-slate-900">NO_RECORDS_DETECTED</span>
  </div>
  </td>
  </tr>
  ) : (
  users.data.map((u) => (
- <tr key={u.id} className="group/row hover:bg-slate-50/30">
- <td className="px-6 py-8">
- <div className="flex items-center gap-6">
+ <tr key={u.id} className="group/row hover:bg-slate-50/50 transition-colors">
+ <td className="px-8 py-6">
+ <div className="flex items-center gap-4">
  <div className="relative">
- <div className="w-14 h-14 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-base font-semibold text-slate-300 group-hover/row:bg-primary group-hover/row:text-white group-hover/row:border-primary">
+ <div className="h-10 w-10 rounded-lg bg-slate-900 border border-slate-800 text-primary text-[11px] font-semibold flex items-center justify-center group-hover/row:scale-110 transition-transform">
  {getInitials(u.name)}
  </div>
- {u.is_active && <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-lg border-2 border-white" />}
+ {u.is_active && <div className="absolute -top-1 -right-1 h-3.5 w-3.5 bg-primary rounded-full border-2 border-white " />}
  </div>
- <div className="flex flex-col gap-1.5">
- <span className="text-[16px] font-semibold text-slate-900 group-hover/row:text-primary transition-colors leading-normal">{u.name}</span>
- <span className="text-[10px] text-sm text-slate-400 opacity-50">RID: #{u.username}</span>
+ <div className="flex flex-col min-w-0">
+ <span className="text-xs font-semibold text-slate-900 truncate max-w-[200px] group-hover/row:text-primary transition-colors">
+ {u.name}
+ </span>
+ <div className="flex items-center gap-2 mt-0.5">
+ <Fingerprint className="h-3 w-3 text-slate-300" />
+ <span className="text-[9px] font-semibold text-slate-400 opacity-50 font-mono">
+ RID: #{u.username}
+ </span>
+ </div>
  </div>
  </div>
  </td>
- <td className="px-6 py-8">
- <div className="flex flex-col gap-2">
- <div className="flex items-center gap-2 text-xs text-sm text-slate-600">
- <Mail className="h-4 w-4 text-primary/50" />
+ <td className="px-8 py-6">
+ <div className="flex flex-col gap-1.5 min-w-0">
+ <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-500 lowercase truncate max-w-[200px]">
+ <Mail className="h-3 w-3 text-primary/40" />
  {u.email}
  </div>
- <span className="text-[10px] font-semibold text-slate-300 bg-slate-50 px-2 py-0.5 rounded-lg w-fit">
- {u.mahasiswa?.nim || u.dosen?.nip || 'INTERNAL_SYS'}
+ <span className="text-[9px] font-semibold text-slate-300">
+ {u.mahasiswa?.nim || u.dosen?.nip || 'INTERNAL_SYS_ENTRY'}
  </span>
  </div>
  </td>
- <td className="px-6 py-8 text-center">
+ <td className="px-8 py-6 text-center">
  <div className="flex flex-wrap justify-center gap-2">
  {u.roles.map((r) => (
- <Badge 
+ <span 
  key={r.name} 
- variant="default" 
  className={clsx(
- "px-4 py-1.5 rounded-xl text-xs font-semibold border-none
- r.name === 'superadmin' ? "bg-amber-100 text-amber-600" :
- r.name === 'faculty_admin' ? "bg-sky-100 text-sky-600" :
- r.name === 'dpl' ? "bg-indigo-100 text-indigo-600" :
- "bg-emerald-100 text-emerald-600"
+ "px-3 py-1 rounded-lg text-[9px] font-semibold ",
+ r.name === 'superadmin' ? "bg-amber-50 text-amber-600 border border-amber-100" :
+ r.name === 'faculty_admin' ? "bg-sky-50 text-sky-600 border border-sky-100" :
+ r.name === 'dpl' ? "bg-indigo-50 text-indigo-600 border border-indigo-100" :
+ "bg-emerald-50 text-emerald-600 border border-emerald-100"
  )}
  >
  {roleMap[r.name] || r.name.toUpperCase()}
- </Badge>
+ </span>
  ))}
  </div>
  </td>
- <td className="px-6 py-8 text-center">
- <Badge
- variant={u.is_active ? 'success' : 'danger'}
- className="px-5 py-2 rounded-xl text-xs font-semibold border-none
- >
- {u.is_active ? 'Otoritas Aktif' : 'Akses Dicabut'}
- </Badge>
+ <td className="px-8 py-6 text-center">
+ <span className={clsx(
+ "px-3 py-1 rounded-lg text-[9px] font-semibold ",
+ u.is_active ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"
+ )}>
+ {u.is_active ? 'ACTIVE_AUTH' : 'REVOKED_ACCESS'}
+ </span>
  </td>
- <td className="px-6 py-8 text-right pr-12">
- <div className="flex justify-end gap-3x-2 group-hover/row:translate-x-0opacity-0 group-hover/row:opacity-100">
+ <td className="px-8 py-6 text-right">
  <button
  onClick={() => toggleStatus(u.id)}
  disabled={toggleForm.processing}
  className={clsx(
- "p-3.5 rounded-lgactive:border",
+ "h-9 w-9 rounded-lg flex items-center justify-center transition-all group/btn",
  u.is_active 
- ? "bg-white border-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white 
- : "bg-white border-primary text-primary hover:bg-primary hover:text-white
+ ? "bg-white border border-rose-100 text-rose-400 hover:bg-rose-500 hover:text-white" 
+ : "bg-white border border-primary text-primary hover:bg-primary hover:text-white"
  )}
- title={u.is_active ? 'Cabut Akses' : 'Berikan Akses'}
  >
- <Power className="w-5.5 h-5.5" />
+ <Power className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
  </button>
- </div>
  </td>
  </tr>
  ))
@@ -250,45 +258,41 @@ export default function UsersIndex({ users, filters }: Props) {
  </table>
  </div>
  {users.meta && (
- <div className="px-6 py-8 bg-slate-50/50 border-t border-slate-200">
+ <div className="px-8 py-6 bg-slate-50/50 border-t border-slate-50">
  <Pagination meta={users.meta} />
  </div>
  )}
  </div>
 
- {/* 
- Lush Emerald Footer 
- Refining from heavy black to premium tactical emerald gradient
- */}
- <div className="p-12 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group">
- <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
- 
- <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
- <div className="space-y-6">
+ {/* Operations Footer */}
+ <div className="p-8 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group">
+ <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_50%,rgba(16,168,83,0.05),transparent_50%)]" />
+ <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+ <div className="space-y-4">
  <div className="flex items-center gap-4">
- <div className="p-3 bg-primary/10 rounded-lg border border-primary">
- <ShieldCheck className="h-7 w-7 text-primary" />
+ <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+ <ShieldAlert className="h-6 w-6 text-primary" />
  </div>
  <div>
- <h4 className="text-[11px] font-semibold text-white ">AUTH_CONTROL_LEDGER_V3</h4>
- <p className="text-[10px] text-emerald-400 text-sm mt-2 whitespace-nowrap">SECURITY_HEARTBEAT: ACTIVE_ENCRYPTED</p>
+ <h4 className="text-[11px] font-semibold text-white leading-none">AUTH_CONTROL_LEDGER_V3.2</h4>
+ <p className="text-[10px] font-semibold text-emerald-500 mt-2">STATUS: ACTIVE_ENCRYPTED_AUTH</p>
  </div>
  </div>
- <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-4xl opacity-75">
- Operational Notice: Pergerakan status otoritas akun diawasi secara real-time melalui protokol audit sistem. Manajemen identitas Administrator Pusat memiliki wewenang untuk menangguhkan akses personel secara instan demi menjaga integritas data nasional KKN UIN SAIZU.
+ <p className="text-[12px] text-slate-400 text-sm leading-relaxed max-w-4xl opacity-75">
+ Manajemen identitas Administrator Pusat memiliki wewenang absolut untuk menangguhkan akses personel secara instan demi menjaga integritas data nasional KKN UIN SAIZU.
  </p>
  </div>
- <div className="flex flex-col items-end gap-5 shrink-0 border-l border-slate-800 pl-12 hidden lg:flex">
- <div className="flex items-center gap-3 mb-2 px-5 py-2.5 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
- <div className="h-2.5 w-2.5 rounded-lg bg-emerald-500" />
- <span className="text-[11px] font-semibold text-slate-100 ">MONITOR_SYNCHRONIZED</span>
+ <div className="flex flex-col items-end gap-5 shrink-0 hidden lg:flex border-l border-slate-800 pl-10">
+ <div className="flex items-center gap-3 px-4 py-2 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
+ <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(16,168,83,0.5)]" />
+ <span className="text-[9px] font-semibold text-slate-100">MONITOR_SYNCHRONIZED</span>
  </div>
- <div className="flex gap-5">
- <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
- <Fingerprint className="h-7 w-7" />
+ <div className="flex gap-4 opacity-50">
+ <div className="h-10 w-10 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 transition-colors">
+ <Cpu className="h-5 w-5" />
  </div>
- <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
- <Zap className="h-7 w-7" />
+ <div className="h-10 w-10 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 transition-colors">
+ <Zap className="h-5 w-5" />
  </div>
  </div>
  </div>

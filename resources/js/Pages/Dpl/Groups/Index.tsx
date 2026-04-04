@@ -48,7 +48,7 @@ export default function DplGroupsIndex({ groups }: Props) {
  </div>
 
  <div className="flex items-center gap-4 bg-white p-4 rounded-lg border border-slate-200
- <div className="p-3 bg-primary/10 rounded-xl">
+ <div className="p-3 bg-primary/10 rounded-lg">
  <UserGroupIcon className="h-5 w-5 text-primary" />
  </div>
  <div>
@@ -81,7 +81,7 @@ export default function DplGroupsIndex({ groups }: Props) {
  
  <div className="mb-8 flex items-center justify-between relative z-10">
  <div className="flex items-center gap-3">
- <div className="h-12 w-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:border-primary">
+ <div className="h-12 w-12 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:border-primary">
  <UserGroupIcon className="h-6 w-6" />
  </div>
  <div>

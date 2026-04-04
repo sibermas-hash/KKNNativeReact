@@ -125,7 +125,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
  "bg-rose-50 border-rose-100 text-rose-700
  )}>
  <div className={clsx(
- "h-12 w-12 rounded-xl flex items-center justify-center text-white",
+ "h-12 w-12 rounded-lg flex items-center justify-center text-white",
  locationStatus === 'acquired' ? "bg-emerald-500" : 
  locationStatus === 'requesting' ? "bg-primary" : 
  "bg-rose-500"
@@ -214,7 +214,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
  disabled={form.processing || locationStatus === 'requesting'}
  className="h-20 px-16 bg-slate-900 text-whiterounded-lg text-xs font-semibold hover:bg-blackactive:disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-5 group group/submit"
  >
- <UploadCloud className={clsx("w-6 h-6 text-primary", form.processing ?  : "group-hover/submit:translate-y-[-3px]")} />
+ <UploadCloud className={clsx("w-6 h-6 text-primary", form.processing ? : "group-hover/submit:translate-y-[-3px]")} />
  {form.processing ? 'Sedang Mengirim...' : 'Kirim Laporan Sekarang'}
  </button>
  </div>

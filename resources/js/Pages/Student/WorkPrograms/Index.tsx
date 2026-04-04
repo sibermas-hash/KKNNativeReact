@@ -127,7 +127,7 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
  <div className="h-1.5 w-1.5 rounded-lg bg-primary/40" />
  <p className="text-[10px] font-semibold text-slate-400 ">ID Proker: #{wp.id.toString().padStart(3, '0')}</p>
  </div>
- <StatusBadge status={wp.status} className="px-5 py-1.5 rounded-xl text-[8px] font-semibold border-none" />
+ <StatusBadge status={wp.status} className="px-5 py-1.5 rounded-lg text-[8px] font-semibold border-none" />
  </div>
 
  <div className="space-y-3">
@@ -140,7 +140,7 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
 
  <div className="mt-8 pt-8 border-t border-slate-200 flex items-center justify-between relative z-10">
  <div className="flex items-center gap-4">
- <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400
+ <div className="h-10 w-10 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400
  <Banknote className="h-5 w-5" />
  </div>
  <div>

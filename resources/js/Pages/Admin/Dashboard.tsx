@@ -13,7 +13,10 @@ import {
  MoreHorizontal,
  ShieldCheck,
  Fingerprint,
- Zap
+ Zap,
+ ChevronRight,
+ Cpu,
+ BarChart3,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -73,185 +76,155 @@ export default function AdminDashboard({ auth, stats, sdg_distribution, recentRe
  const userRole = auth.user?.roles?.[0] || 'Administrator';
  
  const roleMap: Record<string, string> = {
- 'superadmin': 'Pusat Komando',
- 'faculty_admin': 'Otoritas Fakultas',
- 'dpl': 'Personel DPL',
- 'student': 'Peserta Mahasiswa',
- 'admin_prodi': 'Koordinator Program'
+ 'superadmin': 'ADMIN_PUSAT',
+ 'faculty_admin': 'ADMIN_FAKULTAS',
+ 'dpl': 'PERSONEL_DPL',
+ 'student': 'PESERTA_MAHASISWA',
+ 'admin_prodi': 'KOORDINATOR_PRODI'
  };
  const translatedRole = roleMap[userRole.toLowerCase()] || userRole.replace('_', ' ').toUpperCase();
  
  return (
  <AppLayout title="Pusat Kendali Operasional">
- <div className="space-y-8 pb-20">
+ <div className="space-y-8 pb-24">
  
- {/* Sleek Minimalist Operational Header */}
- <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-8">
+ {/* Minimalist Tactical Header Strip */}
+ <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-100 pb-8">
  <div className="space-y-1">
  <div className="flex items-center gap-3">
- <div className="h-1.5 w-1.5 rounded-lg bg-emerald-500 />
- <span className="text-[9px] font-semibold text-emerald-600 ">
- -HUB_EMERALD_V3
+ <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+ <span className="text-[9px] font-semibold text-emerald-600">
+ OPERATIONAL_COMMAND_CENTER_V3.2
  </span>
  </div>
- <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 ">
- Selamat Datang, <br className="md:hidden" />
- <span className="text-primary">{translatedRole}</span>
+ <h1 className="text-2xl font-semibold text-slate-900 leading-none">
+ Welcome, <span className="text-primary">{translatedRole}</span>
  </h1>
- <p className="text-slate-400 text-sm text-xs flex items-center gap-2">
+ <p className="text-slate-400 text-[10px] font-semibold flex items-center gap-2 opacity-50">
  <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
- Akses taktis ke seluruh instrumen operasional KKN UIN SAIZU.
+ ACCESS_LEVEL_AUTHORIZED: TACTICAL_INSTRUMENTS_ACTIVE
  </p>
  </div>
 
- <div className="flex items-center gap-3">
- <div className="px-4 py-2 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-4
+ <div className="flex items-center gap-4">
+ <div className="px-4 py-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-4">
  <div className="text-right">
- <span className="block text-[8px] font-semibold text-slate-400 mb-1">Status Periode</span>
- <span className="text-xs font-semibold text-slate-900 
- {stats?.active_period || '—'}
+ <span className="block text-[8px] font-semibold text-slate-400 leading-none mb-1">Status_Periode</span>
+ <span className="text-xs font-semibold text-slate-900 leading-none">
+ {stats?.active_period || 'STANDBY'}
  </span>
  </div>
- <div className="h-8 w-8 bg-white rounded-lg border border-slate-200 flex items-center justify-center text-primary">
- <Activity className="w-4 h-4 stroke-[2.5px]" />
+ <div className="h-8 w-8 bg-white rounded-lg border border-slate-100 flex items-center justify-center text-primary ">
+ <Activity className="w-4 h-4" />
  </div>
  </div>
  
- <div className="flex gap-1.5">
- <Link 
- href="/admin/periods" 
- className="h-10 w-10 bg-white text-slate-400 border border-slate-200 rounded-lg flex items-center justify-centerhover:text-primary hover:border-primary/30"
- title="Kelola Periode"
- >
+ <div className="flex gap-2">
+ <Link href="/admin/periods" className="h-10 w-10 bg-white border border-slate-100 text-slate-300 hover:text-primary hover:border-primary/30 rounded-lg transition-all flex items-center justify-center">
  <CalendarDays className="w-4 h-4" />
  </Link>
- <Link 
- href="/admin/registrations" 
- className="h-10 w-10 bg-primary text-white rounded-lg flex items-center justify-centerhover:-"
- title="Audit Registrasi"
- >
+ <Link href="/admin/registrations" className="h-10 w-10 bg-slate-900 text-white rounded-lg flex items-center justify-center hover:-translate-y-1 transition-all">
  <Users className="w-4 h-4" />
  </Link>
  </div>
  </div>
  </div>
 
- {/* METRICS GRID - HIGH DENSITY COMPACT */}
+ {/* METRICS GRID */}
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
- <MetricCard 
- label="TOTAL MAHASISWA" 
- value={stats?.total_students} 
- icon={Users} 
- color="primary"
- description="Terdaftar"
- />
- <MetricCard 
- label="KELOMPOK AKTIF" 
- value={stats?.total_groups} 
- icon={Users2} 
- color="blue"
- description="Unit"
- />
- <MetricCard 
- label="LAPORAN HARIAN" 
- value={stats?.total_reports} 
- icon={FileText} 
- color="amber"
- description="Aktivitas"
- />
- <MetricCard 
- label="LAPORAN AKHIR" 
- value={stats?.total_final_reports} 
- icon={CheckCircle2} 
- color="emerald"
- description="Audit"
- />
+ <MetricCard label="TOTAL_PERSONNEL" value={stats?.total_students} icon={Users} color="primary" description="RECORDED" />
+ <MetricCard label="ACTIVE_UNITS" value={stats?.total_groups} icon={Users2} color="emerald" description="DEPLOYED" />
+ <MetricCard label="DAILY_THROUGHPUT" value={stats?.total_reports} icon={FileText} color="amber" description="TELEMETRY" />
+ <MetricCard label="FINAL_AUDITS" value={stats?.total_final_reports} icon={CheckCircle2} color="primary" description="VERIFIED" />
  </div>
 
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
- {/* RECENT RECORDS - COMPACT */}
- <div className="lg:col-span-2 bg-whiterounded-lg border border-slate-200 overflow-hidden">
- <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/20">
+ {/* RECENT RECORDS */}
+ <div className="lg:col-span-2 bg-white rounded-lg border border-slate-100 overflow-hidden">
+ <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
  <div className="flex items-center gap-4">
- <div className="p-2.5 bg-white rounded-xl border border-slate-200 text-primary">
- <ClipboardList className="w-5 h-5 stroke-[2.5px]" />
+ <div className="p-3 bg-white rounded-lg border border-slate-100 text-primary ">
+ <ClipboardList className="w-5 h-5" />
  </div>
- <div>
- <h3 className="text-base font-semibold text-slate-900 ">Aktivitas Terkini</h3>
- <p className="text-[9px] text-sm text-slate-400 mt-1 ">Sinkronisasi Registrasi</p>
+ <div className="flex flex-col">
+ <h3 className="text-[11px] font-semibold text-slate-900 leading-none mb-1.5">Aktivitas Terkini</h3>
+ <span className="text-[9px] font-semibold text-slate-400 opacity-50 leading-none">REGISTRY_SYNC_STREAM</span>
  </div>
  </div>
- <Link href="/admin/registrations" className="flex items-center gap-2 text-[9px] font-semibold text-primary hover:text-primary-dark transition-colors group/link">
- Selengkapnya
+ <Link href="/admin/registrations" className="flex items-center gap-2 text-[9px] font-semibold text-primary hover:text-primary-dark transition-all group/link">
+ VIEW_FULL_LEDGER
  <ArrowRight className="w-3 h-3 group-hover/link:translate-x-1 transition-transform" />
  </Link>
  </div>
  <div className="divide-y divide-slate-50">
  {recentRegistrations && recentRegistrations.length > 0 ? (
  recentRegistrations.map((reg) => (
- <div key={reg.id} className="px-6 py-5 hover:bg-slate-50/40flex items-center justify-between group/row cursor-default">
+ <div key={reg.id} className="px-8 py-5 hover:bg-slate-50/50 flex items-center justify-between group/row transition-colors">
  <div className="flex items-center gap-4">
- <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-base font-semibold text-slate-300 group-hover/row:bg-primary group-hover/row:text-white">
+ <div className="h-10 w-10 rounded-lg bg-slate-900 border border-slate-800 text-primary text-[11px] font-semibold flex items-center justify-center group-hover/row:scale-110 transition-transform">
  {reg.mahasiswa?.user?.name?.charAt(0) || 'U'}
  </div>
- <div className="space-y-1">
- <p className="font-black text-sm text-slate-900 group-hover/row:text-primary transition-colors">{reg.mahasiswa?.user?.name || 'ENTITAS_PESERTA'}</p>
- <div className="flex items-center gap-2">
- <span className="text-[9px] text-sm text-slate-400">NIM: {reg.mahasiswa?.nim || '---'}</span>
- <div className="h-1 w-1 rounded-lg bg-slate-200" />
- <span className="text-[9px] text-sm text-slate-400 truncate max-w-[120px]">{reg.periode?.name}</span>
+ <div className="flex flex-col min-w-0">
+ <span className="text-xs font-semibold text-slate-900 truncate max-w-[200px] group-hover/row:text-primary transition-colors">
+ {reg.mahasiswa?.user?.name || 'ENTITAS_PESERTA'}
+ </span>
+ <div className="flex items-center gap-2 mt-0.5">
+ <span className="text-[9px] font-semibold text-slate-400 opacity-50 font-mono">
+ NIM: {reg.mahasiswa?.nim || '---'}
+ </span>
+ <span className="text-[9px] font-semibold text-primary/40">{reg.periode?.name}</span>
  </div>
  </div>
  </div>
- <div className={clsx(
- "px-4 py-1.5 rounded-lg text-[9px] font-semibold ",
+ <span className={clsx(
+ "inline-flex px-3 py-1 rounded-lg text-[9px] font-semibold ",
  reg.status === 'pending' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
  reg.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
  'bg-rose-50 text-rose-600 border border-rose-100'
  )}>
- {reg.status === 'pending' ? 'Menunggu' : (reg.status === 'approved' ? 'Disetujui' : 'Ditolak')}
- </div>
+ {reg.status}
+ </span>
  </div>
  ))
  ) : (
- <div className="p-16 text-center">
- <ClipboardList className="w-8 h-8 text-slate-200 mx-auto mb-4" />
- <p className="text-[9px] font-semibold text-slate-400 ">Belum ada aktivitas terekam</p>
+ <div className="py-24 text-center">
+ <ClipboardList className="w-10 h-10 text-slate-100 mx-auto mb-4" />
+ <span className="text-[10px] font-semibold text-slate-900 opacity-20">NO_RECORDS_DETECTED</span>
  </div>
  )}
  </div>
  </div>
 
- {/* SDG ANALYTICS - COMPACT */}
- <div className="bg-whiterounded-lg border border-slate-200 p-8 space-y-8 group overflow-hidden relative">
- <div className="absolute top-0 right-0 p-8 text-primary rotate-12 group-hover:rotate-45 transition-transform pointer-events-none">
- <Globe2 className="w-32 h-32" />
+ {/* SDG ANALYTICS */}
+ <div className="bg-white rounded-lg border border-slate-100 p-8 space-y-8 group overflow-hidden relative">
+ <div className="absolute top-0 right-0 p-10 text-primary opacity-[0.03] pointer-events-none group-hover:rotate-12 transition-transform duration-1000">
+ <Globe2 className="w-64 h-64" />
  </div>
  
  <div className="relative z-10">
- <h3 className="text-base font-semibold text-slate-900 ">Analitik SDG</h3>
- <p className="text-[9px] text-sm text-slate-400 mt-2 ">Distribusi Fokus Program</p>
+ <h3 className="text-[11px] font-semibold text-slate-900 leading-none mb-1.5">SDG_ANALYTICS_V3</h3>
+ <span className="text-[9px] font-semibold text-slate-400 opacity-50 leading-none">PROGRAM_DISTRIBUTION_VECTOR</span>
  </div>
 
- <div className="space-y-5 relative z-10">
+ <div className="space-y-6 relative z-10">
  {(() => {
  const totalSdgCount = sdg_distribution?.reduce((sum, item) => sum + item.count, 0) || 1;
- return (sdg_distribution || []).slice(0, 4).map((item) => {
+ return (sdg_distribution || []).slice(0, 5).map((item) => {
  const sdg = SDG_DETAILS[item.id] || { name: `SDG ${item.id}`, color: 'bg-slate-100', icon: '📍' };
  const percentage = (item.count / totalSdgCount) * 100;
  
  return (
- <div key={item.id} className="space-y-2">
+ <div key={item.id} className="space-y-3 group/item">
  <div className="flex justify-between items-end">
- <div className="flex items-center gap-2">
- <span className="text-xl">{sdg.icon}</span>
- <span className="text-[10px] font-semibold text-slate-700 truncate max-w-[120px] 
+ <div className="flex items-center gap-3">
+ <span className="text-xl group-hover/item:scale-125 transition-transform">{sdg.icon}</span>
+ <span className="text-[9px] font-semibold text-slate-600 truncate max-w-[150px]">{sdg.name}</span>
  </div>
- <span className="text-xs font-semibold text-slate-900">{item.count}</span>
+ <span className="text-sm font-semibold text-slate-900">{item.count}</span>
  </div>
- <div className="h-1.5 w-full bg-slate-50 rounded-lg overflow-hidden border border-slate-200">
+ <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100">
  <div 
- className={clsx("h-full rounded-lg", sdg.color)} 
+ className={clsx("h-full rounded-full transition-all duration-1000", sdg.color)} 
  style={{ width: `${Math.max(5, percentage)}%` }} 
  />
  </div>
@@ -263,31 +236,36 @@ export default function AdminDashboard({ auth, stats, sdg_distribution, recentRe
  </div>
  </div>
 
- {/* Tactical Global Monitor - COMPACT */}
- <div className="p-8 bg-[#043d23] rounded-lg border border-primary relative overflow-hidden group">
- <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+ {/* Tactical Global Monitor */}
+ <div className="p-8 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group">
+ <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_50%,rgba(16,168,83,0.05),transparent_50%)]" />
+ <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-8">
  <div className="space-y-4">
- <div className="flex items-center gap-3">
- <div className="p-2.5 bg-primary/10 rounded-xl border border-primary text-primary">
- <ShieldCheck className="h-5 w-5" />
+ <div className="flex items-center gap-4">
+ <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+ <ShieldCheck className="h-6 w-6 text-primary" />
  </div>
  <div>
- <h4 className="text-[9px] font-semibold text-white ">INTEGRITY_CONTROL_PROTOCOL</h4>
- <p className="text-[8px] text-emerald-400 text-sm mt-1.5">STATUS: ENCRYPTED_SATELLITE_LINK</p>
+ <h4 className="text-[11px] font-semibold text-white leading-none">INTEGRITY_CONTROL_PROTOCOL_V3.2</h4>
+ <p className="text-[10px] font-semibold text-emerald-500 mt-2">STATUS: ENCRYPTED_SATELLITE_LINK_ACTIVE</p>
  </div>
  </div>
- <p className="text-[12px] text-slate-400 text-sm leading-normal max-w-3xl opacity-75">
- Protokol audit sistem aktif. Seluruh aktivitas operasional terekam secara real-time untuk keperluan monitoring KKN UIN SAIZU.
+ <p className="text-[12px] text-slate-400 text-sm leading-relaxed max-w-4xl opacity-75">
+ Protokol audit sistem aktif. Seluruh aktivitas operasional terekam secara real-time untuk menjamin transparansi absolut mutasi data KKN UIN SAIZU.
  </p>
  </div>
- <div className="flex items-center gap-4 border-l border-slate-800 pl-8 hidden lg:flex">
- <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
- <div className="h-2 w-2 rounded-lg bg-emerald-500" />
- <span className="text-[9px] font-semibold text-slate-100 ">LIVE</span>
+ <div className="flex flex-col items-end gap-5 shrink-0 hidden lg:flex border-l border-slate-800 pl-10">
+ <div className="flex items-center gap-3 px-4 py-2 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
+ <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(16,168,83,0.5)]" />
+ <span className="text-[9px] font-semibold text-slate-100">REALTIME_SURVEILLANCE</span>
  </div>
- <div className="flex gap-3">
- <Fingerprint className="h-6 w-6 text-slate-600 hover:text-primary transition-colors cursor-help" />
- <Globe2 className="h-6 w-6 text-slate-600 hover:text-primary transition-colors cursor-help" />
+ <div className="flex gap-4 opacity-50">
+ <div className="h-10 w-10 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 transition-colors">
+ <Fingerprint className="h-5 w-5" />
+ </div>
+ <div className="h-10 w-10 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 transition-colors">
+ <Globe2 className="h-5 w-5" />
+ </div>
  </div>
  </div>
  </div>
@@ -298,36 +276,27 @@ export default function AdminDashboard({ auth, stats, sdg_distribution, recentRe
 }
 
 function MetricCard({ label, value, icon: Icon, color, description }: any) {
- const iconColors: Record<string, string> = {
- primary: 'bg-primary text-white
- blue: 'bg-blue-600 text-white
- amber: 'bg-amber-600 text-white
- emerald: 'bg-emerald-600 text-white
- };
+ const colors: Record<string, string> = {
+ primary: 'text-primary bg-primary/5 border-primary/10',
+ emerald: 'text-emerald-500 bg-emerald-500/5 border-emerald-500/10',
+ amber: 'text-amber-500 bg-amber-500/5 border-amber-500/10',
+ }
 
  return (
- <div className="bg-white rounded-lg p-5 border border-slate-200 relative overflow-hidden">
- <div className="absolute top-0 right-0 p-4 text-slate-900 transition-transform group-">
- <Icon className="w-16 h-16" />
+ <div className="bg-white p-8 rounded-lg border border-slate-100 flex items-center justify-between group hover:border-primary/20 transition-all overflow-hidden relative">
+ <div className="absolute top-0 right-0 p-8 text-slate-900 opacity-[0.02] pointer-events-none group-hover:rotate-12 transition-transform">
+ <Icon className="h-32 w-32" />
  </div>
- 
- <div className="flex items-center gap-3 mb-6 relative z-10">
- <div className={clsx("p-2.5 rounded-xlgroup-hover:rotate-6", iconColors[color])}>
- <Icon className="w-4 h-4 stroke-[2.5px]" />
- </div>
- <div className="text-left font-semibold text-[9px] text-slate-400 grow">{label}</div>
- </div>
- 
- <div className="flex items-baseline gap-2 relative z-10">
- <h4 className="text-3xl font-semibold text-slate-900 ">
- {value?.toLocaleString() || 0}
- </h4>
- <span className="text-[8px] font-semibold text-slate-300 ">{description}</span>
- </div>
- 
- <div className="mt-6 border-t border-slate-200 pt-4 opacity-50 flex justify-end">
- <MoreHorizontal className="w-4 h-4 text-slate-200 group-hover:text-primary transition-colors cursor-pointer" />
+ <div className="relative z-10">
+ <p className="text-[9px] font-semibold text-slate-400 mb-1 group-hover:text-primary transition-colors">{label}</p>
+ <div className="flex items-baseline gap-2">
+ <p className="text-3xl font-semibold leading-none text-slate-900 transition-transform group-hover:translate-x-1">{(value || 0).toLocaleString()}</p>
+ <span className="text-[8px] font-semibold text-slate-300">{description}</span>
  </div>
  </div>
- );
+ <div className={clsx('p-4 rounded-lg border transition-all group-hover:rotate-12 ', colors[color])}>
+ <Icon className="w-6 h-6" />
+ </div>
+ </div>
+ )
 }

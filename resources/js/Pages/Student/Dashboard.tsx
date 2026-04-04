@@ -108,7 +108,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 border-b border-slate-100 pb-10">
  <div className="flex items-center gap-6">
  <div className="relative shrink-0">
- <div className="h-16 w-16 rounded-lg bg-white border border-slate-100 text-primary flex items-center justify-center text-2xl font-black leading-none uppercase">
+ <div className="h-16 w-16 rounded-lg bg-white border border-slate-100 text-primary flex items-center justify-center text-2xl font-semibold leading-none">
  {studentFirstName.charAt(0)}
  </div>
  <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-white rounded-full flex items-center justify-center border border-slate-100">
@@ -117,14 +117,14 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
  <div className="space-y-1">
  <div className="flex items-center gap-3">
- <span className="text-[10px] font-black text-emerald-600 tracking-widest">
+ <span className="text-[10px] font-semibold text-emerald-600">
  STUDENT_TERMINAL_V3.2
  </span>
  </div>
- <h1 className="text-2xl md:text-3xl font-black text-slate-900 leading-none">
+ <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 leading-none">
  Halo, <span className="text-primary">{studentFirstName}!</span>
  </h1>
- <p className="text-slate-400 font-bold text-xs flex items-center gap-2">
+ <p className="text-slate-400 font-semibold text-xs flex items-center gap-2">
  <Sparkles className="w-3 h-3 text-emerald-400 fill-emerald-100" />
  Anda sedang dalam tahap <span className="text-slate-600 underline decoration-emerald-200 decoration-2 underline-offset-4">{isPending ? 'VERIFIKASI_ADMIN' : currentPhase.label.toUpperCase()}</span>.
  </p>
@@ -134,16 +134,16 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <div className="flex items-center gap-4">
  <div className="px-6 py-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-6 min-w-[220px]">
  <div className="text-right">
- <span className="block text-[9px] font-black text-slate-400 leading-none mb-1">Status Otoritas</span>
+ <span className="block text-[9px] font-semibold text-slate-400 leading-none mb-1">Status Otoritas</span>
  <span className={clsx(
- "text-sm font-black leading-none block",
+ "text-sm font-semibold leading-none block",
  isApproved ? "text-emerald-600" : "text-amber-500"
  )}>
  {isApproved ? 'AKTIF_VERIFIED' : isPending ? 'PENDING' : 'DATA_KOSONG'}
  </span>
  </div>
  <div className={clsx(
- "h-10 w-10 bg-white rounded-xl border border-slate-100 flex items-center justify-center",
+ "h-10 w-10 bg-white rounded-lg border border-slate-100 flex items-center justify-center",
  isApproved ? "text-emerald-500" : "text-amber-500"
  )}>
  {isApproved ? <ShieldCheck className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
@@ -152,7 +152,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  
  <Link 
  href="/student/register" 
- className="h-12 px-6 bg-slate-900 text-white rounded-xl text-xs font-black flex items-center justify-center hover:bg-primary transition-all active:"
+ className="h-12 px-6 bg-slate-900 text-white rounded-lg text-xs font-semibold flex items-center justify-center hover:bg-primary transition-all active:"
  >
  Detail Pendaftaran
  </Link>
@@ -160,14 +160,14 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
 
  {/* Road to Success - Progress Viz */}
- <div className="bg-white rounded-2xl p-8 md:p-12 border border-slate-100 relative group overflow-hidden">
+ <div className="bg-white rounded-lg p-8 md:p-12 border border-slate-100 relative group overflow-hidden">
  <div className="flex items-center gap-4 mb-12 relative z-10">
- <div className="p-3 bg-primary/5 rounded-xl border border-primary/10 group-hover:text-primary transition-colors">
+ <div className="p-3 bg-primary/5 rounded-lg border border-primary/10 group-hover:text-primary transition-colors">
  <Activity className="h-6 w-6 text-primary" />
  </div>
  <div>
- <h3 className="text-sm font-black text-slate-900 leading-none">Alur Pelaksanaan KKN</h3>
- <p className="text-[10px] font-bold text-slate-400 mt-1 opacity-60">Progress Perjalanan Anda (SOP UIN SAIZU)</p>
+ <h3 className="text-sm font-semibold text-slate-900 leading-none">Alur Pelaksanaan KKN</h3>
+ <p className="text-[10px] font-semibold text-slate-400 mt-1 opacity-60">Progress Perjalanan Anda (SOP UIN SAIZU)</p>
  </div>
  </div>
 
@@ -180,7 +180,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  return (
  <div key={idx} className="relative z-10 flex-1 flex flex-col items-center text-center group/phase">
  <div className={clsx(
- "h-20 w-20 rounded-2xl flex items-center justify-center transition-all border-4",
+ "h-20 w-20 rounded-lg flex items-center justify-center transition-all border-4",
  phase.isCompleted ? "bg-emerald-500 border-white text-white" :
  phase.isActive ? "bg-primary border-white text-white/20" :
  "bg-slate-50 border-white text-slate-300"
@@ -189,12 +189,12 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
  <div className="mt-6 space-y-1">
  <p className={clsx(
- "text-[11px] font-black uppercase tracking-wider",
+ "text-[11px] font-semibold",
  phase.isActive ? "text-primary" : phase.isCompleted ? "text-emerald-600" : "text-slate-400"
  )}>
  {phase.label}
  </p>
- <p className="text-[10px] font-bold text-slate-400 opacity-60 leading-none">{phase.desc}</p>
+ <p className="text-[10px] font-semibold text-slate-400 opacity-60 leading-none">{phase.desc}</p>
  </div>
  {!phase.isCompleted && !phase.isActive && (
  <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-white p-1.5 rounded-lg border border-slate-100">
@@ -211,52 +211,52 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
  <div className="lg:col-span-2 space-y-8">
  {isGroupPinned ? (
- <section className="bg-white rounded-2xl p-10 border border-slate-100 relative overflow-hidden group">
+ <section className="bg-white rounded-lg p-10 border border-slate-100 relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-16 opacity-[0.02] text-slate-900 pointer-events-none group-transition-transform">
  <MapPin className="h-64 w-64" />
  </div>
  
  <div className="relative z-10">
  <div className="flex items-center gap-5 text-primary mb-10 border-b border-slate-50 pb-8">
- <div className="p-3 bg-primary/10 rounded-xl border border-primary/20">
+ <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
  <MapPin className="h-6 w-6" />
  </div>
  <div>
- <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Informasi Lokasi & Posko</h3>
- <p className="text-[10px] font-bold text-primary mt-0.5">Data Penempatan Terakreditasi</p>
+ <h3 className="text-[11px] font-semibold text-slate-400">Informasi Lokasi & Posko</h3>
+ <p className="text-[10px] font-semibold text-primary mt-0.5">Data Penempatan Terakreditasi</p>
  </div>
  </div>
  
  <div className="mb-10">
- <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Desa / Kelurahan</p>
- <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight">
+ <p className="text-[10px] font-semibold text-slate-400 mb-3">Desa / Kelurahan</p>
+ <h2 className="text-4xl md:text-5xl font-semibold text-slate-900 leading-tight">
  {registration.group.location?.name ?? 'Lokasi Belum Ditetapkan'}
  </h2>
  <div className="mt-6 flex items-center gap-4">
- <span className="text-slate-900 text-lg font-black bg-slate-50 border border-slate-100 px-5 py-2.5 rounded-xl tabular-nums">
+ <span className="text-slate-900 text-lg font-semibold bg-slate-50 border border-slate-100 px-5 py-2.5 rounded-lg tabular-nums">
  {registration.group.name}
  </span>
  <span className="h-2 w-2 rounded-full bg-primary" />
- <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Unit Aktif</span>
+ <span className="text-[10px] font-semibold text-slate-400">Unit Aktif</span>
  </div>
  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-10 border-t border-slate-50">
- <div className="flex items-center gap-5 p-6 rounded-2xl bg-slate-50 border border-slate-100 group/item hover:bg-white hover:border-primary/20 transition-all cursor-default">
- <div className="h-14 w-14 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover/item:text-primary group-hover/item:border-primary/20 transition-all">
+ <div className="flex items-center gap-5 p-6 rounded-lg bg-slate-50 border border-slate-100 group/item hover:bg-white hover:border-primary/20 transition-all cursor-default">
+ <div className="h-14 w-14 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover/item:text-primary group-hover/item:border-primary/20 transition-all">
  <UserCircle className="h-7 w-7" />
  </div>
  <div>
- <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1 leading-none">Dosen Pembimbing</p>
+ <p className="text-[10px] font-semibold text-slate-400 mb-1 leading-none">Dosen Pembimbing</p>
  <p className="font-black text-sm text-slate-900 leading-tight">{registration.group.lecturer?.name ?? 'Belum Ditetapkan'}</p>
  </div>
  </div>
- <div className="flex items-center gap-5 p-6 rounded-2xl bg-slate-50 border border-slate-100 group/item hover:bg-white hover:border-primary/20 transition-all cursor-default">
- <div className="h-14 w-14 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover/item:text-primary group-hover/item:border-primary/20 transition-all">
+ <div className="flex items-center gap-5 p-6 rounded-lg bg-slate-50 border border-slate-100 group/item hover:bg-white hover:border-primary/20 transition-all cursor-default">
+ <div className="h-14 w-14 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover/item:text-primary group-hover/item:border-primary/20 transition-all">
  <Calendar className="h-7 w-7" />
  </div>
  <div>
- <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1 leading-none">Periode KKN</p>
+ <p className="text-[10px] font-semibold text-slate-400 mb-1 leading-none">Periode KKN</p>
  <p className="font-black text-sm text-slate-900 leading-tight">{registration.period?.name}</p>
  </div>
  </div>
@@ -264,22 +264,22 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
  </section>
  ) : (
- <section className="bg-white rounded-2xl border-2 border-dashed border-slate-200 p-16 md:p-24 text-center group transition-all hover:border-primary/40 hover:bg-primary/5">
+ <section className="bg-white rounded-lg border-2 border-dashed border-slate-200 p-16 md:p-24 text-center group transition-all hover:border-primary/40 hover:bg-primary/5">
  <div className="relative inline-block mb-8">
  <MapPin className={clsx("h-16 w-16 transition-all", isPending ? "text-amber-200" : "text-slate-100")} />
  <div className={clsx("absolute top-0 right-0 h-4 w-4 rounded-full", isPending ? "bg-amber-400" : "bg-primary")} />
  </div>
- <h3 className="text-2xl font-black text-slate-900 mb-3">
+ <h3 className="text-2xl font-semibold text-slate-900 mb-3">
  {isPending ? 'Verifikasi Berlangsung' : 'Penempatan Menunggu'}
  </h3>
- <p className="text-slate-400 font-bold text-xs mb-10 leading-relaxed max-w-sm mx-auto opacity-70">
+ <p className="text-slate-400 font-semibold text-xs mb-10 leading-relaxed max-w-sm mx-auto opacity-70">
  {isPending 
  ? 'Data pendaftaran Anda sedang dalam tahap peninjauan oleh Admin LPPM.' 
  : 'Sistem belum menetapkan lokasi penempatan untuk profil Anda.'}
  </p>
  <Link
  href="/student/register"
- className="inline-flex items-center gap-4 px-8 py-4 bg-slate-900 text-white rounded-xl text-xs font-black hover:bg-primary transition-all active:group/btn -200"
+ className="inline-flex items-center gap-4 px-8 py-4 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-primary transition-all active:group/btn -200"
  >
  {isPending ? 'Ubah Pilihan' : 'Daftar Kelompok'} <ArrowRight className="h-4 w-4 group-hover:translate-x-2 transition-transform" />
  </Link>
@@ -314,14 +314,14 @@ export default function StudentDashboard({ student, registration, dailyReportCou
 
  {/* Navigation Sidebar */}
  <div className="space-y-8">
- <section className="bg-white rounded-2xl border border-slate-100 p-8 h-fit">
+ <section className="bg-white rounded-lg border border-slate-100 p-8 h-fit">
  <div className="flex items-center gap-4 mb-10 border-b border-slate-50 pb-6">
  <div className="p-2.5 bg-slate-50 rounded-lg text-slate-400 border border-slate-100">
  <Zap className="h-5 w-5" />
  </div>
  <div>
- <h3 className="text-[11px] font-black text-slate-900 leading-none uppercase tracking-wider">Menu Cepat</h3>
- <p className="text-[9px] font-bold text-slate-400 mt-0.5 opacity-60">Akses Aktivitas Utama</p>
+ <h3 className="text-[11px] font-semibold text-slate-900 leading-none">Menu Cepat</h3>
+ <p className="text-[9px] font-semibold text-slate-400 mt-0.5 opacity-60">Akses Aktivitas Utama</p>
  </div>
  </div>
  
@@ -357,37 +357,37 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
  </section>
 
- <section className="bg-white rounded-2xl p-8 border border-slate-100 relative overflow-hidden group">
+ <section className="bg-white rounded-lg p-8 border border-slate-100 relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-8 opacity-[0.02] text-primary group-transition-transform pointer-events-none">
  <Info className="h-40 w-40" />
  </div>
  
- <h3 className="text-[11px] font-black mb-10 flex items-center gap-3 text-slate-400 uppercase tracking-wider">
+ <h3 className="text-[11px] font-semibold mb-10 flex items-center gap-3 text-slate-400">
  <span className="flex h-2 w-2 rounded-full bg-primary" />
  Informasi Penting
  </h3>
  
  <div className="space-y-6 relative z-10">
  <div className="space-y-2">
- <p className="text-[10px] font-black text-primary flex items-center gap-2 uppercase tracking-wide">
+ <p className="text-[10px] font-semibold text-primary flex items-center gap-2">
  <Lock className="h-3 w-3" />
  Batas Waktu
  </p>
- <p className="text-[11px] font-bold text-slate-500 leading-relaxed opacity-80 italic">Pastikan seluruh laporan harian telah diverifikasi sebelum periode pelaksanaan berakhir.</p>
+ <p className="text-[11px] font-semibold text-slate-500 leading-relaxed opacity-80">Pastikan seluruh laporan harian telah diverifikasi sebelum periode pelaksanaan berakhir.</p>
  </div>
  <div className="space-y-2 pt-5 border-t border-slate-50">
- <p className="text-[10px] font-black text-slate-400 flex items-center gap-2 uppercase tracking-wide">
+ <p className="text-[10px] font-semibold text-slate-400 flex items-center gap-2">
  <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
  Asuransi
  </p>
- <p className="text-[11px] font-bold text-slate-500 leading-relaxed opacity-80 italic">Mahasiswa terdaftar dalam program BPJS Ketenagakerjaan selama masa bakti KKN.</p>
+ <p className="text-[11px] font-semibold text-slate-500 leading-relaxed opacity-80">Mahasiswa terdaftar dalam program BPJS Ketenagakerjaan selama masa bakti KKN.</p>
  </div>
  <div className="space-y-2 pt-5 border-t border-slate-50">
- <p className="text-[10px] font-black text-slate-400 flex items-center gap-2 uppercase tracking-wide">
+ <p className="text-[10px] font-semibold text-slate-400 flex items-center gap-2">
  <IdCard className="h-3.5 w-3.5" />
  E-Sertifikat
  </p>
- <p className="text-[11px] font-bold text-slate-500 leading-relaxed opacity-80 italic">Sertifikat terbit otomatis setelah evaluasi DPL & Admin selesai divalidasi.</p>
+ <p className="text-[11px] font-semibold text-slate-500 leading-relaxed opacity-80">Sertifikat terbit otomatis setelah evaluasi DPL & Admin selesai divalidasi.</p>
  </div>
  </div>
  </section>
@@ -395,7 +395,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
 
  <div className="text-center pt-8 opacity-20">
- <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">
+ <p className="text-[10px] font-semibold text-slate-300">
  Pusat Layanan Mahasiswa • UIN SAIZU © 2026
  </p>
  </div>
@@ -412,23 +412,23 @@ function StatCard({ title, value, unit, icon: Icon, color }: any) {
  };
 
  return (
- <div className="bg-white border border-slate-100 rounded-2xl p-8 hover:-transition-all group overflow-hidden relative">
+ <div className="bg-white border border-slate-100 rounded-lg p-8 hover:-transition-all group overflow-hidden relative">
  <div className="absolute top-0 right-0 p-6 opacity-[0.02] text-slate-900 transition-transform group-group-hover:rotate-12">
  <Icon className="h-24 w-24" />
  </div>
  
  <div className={clsx(
- "h-14 w-14 rounded-xl flex items-center justify-center mb-8 border transition-all group-relative z-10",
+ "h-14 w-14 rounded-lg flex items-center justify-center mb-8 border transition-all group-relative z-10",
  colorClasses[color]
  )}>
  <Icon className="h-7 w-7" />
  </div>
  
  <div className="relative z-10">
- <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 group-hover:text-primary transition-colors leading-none">{title}</p>
+ <p className="text-[10px] font-semibold text-slate-400 mb-2 group-hover:text-primary transition-colors leading-none">{title}</p>
  <div className="flex items-baseline gap-1.5">
- <span className="text-3xl font-black text-slate-900 tracking-tight">{value}</span>
- {unit && <span className="text-[10px] font-black text-slate-400 opacity-60 uppercase">{unit}</span>}
+ <span className="text-3xl font-semibold text-slate-900">{value}</span>
+ {unit && <span className="text-[10px] font-semibold text-slate-400 opacity-60">{unit}</span>}
  </div>
  </div>
  </div>
@@ -438,13 +438,13 @@ function StatCard({ title, value, unit, icon: Icon, color }: any) {
 function QuickActionButton({ href, icon: Icon, label, desc, disabled }: any) {
  if (disabled) {
  return (
- <div className="flex items-center gap-5 p-5 rounded-2xl bg-slate-50 border border-slate-100 opacity-40 cursor-not-allowed">
- <div className="h-12 w-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-200">
+ <div className="flex items-center gap-5 p-5 rounded-lg bg-slate-50 border border-slate-100 opacity-40 cursor-not-allowed">
+ <div className="h-12 w-12 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-200">
  <Icon className="h-6 w-6" />
  </div>
  <div>
  <p className="font-black text-xs text-slate-400 leading-none">{label}</p>
- <p className="text-[10px] text-slate-300 font-bold mt-2 leading-none opacity-60">{desc}</p>
+ <p className="text-[10px] text-slate-300 font-semibold mt-2 leading-none opacity-60">{desc}</p>
  </div>
  </div>
  );
@@ -453,14 +453,14 @@ function QuickActionButton({ href, icon: Icon, label, desc, disabled }: any) {
  return (
  <Link
  href={href}
- className="flex items-center gap-5 p-5 rounded-2xl bg-white border border-slate-100 transition-all hover:bg-slate-50 hover:border-primary/20 group active:"
+ className="flex items-center gap-5 p-5 rounded-lg bg-white border border-slate-100 transition-all hover:bg-slate-50 hover:border-primary/20 group active:"
  >
- <div className="h-12 w-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:bg-white group-hover:border-primary/20 transition-all">
+ <div className="h-12 w-12 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:bg-white group-hover:border-primary/20 transition-all">
  <Icon className="h-6 w-6" />
  </div>
  <div className="min-w-0">
  <p className="font-black text-xs text-slate-900 leading-none group-hover:text-primary transition-colors">{label}</p>
- <p className="text-[10px] text-slate-400 font-bold mt-2 truncate opacity-80 leading-none">{desc}</p>
+ <p className="text-[10px] text-slate-400 font-semibold mt-2 truncate opacity-80 leading-none">{desc}</p>
  </div>
  <ChevronRight className="h-4 w-4 ml-auto text-slate-200 group-hover:text-primary group-hover:translate-x-1 transition-all" />
  </Link>

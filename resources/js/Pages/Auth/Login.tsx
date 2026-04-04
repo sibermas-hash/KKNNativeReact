@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { route } from 'ziggy-js';
 import { 
  User, 
- Lock, 
  Eye, 
  EyeOff, 
  RefreshCw, 
@@ -51,7 +50,7 @@ export default function Login() {
  <form onSubmit={submit} className="space-y-6">
  {/* WELCOME TEXT */}
  <div className="mb-8">
- <h1 className="text-xl text-sm text-slate-800">Selamat Datang</h1>
+ <h1 className="text-xl font-semibold text-slate-800">Selamat Datang</h1>
  <p className="text-sm text-slate-500 font-medium">Silakan masuk ke akun Anda untuk melanjutkan.</p>
  </div>
 
@@ -62,12 +61,12 @@ export default function Login() {
  initial={{ height: 0, opacity: 0 }}
  animate={{ height: 'auto', opacity: 1 }}
  exit={{ height: 0, opacity: 0 }}
- className="bg-red-50 border border-red-100 rounded-xl p-3 flex flex-col gap-2"
+ className="bg-red-50 border border-red-100 rounded-lg p-3 flex flex-col gap-2"
  >
  {Object.entries(errors).map(([key, message]) => (
  <div key={key} className="flex items-start gap-3">
  <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
- <p className="text-xs text-red-600 text-sm leading-normal">
+ <p className="text-sm text-red-600 leading-normal">
  {message}
  </p>
  </div>
@@ -83,7 +82,7 @@ export default function Login() {
  Username
  </label>
  <div className="relative group">
- <div className="absolute left-4 top-1/2 -/2 text-slate-400 group-focus-within:text-primary transition-colors">
+ <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
  <User size={18} />
  </div>
  <input
@@ -103,7 +102,7 @@ export default function Login() {
  Kata Sandi
  </label>
  <div className="relative group">
- <div className="absolute left-4 top-1/2 -/2 text-slate-400 group-focus-within:text-primary transition-colors">
+ <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
  <KeyRound size={18} />
  </div>
  <input
@@ -117,7 +116,7 @@ export default function Login() {
  <button
  type="button"
  onClick={() => setShowPassword(!showPassword)}
- className="absolute right-4 top-1/2 -/2 text-slate-400 hover:text-slate-600 transition-colors"
+ className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
  title={showPassword ? 'Sembunyikan' : 'Tampilkan'}
  >
  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -129,9 +128,11 @@ export default function Login() {
  <div className="p-5 bg-primary/5 rounded-lg border border-primary/10 relative overflow-hidden group">
  <div className="flex items-center justify-between relative z-10">
  <div className="space-y-1">
- <span className="text-[10px] font-semibold text-primary/60 Manusia</span>
+ <span className="text-[10px] font-semibold text-primary/60">
+ Verifikasi Manusia
+ </span>
  <div className="flex items-center gap-3">
- <span className="text-2xl font-semibold text-primary font-mono 
+ <span className="text-2xl font-semibold text-primary font-mono">
  {activeCaptchaQuestion}
  </span>
  <button 
@@ -149,17 +150,17 @@ export default function Login() {
  type="number"
  value={data.captcha_answer}
  onChange={(e) => setData('captcha_answer', e.target.value)}
- className="w-full bg-white border border-primary rounded-xl py-3 px-3 text-center font-semibold text-primary text-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+ className="w-full bg-white border border-primary rounded-lg py-3 px-3 text-center font-semibold text-primary text-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
  placeholder="?"
  required
  />
  </div>
  </div>
- <p className="mt-3 text-xs text-sm text-primary/70">
+ <p className="mt-3 text-xs text-primary/70">
  {activeCaptchaQuestion}
  </p>
  {/* Background pattern for captcha */}
- <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-lg/2x-1/2 blur-2xl group-hover:bg-primary/10 transition-colors" />
+ <div className="absolute top-0 right-0 h-32 w-32 -translate-y-1/2 translate-x-1/2 rounded-full bg-primary/5 blur-2xl transition-colors group-hover:bg-primary/10" />
  </div>
  </div>
 
@@ -173,11 +174,11 @@ export default function Login() {
  className="sr-only peer"
  />
  <div className="w-5 h-5 border-2 border-slate-200 rounded-md bg-white peer-checked:bg-primary peer-checked:border-primary" />
- <CheckCircle2 className="absolute inset-0 w-5 h-5 text-white0 peer-checked:transition-transform" />
+ <CheckCircle2 className="absolute inset-0 h-5 w-5 scale-75 text-white opacity-0 transition-all peer-checked:scale-100 peer-checked:opacity-100" />
  </div>
- <span className="text-xs text-sm text-slate-500 group-hover:text-slate-700 transition-colors">Ingat Saya</span>
+ <span className="text-sm text-slate-500 transition-colors group-hover:text-slate-700">Ingat Saya</span>
  </label>
- <Link href={route('password.request')} className="text-xs text-sm text-primary hover:underline underline-offset-4">
+ <Link href={route('password.request')} className="text-sm text-primary hover:underline underline-offset-4">
  Lupa Sandi?
  </Link>
  </div>
@@ -185,14 +186,14 @@ export default function Login() {
  <button
  type="submit"
  disabled={processing}
- className="w-full bg-whitetext-white rounded-lg py-4 text-sm text-sm/30 hover:-.5 active:active:scale-[0.98]disabled:opacity-50 disabled:border border-slate-200 flex items-center justify-center gap-3 relative overflow-hidden group"
+ className="flex w-full items-center justify-center gap-3 overflow-hidden rounded-lg bg-primary px-4 py-4 text-sm font-semibold text-white transition hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
  >
  {processing ? (
- <RefreshCw className="w-5 h-5" />
+ <RefreshCw className="h-5 w-5" />
  ) : (
  <>
- <ShieldCheck className="w-5 h-5 group-hover:rotate-12 transition-transform" />
- <span className="">VERIFIKASI & MASUK</span>
+ <ShieldCheck className="h-5 w-5 transition-transform group-hover:rotate-12" />
+ <span>Verifikasi dan Masuk</span>
  </>
  )}
  </button>

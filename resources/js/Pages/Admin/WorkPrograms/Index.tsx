@@ -50,7 +50,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/10 rounded-xl border border-slate-200
+ <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <Briefcase className="h-4 w-4 text-emerald-300" />
  </div>
  <span className="text-[10px] font-semibold text-emerald-100 ">
@@ -136,7 +136,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  </td>
  <td className="px-6 py-3">
  <div className="flex items-center gap-3">
- <div className="p-2 bg-slate-50 rounded-xl text-slate-400 group-hover/row:bg-primary/10 group-hover/row:text-primary">
+ <div className="p-2 bg-slate-50 rounded-lg text-slate-400 group-hover/row:bg-primary/10 group-hover/row:text-primary">
  <Users className="h-4 w-4" />
  </div>
  <span className="text-[11px] text-sm text-slate-700 ">{p.group?.name}</span>
@@ -149,13 +149,13 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  </div>
  </td>
  <td className="px-6 py-3 text-center">
- <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl">
+ <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg">
  <Calendar className="h-3 w-3 text-slate-400" />
  <span className="text-[10px] font-semibold text-slate-700">{p.submitted_at ?? '--'}</span>
  </div>
  </td>
  <td className="px-6 py-3 text-right">
- <StatusBadge status={p.status} className="px-4 py-1.5 rounded-xl text-[9px] text-sm border-none />
+ <StatusBadge status={p.status} className="px-4 py-1.5 rounded-lg text-[9px] text-sm border-none />
  </td>
  </tr>
  )) : (
@@ -180,7 +180,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
  <div className="space-y-4">
  <div className="flex items-center gap-3">
- <div className="p-2.5 bg-primary/10 rounded-xl border border-primary">
+ <div className="p-2.5 bg-primary/10 rounded-lg border border-primary">
  <ShieldCheck className="h-5.5 w-5.5 text-primary" />
  </div>
  <h4 className="text-[11px] font-semibold text-white ">TATA_KELOLA_INISIATIF_STRATEGIS</h4>
@@ -197,10 +197,10 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  <span className="text-[10px] font-semibold text-slate-100 ">DATA_INTEGRITY_VERIFIED</span>
  </div>
  <div className="flex gap-4">
- <div className="h-10 w-10 bg-white/5 border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 transition-colors hover:text-primary
+ <div className="h-10 w-10 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-600 transition-colors hover:text-primary
  <Info className="h-5 w-5" />
  </div>
- <div className="h-10 w-10 bg-white/5 border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 transition-colors hover:text-primary
+ <div className="h-10 w-10 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-600 transition-colors hover:text-primary
  <Fingerprint className="h-5 w-5" />
  </div>
  </div>

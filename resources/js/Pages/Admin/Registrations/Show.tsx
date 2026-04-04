@@ -65,12 +65,12 @@ export default function RegistrationShow({ registration }: Props) {
  <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
  
  <div className="relative z-10 space-y-5 flex-1">
- <Link href="/admin/registrations" className="inline-flex items-center gap-3 px-4 py-2 bg-white/10 rounded-xl border border-slate-200 text-xs font-semibold text-emerald-100 hover:bg-white/20mb-2">
+ <Link href="/admin/registrations" className="inline-flex items-center gap-3 px-4 py-2 bg-white/10 rounded-lg border border-slate-200 text-xs font-semibold text-emerald-100 hover:bg-white/20mb-2">
  <ArrowLeft className="w-3.5 h-3.5" />
  KEMBALI KE LEDGER
  </Link>
  <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/10 rounded-xl border border-slate-200
+ <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <FileSearch className="h-4 w-4 text-emerald-300" />
  </div>
  <span className="text-[10px] font-semibold text-emerald-100 ">
@@ -92,7 +92,7 @@ export default function RegistrationShow({ registration }: Props) {
  </div>
  <div>
  <span className="text-[9px] font-semibold text-emerald-200/60 block mb-1.5">Status Verifikasi</span>
- <StatusBadge status={registration.status} className="px-5 py-2 rounded-xl text-xs font-semibold " />
+ <StatusBadge status={registration.status} className="px-5 py-2 rounded-lg text-xs font-semibold " />
  </div>
  </div>
  </div>
@@ -170,10 +170,10 @@ export default function RegistrationShow({ registration }: Props) {
  </div>
 
  <div className="mt-8 flex gap-4">
- <button className="flex-1 px-6 py-3.5 bg-white border border-slate-200 text-slate-400 text-[9px] font-semibold rounded-xl hover:bg-primary hover:text-white hover:border-primaryflex items-center justify-center gap-3">
+ <button className="flex-1 px-6 py-3.5 bg-white border border-slate-200 text-slate-400 text-[9px] font-semibold rounded-lg hover:bg-primary hover:text-white hover:border-primaryflex items-center justify-center gap-3">
  <Eye className="w-4 h-4" /> Preview
  </button>
- <button className="flex-1 px-6 py-3.5 bg-white border border-slate-200 text-slate-400 text-[9px] font-semibold rounded-xl hover:bg-slate-900 hover:text-white hover:border-slate-900flex items-center justify-center gap-3">
+ <button className="flex-1 px-6 py-3.5 bg-white border border-slate-200 text-slate-400 text-[9px] font-semibold rounded-lg hover:bg-slate-900 hover:text-white hover:border-slate-900flex items-center justify-center gap-3">
  <Download className="w-4 h-4" /> Get_File
  </button>
  </div>
@@ -316,7 +316,7 @@ function ProfileItem({ icon: Icon, label, value }: any) {
  return (
  <div className="group/item space-y-4">
  <div className="flex items-center gap-3">
- <div className="p-2 bg-slate-50 rounded-xl border border-slate-200 group-hover/item:bg-primary/20 group-hover/item:border-primary/30">
+ <div className="p-2 bg-slate-50 rounded-lg border border-slate-200 group-hover/item:bg-primary/20 group-hover/item:border-primary/30">
  <Icon className="w-3.5 h-3.5 text-primary" />
  </div>
  <span className="text-[10px] font-semibold text-slate-300 group-hover/item:text-primary transition-colors">{label}</span>

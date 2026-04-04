@@ -128,7 +128,7 @@ export default function Index({ groups }: Props) {
  {/* Warning Policy Section */}
  <div className="lg:col-span-1 space-y-8">
  <div className="bg-white rounded-lg p-10 border border-slate-200 sticky top-12 group overflow-hidden">
- <div className="absolute top-0 right-0 p-12 text-rose-600 pointer-events-none group-hover:rotate-6 transition-transform">
+ <div className="absolute top-0 right-0 p-12 text-rose-600 pointer-events-none ">
  <TriangleAlert className="h-64 w-64" />
  </div>
 

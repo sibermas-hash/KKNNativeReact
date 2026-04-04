@@ -96,7 +96,7 @@ export default function DplSync({ availableDosen, filters }: Props) {
 
  <button 
  onClick={() => router.reload()}
- className="px-6 py-3 bg-white border border-slate-200 text-slate-900 text-[10px] font-semibold rounded-lg transition-all hover:-translate-y-1 active:scale-95 flex items-center gap-3"
+ className="px-6 py-3 bg-white border border-slate-200 text-slate-900 text-[10px] font-semibold rounded-lg transition-all flex items-center gap-3"
  >
  <RefreshCw className="w-3.5 h-3.5 text-primary" />
  RESCAN_CANDIDATES
@@ -135,7 +135,7 @@ export default function DplSync({ availableDosen, filters }: Props) {
  <td className="px-8 py-6">
  <div className="flex items-center gap-4">
  <div className="relative">
- <div className="h-12 w-12 rounded-lg bg-slate-900 border border-slate-800 text-primary text-[13px] font-semibold flex items-center justify-center group-hover/row:scale-110 transition-transform">
+ <div className="h-12 w-12 rounded-lg bg-slate-900 border border-slate-800 text-primary text-[13px] font-semibold flex items-center justify-center ">
  {getInitials(dosen.name)}
  </div>
  <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-white rounded-lg border border-slate-100 flex items-center justify-center ">

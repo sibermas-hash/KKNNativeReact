@@ -99,14 +99,14 @@ export default function DosenIndex({ users, filters }: Props) {
  </div>
  </div>
  <Link href="/admin/dpl/sync" className="flex items-center gap-2 text-primary hover:text-primary-dark transition-colors group">
- <RefreshCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" />
+ <RefreshCw className="w-3.5 h-3.5  duration-500" />
  <span className="text-[10px] font-semibold">SYNC_DATA</span>
  </Link>
  </div>
 
  <Link 
  href="/admin/dpl/assignment" 
- className="px-6 py-3 bg-slate-900 text-white text-[10px] font-semibold rounded-lg transition-all hover:-translate-y-1 active:scale-95 flex items-center gap-3"
+ className="px-6 py-3 bg-slate-900 text-white text-[10px] font-semibold rounded-lg transition-all flex items-center gap-3"
  >
  <Briefcase className="w-3.5 h-3.5 text-emerald-400" />
  PENUGASAN_LAPANGAN

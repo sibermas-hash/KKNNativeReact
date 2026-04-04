@@ -271,7 +271,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  </section>
 
  <div className="bg-white border border-slate-200 rounded-lg p-10 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-4 text-slate-900 group-hover:rotate-12 transition-transform[2000ms]">
+ <div className="absolute top-0 right-0 p-4 text-slate-900 [2000ms]">
  <Activity className="h-[200px] w-full" />
  </div>
  <h4 className="text-[10px] font-semibold mb-8 text-slate-400">Arsip Strategis</h4>

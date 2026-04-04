@@ -207,7 +207,7 @@ export default function StudentTransfer({ students, targetPeriods }: Props) {
  <tr key={s.id} className="group/row hover:bg-slate-50/50 transition-colors">
  <td className="px-8 py-6">
  <div className="flex items-center gap-4">
- <div className="h-10 w-10 rounded-lg bg-slate-900 border border-slate-800 text-primary text-[11px] font-semibold flex items-center justify-center group-hover/row:scale-110 transition-transform">
+ <div className="h-10 w-10 rounded-lg bg-slate-900 border border-slate-800 text-primary text-[11px] font-semibold flex items-center justify-center ">
  {s.mahasiswa.nama.charAt(0)}
  </div>
  <div className="flex flex-col min-w-0">
@@ -257,7 +257,7 @@ export default function StudentTransfer({ students, targetPeriods }: Props) {
  onClick={() => openTransfer(s)}
  className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white hover:bg-primary transition-all rounded-lg text-[9px] font-semibold group/btn"
  >
- <RefreshCw className="w-3.5 h-3.5 text-primary group-hover/btn:rotate-180 transition-transform duration-500" />
+ <RefreshCw className="w-3.5 h-3.5 text-primary group-hover/btn:rotate-180 " />
  EXECUTE_TRANSFER
  </button>
  ) : (
@@ -424,7 +424,7 @@ export default function StudentTransfer({ students, targetPeriods }: Props) {
  <button
  type="submit"
  disabled={transferForm.processing}
- className="px-12 py-3 bg-slate-900 text-white rounded-lg text-[10px] font-semibold hover:-translate-y-1 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+ className="px-12 py-3 bg-slate-900 text-white rounded-lg text-[10px] font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-3"
  >
  <RefreshCw className={clsx("w-3.5 h-3.5 text-primary", transferForm.processing && "animate-spin")} />
  {transferForm.processing ? 'EXECUTING...' : 'INIT_TRANSFER'}

@@ -123,7 +123,7 @@ export default function AdminDashboard({ auth, stats, sdg_distribution, recentRe
  <Link href="/admin/periods" className="h-10 w-10 bg-white border border-slate-100 text-slate-300 hover:text-primary hover:border-primary/30 rounded-lg transition-all flex items-center justify-center">
  <CalendarDays className="w-4 h-4" />
  </Link>
- <Link href="/admin/registrations" className="h-10 w-10 bg-slate-900 text-white rounded-lg flex items-center justify-center hover:-translate-y-1 transition-all">
+ <Link href="/admin/registrations" className="h-10 w-10 bg-slate-900 text-white rounded-lg flex items-center justify-center transition-all">
  <Users className="w-4 h-4" />
  </Link>
  </div>
@@ -153,7 +153,7 @@ export default function AdminDashboard({ auth, stats, sdg_distribution, recentRe
  </div>
  <Link href="/admin/registrations" className="flex items-center gap-2 text-[9px] font-semibold text-primary hover:text-primary-dark transition-all group/link">
  VIEW_FULL_LEDGER
- <ArrowRight className="w-3 h-3 group-hover/link:translate-x-1 transition-transform" />
+ <ArrowRight className="w-3 h-3 " />
  </Link>
  </div>
  <div className="divide-y divide-slate-50">
@@ -161,7 +161,7 @@ export default function AdminDashboard({ auth, stats, sdg_distribution, recentRe
  recentRegistrations.map((reg) => (
  <div key={reg.id} className="px-8 py-5 hover:bg-slate-50/50 flex items-center justify-between group/row transition-colors">
  <div className="flex items-center gap-4">
- <div className="h-10 w-10 rounded-lg bg-slate-900 border border-slate-800 text-primary text-[11px] font-semibold flex items-center justify-center group-hover/row:scale-110 transition-transform">
+ <div className="h-10 w-10 rounded-lg bg-slate-900 border border-slate-800 text-primary text-[11px] font-semibold flex items-center justify-center ">
  {reg.mahasiswa?.user?.name?.charAt(0) || 'U'}
  </div>
  <div className="flex flex-col min-w-0">
@@ -197,7 +197,7 @@ export default function AdminDashboard({ auth, stats, sdg_distribution, recentRe
 
  {/* SDG ANALYTICS */}
  <div className="bg-white rounded-lg border border-slate-100 p-8 space-y-8 group overflow-hidden relative">
- <div className="absolute top-0 right-0 p-10 text-primary opacity-[0.03] pointer-events-none group-hover:rotate-12 transition-transform duration-1000">
+ <div className="absolute top-0 right-0 p-10 text-primary opacity-[0.03] pointer-events-none ">
  <Globe2 className="w-64 h-64" />
  </div>
  
@@ -217,14 +217,14 @@ export default function AdminDashboard({ auth, stats, sdg_distribution, recentRe
  <div key={item.id} className="space-y-3 group/item">
  <div className="flex justify-between items-end">
  <div className="flex items-center gap-3">
- <span className="text-xl group-hover/item:scale-125 transition-transform">{sdg.icon}</span>
+ <span className="text-xl ">{sdg.icon}</span>
  <span className="text-[9px] font-semibold text-slate-600 truncate max-w-[150px]">{sdg.name}</span>
  </div>
  <span className="text-sm font-semibold text-slate-900">{item.count}</span>
  </div>
  <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100">
  <div 
- className={clsx("h-full rounded-full transition-all duration-1000", sdg.color)} 
+ className={clsx("h-full rounded-full transition-all", sdg.color)} 
  style={{ width: `${Math.max(5, percentage)}%` }} 
  />
  </div>
@@ -284,7 +284,7 @@ function MetricCard({ label, value, icon: Icon, color, description }: any) {
 
  return (
  <div className="bg-white p-8 rounded-lg border border-slate-100 flex items-center justify-between group hover:border-primary/20 transition-all overflow-hidden relative">
- <div className="absolute top-0 right-0 p-8 text-slate-900 opacity-[0.02] pointer-events-none group-hover:rotate-12 transition-transform">
+ <div className="absolute top-0 right-0 p-8 text-slate-900 opacity-[0.02] pointer-events-none ">
  <Icon className="h-32 w-32" />
  </div>
  <div className="relative z-10">
@@ -294,7 +294,7 @@ function MetricCard({ label, value, icon: Icon, color, description }: any) {
  <span className="text-[8px] font-semibold text-slate-300">{description}</span>
  </div>
  </div>
- <div className={clsx('p-4 rounded-lg border transition-all group-hover:rotate-12 ', colors[color])}>
+ <div className={clsx('p-4 rounded-lg border transition-all', colors[color])}>
  <Icon className="w-6 h-6" />
  </div>
  </div>

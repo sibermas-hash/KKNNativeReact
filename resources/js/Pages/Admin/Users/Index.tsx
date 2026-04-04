@@ -115,7 +115,7 @@ export default function UsersIndex({ users, filters }: Props) {
 
  <Link 
  href="/admin/users/create" 
- className="px-6 py-3 bg-slate-900 text-white text-[10px] font-semibold rounded-lg transition-all hover:-translate-y-1 active:scale-95 flex items-center gap-3"
+ className="px-6 py-3 bg-slate-900 text-white text-[10px] font-semibold rounded-lg transition-all flex items-center gap-3"
  >
  <UserPlus className="w-3.5 h-3.5 text-emerald-400" />
  REGISTER_RECORD
@@ -182,7 +182,7 @@ export default function UsersIndex({ users, filters }: Props) {
  <td className="px-8 py-6">
  <div className="flex items-center gap-4">
  <div className="relative">
- <div className="h-10 w-10 rounded-lg bg-slate-900 border border-slate-800 text-primary text-[11px] font-semibold flex items-center justify-center group-hover/row:scale-110 transition-transform">
+ <div className="h-10 w-10 rounded-lg bg-slate-900 border border-slate-800 text-primary text-[11px] font-semibold flex items-center justify-center ">
  {getInitials(u.name)}
  </div>
  {u.is_active && <div className="absolute -top-1 -right-1 h-3.5 w-3.5 bg-primary rounded-full border-2 border-white " />}
@@ -248,7 +248,7 @@ export default function UsersIndex({ users, filters }: Props) {
  : "bg-white border border-primary text-primary hover:bg-primary hover:text-white"
  )}
  >
- <Power className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+ <Power className="w-4 h-4 " />
  </button>
  </td>
  </tr>

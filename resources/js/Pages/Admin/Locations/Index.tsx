@@ -140,7 +140,7 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  {/* Import Area */}
  <div className="xl:col-span-2">
  <form onSubmit={handleImport} className="bg-white p-6 border border-slate-100 rounded-lg space-y-6 relative overflow-hidden group">
- <div className="absolute -top-4 -right-4 p-8 text-emerald-500/5 group-hover:rotate-12 transition-transform duration-700">
+ <div className="absolute -top-4 -right-4 p-8 text-emerald-500/5  duration-700">
  <UploadCloud className="h-32 w-32" />
  </div>
  
@@ -174,7 +174,7 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  <button
  type="submit"
  disabled={!importForm.data.file || importForm.processing}
- className="w-full py-4 bg-primary text-white text-[10px] font-semibold rounded-lg transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50"
+ className="w-full py-4 bg-primary text-white text-[10px] font-semibold rounded-lg transition-all disabled:opacity-50"
  >
  {importForm.processing ? 'UPLOADING...' : 'START_IMPORT_PROTOCOL'}
  </button>

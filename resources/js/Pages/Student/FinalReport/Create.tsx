@@ -98,7 +98,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  <div className="lg:col-span-2 space-y-6">
  {existingReport && (
  <section className="bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none group-hover:rotate-12 transition-transform">
+ <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none ">
  <Sparkles className="h-40 w-40" />
  </div>
  

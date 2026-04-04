@@ -53,7 +53,7 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
 
  <Link href="/student/daily-reports/create">
  <button className="h-16 px-6 rounded-lg bg-slate-900 text-white font-semibold text-xs flex items-center gap-4 grouphover:bg-black hover:scale-[1.02]">
- <PlusCircle className="h-5.5 w-5.5 text-primary group-hover:rotate-90 transition-transform" />
+ <PlusCircle className="h-5.5 w-5.5 text-primary " />
  Buat Laporan Baru
  </button>
  </Link>

@@ -97,7 +97,7 @@ export default function UserForm({ faculties, programs }: Props) {
  <form onSubmit={handleSubmit} className="space-y-8">
  {/* Role Selection */}
  <div className="bg-white p-8rounded-lg border border-slate-200 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-8 text-primary pointer-events-none group-hover:rotate-12 transition-transform">
+ <div className="absolute top-0 right-0 p-8 text-primary pointer-events-none ">
  <ShieldCheck className="h-32 w-32" />
  </div>
  

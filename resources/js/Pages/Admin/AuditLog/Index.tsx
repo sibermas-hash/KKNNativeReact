@@ -134,7 +134,7 @@ export default function AuditLogIndex({ logs, stats, filters }: { logs: any; sta
 
  <button 
  onClick={() => applyFilters()} 
- className="px-8 py-3 bg-slate-900 text-white text-[10px] font-semibold rounded-lg transition-all hover:-translate-y-1 active:scale-95 flex items-center gap-3 shrink-0"
+ className="px-8 py-3 bg-slate-900 text-white text-[10px] font-semibold rounded-lg transition-all flex items-center gap-3 shrink-0"
  >
  <Zap className="w-3.5 h-3.5 text-primary" />
  SYNC_LEDGER
@@ -163,7 +163,7 @@ export default function AuditLogIndex({ logs, stats, filters }: { logs: any; sta
  <td className="px-8 py-6">
  <div className="flex items-center gap-4">
  <div className={clsx(
- "h-10 w-10 rounded-lg flex items-center justify-center border group-hover/row:scale-110 transition-transform",
+ "h-10 w-10 rounded-lg flex items-center justify-center border ",
  cfg.bg, cfg.color, cfg.border
  )}>
  {cfg.icon}
@@ -279,7 +279,7 @@ function StatCard({ label, value, icon: Icon, color }: any) {
 
  return (
  <div className="bg-white p-8 rounded-lg border border-slate-100 flex items-center justify-between group hover:border-primary/20 transition-all overflow-hidden relative">
- <div className="absolute top-0 right-0 p-8 text-slate-900 opacity-[0.02] pointer-events-none group-hover:rotate-12 transition-transform">
+ <div className="absolute top-0 right-0 p-8 text-slate-900 opacity-[0.02] pointer-events-none ">
  <Icon className="h-32 w-32" />
  </div>
  <div className="relative z-10">

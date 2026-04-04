@@ -122,7 +122,7 @@ export default function RegistrationsIndex({ registrations, filters }: Props) {
  <tr key={reg.id} className="group/row hover:bg-slate-50/50 transition-colors">
  <td className="px-8 py-6">
  <div className="flex items-center gap-4">
- <div className="h-10 w-10 rounded-lg bg-slate-900 border border-slate-800 text-primary text-[11px] font-semibold flex items-center justify-center group-hover/row:scale-110 transition-transform">
+ <div className="h-10 w-10 rounded-lg bg-slate-900 border border-slate-800 text-primary text-[11px] font-semibold flex items-center justify-center ">
  {reg.student.name.charAt(0)}
  </div>
  <div className="flex flex-col min-w-0">

@@ -220,7 +220,7 @@ export default function WorkshopIndex({ workshops }: Props) {
 
  {showForm && (
  <div className="bg-white rounded-lg border border-slate-200 overflow-hidden zoom-in-95 relative group mx-2">
- <div className="absolute top-0 right-0 p-16 text-slate-900 pointer-events-none group-hover:rotate-12 transition-transform">
+ <div className="absolute top-0 right-0 p-16 text-slate-900 pointer-events-none ">
  <GraduationCap className="h-80 w-full" />
  </div>
 
@@ -380,7 +380,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  )} />
 
  <div className="p-12 border-b border-slate-200/50 flex-grow relative overflow-hidden">
- <div className="absolute -right-6 -top-4 text-slate-900 pointer-events-none group-hover:rotate-12 transition-transform">
+ <div className="absolute -right-6 -top-4 text-slate-900 pointer-events-none ">
  <Globe className="h-48 w-48" />
  </div>
 

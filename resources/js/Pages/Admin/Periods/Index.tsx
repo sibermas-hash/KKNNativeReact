@@ -184,7 +184,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  {!showForm && (
  <button
  onClick={openCreateForm}
- className="flex items-center gap-3 px-4 py-2 bg-primary text-white rounded-lg font-semibold text-[10px] hover: hover:shadow-primary/20 transition-all active:scale-95"
+ className="flex items-center gap-3 px-4 py-2 bg-primary text-white rounded-lg font-semibold text-[10px] hover: hover:shadow-primary/20 transition-all"
  >
  <Plus className="w-3.5 h-3.5 stroke-[3px]" />
  INISIASI_BARU
@@ -296,14 +296,14 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  <button
  type="button"
  onClick={() => form.setData('is_active', !form.data.is_active)}
- className="flex items-center gap-4 group transition-transform active:scale-95"
+ className="flex items-center gap-4 group transition-transform"
  >
  <div className={clsx(
  "w-12 h-6 rounded-full p-1 transition-all duration-300",
  form.data.is_active ? 'bg-primary' : 'bg-slate-200'
  )}>
  <div className={clsx(
- "w-4 h-4 bg-white rounded-full transition-transform duration-300 ",
+ "w-4 h-4 bg-white rounded-full  ",
  form.data.is_active ? 'translate-x-6' : 'translate-x-0'
  )} />
  </div>
@@ -318,7 +318,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  <button 
  type="submit" 
  disabled={form.processing}
- className="px-10 py-4 bg-primary text-white rounded-lg font-semibold text-[10px] hover: hover:shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
+ className="px-10 py-4 bg-primary text-white rounded-lg font-semibold text-[10px] hover: hover:shadow-primary/20 transition-all disabled:opacity-50"
  >
  {editing ? 'SIMPAN_KOREKSI' : 'LAUNCH_PERIODE'}
  </button>

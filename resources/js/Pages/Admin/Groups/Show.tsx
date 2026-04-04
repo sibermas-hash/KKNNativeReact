@@ -101,7 +101,7 @@ export default function GroupShow({ group }: Props) {
  <div className="lg:col-span-2 space-y-6">
  {/* Location Details - High Density */}
  <div className="bg-white p-12 rounded-lg border border-slate-200 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-14 text-slate-900 pointer-events-none group-group-hover:rotate-6 transition-transform">
+ <div className="absolute top-0 right-0 p-14 text-slate-900 pointer-events-none group-">
  <MapPin className="h-80 w-full" />
  </div>
 
@@ -127,7 +127,7 @@ export default function GroupShow({ group }: Props) {
 
  {/* Posko Details - Tactical Multimedia */}
  <div className="bg-white p-12 rounded-lg border border-slate-200 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-12 text-primary pointer-events-none group-hover:rotate-12 transition-transform">
+ <div className="absolute top-0 right-0 p-12 text-primary pointer-events-none ">
  <ShieldCheck className="h-64 w-64" />
  </div>
 
@@ -172,7 +172,7 @@ export default function GroupShow({ group }: Props) {
  rel="noreferrer"
  className="inline-flex items-center justify-center gap-4 w-full py-6 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800active:group/map"
  >
- <MapIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+ <MapIcon className="w-5 h-5 " />
  OPEN_MAPS_GATEWAY
  </a>
  </div>
@@ -242,7 +242,7 @@ export default function GroupShow({ group }: Props) {
  <tr>
  <td colSpan={3} className="px-12 py-32 text-center">
  <div className="flex flex-col items-center gap-8 opacity-20 group">
- <Cpu className="h-16 w-16 text-white group-hover:rotate-180 transition-transform" />
+ <Cpu className="h-16 w-16 text-white " />
  <p className="text-[13px] font-semibold text-white ">NULL_ALLOCATION_DETECTED</p>
  </div>
  </td>

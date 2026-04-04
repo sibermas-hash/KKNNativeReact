@@ -137,7 +137,7 @@ export default function GradingSettings({ sections }: Props) {
  key={section.group}
  className="bg-white p-8 rounded-lg border border-slate-100 relative overflow-hidden group"
  >
- <div className="absolute top-0 right-0 p-10 text-slate-900/5 pointer-events-none group-hover:rotate-12 transition-transform">
+ <div className="absolute top-0 right-0 p-10 text-slate-900/5 pointer-events-none ">
  <Sliders className="h-32 w-32" />
  </div>
 
@@ -218,7 +218,7 @@ export default function GradingSettings({ sections }: Props) {
 
  <div className="space-y-8">
  <div className="bg-slate-900 p-8 rounded-lg border border-slate-800 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-8 opacity-10 text-primary group-hover:rotate-12 transition-transform">
+ <div className="absolute top-0 right-0 p-8 opacity-10 text-primary ">
  <Sparkles className="w-32 h-32" />
  </div>
 
@@ -262,7 +262,7 @@ export default function GradingSettings({ sections }: Props) {
  <button
  type="submit"
  disabled={processing || invalidSections.length > 0}
- className="w-full py-5 bg-slate-900 text-white rounded-lg text-[10px] font-semibold hover:-translate-y-1 transition-all disabled:opacity-30 disabled:grayscale flex items-center justify-center gap-3"
+ className="w-full py-5 bg-slate-900 text-white rounded-lg text-[10px] font-semibold transition-all disabled:opacity-30 disabled:grayscale flex items-center justify-center gap-3"
  >
  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
  {processing ? 'SYNCING...' : 'UPDATE_ALGORITHM'}

@@ -165,7 +165,7 @@ export default function GroupsIndex({ groups, periods, locations, lecturers }: P
  {!showForm && (
  <button 
  onClick={() => { setEditing(null); reset(); setShowForm(true); }}
- className="px-6 py-3 bg-slate-900 text-white text-[10px] font-semibold rounded-lg transition-all hover:-translate-y-1 active:scale-95 flex items-center gap-3"
+ className="px-6 py-3 bg-slate-900 text-white text-[10px] font-semibold rounded-lg transition-all flex items-center gap-3"
  >
  <Plus className="w-3.5 h-3.5 text-emerald-400" />
  INITIALIZE_NEW_UNIT
@@ -347,7 +347,7 @@ export default function GroupsIndex({ groups, periods, locations, lecturers }: P
  <button
  type="submit"
  disabled={processing}
- className="px-12 py-3 bg-primary text-white rounded-lg text-[10px] font-semibold hover:-translate-y-1 transition-all disabled:opacity-50"
+ className="px-12 py-3 bg-primary text-white rounded-lg text-[10px] font-semibold transition-all disabled:opacity-50"
  >
  {processing ? 'SYNCING...' : (editing ? 'CONFIRM_PARAMETERS_UPDATE' : 'INITIALIZE_UNIT_RECON')}
  </button>

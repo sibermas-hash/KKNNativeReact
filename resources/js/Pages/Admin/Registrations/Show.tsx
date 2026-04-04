@@ -103,7 +103,7 @@ export default function RegistrationShow({ registration }: Props) {
  <div className="lg:col-span-2 space-y-6">
  {/* Student Core Profile - Tactical Overhaul */}
  <div className="bg-white rounded-lg border border-slate-200 p-12 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-14 text-slate-900 pointer-events-none group-group-hover:rotate-6 transition-transform">
+ <div className="absolute top-0 right-0 p-14 text-slate-900 pointer-events-none group-">
  <User className="w-80 h-auto" />
  </div>
 
@@ -139,7 +139,7 @@ export default function RegistrationShow({ registration }: Props) {
 
  {/* Documents & Assets - Tactical Grid */}
  <div className="bg-white rounded-lg border border-slate-200 p-12 relative group">
- <div className="absolute top-0 right-0 p-12 text-primary rotate-12 group-hover:rotate-45 transition-transform">
+ <div className="absolute top-0 right-0 p-12 text-primary rotate-12 ">
  <FileSearch className="w-48 h-48" />
  </div>
 
@@ -286,7 +286,7 @@ export default function RegistrationShow({ registration }: Props) {
  
  {registration.notes && (
  <div className="p-10 bg-amber-50 rounded-lg border border-amber-100 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-8 text-amber-600 pointer-events-none group-hover:rotate-12 transition-transform">
+ <div className="absolute top-0 right-0 p-8 text-amber-600 pointer-events-none ">
  <MessageSquare className="h-40 w-40" />
  </div>
  <div className="relative z-10">

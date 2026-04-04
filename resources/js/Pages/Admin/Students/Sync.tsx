@@ -71,7 +71,7 @@ export default function StudentSync(_props: Props) {
 
  {/* Main Sync Interface */}
  <div className="bg-white rounded-lg border border-slate-100 overflow-hidden relative group min-h-[500px] flex items-center justify-center">
- <div className="absolute top-0 right-0 p-16 text-slate-900 opacity-[0.03] pointer-events-none group-hover:rotate-12 transition-transform duration-1000">
+ <div className="absolute top-0 right-0 p-16 text-slate-900 opacity-[0.03] pointer-events-none  duration-1000">
  <Database className="h-[40rem] w-[40rem]" />
  </div>
 
@@ -95,7 +95,7 @@ export default function StudentSync(_props: Props) {
  "w-full py-8 rounded-lg text-[11px] font-semibold flex items-center justify-center gap-4 transition-all",
  processing 
  ? "bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed" 
- : "bg-slate-900 text-white hover:-translate-y-2 active:scale-95 group/sync"
+ : "bg-slate-900 text-white hover:-translate-y-2 group/sync"
  )}
  >
  <RefreshCw className={clsx("w-6 h-6 text-primary transition-all duration-700", processing ? "animate-spin" : "group-hover/sync:rotate-180")} />

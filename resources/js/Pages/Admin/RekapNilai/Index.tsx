@@ -175,7 +175,7 @@ export default function RekapNilaiIndex({
  <button
  onClick={handleExport}
  disabled={!currentPeriodId}
- className="px-6 py-3 bg-white border border-slate-200 text-slate-900 text-[10px] font-semibold rounded-lg transition-all hover:-translate-y-1 active:scale-95 flex items-center gap-3 disabled:opacity-30"
+ className="px-6 py-3 bg-white border border-slate-200 text-slate-900 text-[10px] font-semibold rounded-lg transition-all flex items-center gap-3 disabled:opacity-30"
  >
  <Download className="w-3.5 h-3.5 text-primary" />
  EXPORT_LEDGER
@@ -185,7 +185,7 @@ export default function RekapNilaiIndex({
  <button
  onClick={handleFinalizeMass}
  disabled={!currentPeriodId || (finalizeProgress?.status === 'processing')}
- className="px-6 py-3 bg-slate-900 text-white text-[10px] font-semibold rounded-lg transition-all hover:-translate-y-1 active:scale-95 flex items-center gap-3 disabled:opacity-30"
+ className="px-6 py-3 bg-slate-900 text-white text-[10px] font-semibold rounded-lg transition-all flex items-center gap-3 disabled:opacity-30"
  >
  <BadgeCheck className="w-3.5 h-3.5 text-emerald-400" />
  {finalizeProgress?.status === 'processing' ? 'PROCESSING...' : 'INITIALIZE_FINAL_LOCK'}
@@ -200,7 +200,7 @@ export default function RekapNilaiIndex({
  <RekapStatCard label="LOCKED_RECORDS" value={stats.finalized} icon={ShieldCheck} color="text-emerald-500" />
  <RekapStatCard label="PENDING_AUDIT" value={stats.pending} icon={AlertCircle} color="text-rose-500" />
  <div className="bg-slate-900 p-6 rounded-lg border border-slate-800 flex flex-col justify-between group overflow-hidden relative">
- <div className="absolute top-0 right-0 p-6 opacity-10 text-emerald-300 pointer-events-none group-hover:rotate-12 transition-transform">
+ <div className="absolute top-0 right-0 p-6 opacity-10 text-emerald-300 pointer-events-none ">
  <Lock className="h-16 w-16" />
  </div>
  <div className="flex items-center justify-between relative z-10">
@@ -287,7 +287,7 @@ export default function RekapNilaiIndex({
  <tr key={student.id} className="group/row hover:bg-slate-50/50 transition-colors">
  <td className="px-8 py-6">
  <div className="flex items-center gap-4">
- <div className="h-10 w-10 rounded-lg bg-slate-900 border border-slate-800 text-primary text-[11px] font-semibold flex items-center justify-center group-hover/row:scale-110 transition-transform">
+ <div className="h-10 w-10 rounded-lg bg-slate-900 border border-slate-800 text-primary text-[11px] font-semibold flex items-center justify-center ">
  {student.nama.charAt(0)}
  </div>
  <div className="flex flex-col min-w-0">
@@ -472,7 +472,7 @@ export default function RekapNilaiIndex({
  }
  }}
  disabled={!selectedStudent.total}
- className="px-12 py-3 bg-primary text-white rounded-lg text-[10px] font-semibold hover:-translate-y-1 transition-all disabled:opacity-50"
+ className="px-12 py-3 bg-primary text-white rounded-lg text-[10px] font-semibold transition-all disabled:opacity-50"
  >
  FINALIZE_&_LOCK
  </button>

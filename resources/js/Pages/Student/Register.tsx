@@ -293,7 +293,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  {/* Registration Summary & Actions */}
  {selectedPeriod && currentRegistration && (
  <section className="bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-12 text-primary pointer-events-none group-hover:rotate-12 transition-transform">
+ <div className="absolute top-0 right-0 p-12 text-primary pointer-events-none ">
  <ShieldCheck className="h-64 w-64" />
  </div>
  <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -491,7 +491,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  )}
  >
  <div className="flex items-center justify-center gap-4">
- {processing ? <RotateCw className="h-8 w-8 text-primary" /> : <Zap className="h-8 w-8 text-primary group-hover:rotate-12 transition-transform" />}
+ {processing ? <RotateCw className="h-8 w-8 text-primary" /> : <Zap className="h-8 w-8 text-primary " />}
  {submitLabel}
  </div>
  </button>

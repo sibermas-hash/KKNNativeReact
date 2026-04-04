@@ -118,7 +118,7 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
  <div className="lg:col-span-2 space-y-6">
  {/* Heatmap Section */}
  <div className="bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-8 text-slate-900 pointer-events-none group-hover:rotate-12 transition-transform">
+ <div className="absolute top-0 right-0 p-8 text-slate-900 pointer-events-none ">
  <Cpu className="h-32 w-32" />
  </div>
  

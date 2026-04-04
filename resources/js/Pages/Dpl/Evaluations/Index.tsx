@@ -136,7 +136,7 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
 
  {showForm && (
  <div className="rounded-lg border border-slate-200 bg-white p-10 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-8 text-slate-900 pointer-events-none group-hover:rotate-12 transition-transform">
+ <div className="absolute top-0 right-0 p-8 text-slate-900 pointer-events-none ">
  <BoltIcon className="h-32 w-32" />
  </div>
 

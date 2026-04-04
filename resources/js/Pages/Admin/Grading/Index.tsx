@@ -173,7 +173,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  <AppLayout title="Protokol Penilaian">
  <div className="flex h-auto items-center justify-center p-8">
  <div className="text-center p-14 bg-white rounded-lg border border-slate-200 max-w-2xl relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-14 text-slate-900 group-hover:rotate-12 transition-transform">
+ <div className="absolute top-0 right-0 p-14 text-slate-900 ">
  <GraduationCap className="h-64 w-64" />
  </div>
  <div className="mx-auto mb-10 h-24 w-24 text-primary bg-primary/5rounded-lg border border-primary/10 flex items-center justify-center

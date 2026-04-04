@@ -75,7 +75,7 @@ export default function DplGroupsIndex({ groups }: Props) {
  href={`/dpl/groups/${g.id}`} 
  className="group block bg-white rounded-lg border border-slate-200 p-8 hover:border-primary/30 relative overflow-hidden"
  >
- <div className="absolute top-0 right-0 p-8 text-slate-900 pointer-events-none group-hover:rotate-12 transition-transform">
+ <div className="absolute top-0 right-0 p-8 text-slate-900 pointer-events-none ">
  <SparklesIcon className="h-32 w-32" />
  </div>
  

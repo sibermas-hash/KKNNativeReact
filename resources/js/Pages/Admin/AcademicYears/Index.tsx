@@ -137,7 +137,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
 
  <div
  className={clsx(
- "flex items-center gap-4 p-4 border rounded-lg cursor-pointer transition-all active:scale-95",
+ "flex items-center gap-4 p-4 border rounded-lg cursor-pointer transition-all",
  form.data.is_active ? 'bg-primary/5 border-primary/20' : 'bg-slate-50 border-slate-100'
  )}
  onClick={() => form.setData('is_active', !form.data.is_active)}
@@ -160,7 +160,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
  <button
  type="submit"
  disabled={form.processing}
- className="w-full py-4 bg-primary text-white text-[10px] font-semibold rounded-lg transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50"
+ className="w-full py-4 bg-primary text-white text-[10px] font-semibold rounded-lg transition-all disabled:opacity-50"
  >
  {editing ? 'SIMPAN_PERUBAHAN' : 'LAUNCH_DATA_BARU'}
  </button>

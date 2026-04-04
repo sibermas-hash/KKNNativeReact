@@ -3,6 +3,7 @@ export interface User {
   username: string;
   name: string;
   email: string;
+  student_registration_locked?: boolean;
   faculty?: Faculty | null;
   roles?: string[];
   permissions?: string[];

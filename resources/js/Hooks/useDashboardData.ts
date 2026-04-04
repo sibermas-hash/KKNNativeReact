@@ -69,5 +69,6 @@ export const useDashboardData = () => {
         role: userRole,
         welcomeMessage: getWelcomeMessage(),
         config: getDashboardConfig(),
+        isRegistrationLocked: !!auth.user.student_registration_locked,
     };
 };

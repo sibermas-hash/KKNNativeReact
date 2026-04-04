@@ -33,11 +33,11 @@ Route::get('/repositori', [\App\Http\Controllers\HomeController::class, 'downloa
 Route::middleware(['auth', 'kkn.throttle'])->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class , 'destroy'])->name('logout');
 
-    // Profile
-    Route::get('/profile', [ProfileController::class , 'show'])->name('profile.show');
-    Route::put('/profile', [ProfileController::class , 'update'])->name('profile.update');
-    Route::post('/profile/avatar', [ProfileController::class , 'updateAvatar'])->name('profile.avatar');
-    Route::post('/profile/password', [ProfileController::class , 'updatePassword'])->name('profile.password');
+    // Profil Saya
+    Route::get('/profil-saya', [ProfileController::class , 'show'])->name('profile.show');
+    Route::put('/profil-saya', [ProfileController::class , 'update'])->name('profile.update');
+    Route::post('/profil-saya/avatar', [ProfileController::class , 'updateAvatar'])->name('profile.avatar');
+    Route::post('/profil-saya/kata-sandi', [ProfileController::class , 'updatePassword'])->name('profile.password');
 
     Route::get('/dashboard', [DashboardController::class , 'index'])->name('dashboard');
 
@@ -50,7 +50,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
     // ==========================================
     Route::middleware(['role:superadmin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [Admin\DashboardController::class , 'index'])->name('dasbor');
-        Route::get('tactical-preview', function () {
+        Route::get('pratinjau-taktis', function () {
             return inertia('Admin/TacticalDashboard');
         })->name('tactical-preview');
 
@@ -61,15 +61,15 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::resource('periode', Admin\PeriodeController::class)
             ->only(['index', 'store', 'update', 'destroy'])
             ->parameters(['periode' => 'periode']);
-        Route::post('periode/{periode}/duplicate', [Admin\PeriodeController::class , 'duplicate'])->name('periods.duplicate');
-        Route::get('periode/export', [Admin\PeriodeController::class, 'export'])->name('periods.export');
+        Route::post('periode/{periode}/duplikat', [Admin\PeriodeController::class , 'duplicate'])->name('periods.duplicate');
+        Route::get('periode/ekspor', [Admin\PeriodeController::class, 'export'])->name('periods.export');
         Route::resource('fakultas', Admin\FakultasController::class)
             ->only(['index', 'store', 'update', 'destroy'])
             ->parameters(['fakultas' => 'fakultas']);
         Route::resource('program-studi', Admin\ProdiController::class)
             ->only(['index', 'store', 'update', 'destroy'])
             ->parameters(['program-studi' => 'prodi']);
-        Route::post('lokasi/import', [Admin\LokasiController::class, 'import'])->name('locations.import');
+        Route::post('lokasi/impor', [Admin\LokasiController::class, 'import'])->name('locations.import');
         Route::resource('lokasi', Admin\LokasiController::class)
             ->only(['index', 'store', 'update', 'destroy'])
             ->parameters(['lokasi' => 'lokasi']);
@@ -80,7 +80,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
             ->only(['index', 'show', 'store', 'update', 'destroy'])
             ->parameters(['kelompok' => 'kelompokKkn']);
         Route::get('pengguna', [Admin\UserController::class , 'index'])->name('users.index');
-        Route::get('pengguna/create', [Admin\UserController::class , 'create'])->name('users.create');
+        Route::get('pengguna/buat', [Admin\UserController::class , 'create'])->name('users.create');
         Route::post('pengguna', [Admin\UserController::class , 'store'])->name('users.store');
         Route::patch('pengguna/{user}/toggle-active', [Admin\UserController::class , 'toggleActive'])->name('users.toggle-active');
         Route::get('dpl', [Admin\UserController::class , 'dosenIndex'])->name('dpl.index');
@@ -88,15 +88,15 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::get('mahasiswa/sync', [Admin\StudentSyncController::class , 'index'])->name('mahasiswa.sync');
         Route::post('mahasiswa/sync', [Admin\StudentSyncController::class , 'sync'])->name('mahasiswa.sync.store');
         
-        Route::get('dpl/assignment', [Admin\DplAssignmentController::class , 'index'])->name('dpl.assignment');
-        Route::get('dpl/sync', [Admin\DplSyncController::class , 'index'])->name('dpl.sync');
-        Route::post('dpl/sync', [Admin\DplSyncController::class , 'sync'])->name('dpl.sync.store');
-        Route::post('dpl/assign-period', [Admin\DplAssignmentController::class , 'assignToPeriod'])->name('dpl.assign-period');
-        Route::post('dpl/assign-group/{group}', [Admin\DplAssignmentController::class , 'assignToGroup'])->name('dpl.assign-group');
-        Route::post('dpl/assign-district', [Admin\DplAssignmentController::class , 'assignDistrictCoordinator'])->name('dpl.assign-district');
-        Route::post('dpl/import', [Admin\DplAssignmentController::class , 'import'])->name('dpl.import');
-        Route::patch('dpl/remove-period/{dplPeriod}', [Admin\DplAssignmentController::class , 'removeDplFromPeriod'])->name('dpl.remove-period');
-        Route::patch('dpl/remove-district/{districtCoordinator}', [Admin\DplAssignmentController::class , 'removeDistrictCoordinator'])->name('dpl.remove-district');
+        Route::get('dpl/penugasan', [Admin\DplAssignmentController::class , 'index'])->name('dpl.assignment');
+        Route::get('dpl/sinkron', [Admin\DplSyncController::class , 'index'])->name('dpl.sync');
+        Route::post('dpl/sinkron', [Admin\DplSyncController::class , 'sync'])->name('dpl.sync.store');
+        Route::post('dpl/tugaskan-periode', [Admin\DplAssignmentController::class , 'assignToPeriod'])->name('dpl.assign-period');
+        Route::post('dpl/tugaskan-kelompok/{group}', [Admin\DplAssignmentController::class , 'assignToGroup'])->name('dpl.assign-group');
+        Route::post('dpl/tugaskan-wilayah', [Admin\DplAssignmentController::class , 'assignDistrictCoordinator'])->name('dpl.assign-district');
+        Route::post('dpl/impor', [Admin\DplAssignmentController::class , 'import'])->name('dpl.import');
+        Route::patch('dpl/lepas-periode/{dplPeriod}', [Admin\DplAssignmentController::class , 'removeDplFromPeriod'])->name('dpl.remove-period');
+        Route::patch('dpl/lepas-wilayah/{districtCoordinator}', [Admin\DplAssignmentController::class , 'removeDistrictCoordinator'])->name('dpl.remove-district');
         
         Route::get('peserta/transfer', [Admin\StudentTransferController::class , 'index'])->name('peserta.transfer.index');
         Route::post('peserta/transfer', [Admin\StudentTransferController::class , 'transfer'])->name('peserta.transfer');
@@ -113,7 +113,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::get('pendaftaran', [Admin\PesertaKknController::class , 'index'])->name('registrations.index');
         Route::get('pendaftaran/berkas/unduh', [Admin\PesertaKknController::class, 'downloadDocument'])->name('registrations.document.download');
         Route::get('pendaftaran/{pesertaKkn}', [Admin\PesertaKknController::class , 'show'])->name('registrations.show');
-        Route::get('pendaftaran/export', [Admin\PesertaKknController::class , 'export'])->name('registrations.export');
+        Route::get('pendaftaran/ekspor', [Admin\PesertaKknController::class , 'export'])->name('registrations.export');
         Route::patch('pendaftaran/{pesertaKkn}/approve', [Admin\PesertaKknController::class , 'approve'])->name('registrations.approve');
         Route::patch('pendaftaran/{pesertaKkn}/reject', [Admin\PesertaKknController::class , 'reject'])->name('registrations.reject');
         Route::patch('pendaftaran/{pesertaKkn}/assign-group', [Admin\PesertaKknController::class , 'assignGroup'])->name('registrations.assign-group');

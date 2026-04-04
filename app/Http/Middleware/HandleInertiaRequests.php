@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\KKN\PesertaKkn;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -36,6 +37,16 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        $studentRegistrationLocked = false;
+
+        if ($user?->hasRole('student') && $user->mahasiswa) {
+            $studentRegistrationLocked = PesertaKkn::query()
+                ->where('mahasiswa_id', $user->mahasiswa->id)
+                ->where('status', 'approved')
+                ->whereNotNull('kelompok_id')
+                ->latest('approved_at')
+                ->exists();
+        }
 
         return [
             ...parent::share($request),
@@ -46,6 +57,7 @@ class HandleInertiaRequests extends Middleware
                     'name' => $user->name,
                     'email' => $user->email,
                     'must_change_password' => $user->must_change_password,
+                    'student_registration_locked' => $studentRegistrationLocked,
                     'faculty' => $user->fakultas ? [
                         'id' => $user->fakultas->id,
                         'name' => $user->fakultas->nama,

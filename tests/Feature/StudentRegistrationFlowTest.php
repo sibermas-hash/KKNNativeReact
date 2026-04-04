@@ -153,6 +153,56 @@ test('student can submit registration to an active period and active group', fun
     ], 'kkn');
 });
 
+test('student with approved group registration is redirected away from registration page', function () {
+    ['user' => $user, 'student' => $student] = createStudentUser();
+
+    $period = Periode::factory()->active()->create();
+    $group = KelompokKkn::factory()->create([
+        'period_id' => $period->id,
+        'status' => 'active',
+    ]);
+
+    PesertaKkn::factory()->approved()->create([
+        'mahasiswa_id' => $student->id,
+        'period_id' => $period->id,
+        'kelompok_id' => $group->id,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('student.registration.create'))
+        ->assertRedirect(route('student.dashboard'))
+        ->assertSessionHas('info');
+});
+
+test('student with approved group registration cannot update or leave registration anymore', function () {
+    ['user' => $user, 'student' => $student] = createStudentUser();
+
+    $period = Periode::factory()->active()->create();
+    $group = KelompokKkn::factory()->create([
+        'period_id' => $period->id,
+        'status' => 'active',
+    ]);
+
+    PesertaKkn::factory()->approved()->create([
+        'mahasiswa_id' => $student->id,
+        'period_id' => $period->id,
+        'kelompok_id' => $group->id,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('student.registration.store'), [
+            'period_id' => $period->id,
+            'kelompok_id' => $group->id,
+        ])
+        ->assertRedirect(route('student.dashboard'))
+        ->assertSessionHas('error');
+
+    $this->actingAs($user)
+        ->delete(route('student.registration.leave', $period->id))
+        ->assertRedirect(route('student.dashboard'))
+        ->assertSessionHas('error');
+});
+
 test('student dashboard receives frontend friendly registration payload', function () {
     ['user' => $user, 'student' => $student] = createStudentUser();
 
@@ -452,7 +502,7 @@ test('male student can still join when male composition has reached the ideal ta
     ], 'kkn');
 });
 
-test('student cannot leave a group while cooling period is active', function () {
+test('student with approved registration cannot leave group through registration flow while locked', function () {
     ['user' => $user, 'student' => $student] = createStudentUser();
 
     $period = Periode::factory()->active()->create([
@@ -480,13 +530,12 @@ test('student cannot leave a group while cooling period is active', function () 
     ]);
 
     $this->actingAs($user)
-        ->from(route('student.registration.create'))
         ->delete(route('student.registration.leave', $period))
-        ->assertRedirect(route('student.registration.create'))
-        ->assertSessionHasErrors('kelompok_id');
+        ->assertRedirect(route('student.dashboard'))
+        ->assertSessionHas('error');
 });
 
-test('student can leave a group after cooling period and receives queue penalty', function () {
+test('student with approved registration remains locked even after cooling period expires', function () {
     ['user' => $user, 'student' => $student] = createStudentUser();
 
     $period = Periode::factory()->active()->create([
@@ -515,20 +564,18 @@ test('student can leave a group after cooling period and receives queue penalty'
 
     $this->actingAs($user)
         ->delete(route('student.registration.leave', $period))
-        ->assertRedirect()
-        ->assertSessionHas('success');
+        ->assertRedirect(route('student.dashboard'))
+        ->assertSessionHas('error');
 
     $this->assertDatabaseHas('peserta_kkn', [
         'mahasiswa_id' => $student->id,
         'period_id' => $period->id,
-        'kelompok_id' => null,
+        'kelompok_id' => $group->id,
     ], 'kkn');
 
     $this->assertDatabaseHas('antrian_kkn', [
         'mahasiswa_id' => $student->id,
         'period_id' => $period->id,
-        'status' => 'menunggu',
-        'penalti_poin' => 10,
-        'pindah_count' => 1,
+        'status' => 'dalam_kelompok',
     ], 'kkn');
 });

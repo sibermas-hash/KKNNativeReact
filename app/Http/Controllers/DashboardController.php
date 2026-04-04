@@ -12,7 +12,7 @@ class DashboardController extends Controller
         $user = $request->user();
 
         if ($user->hasRole('Admin') || $user->hasRole('superadmin')) {
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('admin.dasbor');
         }
 
         if ($user->hasRole('dpl')) {

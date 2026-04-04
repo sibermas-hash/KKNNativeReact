@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { FormInput } from '@/Components/ui';
 import type { PageProps } from '@/types';
+import { route } from 'ziggy-js';
 
 interface SlotRule {
  id: number;
@@ -112,7 +113,7 @@ export default function Register({ periods, student_gender, student_academic }: 
 
  const handleSubmit = (event: React.FormEvent) => {
  event.preventDefault();
- form.post('/student/register', {
+ form.post(route('student.registration.store'), {
  forceFormData: true,
  });
  };
@@ -126,7 +127,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  return;
  }
 
- router.delete(`/student/register/${selectedPeriod.id}/group`, {
+ router.delete(route('student.registration.leave', selectedPeriod.id), {
  preserveScroll: true,
  });
  };

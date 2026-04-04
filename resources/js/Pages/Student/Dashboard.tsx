@@ -259,7 +259,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  : 'Sistem belum menetapkan lokasi penempatan untuk profil Anda. Silakan pilih kelompok terlebih dahulu.'}
  </p>
  <Link
- href="/student/register"
+ href={route('student.registration.create')}
  className="inline-flex items-center gap-4 px-8 py-4 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-primary transition-all active:scale-95"
  >
  {isPending ? 'Ubah Pilihan' : 'Pilih Kelompok'} <ArrowRight className="h-4 w-4 group-hover:translate-x-2 transition-transform" />

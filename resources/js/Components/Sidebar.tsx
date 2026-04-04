@@ -134,12 +134,13 @@ const facultyAdminNav: NavGroup[] = [
  },
 ];
 
-const studentNav: NavGroup[] = [
+function buildStudentNav(isRegistrationLocked: boolean): NavGroup[] {
+ return [
  {
  title: 'Dasbor',
  items: [
  { label: 'Dasbor Saya', href: '/mahasiswa', icon: LayoutDashboard },
- { label: 'Pendaftaran', href: '/mahasiswa/pendaftaran', icon: ClipboardList },
+ ...(isRegistrationLocked ? [] : [{ label: 'Pendaftaran', href: '/mahasiswa/pendaftaran', icon: ClipboardList }]),
  ],
  },
  {
@@ -152,14 +153,15 @@ const studentNav: NavGroup[] = [
  { label: 'Cek Nilai', href: '/mahasiswa/evaluasi', icon: Award },
  ],
  },
-];
+ ];
+}
 
-function getNavForRole(roles: string[]): NavGroup[] {
+function getNavForRole(roles: string[], isStudentRegistrationLocked: boolean): NavGroup[] {
  const norm = roles.map(r => r.toLowerCase());
  if (norm.includes('admin') || norm.includes('superadmin')) return adminNav;
  if (norm.includes('faculty_admin') || norm.includes('admin fakultas') || norm.includes('administrator fakultas')) return facultyAdminNav;
  if (norm.includes('dpl') || norm.includes('dosen')) return dplNav;
- return studentNav;
+ return buildStudentNav(isStudentRegistrationLocked);
 }
 
 interface SidebarProps {
@@ -177,8 +179,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
  const roles = Array.isArray(rawRoles) 
  ? rawRoles.map(r => typeof r === 'object' ? (r as any).name : String(r))
  : [];
+ const isStudentRegistrationLocked = !!auth.user?.student_registration_locked;
 
- const navGroups = getNavForRole(roles);
+ const navGroups = getNavForRole(roles, isStudentRegistrationLocked);
  const currentPath = typeof url === 'string' ? url : window.location.pathname;
  const navRef = useRef<HTMLElement | null>(null);
 

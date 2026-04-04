@@ -1,237 +1,499 @@
-import { useState } from 'react';
-import { useForm, router, Head } from '@inertiajs/react';
-import AppLayout from '@/Layouts/AppLayout';
+import type { FormEvent } from 'react';
+import { useMemo, useState } from 'react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import {
-    Users,
-    Search,
-    RefreshCw,
-    UserPlus,
-    X,
-    CheckCircle2,
-    Briefcase,
-    Zap,
-    MapPin,
     AlertCircle,
+    CheckCircle2,
+    RefreshCw,
+    Search,
+    Trash2,
+    UserPlus,
+    Users,
 } from 'lucide-react';
-import { clsx } from 'clsx';
+import AppLayout from '@/Layouts/AppLayout';
 
-interface Dosen {
+interface DosenOption {
     id: number;
+    nama: string;
     nip: string;
-    name: string;
 }
 
-interface Group {
+interface PeriodOption {
     id: number;
     name: string;
-    dosen_id: number | null;
+    periode?: number | null;
+    jenis?: string | null;
+}
+
+interface AssignmentRow {
+    id: number;
+    max_groups: number;
+    current_groups: number;
+    remaining_slots: number;
+    is_active: boolean;
+    dosen: DosenOption;
+    period: PeriodOption;
+}
+
+interface GroupRow {
+    id: number;
+    name: string;
+    code: string;
+    dpl_period_id: number | null;
+    period: PeriodOption;
     location?: {
-        kecamatan: string;
-        kabupaten: string;
-    };
+        district_name?: string | null;
+        regency_name?: string | null;
+    } | null;
+    dpl?: DosenOption | null;
 }
 
 interface Props {
-    groups: Group[];
-    availableDosen: Dosen[];
-    filters: { search?: string };
+    assignments: AssignmentRow[];
+    groups: GroupRow[];
+    allDosen: DosenOption[];
+    allPeriods: PeriodOption[];
+    filters: {
+        search?: string;
+    };
 }
 
-export default function DplAssignment({ groups, availableDosen, filters }: Props) {
-    const [search, setSearch] = useState(filters.search || '');
-    const { data, setData, post, processing, reset } = useForm({
-        group_id: '',
+function formatPeriod(period: PeriodOption): string {
+    const numberLabel = period.periode ? `Periode ${period.periode}` : null;
+    return [period.name, numberLabel, period.jenis].filter(Boolean).join(' · ');
+}
+
+function formatLocation(group: GroupRow): string {
+    return [group.location?.district_name, group.location?.regency_name].filter(Boolean).join(', ');
+}
+
+export default function DplAssignment({
+    assignments,
+    groups,
+    allDosen,
+    allPeriods,
+    filters,
+}: Props) {
+    const [search, setSearch] = useState(filters.search ?? '');
+
+    const periodForm = useForm({
         dosen_id: '',
+        period_id: '',
+        max_groups: '5',
     });
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        router.get(route('admin.dpl.assignment'), { search }, { preserveState: true });
+    const groupForm = useForm({
+        group_id: '',
+        dpl_period_id: '',
+    });
+
+    const selectedGroup = useMemo(
+        () => groups.find((group) => String(group.id) === groupForm.data.group_id) ?? null,
+        [groupForm.data.group_id, groups],
+    );
+
+    const availableAssignments = useMemo(() => {
+        if (!selectedGroup) {
+            return assignments;
+        }
+
+        return assignments.filter((assignment) => assignment.period.id === selectedGroup.period.id);
+    }, [assignments, selectedGroup]);
+
+    const assignedGroupCount = groups.filter((group) => group.dpl_period_id !== null).length;
+    const progressPercentage = groups.length > 0 ? (assignedGroupCount / groups.length) * 100 : 0;
+
+    const handleSearch = (event: FormEvent) => {
+        event.preventDefault();
+        router.get(
+            route('admin.dpl.assignment'),
+            { search },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
     };
 
-    const submit = (e: React.FormEvent) => {
-        e.preventDefault();
-        post(route('admin.dpl.assignment.store'), {
-            onSuccess: () => reset(),
+    const submitPeriodAssignment = (event: FormEvent) => {
+        event.preventDefault();
+        periodForm.post(route('admin.dpl.assign-period'), {
+            preserveScroll: true,
+            onSuccess: () => periodForm.reset('dosen_id', 'period_id'),
         });
     };
 
-    const assignedCount = groups.filter(g => g.dosen_id).length;
-    const progressPercentage = groups.length > 0 ? (assignedCount / groups.length) * 100 : 0;
+    const submitGroupAssignment = (event: FormEvent) => {
+        event.preventDefault();
+
+        if (!groupForm.data.group_id) {
+            return;
+        }
+
+        groupForm.post(route('admin.dpl.assign-group', Number(groupForm.data.group_id)), {
+            preserveScroll: true,
+            onSuccess: () => groupForm.reset('group_id', 'dpl_period_id'),
+        });
+    };
 
     return (
         <AppLayout title="Penugasan DPL">
-            <Head title="Matriks Penugasan DPL" />
+            <Head title="Penugasan DPL" />
 
             <div className="space-y-8 pb-20">
-                {/* Simple Clean Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
+                <div className="flex flex-col gap-3 border-b border-slate-100 pb-6 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Penugasan DPL</h1>
-                        <p className="text-sm text-slate-500 mt-1">Delegasikan dosen pembimbing lapangan untuk setiap unit kelompok.</p>
+                        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Penugasan DPL</h1>
+                        <p className="mt-1 text-sm text-slate-500">
+                            Tetapkan dosen pembimbing ke periode, lalu hubungkan ke kelompok yang sesuai.
+                        </p>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-                    {/* Form Section */}
-                    <div className="xl:col-span-4 space-y-6">
-                        <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
-                           <div className="absolute top-0 right-0 p-8 text-emerald-500 pointer-events-none  transition-transform">
-                                <UserPlus className="h-48 w-48" />
+                <div className="grid gap-8 xl:grid-cols-12">
+                    <div className="space-y-6 xl:col-span-4">
+                        <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+                            <div className="mb-6 flex items-center gap-4">
+                                <div className="rounded-lg bg-emerald-50 p-3 text-emerald-600">
+                                    <UserPlus className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <h2 className="font-bold text-slate-900">Tetapkan DPL ke Periode</h2>
+                                    <p className="text-sm text-slate-500">
+                                        Langkah pertama sebelum DPL dapat ditugaskan ke kelompok.
+                                    </p>
+                                </div>
                             </div>
 
-                            <div className="flex items-center gap-4 mb-8">
-                                <div className="p-3 bg-emerald-50 rounded-lg text-emerald-600 shadow-sm shadow-emerald-600/5">
-                                    <UserPlus className="w-5 h-5 shadow-sm" />
-                                </div>
-                                <h3 className="font-bold text-slate-900 tracking-tight">Input Penugasan Baru</h3>
-                            </div>
-
-                            <form onSubmit={submit} className="space-y-6 relative z-10">
+                            <form onSubmit={submitPeriodAssignment} className="space-y-5">
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Pilih Kelompok</label>
+                                    <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
+                                        Dosen
+                                    </label>
                                     <select
-                                        value={data.group_id}
-                                        onChange={(e) => setData('group_id', e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 text-sm font-semibold focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 appearance-none transition-all shadow-sm outline-none"
+                                        value={periodForm.data.dosen_id}
+                                        onChange={(event) => periodForm.setData('dosen_id', event.target.value)}
+                                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5"
+                                        required
                                     >
-                                        <option value="">-- Pilih Kelompok --</option>
-                                        {groups.filter(g => !g.dosen_id).map(g => (
-                                            <option key={g.id} value={g.id.toString()}>{g.name}</option>
+                                        <option value="">Pilih dosen</option>
+                                        {allDosen.map((dosen) => (
+                                            <option key={dosen.id} value={dosen.id}>
+                                                {dosen.nama} ({dosen.nip})
+                                            </option>
                                         ))}
                                     </select>
+                                    {periodForm.errors.dosen_id ? (
+                                        <p className="mt-2 text-xs text-red-600">{periodForm.errors.dosen_id}</p>
+                                    ) : null}
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Pilih Dosen (DPL)</label>
+                                    <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
+                                        Periode
+                                    </label>
                                     <select
-                                        value={data.dosen_id}
-                                        onChange={(e) => setData('dosen_id', e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 text-sm font-semibold focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 appearance-none transition-all shadow-sm outline-none"
+                                        value={periodForm.data.period_id}
+                                        onChange={(event) => periodForm.setData('period_id', event.target.value)}
+                                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5"
+                                        required
                                     >
-                                        <option value="">-- Pilih Dosen --</option>
-                                        {availableDosen.map(d => (
-                                            <option key={d.id} value={d.id.toString()}>{d.name}</option>
+                                        <option value="">Pilih periode</option>
+                                        {allPeriods.map((period) => (
+                                            <option key={period.id} value={period.id}>
+                                                {formatPeriod(period)}
+                                            </option>
                                         ))}
                                     </select>
+                                    {periodForm.errors.period_id ? (
+                                        <p className="mt-2 text-xs text-red-600">{periodForm.errors.period_id}</p>
+                                    ) : null}
+                                </div>
+
+                                <div>
+                                    <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
+                                        Maksimum Kelompok
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        max={20}
+                                        value={periodForm.data.max_groups}
+                                        onChange={(event) => periodForm.setData('max_groups', event.target.value)}
+                                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5"
+                                    />
+                                    {periodForm.errors.max_groups ? (
+                                        <p className="mt-2 text-xs text-red-600">{periodForm.errors.max_groups}</p>
+                                    ) : null}
                                 </div>
 
                                 <button
                                     type="submit"
-                                    disabled={processing || !data.group_id || !data.dosen_id}
-                                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20 active:scale-[0.98] disabled:opacity-20 flex items-center justify-center gap-3"
+                                    disabled={periodForm.processing}
+                                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-4 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-60"
                                 >
-                                    {processing ? (
-                                        <RefreshCw className="w-4 h-4 animate-spin" />
+                                    {periodForm.processing ? (
+                                        <RefreshCw className="h-4 w-4 animate-spin" />
                                     ) : (
-                                        <><CheckCircle2 className="w-4 h-4" /> Simpan Penugasan</>
+                                        <CheckCircle2 className="h-4 w-4" />
                                     )}
+                                    Simpan Penugasan Periode
                                 </button>
                             </form>
                         </div>
 
-                         <div className="bg-slate-900 p-8 rounded-xl border border-slate-800 text-white relative overflow-hidden group/notice shadow-xl shadow-slate-900/10">
-                            <div className="absolute top-0 right-0 p-8 text-emerald-500 opacity-5 group-hover/notice:rotate-12 transition-transform">
-                                <Zap className="w-32 h-32" />
-                            </div>
-                            <div className="relative z-10 flex flex-col items-center text-center space-y-4">
-                                <AlertCircle className="w-8 h-8 text-emerald-500 mb-2 shadow-sm" />
+                        <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+                            <div className="mb-6 flex items-center gap-4">
+                                <div className="rounded-lg bg-sky-50 p-3 text-sky-600">
+                                    <Users className="h-5 w-5" />
+                                </div>
                                 <div>
-                                    <h4 className="text-xs font-bold text-white uppercase tracking-widest mb-2">Informasi</h4>
-                                    <p className="text-sm text-slate-400 font-medium italic">
-                                        Perubahan penugasan akan secara otomatis memperbarui data di dashboard DPL yang bersangkutan.
+                                    <h2 className="font-bold text-slate-900">Hubungkan ke Kelompok</h2>
+                                    <p className="text-sm text-slate-500">
+                                        Pilih kelompok, lalu pilih DPL yang sudah aktif pada periode yang sama.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <form onSubmit={submitGroupAssignment} className="space-y-5">
+                                <div>
+                                    <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
+                                        Kelompok
+                                    </label>
+                                    <select
+                                        value={groupForm.data.group_id}
+                                        onChange={(event) => {
+                                            groupForm.setData('group_id', event.target.value);
+                                            groupForm.setData('dpl_period_id', '');
+                                        }}
+                                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-500/5"
+                                        required
+                                    >
+                                        <option value="">Pilih kelompok</option>
+                                        {groups.map((group) => (
+                                            <option key={group.id} value={group.id}>
+                                                {group.name} ({group.code})
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {groupForm.errors.group_id ? (
+                                        <p className="mt-2 text-xs text-red-600">{groupForm.errors.group_id}</p>
+                                    ) : null}
+                                </div>
+
+                                <div>
+                                    <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
+                                        Penugasan DPL Aktif
+                                    </label>
+                                    <select
+                                        value={groupForm.data.dpl_period_id}
+                                        onChange={(event) => groupForm.setData('dpl_period_id', event.target.value)}
+                                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-500/5"
+                                        disabled={!selectedGroup}
+                                        required
+                                    >
+                                        <option value="">
+                                            {selectedGroup ? 'Pilih DPL aktif' : 'Pilih kelompok lebih dulu'}
+                                        </option>
+                                        {availableAssignments.map((assignment) => (
+                                            <option key={assignment.id} value={assignment.id}>
+                                                {assignment.dosen.nama} · Sisa {assignment.remaining_slots} slot
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {selectedGroup && availableAssignments.length === 0 ? (
+                                        <p className="mt-2 text-xs text-amber-600">
+                                            Belum ada DPL aktif untuk periode kelompok ini.
+                                        </p>
+                                    ) : null}
+                                    {groupForm.errors.dpl_period_id ? (
+                                        <p className="mt-2 text-xs text-red-600">{groupForm.errors.dpl_period_id}</p>
+                                    ) : null}
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={groupForm.processing || !selectedGroup || availableAssignments.length === 0}
+                                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-4 text-sm font-bold text-white transition hover:bg-sky-700 disabled:opacity-60"
+                                >
+                                    {groupForm.processing ? (
+                                        <RefreshCw className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <CheckCircle2 className="h-4 w-4" />
+                                    )}
+                                    Simpan Penugasan Kelompok
+                                </button>
+                            </form>
+                        </div>
+
+                        <div className="rounded-xl border border-slate-200 bg-slate-900 p-6 text-white shadow-sm">
+                            <div className="flex items-start gap-3">
+                                <AlertCircle className="mt-0.5 h-5 w-5 text-emerald-400" />
+                                <div>
+                                    <h3 className="font-semibold">Catatan Operasional</h3>
+                                    <p className="mt-2 text-sm leading-6 text-slate-300">
+                                        Penugasan DPL ke kelompok hanya valid jika periode DPL dan periode kelompok sama.
+                                        Jika kelompok sudah memiliki DPL utama, penugasan baru akan mengganti DPL utama
+                                        tersebut.
                                     </p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Table Matrix Section */}
-                    <div className="xl:col-span-8 space-y-8">
-                         <div className="bg-white px-8 py-6 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
-                            <div className="flex-1 space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-2.5 bg-emerald-50 rounded-lg text-emerald-600 border border-emerald-50 shadow-sm">
-                                            <Briefcase className="w-5 h-5 shadow-sm" />
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <h4 className="font-bold text-slate-900  mb-1">Status Penugasan</h4>
-                                            <span className="text-sm font-bold text-slate-400 uppercase">{progressPercentage.toFixed(1)}% Unit Terisi</span>
-                                        </div>
-                                    </div>
-                                    <span className="text-sm font-bold text-slate-900">{assignedCount} / {groups.length} <span className="text-xs font-medium text-slate-400">Unit</span></span>
+                    <div className="space-y-8 xl:col-span-8">
+                        <div className="rounded-xl border border-slate-200 bg-white px-8 py-6 shadow-sm">
+                            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <h2 className="text-lg font-semibold text-slate-900">Status Penugasan Kelompok</h2>
+                                    <p className="mt-1 text-sm text-slate-500">
+                                        {assignedGroupCount} dari {groups.length} kelompok sudah memiliki DPL utama.
+                                    </p>
                                 </div>
-                                <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100">
-                                    <div 
-                                        className="h-full bg-emerald-500 rounded-full transition-all duration-1000 shadow-sm shadow-emerald-500/20" 
-                                        style={{ width: `${progressPercentage}%` }} 
-                                    />
+                                <div className="text-sm font-semibold text-slate-700">
+                                    {progressPercentage.toFixed(1)}% terisi
                                 </div>
+                            </div>
+                            <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+                                <div
+                                    className="h-full rounded-full bg-emerald-500 transition-all"
+                                    style={{ width: `${progressPercentage}%` }}
+                                />
                             </div>
                         </div>
 
-                        <form onSubmit={handleSearch} className="relative group flex-1 w-full max-w-2xl">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
+                        <form onSubmit={handleSearch} className="relative">
+                            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300" />
                             <input
                                 type="search"
-                                placeholder="Cari Berdasarkan Nama Kelompok atau DPL..."
                                 value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="w-full pl-12 pr-6 py-3 bg-white border border-slate-200 rounded-xl text-sm transition-all focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 outline-none shadow-sm shadow-slate-100/10"
+                                onChange={(event) => setSearch(event.target.value)}
+                                placeholder="Cari kelompok, DPL, atau periode..."
+                                className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-12 pr-4 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5"
                             />
                         </form>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                             {groups.map((group) => (
-                                <div key={group.id} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden group/card hover:border-emerald-300 transition-all duration-300">
-                                    <div className="p-6 space-y-6">
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-12 w-12 rounded-lg bg-slate-900 border border-slate-800 text-primary text-base font-bold flex items-center justify-center italic shadow-lg group-hover/card:scale-105 transition-transform">
-                                                    {group.name.replace('Kelompok ', '').slice(0, 2)}
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <h3 className="font-bold text-slate-900 group-hover/card:text-emerald-600 transition-colors tracking-tighter text-sm mb-1">{group.name}</h3>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <MapPin className="w-3 h-3 text-slate-400" />
-                                                        <span className="text-xs font-bold text-slate-600 truncate max-w-[150px]">{group.location ? `${group.location.kecamatan}` : 'Lokasi Belum Diatur'}</span>
+                        <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-lg font-semibold text-slate-900">Penugasan DPL per Periode</h2>
+                                    <p className="mt-1 text-sm text-slate-500">
+                                        Pantau kapasitas DPL sebelum ditugaskan ke kelompok.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                {assignments.length > 0 ? (
+                                    assignments.map((assignment) => (
+                                        <div
+                                            key={assignment.id}
+                                            className="rounded-xl border border-slate-200 bg-slate-50 p-5"
+                                        >
+                                            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="font-semibold text-slate-900">
+                                                            {assignment.dosen.nama}
+                                                        </p>
+                                                        <span className="rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
+                                                            {assignment.dosen.nip}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm text-slate-600">
+                                                        {formatPeriod(assignment.period)}
+                                                    </p>
+                                                    <div className="flex flex-wrap gap-3 text-xs font-medium text-slate-500">
+                                                        <span>Maksimum {assignment.max_groups} kelompok</span>
+                                                        <span>{assignment.current_groups} kelompok aktif</span>
+                                                        <span>Sisa {assignment.remaining_slots} slot</span>
                                                     </div>
                                                 </div>
+
+                                                <button
+                                                    type="button"
+                                                    disabled={assignment.current_groups > 0}
+                                                    onClick={() =>
+                                                        router.patch(
+                                                            route('admin.dpl.remove-period', assignment.id),
+                                                            {},
+                                                            { preserveScroll: true },
+                                                        )
+                                                    }
+                                                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                    Nonaktifkan
+                                                </button>
                                             </div>
-                                            <div className="h-8 px-2 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-center text-xs font-bold text-slate-400 italic">#{group.id}</div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
+                                        Belum ada penugasan DPL ke periode yang cocok dengan filter saat ini.
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+
+                        <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                            <div>
+                                <h2 className="text-lg font-semibold text-slate-900">Daftar Kelompok</h2>
+                                <p className="mt-1 text-sm text-slate-500">
+                                    Pastikan setiap kelompok memiliki DPL utama yang sesuai dengan periodenya.
+                                </p>
+                            </div>
+
+                            <div className="grid gap-4 md:grid-cols-2">
+                                {groups.map((group) => (
+                                    <div
+                                        key={group.id}
+                                        className="rounded-xl border border-slate-200 bg-white p-5 transition hover:border-emerald-300"
+                                    >
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <h3 className="font-semibold text-slate-900">{group.name}</h3>
+                                                <p className="mt-1 text-xs font-medium uppercase tracking-wide text-slate-400">
+                                                    {group.code}
+                                                </p>
+                                            </div>
+                                            <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-500">
+                                                #{group.id}
+                                            </span>
                                         </div>
 
-                                        <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 relative group/officer overflow-hidden transition-all group-hover/card:bg-emerald-50/50 group-hover/card:border-emerald-100/50">
-                                            {group.dosen_id ? (
-                                                <div className="flex items-center gap-3 relative z-10 transition-all">
-                                                    <div className="p-2 bg-white border border-emerald-100 text-emerald-600 rounded-lg shadow-sm">
-                                                        <CheckCircle2 className="w-4 h-4" />
-                                                    </div>
-                                                    <div className="flex flex-col min-w-0">
-                                                        <span className="text-xs font-bold text-emerald-500  mb-1">Dosen Pembimbing</span>
-                                                        <span className="text-xs font-bold text-slate-800 truncate max-w-[200px]">{availableDosen.find(d => d.id === group.dosen_id)?.name || 'Dosen Terdaftar'}</span>
-                                                    </div>
+                                        <div className="mt-4 space-y-2 text-sm text-slate-600">
+                                            <p>{formatPeriod(group.period)}</p>
+                                            <p>{formatLocation(group) || 'Lokasi administratif belum tersedia'}</p>
+                                        </div>
+
+                                        <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                                            {group.dpl ? (
+                                                <div className="space-y-1">
+                                                    <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                                                        DPL Utama
+                                                    </p>
+                                                    <p className="text-sm font-semibold text-slate-900">
+                                                        {group.dpl.nama}
+                                                    </p>
+                                                    <p className="text-xs text-slate-500">{group.dpl.nip}</p>
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center gap-3 relative z-10 italic group-hover/card:opacity-100 transition-all">
-                                                    <div className="p-2 bg-white border border-slate-200 text-slate-300 rounded-lg shadow-sm">
-                                                        <AlertCircle className="w-4 h-4" />
-                                                    </div>
-                                                    <div className="flex flex-col min-w-0">
-                                                        <span className="text-xs font-bold text-slate-400  mb-1">Penugasan Kosong</span>
-                                                        <span className="text-xs font-bold text-slate-300 italic">BELUM_ADA_DPL_TERDETEKSI</span>
-                                                    </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-xs font-semibold uppercase tracking-wide text-amber-600">
+                                                        Belum Ada DPL
+                                                    </p>
+                                                    <p className="text-sm text-slate-600">
+                                                        Kelompok ini masih menunggu penugasan DPL.
+                                                    </p>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        </section>
                     </div>
                 </div>
+            </div>
             </div>
         </AppLayout>
     );

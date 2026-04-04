@@ -84,7 +84,7 @@ export default function DplSync({ availableDpls, filters }: Props) {
                         <table className="min-w-full divide-y divide-slate-100 italic font-bold">
                             <thead className="bg-slate-50/50">
                                 <tr>
-                                    <th className="px-8 py-6 text-left text-xs font-bold text-slate-500 uppercase tracking-widest">Officer_Manifest_Data</th>
+                                    <th className="px-8 py-6 text-left text-xs font-bold text-slate-500 uppercase tracking-widest">Data Manifest Petugas</th>
                                     <th className="px-8 py-6 text-right text-xs font-bold text-slate-500 uppercase tracking-widest pr-12">Authorization</th>
                                 </tr>
                             </thead>
@@ -112,7 +112,7 @@ export default function DplSync({ availableDpls, filters }: Props) {
                                                 className="group/btn h-12 px-8 bg-white border border-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl text-xs uppercase italic tracking-widest transition-all shadow-sm active:scale-95 disabled:opacity-20 flex items-center justify-center gap-3 ml-auto opacity-70 group-hover/row:opacity-100"
                                             >
                                                 <UserCheck className="w-4 h-4 text-emerald-400 group-hover/btn:text-white" />
-                                                Activate_Personel
+                                                Aktivasi Personel
                                             </button>
                                         </td>
                                     </tr>
@@ -124,7 +124,7 @@ export default function DplSync({ availableDpls, filters }: Props) {
                                                 <div className="p-10 bg-slate-50 rounded-3xl border border-slate-100">
                                                     <ShieldAlert className="h-12 w-12 text-slate-900" />
                                                 </div>
-                                                <span className="text-xs font-black text-slate-900 uppercase italic tracking-[0.4em]">NO_OFFICER_RECORDS_FOUND</span>
+                                                <span className="text-xs font-black text-slate-900 uppercase italic tracking-[0.4em]">DATA PETUGAS TIDAK DITEMUKAN</span>
                                             </div>
                                         </td>
                                     </tr>
@@ -143,7 +143,7 @@ export default function DplSync({ availableDpls, filters }: Props) {
                                 <div className="p-3 bg-primary/10 rounded-xl border border-primary/20 shadow-sm">
                                     <ShieldCheck className="h-6 w-6 text-primary shadow-sm" />
                                 </div>
-                                <h4 className="text-sm font-black text-white italic tracking-widest uppercase ">Authentication_Gateway_V3.2</h4>
+                                <h4 className="text-sm font-black text-white italic tracking-widest uppercase ">Gerbang Autentikasi V3.2</h4>
                             </div>
                             <p className="text-sm text-slate-500 font-bold  max-w-4xl italic uppercase">
                                 Protokol Otorisasi: Aktivasi personel akan memberikan hak akses kontrol penuh terhadap evaluasi akademik unit kelompok yang ditugaskan. Pastikan integritas akun terverifikasi melalui jalur internal.
@@ -151,11 +151,12 @@ export default function DplSync({ availableDpls, filters }: Props) {
                         </div>
                         <div className="flex gap-4 justify-center xl:justify-end">
                             <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/10 text-emerald-500 text-xs font-bold">
-                                ACCESS_FEDERATION_OK
+                                AKSES FEDERASI OKE
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
             </div>
         </AppLayout>
     );

@@ -151,8 +151,7 @@ export default function CertificateSettings({ configs }: Props) {
  {/* Visual Assets Card */}
  <section className="bg-white rounded-lg p-10 border border-slate-200 group">
  <div className="flex items-center gap-5 border-b border-slate-200 pb-8 mb-10">
- <div className="p-4 bg-slate-50 rounded-lg text-slate-300 border border-slate-200 group-hover:bg-primary group-hover:text-white group-hover:border-primary
- <ImageIcon className="h-6 w-6 stroke-[2px]" />
+ <div className="p-4 bg-slate-50 rounded-lg text-slate-300 border border-slate-200    <ImageIcon className="h-6 w-6 stroke-[2px]" />
  </div>
  <h3 className="text-lg font-semibold text-slate-900">Aset_Visual</h3>
  </div>

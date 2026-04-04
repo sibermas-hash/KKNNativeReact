@@ -67,7 +67,7 @@ class UserController extends Controller
     public function mahasiswaIndex(Request $request): Response
     {
         $users = User::role('student')
-            ->with(['mahasiswa.prodi.fakultas'])
+            ->with(['mahasiswa.prodi.fakultas', 'mahasiswa.fakultas'])
             ->when($request->input('search'), function ($q, $search) {
                 $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
                 $q->where(function ($query) use ($s) {
@@ -144,6 +144,9 @@ class UserController extends Controller
                 'batch_year' => $validated['batch_year'],
                 'gender' => $validated['gender'],
             ]);
+
+            // Sync nama user dengan nama mahasiswa
+            $user->update(['name' => $validated['name']]);
         }
 
         if ($validated['role'] === 'dpl' && !empty($validated['nip'])) {
@@ -160,6 +163,11 @@ class UserController extends Controller
 
     public function toggleActive(User $user): RedirectResponse
     {
+        // Pastikan hanya mahasiswa yang bisa di-toggle
+        if (!$user->hasRole('student')) {
+            return redirect()->back()->withErrors(['error' => 'Hanya dapat mengubah status mahasiswa.']);
+        }
+
         $user->update(['is_active' => !$user->is_active]);
         $status = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
 

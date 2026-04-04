@@ -89,9 +89,15 @@ class FinalReportController extends Controller
     {
         $groupIds = $this->assignedGroupIds();
         abort_if(!$groupIds->contains($report->kelompok_id), 403, 'Anda tidak memiliki akses ke laporan ini.');
-        abort_unless($report->file_path && Storage::disk('local')->exists($report->file_path), 404, 'Dokumen laporan akhir tidak ditemukan.');
+        abort_if(!$report->file_path, 404, 'Dokumen laporan akhir tidak ditemukan.');
 
-        return Storage::disk('local')->download(
+        $disk = Storage::disk('local')->exists($report->file_path)
+            ? 'local'
+            : (Storage::disk('public')->exists($report->file_path) ? 'public' : null);
+
+        abort_if($disk === null, 404, 'Dokumen laporan akhir tidak ditemukan.');
+
+        return Storage::disk($disk)->download(
             $report->file_path,
             $report->file_name ?: basename($report->file_path)
         );

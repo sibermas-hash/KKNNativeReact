@@ -90,7 +90,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
 
  <div className="flex items-center gap-5">
  <div className="p-3.5 bg-slate-50 text-slate-400 border border-slate-200 rounded-lg group flex items-center gap-4">
- <Filter className="h-4.5 w-4.5 group-hover:text-primary transition-colors" />
+ <Filter className="h-4.5 w-4.5  transition-colors" />
  </div>
  <FormSelect
  options={[

@@ -262,11 +262,11 @@ function SummaryCard({ icon: Icon, label, value, color }: { icon: any, label: st
  <div className="flex items-center justify-between mb-8">
  <div className={clsx(
  "p-4 rounded-lg border",
- color === 'primary' ? "bg-slate-50 text-slate-400 border-slate-200 group-hover:bg-primary/10 group-hover:text-primary" : "bg-amber-50 text-amber-500 border-amber-100"
+ color === 'primary' ? "bg-slate-50 text-slate-400 border-slate-200   : "bg-amber-50 text-amber-500 border-amber-100"
  )}>
  <Icon className="h-6 w-6" />
  </div>
- <span className="h-2 w-2 rounded-lg bg-slate-100 group-hover:bg-primary transition-colors" />
+ <span className="h-2 w-2 rounded-lg bg-slate-100  transition-colors" />
  </div>
  <p className="text-[11px] text-sm text-slate-400 mb-2 text-sm">{label}</p>
  <div className="flex items-end gap-2">

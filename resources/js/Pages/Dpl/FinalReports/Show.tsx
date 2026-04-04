@@ -1,27 +1,16 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { StatusBadge, FormTextarea } from '@/Components/ui';
-import type { PageProps } from '@/types';
-import {
- ChevronLeft,
- FileText,
- MapPin,
- User,
- Users,
- Download,
- CheckCircle2,
- MessageSquare,
-} from 'lucide-react';
+import { StatusBadge } from '@/Components/ui';
 
 interface ReportDetail {
  id: number;
  title: string;
  abstract?: string | null;
- file_path?: string | null;
  file_name?: string | null;
  status: string;
  submitted_at?: string | null;
  review_notes?: string | null;
+ download_url: string;
  mahasiswa?: {
  nama?: string | null;
  nim?: string | null;
@@ -36,138 +25,79 @@ interface ReportDetail {
  } | null;
 }
 
-interface Props extends PageProps {
+interface Props {
  report: ReportDetail;
 }
 
 function formatLocation(report: ReportDetail): string {
  const location = report.kelompok?.lokasi;
- if (!location) {
- return 'Lokasi belum tersedia';
- }
 
- return [
- location.village_name,
- location.district_name ? `Kecamatan ${location.district_name}` : null,
- location.regency_name ? `Kabupaten ${location.regency_name}` : null,
- ]
+ return [location?.village_name, location?.district_name, location?.regency_name]
  .filter(Boolean)
  .join(', ');
 }
 
 export default function DplFinalReportsShow({ report }: Props) {
+ const approveForm = useForm({});
  const revisionForm = useForm({
  notes: report.review_notes ?? '',
  });
-
- const approveForm = useForm({});
 
  return (
  <AppLayout title="Detail Laporan Akhir">
  <Head title="Detail Laporan Akhir" />
 
- <div className="mx-auto max-w-5xl space-y-8 pb-16">
+ <div className="mx-auto max-w-5xl space-y-8">
+ <section className="rounded-lg border border-slate-200 bg-white p-8">
  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
- <div className="flex items-center gap-4">
- <Link
- href="/dpl/final-reports"
- className="inline-flex h-12 w-12 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:border-primary hover:text-primary"
- >
- <ChevronLeft className="h-5 w-5" />
- </Link>
  <div>
- <p className="text-[11px] font-semibold text-slate-400">
- DPL Final Report Desk
+ <Link href="/dpl/final-reports" className="text-sm font-medium text-primary hover:underline">
+ Kembali ke daftar laporan akhir
+ </Link>
+ <h1 className="mt-3 text-2xl font-semibold text-slate-900">{report.title}</h1>
+ <p className="mt-2 text-sm text-slate-500">
+ {report.mahasiswa?.nama ?? '-'} ({report.mahasiswa?.nim ?? '-'})
  </p>
- <h1 className="text-3xl font-semibold text-slate-900">
- Detail Laporan Akhir
- </h1>
+ <p className="text-sm text-slate-500">
+ {report.kelompok?.nama_kelompok ?? '-'} · {formatLocation(report) || 'Lokasi belum tersedia'}
+ </p>
  </div>
- </div>
-
  <StatusBadge status={report.status} />
  </div>
+ </section>
 
  <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
- <section className="space-y-8rounded-lg border border-slate-200 bg-white p-8
- <div className="space-y-3 border-b border-slate-200 pb-6">
- <div className="flex items-center gap-3 text-slate-500">
- <FileText className="h-5 w-5" />
- <span className="text-xs font-semibold 
- Dokumen Laporan
- </span>
- </div>
- <h2 className="text-2xl font-semibold text-slate-900">
- {report.title}
- </h2>
- <p className="text-sm font-medium text-slate-500">
+ <section className="space-y-6 rounded-lg border border-slate-200 bg-white p-6">
+ <div>
+ <h2 className="text-lg font-semibold text-slate-900">Dokumen Laporan</h2>
+ <p className="mt-1 text-sm text-slate-500">
  Dikirim pada {report.submitted_at ?? 'waktu belum tercatat'}.
  </p>
  </div>
 
- <div className="space-y-6">
- <div className="grid gap-4 md:grid-cols-2">
- <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
- <div className="mb-2 flex items-center gap-2 text-slate-500">
- <User className="h-4 w-4" />
- <span className="text-xs font-semibold 
- </div>
- <p className="text-sm text-sm text-slate-900">{report.mahasiswa?.nama ?? '-'}</p>
- <p className="text-xs font-medium text-slate-500">{report.mahasiswa?.nim ?? '-'}</p>
- </div>
-
- <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
- <div className="mb-2 flex items-center gap-2 text-slate-500">
- <Users className="h-4 w-4" />
- <span className="text-xs font-semibold 
- </div>
- <p className="text-sm text-sm text-slate-900">
- {report.kelompok?.nama_kelompok ?? '-'}
- </p>
- </div>
+ <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+ <p className="text-sm font-medium text-slate-800">{report.file_name ?? 'Dokumen laporan akhir'}</p>
+ <a
+ href={report.download_url}
+ className="mt-3 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90"
+ >
+ Unduh Dokumen
+ </a>
  </div>
 
- <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
- <div className="mb-2 flex items-center gap-2 text-slate-500">
- <MapPin className="h-4 w-4" />
- <span className="text-xs font-semibold KKN</span>
- </div>
- <p className="text-sm font-medium leading-normal text-slate-700">
- {formatLocation(report)}
- </p>
- </div>
-
- <div className="rounded-lg border border-slate-200 bg-white p-5">
- <p className="mb-3 text-xs font-semibold text-slate-500">
- Ringkasan / Abstrak
- </p>
- <p className="text-sm leading-normal text-slate-700">
+ <div>
+ <h3 className="text-base font-semibold text-slate-900">Abstrak</h3>
+ <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700">
  {report.abstract || 'Mahasiswa belum mengisi abstrak laporan akhir.'}
  </p>
  </div>
-
- {report.file_path && (
- <a
- href={`/storage/${report.file_path}`}
- target="_blank"
- rel="noreferrer"
- className="inline-flex items-center gap-3 rounded-lg border border-primary bg-primary/5 px-5 py-3 text-sm text-sm text-primary transition-colors hover:bg-primary hover:text-white"
- >
- <Download className="h-4 w-4" />
- Unduh {report.file_name ?? 'dokumen laporan'}
- </a>
- )}
- </div>
  </section>
 
- <aside className="space-y-6rounded-lg border border-slate-200 bg-white p-8
- <div className="space-y-3">
- <h3 className="text-sm font-semibold text-slate-900">
- Tinjauan DPL
- </h3>
- <p className="text-sm font-medium leading-normal text-slate-500">
- Gunakan panel ini untuk menyetujui laporan akhir atau mengirimkannya kembali
- dengan catatan revisi.
+ <aside className="space-y-6 rounded-lg border border-slate-200 bg-white p-6">
+ <div>
+ <h2 className="text-lg font-semibold text-slate-900">Tinjauan DPL</h2>
+ <p className="mt-1 text-sm text-slate-500">
+ Setujui laporan akhir atau kembalikan dengan catatan revisi.
  </p>
  </div>
 
@@ -175,9 +105,8 @@ export default function DplFinalReportsShow({ report }: Props) {
  type="button"
  onClick={() => approveForm.patch(`/dpl/final-reports/${report.id}/approve`)}
  disabled={approveForm.processing}
- className="inline-flex w-full items-center justify-center gap-3 rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+ className="w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
  >
- <CheckCircle2 className="h-4 w-4" />
  Setujui Laporan
  </button>
 
@@ -186,33 +115,37 @@ export default function DplFinalReportsShow({ report }: Props) {
  event.preventDefault();
  revisionForm.patch(`/dpl/final-reports/${report.id}/revision`);
  }}
- className="space-y-4"
+ className="space-y-3"
  >
- <div className="flex items-center gap-2 text-slate-600">
- <MessageSquare className="h-4 w-4" />
- <span className="text-xs font-semibold 
- Catatan Revisi
- </span>
- </div>
-
- <FormTextarea
- label=""
+ <label htmlFor="notes" className="block text-sm font-medium text-slate-700">
+ Catatan revisi
+ </label>
+ <textarea
+ id="notes"
+ rows={5}
  value={revisionForm.data.notes}
  onChange={(event) => revisionForm.setData('notes', event.target.value)}
- rows={5}
- error={revisionForm.errors.notes}
- placeholder="Tulis arahan revisi yang jelas untuk mahasiswa."
+ className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+ placeholder="Tulis arahan revisi untuk mahasiswa."
  />
-
+ {revisionForm.errors.notes ? (
+ <p className="text-xs text-red-600">{revisionForm.errors.notes}</p>
+ ) : null}
  <button
  type="submit"
  disabled={revisionForm.processing}
- className="inline-flex w-full items-center justify-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-5 py-3 text-sm font-semibold text-amber-700 transition-colors hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
+ className="w-full rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700 hover:bg-amber-100 disabled:opacity-60"
  >
- <MessageSquare className="h-4 w-4" />
  Kirim Revisi
  </button>
  </form>
+
+ {report.review_notes ? (
+ <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+ <h3 className="text-sm font-semibold text-amber-800">Catatan Review Terakhir</h3>
+ <p className="mt-2 whitespace-pre-line text-sm text-amber-700">{report.review_notes}</p>
+ </div>
+ ) : null}
  </aside>
  </div>
  </div>

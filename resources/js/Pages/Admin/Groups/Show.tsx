@@ -255,7 +255,7 @@ export default function GroupShow({ group }: Props) {
  <div className="h-10 w-10 rounded-lg bg-white/5 border border-slate-200 flex items-center justify-center text-emerald-400 font-semibold">
  {reg.student.name.charAt(0)}
  </div>
- <span className="text-[16px] font-semibold text-slate-100 group-hover:text-primary transition-colors">{reg.student.name}</span>
+ <span className="text-[16px] font-semibold text-slate-100  transition-colors">{reg.student.name}</span>
  </div>
  </td>
  <td className="px-12 py-8">
@@ -337,7 +337,7 @@ export default function GroupShow({ group }: Props) {
 
  {/* Program Statistics - High Contrast Emerald */}
  <div className="bg-whitep-12 rounded-lg relative overflow-hidden group hover:-border border-slate-200">
- <div className="absolute -bottom-8 -right-8 p-12 text-white pointer-events-none group-group-hover:-rotate-12 transition-transform">
+ <div className="absolute -bottom-8 -right-8 p-12 text-white pointer-events-none group- transition-transform">
  <Briefcase className="w-64 h-64" />
  </div>
  
@@ -355,8 +355,7 @@ export default function GroupShow({ group }: Props) {
  </span>
  <span className="text-[11px] font-semibold text-emerald-200 ml-2">PROKER_AKTIF_SEKTOR</span>
  </div>
- <div className="p-8 bg-white/10 rounded-lg border border-slate-200 group-hover:bg-white group-hover:text-primary">
- <Activity className="w-12 h-12 stroke-[2.5px]" />
+ <div className="p-8 bg-white/10 rounded-lg border border-slate-200   <Activity className="w-12 h-12 stroke-[2.5px]" />
  </div>
  </div>
  </div>

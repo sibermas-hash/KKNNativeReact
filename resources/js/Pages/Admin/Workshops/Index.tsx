@@ -390,7 +390,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <span className="h-2 w-2 rounded-lg bg-primary />
  <span className="text-[10px] font-semibold text-slate-300 pt-0.5">Kode: {workshop.id.toString().padStart(4, '0')}</span>
  </div>
- <h3 className="text-3xl font-semibold text-slate-900 group-hover:text-primary transition-colors">{workshop.title}</h3>
+ <h3 className="text-3xl font-semibold text-slate-900  transition-colors">{workshop.title}</h3>
  </div>
  <div className={clsx(
  "px-5 py-2 rounded-lg border text-[9px] font-semibold shrink-0",

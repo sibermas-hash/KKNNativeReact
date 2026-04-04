@@ -52,22 +52,14 @@ export default function UsersIndex({ users, filters }: Props) {
 
     return (
         <AppLayout title="Manajemen Pengguna">
-            <Head title="Ledger Otoritas Personel" />
+            <Head title="Direktori Personel" />
 
             <div className="space-y-8 pb-20">
-                {/* Clean Header */}
+                {/* Simple Clean Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight text-emerald-600">Direktori Personel</h1>
-                        <p className="text-sm text-slate-500 mt-1">Otorisasi dan administrasi hak akses seluruh entitas pengguna sistem.</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <div className="px-4 py-2 bg-emerald-50 rounded-lg border border-emerald-100 flex items-center gap-3">
-                            <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                            <span className="text-sm font-semibold text-emerald-700">
-                                {users.meta?.total || 0} Akun Terdaftar
-                            </span>
-                        </div>
+                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Direktori Personel</h1>
+                        <p className="text-sm text-slate-500 mt-1">Kelola otorisasi akun dan hak akses seluruh entitas pengguna sistem.</p>
                     </div>
                 </div>
 
@@ -77,73 +69,73 @@ export default function UsersIndex({ users, filters }: Props) {
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-300 group-focus-within:text-emerald-500 transition-colors z-10" />
                         <input
                             type="search"
-                            placeholder="SEARCH_ACCOUNT_LEDGER (NAME / EMAIL)..."
+                            placeholder="Cari Berdasarkan Nama / Email..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full h-15 pl-16 pr-8 py-2 bg-white border border-slate-100 rounded-xl text-[11px] font-black italic uppercase tracking-[0.2em] text-slate-900 placeholder:text-slate-200 focus:outline-none focus:ring-8 focus:ring-emerald-500/5 transition-all shadow-sm focus:border-emerald-500 outline-none placeholder:italic placeholder:font-black placeholder:uppercase placeholder:tracking-widest"
+                            className="w-full h-15 pl-16 pr-8 py-2 bg-white border border-slate-100 rounded-xl text-sm font-semibold tracking-tight text-slate-900 placeholder:text-slate-200 focus:outline-none focus:ring-8 focus:ring-emerald-500/5 transition-all shadow-sm focus:border-emerald-500 outline-none italic"
                         />
                     </form>
 
                     <div className="flex flex-wrap gap-4 w-full xl:w-auto">
-                        <button className="flex-1 xl:w-auto h-15 px-8 bg-slate-900 border border-slate-800 text-primary text-[10px] font-black uppercase italic tracking-[0.25em] rounded-xl shadow-2xl shadow-slate-900/40 active:scale-95 transition-all hover:bg-emerald-600 hover:text-white flex items-center justify-center gap-4 group/add">
+                        <button className="flex-1 xl:w-auto h-15 px-8 bg-emerald-600 text-white rounded-xl font-bold transition-all shadow-xl shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-4 group/add">
                             <UserPlus className="w-5 h-5 shadow-sm group-hover/add:scale-110 transition-transform" />
                             Provision_New_Account
                         </button>
-                         <button className="h-15 w-15 bg-white border border-slate-100 text-slate-400 hover:text-emerald-600 rounded-xl flex items-center justify-center shadow-sm active:scale-95 transition-all">
-                            <Filter className="w-5 h-5" />
+                         <button className="h-15 w-15 bg-white border border-slate-100 text-slate-400 hover:text-emerald-600 rounded-xl flex items-center justify-center shadow-sm active:scale-95 transition-all group/opt">
+                            <Filter className="w-5 h-5 shadow-sm group-hover/opt:rotate-12 transition-transform" />
                         </button>
                     </div>
                 </div>
 
-                {/* Users Registry List */}
-                <div className="bg-white rounded-lg border border-slate-100 shadow-2xl shadow-slate-200/5 overflow-hidden group relative">
-                    <div className="divide-y divide-slate-50 relative z-10">
+                {/* Main Table Content */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden group">
+                    <div className="divide-y divide-slate-50 relative z-10 font-bold italic">
                         {users.data.map((user) => (
                             <div key={user.id} className="p-8 hover:bg-slate-50/50 transition-all flex flex-col md:flex-row md:items-center justify-between gap-8 group/row">
                                 <div className="flex items-start gap-6">
-                                    <div className="h-14 w-14 rounded-2xl bg-slate-900 border border-slate-800 text-primary flex items-center justify-center shadow-lg group-hover/row:scale-110 transition-transform italic font-black text-lg">
+                                    <div className="h-14 w-14 rounded-2xl bg-slate-900 border border-slate-800 text-primary flex items-center justify-center shadow-lg group-hover/row:scale-110 transition-transform italic text-lg font-black">
                                         {user.name.charAt(0)}
                                     </div>
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-3">
                                             <span className={clsx(
-                                                "text-[9px] font-black uppercase italic tracking-widest leading-none px-2 py-0.5 rounded border transition-colors",
-                                                user.roles[0]?.toLowerCase() === 'superadmin' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-primary/10 text-primary border-primary/20"
+                                                "text-[9px] font-black uppercase italic tracking-widest leading-none px-2 py-0.5 rounded border shadow-sm",
+                                                user.roles[0]?.toLowerCase() === 'superadmin' ? "bg-emerald-50 text-emerald-500 border-emerald-100" : "bg-primary/10 text-primary border-primary/20"
                                             )}>
                                                 {user.roles[0]?.toUpperCase() || 'NO_ROLE'}
                                             </span>
                                             <div className="h-1 w-1 rounded-full bg-slate-200" />
-                                            <span className="text-[10px] font-bold text-slate-300 uppercase italic tracking-widest font-mono">ACCOUNT_ID: #{user.id.toString().padStart(4, '0')}</span>
+                                            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest font-mono">ACCOUNT_ID: #{user.id.toString().padStart(4, '0')}</span>
                                         </div>
-                                        <h3 className="font-black text-slate-900 uppercase italic tracking-tighter text-sm leading-none group-hover/row:text-primary transition-colors">{user.name}</h3>
-                                        <div className="flex items-center gap-4">
+                                        <h3 className="font-bold text-slate-900 uppercase italic tracking-tighter text-sm leading-none group-hover/row:text-emerald-600 transition-colors uppercase">{user.name}</h3>
+                                        <div className="flex items-center gap-4 opacity-50">
                                             <div className="flex items-center gap-2">
-                                                <Mail className="h-3 w-3 text-slate-400" />
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase italic tracking-widest opacity-50">{user.email}</span>
+                                                <Mail className="h-3.5 w-3.5 text-slate-400" />
+                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{user.email}</span>
                                             </div>
                                             {user.email_verified_at && (
-                                                <div className="flex items-center gap-2 px-2 py-0.5 bg-emerald-50 rounded-lg border border-emerald-100">
-                                                    <ShieldCheck className="h-2.5 w-2.5 text-emerald-500 shadow-sm" />
-                                                    <span className="text-[8px] font-black text-emerald-600 uppercase italic tracking-widest">VERIFIED</span>
+                                                <div className="flex items-center gap-2 px-2 py-0.5 bg-emerald-50 rounded border border-emerald-100 text-emerald-600">
+                                                    <ShieldCheck className="h-2.5 w-2.5 shadow-sm shadow-emerald-500/20" />
+                                                    <span className="text-[8px] font-black uppercase tracking-widest">VERIFIED</span>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="flex flex-col items-end gap-5">
-                                    <div className="flex items-center gap-3 opacity-0 group-hover/row:opacity-100 translate-x-3 group-hover/row:translate-x-0 transition-all">
-                                        <button className="h-12 w-12 bg-white border border-slate-100 text-slate-300 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl flex items-center justify-center transition-all shadow-sm">
+                                    <div className="flex items-center gap-3 translate-x-3 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all">
+                                        <button className="h-10 w-10 bg-white border border-slate-100 text-slate-300 hover:text-emerald-600 shadow-sm rounded-lg flex items-center justify-center transition-all hover:border-emerald-100">
                                             <Lock className="w-4 h-4 shadow-sm" />
                                         </button>
                                         <button 
                                             onClick={() => destroy(user.id)}
-                                            className="h-12 w-12 bg-white border border-rose-100 text-rose-300 hover:text-white hover:bg-rose-500 rounded-xl flex items-center justify-center transition-all shadow-sm"
+                                            className="h-10 w-10 bg-white border border-rose-50 text-rose-300 hover:text-rose-600 shadow-sm rounded-lg flex items-center justify-center transition-all hover:border-rose-100"
                                         >
-                                            <Trash2 className="w-4 h-4 shadow-sm" />
+                                            <Trash2 className="w-4 h-4 shadow-sm px-[1px]" />
                                         </button>
-                                        <button className="h-12 px-6 bg-slate-900 text-white rounded-xl font-bold uppercase italic tracking-widest tracking-[0.2em] text-[9px] shadow-lg shadow-slate-900/10 flex items-center gap-3 transition-all active:scale-95 group/btn border border-slate-800 hover:bg-emerald-600">
-                                            <ArrowRight className="w-4 h-4" />
-                                            CREDENTIAL_INSPECT
+                                        <button className="h-10 px-6 bg-slate-900 text-primary border border-slate-800 rounded-xl font-bold uppercase italic tracking-widest text-[9px] shadow-lg shadow-slate-900/10 flex items-center gap-3 transition-all active:scale-95 group/btn hover:bg-emerald-600 hover:text-white">
+                                            <ArrowRight className="w-4 h-4 shadow-sm" />
+                                            Credentials
                                         </button>
                                     </div>
                                 </div>
@@ -156,37 +148,22 @@ export default function UsersIndex({ users, filters }: Props) {
                     <Pagination meta={users.meta} />
                 </div>
 
-                {/* Tactical Command Authorization Monitor */}
-                <div className="p-8 bg-slate-900 rounded-xl border border-slate-800 relative overflow-hidden group shadow-2xl shadow-slate-900/40">
-                    <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_50%,rgba(16,168,83,0.05),transparent_50%)]" />
-
-                    <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-8">
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-primary/10 rounded-2xl border border-primary/20">
-                                    <ShieldAlert className="h-6 w-6 text-primary shadow-[0_0_15px_rgba(16,168,83,0.3)] animate-pulse" />
-                                </div>
-                                <div>
-                                    <h4 className="text-[11px] font-black text-white italic tracking-widest uppercase leading-none">ADMINISTRATIVE_AUTHORITY_SURVEILLANCE_V3.2</h4>
-                                    <p className="text-[10px] font-bold text-emerald-400 italic mt-2 uppercase">STATUS: IDENTITY_FEDERATION_SECURED</p>
-                                </div>
+                {/* Footer Security Section */}
+                <div className="p-8 bg-slate-900 rounded-xl border border-slate-800 text-white relative overflow-hidden group shadow-xl">
+                    <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
+                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+                        <div className="space-y-3">
+                             <div className="flex items-center gap-3 justify-center md:justify-start">
+                                <ShieldAlert className="w-6 h-6 text-emerald-500 animate-pulse" />
+                                <h4 className="text-sm font-bold text-white uppercase italic tracking-widest">Authority_Audit_Governance</h4>
                             </div>
-                            <p className="text-[12px] text-slate-400 text-sm leading-relaxed max-w-4xl opacity-75 uppercase italic font-bold">
-                                Seluruh modifikasi terhadap ledger otoritas personel dipantau secara real-time oleh protokol keamanan kedaulatan data. Penyalahgunaan hak akses akan memicu pembekuan identitas secara otomatis.
+                            <p className="text-[11px] text-slate-400 font-medium leading-relaxed max-w-4xl opacity-75 italic uppercase">
+                                Seluruh modifikasi hak akses personel terekam secara permanen dalam ledger kedaulatan data. Pastikan otorisasi telah sesuai dengan kebijakan keamanan institusi.
                             </p>
                         </div>
-                        <div className="flex flex-col items-end gap-5 shrink-0 hidden lg:flex border-l border-slate-800 pl-10">
-                            <div className="flex items-center gap-3 px-4 py-2 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
-                                <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(16,168,83,0.5)]" />
-                                <span className="text-[9px] font-black text-slate-100 uppercase italic tracking-widest">IDENTITY_ORCHESTRATION_OK</span>
-                            </div>
-                            <div className="flex gap-4 opacity-50">
-                                <div className="h-10 w-10 bg-white/5 border border-slate-200 rounded-xl flex items-center justify-center text-slate-400 transition-colors">
-                                    <Fingerprint className="h-5 w-5" />
-                                </div>
-                                <div className="h-10 w-10 bg-white/5 border border-slate-200 rounded-xl flex items-center justify-center text-slate-400 transition-colors">
-                                    <ShieldCheck className="h-5 w-5" />
-                                </div>
+                        <div className="flex gap-4">
+                            <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/10 text-emerald-500 text-[10px] font-bold">
+                                FEDERATION_SECURED
                             </div>
                         </div>
                     </div>

@@ -199,8 +199,7 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
  <td className="px-6 py-3">
  <div className="flex items-center gap-4">
  <div className="h-7 w-1.5 bg-slate-100 group-hover/row:bg-primaryrounded-lg" />
- <span className="text-[12px] font-semibold text-slate-500 group-hover/row:text-slate-900 transition-colors opacity-50 group-hover:opacity-100">{p.faculty?.name}</span>
- </div>
+ <span className="text-[12px] font-semibold text-slate-500 group-hover/row:text-slate-900 transition-colors opacity-50  </div>
  </td>
  <td className="px-6 py-3 text-right pr-14">
  <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-400 group-hover/row:bg-white group-hover/row:text-primary group-hover/row:border-primary">

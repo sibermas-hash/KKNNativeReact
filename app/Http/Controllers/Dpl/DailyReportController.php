@@ -101,12 +101,13 @@ class DailyReportController extends Controller
             'Anda tidak memiliki akses ke lampiran ini.'
         );
 
-        abort_unless(Storage::disk('local')->exists($fileKegiatan->file_path), 404, 'File lampiran tidak ditemukan.');
+        $disk = Storage::disk('local')->exists($fileKegiatan->file_path)
+            ? 'local'
+            : (Storage::disk('public')->exists($fileKegiatan->file_path) ? 'public' : null);
 
-        return Storage::disk('local')->download(
-            $fileKegiatan->file_path,
-            $fileKegiatan->file_name ?: basename($fileKegiatan->file_path)
-        );
+        abort_if($disk === null, 404, 'File lampiran tidak ditemukan.');
+
+        return Storage::disk($disk)->download($fileKegiatan->file_path, $fileKegiatan->file_name ?: basename($fileKegiatan->file_path));
     }
 
     public function approve(KegiatanKkn $dailyReport): RedirectResponse

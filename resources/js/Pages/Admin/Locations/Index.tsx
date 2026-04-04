@@ -317,8 +317,7 @@ function SOPStep({ step, text }: { step: string; text: string }) {
  return (
  <div className="flex gap-5 group">
  <div className="flex flex-col items-center gap-2">
- <div className="h-10 w-10 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-xs font-semibold text-primary group-hover:bg-primary group-hover:text-white">
- {step}
+ <div className="h-10 w-10 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-xs font-semibold text-primary   {step}
  </div>
  <div className="w-[1px] h-full bg-slate-200 group-last:hidden" />
  </div>

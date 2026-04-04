@@ -1,264 +1,183 @@
-import { useState } from 'react';
-import { useForm, Head, Link } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { StatusBadge } from '@/Components/ui';
-import {
- Calendar,
- User,
- Users,
- MapPin, 
- FileText, 
- Image as ImageIcon,
- ChevronLeft,
- CheckCircle2,
- AlertCircle,
- Navigation,
- 
- Activity,
- MessageSquare,
- ExternalLink,
- RefreshCw,
-} from 'lucide-react';
-import type { PageProps } from '@/types';
 
-interface Props extends PageProps {
- report: {
+interface Attachment {
+ id: number;
+ file_name: string;
+ download_url: string;
+}
+
+interface ReportDetail {
  id: number;
  date: string;
  title: string;
  activity: string;
- output?: string;
+ output?: string | null;
  latitude?: number | null;
  longitude?: number | null;
  status: string;
- review_notes?: string;
- student: { name: string; nim: string };
- group: { name: string; location?: { village_name: string } };
- file_kegiatan: { id: number; file_name: string; file_path: string }[];
+ review_notes?: string | null;
+ student: {
+ name: string;
+ nim: string;
  };
+ group: {
+ name: string;
+ location?: {
+ village_name?: string | null;
+ address?: string | null;
+ };
+ };
+ file_kegiatan: Attachment[];
+}
+
+interface Props {
+ report: ReportDetail;
 }
 
 export default function DplDailyReportShow({ report }: Props) {
- const [showRevision, setShowRevision] = useState(false);
  const approveForm = useForm({});
- const revisionForm = useForm({ revision_notes: '' });
+ const revisionForm = useForm({
+ revision_notes: report.review_notes ?? '',
+ });
 
  const canReview = report.status === 'submitted' || report.status === 'revision';
- const hasCoordinates = report.latitude && report.longitude;
-
- const gmapsUrl = hasCoordinates 
- ? `https://www.google.com/maps/search/?api=1&query=${report.latitude},${report.longitude}`
- : null;
 
  return (
- <AppLayout title="Review Laporan Harian">
- <Head title="Verifikasi Absensi Mahasiswa" />
- 
- <div className="max-w-5xl mx-auto space-y-6 pb-20">
- {/* Tactical Header */}
- <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-200 pb-8">
- <div className="flex items-center gap-6">
- <Link 
- href="/dpl/daily-reports"
- className="h-14 w-14 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-300 hover:text-primary hover:border-primary"
- >
- <ChevronLeft className="h-6 w-6" />
- </Link>
+ <AppLayout title="Detail Laporan Harian">
+ <Head title="Detail Laporan Harian" />
+
+ <div className="mx-auto max-w-5xl space-y-8">
+ <section className="rounded-lg border border-slate-200 bg-white p-8">
+ <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
  <div>
- <div className="flex items-center gap-2 mb-2">
- <Zap className="h-3.5 w-3.5 text-primary" />
- <span className="text-[10px] font-semibold text-slate-400 ">Siklus Verifikasi Lapangan</span>
- </div>
- <h1 className="text-3xl font-extrabold text-slate-900 ">
- Review <span className="text-primary">Laporan</span> Harian
- </h1>
- </div>
- </div>
- <StatusBadge status={report.status} className="px-6 py-3 rounded-lg text-xs font-semibold border-none" />
- </div>
-
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
- <div className="lg:col-span-2 space-y-6">
- {/* Main Content Card */}
- <section className="bg-white rounded-lg border border-slate-100 p-10 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none group-transition-transform[2000ms]">
- <FileText className="h-64 w-64" />
- </div>
-
- <div className="relative z-10 space-y-6">
- <div className="space-y-4 border-b border-slate-200 pb-8">
- <p className="text-[10px] font-semibold text-slate-400 ">Identitas Kegiatan</p>
- <h2 className="text-3xl font-semibold text-slate-900 leading-normal underline decoration-primary/10 underline-offset-8">
- {report.title}
- </h2>
- </div>
-
- <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
- <MetaInfo icon={Calendar} label="Siklus Tanggal" value={report.date} />
- <MetaInfo icon={User} label="Identitas Mahasiswa" value={`${report.student.name} (${report.student.nim})`} />
- <MetaInfo icon={Users} label="Unit Kelompok" value={report.group.name} />
- <MetaInfo icon={MapPin} label="Sektor Penugasan" value={report.group.location?.village_name ?? 'Belum ditetapkan'} />
- </div>
-
- <div className="space-y-8 pt-10 border-t border-slate-200">
- <div className="space-y-4">
- <h3 className="text-[10px] font-semibold text-primary flex items-center gap-2">
- <Activity className="w-4 h-4" /> Uraian Operasional
- </h3>
- <p className="text-sm font-medium text-slate-600 leading-normal bg-slate-50 p-8 rounded-lg
- {report.activity}
+ <Link href="/dpl/daily-reports" className="text-sm font-medium text-primary hover:underline">
+ Kembali ke daftar laporan
+ </Link>
+ <h1 className="mt-3 text-2xl font-semibold text-slate-900">{report.title}</h1>
+ <p className="mt-2 text-sm text-slate-500">
+ {report.date} · {report.student.name} ({report.student.nim})
  </p>
+ <p className="text-sm text-slate-500">{report.group.name}</p>
  </div>
-
- {report.output && (
- <div className="space-y-4">
- <h3 className="text-[10px] font-semibold text-emerald-600 flex items-center gap-2">
- <Zap className="w-4 h-4" /> Hasil / Output
- </h3>
- <p className="text-sm font-semibold text-slate-900 leading-normal 
- {report.output}
- </p>
- </div>
- )}
- </div>
+ <StatusBadge status={report.status} />
  </div>
  </section>
 
- {/* Attachments Section */}
- {report.file_kegiatan.length > 0 && (
- <section className="bg-white rounded-lg border border-slate-100 p-10">
- <h3 className="text-xs font-semibold text-slate-900 mb-8 flex items-center gap-3">
- <ImageIcon className="w-5 h-5 text-slate-400" /> Bukti Dokumentasi Lapangan
- </h3>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
- {report.file_kegiatan.map((f) => (
- <a
- key={f.id}
- href={`/storage/${f.file_path}`}
- target="_blank"
- rel="noreferrer"
- className="group flex items-center gap-5 p-5 rounded-lg bg-slate-50 border border-slate-200 hover:bg-white hover:border-primary/30
- >
- <div className="h-12 w-12 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white
- <FileText className="h-6 w-6" />
- </div>
- <div className="min-w-0">
- <p className="text-[10px] font-semibold text-slate-900 truncate">{f.file_name}</p>
- <p className="text-[9px] text-sm text-slate-400 mt-1">Buka Dokumen <ExternalLink className="inline-block w-2.5 h-2.5 ml-1" /></p>
- </div>
- </a>
- ))}
- </div>
- </section>
- )}
- </div>
+ <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
+ <div className="space-y-6">
+ <section className="rounded-lg border border-slate-200 bg-white p-6">
+ <h2 className="text-lg font-semibold text-slate-900">Aktivitas</h2>
+ <p className="mt-4 whitespace-pre-line text-sm leading-6 text-slate-700">{report.activity}</p>
 
- <aside className="space-y-8">
- {/* Geotagging Verification Card */}
- <section className="bg-slate-900 rounded-lg p-10 border border-slate-800 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-8 opacity-10 text-primary group-transition-transform pointer-events-none">
- <Navigation className="h-32 w-32" />
- </div>
- <h3 className="text-[10px] font-semibold mb-10 flex items-center gap-3 text-slate-400">
- <span className="flex h-2 w-2 rounded-lg bg-primary" />
- Autentikasi Geotag
- </h3>
- 
- {hasCoordinates ? (
- <div className="space-y-8 relative z-10">
- <div className="p-6 rounded-lg bg-white/5 border border-slate-200
- <p className="text-[9px] font-semibold text-primary mb-3">Koordinat GPS Terkunci</p>
- <div className="space-y-2">
- <p className="text-xs font-semibold text-white">LAT: {report.latitude}</p>
- <p className="text-xs font-semibold text-white">LNG: {report.longitude}</p>
- </div>
- </div>
+ {report.output ? (
+ <>
+ <h3 className="mt-6 text-base font-semibold text-slate-900">Output</h3>
+ <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700">{report.output}</p>
+ </>
+ ) : null}
+ </section>
+
+ <section className="rounded-lg border border-slate-200 bg-white p-6">
+ <h2 className="text-lg font-semibold text-slate-900">Lampiran</h2>
+ <div className="mt-4 space-y-3">
+ {report.file_kegiatan.length > 0 ? (
+ report.file_kegiatan.map((file) => (
  <a
- href={gmapsUrl!}
- target="_blank"
- rel="noreferrer"
- className="w-full flex items-center justify-center gap-4 py-5 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary-darkactive:"
+ key={file.id}
+ href={file.download_url}
+ className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 hover:border-primary hover:text-primary"
  >
- <MapPin className="w-4 h-4" /> Verifikasi di Peta
+ <span>{file.file_name}</span>
+ <span className="font-medium">Unduh</span>
  </a>
- </div>
+ ))
  ) : (
- <div className="py-10 text-center opacity-50">
- <AlertCircle className="w-10 h-10 text-slate-500 mx-auto mb-4" />
- <p className="text-[9px] font-semibold text-slate-400 Lokasi Tidak Ditemukan</p>
- </div>
+ <p className="text-sm text-slate-500">Tidak ada lampiran pada laporan ini.</p>
  )}
+ </div>
+ </section>
+ </div>
+
+ <aside className="space-y-6">
+ <section className="rounded-lg border border-slate-200 bg-white p-6">
+ <h2 className="text-lg font-semibold text-slate-900">Lokasi</h2>
+ <div className="mt-4 space-y-2 text-sm text-slate-600">
+ <p>{report.group.location?.village_name ?? 'Lokasi desa belum tersedia'}</p>
+ {report.group.location?.address ? <p>{report.group.location.address}</p> : null}
+ {report.latitude !== null && report.latitude !== undefined && report.longitude !== null && report.longitude !== undefined ? (
+ <>
+ <p>Latitude: {report.latitude}</p>
+ <p>Longitude: {report.longitude}</p>
+ <a
+ href={`https://www.google.com/maps?q=${report.latitude},${report.longitude}`}
+ target="_blank"
+ rel="noreferrer"
+ className="inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90"
+ >
+ Buka di Google Maps
+ </a>
+ </>
+ ) : (
+ <p>Koordinat belum dikirimkan pada laporan ini.</p>
+ )}
+ </div>
  </section>
 
- {/* Review Action Card */}
- {canReview && (
- <section className="bg-white rounded-lg border border-slate-100 p-10">
- <h3 className="text-xs font-semibold text-slate-900 mb-8 border-b border-slate-200 pb-6">Otoritas Verifikasi</h3>
- <div className="space-y-5">
- <button 
+ <section className="rounded-lg border border-slate-200 bg-white p-6">
+ <h2 className="text-lg font-semibold text-slate-900">Tindakan DPL</h2>
+ <div className="mt-4 space-y-4">
+ <button
+ type="button"
+ disabled={!canReview || approveForm.processing}
  onClick={() => approveForm.patch(`/dpl/daily-reports/${report.id}/approve`)}
- disabled={approveForm.processing}
- className="w-full flex items-center justify-center gap-4 py-5 bg-emerald-500 text-white rounded-lg text-xs font-semibold hover:bg-emerald-600active:"
+ className="w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
  >
- {approveForm.processing ? <RefreshCw className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
  Setujui Laporan
  </button>
- <button 
- onClick={() => setShowRevision(!showRevision)}
- className="w-full flex items-center justify-center gap-4 py-5 bg-white border border-slate-200 text-slate-400 rounded-lg text-xs font-semibold hover:border-amber-200 hover:text-amber-600"
- >
- <MessageSquare className="w-4 h-4" />
- Minta Revisi
- </button>
- </div>
 
- {showRevision && (
- <div className="mt-8 space-y-6">
+ <form
+ onSubmit={(event) => {
+ event.preventDefault();
+ revisionForm.patch(`/dpl/daily-reports/${report.id}/revision`);
+ }}
+ className="space-y-3"
+ >
+ <label htmlFor="revision_notes" className="block text-sm font-medium text-slate-700">
+ Catatan revisi
+ </label>
  <textarea
- placeholder="Tulis instruksi revisi untuk mahasiswa..."
+ id="revision_notes"
  value={revisionForm.data.revision_notes}
- onChange={(e) => revisionForm.setData('revision_notes', e.target.value)}
- rows={4}
- className="w-full bg-slate-50 border-slate-200 rounded-lg p-6 text-xs text-sm text-slate-700 focus:ring-4 focus:ring-primary/10 outline-none
+ onChange={(event) => revisionForm.setData('revision_notes', event.target.value)}
+ rows={5}
+ className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+ placeholder="Tulis arahan revisi untuk mahasiswa."
  />
- <button 
- onClick={() => revisionForm.patch(`/dpl/daily-reports/${report.id}/revision`)}
- disabled={revisionForm.processing}
- className="w-full py-4 bg-amber-500 text-white rounded-lg text-[9px] font-semibold hover:bg-amber-600"
+ {revisionForm.errors.revision_notes ? (
+ <p className="text-xs text-red-600">{revisionForm.errors.revision_notes}</p>
+ ) : null}
+ <button
+ type="submit"
+ disabled={!canReview || revisionForm.processing}
+ className="w-full rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
  >
- Kirim Instruksi Revisi
+ Kirim Revisi
  </button>
+ </form>
  </div>
- )}
  </section>
- )}
 
- {report.review_notes && (
- <section className="bg-amber-50 rounded-lg border border-amber-100 p-8">
- <div className="flex items-center gap-3 mb-4">
- <AlertCircle className="w-4 h-4 text-amber-600" />
- <h4 className="text-[10px] font-semibold text-amber-800 Revisi Aktif</h4>
- </div>
- <p className="text-[11px] text-sm text-amber-700 leading-normal 
+ {report.review_notes ? (
+ <section className="rounded-lg border border-amber-200 bg-amber-50 p-6">
+ <h2 className="text-base font-semibold text-amber-800">Catatan Review Terakhir</h2>
+ <p className="mt-2 whitespace-pre-line text-sm text-amber-700">{report.review_notes}</p>
  </section>
- )}
+ ) : null}
  </aside>
  </div>
  </div>
  </AppLayout>
- );
-}
-
-function MetaInfo({ icon: Icon, label, value }: any) {
- return (
- <div className="flex items-start gap-4 group">
- <div className="h-10 w-10 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
- <Icon className="h-5 w-5" />
- </div>
- <div className="min-w-0">
- <p className="text-[9px] font-semibold text-slate-400 mb-1">{label}</p>
- <p className="text-xs font-semibold text-slate-900 truncate">{value}</p>
- </div>
- </div>
  );
 }

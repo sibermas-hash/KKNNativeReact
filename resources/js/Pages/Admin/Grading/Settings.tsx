@@ -47,82 +47,80 @@ export default function GradingSettings({ components }: Props) {
 
     return (
         <AppLayout title="Setelan Penilaian">
-            <Head title="Konfigurasi Bobot Nilai" />
+            <Head title="Bobot Penilaian" />
 
             <div className="space-y-8 pb-20">
-                {/* Clean Header */}
+                {/* Simple Clean Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Konfigurasi Pembobotan</h1>
-                        <p className="text-sm text-slate-500 mt-1">Kalibrasi algoritma penilaian untuk evaluasi performa akademik KKN.</p>
+                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Setelan Penilaian</h1>
+                        <p className="text-sm text-slate-500 mt-1">Sesuaikan pembobotan komponen nilai akhir untuk evaluasi akademik.</p>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-                    {/* Weight Adjustment Panel - Main Column */}
-                    <div className="xl:col-span-8">
-                        <div className="bg-white rounded-lg border border-slate-100 shadow-2xl shadow-slate-200/5 overflow-hidden group">
-                            <div className="px-10 py-12 border-b border-slate-50 relative overflow-hidden">
-                                <div className="absolute top-0 right-0 p-12 text-primary opacity-[0.02] pointer-events-none group-hover:rotate-12 transition-transform duration-1000">
-                                    <Scale className="h-64 w-64" />
-                                </div>
-                                
-                                <div className="flex items-center gap-6 relative z-10">
-                                    <div className="p-4 bg-slate-900 rounded-3xl text-primary shadow-2xl shadow-slate-900/40 italic">
-                                        <Calculator className="h-8 w-8" />
+                    {/* Weight Adjustment Section */}
+                    <div className="xl:col-span-8 space-y-8">
+                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden group">
+                            <div className="px-10 py-10 border-b border-slate-50 flex items-center justify-between bg-slate-50/10">
+                                <div className="flex items-center gap-6">
+                                    <div className="p-4 bg-slate-900 rounded-2xl text-emerald-400 shadow-lg italic">
+                                        <Scale className="h-6 w-6" />
                                     </div>
                                     <div className="flex flex-col">
-                                        <h3 className="text-2xl font-black text-slate-900 uppercase italic tracking-tighter leading-none mb-2">Matrix Calculation</h3>
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic opacity-50">ALGORITHM_VERSION: 3.2.0</span>
-                                            <div className="h-1 w-1 rounded-full bg-slate-200" />
-                                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest italic">CALIBRATION_ACTIVE</span>
+                                        <h3 className="text-lg font-bold text-slate-900 leading-none">Matriks Pembobotan</h3>
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest italic leading-none">Status: Ready_Calibration</span>
                                         </div>
                                     </div>
                                 </div>
+                                <div className="hidden lg:flex items-center gap-2 italic">
+                                    <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest leading-none">Algorithm_V3.2</span>
+                                </div>
                             </div>
 
-                            <form onSubmit={submit} className="p-10 space-y-8 relative z-10">
+                            <form onSubmit={submit} className="p-10 space-y-10 relative z-10">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     {components.map((component) => (
-                                        <div key={component.key} className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-4 hover:border-emerald-200 transition-all group/item">
-                                            <div className="flex items-center justify-between">
+                                        <div key={component.key} className="p-6 bg-slate-50 rounded-xl border border-slate-100 group/item hover:border-emerald-200 transition-all">
+                                            <div className="flex items-center justify-between mb-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-white rounded-xl border border-slate-100 text-slate-400 group-hover/item:text-emerald-600 transition-colors">
+                                                    <div className="p-2 bg-white rounded-lg border border-slate-100 text-slate-400 group-hover/item:text-emerald-600 shadow-sm transition-colors">
                                                         <FileText className="w-4 h-4" />
                                                     </div>
-                                                    <span className="text-[10px] font-black text-slate-900 uppercase italic tracking-widest">{component.name}</span>
+                                                    <span className="text-[11px] font-bold text-slate-900 uppercase tracking-widest">{component.name}</span>
                                                 </div>
-                                                <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest font-mono italic">KEY: {component.key}</span>
+                                                <span className="text-[9px] font-bold text-slate-300 italic uppercase">Key: {component.key}</span>
                                             </div>
                                             <div className="relative">
                                                 <input
                                                     type="number"
                                                     value={data.weights[component.key]}
                                                     onChange={(e) => setData('weights', { ...data.weights, [component.key]: Number(e.target.value) })}
-                                                    className="w-full h-16 pl-6 pr-16 bg-white border border-slate-100 rounded-2xl text-xl font-black italic tracking-tighter focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all shadow-inner"
+                                                    className="w-full h-15 pl-6 pr-16 bg-white border border-slate-100 rounded-xl text-xl font-bold italic tracking-tighter focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none"
                                                 />
-                                                <span className="absolute right-6 top-1/2 -translate-y-1/2 font-black text-slate-300 italic">%</span>
+                                                <span className="absolute right-6 top-1/2 -translate-y-1/2 font-bold text-slate-300 italic">%</span>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
 
                                 <div className={clsx(
-                                    "p-10 rounded-lg border-2 border-dashed transition-all mt-10 flex flex-col md:flex-row md:items-center justify-between gap-8",
-                                    isWeightValid ? "bg-emerald-50/30 border-emerald-100" : "bg-rose-50/30 border-rose-100"
+                                    "p-8 rounded-xl border border-dashed transition-all flex flex-col md:flex-row md:items-center justify-between gap-8",
+                                    isWeightValid ? "bg-emerald-50/50 border-emerald-100" : "bg-rose-50/50 border-rose-100"
                                 )}>
                                     <div className="flex items-center gap-6">
                                         <div className={clsx(
-                                            "h-16 w-16 rounded-lg flex items-center justify-center border shadow-xl transition-all",
+                                            "h-14 w-14 rounded-2xl flex items-center justify-center border shadow-sm transition-all",
                                             isWeightValid ? "bg-white border-emerald-100 text-emerald-600" : "bg-white border-rose-100 text-rose-500 animate-pulse"
                                         )}>
-                                            <BarChartIcon percent={totalWeight} />
+                                            <Calculator className="h-6 w-6" />
                                         </div>
                                         <div className="space-y-1">
-                                            <h4 className="text-[11px] font-black text-slate-900 uppercase italic tracking-widest leading-none">TOTAL_ACCUMULATED_WEIGHT</h4>
+                                            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Akumulasi Bobot Total</h4>
                                             <p className={clsx(
-                                                "text-4xl font-black italic italic tracking-tighter leading-none",
+                                                "text-3xl font-black italic",
                                                 isWeightValid ? "text-emerald-600" : "text-rose-500"
                                             )}>{totalWeight}%</p>
                                         </div>
@@ -131,60 +129,55 @@ export default function GradingSettings({ components }: Props) {
                                     <button
                                         type="submit"
                                         disabled={processing || !isWeightValid}
-                                        className="h-16 px-12 bg-slate-900 text-white rounded-lg font-black uppercase italic tracking-[0.25em] text-[11px] shadow-2xl shadow-slate-900/40 relative active:scale-95 group/submit disabled:opacity-20 transition-all hover:bg-emerald-600"
+                                        className="h-15 px-10 bg-emerald-600 text-white rounded-xl font-bold uppercase italic tracking-widest text-[11px] shadow-lg shadow-emerald-500/20 relative active:scale-95 disabled:opacity-20 transition-all hover:bg-emerald-700 flex items-center justify-center gap-3"
                                     >
-                                        <span className="relative z-10 flex items-center gap-4">
-                                            <ShieldCheck className="w-5 h-5 text-primary group-hover/submit:text-white" />
-                                            SAVE_CALIBRATION
-                                        </span>
+                                        <ShieldCheck className="w-5 h-5" />
+                                        Simpan Perubahan
                                     </button>
                                 </div>
                             </form>
                         </div>
                     </div>
 
-                    {/* Meta Info - Side Column */}
-                    <div className="xl:col-span-4 space-y-8">
-                        <section className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm space-y-8 relative overflow-hidden group/notice">
-                            <div className="absolute -bottom-6 -right-6 text-slate-900 opacity-[0.02] pointer-events-none group-hover/notice:rotate-12 transition-transform">
-                                <History className="h-32 w-32" />
+                     {/* Info Sidebar Section */}
+                     <div className="xl:col-span-4 space-y-6">
+                        <section className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm space-y-6 relative overflow-hidden group/notice">
+                            <div className="absolute -bottom-6 -right-6 text-slate-100 opacity-20 pointer-events-none group-hover/notice:rotate-12 transition-transform">
+                                <Zap className="h-32 w-32" />
                             </div>
                             
                             <div className="flex items-center gap-4 pb-6 border-b border-slate-50">
-                                <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600 border border-emerald-100 shadow-sm">
-                                    <AlertCircle className="w-5 h-5" />
+                                <div className="p-3 bg-emerald-50 rounded-lg text-emerald-600 border border-emerald-100 shadow-sm">
+                                    <AlertCircle className="w-5 h-5 shadow-sm shadow-emerald-500/20" />
                                 </div>
-                                <h3 className="text-[11px] font-black text-slate-900 uppercase italic tracking-widest">Protocol Notice</h3>
+                                <h3 className="font-bold text-slate-900 tracking-tight">Ketik Bobot</h3>
                             </div>
 
-                            <div className="space-y-6 relative z-10">
-                                <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Verification_Requirement</span>
-                                    <p className="text-[11px] text-slate-600 font-bold uppercase italic leading-relaxed">
-                                        Akumulasi seluruh bobot komponen penilaian harus mencapai angka presisi 100%. Ketidakseimbangan bobot akan mengunci tombol penyimpanan.
+                            <div className="space-y-5 relative z-10">
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 italic">
+                                    <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-1 opacity-50">Aturan Total Bobot</p>
+                                    <p className="text-[11px] text-slate-600 font-medium italic leading-relaxed">
+                                        Seluruh bobot komponen harus berjumlah tepat 100%. Jika tidak memenuhi syarat, perubahan tidak dapat disimpan.
                                     </p>
                                 </div>
-                                <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Impact_Level</span>
-                                    <p className="text-[11px] text-slate-600 font-bold uppercase italic leading-relaxed">
-                                        Perubahan pembobotan akan berdampak langsung pada seluruh kalkulasi nilai agregat mahasiswa secara real-time.
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 italic">
+                                    <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-1 opacity-50">Efek Perubahan</p>
+                                    <p className="text-[11px] text-slate-600 font-medium italic leading-relaxed">
+                                        Nilai agregat mahasiswa akan diperbarui secara otomatis menggunakan bobot terbaru pada proses sinkronisasi berikutnya.
                                     </p>
                                 </div>
                             </div>
                         </section>
 
-                        <div className="bg-slate-900 p-8 rounded-xl border border-slate-800 relative overflow-hidden group shadow-xl shadow-slate-900/20">
+                        <div className="p-8 bg-slate-900 rounded-xl border border-slate-800 text-white relative overflow-hidden group shadow-xl">
                             <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
-                            <div className="relative z-10 flex flex-col items-center text-center space-y-6">
-                                <div className="p-4 bg-primary/10 rounded-3xl border border-primary/20">
-                                    <Cpu className="w-10 h-10 text-primary shadow-[0_0_15px_rgba(16,168,83,0.3)]" />
+                            <div className="relative z-10 flex flex-col items-center text-center space-y-4">
+                                <div className="p-3.5 bg-primary/10 rounded-2xl border border-primary/20 shadow-sm shadow-primary/20">
+                                     <Cpu className="h-8 w-8 text-primary shadow-sm" />
                                 </div>
                                 <div>
-                                    <h4 className="text-[11px] font-black text-white uppercase italic tracking-widest leading-none mb-3">SYSTEM_CORE_SYNC</h4>
-                                    <div className="flex items-center gap-3 justify-center px-4 py-2 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
-                                        <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                                        <span className="text-[9px] font-black text-slate-100 uppercase italic tracking-widest">ALGORITHM_SECURED</span>
-                                    </div>
+                                    <h4 className="text-[10px] font-bold text-white uppercase italic tracking-[0.2em] mb-2 leading-none">Infrastruktur_Audit</h4>
+                                    <p className="text-[10px] text-slate-500 font-medium italic leading-relaxed opacity-75 truncate uppercase">ENCRYPTED_ALGO_GOVERNANCE_SECURED</p>
                                 </div>
                             </div>
                         </div>
@@ -193,14 +186,4 @@ export default function GradingSettings({ components }: Props) {
             </div>
         </AppLayout>
     );
-}
-
-function BarChartIcon({ percent }: { percent: number }) {
-    return (
-        <div className="flex items-end gap-1 h-6">
-            <div className={clsx("w-1.5 rounded-full transition-all", percent > 0 ? "bg-emerald-500" : "bg-slate-100")} style={{ height: '30%' }} />
-            <div className={clsx("w-1.5 rounded-full transition-all", percent > 50 ? "bg-emerald-500" : "bg-slate-100")} style={{ height: '60%' }} />
-            <div className={clsx("w-1.5 rounded-full transition-all", percent === 100 ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,168,83,0.5)]" : "bg-slate-100")} style={{ height: '100%' }} />
-        </div>
-    )
 }

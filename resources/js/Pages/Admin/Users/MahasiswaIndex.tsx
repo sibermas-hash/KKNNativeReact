@@ -25,7 +25,8 @@ interface UserData {
  is_active: boolean;
  mahasiswa?: {
  nim: string;
- prodi?: { nama: string; fakultas: { nama: string } };
+ prodi?: { nama: string; fakultas?: { nama: string } };
+ fakultas?: { nama: string };
  };
 }
 
@@ -172,7 +173,7 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  {user.mahasiswa?.prodi?.nama || 'UNASSIGNED_PROGRAM'}
  </span>
  <span className="text-[8px] font-semibold text-slate-300">
- {user.mahasiswa?.prodi?.fakultas?.nama || 'UNASSIGNED_FACULTY'}
+ {user.mahasiswa?.fakultas?.nama || user.mahasiswa?.prodi?.fakultas?.nama || 'UNASSIGNED_FACULTY'}
  </span>
  </div>
  </td>

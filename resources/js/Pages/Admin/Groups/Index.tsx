@@ -48,20 +48,20 @@ export default function GroupsIndex({ groups, filters }: Props) {
 
     return (
         <AppLayout title="Kelompok KKN">
-            <Head title="Manajemen Kelompok" />
+            <Head title="Direktori Kelompok" />
 
             <div className="space-y-8 pb-20">
-                {/* Clean Header */}
+                {/* Simple Clean Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Direktori Kelompok</h1>
-                        <p className="text-sm text-slate-500 mt-1">Pantau dan kelola seluruh unit kelompok KKN operasional.</p>
+                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Kelompok KKN</h1>
+                        <p className="text-sm text-slate-500 mt-1">Daftar seluruh unit kelompok KKN pada periode aktif.</p>
                     </div>
                     <div className="flex items-center gap-3">
                         <div className="px-4 py-2 bg-emerald-50 rounded-lg border border-emerald-100 flex items-center gap-3">
                             <Users className="w-4 h-4 text-emerald-600" />
                             <span className="text-sm font-semibold text-emerald-700">
-                                {groups.meta?.total || 0} Unit Terdaftar
+                                {groups.meta?.total || 0} Kelompok
                             </span>
                         </div>
                     </div>
@@ -73,69 +73,64 @@ export default function GroupsIndex({ groups, filters }: Props) {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
                         <input
                             type="search"
-                            placeholder="Cari Identitas Kelompok, Lokasi, atau DPL..."
+                            placeholder="Cari Kelompok, Lokasi, atau DPL..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-12 pr-6 py-3 bg-white border border-slate-200 rounded-xl text-sm transition-all focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 outline-none shadow-sm"
+                            className="w-full pl-12 pr-6 py-3 bg-white border border-slate-200 rounded-xl text-sm transition-all focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 outline-none shadow-sm shadow-slate-100/10"
                         />
                     </form>
 
-                    <div className="flex gap-3 w-full md:w-auto">
-                         <button className="flex-1 md:flex-none px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-xs hover:bg-slate-50 transition-all flex items-center justify-center gap-3">
+                    <div className="flex gap-2 w-full md:w-auto">
+                        <button className="flex-1 md:flex-none px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-xs hover:bg-slate-50 transition-all flex items-center justify-center gap-3">
                             <Filter className="w-4 h-4" />
                             Filter Data
                         </button>
                     </div>
                 </div>
 
-                {/* Grid Structure */}
+                {/* Groups Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {groups.data.map((group) => (
-                        <div key={group.id} className="bg-white rounded-lg border border-slate-100 overflow-hidden hover:border-emerald-300 transition-all group shadow-sm hover:shadow-xl hover:shadow-emerald-900/5">
+                        <div key={group.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:border-emerald-300 transition-all group shadow-sm hover:shadow-md">
                             <div className="p-6 space-y-6">
-                                <div className="flex items-start justify-between gap-4">
+                                <div className="flex items-start justify-between">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-12 w-12 rounded-lg bg-slate-900 flex items-center justify-center text-emerald-400 font-bold italic shadow-lg">
-                                            {group.name.replace('Kelompok ', '').slice(0, 3)}
+                                        <div className="h-10 w-10 rounded-lg bg-slate-900 flex items-center justify-center text-primary font-bold text-sm">
+                                            {group.name.replace('Kelompok ', '').charAt(0)}
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-slate-900 group-hover:text-emerald-600 transition-colors tracking-tight line-clamp-1">{group.name}</h3>
-                                            <p className="text-[11px] font-semibold text-slate-400 tracking-wider">UNIT_REF: #{group.id.toString().padStart(4, '0')}</p>
+                                            <h3 className="font-bold text-slate-900  transition-colors tracking-tight truncate max-w-[180px]">{group.name}</h3>
+                                            <p className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">MOD_ID: #{group.id}</p>
                                         </div>
                                     </div>
                                     <Link 
                                         href={route('admin.groups.show', group.id)}
-                                        className="p-2 bg-slate-50 rounded-lg text-slate-300 hover:text-emerald-600 hover:bg-emerald-50 transition-all"
+                                        className="h-8 w-8 bg-slate-50 rounded-lg text-slate-300 hover:text-emerald-600 hover:bg-emerald-50 transition-all flex items-center justify-center"
                                     >
                                         <ChevronRight className="w-4 h-4" />
                                     </Link>
                                 </div>
 
                                 <div className="space-y-3">
-                                    <div className="flex items-center gap-3 text-xs font-semibold text-slate-600">
-                                        <div className="p-1.5 bg-slate-50 rounded-lg group-hover:text-emerald-600 transition-colors">
-                                            <MapPin className="w-3.5 h-3.5" />
-                                        </div>
-                                        <span className="truncate">{group.location ? `${group.location.kecamatan}, ${group.location.kabupaten}` : 'LOKASI_BELUM_SET'}</span>
+                                    <div className="flex items-center gap-3 text-sm font-medium text-slate-600 transition-colors                                         <MapPin className="w-4 h-4 text-emerald-500" />
+                                        <span className="truncate">{group.location ? `${group.location.kecamatan}, ${group.location.kabupaten}` : 'Lokasi belum diatur'}</span>
                                     </div>
-                                    <div className="flex items-center gap-3 text-xs font-semibold text-slate-600">
-                                        <div className="p-1.5 bg-slate-50 rounded-lg group-hover:text-emerald-600 transition-colors">
-                                            <Users className="w-3.5 h-3.5" />
-                                        </div>
-                                        <span>{group.members_count} Personel Terdaftar</span>
+                                    <div className="flex items-center gap-3 text-sm font-medium text-slate-600 transition-colors                                         <Users className="w-4 h-4 text-emerald-500" />
+                                        <span>{group.members_count} Mahasiswa</span>
                                     </div>
                                 </div>
 
                                 <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1.5">Penanggung Jawab</span>
-                                        <span className="text-xs font-bold text-slate-700">{group.dosen?.name || 'BELUM_DITETAPKAN'}</span>
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Dosen Pembimbing</span>
+                                        <span className="text-sm font-bold text-slate-700">{group.dosen?.name || 'Belum diatur'}</span>
                                     </div>
                                     <Link 
                                         href={route('admin.groups.show', group.id)}
-                                        className="h-8 w-8 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+                                        className="text-xs font-bold text-emerald-600 flex items-center gap-2 group/link"
                                     >
-                                        <ArrowRight className="w-4 h-4" />
+                                        Detail
+                                        <ArrowRight className="w-3.5 h-3.5 group-hover/link:translate-x-1 transition-transform" />
                                     </Link>
                                 </div>
                             </div>
@@ -144,9 +139,9 @@ export default function GroupsIndex({ groups, filters }: Props) {
                 </div>
 
                 {groups.data.length === 0 && (
-                    <div className="py-24 text-center bg-white rounded-lg border border-slate-100 italic">
+                    <div className="py-24 text-center opacity-30 italic">
                         <Users className="w-12 h-12 text-slate-100 mx-auto mb-4" />
-                        <p className="font-bold text-slate-900 opacity-20 tracking-widest">DATA_KELOMPOK_EMPTY</p>
+                        <p className="font-bold text-slate-400">Tidak ada kelompok yang ditemukan</p>
                     </div>
                 )}
 

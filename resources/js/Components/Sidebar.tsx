@@ -20,7 +20,8 @@ import {
  FileSpreadsheet,
  SlidersHorizontal,
  GraduationCap,
- Globe
+ Globe,
+ Download
 } from 'lucide-react';
 
 interface NavItem {

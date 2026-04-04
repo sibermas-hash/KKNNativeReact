@@ -12,13 +12,13 @@ import {
     Globe2, 
     Navigation,
     BookOpen,
-    Download,
+    Download as DownloadIcon,
     ChevronRight,
     Info,
     ExternalLink,
     Star
 } from 'lucide-react';
-import type { PageProps, Announcement } from '@/types';
+import type { PageProps, Announcement, Download } from '@/types';
 import dayjs from 'dayjs';
 
 interface Props extends PageProps {
@@ -28,6 +28,7 @@ interface Props extends PageProps {
         locations: number;
     };
     announcements: Announcement[];
+    downloads: Download[];
     aboutContent: {
         about: string;
         visi: string;
@@ -35,7 +36,7 @@ interface Props extends PageProps {
     };
 }
 
-export default function Home({ stats, auth, announcements, aboutContent }: Props) {
+export default function Home({ stats, auth, announcements, aboutContent, downloads }: Props) {
     const defaultAnnouncements = [
         {
             date: '04 APR 2026',
@@ -142,7 +143,7 @@ export default function Home({ stats, auth, announcements, aboutContent }: Props
                 </div>
             </nav>
 
-            {/* HERO SECTION - REBRANDED */}
+            {/* HERO SECTION */}
             <section className="relative pt-32 pb-20 lg:pt-52 lg:pb-44 overflow-hidden bg-emerald-600">
                 <div className="absolute inset-0 z-0">
                     <img 
@@ -152,7 +153,6 @@ export default function Home({ stats, auth, announcements, aboutContent }: Props
                     />
                     <div className="absolute inset-0 bg-gradient-to-tr from-emerald-900/90 via-emerald-800/40 to-amber-500/10" />
                     
-                    {/* Visual Accents like the Paper Arrows */}
                     <div className="absolute top-1/4 right-1/4 opacity-20 hidden lg:block">
                          <div className="flex flex-col gap-4">
                             {[...Array(5)].map((_, i) => (
@@ -221,7 +221,7 @@ export default function Home({ stats, auth, announcements, aboutContent }: Props
                 </div>
             </section>
 
-            {/* VIBRANT LIVE DATA SECTION */}
+            {/* LIVE DATA SECTION */}
             <section className="relative -mt-20 z-20 container mx-auto px-6 lg:px-12">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <motion.div
@@ -277,7 +277,7 @@ export default function Home({ stats, auth, announcements, aboutContent }: Props
                 </div>
             </section>
 
-            {/* CLEAN VIBRANT ABOUT SECTION */}
+            {/* ABOUT SECTION */}
             <section id="about" className="py-24 lg:py-48 bg-white">
                 <div className="container mx-auto px-6 lg:px-12">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-32 items-center">
@@ -323,8 +323,7 @@ export default function Home({ stats, auth, announcements, aboutContent }: Props
                         </div>
 
                         <div className="relative flex justify-center">
-                            {/* Graphic Sinar Dunia Style */}
-                            <div className="w-full max-w-lg aspect-square bg-emerald-500 rounded-[3rem] p-4 rotate-3 relative overflow-hidden group hover:rotate-0 transition-all duration-700 shadow-[0_50px_100px_-20px_rgba(27,176,189,0.3)]">
+                            <div className="w-full max-w-lg aspect-square bg-emerald-500 rounded-[3rem] p-4 rotate-3 relative overflow-hidden group hover:rotate-0 transition-all duration-700 shadow-[0_50px_100px_-20px_rgba(16,168,83,0.3)]">
                                 <div className="absolute inset-0 bg-white/10 opacity-20 flex flex-col gap-8 p-12">
                                      {[...Array(10)].map((_, i) => (
                                          <div key={i} className="flex gap-10">
@@ -340,10 +339,6 @@ export default function Home({ stats, auth, announcements, aboutContent }: Props
                                         className="w-full h-full object-cover grayscale saturate-150 contrast-125" 
                                         alt="Campus Life" 
                                      />
-                                     <div className="absolute bottom-10 left-10 right-10 p-6 bg-emerald-600/90 backdrop-blur-md rounded-2xl border-l-8 border-amber-400">
-                                        <span className="text-[10px] font-black text-white/60 uppercase tracking-[0.5em]">SYSTEM_IDENTITY_VERIFIED</span>
-                                        <h6 className="text-2xl font-black text-white italic tracking-tighter mt-2">Prof. K.H. Saifuddin Zuhri_CAMPUS_86</h6>
-                                     </div>
                                 </div>
                             </div>
                         </div>
@@ -351,8 +346,8 @@ export default function Home({ stats, auth, announcements, aboutContent }: Props
                 </div>
             </section>
 
-            {/* GREEN VIBRANT SCHEMES SECTION */}
-            <section id="schemes" className="py-24 lg:py-48 bg-slate-50 relative overflow-hidden">
+            {/* SCHEMES SECTION */}
+            <section id="schemes" className="py-24 lg:py-48 bg-slate-50">
                 <div className="container mx-auto px-6 lg:px-12 relative z-10">
                     <div className="flex flex-col lg:flex-row items-end justify-between gap-12 mb-24">
                         <div className="max-w-3xl">
@@ -363,9 +358,6 @@ export default function Home({ stats, auth, announcements, aboutContent }: Props
                             <h3 className="text-5xl lg:text-7xl font-black text-slate-950 mb-8 tracking-tighter">
                                 Skema Operasional <br /> <span className="text-emerald-500 italic">Terintegrasi.</span>
                             </h3>
-                            <p className="text-slate-500 text-xl leading-relaxed font-bold max-w-2xl">
-                                Kami merancang model pengabdian yang presisi untuk mengakomodasi diversitas kompetensi akademik dalam transformasi sosial.
-                            </p>
                         </div>
                     </div>
 
@@ -377,7 +369,7 @@ export default function Home({ stats, auth, announcements, aboutContent }: Props
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: i * 0.1 }}
                                 viewport={{ once: true }}
-                                className="bg-white p-12 rounded-[2.5rem] border-2 border-slate-100 hover:border-emerald-500 hover:shadow-[0_40px_80px_-20px_rgba(27,176,189,0.15)] transition-all group"
+                                className="bg-white p-12 rounded-[2.5rem] border-2 border-slate-100 hover:border-emerald-500 hover:shadow-[0_40px_80px_-20px_rgba(16,168,83,0.15)] transition-all group"
                             >
                                 <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mb-10 transition-all duration-500 group-hover:scale-110 group-hover:-rotate-6
                                     ${scheme.color === 'emerald' ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-500/30' : ''}
@@ -391,9 +383,9 @@ export default function Home({ stats, auth, announcements, aboutContent }: Props
                                 <p className="text-slate-500 text-sm leading-relaxed font-bold mb-10 h-24 italic">
                                     {scheme.description}
                                 </p>
-                                <button className="w-full py-4 text-xs font-black text-emerald-600 border-2 border-emerald-500 rounded-xl flex items-center justify-center gap-3 group-hover:bg-emerald-500 group-hover:text-white transition-all uppercase tracking-widest">
-                                    AKSES_PROTOKOL
-                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                <button className="w-full py-4 text-xs font-black text-emerald-600 border-2 border-emerald-500 rounded-xl flex items-center justify-center gap-3 hover:bg-emerald-500 hover:text-white transition-all uppercase tracking-widest">
+                                    PELAJARI
+                                    <ArrowRight className="w-4 h-4" />
                                 </button>
                             </motion.div>
                         ))}
@@ -401,214 +393,109 @@ export default function Home({ stats, auth, announcements, aboutContent }: Props
                 </div>
             </section>
 
-            {/* NEWS & ANNOUNCEMENTS - SINAR DUNIA THEME */}
-            <section id="announcements" className="py-24 lg:py-48">
-                <div className="container mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-24 lg:gap-32">
-                    <div className="lg:col-span-5">
-                        <div className="sticky top-40 bg-emerald-600 p-16 rounded-[3rem] text-white shadow-2xl overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-12 opacity-10">
-                                <Users className="w-64 h-64 rotate-12" />
-                            </div>
-                            <div className="relative z-10">
-                                <div className="flex items-center gap-4 mb-10">
-                                    <div className="h-1.5 w-16 bg-amber-400 rounded-full" />
-                                    <span className="text-[12px] font-black text-emerald-100 uppercase tracking-[0.5em]">SYSTEM_COMMUNICATIONS</span>
-                                </div>
-                                <h3 className="text-5xl lg:text-7xl font-black text-white mb-10 tracking-tighter leading-[0.9]">Warta & <br /> Informasi.</h3>
-                                <p className="text-emerald-50 text-xl font-bold italic leading-relaxed mb-14 opacity-80">
-                                    Monitor pembaruan kebijakan operasional dan siklus pendaftaran KKN secara real-time.
-                                </p>
-                                <Link 
-                                    href="#" 
-                                    className="w-full bg-white text-emerald-600 px-10 py-5 rounded-2xl text-sm font-black shadow-2xl flex items-center justify-center gap-4 hover:bg-amber-400 hover:text-slate-950 transition-all uppercase tracking-widest"
-                                >
-                                    SELURUH_KATALOG
-                                    <BookOpen className="w-5 h-5" />
-                                </Link>
-                            </div>
+            {/* ANNOUNCEMENTS & DOWNLOADS SECTION */}
+            <section id="announcements" className="py-24 lg:py-48 bg-white">
+                <div className="container mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-24">
+                    <div className="lg:col-span-12 mb-12">
+                         <div className="flex items-center gap-4 mb-4">
+                            <div className="h-1.5 w-16 bg-amber-400 rounded-full" />
+                            <span className="text-[12px] font-black text-emerald-600 uppercase tracking-[0.5em]">COMMUNICATION_HUB</span>
                         </div>
+                        <h3 className="text-5xl lg:text-7xl font-black text-slate-950 tracking-tighter leading-[0.9]">Pusat Informasi.</h3>
                     </div>
 
                     <div className="lg:col-span-7 space-y-12">
+                        <h5 className="text-[14px] font-black text-slate-950 uppercase tracking-[0.4em] mb-10 flex items-center gap-4">
+                            <BookOpen className="w-6 h-6 text-emerald-500" />
+                            WARTA_TERBARU
+                        </h5>
                         {displayAnnouncements.map((news, i) => (
                             <motion.div
-                                key={news.title}
-                                initial={{ opacity: 0, x: 50 }}
+                                key={i}
+                                initial={{ opacity: 0, x: -50 }}
                                 whileInView={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.6, delay: i * 0.1 }}
-                                viewport={{ once: true }}
-                                className="group relative bg-white p-12 rounded-[2.5rem] border-2 border-slate-100 hover:border-emerald-500 transition-all cursor-pointer shadow-xl shadow-emerald-900/5"
+                                className="group relative bg-white p-12 rounded-[2.5rem] border-2 border-slate-100 hover:border-emerald-500 transition-all shadow-xl shadow-emerald-900/5"
                             >
-                                {news.isNew && (
-                                    <div className="absolute top-0 right-0 px-6 py-2 bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-[0.3em] rounded-bl-2xl shadow-lg border-l-4 border-b-4 border-slate-950">
-                                        PRIORITY_NEW
-                                    </div>
-                                )}
                                 <div className="flex flex-col md:flex-row md:items-start gap-12">
-                                    <div className="flex flex-col items-center justify-center p-6 bg-emerald-500 rounded-3xl min-w-[120px] text-white shadow-xl shadow-emerald-500/20 group-hover:scale-95 transition-transform">
-                                        <span className="text-lg font-black leading-none">{news.date.split(' ')[0]}</span>
-                                        <span className="text-4xl font-black tracking-tighter my-2">{news.date.split(' ')[1]}</span>
-                                        <span className="text-[11px] font-black text-emerald-100 uppercase">{news.date.split(' ')[2]}</span>
+                                    <div className="flex flex-col items-center justify-center p-6 bg-emerald-500 rounded-3xl min-w-[120px] text-white shadow-xl shadow-emerald-500/20">
+                                        <span className="text-4xl font-black tracking-tighter my-2">{news.date.split(' ')[0]}</span>
+                                        <span className="text-[11px] font-black text-emerald-100 uppercase">{news.date.split(' ')[1]} {news.date.split(' ')[2]}</span>
                                     </div>
                                     <div className="flex-1">
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <span className="px-4 py-1 bg-amber-50 text-amber-600 border-2 border-amber-200 rounded-full text-[10px] font-black uppercase tracking-widest">{news.category}</span>
-                                        </div>
-                                        <h4 className="text-3xl font-black text-slate-950 mb-5 group-hover:text-emerald-500 transition-colors italic tracking-tighter leading-tight">
+                                        <h4 className="text-3xl font-black text-slate-950 mb-5 group-hover:text-emerald-500 transition-colors leading-tight italic">
                                             {news.title}
                                         </h4>
                                         <p className="text-slate-500 text-lg leading-relaxed font-bold mb-8 italic">
                                             {news.description}
                                         </p>
-                                        <div className="flex items-center gap-4 text-xs font-black text-emerald-600 uppercase tracking-widest group-hover:gap-6 transition-all">
-                                            <span>VALIDASI_LEBIH_LANJUT</span>
-                                            <ChevronRight className="w-5 h-5" />
-                                        </div>
                                     </div>
                                 </div>
                             </motion.div>
                         ))}
                     </div>
+
+                    <div id="downloads" className="lg:col-span-5 space-y-12">
+                        <h5 className="text-[14px] font-black text-slate-950 uppercase tracking-[0.4em] mb-10 flex items-center gap-4">
+                            <DownloadIcon className="w-6 h-6 text-amber-500" />
+                            REPOSITORI_FILE
+                        </h5>
+                        <div className="grid grid-cols-1 gap-6">
+                            {downloads.map((d) => (
+                                <a 
+                                    key={d.id}
+                                    href={d.external_url || d.file_path || '#'}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="group flex items-center justify-between p-10 bg-slate-50 border-2 border-slate-100 rounded-[2.5rem] hover:bg-emerald-600 hover:border-emerald-700 transition-all shadow-lg"
+                                >
+                                    <div className="flex items-center gap-8">
+                                        <div className="p-4 bg-white rounded-2xl text-emerald-500 group-hover:text-emerald-600 shadow-xl group-hover:shadow-none transition-all">
+                                            <DownloadIcon className="w-8 h-8" />
+                                        </div>
+                                        <span className="text-xl font-black text-slate-950 group-hover:text-white transition-colors uppercase tracking-tight italic">{d.title}</span>
+                                    </div>
+                                    <ArrowRight className="w-8 h-8 text-slate-300 group-hover:text-white transition-all transform group-hover:translate-x-2" />
+                                </a>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </section>
 
-            {/* VIBRANT CALL TO ACTION */}
+            {/* CALL TO ACTION */}
             <section className="py-24 lg:py-48 bg-slate-950 relative overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(27,176,189,0.15),transparent)]" />
                 <div className="container mx-auto px-6 lg:px-12 relative z-10 text-center">
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.9 }}
                         whileInView={{ opacity: 1, scale: 1 }}
-                        className="bg-emerald-500 p-16 lg:p-32 rounded-[4rem] shadow-[0_60px_120px_-30px_rgba(27,176,189,0.5)] relative overflow-hidden group"
+                        className="bg-emerald-500 p-16 lg:p-32 rounded-[4rem] text-white flex flex-col items-center gap-12"
                     >
-                         <div className="absolute inset-0 opacity-10 flex flex-col gap-10 p-12 -rotate-12 translate-x-20">
-                            {[...Array(10)].map((_, i) => (
-                                <div key={i} className="flex gap-10">
-                                {[...Array(10)].map((_, j) => (
-                                    <div key={j} className="w-4 h-4 rounded-full bg-white" />
-                                ))}
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="relative z-10 flex flex-col items-center">
-                            <div className="p-8 bg-white/20 backdrop-blur-2xl rounded-full mb-12 border-2 border-white/40 group-hover:scale-110 transition-transform duration-700">
-                                <ShieldCheck className="w-16 h-16 text-white" />
-                            </div>
-                            <h3 className="text-5xl lg:text-[100px] font-black text-white mb-10 tracking-[0.3em] leading-[0.8] uppercase flex flex-col items-center">
-                                UNIFIED <br /> <span className="text-amber-400 italic mt-4">K. K. N.</span>
-                            </h3>
-                            <p className="text-emerald-50 text-xl lg:text-2xl font-black mb-16 max-w-2xl opacity-90 italic">
-                                Gerbang integrasi pendaftaran dan pelaporan pengabdian. Segera lakukan validasi identitas untuk akses penuh sistem.
-                            </p>
-                            <div className="flex flex-col sm:flex-row items-center gap-10">
-                                <Link 
-                                    href={route('login')}
-                                    className="w-full sm:w-auto bg-slate-950 text-white px-16 py-8 rounded-3xl font-black text-xl tracking-[0.2em] shadow-2xl hover:bg-white hover:text-slate-950 hover:scale-110 active:scale-95 transition-all uppercase"
-                                >
-                                    DAFTAR_SEKARANG
-                                </Link>
-                                <Link 
-                                    href={route('login')}
-                                    className="w-full sm:w-auto bg-white/20 backdrop-blur-xl text-white px-16 py-8 rounded-3xl font-black text-xl tracking-[0.2em] border-2 border-white/40 hover:bg-amber-400 hover:text-slate-950 transition-all flex items-center gap-6 uppercase"
-                                >
-                                    LOGIN_PORTAL
-                                    <ArrowRight className="w-8 h-8" />
-                                </Link>
-                            </div>
+                         <h3 className="text-5xl lg:text-8xl font-black tracking-tighter leading-[0.8] uppercase flex flex-col items-center">
+                            READY FOR <br /> <span className="text-amber-400 italic mt-4 underline decoration-8">IMPACT.</span>
+                        </h3>
+                        <div className="flex flex-col sm:flex-row items-center gap-10">
+                            <Link 
+                                href={route('login')}
+                                className="w-full sm:w-auto bg-slate-950 text-white px-16 py-8 rounded-3xl font-black text-xl tracking-[0.2em] shadow-2xl hover:bg-white hover:text-emerald-600 transition-all"
+                            >
+                                DAFTAR SEKARANG
+                            </Link>
                         </div>
                     </motion.div>
                 </div>
             </section>
 
-            {/* DOWNLOADS & VIBRANT FOOTER */}
-            <footer id="downloads" className="pt-32 pb-16 bg-white">
-                <div className="container mx-auto px-6 lg:px-12">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-24 pb-24 border-b-8 border-emerald-500">
-                        <div className="lg:col-span-4 space-y-12">
-                            <div className="flex items-center gap-5">
-                                <div className="p-4 bg-emerald-500 rounded-2xl text-white shadow-xl shadow-emerald-500/20">
-                                    <Globe className="w-10 h-10" />
-                                </div>
-                                <div>
-                                    <h1 className="text-3xl font-black tracking-tighter text-slate-950 uppercase">
-                                        KKN <span className="text-emerald-500">Prof. K.H. Saifuddin Zuhri</span>
-                                    </h1>
-                                    <p className="text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase">V3.5_VIBRANT_CORE</p>
-                                </div>
-                            </div>
-                            <p className="text-slate-500 font-bold text-xl leading-relaxed max-w-sm italic">
-                                Lembaga Penelitian dan Pengabdian kepada Masyarakat (LPPM) UIN Prof. K.H. Saifuddin Zuhri Purwokerto.
-                            </p>
-                            <div className="flex gap-6">
-                                {[Globe2, Info, ExternalLink].map((Icon, i) => (
-                                    <a key={i} href="#" className="w-14 h-14 rounded-2xl bg-emerald-50 border-2 border-emerald-100 flex items-center justify-center text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all shadow-lg shadow-emerald-900/5">
-                                        <Icon className="w-6 h-6" />
-                                    </a>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="lg:col-span-2 space-y-10">
-                            <h5 className="text-[12px] font-black text-slate-900 uppercase tracking-[0.5em] flex items-center gap-3">
-                                <div className="w-2 h-2 bg-amber-400 rounded-full" />
-                                SITE_NAV
-                            </h5>
-                            <ul className="space-y-6">
-                                {['Profil LPPM', 'Skema KKN', 'Arsip Berita', 'Jadwal Penting'].map((item) => (
-                                    <li key={item}>
-                                        <a href="#" className="text-sm font-black text-slate-400 hover:text-emerald-600 transition-all uppercase tracking-widest">{item}</a>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        <div className="lg:col-span-3 space-y-10">
-                            <h5 className="text-[12px] font-black text-slate-900 uppercase tracking-[0.5em] flex items-center gap-3">
-                                <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                                REPOSITORY
-                            </h5>
-                            <div className="space-y-6">
-                                {['Pedoman_2026.pdf', 'Logbook_F4.docx', 'Template_Riset.xlsx'].map((file) => (
-                                    <a key={file} href="#" className="flex items-center gap-6 group">
-                                        <div className="p-3 bg-emerald-50 rounded-xl group-hover:bg-amber-400 transition-colors">
-                                            <Download className="w-5 h-5 text-emerald-600 group-hover:text-slate-950" />
-                                        </div>
-                                        <span className="text-sm font-black text-slate-500 group-hover:text-slate-950 transition-colors uppercase tracking-widest italic">{file}</span>
-                                    </a>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="lg:col-span-3 space-y-10">
-                            <h5 className="text-[12px] font-black text-slate-900 uppercase tracking-[0.5em] flex items-center gap-3">
-                                <div className="w-2 h-2 bg-amber-400 rounded-full" />
-                                CONTACTS
-                            </h5>
-                            <div className="p-10 bg-slate-950 rounded-[2.5rem] border-r-8 border-amber-400 shadow-2xl">
-                                <p className="text-[11px] font-black text-white leading-relaxed mb-8 uppercase tracking-widest opacity-60">
-                                    Jl. Jend. A. Yani No.40, Purwokerto, <br /> Jawa Tengah 53126 INDONESIA
-                                </p>
-                                <div className="flex items-center gap-4 text-sm font-black text-emerald-400 group cursor-pointer">
-                                    <Info className="w-5 h-5 text-amber-400" />
-                                    <span className="group-hover:text-white transition-colors">lppm@uinsaizu.ac.id</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="pt-16 flex flex-col md:flex-row items-center justify-between gap-10 text-[10px] font-black text-slate-400 uppercase tracking-[0.8em]">
-                        <span>&copy; 2026 KKN UIN Prof. K.H. Saifuddin Zuhri. ARCHITECTURE_OF_IMPACT</span>
-                        <div className="flex items-center gap-10 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all">
-                             <div className="flex items-center gap-3">
-                                <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                <span>SSL_ACTIVE</span>
-                             </div>
-                             <div className="flex items-center gap-3">
-                                <div className="w-2 h-2 rounded-full bg-amber-400" />
-                                <span>AES_256_GCM</span>
-                             </div>
-                        </div>
+            {/* FOOTER */}
+            <footer className="py-24 bg-white border-t-8 border-emerald-500">
+                <div className="container mx-auto px-6 lg:px-12 text-center space-y-12">
+                    <h1 className="text-4xl font-black text-slate-950 uppercase tracking-tighter">
+                        UIN <span className="text-emerald-500">Prof. K.H. Saifuddin Zuhri</span>
+                    </h1>
+                    <p className="text-slate-400 font-bold max-w-2xl mx-auto italic">
+                        Lembaga Penelitian dan Pengabdian kepada Masyarakat (LPPM). <br /> Purwokerto, Jawa Tengah, Indonesia.
+                    </p>
+                    <div className="pt-12 flex justify-center gap-10 text-[10px] font-black text-slate-300 uppercase tracking-[0.8em]">
+                        <span>&copy; 2026 ARCHITECTURE_OF_IMPACT</span>
                     </div>
                 </div>
             </footer>

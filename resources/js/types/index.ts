@@ -182,6 +182,17 @@ export interface Announcement {
   published_at: string;
 }
 
+export interface Download {
+    id: number;
+    title: string;
+    file_name: string | null;
+    file_path: string | null;
+    external_url: string | null;
+    file_type: string | null;
+    is_active: boolean;
+    created_at: string;
+}
+
 // Utility: checks if user has a specific role
 export function hasRole(user: User | null | undefined, role: string): boolean {
   return user?.roles?.includes(role) ?? false;

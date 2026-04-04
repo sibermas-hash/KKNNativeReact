@@ -9,6 +9,7 @@ use App\Models\KKN\DplKecamatanAssignment;
 use App\Models\KKN\DplPeriod;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
+use App\Models\KKN\LogAudit;
 use App\Models\KKN\Periode;
 use App\Services\DplAssignmentService;
 use App\Services\PeriodContextService;
@@ -22,6 +23,20 @@ class DplAssignmentController extends Controller
         private PeriodContextService $contextService,
         private DplAssignmentService $assignmentService,
     ) {}
+
+    private function logAudit(string $action, string $description, ?array $newValues = null): void
+    {
+        LogAudit::create([
+            'user_id' => auth()->id(),
+            'action' => $action,
+            'description' => $description,
+            'model_type' => 'DplPeriod',
+            'severity' => 'info',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'new_values' => $newValues,
+        ]);
+    }
 
     /**
      * Display the DPL assignment management page.
@@ -184,6 +199,19 @@ class DplAssignmentController extends Controller
         $period = Periode::query()->findOrFail($validated['period_id']);
         $activation = $this->assignmentService->activateForPeriod($dosen, $period, (int) ($validated['max_groups'] ?? 5));
 
+        $this->logAudit(
+            'assign_dpl_period',
+            "DPL {$dosen->nama} (NIP: {$dosen->nip}) diaktifkan pada periode {$period->name}",
+            [
+                'dosen_id' => $dosen->id,
+                'dosen_nama' => $dosen->nama,
+                'period_id' => $period->id,
+                'period_name' => $period->name,
+                'max_groups' => $validated['max_groups'] ?? 5,
+                'account_created' => $activation['provisioning']['created'] ?? false,
+            ]
+        );
+
         $message = "DPL {$dosen->nama} berhasil diaktifkan pada periode {$period->name}.";
         if ($activation['provisioning']['temp_password']) {
             $message .= " Akun login dibuat dengan username {$activation['provisioning']['user']->username} dan kata sandi sementara {$activation['provisioning']['temp_password']}. DPL wajib mengganti kata sandi saat login pertama.";
@@ -205,6 +233,18 @@ class DplAssignmentController extends Controller
 
         try {
             $this->assignmentService->assignPrimaryGroup($dplPeriod, $group);
+
+            $this->logAudit(
+                'assign_group_to_dpl',
+                "Kelompok {$group->nama_kelompok} ({$group->code}) ditugaskan kepada DPL {$dplPeriod->dosen->nama}",
+                [
+                    'group_id' => $group->id,
+                    'group_code' => $group->code,
+                    'group_name' => $group->nama_kelompok,
+                    'dpl_id' => $dplPeriod->dosen_id,
+                    'dpl_periode_id' => $dplPeriod->id,
+                ]
+            );
         } catch (\DomainException $exception) {
             return back()->with('error', $exception->getMessage());
         }
@@ -241,6 +281,20 @@ class DplAssignmentController extends Controller
             auth()->id(),
         );
 
+        $this->logAudit(
+            'assign_district_coordinator',
+            "DPL {$dosen->nama} (NIP: {$dosen->nip}) ditetapkan sebagai koordinator kecamatan {$district->district_name}",
+            [
+                'dosen_id' => $dosen->id,
+                'dosen_nama' => $dosen->nama,
+                'period_id' => $period->id,
+                'period_name' => $period->name,
+                'district_id' => $district->district_id,
+                'district_name' => $district->district_name,
+                'regency_name' => $district->regency_name,
+            ]
+        );
+
         $message = "Koordinator DPL untuk kecamatan {$district->district_name} berhasil ditetapkan.";
         if ($activation['provisioning']['temp_password']) {
             $message .= " Akun login dibuat dengan username {$activation['provisioning']['user']->username} dan kata sandi sementara {$activation['provisioning']['temp_password']}.";
@@ -252,6 +306,16 @@ class DplAssignmentController extends Controller
     public function removeDistrictCoordinator(DplKecamatanAssignment $districtCoordinator)
     {
         $districtCoordinator->update(['is_active' => false]);
+
+        $this->logAudit(
+            'remove_district_coordinator',
+            "Koordinator DPL {$districtCoordinator->dosen->nama} untuk kecamatan {$districtCoordinator->district_name} dinonaktifkan",
+            [
+                'dosen_id' => $districtCoordinator->dosen_id,
+                'district_id' => $districtCoordinator->district_id,
+                'district_name' => $districtCoordinator->district_name,
+            ]
+        );
 
         return back()->with('success', 'Koordinator kecamatan berhasil dinonaktifkan.');
     }
@@ -320,6 +384,15 @@ class DplAssignmentController extends Controller
         }
 
         $dplPeriod->update(['is_active' => false]);
+
+        $this->logAudit(
+            'remove_dpl_period',
+            "DPL {$dplPeriod->dosen->nama} dihapus dari periode {$dplPeriod->periode->name}",
+            [
+                'dosen_id' => $dplPeriod->dosen_id,
+                'period_id' => $dplPeriod->period_id,
+            ]
+        );
 
         return back()->with('success', 'DPL berhasil dihapus dari periode.');
     }

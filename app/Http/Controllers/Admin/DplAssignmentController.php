@@ -230,6 +230,8 @@ class DplAssignmentController extends Controller
      */
     public function assignToGroup(Request $request, KelompokKkn $group)
     {
+        Gate::authorize('manageDplAssignment', new \App\Models\User());
+
         $validated = $request->validate([
             'dpl_period_id' => 'required|exists:dpl_periods,id',
         ]);
@@ -259,6 +261,8 @@ class DplAssignmentController extends Controller
 
     public function assignDistrictCoordinator(Request $request)
     {
+        Gate::authorize('manageDplAssignment', new \App\Models\User());
+
         $validated = $request->validate([
             'dosen_id' => 'required|exists:dosen,id',
             'period_id' => 'required|exists:periode,id',
@@ -310,6 +314,8 @@ class DplAssignmentController extends Controller
 
     public function removeDistrictCoordinator(DplKecamatanAssignment $districtCoordinator)
     {
+        Gate::authorize('manageDplAssignment', new \App\Models\User());
+
         $districtCoordinator->update(['is_active' => false]);
 
         $this->logAudit(
@@ -383,6 +389,8 @@ class DplAssignmentController extends Controller
      */
     public function removeDplFromPeriod(DplPeriod $dplPeriod)
     {
+        Gate::authorize('manageDplAssignment', new \App\Models\User());
+
         // Check if DPL has assigned groups
         if ($dplPeriod->kelompok()->count() > 0) {
             return back()->with('error', 'Tidak dapat menghapus DPL yang masih memiliki kelompok aktif.');

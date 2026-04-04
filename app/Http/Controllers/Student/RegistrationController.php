@@ -18,12 +18,31 @@ use Inertia\Response;
 
 class RegistrationController extends Controller
 {
+    private function hasLockedRegistration(?\App\Models\KKN\Mahasiswa $mahasiswa): bool
+    {
+        if (! $mahasiswa) {
+            return false;
+        }
+
+        return PesertaKkn::query()
+            ->where('mahasiswa_id', $mahasiswa->id)
+            ->where('status', 'approved')
+            ->whereNotNull('kelompok_id')
+            ->latest('approved_at')
+            ->exists();
+    }
+
     public function create(
         RegistrationService $registrationService,
         RegistrationPortalService $registrationPortalService
-    ): Response {
+    ): Response|RedirectResponse {
         $today = now()->toDateString();
         $mahasiswa = auth()->user()?->mahasiswa;
+
+        if ($this->hasLockedRegistration($mahasiswa)) {
+            return redirect()->route('student.dashboard')
+                ->with('info', 'Pendaftaran Anda sudah dikunci. Silakan lanjutkan aktivitas KKN melalui dasbor mahasiswa.');
+        }
 
         $periods = $registrationPortalService->activePeriodsSnapshot($today);
 
@@ -81,6 +100,11 @@ class RegistrationController extends Controller
             return redirect()->back()->with('error', 'Profil mahasiswa belum ditemukan.');
         }
 
+        if ($this->hasLockedRegistration($mahasiswa)) {
+            return redirect()->route('student.dashboard')
+                ->with('error', 'Pendaftaran Anda sudah dikunci dan tidak dapat diubah lagi.');
+        }
+
         if ($request->hasFile('health_certificate')) {
             if ($mahasiswa->health_certificate_path) {
                 Storage::disk('local')->delete($mahasiswa->health_certificate_path);
@@ -120,6 +144,11 @@ class RegistrationController extends Controller
 
         if (! $mahasiswa) {
             return redirect()->back()->with('error', 'Profil mahasiswa belum ditemukan.');
+        }
+
+        if ($this->hasLockedRegistration($mahasiswa)) {
+            return redirect()->route('student.dashboard')
+                ->with('error', 'Pendaftaran Anda sudah dikunci dan tidak dapat keluar dari kelompok.');
         }
 
         $registrationService->leaveGroup($mahasiswa, $periode->id);

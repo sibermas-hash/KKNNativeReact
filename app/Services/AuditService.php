@@ -13,7 +13,7 @@ class AuditService
      */
     public static function log(string $action, string $description, $model = null, ?array $oldValues = null, ?array $newValues = null, ?int $userId = null)
     {
-        return LogAudit::create([
+        $data = [
             'user_id' => $userId ?? Auth::id(),
             'action' => $action,
             'description' => $description,
@@ -24,7 +24,9 @@ class AuditService
             'ip_address' => Request::ip(),
             'user_agent' => Request::userAgent(),
             'severity' => self::determineSeverity($action),
-        ]);
+        ];
+
+        return \App\Jobs\ProcessAuditLog::dispatch($data);
     }
 
     /**

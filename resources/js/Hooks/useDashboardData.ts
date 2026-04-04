@@ -1,0 +1,73 @@
+import { usePage } from '@inertiajs/react';
+import { 
+    LayoutDashboard, 
+    Users2, 
+    FileText, 
+    Star, 
+    FileSpreadsheet,
+    UserCircle,
+    Settings,
+    Bell
+} from 'lucide-react';
+
+export type UserRole = 'superadmin' | 'faculty_admin' | 'dpl' | 'mahasiswa';
+
+interface NavItem {
+    label: string;
+    href: string;
+    icon: any;
+    roles: UserRole[];
+}
+
+export const useDashboardData = () => {
+    const { auth } = usePage<any>().props;
+    const userRole = auth.user.role as UserRole;
+
+    const getWelcomeMessage = () => {
+        const hour = new Date().getHours();
+        const greeting = hour < 12 ? 'Selamat Pagi' : hour < 18 ? 'Selamat Siang' : 'Selamat Malam';
+        return `${greeting}, ${auth.user.name}`;
+    };
+
+    const getDashboardConfig = () => {
+        switch (userRole) {
+            case 'superadmin':
+                return {
+                    title: 'Pusat Komando Admin',
+                    primaryColor: 'emerald',
+                    widgets: ['stats_total', 'recent_registrations', 'system_health', 'pending_approvals'],
+                };
+            case 'faculty_admin':
+                return {
+                    title: 'Panel Kendali Fakultas',
+                    primaryColor: 'blue',
+                    widgets: ['stats_faculty', 'faculty_students', 'faculty_groups'],
+                };
+            case 'dpl':
+                return {
+                    title: 'Portal Bimbingan DPL',
+                    primaryColor: 'indigo',
+                    widgets: ['stats_groups', 'daily_reports_pending', 'evaluation_status'],
+                };
+            case 'mahasiswa':
+                return {
+                    title: 'Ruang Kerja Mahasiswa',
+                    primaryColor: 'emerald',
+                    widgets: ['registration_status', 'daily_report_tracking', 'proker_status'],
+                };
+            default:
+                return {
+                    title: 'Dashboard',
+                    primaryColor: 'slate',
+                    widgets: [],
+                };
+        }
+    };
+
+    return {
+        user: auth.user,
+        role: userRole,
+        welcomeMessage: getWelcomeMessage(),
+        config: getDashboardConfig(),
+    };
+};

@@ -192,6 +192,8 @@ class DplAssignmentController extends Controller
 
     public function assignToPeriod(Request $request)
     {
+        Gate::authorize('manageDplAssignment', new \App\Models\User());
+
         $validated = $request->validate([
             'dosen_id' => 'required|exists:dosen,id',
             'period_id' => 'required|exists:periode,id',

@@ -16,23 +16,24 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $announcements = Announcement::active()->orderBy('published_at', 'desc')->take(3)->get();
-        $downloads = Download::active()->orderBy('created_at', 'desc')->take(3)->get();
-
         return Inertia::render('Home', [
-            'stats' => [
+            'stats' => Inertia::defer(fn() => [
                 'students' => PesertaKkn::where('status', 'verifikasi_pusat')->count(),
                 'groups' => KelompokKkn::count(),
                 'locations' => Lokasi::count(),
-            ],
-            'announcements' => $announcements->take(5)->values(),
-            'downloads' => $downloads->isNotEmpty() ? $downloads : Download::active()->orderBy('created_at', 'desc')->limit(10)->get(),
-            'featuredAnnouncements' => $announcements->isNotEmpty()
-                ? $this->transformAnnouncements($announcements, false)
-                : $this->fallbackAnnouncements(),
-            'featuredDownloads' => $downloads->isNotEmpty()
-                ? $this->transformDownloads($downloads, false)
-                : $this->fallbackDownloads(),
+            ]),
+            'featuredAnnouncements' => Inertia::defer(function() {
+                $announcements = Announcement::active()->orderBy('published_at', 'desc')->take(3)->get();
+                return $announcements->isNotEmpty()
+                    ? $this->transformAnnouncements($announcements, false)
+                    : $this->fallbackAnnouncements();
+            }),
+            'featuredDownloads' => Inertia::defer(function() {
+                $downloads = Download::active()->orderBy('created_at', 'desc')->take(3)->get();
+                return $downloads->isNotEmpty()
+                    ? $this->transformDownloads($downloads, false)
+                    : $this->fallbackDownloads();
+            }),
             'aboutContent' => [
                 'about' => SystemSetting::get('site_about', 'Lembaga Penelitian dan Pengabdian kepada Masyarakat (LPPM) UIN Profesor Kiai Haji Saifuddin Zuhri Purwokerto.'),
                 'visi' => SystemSetting::get('site_visi', 'Menjadi pusat unggulan penelitian dan pengabdian masyarakat.'),

@@ -44,6 +44,20 @@ class PublicDataController extends Controller
      */
     private const DELETABLE_TABLES = [];
 
+    /**
+     * Standard API response wrapper untuk consistency across all endpoints.
+     */
+    private function apiResponse(bool $success, string $message, mixed $data = null, int $code = 200): JsonResponse
+    {
+        return response()->json([
+            'success' => $success,
+            'status' => $success ? 'success' : 'error',
+            'code' => $code,
+            'message' => $message,
+            'data' => $data,
+        ], $code);
+    }
+
     private function getModel(string $table)
     {
         $class = self::MODEL_MAP[$table] ?? null;
@@ -92,8 +106,8 @@ class PublicDataController extends Controller
         $perPage = min((int)$request->get('per_page', 25), 100);
         $paginated = $query->paginate($perPage);
 
-        return response()->json([
-            'data' => $paginated->items(),
+        return $this->apiResponse(true, 'Data berhasil diambil', [
+            'items' => $paginated->items(),
             'meta' => [
                 'current_page' => $paginated->currentPage(),
                 'per_page' => $paginated->perPage(),
@@ -114,27 +128,22 @@ class PublicDataController extends Controller
 
         $modelClass = self::MODEL_MAP[$table] ?? null;
         if (!$modelClass) {
-            return response()->json(['error' => 'Model mapping not found for this table.'], 500);
+            return $this->apiResponse(false, 'Model mapping tidak ditemukan untuk tabel ini.', null, 500);
         }
 
         try {
             $allowedColumns = $this->getWritableColumns($table);
             if (empty($allowedColumns)) {
-                return response()->json(['error' => 'Tabel ini tidak dapat ditulis melalui API.'], 403);
+                return $this->apiResponse(false, 'Tabel ini tidak dapat ditulis melalui API.', null, 403);
             }
-            
+
             $record = $modelClass::create($request->only($allowedColumns));
 
-            return response()->json([
-                'message' => 'Data berhasil ditambahkan via Eloquent.',
-                'data' => $record,
-            ], 201);
+            return $this->apiResponse(true, 'Data berhasil ditambahkan.', $record, 201);
         }
         catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('PublicData API error', ['exception' => $e]);
-            return response()->json([
-                'error' => 'Terjadi kesalahan pada server.',
-            ], 500);
+            return $this->apiResponse(false, 'Terjadi kesalahan pada server.', null, 500);
         }
     }
 
@@ -151,27 +160,22 @@ class PublicDataController extends Controller
         $record = $modelClass ? $modelClass::find($id) : null;
 
         if (!$record) {
-            return response()->json(['error' => 'Data tidak ditemukan.'], 404);
+            return $this->apiResponse(false, 'Data tidak ditemukan.', null, 404);
         }
 
         try {
             $allowedColumns = $this->getWritableColumns($table);
             if (empty($allowedColumns)) {
-                return response()->json(['error' => 'Tabel ini tidak dapat ditulis melalui API.'], 403);
+                return $this->apiResponse(false, 'Tabel ini tidak dapat ditulis melalui API.', null, 403);
             }
-            
+
             $record->update($request->only($allowedColumns));
 
-            return response()->json([
-                'message' => 'Data berhasil diupdate dan disinkronkan.',
-                'data' => $record->fresh(),
-            ]);
+            return $this->apiResponse(true, 'Data berhasil diupdate dan disinkronkan.', $record->fresh());
         }
         catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('PublicData API error', ['exception' => $e]);
-            return response()->json([
-                'error' => 'Terjadi kesalahan pada server.',
-            ], 500);
+            return $this->apiResponse(false, 'Terjadi kesalahan pada server.', null, 500);
         }
     }
 
@@ -183,22 +187,22 @@ class PublicDataController extends Controller
 
         // Fix: Prevent deletion of reference tables via API
         if (!in_array($table, self::DELETABLE_TABLES, true)) {
-            return response()->json(['error' => "Penghapusan data '{$table}' tidak diizinkan melalui API."], 403);
+            return $this->apiResponse(false, "Penghapusan data '{$table}' tidak diizinkan melalui API.", null, 403);
         }
 
         $modelClass = self::MODEL_MAP[$table] ?? null;
         $record = $modelClass ? $modelClass::find($id) : null;
 
         if (!$record) {
-            return response()->json(['error' => 'Data tidak ditemukan.'], 404);
+            return $this->apiResponse(false, 'Data tidak ditemukan.', null, 404);
         }
 
         try {
             $record->delete();
-            return response()->json(['message' => 'Data berhasil dihapus.']);
+            return $this->apiResponse(true, 'Data berhasil dihapus.');
         }
         catch (\Throwable $e) {
-            return response()->json(['error' => 'Gagal menghapus data.'], 500);
+            return $this->apiResponse(false, 'Gagal menghapus data.', null, 500);
         }
     }
 
@@ -234,13 +238,13 @@ class PublicDataController extends Controller
     {
         $allowed = config('api_keys.allowed_tables', []);
         if (!in_array($table, $allowed, true)) {
-            return response()->json(['error' => "Tabel '{$table}' tidak tersedia atau tidak diizinkan."], 403);
+            return $this->apiResponse(false, "Tabel '{$table}' tidak tersedia atau tidak diizinkan.", null, 403);
         }
 
         /** @var ApiKey $apiKey */
         $apiKey = $request->attributes->get('api_key');
         if ($apiKey && !$apiKey->hasPermission($permission)) {
-            return response()->json(['error' => "Izin '{$permission}' ditolak."], 403);
+            return $this->apiResponse(false, "Izin '{$permission}' ditolak.", null, 403);
         }
 
         return null;

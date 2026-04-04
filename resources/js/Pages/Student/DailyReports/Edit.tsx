@@ -39,6 +39,21 @@ interface Props {
 }
 
 const LOCATION_FRESHNESS_WINDOW_MS = 2 * 60 * 1000;
+const DEFAULT_LOCATION_LABEL = 'Lokasi GPS terkini';
+
+function shouldAutofillLocationName(value: string): boolean {
+    const trimmed = value.trim();
+
+    if (!trimmed) {
+        return true;
+    }
+
+    if (trimmed.length <= 2) {
+        return true;
+    }
+
+    return trimmed.toLowerCase().includes('lokasi gps');
+}
 
 function formatDateTime(value: string | null | undefined): string {
     if (!value) {
@@ -107,7 +122,9 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                 gps_accuracy: coords.accuracy ? coords.accuracy.toFixed(2) : '',
                 captured_at: coords.capturedAt,
                 location_source: 'gps',
-                location_name: current.location_name.trim() ? current.location_name : 'Lokasi GPS terkini',
+                location_name: shouldAutofillLocationName(current.location_name)
+                    ? DEFAULT_LOCATION_LABEL
+                    : current.location_name,
             }));
 
             form.clearErrors('latitude', 'longitude', 'gps_accuracy', 'captured_at', 'location_source');
@@ -219,6 +236,7 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                             value={form.data.date}
                             onChange={(event) => form.setData('date', event.target.value)}
                             error={form.errors.date}
+                            hint="Gunakan tanggal kegiatan yang benar-benar diperbarui."
                         />
                         <FormInput
                             label="Lokasi kegiatan"
@@ -226,6 +244,8 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                             value={form.data.location_name}
                             onChange={(event) => form.setData('location_name', event.target.value)}
                             error={form.errors.location_name}
+                            placeholder="Contoh: Balai Desa Karangsari atau Posko Kelompok"
+                            hint="Isi nama tempat kegiatan. Koordinat GPS tetap diperbarui otomatis dari perangkat."
                         />
 
                         <div className="md:col-span-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-4">
@@ -270,6 +290,11 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                                     {locationFeedback}
                                 </p>
                             ) : null}
+                            {form.data.captured_at && !isCapturedLocationFresh() ? (
+                                <p className="mt-2 text-sm text-amber-700">
+                                    Data GPS ini sudah lebih dari dua menit. Sistem akan mengambil ulang lokasi terbaru saat Anda menyimpan perubahan.
+                                </p>
+                            ) : null}
                             {form.errors.latitude ? <p className="mt-2 text-sm text-red-600">{form.errors.latitude}</p> : null}
                             {form.errors.gps_accuracy ? <p className="mt-2 text-sm text-red-600">{form.errors.gps_accuracy}</p> : null}
                             {form.errors.captured_at ? <p className="mt-2 text-sm text-red-600">{form.errors.captured_at}</p> : null}
@@ -282,6 +307,7 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                                 value={form.data.title}
                                 onChange={(event) => form.setData('title', event.target.value)}
                                 error={form.errors.title}
+                                placeholder="Contoh: Pendampingan posyandu balita"
                             />
                         </div>
                         <div className="md:col-span-2">
@@ -291,6 +317,7 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                                 value={form.data.activity}
                                 onChange={(event) => form.setData('activity', event.target.value)}
                                 error={form.errors.activity}
+                                placeholder="Jelaskan kegiatan yang dilakukan, pihak yang terlibat, dan hasil utamanya."
                             />
                         </div>
                         <div className="md:col-span-2">
@@ -299,6 +326,7 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                                 value={form.data.reflection}
                                 onChange={(event) => form.setData('reflection', event.target.value)}
                                 error={form.errors.reflection}
+                                placeholder="Tuliskan evaluasi singkat, hambatan, atau pembelajaran dari kegiatan hari ini."
                             />
                         </div>
                         <div className="md:col-span-2">
@@ -307,6 +335,7 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                                 value={form.data.output}
                                 onChange={(event) => form.setData('output', event.target.value)}
                                 error={form.errors.output}
+                                placeholder="Contoh: daftar hadir, dokumentasi kegiatan, notula, atau hasil pendataan."
                             />
                         </div>
                     </div>

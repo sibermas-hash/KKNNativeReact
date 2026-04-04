@@ -39,4 +39,9 @@ class AdminOperationPolicy extends BasePolicy
     {
         return $this->superAdminBypass($user, 'manageAnnouncements') ?? false;
     }
+
+    public function manageDplAssignment(User $user): bool
+    {
+        return $this->superAdminBypass($user, 'manageDplAssignment') ?? false;
+    }
 }

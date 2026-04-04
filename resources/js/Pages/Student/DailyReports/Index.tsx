@@ -36,6 +36,24 @@ interface Props extends PageProps {
  isWorkshopPassed?: boolean;
 }
 
+function formatReportDate(value: string): string {
+ try {
+ const date = new Date(value);
+
+ if (Number.isNaN(date.getTime())) {
+ return value;
+ }
+
+ return date.toLocaleDateString('id-ID', {
+ day: '2-digit',
+ month: 'long',
+ year: 'numeric',
+ });
+ } catch {
+ return value;
+ }
+}
+
 function resolvePaginationMeta(payload: PaginationPayload<unknown>): PaginationMeta | null {
  if (payload.meta) {
  return payload.meta;
@@ -148,9 +166,10 @@ export default function StudentDailyReportsIndex({ reports, isWorkshopPassed = t
  <div className="flex gap-3">
  <Link
  href={route('student.daily-reports.download-compilation')}
+ title="Unduh seluruh laporan harian Anda dalam satu berkas PDF"
  className="inline-flex items-center justify-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
  >
- Unduh kompilasi
+ Unduh rekap PDF
  </Link>
  <Link
  href={route('student.laporan-harian.create')}
@@ -257,7 +276,7 @@ export default function StudentDailyReportsIndex({ reports, isWorkshopPassed = t
  {rows.length > 0 ? (
  rows.map((report) => (
  <tr key={report.id}>
- <td className="px-6 py-4 text-sm text-slate-700">{report.date}</td>
+ <td className="px-6 py-4 text-sm text-slate-700">{formatReportDate(report.date)}</td>
  <td className="px-6 py-4 text-sm font-medium text-slate-900">{report.title}</td>
  <td className="px-6 py-4">
  <StatusBadge status={report.status} />

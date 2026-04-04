@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, Deferred } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import {
     Download,
@@ -24,7 +24,7 @@ interface Props {
         students: number;
         groups: number;
         locations: number;
-    };
+    } | null;
     featuredAnnouncements: Array<{
         id: number;
         title: string;
@@ -32,7 +32,7 @@ interface Props {
         content: string;
         published_at: string;
         is_demo: boolean;
-    }>;
+    }> | null;
     featuredDownloads: Array<{
         id: number;
         title: string;
@@ -40,7 +40,7 @@ interface Props {
         external_url: string | null;
         file_path: string | null;
         is_demo: boolean;
-    }>;
+    }> | null;
 }
 
 export default function Home({ stats, featuredAnnouncements, featuredDownloads }: Props) {
@@ -150,27 +150,35 @@ export default function Home({ stats, featuredAnnouncements, featuredDownloads }
             {/* QUICK STATS - DISCRETE CARDS */}
             <section className="pb-40 bg-white">
                 <div className="container mx-auto px-6 lg:px-12">
-                   <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                       {[
-                           { label: 'Kelompok KKN', value: stats.groups, icon: Layers, color: 'emerald' },
-                           { label: 'Total Peserta', value: stats.students, icon: GraduationCap, color: 'emerald' },
-                           { label: 'Kabupaten/Kota', value: stats.locations, icon: Globe, color: 'emerald' }
-                       ].map((stat, i) => (
-                           <motion.div
-                                key={i}
-                                whileHover={{ y: -10 }}
-                                className="flex flex-col items-center text-center gap-8 p-12 bg-slate-50/50 rounded-[4rem] hover:bg-white border border-transparent hover:border-slate-100 transition-all hover:shadow-[0_40px_80px_rgba(0,0,0,0.03)] cursor-default group"
-                           >
-                                <div className="p-6 bg-white text-slate-300 rounded-[2rem] group-hover:bg-emerald-500 group-hover:text-white transition-all duration-700 shadow-sm">
-                                    <stat.icon size={36} />
-                                </div>
-                                <div className="space-y-2">
-                                     <h3 className="text-5xl font-black text-slate-950 tracking-tighter italic leading-none">{stat.value.toLocaleString()}+</h3>
-                                     <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] pt-2">{stat.label}</p>
-                                </div>
-                           </motion.div>
-                       ))}
-                   </div>
+                   <Deferred data="stats" fallback={
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 animate-pulse">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="h-64 bg-slate-50 rounded-[4rem]" />
+                            ))}
+                        </div>
+                   }>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                          {[
+                              { label: 'Kelompok KKN', value: stats?.groups || 0, icon: Layers, color: 'emerald' },
+                              { label: 'Total Peserta', value: stats?.students || 0, icon: GraduationCap, color: 'emerald' },
+                              { label: 'Kabupaten/Kota', value: stats?.locations || 0, icon: Globe, color: 'emerald' }
+                          ].map((stat, i) => (
+                              <motion.div
+                                   key={i}
+                                   whileHover={{ y: -10 }}
+                                   className="flex flex-col items-center text-center gap-8 p-12 bg-slate-50/50 rounded-[4rem] hover:bg-white border border-transparent hover:border-slate-100 transition-all hover:shadow-[0_40px_80px_rgba(0,0,0,0.03)] cursor-default group"
+                              >
+                                   <div className="p-6 bg-white text-slate-300 rounded-[2rem] group-hover:bg-emerald-500 group-hover:text-white transition-all duration-700 shadow-sm">
+                                       <stat.icon size={36} />
+                                   </div>
+                                   <div className="space-y-2">
+                                        <h3 className="text-5xl font-black text-slate-950 tracking-tighter italic leading-none">{stat.value.toLocaleString()}+</h3>
+                                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] pt-2">{stat.label}</p>
+                                   </div>
+                               </motion.div>
+                          ))}
+                      </div>
+                   </Deferred>
                 </div>
             </section>
 
@@ -209,23 +217,31 @@ export default function Home({ stats, featuredAnnouncements, featuredDownloads }
                                  </div>
 
                                  <h3 className="text-4xl font-black text-slate-950 uppercase tracking-tighter leading-none italic">Repositori <br/> <span className="text-slate-300 font-medium">dokumen.</span></h3>
-                                 <div className="space-y-8 relative z-10">
-                                    {featuredDownloads.map((item) => (
-                                        <div key={item.id} className="flex items-center gap-8 group cursor-pointer">
-                                            <div className="p-4 bg-slate-50 text-slate-300 rounded-[2rem] border border-slate-50 group-hover:border-emerald-500 group-hover:text-emerald-500 transition-all">
-                                                <FileText size={20} />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight group-hover:text-emerald-600 transition-colors truncate">{item.title}</h4>
-                                                <div className="mt-2 flex items-center gap-3">
-                                                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{item.file_type || 'PDF'}</span>
-                                                    <div className="w-1 h-1 rounded-full bg-slate-200" />
-                                                    <Download size={10} className="text-slate-300 group-hover:text-emerald-500" />
+                                 <Deferred data="featuredDownloads" fallback={
+                                    <div className="space-y-6 animate-pulse">
+                                        {[1, 2, 3].map(i => (
+                                            <div key={i} className="h-14 bg-slate-50 rounded-2xl" />
+                                        ))}
+                                    </div>
+                                 }>
+                                    <div className="space-y-8 relative z-10">
+                                        {featuredDownloads?.map((item) => (
+                                            <div key={item.id} className="flex items-center gap-8 group cursor-pointer">
+                                                <div className="p-4 bg-slate-50 text-slate-300 rounded-[2rem] border border-slate-50 group-hover:border-emerald-500 group-hover:text-emerald-500 transition-all">
+                                                    <FileText size={20} />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight group-hover:text-emerald-600 transition-colors truncate">{item.title}</h4>
+                                                    <div className="mt-2 flex items-center gap-3">
+                                                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{item.file_type || 'PDF'}</span>
+                                                        <div className="w-1 h-1 rounded-full bg-slate-200" />
+                                                        <Download size={10} className="text-slate-300 group-hover:text-emerald-500" />
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                 </div>
+                                        ))}
+                                    </div>
+                                 </Deferred>
                                  <Link 
                                     href={route('public.downloads')}
                                     className="block p-8 border-t-2 border-slate-50 text-center text-[11px] font-black text-slate-400 uppercase tracking-[0.5em] hover:text-emerald-500 transition-colors pt-20"
@@ -254,35 +270,43 @@ export default function Home({ stats, featuredAnnouncements, featuredDownloads }
                         </Link>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                        {featuredAnnouncements.map((item) => (
-                            <motion.div 
-                                key={item.id}
-                                whileHover={{ scale: 1.02 }}
-                                className="group bg-white p-16 rounded-[4rem] border border-slate-100 hover:border-emerald-500 transition-all hover:shadow-[0_80px_160px_rgba(0,0,0,0.06)] cursor-pointer"
-                            >
-                                <div className="flex items-center gap-8 mb-12">
-                                    <span className="px-4 py-2 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase rounded-full border border-emerald-100">
-                                        {item.category}
-                                    </span>
-                                    <div className="flex-1 h-[1px] bg-slate-100" />
-                                    <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest leading-none">
-                                        {dayjs(item.published_at).format('DD.MM.YY')}
-                                    </span>
-                                </div>
-                                <h4 className="text-3xl font-black text-slate-900 mb-8 group-hover:text-emerald-600 transition-colors uppercase leading-tight italic">
-                                    {item.title}
-                                </h4>
-                                <p className="text-slate-400 font-bold italic line-clamp-3 text-lg leading-relaxed mb-12">
-                                    {item.content}
-                                </p>
-                                <div className="inline-flex items-center gap-4 text-[10px] font-black text-emerald-600 uppercase tracking-[0.5em]">
-                                    BACA SELENGKAPNYA
-                                    <ArrowRight size={16} className="group-hover:translate-x-4 transition-transform" />
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
+                    <Deferred data="featuredAnnouncements" fallback={
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 animate-pulse">
+                            {[1, 2].map(i => (
+                                <div key={i} className="h-64 bg-slate-50 rounded-[4rem]" />
+                            ))}
+                        </div>
+                    }>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                            {featuredAnnouncements?.map((item) => (
+                                <motion.div 
+                                    key={item.id}
+                                    whileHover={{ scale: 1.02 }}
+                                    className="group bg-white p-16 rounded-[4rem] border border-slate-100 hover:border-emerald-500 transition-all hover:shadow-[0_80px_160px_rgba(0,0,0,0.06)] cursor-pointer"
+                                >
+                                    <div className="flex items-center gap-8 mb-12">
+                                        <span className="px-4 py-2 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase rounded-full border border-emerald-100">
+                                            {item.category}
+                                        </span>
+                                        <div className="flex-1 h-[1px] bg-slate-100" />
+                                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest leading-none">
+                                            {dayjs(item.published_at).format('DD.MM.YY')}
+                                        </span>
+                                    </div>
+                                    <h4 className="text-3xl font-black text-slate-900 mb-8 group-hover:text-emerald-600 transition-colors uppercase leading-tight italic">
+                                        {item.title}
+                                    </h4>
+                                    <p className="text-slate-400 font-bold italic line-clamp-3 text-lg leading-relaxed mb-12">
+                                        {item.content}
+                                    </p>
+                                    <div className="inline-flex items-center gap-4 text-[10px] font-black text-emerald-600 uppercase tracking-[0.5em]">
+                                        BACA SELENGKAPNYA
+                                        <ArrowRight size={16} className="group-hover:translate-x-4 transition-transform" />
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </Deferred>
                 </div>
             </section>
 

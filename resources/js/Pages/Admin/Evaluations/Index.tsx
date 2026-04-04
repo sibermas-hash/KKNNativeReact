@@ -2,237 +2,237 @@ import AppLayout from '@/Layouts/AppLayout';
 import { StatusBadge } from '@/Components/ui';
 import type { PageProps } from '@/types';
 import { 
-    Star,
-    User,
-    Calendar,
-    BarChart3,
-    ShieldCheck,
-    Cpu,
-    Fingerprint,
-    Users,
-    Zap
+ Star,
+ User,
+ Calendar,
+ BarChart3,
+ ShieldCheck,
+ Cpu,
+ Fingerprint,
+ Users,
+ Zap
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Head } from '@inertiajs/react';
 
 interface EvaluationItem {
-    criterion: string;
-    score: number;
-    weight: number;
+ criterion: string;
+ score: number;
+ weight: number;
 }
 
 interface EvaluationData {
-    id: number;
-    student_name: string;
-    group_name: string;
-    evaluator_name: string;
-    evaluator_type: string;
-    total_score: number | null;
-    grade: string | null;
-    evaluated_at: string;
-    notes: string | null;
-    items: EvaluationItem[];
+ id: number;
+ student_name: string;
+ group_name: string;
+ evaluator_name: string;
+ evaluator_type: string;
+ total_score: number | null;
+ grade: string | null;
+ evaluated_at: string;
+ notes: string | null;
+ items: EvaluationItem[];
 }
 
 interface PaginatedData {
-    data: EvaluationData[];
-    meta?: {
-        current_page: number;
-        last_page: number;
-        total: number;
-        links: { url: string | null; label: string; active: boolean }[];
-    };
+ data: EvaluationData[];
+ meta?: {
+ current_page: number;
+ last_page: number;
+ total: number;
+ links: { url: string | null; label: string; active: boolean }[];
+ };
 }
 
 interface Props extends PageProps {
-    evaluations: PaginatedData;
+ evaluations: PaginatedData;
 }
 
 export default function EvaluationsIndex({ evaluations }: Props) {
-    return (
-        <AppLayout title="Arsip Evaluasi Akademik">
-            <Head title="Monitoring Evaluasi Akademik" />
-            
-            <div className="space-y-12 pb-24">
-                {/* 
-                    Emerald Premium Header 
-                    Refining from heavy black to lush tactical emerald gradient
-                */}
-                <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
-                    <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
-                    
-                    <div className="relative z-10 space-y-5 flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                             <div className="p-2.5 bg-white/10 rounded-xl border border-slate-200
-                                <BarChart3 className="h-4 w-4 text-emerald-300" />
-                             </div>
-                            <span className="text-[10px] font-semibold text-emerald-100 ">
-                                ACADEMIC_EVALUATION_ENGINE_V3
-                            </span>
-                        </div>
-                        <h1 className="text-4xl md:text-5xl font-semibold text-white  ">
-                            Monitoring <span className="text-emerald-300">Evaluasi</span>
-                        </h1>
-                        <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
-                             Log audit penilaian sistematis kinerja akademik dan dampak lapangan mahasiswa KKN UIN SAIZU melalui verifikasi parameter ganda.
-                        </p>
-                    </div>
+ return (
+ <AppLayout title="Arsip Evaluasi Akademik">
+ <Head title="Monitoring Evaluasi Akademik" />
+ 
+ <div className="space-y-12 pb-24">
+ {/* 
+ Emerald Premium Header 
+ Refining from heavy black to lush tactical emerald gradient
+ */}
+ <div className="relative overflow-hidden rounded-lg bg-white p-10 md:p-14 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+ <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
+ 
+ <div className="relative z-10 space-y-5 flex-1">
+ <div className="flex items-center gap-3 mb-2">
+ <div className="p-2.5 bg-white/10 rounded-xl border border-slate-200
+ <BarChart3 className="h-4 w-4 text-emerald-300" />
+ </div>
+ <span className="text-[10px] font-semibold text-emerald-100 ">
+ ACADEMIC_EVALUATION_ENGINE_V3
+ </span>
+ </div>
+ <h1 className="text-4xl md:text-5xl font-semibold text-white ">
+ Monitoring <span className="text-emerald-300">Evaluasi</span>
+ </h1>
+ <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
+ Log audit penilaian sistematis kinerja akademik dan dampak lapangan mahasiswa KKN UIN SAIZU melalui verifikasi parameter ganda.
+ </p>
+ </div>
 
-                    <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
-                        <div className="bg-white/10 p-6 rounded-lg border border-slate-200 flex items-center gap-6 min-w-[200px] group/stat">
-                            <div className="p-3 bg-white rounded-lg text-primary group-hover/stat:scale-110 transition-transform">
-                                <BarChart3 className="h-6 w-6" />
-                            </div>
-                            <div>
-                                <span className="text-[9px] font-semibold text-emerald-200/60  block mb-1.5">Total Evaluasi</span>
-                                <span className="text-2xl font-semibold text-white">
-                                    {evaluations.meta?.total ?? evaluations.data?.length ?? 0} Record
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+ <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
+ <div className="bg-white/10 p-6 rounded-lg border border-slate-200 flex items-center gap-6 min-w-[200px] group/stat">
+ <div className="p-3 bg-white rounded-lg text-primary group-hover/stat:transition-transform">
+ <BarChart3 className="h-6 w-6" />
+ </div>
+ <div>
+ <span className="text-[9px] font-semibold text-emerald-200/60 block mb-1.5">Total Evaluasi</span>
+ <span className="text-2xl font-semibold text-white">
+ {evaluations.meta?.total ?? evaluations.data?.length ?? 0} Record
+ </span>
+ </div>
+ </div>
+ </div>
+ </div>
 
-                {/* Main Table Section (Tactical Table) */}
-                <div className="bg-white rounded-lg border border-slate-200 overflow-hidden group lg:mx-2">
-                    <div className="overflow-x-auto relative z-10 custom-scrollbar pr-1">
-                        <table className="min-w-full divide-y divide-slate-50">
-                            <thead className="bg-slate-50/50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold  text-slate-400">Identitas_Personel</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold  text-slate-400">Sektor_Kelompok</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold  text-slate-400">Otoritas_Penilai</th>
-                                    <th className="px-6 py-3 text-center text-xs font-semibold  text-slate-400">Skor_Audit</th>
-                                    <th className="px-6 py-3 text-center text-xs font-semibold  text-slate-400">Predikat</th>
-                                    <th className="px-6 py-3 text-right text-xs font-semibold  text-slate-400 pr-14">Timestamp</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-50 bg-white">
-                                {(evaluations.data ?? []).map((ev) => (
-                                    <tr key={ev.id} className="group/row hover:bg-slate-50/20cursor-default">
-                                        <td className="px-6 py-3">
-                                            <div className="flex flex-col gap-2.5 min-w-0">
-                                                <span className="text-[16px] font-semibold text-slate-900 group-hover/row:text-primary transition-colors  truncate">
-                                                    {ev.student_name}
-                                                </span>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="p-1 px-2.5 bg-slate-50 border border-slate-200 rounded-lg">
-                                                        <Fingerprint className="h-3 w-3 text-slate-300 group-hover/row:text-primary transition-colors" />
-                                                    </div>
-                                                    <span className="text-[9px] font-semibold text-slate-400  opacity-50">IDENTITY_VERIFIED_OK</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-3">
-                                            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-lg bg-primary/5 border border-primary/10 group-hover/row:rotate-1 group-hover/row:scale-105">
-                                                <Users className="h-4 w-4 text-primary/40" />
-                                                <span className="text-[11px] font-semibold text-primary  pt-0.5">
-                                                    {ev.group_name}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-3">
-                                            <div className="flex flex-col gap-2.5">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="h-3.5 w-3.5 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200">
-                                                       <User className="h-2 w-2 text-slate-400" />
-                                                    </div>
-                                                    <span className="text-[12px] font-semibold text-slate-600  truncate max-w-[150px]">
-                                                        {ev.evaluator_name}
-                                                    </span>
-                                                </div>
-                                                <StatusBadge status={ev.evaluator_type} className="px-4 py-1.5 text-[9px] font-semibold  border-none h-6 w-fit bg-slate-900 text-primary" />
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-3 text-center">
-                                            <span className="text-3xl font-semibold text-slate-900  group-hover/row:text-primary transition-colors">
-                                                {ev.total_score != null ? ev.total_score.toFixed(1) : '--.-'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-3 text-center">
-                                            <div className="inline-flex items-center justify-center w-16 h-16rounded-lg bg-slate-50 border border-slate-200 group-hover/row:border-primary/30 group-hover/row:bg-whitegroup-hover/row:rotate-6 group-hover/row:scale-110 group-hover/row:shadow-xl group-hover/row:shadow-primary/10">
-                                                <span className={clsx(
-                                                    "text-xl font-semibold  transition-colors",
-                                                    ev.grade === 'A' || ev.grade === 'A-' ? 'text-emerald-500' : 'text-slate-900'
-                                                )}>
-                                                    {ev.grade ?? '--'}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-3 text-right pr-14">
-                                            <div className="flex flex-col items-end gap-2 group-hover/row:translate-x-[-4px] transition-transform">
-                                                <div className="flex items-center gap-3 text-slate-400 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
-                                                    <Calendar className="h-3.5 w-3.5 opacity-50" />
-                                                    <span className="text-[9px] font-semibold ">
-                                                        {ev.evaluated_at ?? 'LOG_PENDING'}
-                                                    </span>
-                                                </div>
-                                                <span className="text-[8px] font-semibold text-slate-300  pr-2">SECURE_PAYLOAD_SAFE</span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {(evaluations.data ?? []).length === 0 && (
-                                    <tr>
-                                        <td colSpan={6} className="px-6 py-40 text-center">
-                                            <div className="flex flex-col items-center gap-6 opacity-50">
-                                                <div className="p-10 bg-slate-50 rounded-lg border border-slate-200
-                                                     <Star className="h-20 w-20 text-slate-200" />
-                                                </div>
-                                                <p className="text-[12px] font-semibold  text-slate-400">SYSTEM_INFO: NO_EVALUATION_RECORDS_DETECTED</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+ {/* Main Table Section (Tactical Table) */}
+ <div className="bg-white rounded-lg border border-slate-200 overflow-hidden group lg:mx-2">
+ <div className="overflow-x-auto relative z-10 custom-scrollbar pr-1">
+ <table className="min-w-full divide-y divide-slate-50">
+ <thead className="bg-slate-50/50">
+ <tr>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400">Identitas_Personel</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400">Sektor_Kelompok</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400">Otoritas_Penilai</th>
+ <th className="px-6 py-3 text-center text-xs font-semibold text-slate-400">Skor_Audit</th>
+ <th className="px-6 py-3 text-center text-xs font-semibold text-slate-400">Predikat</th>
+ <th className="px-6 py-3 text-right text-xs font-semibold text-slate-400 pr-14">Timestamp</th>
+ </tr>
+ </thead>
+ <tbody className="divide-y divide-slate-50 bg-white">
+ {(evaluations.data ?? []).map((ev) => (
+ <tr key={ev.id} className="group/row hover:bg-slate-50/20cursor-default">
+ <td className="px-6 py-3">
+ <div className="flex flex-col gap-2.5 min-w-0">
+ <span className="text-[16px] font-semibold text-slate-900 group-hover/row:text-primary transition-colors truncate">
+ {ev.student_name}
+ </span>
+ <div className="flex items-center gap-3">
+ <div className="p-1 px-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+ <Fingerprint className="h-3 w-3 text-slate-300 group-hover/row:text-primary transition-colors" />
+ </div>
+ <span className="text-[9px] font-semibold text-slate-400 opacity-50">IDENTITY_VERIFIED_OK</span>
+ </div>
+ </div>
+ </td>
+ <td className="px-6 py-3">
+ <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-lg bg-primary/5 border border-primary/10 group-hover/row:rotate-1 group-hover/row:">
+ <Users className="h-4 w-4 text-primary/40" />
+ <span className="text-[11px] font-semibold text-primary pt-0.5">
+ {ev.group_name}
+ </span>
+ </div>
+ </td>
+ <td className="px-6 py-3">
+ <div className="flex flex-col gap-2.5">
+ <div className="flex items-center gap-3">
+ <div className="h-3.5 w-3.5 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200">
+ <User className="h-2 w-2 text-slate-400" />
+ </div>
+ <span className="text-[12px] font-semibold text-slate-600 truncate max-w-[150px]">
+ {ev.evaluator_name}
+ </span>
+ </div>
+ <StatusBadge status={ev.evaluator_type} className="px-4 py-1.5 text-[9px] font-semibold border-none h-6 w-fit bg-slate-900 text-primary" />
+ </div>
+ </td>
+ <td className="px-6 py-3 text-center">
+ <span className="text-3xl font-semibold text-slate-900 group-hover/row:text-primary transition-colors">
+ {ev.total_score != null ? ev.total_score.toFixed(1) : '--.-'}
+ </span>
+ </td>
+ <td className="px-6 py-3 text-center">
+ <div className="inline-flex items-center justify-center w-16 h-16rounded-lg bg-slate-50 border border-slate-200 group-hover/row:border-primary/30 group-hover/row:bg-whitegroup-hover/row:rotate-6 group-hover/row:group-hover/row: group-hover/row:/10">
+ <span className={clsx(
+ "text-xl font-semibold transition-colors",
+ ev.grade === 'A' || ev.grade === 'A-' ? 'text-emerald-500' : 'text-slate-900'
+ )}>
+ {ev.grade ?? '--'}
+ </span>
+ </div>
+ </td>
+ <td className="px-6 py-3 text-right pr-14">
+ <div className="flex flex-col items-end gap-2 group-hover/row:translate-x-[-4px] transition-transform">
+ <div className="flex items-center gap-3 text-slate-400 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+ <Calendar className="h-3.5 w-3.5 opacity-50" />
+ <span className="text-[9px] font-semibold ">
+ {ev.evaluated_at ?? 'LOG_PENDING'}
+ </span>
+ </div>
+ <span className="text-[8px] font-semibold text-slate-300 pr-2">SECURE_PAYLOAD_SAFE</span>
+ </div>
+ </td>
+ </tr>
+ ))}
+ {(evaluations.data ?? []).length === 0 && (
+ <tr>
+ <td colSpan={6} className="px-6 py-40 text-center">
+ <div className="flex flex-col items-center gap-6 opacity-50">
+ <div className="p-10 bg-slate-50 rounded-lg border border-slate-200
+ <Star className="h-20 w-20 text-slate-200" />
+ </div>
+ <p className="text-[12px] font-semibold text-slate-400">SYSTEM_INFO: NO_EVALUATION_RECORDS_DETECTED</p>
+ </div>
+ </td>
+ </tr>
+ )}
+ </tbody>
+ </table>
+ </div>
+ </div>
 
-                {/* Tactical Emerald Footer Monitor */}
-                <div className="p-12 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group mx-2">
-                     <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
+ {/* Tactical Emerald Footer Monitor */}
+ <div className="p-12 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group mx-2">
+ <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
 
-                     <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-                        <div className="space-y-6">
-                            <div className="flex items-center gap-5">
-                                <div className="p-3 bg-primary/10 rounded-lg border border-primary">
-                                    <ShieldCheck className="h-7 w-7 text-primary" />
-                                </div>
-                                <div>
-                                    <h4 className="text-[11px] font-semibold text-white ">ACADEMIC_VALIDATION_GOVERNANCE_V3</h4>
-                                    <p className="text-[10px] text-emerald-400 text-sm  mt-2 whitespace-nowrap">STATUS: AUDIT_ALGORITHM_VERIFIED</p>
-                                </div>
-                            </div>
-                            <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-4xl opacity-75">
-                                Petunjuk Validasi: Seluruh hasil penilaian diverifikasi melalui algoritma validasi akademik terpusat UIN SAIZU. 
-                                Data evaluasi mencakup <span className="text-primary font-semibold">"Analytical Scoring"</span> yang secara otomatis menjadi basis 
-                                penentuan grade kelulusan. Log audit pusat mencatat setiap interaksi petugas untuk menjamin kedaulatan data akademik.
-                            </p>
-                        </div>
-                        <div className="flex flex-col items-end gap-5 shrink-0 border-l border-slate-800 pl-12 hidden lg:flex">
-                             <div className="flex items-center gap-3 mb-1 px-5 py-2.5 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
-                                <div className="h-2.5 w-2.5 rounded-lg bg-emerald-500" />
-                                <span className="text-[11px] font-semibold text-slate-100 ">VAL_INTEGRITY_OK</span>
-                             </div>
-                             <div className="flex gap-5">
-                                <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
-                                    <Cpu className="h-7 w-7" />
-                                </div>
-                                <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
-                                    <Zap className="h-7 w-7" />
-                                </div>
-                             </div>
-                        </div>
-                    </div>
-                </div>
+ <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+ <div className="space-y-6">
+ <div className="flex items-center gap-5">
+ <div className="p-3 bg-primary/10 rounded-lg border border-primary">
+ <ShieldCheck className="h-7 w-7 text-primary" />
+ </div>
+ <div>
+ <h4 className="text-[11px] font-semibold text-white ">ACADEMIC_VALIDATION_GOVERNANCE_V3</h4>
+ <p className="text-[10px] text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: AUDIT_ALGORITHM_VERIFIED</p>
+ </div>
+ </div>
+ <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-4xl opacity-75">
+ Petunjuk Validasi: Seluruh hasil penilaian diverifikasi melalui algoritma validasi akademik terpusat UIN SAIZU. 
+ Data evaluasi mencakup <span className="text-primary font-semibold">"Analytical Scoring"</span> yang secara otomatis menjadi basis 
+ penentuan grade kelulusan. Log audit pusat mencatat setiap interaksi petugas untuk menjamin kedaulatan data akademik.
+ </p>
+ </div>
+ <div className="flex flex-col items-end gap-5 shrink-0 border-l border-slate-800 pl-12 hidden lg:flex">
+ <div className="flex items-center gap-3 mb-1 px-5 py-2.5 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
+ <div className="h-2.5 w-2.5 rounded-lg bg-emerald-500" />
+ <span className="text-[11px] font-semibold text-slate-100 ">VAL_INTEGRITY_OK</span>
+ </div>
+ <div className="flex gap-5">
+ <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
+ <Cpu className="h-7 w-7" />
+ </div>
+ <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
+ <Zap className="h-7 w-7" />
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
 
-                <div className="text-center pt-8 opacity-20">
-                    <p className="text-[9px] font-semibold text-slate-300 ">
-                        Evaluation Monitor System • Audit Registry Ver. 3.2.0 • UIN SAIZU © 2024
-                    </p>
-                </div>
-            </div>
-        </AppLayout>
-    );
+ <div className="text-center pt-8 opacity-20">
+ <p className="text-[9px] font-semibold text-slate-300 ">
+ Evaluation Monitor System • Audit Registry Ver. 3.2.0 • UIN SAIZU © 2024
+ </p>
+ </div>
+ </div>
+ </AppLayout>
+ );
 }

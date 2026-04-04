@@ -9,15 +9,15 @@ import { initCapacitor } from '@/lib/capacitor-init';
 const appName = import.meta.env.VITE_APP_NAME || 'KKN UIN SAIZU';
 
 createInertiaApp({
-  title: (title) => `${title} - ${appName}`,
-  resolve: (name) =>
-    resolvePageComponent(`./Pages/${name}.tsx`, import.meta.glob('./Pages/**/*.tsx')),
-  setup({ el, App, props }) {
-    initCapacitor();
-    const root = createRoot(el);
-    root.render(<App {...props} />);
-  },
-  progress: {
-    color: '#0B6B3A',
-  },
+ title: (title) => `${title} - ${appName}`,
+ resolve: (name) =>
+ resolvePageComponent(`./Pages/${name}.tsx`, import.meta.glob('./Pages/**/*.tsx')),
+ setup({ el, App, props }) {
+ initCapacitor();
+ const root = createRoot(el);
+ root.render(<App {...props} />);
+ },
+ progress: {
+ color: '#0B6B3A',
+ },
 });

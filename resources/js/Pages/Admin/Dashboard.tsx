@@ -1,333 +1,333 @@
 import { Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import {
-    Users,
-    Users2,
-    FileText,
-    CheckCircle2,
-    ArrowRight,
-    Globe2,
-    CalendarDays,
-    Activity,
-    ClipboardList,
-    MoreHorizontal,
-    ShieldCheck,
-    Fingerprint,
-    Zap
+ Users,
+ Users2,
+ FileText,
+ CheckCircle2,
+ ArrowRight,
+ Globe2,
+ CalendarDays,
+ Activity,
+ ClipboardList,
+ MoreHorizontal,
+ ShieldCheck,
+ Fingerprint,
+ Zap
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
 const SDG_DETAILS: Record<number, { name: string; color: string; icon: string }> = {
-    1: { name: 'Tanpa Kemiskinan', color: 'bg-[#E5243B]', icon: '💰' },
-    2: { name: 'Tanpa Kelaparan', color: 'bg-[#DDA63A]', icon: '🌾' },
-    3: { name: 'Kehidupan Sehat & Sejahtera', color: 'bg-[#4C9F38]', icon: '🏥' },
-    4: { name: 'Pendidikan Berkualitas', color: 'bg-[#C5192D]', icon: '🎓' },
-    5: { name: 'Kesetaraan Gender', color: 'bg-[#FF3A21]', icon: '⚖️' },
-    6: { name: 'Air Bersih & Sanitasi', color: 'bg-[#26BDE2]', icon: '🚰' },
-    7: { name: 'Energi Bersih & Terjangkau', color: 'bg-[#FCC30B]', icon: '⚡' },
-    8: { name: 'Pekerjaan Layak & Pertumbuhan Ekonomi', color: 'bg-[#A21942]', icon: '📈' },
-    9: { name: 'Industri, Inovasi & Infrastruktur', color: 'bg-[#FD6925]', icon: '🏗️' },
-    10: { name: 'Berkurangnya Kesenjangan', color: 'bg-[#DD1367]', icon: '🤝' },
-    11: { name: 'Kota & Permukiman Berkelanjutan', color: 'bg-[#FD9D24]', icon: '🏙️' },
-    12: { name: 'Konsumsi & Produksi Bertanggung Jawab', color: 'bg-[#BF8B2E]', icon: '♻️' },
-    13: { name: 'Penanganan Perubahan Iklim', color: 'bg-[#3F7E44]', icon: '🌡️' },
-    14: { name: 'Ekosistem Laut', color: 'bg-[#0A97D9]', icon: '🌊' },
-    15: { name: 'Ekosistem Daratan', color: 'bg-[#56C02B]', icon: '🌳' },
-    16: { name: 'Perdamaian, Keadilan & Kelembagaan Kuat', color: 'bg-[#00689D]', icon: '🕊️' },
-    17: { name: 'Kemitraan untuk Mencapai Tujuan', color: 'bg-[#19486A]', icon: '🌍' },
+ 1: { name: 'Tanpa Kemiskinan', color: 'bg-[#E5243B]', icon: '💰' },
+ 2: { name: 'Tanpa Kelaparan', color: 'bg-[#DDA63A]', icon: '🌾' },
+ 3: { name: 'Kehidupan Sehat & Sejahtera', color: 'bg-[#4C9F38]', icon: '🏥' },
+ 4: { name: 'Pendidikan Berkualitas', color: 'bg-[#C5192D]', icon: '🎓' },
+ 5: { name: 'Kesetaraan Gender', color: 'bg-[#FF3A21]', icon: '⚖️' },
+ 6: { name: 'Air Bersih & Sanitasi', color: 'bg-[#26BDE2]', icon: '🚰' },
+ 7: { name: 'Energi Bersih & Terjangkau', color: 'bg-[#FCC30B]', icon: '⚡' },
+ 8: { name: 'Pekerjaan Layak & Pertumbuhan Ekonomi', color: 'bg-[#A21942]', icon: '📈' },
+ 9: { name: 'Industri, Inovasi & Infrastruktur', color: 'bg-[#FD6925]', icon: '🏗️' },
+ 10: { name: 'Berkurangnya Kesenjangan', color: 'bg-[#DD1367]', icon: '🤝' },
+ 11: { name: 'Kota & Permukiman Berkelanjutan', color: 'bg-[#FD9D24]', icon: '🏙️' },
+ 12: { name: 'Konsumsi & Produksi Bertanggung Jawab', color: 'bg-[#BF8B2E]', icon: '♻️' },
+ 13: { name: 'Penanganan Perubahan Iklim', color: 'bg-[#3F7E44]', icon: '🌡️' },
+ 14: { name: 'Ekosistem Laut', color: 'bg-[#0A97D9]', icon: '🌊' },
+ 15: { name: 'Ekosistem Daratan', color: 'bg-[#56C02B]', icon: '🌳' },
+ 16: { name: 'Perdamaian, Keadilan & Kelembagaan Kuat', color: 'bg-[#00689D]', icon: '🕊️' },
+ 17: { name: 'Kemitraan untuk Mencapai Tujuan', color: 'bg-[#19486A]', icon: '🌍' },
 };
 
 interface Registration {
-    id: number;
-    status: string;
-    mahasiswa?: {
-        nim: string;
-        user?: { name: string; };
-    };
-    periode?: { name: string; };
+ id: number;
+ status: string;
+ mahasiswa?: {
+ nim: string;
+ user?: { name: string; };
+ };
+ periode?: { name: string; };
 }
 
 interface SdgDistributionItem {
-    id: number;
-    count: number;
+ id: number;
+ count: number;
 }
 
 interface DashboardStats {
-    total_students: number;
-    total_groups: number;
-    total_reports: number;
-    pending_registrations: number;
-    active_period: string;
-    total_work_programs: number;
-    total_final_reports: number;
-    reported_posko: number;
+ total_students: number;
+ total_groups: number;
+ total_reports: number;
+ pending_registrations: number;
+ active_period: string;
+ total_work_programs: number;
+ total_final_reports: number;
+ reported_posko: number;
 }
 
 interface Props {
-    stats?: DashboardStats;
-    sdg_distribution?: SdgDistributionItem[];
-    recentRegistrations?: Registration[];
+ stats?: DashboardStats;
+ sdg_distribution?: SdgDistributionItem[];
+ recentRegistrations?: Registration[];
 }
 
 export default function AdminDashboard({ auth, stats, sdg_distribution, recentRegistrations }: Props & { auth: any }) {
-    const userRole = auth.user?.roles?.[0] || 'Administrator';
-    
-    const roleMap: Record<string, string> = {
-        'superadmin': 'Pusat Komando',
-        'faculty_admin': 'Otoritas Fakultas',
-        'dpl': 'Personel DPL',
-        'student': 'Peserta Mahasiswa',
-        'admin_prodi': 'Koordinator Program'
-    };
-    const translatedRole = roleMap[userRole.toLowerCase()] || userRole.replace('_', ' ').toUpperCase();
-    
-    return (
-        <AppLayout title="Pusat Kendali Operasional">
-            <div className="space-y-8 pb-20">
-                
-                {/* Sleek Minimalist Operational Header */}
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-8">
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-3">
-                            <div className="h-1.5 w-1.5 rounded-lg bg-emerald-500 />
-                            <span className="text-[9px] font-semibold text-emerald-600 ">
-                                -HUB_EMERALD_V3
-                            </span>
-                        </div>
-                        <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 ">
-                            Selamat Datang, <br className="md:hidden" />
-                            <span className="text-primary">{translatedRole}</span>
-                        </h1>
-                        <p className="text-slate-400 text-sm text-xs  flex items-center gap-2">
-                            <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
-                            Akses taktis ke seluruh instrumen operasional KKN UIN SAIZU.
-                        </p>
-                    </div>
+ const userRole = auth.user?.roles?.[0] || 'Administrator';
+ 
+ const roleMap: Record<string, string> = {
+ 'superadmin': 'Pusat Komando',
+ 'faculty_admin': 'Otoritas Fakultas',
+ 'dpl': 'Personel DPL',
+ 'student': 'Peserta Mahasiswa',
+ 'admin_prodi': 'Koordinator Program'
+ };
+ const translatedRole = roleMap[userRole.toLowerCase()] || userRole.replace('_', ' ').toUpperCase();
+ 
+ return (
+ <AppLayout title="Pusat Kendali Operasional">
+ <div className="space-y-8 pb-20">
+ 
+ {/* Sleek Minimalist Operational Header */}
+ <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-8">
+ <div className="space-y-1">
+ <div className="flex items-center gap-3">
+ <div className="h-1.5 w-1.5 rounded-lg bg-emerald-500 />
+ <span className="text-[9px] font-semibold text-emerald-600 ">
+ -HUB_EMERALD_V3
+ </span>
+ </div>
+ <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 ">
+ Selamat Datang, <br className="md:hidden" />
+ <span className="text-primary">{translatedRole}</span>
+ </h1>
+ <p className="text-slate-400 text-sm text-xs flex items-center gap-2">
+ <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
+ Akses taktis ke seluruh instrumen operasional KKN UIN SAIZU.
+ </p>
+ </div>
 
-                    <div className="flex items-center gap-3">
-                        <div className="px-4 py-2 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-4
-                            <div className="text-right">
-                                <span className="block text-[8px] font-semibold text-slate-400  mb-1">Status Periode</span>
-                                <span className="text-xs font-semibold text-slate-900 
-                                    {stats?.active_period || '—'}
-                                </span>
-                            </div>
-                            <div className="h-8 w-8 bg-white rounded-lg border border-slate-200 flex items-center justify-center text-primary">
-                                <Activity className="w-4 h-4 stroke-[2.5px]" />
-                            </div>
-                        </div>
-                        
-                        <div className="flex gap-1.5">
-                            <Link 
-                                href="/admin/periods" 
-                                className="h-10 w-10 bg-white text-slate-400 border border-slate-200 rounded-lg flex items-center justify-centerhover:text-primary hover:border-primary/30 hover:shadow-lg"
-                                title="Kelola Periode"
-                            >
-                                <CalendarDays className="w-4 h-4" />
-                            </Link>
-                            <Link 
-                                href="/admin/registrations" 
-                                className="h-10 w-10 bg-primary text-white rounded-lg flex items-center justify-centerhover:-translate-y-1"
-                                title="Audit Registrasi"
-                            >
-                                <Users className="w-4 h-4" />
-                            </Link>
-                        </div>
-                    </div>
-                </div>
+ <div className="flex items-center gap-3">
+ <div className="px-4 py-2 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-4
+ <div className="text-right">
+ <span className="block text-[8px] font-semibold text-slate-400 mb-1">Status Periode</span>
+ <span className="text-xs font-semibold text-slate-900 
+ {stats?.active_period || '—'}
+ </span>
+ </div>
+ <div className="h-8 w-8 bg-white rounded-lg border border-slate-200 flex items-center justify-center text-primary">
+ <Activity className="w-4 h-4 stroke-[2.5px]" />
+ </div>
+ </div>
+ 
+ <div className="flex gap-1.5">
+ <Link 
+ href="/admin/periods" 
+ className="h-10 w-10 bg-white text-slate-400 border border-slate-200 rounded-lg flex items-center justify-centerhover:text-primary hover:border-primary/30"
+ title="Kelola Periode"
+ >
+ <CalendarDays className="w-4 h-4" />
+ </Link>
+ <Link 
+ href="/admin/registrations" 
+ className="h-10 w-10 bg-primary text-white rounded-lg flex items-center justify-centerhover:-"
+ title="Audit Registrasi"
+ >
+ <Users className="w-4 h-4" />
+ </Link>
+ </div>
+ </div>
+ </div>
 
-                {/* METRICS GRID - HIGH DENSITY COMPACT */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <MetricCard 
-                        label="TOTAL MAHASISWA" 
-                        value={stats?.total_students} 
-                        icon={Users} 
-                        color="primary"
-                        description="Terdaftar"
-                    />
-                    <MetricCard 
-                        label="KELOMPOK AKTIF" 
-                        value={stats?.total_groups} 
-                        icon={Users2} 
-                        color="blue"
-                        description="Unit"
-                    />
-                    <MetricCard 
-                        label="LAPORAN HARIAN" 
-                        value={stats?.total_reports} 
-                        icon={FileText} 
-                        color="amber"
-                        description="Aktivitas"
-                    />
-                    <MetricCard 
-                        label="LAPORAN AKHIR" 
-                        value={stats?.total_final_reports} 
-                        icon={CheckCircle2} 
-                        color="emerald"
-                        description="Audit"
-                    />
-                </div>
+ {/* METRICS GRID - HIGH DENSITY COMPACT */}
+ <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+ <MetricCard 
+ label="TOTAL MAHASISWA" 
+ value={stats?.total_students} 
+ icon={Users} 
+ color="primary"
+ description="Terdaftar"
+ />
+ <MetricCard 
+ label="KELOMPOK AKTIF" 
+ value={stats?.total_groups} 
+ icon={Users2} 
+ color="blue"
+ description="Unit"
+ />
+ <MetricCard 
+ label="LAPORAN HARIAN" 
+ value={stats?.total_reports} 
+ icon={FileText} 
+ color="amber"
+ description="Aktivitas"
+ />
+ <MetricCard 
+ label="LAPORAN AKHIR" 
+ value={stats?.total_final_reports} 
+ icon={CheckCircle2} 
+ color="emerald"
+ description="Audit"
+ />
+ </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* RECENT RECORDS - COMPACT */}
-                    <div className="lg:col-span-2 bg-whiterounded-lg border border-slate-200 overflow-hidden">
-                        <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/20">
-                            <div className="flex items-center gap-4">
-                                <div className="p-2.5 bg-white rounded-xl border border-slate-200 text-primary">
-                                    <ClipboardList className="w-5 h-5 stroke-[2.5px]" />
-                                </div>
-                                <div>
-                                    <h3 className="text-base font-semibold text-slate-900 ">Aktivitas Terkini</h3>
-                                    <p className="text-[9px] text-sm text-slate-400 mt-1 ">Sinkronisasi Registrasi</p>
-                                </div>
-                            </div>
-                            <Link href="/admin/registrations" className="flex items-center gap-2 text-[9px] font-semibold text-primary hover:text-primary-dark transition-colors  group/link">
-                                Selengkapnya
-                                <ArrowRight className="w-3 h-3 group-hover/link:translate-x-1 transition-transform" />
-                            </Link>
-                        </div>
-                        <div className="divide-y divide-slate-50">
-                            {recentRegistrations && recentRegistrations.length > 0 ? (
-                                recentRegistrations.map((reg) => (
-                                    <div key={reg.id} className="px-6 py-5 hover:bg-slate-50/40flex items-center justify-between group/row cursor-default">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-base font-semibold text-slate-300 group-hover/row:bg-primary group-hover/row:text-white">
-                                                {reg.mahasiswa?.user?.name?.charAt(0) || 'U'}
-                                            </div>
-                                            <div className="space-y-1">
-                                                <p className="font-black text-sm text-slate-900 group-hover/row:text-primary transition-colors">{reg.mahasiswa?.user?.name || 'ENTITAS_PESERTA'}</p>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[9px] text-sm text-slate-400">NIM: {reg.mahasiswa?.nim || '---'}</span>
-                                                    <div className="h-1 w-1 rounded-lg bg-slate-200" />
-                                                    <span className="text-[9px] text-sm text-slate-400 truncate max-w-[120px]">{reg.periode?.name}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className={clsx(
-                                            "px-4 py-1.5 rounded-lg text-[9px] font-semibold ",
-                                            reg.status === 'pending' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
-                                            reg.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
-                                            'bg-rose-50 text-rose-600 border border-rose-100'
-                                        )}>
-                                            {reg.status === 'pending' ? 'Menunggu' : (reg.status === 'approved' ? 'Disetujui' : 'Ditolak')}
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="p-16 text-center">
-                                    <ClipboardList className="w-8 h-8 text-slate-200 mx-auto mb-4" />
-                                    <p className="text-[9px] font-semibold text-slate-400 ">Belum ada aktivitas terekam</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+ <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+ {/* RECENT RECORDS - COMPACT */}
+ <div className="lg:col-span-2 bg-whiterounded-lg border border-slate-200 overflow-hidden">
+ <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/20">
+ <div className="flex items-center gap-4">
+ <div className="p-2.5 bg-white rounded-xl border border-slate-200 text-primary">
+ <ClipboardList className="w-5 h-5 stroke-[2.5px]" />
+ </div>
+ <div>
+ <h3 className="text-base font-semibold text-slate-900 ">Aktivitas Terkini</h3>
+ <p className="text-[9px] text-sm text-slate-400 mt-1 ">Sinkronisasi Registrasi</p>
+ </div>
+ </div>
+ <Link href="/admin/registrations" className="flex items-center gap-2 text-[9px] font-semibold text-primary hover:text-primary-dark transition-colors group/link">
+ Selengkapnya
+ <ArrowRight className="w-3 h-3 group-hover/link:translate-x-1 transition-transform" />
+ </Link>
+ </div>
+ <div className="divide-y divide-slate-50">
+ {recentRegistrations && recentRegistrations.length > 0 ? (
+ recentRegistrations.map((reg) => (
+ <div key={reg.id} className="px-6 py-5 hover:bg-slate-50/40flex items-center justify-between group/row cursor-default">
+ <div className="flex items-center gap-4">
+ <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-base font-semibold text-slate-300 group-hover/row:bg-primary group-hover/row:text-white">
+ {reg.mahasiswa?.user?.name?.charAt(0) || 'U'}
+ </div>
+ <div className="space-y-1">
+ <p className="font-black text-sm text-slate-900 group-hover/row:text-primary transition-colors">{reg.mahasiswa?.user?.name || 'ENTITAS_PESERTA'}</p>
+ <div className="flex items-center gap-2">
+ <span className="text-[9px] text-sm text-slate-400">NIM: {reg.mahasiswa?.nim || '---'}</span>
+ <div className="h-1 w-1 rounded-lg bg-slate-200" />
+ <span className="text-[9px] text-sm text-slate-400 truncate max-w-[120px]">{reg.periode?.name}</span>
+ </div>
+ </div>
+ </div>
+ <div className={clsx(
+ "px-4 py-1.5 rounded-lg text-[9px] font-semibold ",
+ reg.status === 'pending' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+ reg.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
+ 'bg-rose-50 text-rose-600 border border-rose-100'
+ )}>
+ {reg.status === 'pending' ? 'Menunggu' : (reg.status === 'approved' ? 'Disetujui' : 'Ditolak')}
+ </div>
+ </div>
+ ))
+ ) : (
+ <div className="p-16 text-center">
+ <ClipboardList className="w-8 h-8 text-slate-200 mx-auto mb-4" />
+ <p className="text-[9px] font-semibold text-slate-400 ">Belum ada aktivitas terekam</p>
+ </div>
+ )}
+ </div>
+ </div>
 
-                    {/* SDG ANALYTICS - COMPACT */}
-                    <div className="bg-whiterounded-lg border border-slate-200 p-8 space-y-8 group overflow-hidden relative">
-                        <div className="absolute top-0 right-0 p-8 text-primary rotate-12 group-hover:rotate-45 transition-transform pointer-events-none">
-                             <Globe2 className="w-32 h-32" />
-                        </div>
-                        
-                        <div className="relative z-10">
-                            <h3 className="text-base font-semibold text-slate-900 ">Analitik SDG</h3>
-                            <p className="text-[9px] text-sm text-slate-400 mt-2 ">Distribusi Fokus Program</p>
-                        </div>
+ {/* SDG ANALYTICS - COMPACT */}
+ <div className="bg-whiterounded-lg border border-slate-200 p-8 space-y-8 group overflow-hidden relative">
+ <div className="absolute top-0 right-0 p-8 text-primary rotate-12 group-hover:rotate-45 transition-transform pointer-events-none">
+ <Globe2 className="w-32 h-32" />
+ </div>
+ 
+ <div className="relative z-10">
+ <h3 className="text-base font-semibold text-slate-900 ">Analitik SDG</h3>
+ <p className="text-[9px] text-sm text-slate-400 mt-2 ">Distribusi Fokus Program</p>
+ </div>
 
-                        <div className="space-y-5 relative z-10">
-                            {(() => {
-                                const totalSdgCount = sdg_distribution?.reduce((sum, item) => sum + item.count, 0) || 1;
-                                return (sdg_distribution || []).slice(0, 4).map((item) => {
-                                    const sdg = SDG_DETAILS[item.id] || { name: `SDG ${item.id}`, color: 'bg-slate-100', icon: '📍' };
-                                    const percentage = (item.count / totalSdgCount) * 100;
-                                    
-                                    return (
-                                        <div key={item.id} className="space-y-2">
-                                            <div className="flex justify-between items-end">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-xl drop-shadow-sm">{sdg.icon}</span>
-                                                    <span className="text-[10px] font-semibold text-slate-700 truncate max-w-[120px] 
-                                                </div>
-                                                <span className="text-xs font-semibold text-slate-900">{item.count}</span>
-                                            </div>
-                                            <div className="h-1.5 w-full bg-slate-50 rounded-lg overflow-hidden border border-slate-200">
-                                                <div 
-                                                    className={clsx("h-full rounded-lg", sdg.color)} 
-                                                    style={{ width: `${Math.max(5, percentage)}%` }} 
-                                                />
-                                            </div>
-                                        </div>
-                                    );
-                                });
-                            })()}
-                        </div>
-                    </div>
-                </div>
+ <div className="space-y-5 relative z-10">
+ {(() => {
+ const totalSdgCount = sdg_distribution?.reduce((sum, item) => sum + item.count, 0) || 1;
+ return (sdg_distribution || []).slice(0, 4).map((item) => {
+ const sdg = SDG_DETAILS[item.id] || { name: `SDG ${item.id}`, color: 'bg-slate-100', icon: '📍' };
+ const percentage = (item.count / totalSdgCount) * 100;
+ 
+ return (
+ <div key={item.id} className="space-y-2">
+ <div className="flex justify-between items-end">
+ <div className="flex items-center gap-2">
+ <span className="text-xl">{sdg.icon}</span>
+ <span className="text-[10px] font-semibold text-slate-700 truncate max-w-[120px] 
+ </div>
+ <span className="text-xs font-semibold text-slate-900">{item.count}</span>
+ </div>
+ <div className="h-1.5 w-full bg-slate-50 rounded-lg overflow-hidden border border-slate-200">
+ <div 
+ className={clsx("h-full rounded-lg", sdg.color)} 
+ style={{ width: `${Math.max(5, percentage)}%` }} 
+ />
+ </div>
+ </div>
+ );
+ });
+ })()}
+ </div>
+ </div>
+ </div>
 
-                {/* Tactical Global Monitor - COMPACT */}
-                <div className="p-8 bg-[#043d23] rounded-lg border border-primary relative overflow-hidden group">
-                     <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2.5 bg-primary/10 rounded-xl border border-primary text-primary">
-                                    <ShieldCheck className="h-5 w-5" />
-                                </div>
-                                <div>
-                                    <h4 className="text-[9px] font-semibold text-white ">INTEGRITY_CONTROL_PROTOCOL</h4>
-                                    <p className="text-[8px] text-emerald-400 text-sm  mt-1.5">STATUS: ENCRYPTED_SATELLITE_LINK</p>
-                                </div>
-                            </div>
-                            <p className="text-[12px] text-slate-400 text-sm leading-normal max-w-3xl opacity-75">
-                                Protokol audit sistem aktif. Seluruh aktivitas operasional terekam secara real-time untuk keperluan monitoring KKN UIN SAIZU.
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-4 border-l border-slate-800 pl-8 hidden lg:flex">
-                             <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
-                                <div className="h-2 w-2 rounded-lg bg-emerald-500 animate-ping" />
-                                <span className="text-[9px] font-semibold text-slate-100 ">LIVE</span>
-                             </div>
-                             <div className="flex gap-3">
-                                <Fingerprint className="h-6 w-6 text-slate-600 hover:text-primary transition-colors cursor-help" />
-                                <Globe2 className="h-6 w-6 text-slate-600 hover:text-primary transition-colors cursor-help" />
-                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </AppLayout>
-    );
+ {/* Tactical Global Monitor - COMPACT */}
+ <div className="p-8 bg-[#043d23] rounded-lg border border-primary relative overflow-hidden group">
+ <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+ <div className="space-y-4">
+ <div className="flex items-center gap-3">
+ <div className="p-2.5 bg-primary/10 rounded-xl border border-primary text-primary">
+ <ShieldCheck className="h-5 w-5" />
+ </div>
+ <div>
+ <h4 className="text-[9px] font-semibold text-white ">INTEGRITY_CONTROL_PROTOCOL</h4>
+ <p className="text-[8px] text-emerald-400 text-sm mt-1.5">STATUS: ENCRYPTED_SATELLITE_LINK</p>
+ </div>
+ </div>
+ <p className="text-[12px] text-slate-400 text-sm leading-normal max-w-3xl opacity-75">
+ Protokol audit sistem aktif. Seluruh aktivitas operasional terekam secara real-time untuk keperluan monitoring KKN UIN SAIZU.
+ </p>
+ </div>
+ <div className="flex items-center gap-4 border-l border-slate-800 pl-8 hidden lg:flex">
+ <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
+ <div className="h-2 w-2 rounded-lg bg-emerald-500" />
+ <span className="text-[9px] font-semibold text-slate-100 ">LIVE</span>
+ </div>
+ <div className="flex gap-3">
+ <Fingerprint className="h-6 w-6 text-slate-600 hover:text-primary transition-colors cursor-help" />
+ <Globe2 className="h-6 w-6 text-slate-600 hover:text-primary transition-colors cursor-help" />
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </AppLayout>
+ );
 }
 
 function MetricCard({ label, value, icon: Icon, color, description }: any) {
-    const iconColors: Record<string, string> = {
-        primary: 'bg-primary text-white
-        blue: 'bg-blue-600 text-white
-        amber: 'bg-amber-600 text-white
-        emerald: 'bg-emerald-600 text-white
-    };
+ const iconColors: Record<string, string> = {
+ primary: 'bg-primary text-white
+ blue: 'bg-blue-600 text-white
+ amber: 'bg-amber-600 text-white
+ emerald: 'bg-emerald-600 text-white
+ };
 
-    return (
-        <div className="bg-white rounded-lg p-5 border border-slate-200 hover:shadow-2xlgroup relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 text-slate-900 transition-transform group-hover:scale-125">
-                 <Icon className="w-16 h-16" />
-            </div>
-            
-            <div className="flex items-center gap-3 mb-6 relative z-10">
-                <div className={clsx("p-2.5 rounded-xlgroup-hover:rotate-6", iconColors[color])}>
-                    <Icon className="w-4 h-4 stroke-[2.5px]" />
-                </div>
-                <div className="text-left font-semibold text-[9px] text-slate-400  grow">{label}</div>
-            </div>
-            
-            <div className="flex items-baseline gap-2 relative z-10">
-                <h4 className="text-3xl font-semibold text-slate-900 ">
-                    {value?.toLocaleString() || 0}
-                </h4>
-                <span className="text-[8px] font-semibold text-slate-300 ">{description}</span>
-            </div>
-            
-            <div className="mt-6 border-t border-slate-200 pt-4 opacity-50 flex justify-end">
-                <MoreHorizontal className="w-4 h-4 text-slate-200 group-hover:text-primary transition-colors cursor-pointer" />
-            </div>
-        </div>
-    );
+ return (
+ <div className="bg-white rounded-lg p-5 border border-slate-200 relative overflow-hidden">
+ <div className="absolute top-0 right-0 p-4 text-slate-900 transition-transform group-">
+ <Icon className="w-16 h-16" />
+ </div>
+ 
+ <div className="flex items-center gap-3 mb-6 relative z-10">
+ <div className={clsx("p-2.5 rounded-xlgroup-hover:rotate-6", iconColors[color])}>
+ <Icon className="w-4 h-4 stroke-[2.5px]" />
+ </div>
+ <div className="text-left font-semibold text-[9px] text-slate-400 grow">{label}</div>
+ </div>
+ 
+ <div className="flex items-baseline gap-2 relative z-10">
+ <h4 className="text-3xl font-semibold text-slate-900 ">
+ {value?.toLocaleString() || 0}
+ </h4>
+ <span className="text-[8px] font-semibold text-slate-300 ">{description}</span>
+ </div>
+ 
+ <div className="mt-6 border-t border-slate-200 pt-4 opacity-50 flex justify-end">
+ <MoreHorizontal className="w-4 h-4 text-slate-200 group-hover:text-primary transition-colors cursor-pointer" />
+ </div>
+ </div>
+ );
 }

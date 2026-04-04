@@ -26,6 +26,7 @@ class Lokasi extends Model
         'latitude',
         'longitude',
         'capacity',
+        'faculty_id',
     ];
 
     protected $casts = [
@@ -33,6 +34,11 @@ class Lokasi extends Model
         'longitude' => 'decimal:8',
         'capacity' => 'integer',
     ];
+
+    public function fakultas(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Fakultas::class, 'faculty_id');
+    }
 
     public function kelompok(): HasMany
     {

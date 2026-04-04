@@ -1,279 +1,177 @@
+import { Head, Link } from '@inertiajs/react';
+import { useMemo, useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Link, Head } from '@inertiajs/react';
-import { useState } from 'react';
-import {
- FileText,
- Video,
- Image as ImageIcon,
- Map,
- Download,
- Archive,
- Search,
- ShieldCheck,
- Clock,
- Activity,
-} from 'lucide-react';
-import { clsx } from 'clsx';
 import { StatusBadge } from '@/Components/ui';
 
-interface Report {
+interface ReportRow {
  id: number;
  title: string;
  type: string;
  status: string;
  file_name: string;
- submitted_at: string;
- user: { name: string };
- group: { name: string; village: string };
+ submitted_at: string | null;
+ user: {
+ name: string;
+ };
+ group: {
+ name: string;
+ village: string;
+ };
 }
 
 interface Props {
- reports: { data: Report[] };
- summary: { total_reports: number; pending_review: number };
+ reports: {
+ data: ReportRow[];
+ };
+ summary: {
+ total_reports: number;
+ pending_review: number;
+ };
 }
+
+const typeLabels: Record<string, string> = {
+ final_report: 'Laporan akhir',
+ village_map: 'Peta desa',
+ video_documentation: 'Dokumentasi video',
+ photo_documentation: 'Dokumentasi foto',
+ attendance_sheet: 'Daftar hadir',
+ activity_proposal: 'Rancangan kegiatan',
+ evaluation_report: 'Laporan evaluasi',
+};
 
 export default function ReportsIndex({ reports, summary }: Props) {
  const [search, setSearch] = useState('');
 
- const getTypeLabel = (type: string) => {
- switch (type) {
- case 'video_documentation':
- return 'Dokumentasi Video';
- case 'photo_documentation':
- return 'Dokumentasi Foto';
- case 'village_map':
- return 'Peta Desa';
- case 'attendance_sheet':
- return 'Daftar Hadir';
- case 'evaluation_report':
- return 'Laporan Evaluasi';
- case 'final_report':
- return 'Laporan Akhir';
- default:
- return type.replace(/_/g, ' ');
- }
- };
+ const filteredReports = useMemo(() => {
+ const keyword = search.trim().toLowerCase();
 
- const getIcon = (type: string) => {
- switch (type) {
- case 'video_documentation': return <Video className="h-5 w-5" />;
- case 'photo_documentation': return <ImageIcon className="h-5 w-5" />;
- case 'village_map': return <Map className="h-5 w-5" />;
- default: return <FileText className="h-5 w-5" />;
+ if (!keyword) {
+ return reports.data;
  }
- };
 
- const filteredReports = reports.data.filter((report) => {
+ return reports.data.filter((report) => {
  const haystack = [
  report.title,
  report.type,
  report.user.name,
  report.group.name,
  report.group.village,
+ report.file_name,
  ]
  .join(' ')
  .toLowerCase();
 
- return haystack.includes(search.toLowerCase());
+ return haystack.includes(keyword);
  });
+ }, [reports.data, search]);
 
  return (
- <AppLayout title="Laporan Kegiatan KKN">
- <Head title="Manajemen Laporan" />
- 
- <div className="space-y-8 pb-16">
- {/* 
- Emerald Premium Header 
- Refining from basic header to lush tactical emerald gradient
- */}
- <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
- 
- <div className="relative z-10 space-y-5 flex-1">
- <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
- <Archive className="h-4 w-4 text-emerald-300" />
+ <AppLayout title="Laporan Kegiatan">
+ <Head title="Repositori Laporan" />
+
+ <div className="space-y-6">
+ <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+ <div className="rounded-lg border border-slate-200 bg-white p-6">
+ <p className="text-sm font-medium text-slate-500">Total laporan</p>
+ <p className="mt-2 text-3xl font-semibold text-slate-900">{summary.total_reports}</p>
  </div>
- <span className="text-xs font-semibold text-emerald-100 ">
- DIGITAL_ASSET_REPOSITORY_V3
- </span>
+ <div className="rounded-lg border border-slate-200 bg-white p-6">
+ <p className="text-sm font-medium text-slate-500">Menunggu review</p>
+ <p className="mt-2 text-3xl font-semibold text-amber-600">{summary.pending_review}</p>
  </div>
- <h1 className="text-4xl md:text-5xl font-semibold text-white ">
- Repositori <span className="text-emerald-300">Dokumentasi</span>
- </h1>
- <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
- Manajemen arsip digital, validasi dokumentasi visual, dan pengawasan luaran kegiatan mahasiswa berdasarkan parameter audit operasional KKN UIN SAIZU.
+ <div className="rounded-lg border border-slate-200 bg-white p-6">
+ <p className="text-sm font-medium text-slate-500">Laporan terfilter</p>
+ <p className="mt-2 text-3xl font-semibold text-slate-900">{filteredReports.length}</p>
+ </div>
+ </section>
+
+ <section className="rounded-lg border border-slate-200 bg-white">
+ <div className="border-b border-slate-200 px-6 py-4">
+ <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+ <div>
+ <h1 className="text-2xl font-semibold text-slate-900">Repositori Laporan</h1>
+ <p className="mt-1 text-sm text-slate-500">
+ Pantau laporan yang diunggah mahasiswa dan unduh berkas yang diperlukan untuk review.
  </p>
  </div>
 
- <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
- <div className="bg-white/10 p-6 rounded-lg border border-slate-200 flex items-center gap-6 min-w-[200px] group/stattransition-transform">
- <div className="p-3 bg-white rounded-lg text-primary ">
- <Activity className="h-6 w-6" />
- </div>
- <div>
- <span className="text-xs font-semibold text-emerald-200/60 block mb-1.5">Status Gateway</span>
- <span className="text-xl font-semibold text-white ">Sinkron_Aktif</span>
- </div>
- </div>
- </div>
- </div>
-
- {/* Summary Metrics */}
- <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
- <SummaryCard 
- icon={Archive} 
- label="Total Laporan" 
- value={summary.total_reports} 
- color="primary"
- />
- <SummaryCard 
- icon={Clock} 
- label="Menunggu Review" 
- value={summary.pending_review} 
- color="amber"
- />
- <div className="bg-whitep-7rounded-lg border border-primary flex flex-col justify-between group overflow-hidden relative">
- <div className="absolute top-0 right-0 p-8 text-emerald-300 pointer-events-none group-transition-transform">
- <ShieldCheck className="h-24 w-24" />
- </div>
- <div className="relative z-10">
- <div className="flex items-center justify-between mb-6">
- <p className="text-sm font-semibold text-emerald-300 ">Audit Integritas Data</p>
- <span className="flex h-2 w-2 rounded-lg bg-emerald-400" />
- </div>
- <div className="space-y-2">
- <div className="flex items-center justify-between">
- <span className="text-xs text-sm text-emerald-100/60 ">Status Verifikasi Luaran</span>
- <span className="text-xs font-semibold text-white ">100% SECURE</span>
- </div>
- <div className="w-full h-1 bg-white/10 rounded-lg overflow-hidden">
- <div className="w-full h-full bg-emerald-400 rounded-lg" />
- </div>
- </div>
- </div>
- </div>
- </div>
-
- {/* Filter Toolbar */}
- <div className="relative group max-w-lg">
- <Search className="absolute left-6 top-1/2 -/2 w-4.5 h-4.5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
+ <div className="w-full max-w-sm">
  <input
+ type="search"
  value={search}
  onChange={(event) => setSearch(event.target.value)}
- placeholder="Cari laporan, mahasiswa, atau desa..."
- className="w-full pl-14 pr-8 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 outline-none focus:border-primary/50
+ placeholder="Cari judul, mahasiswa, atau kelompok..."
+ className="h-11 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
  />
  </div>
+ </div>
+ </div>
 
- {/* Data Table */}
- <div className="bg-white rounded-lg border border-slate-100 overflow-hidden group">
- <div className="overflow-x-auto relative z-10 custom-scrollbar">
- <table className="min-w-full divide-y divide-slate-50">
- <thead className="bg-slate-50/50">
+ <div className="overflow-x-auto">
+ <table className="min-w-full divide-y divide-slate-200">
+ <thead className="bg-slate-50">
  <tr>
- <th className="px-6 py-6 text-left text-xs text-sm text-slate-400">Judul Dokumentasi</th>
- <th className="px-6 py-6 text-left text-xs text-sm text-slate-400">Identitas Pengirim</th>
- <th className="px-6 py-6 text-left text-xs text-sm text-slate-400">Lokasi Penempatan</th>
- <th className="px-6 py-6 text-center text-xs text-sm text-slate-400">Status</th>
- <th className="px-6 py-6 text-right text-xs text-sm text-slate-400">Aksi</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+ Judul
+ </th>
+ <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+ Pengunggah
+ </th>
+ <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+ Kelompok
+ </th>
+ <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+ Tipe
+ </th>
+ <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+ Status
+ </th>
+ <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+ Aksi
+ </th>
  </tr>
  </thead>
- <tbody className="divide-y divide-slate-50">
- {filteredReports.length > 0 ? filteredReports.map((report) => (
- <tr key={report.id} className="group/row hover:bg-slate-50/10">
- <td className="px-6 py-3">
- <div className="flex items-center gap-5">
- <div className="h-12 w-12 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover/row:bg-primary group-hover/row:text-white
- {getIcon(report.type)}
- </div>
- <div className="flex flex-col gap-1.5 max-w-sm">
- <span className="text-sm font-semibold text-slate-900 group-hover/row:text-primary transition-colors line-clamp-1">{report.title}</span>
- <div className="flex items-center gap-2">
- <span className="text-xs text-sm text-slate-400 ">{getTypeLabel(report.type)}</span>
- </div>
- </div>
- </div>
+ <tbody className="divide-y divide-slate-100 bg-white">
+ {filteredReports.length > 0 ? (
+ filteredReports.map((report) => (
+ <tr key={report.id}>
+ <td className="px-6 py-4">
+ <p className="text-sm font-medium text-slate-900">{report.title}</p>
+ <p className="mt-1 text-xs text-slate-500">{report.file_name}</p>
  </td>
- <td className="px-6 py-3">
- <div className="flex items-center gap-4">
- <div className="h-9 w-9 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-semibold text-slate-400 group-hover/row:bg-primary/10 group-hover/row:text-primary">
- {report.user.name.charAt(0)}
- </div>
- <span className="text-sm text-slate-700 ">{report.user.name}</span>
- </div>
+ <td className="px-6 py-4 text-sm text-slate-700">{report.user.name}</td>
+ <td className="px-6 py-4">
+ <p className="text-sm font-medium text-slate-800">{report.group.name}</p>
+ <p className="mt-1 text-xs text-slate-500">{report.group.village}</p>
  </td>
- <td className="px-6 py-3">
- <div className="flex flex-col gap-1.5">
- <span className="text-xs font-semibold text-slate-900 flex items-center gap-2">
- <div className="h-2 w-1 bg-primary rounded-lg" />
- {report.group.name}
- </span>
- <span className="text-xs text-sm text-slate-400 ml-3 truncate max-w-[150px]">{report.group.village}</span>
- </div>
+ <td className="px-6 py-4 text-sm text-slate-600">
+ {typeLabels[report.type] || report.type}
  </td>
- <td className="px-6 py-3 text-center">
- <StatusBadge status={report.status} className="px-4 py-1.5 rounded-lg text-xs text-sm border-none />
+ <td className="px-6 py-4">
+ <StatusBadge status={report.status} />
  </td>
- <td className="px-6 py-3">
- <div className="flex justify-end gap-2x-4 opacity-0 group-hover/row:opacity-100 group-hover/row:translate-x-0">
+ <td className="px-6 py-4 text-right">
  <Link
  href={`/reports/${report.id}/download`}
- className="h-10 w-10 flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary/50 rounded-lgactive:group/btn"
+ className="inline-flex items-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
  >
- <Download className="h-4.5 w-4.5 group-hover/btn:transition-transform" />
+ Unduh
  </Link>
- </div>
  </td>
  </tr>
- )) : (
+ ))
+ ) : (
  <tr>
- <td colSpan={5} className="px-6 py-24 text-center">
- <div className="flex flex-col items-center gap-5">
- <div className="p-8 bg-slate-50 rounded-lg border border-slate-200
- <FileText className="h-12 w-12 text-slate-200" />
- </div>
- <p className="text-sm text-slate-400 ">
- {reports.data.length > 0 ? 'Tidak ada laporan yang cocok dengan pencarian' : 'Arsip laporan tidak ditemukan'}
- </p>
- </div>
+ <td colSpan={6} className="px-6 py-12 text-center text-sm text-slate-500">
+ Tidak ada laporan yang sesuai dengan pencarian.
  </td>
  </tr>
  )}
  </tbody>
  </table>
  </div>
- </div>
-
- <div className="flex items-center justify-center pt-8">
- <p className="text-xs font-semibold text-slate-300">
- Sistem Dokumentasi Terenkripsi • UIN SAIZU © 2024
- </p>
- </div>
+ </section>
  </div>
  </AppLayout>
- );
-}
-
-function SummaryCard({ icon: Icon, label, value, color }: { icon: any, label: string, value: number, color: string }) {
- return (
- <div className="bg-white p-7rounded-lg border border-slate-200 relative overflow-hidden group">
- <div className="relative z-10">
- <div className="flex items-center justify-between mb-8">
- <div className={clsx(
- "p-4 rounded-lg border",
- color === 'primary' ? "bg-slate-50 text-slate-400 border-slate-200   : "bg-amber-50 text-amber-500 border-amber-100"
- )}>
- <Icon className="h-6 w-6" />
- </div>
- <span className="h-2 w-2 rounded-lg bg-slate-100  transition-colors" />
- </div>
- <p className="text-sm text-slate-400 mb-2 text-sm">{label}</p>
- <div className="flex items-end gap-2">
- <p className="text-4xl font-semibold text-slate-900 ">{value}</p>
- <span className="text-xs text-sm text-slate-300 pb-1">Unit</span>
- </div>
- </div>
- </div>
  );
 }

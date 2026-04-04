@@ -173,6 +173,15 @@ export interface EvaluationItem {
   notes?: string;
 }
 
+export interface Announcement {
+  id: number;
+  title: string;
+  category: string;
+  content: string;
+  is_active: boolean;
+  published_at: string;
+}
+
 // Utility: checks if user has a specific role
 export function hasRole(user: User | null | undefined, role: string): boolean {
   return user?.roles?.includes(role) ?? false;

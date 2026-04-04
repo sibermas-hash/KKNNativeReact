@@ -3,7 +3,6 @@ import AppLayout from '@/Layouts/AppLayout';
 import {
  Calendar,
  MapPin,
- User,
  FileText,
  UploadCloud,
  GraduationCap,
@@ -15,6 +14,7 @@ import {
  Info,
  Rocket,
  Lock,
+ Zap,
  Beaker,
  ClipboardList,
  CheckCircle,
@@ -25,7 +25,7 @@ import {
  UserCircle
 } from 'lucide-react';
 import { clsx } from 'clsx';
-import { PageProps } from '@/types';
+import type { PageProps } from '@/types';
 
 interface Props {
  student: any;

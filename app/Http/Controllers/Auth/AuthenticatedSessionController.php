@@ -13,11 +13,15 @@ class AuthenticatedSessionController extends Controller
 {
     public function create(Request $request): Response
     {
-        $captcha = $this->generateCaptcha();
-        $request->session()->put('captcha_hash', $this->hashCaptchaAnswer($captcha['answer']));
+        // Only generate new captcha if one doesn't exist in session OR if forced refresh
+        if ($request->has('refresh') || !$request->session()->has('captcha_hash')) {
+            $captcha = $this->generateCaptcha();
+            $request->session()->put('captcha_hash', $this->hashCaptchaAnswer($captcha['answer']));
+            $request->session()->put('captcha_question', $captcha['question']);
+        }
 
         return Inertia::render('Auth/Login', [
-            'captcha_question' => $captcha['question'],
+            'captcha_question' => $request->session()->get('captcha_question'),
         ]);
     }
 
@@ -27,9 +31,10 @@ class AuthenticatedSessionController extends Controller
         $captchaHash = $request->session()->get('captcha_hash');
 
         if (!$captchaHash || !$this->verifyCaptchaAnswer($userAnswer, $captchaHash)) {
-            // Regenerate captcha for next attempt
+            // Force new captcha on failure
             $captcha = $this->generateCaptcha();
             $request->session()->put('captcha_hash', $this->hashCaptchaAnswer($captcha['answer']));
+            $request->session()->put('captcha_question', $captcha['question']);
 
             return back()->withErrors([
                 'captcha_answer' => 'Jawaban verifikasi keamanan salah.',
@@ -112,7 +117,7 @@ class AuthenticatedSessionController extends Controller
      */
     private function verifyCaptchaAnswer(?string $userAnswer, string $captchaHash): bool
     {
-        if ($userAnswer === null) {
+        if ($userAnswer === null || !is_numeric($userAnswer)) {
             return false;
         }
         

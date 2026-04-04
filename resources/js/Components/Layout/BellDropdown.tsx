@@ -1,10 +1,15 @@
-import { useState, useEffect, useRef } from 'react'
-import { BellIcon, CheckBadgeIcon, ClockIcon } from '@heroicons/react/24/outline'
-import axios from 'axios'
+import { useEffect, useRef, useState } from 'react';
+import axios from 'axios';
+import { BellIcon, CheckBadgeIcon, ClockIcon } from '@heroicons/react/24/outline';
 
-interface NotifItem {
- id: string; type: string; title: string; message: string
- action: string | null; priority: string; created_at: string
+interface NotificationItem {
+ id: string;
+ type: string;
+ title: string;
+ message: string;
+ action: string | null;
+ priority: string;
+ created_at: string;
 }
 
 const priorityDot: Record<string, string> = {
@@ -12,154 +17,158 @@ const priorityDot: Record<string, string> = {
  warning: 'bg-amber-400',
  error: 'bg-red-400',
  info: 'bg-blue-400',
-}
+};
 
 export default function BellDropdown() {
- const [open, setOpen] = useState(false)
- const [items, setItems] = useState<NotifItem[]>([])
- const [count, setCount] = useState(0)
- const ref = useRef<HTMLDivElement>(null)
+ const [open, setOpen] = useState(false);
+ const [items, setItems] = useState<NotificationItem[]>([]);
+ const [count, setCount] = useState(0);
+ const containerRef = useRef<HTMLDivElement>(null);
 
- // Polling setiap 60 detik (ringan)
  useEffect(() => {
- const fetch = async () => {
+ const fetchNotifications = async () => {
  try {
- const { data } = await axios.get('/api/notifications/unread')
- setItems(data.notifications)
- setCount(data.unread_count)
- } catch { /* silent fail */ }
+ const { data } = await axios.get('/api/notifications/unread');
+ setItems(data.notifications ?? []);
+ setCount(data.unread_count ?? 0);
+ } catch {
+ // biarkan senyap pada tampilan
  }
- fetch()
- const id = setInterval(fetch, 60_000)
- return () => clearInterval(id)
- }, [])
+ };
 
- // Close on outside click
+ fetchNotifications();
+ const intervalId = window.setInterval(fetchNotifications, 60_000);
+
+ return () => window.clearInterval(intervalId);
+ }, []);
+
  useEffect(() => {
- const handler = (e: MouseEvent) => {
- if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+ const handleOutsideClick = (event: MouseEvent) => {
+ if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+ setOpen(false);
  }
- document.addEventListener('mousedown', handler)
- return () => document.removeEventListener('mousedown', handler)
- }, [])
+ };
+
+ document.addEventListener('mousedown', handleOutsideClick);
+ return () => document.removeEventListener('mousedown', handleOutsideClick);
+ }, []);
 
  const markRead = async (id: string) => {
- await axios.post(`/api/notifications/${id}/read`)
- setItems(prev => prev.filter(n => n.id !== id))
- setCount(prev => Math.max(0, prev - 1))
+ try {
+ await axios.post(`/api/notifications/${id}/read`);
+ setItems((current) => current.filter((item) => item.id !== id));
+ setCount((current) => Math.max(0, current - 1));
+ } catch {
+ // abaikan kegagalan sementara
  }
+ };
 
  const markAllRead = async () => {
- await axios.post('/api/notifications/read-all')
- setItems([])
- setCount(0)
+ try {
+ await axios.post('/api/notifications/read-all');
+ setItems([]);
+ setCount(0);
+ } catch {
+ // abaikan kegagalan sementara
  }
+ };
 
  return (
- <div ref={ref} className="relative">
- {/* Bell button */}
- <button onClick={() => setOpen(o => !o)}
- className={`relative p-2.5 rounded-lg active:
- ${open ? 'bg-white/10 text-white : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
- <BellIcon className="w-5 h-5" />
+ <div ref={containerRef} className="relative">
+ <button
+ type="button"
+ onClick={() => setOpen((current) => !current)}
+ className={`relative rounded-lg p-2.5 transition ${
+ open ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'
+ }`}
+ >
+ <BellIcon className="h-5 w-5" />
  {count > 0 && (
- <span className="absolute top-2 right-2 flex h-2 w-2">
- <span className=></span>
- <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
- </span>
- )}
- </button>
-
- {/* Dropdown */}
- {open && (
- <div className="absolute right-0 top-14 w-80 z-[100] rounded-lg border border-white/10
- overflow-hidden glass-ui zoom-in-95"
- style={{ background: 'rgba(15, 23, 42, 0.95)', backdropFilter: 'blur(16px)' }}>
-
- {/* Header */}
- <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-white/2">
- <h3 className="text-white text-xs font-semibold 
- Notifikasi
- {count > 0 && (
- <span className="ml-2 px-2 py-0.5 rounded-md bg-red-500/20 text-red-500 text-[10px] font-semibold">
+ <span className="absolute right-1.5 top-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
  {count > 99 ? '99+' : count}
  </span>
  )}
- </h3>
+ </button>
+
+ {open && (
+ <div
+ className="absolute right-0 top-14 z-[100] w-80 overflow-hidden rounded-lg border border-white/10 shadow-2xl"
+ style={{ background: 'rgba(15, 23, 42, 0.95)', backdropFilter: 'blur(16px)' }}
+ >
+ <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+ <div className="flex items-center gap-2">
+ <h3 className="text-sm font-semibold text-white">Notifikasi</h3>
  {count > 0 && (
- <button onClick={markAllRead}
- className="text-[10px] font-semibold text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">
- <CheckBadgeIcon className="w-3 h-3" /> Tandai semua dibaca
+ <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-semibold text-red-300">
+ {count > 99 ? '99+' : count}
+ </span>
+ )}
+ </div>
+
+ {count > 0 && (
+ <button
+ type="button"
+ onClick={markAllRead}
+ className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-300 hover:text-blue-200"
+ >
+ <CheckBadgeIcon className="h-4 w-4" />
+ Tandai semua
  </button>
  )}
  </div>
 
- {/* Items */}
- <div className="max-h-96 overflow-y-auto custom-scrollbar">
- {items.length === 0 ? (
- <div className="py-6 text-center">
- <div className="w-12 h-12 rounded-full bg-slate-800/50 flex items-center justify-center mx-auto mb-3">
- <BellIcon className="w-6 h-6 text-slate-600" />
- </div>
- <p className="text-slate-500 text-xs font-medium">Belum ada notifikasi baru</p>
- </div>
- ) : items.map(item => (
- <div key={item.id}
- className="px-6 py-4 border-b border-white/5 hover:bg-white/3 transition-colors flex gap-4 group">
- <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5
- ${priorityDot[item.priority] ?? 'bg-blue-400'}`} />
- <div className="flex-1 min-w-0">
- <p className="text-white text-[12px] font-semibold leading-tight 
- <p className="text-slate-400 text-[11px] mt-1 leading-relaxed line-clamp-2 font-medium">
- {item.message}
- </p>
- <div className="flex items-center justify-between mt-3">
- <span className="text-slate-600 text-[10px] font-semibold flex items-center gap-1">
- <ClockIcon className="w-3 h-3" />
+ <div className="max-h-96 overflow-y-auto">
+ {items.length > 0 ? (
+ items.map((item) => (
+ <div key={item.id} className="border-b border-white/5 px-5 py-4">
+ <div className="flex gap-3">
+ <span
+ className={`mt-1 h-2 w-2 flex-shrink-0 rounded-full ${
+ priorityDot[item.priority] ?? 'bg-blue-400'
+ }`}
+ />
+ <div className="min-w-0 flex-1">
+ <p className="text-sm font-semibold text-white">{item.title}</p>
+ <p className="mt-1 text-xs leading-relaxed text-slate-300">{item.message}</p>
+ <div className="mt-3 flex items-center justify-between gap-3">
+ <span className="inline-flex items-center gap-1 text-[11px] text-slate-400">
+ <ClockIcon className="h-3.5 w-3.5" />
  {item.created_at}
  </span>
- <div className="flex gap-3">
+ <div className="flex items-center gap-3">
  {item.action && (
- <a href={item.action}
+ <a
+ href={item.action}
  onClick={() => markRead(item.id)}
- className="text-[10px] font-semibold text-blue-400 hover:text-blue-300 
- Lihat →
+ className="text-[11px] font-medium text-blue-300 hover:text-blue-200"
+ >
+ Lihat
  </a>
  )}
- <button onClick={() => markRead(item.id)}
- className="opacity-0 group-hover:opacity-100 text-[10px] font-semibold text-slate-500 hover:text-slate-300 
+ <button
+ type="button"
+ onClick={() => markRead(item.id)}
+ className="text-[11px] font-medium text-slate-400 hover:text-white"
+ >
  Tandai dibaca
  </button>
  </div>
  </div>
  </div>
  </div>
- ))}
  </div>
-
- <div className="px-6 py-3 border-t border-white/5 bg-white/2">
- <button className="w-full text-center text-[10px] font-semibold text-slate-500 hover:text-white transition-colors 
- Lihat arsip notifikasi
- </button>
+ ))
+ ) : (
+ <div className="px-5 py-8 text-center">
+ <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-800/60">
+ <BellIcon className="h-6 w-6 text-slate-500" />
+ </div>
+ <p className="mt-3 text-sm font-medium text-slate-300">Belum ada notifikasi baru</p>
+ </div>
+ )}
  </div>
  </div>
  )}
-
- <style>{`
- .custom-scrollbar::-webkit-scrollbar {
- width: 4px;
- }
- .custom-scrollbar::-webkit-scrollbar-track {
- background: transparent;
- }
- .custom-scrollbar::-webkit-scrollbar-thumb {
- background: rgba(255, 255, 255, 0.05);
- border-radius: 10px;
- }
- .custom-scrollbar::-webkit-scrollbar-thumb:hover {
- background: rgba(255, 255, 255, 0.1);
- }
- `}</style>
  </div>
- )
+ );
 }

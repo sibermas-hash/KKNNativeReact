@@ -6,7 +6,6 @@ import type { PageProps } from '@/types';
 import type { PaginationMeta } from '@/Components/UI/Pagination';
 import {
  UploadCloud,
- Map,
  MapPin,
  Users,
  Trash2,
@@ -15,7 +14,6 @@ import {
  FileSpreadsheet,
  ShieldCheck,
  Info,
- FileCheck,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -282,7 +280,7 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  <ShieldCheck className="h-6 w-6 text-primary" />
  </div>
  <div>
- <h4 className="text-sm font-semibold text-white"></h4>
+ <h4 className="text-sm font-semibold text-white">Integritas Data Wilayah</h4>
  <p className="text-xs font-semibold text-slate-500 mt-1  max-w-2xl">
  Data wilayah disinkronkan langsung dengan repositori pusat KKN. <br/>
  STATUS: SECURE_
@@ -311,19 +309,4 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  />
  </AppLayout>
  );
-}
-
-function SOPStep({ step, text }: { step: string; text: string }) {
- return (
- <div className="flex gap-5 group">
- <div className="flex flex-col items-center gap-2">
- <div className="h-10 w-10 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-xs font-semibold text-primary   {step}
- </div>
- <div className="w-[1px] h-full bg-slate-200 group-last:hidden" />
- </div>
- <div className="pb-6">
- <p className="text-xs text-sm text-slate-500 leading-normal pt-2">{text}</p>
- </div>
- </div>
- )
 }

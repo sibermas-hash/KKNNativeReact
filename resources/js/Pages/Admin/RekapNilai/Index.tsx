@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useForm, router, Head } from '@inertiajs/react';
+import { useForm, router, Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { route } from 'ziggy-js';
 import {
@@ -248,9 +248,9 @@ function StatCard({ label, value, icon: Icon, color }: any) {
         <div className="bg-white p-8 rounded-xl border border-slate-200 flex items-center justify-between group hover:border-emerald-300 transition-all shadow-sm">
             <div className="space-y-1">
                 <p className="text-xs font-bold text-slate-400 mb-1  transition-colors uppercase italic tracking-widest">{label}</p>
-                <p className="text-3xl font-bold text-slate-900 italic tracking-tighter transition-transform  || 0}</p>
+                <p className="text-3xl font-bold text-slate-900 italic tracking-tighter transition-transform">{value || 0}</p>
             </div>
-            <div className={clsx('p-4 rounded-xl border transition-all  colors[color])}>
+            <div className={clsx('p-4 rounded-xl border transition-all', colors[color])}>
                 <Icon className="w-6 h-6" />
             </div>
         </div>

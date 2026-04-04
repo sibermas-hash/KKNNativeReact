@@ -11,12 +11,9 @@ import {
  Edit2,
  Trash2,
  ShieldCheck,
- Database,
  Info,
  Copy,
  Map,
- Activity,
- Zap
 } from "lucide-react";
 import { clsx } from 'clsx';
 
@@ -288,10 +285,10 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  </button>
  <div className="flex gap-3">
  <button type="button" onClick={cancelForm} className="px-6 py-4 text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors">Batal</button>
- <button 
- type="submit" 
+ <button
+ type="submit"
  disabled={form.processing}
- className="px-10 py-4 bg-primary text-white rounded-lg font-semibold text-xs hover: hover:shadow-primary/20 transition-all disabled:opacity-50"
+ className="px-10 py-4 bg-primary text-white rounded-lg font-semibold text-xs hover:bg-primary/90 transition-all disabled:opacity-50"
  >
  {editing ? 'Simpan' : 'Simpan'}
  </button>
@@ -412,7 +409,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  <ShieldCheck className="h-6 w-6 text-primary" />
  </div>
  <div>
- <h4 className="text-sm font-semibold text-white"></h4>
+ <h4 className="text-sm font-semibold text-white">Keamanan Siklus Periode</h4>
  <p className="text-xs font-semibold text-slate-500 mt-1  max-w-2xl">
  Seluruh parameter temporal terekam dalam audit sistem universitas. Mengaktifkan status <span className="text-primary">Aktif</span> akan membuka pintu pendaftaran bagi publik.
  </p>
@@ -426,18 +423,18 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  open={!!duplicating}
  onClose={() => !duplicateForm.processing && setDuplicating(null)}
  onConfirm={() => duplicating && duplicateForm.post(`/admin/periods/${duplicating.id}/duplicate`, { onSuccess: () => setDuplicating(null) })}
- title="Duplikasi_PERIODE"
+ title="Duplikasi Periode"
  message={`Inisiasi database baru berbasis "${duplicating?.name}"?`}
  processing={duplicateForm.processing}
- confirmLabel="KONFIRMASI_Duplikasi"
+ confirmLabel="Ya, duplikasi"
  />
 
  <ConfirmDialog
  open={!!deleting}
  onClose={() => !deleteForm.processing && setDeleting(null)}
  onConfirm={() => deleting && deleteForm.delete(`/admin/periods/${deleting.id}`, { onSuccess: () => setDeleting(null) })}
- title="PENGHapusAN_DATA"
- message={deleting?.can_delete ? `Hapus siklus "${deleting.name}" dari basis data?` : deleting?.delete_blocker}
+ title="Hapus Periode"
+ message={deleting?.can_delete ? `Hapus siklus "${deleting.name}" dari basis data?` : (deleting?.delete_blocker ?? 'Periode ini tidak dapat dihapus saat ini.')}
  processing={deleteForm.processing}
  confirmLabel="Ya, hapus"
  />

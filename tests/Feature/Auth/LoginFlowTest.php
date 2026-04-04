@@ -25,7 +25,7 @@ it('allows a local user to log in with username and captcha', function () {
             'remember' => false,
         ]);
 
-    $response->assertRedirect('/');
+    $response->assertRedirect('/dashboard');
     $this->assertAuthenticatedAs($user);
 });
 

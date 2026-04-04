@@ -151,7 +151,8 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
                                             </div>
                                         </div>
                                         <ChevronRight className={clsx(
-                                            "w-4 h-4 transition-transform                                             selectedStudent?.id === student.id ? "text-primary" : "text-slate-200"
+                                            "w-4 h-4 transition-transform",
+                                            selectedStudent?.id === student.id ? "text-primary" : "text-slate-200"
                                         )} />
                                     </button>
                                 ))}

@@ -1,18 +1,7 @@
-import { useForm, Link } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { FormInput, FormSelect, Button } from '@/Components/ui';
-import type { PageProps, Faculty, Program } from '@/types';
-import {
- UserPlus,
- UserCircle,
- ShieldCheck,
- Key,
- ChevronLeft,
- Fingerprint,
- Loader2,
- Briefcase,
- GraduationCap
-} from 'lucide-react';
+import { FormInput, FormSelect } from '@/Components/ui';
+import type { Faculty, PageProps, Program } from '@/types';
 
 interface Props extends PageProps {
  faculties: Faculty[];
@@ -34,250 +23,226 @@ export default function UserForm({ faculties, programs }: Props) {
  gender: '',
  });
 
- function handleSubmit(e: React.FormEvent) {
- e.preventDefault();
- form.post('/admin/users');
- }
-
  const isStudent = form.data.role === 'student';
  const isDpl = form.data.role === 'dpl';
  const isFacultyAdmin = form.data.role === 'faculty_admin';
 
+ const filteredPrograms = form.data.faculty_id
+ ? programs.filter((program) => String(program.faculty_id) === String(form.data.faculty_id))
+ : programs;
+
+ const handleSubmit = (event: React.FormEvent) => {
+ event.preventDefault();
+ form.post('/admin/users');
+ };
+
  return (
- <AppLayout title="Tambah Pengguna Baru">
- <div className="max-w-5xl mx-auto space-y-8 pb-20">
- 
- {/* 
- Emerald Premium Header 
- Refining from basic header to lush tactical emerald gradient
- */}
- <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
- 
- <div className="relative z-10 space-y-5 flex-1">
- <div className="flex items-center gap-6 mb-2">
- <Link 
- href="/admin/users"
- className="group/back flex items-center gap-2.5 px-4 py-2 bg-white/10 hover:bg-white/20 border border-slate-200 rounded-lg
- >
- <ChevronLeft className="w-4 h-4 text-emerald-300 group-hover/back:-translate-x-1 transition-transform" />
- <span className="text-xs font-semibold text-white ">Kembali</span>
- </Link>
- <div className="h-4 w-px bg-white/10" />
- <div className="flex items-center gap-3">
- <div className="p-2 bg-emerald-500/20 rounded-lg border border-emerald-500/30">
- <Fingerprint className="h-3.5 w-3.5 text-emerald-300" />
- </div>
- <span className="text-xs font-semibold text-emerald-100 ">
- IDENTITY_PROVISIONING_V3
- </span>
- </div>
- </div>
- <h1 className="text-4xl md:text-5xl font-semibold text-white ">
- Registrasi <span className="text-emerald-300">Personel</span>
- </h1>
- <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
- Inisialisasi record baru dalam registry pusat. Pastikan seluruh parameter administratif dan peran otorisasi telah diverifikasi sesuai protokol keamanan.
+ <AppLayout title="Tambah Pengguna">
+ <Head title="Tambah Pengguna" />
+
+ <div className="mx-auto max-w-5xl space-y-6">
+ <section className="rounded-lg border border-slate-200 bg-white p-8">
+ <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+ <div>
+ <h1 className="text-2xl font-semibold text-slate-900">Tambah Pengguna Baru</h1>
+ <p className="mt-2 text-sm text-slate-500">
+ Buat akun baru untuk administrator, admin fakultas, DPL, atau mahasiswa.
  </p>
  </div>
 
- <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
- <div className="bg-white/10 p-6 rounded-lg border border-slate-200 flex items-center gap-6 min-w-[240px]">
- <div className="p-3 bg-white rounded-lg text-primary
- <ShieldCheck className="h-6 w-6" />
+ <Link
+ href="/admin/users"
+ className="inline-flex items-center justify-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
+ >
+ Kembali ke daftar pengguna
+ </Link>
  </div>
- <div>
- <span className="text-xs font-semibold text-emerald-200/60 block mb-1.5">Status Keamanan</span>
- <span className="text-xl font-semibold text-white ">Koneksi Terenkripsi</span>
- </div>
- </div>
- </div>
- </div>
+ </section>
 
- <form onSubmit={handleSubmit} className="space-y-8">
- {/* Role Selection */}
- <div className="bg-white p-8rounded-lg border border-slate-200 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-8 text-primary pointer-events-none ">
- <ShieldCheck className="h-32 w-32" />
- </div>
- 
- <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
- <div className="md:col-span-4 space-y-1">
- <h3 className="text-sm text-slate-900 Akses</h3>
- <p className="text-xs text-slate-500 font-medium">Tentukan peran pengguna dalam sistem.</p>
- </div>
- <div className="md:col-span-8">
+ <form onSubmit={handleSubmit} className="space-y-6">
+ <section className="rounded-lg border border-slate-200 bg-white p-6">
+ <h2 className="text-lg font-semibold text-slate-900">Akun Utama</h2>
+ <div className="mt-6 grid gap-6 md:grid-cols-2">
  <FormSelect
- id="role" 
+ id="role"
+ label="Peran"
  required
- options={[
- { value: 'superadmin', label: 'Administrator Sistem' },
- { value: 'faculty_admin', label: 'Admin Fakultas' },
- { value: 'dpl', label: 'Dosen Pembimbing Lapangan (DPL)' },
- { value: 'student', label: 'Mahasiswa Peserta KKN' }
- ]}
- placeholder="Pilih peran..."
  value={form.data.role}
- onChange={(e) => form.setData('role', e.target.value)}
+ onChange={(event) => form.setData('role', event.target.value)}
  error={form.errors.role}
- className="h-14 text-sm text-slate-700"
- />
- </div>
- </div>
- </div>
-
- {/* Basic Info */}
- <div className="bg-white p-10 rounded-lg border border-slate-200 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-10 text-slate-900 pointer-events-none group-transition-transform">
- <Key className="h-40 w-40 transformx-1/4/4" />
- </div>
-
- <div className="relative z-10">
- <div className="flex items-center gap-4 mb-10 border-b border-slate-200 pb-6">
- <div className="p-3 bg-slate-900 text-primary rounded-lg
- <UserCircle className="w-6 h-6" />
- </div>
- <div>
- <h3 className="text-lg text-sm text-slate-900 ">Informasi Akun Utama</h3>
- <p className="text-xs text-sm text-slate-400 mt-2">Kredensial & Identitas Dasar</p>
- </div>
- </div>
-
- <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
- <FormInput label="Nama Lengkap" id="name" placeholder="Misal: Dr. Ahmad Fauzi, M.Pd." value={form.data.name} onChange={(e: any) => form.setData('name', e.target.value)} error={form.errors.name} required />
- <FormInput label="Username" id="username" placeholder="Gunakan NIM/NIP atau teks unik" value={form.data.username} onChange={(e: any) => form.setData('username', e.target.value)} error={form.errors.username} required />
- <FormInput label="Email Institusi" id="email" type="email" placeholder="example@uinsaizu.ac.id" value={form.data.email} onChange={(e: any) => form.setData('email', e.target.value)} error={form.errors.email} required />
- <FormInput label="Kata Sandi" id="password" type="password" placeholder="Minimal 8 karakter" value={form.data.password} onChange={(e: any) => form.setData('password', e.target.value)} error={form.errors.password} required />
- </div>
- </div>
- </div>
-
- {/* Student Specific */}
- {isStudent && (
- <div className="bg-white p-10 rounded-lg border border-slate-200 group">
- <div className="flex items-center gap-4 mb-10 border-b border-slate-200 pb-6">
- <div className="p-3 bg-primary text-white rounded-lg
- <GraduationCap className="w-6 h-6" />
- </div>
- <div>
- <h3 className="text-lg text-sm text-slate-900 ">Data Mahasiswa</h3>
- <p className="text-xs text-sm text-slate-400 mt-2">Distribusi Unit Akademik</p>
- </div>
- </div>
-
- <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
- <FormInput label="Nomor Induk Mahasiswa (NIM)" id="nim" placeholder="20210001" value={form.data.nim} onChange={(e: any) => form.setData('nim', e.target.value)} error={form.errors.nim} required />
- <FormSelect 
- label="Jenis Kelamin"
- id="gender" 
+ placeholder="Pilih peran"
  options={[
- { value: 'L', label: 'Laki-laki' }, 
- { value: 'P', label: 'Perempuan' }
- ]} 
- placeholder="Pilih jenis..." 
- value={form.data.gender} 
- onChange={(e) => form.setData('gender', e.target.value)} 
- error={form.errors.gender} 
- required 
+ { value: 'superadmin', label: 'Superadmin' },
+ { value: 'faculty_admin', label: 'Admin fakultas' },
+ { value: 'dpl', label: 'DPL' },
+ { value: 'student', label: 'Mahasiswa' },
+ ]}
  />
- <FormInput label="Angkatan" id="batch_year" type="number" placeholder="2021" value={form.data.batch_year} onChange={(e: any) => form.setData('batch_year', e.target.value)} error={form.errors.batch_year} required />
- 
- <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
- <FormSelect label="Fakultas" id="faculty_id" options={faculties.map(f => ({ value: f.id, label: f.name }))} placeholder="Pilih fakultas..." value={form.data.faculty_id} onChange={(e) => form.setData('faculty_id', e.target.value)} error={form.errors.faculty_id} required />
- <FormSelect label="Program Studi" id="program_id" options={programs.map(p => ({ value: p.id, label: p.name }))} placeholder="Pilih prodi..." value={form.data.program_id} onChange={(e) => form.setData('program_id', e.target.value)} error={form.errors.program_id} required />
+ <div />
+
+ <FormInput
+ id="name"
+ label="Nama lengkap"
+ required
+ value={form.data.name}
+ onChange={(event) => form.setData('name', event.target.value)}
+ error={form.errors.name}
+ />
+ <FormInput
+ id="username"
+ label="Username"
+ required
+ value={form.data.username}
+ onChange={(event) => form.setData('username', event.target.value)}
+ error={form.errors.username}
+ />
+ <FormInput
+ id="email"
+ type="email"
+ label="Email"
+ required
+ value={form.data.email}
+ onChange={(event) => form.setData('email', event.target.value)}
+ error={form.errors.email}
+ />
+ <FormInput
+ id="password"
+ type="password"
+ label="Kata sandi"
+ required
+ value={form.data.password}
+ onChange={(event) => form.setData('password', event.target.value)}
+ error={form.errors.password}
+ />
  </div>
+ </section>
+
+ {(isStudent || isDpl || isFacultyAdmin) && (
+ <section className="rounded-lg border border-slate-200 bg-white p-6">
+ <h2 className="text-lg font-semibold text-slate-900">Afiliasi Fakultas</h2>
+ <div className="mt-6 grid gap-6 md:grid-cols-2">
+ <FormSelect
+ id="faculty_id"
+ label="Fakultas"
+ required
+ value={form.data.faculty_id}
+ onChange={(event) => {
+ form.setData('faculty_id', event.target.value);
+ if (isStudent) {
+ form.setData('program_id', '');
+ }
+ }}
+ error={form.errors.faculty_id}
+ placeholder="Pilih fakultas"
+ options={faculties.map((faculty) => ({
+ value: faculty.id,
+ label: faculty.name,
+ }))}
+ />
  </div>
- </div>
+ </section>
  )}
 
- {/* DPL Specific */}
- {isDpl && (
- <div className="bg-white p-10 rounded-lg border border-slate-200 group">
- <div className="flex items-center gap-4 mb-10 border-b border-slate-200 pb-6">
- <div className="p-3 bg-slate-900 text-primary rounded-lg
- <Briefcase className="w-6 h-6" />
+ {isStudent && (
+ <section className="rounded-lg border border-slate-200 bg-white p-6">
+ <h2 className="text-lg font-semibold text-slate-900">Data Mahasiswa</h2>
+ <div className="mt-6 grid gap-6 md:grid-cols-2">
+ <FormInput
+ id="nim"
+ label="NIM"
+ required
+ value={form.data.nim}
+ onChange={(event) => form.setData('nim', event.target.value)}
+ error={form.errors.nim}
+ />
+ <FormInput
+ id="batch_year"
+ type="number"
+ label="Angkatan"
+ required
+ value={form.data.batch_year}
+ onChange={(event) => form.setData('batch_year', event.target.value)}
+ error={form.errors.batch_year}
+ />
+ <FormSelect
+ id="gender"
+ label="Jenis kelamin"
+ required
+ value={form.data.gender}
+ onChange={(event) => form.setData('gender', event.target.value)}
+ error={form.errors.gender}
+ placeholder="Pilih jenis kelamin"
+ options={[
+ { value: 'L', label: 'Laki-laki' },
+ { value: 'P', label: 'Perempuan' },
+ ]}
+ />
+ <FormSelect
+ id="program_id"
+ label="Program studi"
+ required
+ value={form.data.program_id}
+ onChange={(event) => form.setData('program_id', event.target.value)}
+ error={form.errors.program_id}
+ placeholder="Pilih program studi"
+ options={filteredPrograms.map((program) => ({
+ value: program.id,
+ label: program.name,
+ }))}
+ />
  </div>
- <div>
- <h3 className="text-lg text-sm text-slate-900 ">Data Dosen</h3>
- <p className="text-xs text-sm text-slate-400 mt-2">Identitas Tugas Lapangan</p>
- </div>
- </div>
+ </section>
+ )}
 
- <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
- <FormInput label="NIP / NIDN" id="nip" placeholder="19800101..." value={form.data.nip} onChange={(e: any) => form.setData('nip', e.target.value)} error={form.errors.nip} required />
- <FormSelect label="Homebase Fakultas" id="faculty_id" options={faculties.map(f => ({ value: f.id, label: f.name }))} placeholder="Pilih fakultas..." value={form.data.faculty_id} onChange={(e) => form.setData('faculty_id', e.target.value)} error={form.errors.faculty_id} required />
+ {isDpl && (
+ <section className="rounded-lg border border-slate-200 bg-white p-6">
+ <h2 className="text-lg font-semibold text-slate-900">Data DPL</h2>
+ <div className="mt-6 grid gap-6 md:grid-cols-2">
+ <FormInput
+ id="nip"
+ label="NIP / NIDN"
+ required
+ value={form.data.nip}
+ onChange={(event) => form.setData('nip', event.target.value)}
+ error={form.errors.nip}
+ />
  </div>
- </div>
+ </section>
  )}
 
  {isFacultyAdmin && (
- <div className="bg-white p-10 rounded-lg border border-slate-200 group">
- <div className="flex items-center gap-4 mb-10 border-b border-slate-200 pb-6">
- <div className="p-3 bg-primary text-white rounded-lg
- <Briefcase className="w-6 h-6" />
- </div>
- <div>
- <h3 className="text-lg text-sm text-slate-900 ">Akses Fakultas</h3>
- <p className="text-xs text-sm text-slate-400 mt-2">Akun ini hanya dapat melihat rekap nilai akhir fakultas.</p>
- </div>
- </div>
-
- <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
- <FormSelect
- label="Fakultas"
- id="faculty_id"
- options={faculties.map(f => ({ value: f.id, label: f.name }))}
- placeholder="Pilih fakultas..."
- value={form.data.faculty_id}
- onChange={(e) => form.setData('faculty_id', e.target.value)}
- error={form.errors.faculty_id}
- required
- />
- </div>
- </div>
+ <section className="rounded-lg border border-slate-200 bg-white p-6">
+ <h2 className="text-lg font-semibold text-slate-900">Akses Admin Fakultas</h2>
+ <p className="mt-2 text-sm text-slate-500">
+ Akun ini hanya dipakai untuk melihat rekap nilai akhir pada fakultas yang dipilih.
+ </p>
+ </section>
  )}
 
- {/* Submit Area */}
- <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-10 border-t border-slate-200">
- <div className="flex items-start gap-4 max-w-xl self-start">
- <ShieldCheck className="w-5 h-5 text-slate-300 shrink-0 mt-0.5" />
- <div className="space-y-1">
- <h4 className="text-xs font-extrabold text-slate-400 ">Verifikasi Keamanan Dasar</h4>
- <p className="text-xs text-slate-400 font-medium leading-normal">
- Pastikan data yang dimasukkan telah sesuai dengan identitas resmi. Akun akan langsung aktif setelah proses penyimpanan selesai.
+ <section className="rounded-lg border border-slate-200 bg-white p-6">
+ <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+ <p className="text-sm text-slate-500">
+ Akun akan langsung aktif setelah data berhasil disimpan.
  </p>
- </div>
- </div>
-
- <div className="flex items-center gap-4 w-full md:w-auto">
+ <div className="flex gap-3">
  <Link
  href="/admin/users"
- className="flex-1 md:flex-none px-6 py-5 bg-white text-slate-400 text-xs text-sm rounded-lg border border-slate-200 hover:bg-slate-50 hover:text-slate-600text-center"
+ className="inline-flex items-center justify-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
  >
  Batal
  </Link>
- <Button
+ <button
  type="submit"
  disabled={form.processing}
- className="flex-1 md:flex-none px-6 py-5 bg-slate-900 text-white rounded-lg hover:bg-slate-800text-sm"
+ className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-60"
  >
- {form.processing ? (
- <div className="flex items-center gap-2">
- <Loader2 className="w-4 h-4" />
- <span>Menyimpan...</span>
- </div>
- ) : (
- <div className="flex items-center gap-2">
- <UserPlus className="w-4 h-4" />
- <span>Simpan Pengguna</span>
- </div>
- )}
- </Button>
+ {form.processing ? 'Menyimpan...' : 'Simpan pengguna'}
+ </button>
  </div>
  </div>
+ </section>
  </form>
  </div>
  </AppLayout>
  );
 }
-

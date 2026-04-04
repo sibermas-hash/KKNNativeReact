@@ -5,8 +5,9 @@ interface PreviewItem {
  id: number | null;
  nim: string;
  name: string;
- discipline: number;
- attitude: number;
+ final_report_score: number;
+ execution_score: number;
+ article_score: number;
  status: 'READY' | 'NOT_IN_GROUP' | 'NOT_FOUND';
 }
 
@@ -16,6 +17,11 @@ interface Props {
  id: number;
  name: string;
  period_name: string;
+ };
+ dplWeights: {
+ final_report: number;
+ execution: number;
+ article: number;
  };
 }
 
@@ -31,8 +37,17 @@ function statusLabel(status: PreviewItem['status']): string {
  return 'NIM tidak ditemukan';
 }
 
-export default function ImportPreview({ preview, group }: Props) {
+export default function ImportPreview({ preview, group, dplWeights }: Props) {
  const readyCount = preview.filter((item) => item.status === 'READY').length;
+ const payloadRows = preview.map((item) => ({
+ id: item.id,
+ nim: item.nim,
+ name: item.name,
+ final_report_score: item.final_report_score,
+ execution_score: item.execution_score,
+ article_score: item.article_score,
+ status: item.status,
+ }));
 
  return (
  <AppLayout title="Pratinjau Impor Evaluasi">
@@ -46,6 +61,9 @@ export default function ImportPreview({ preview, group }: Props) {
  </p>
  <p className="mt-1 text-sm text-slate-500">
  {readyCount} dari {preview.length} baris siap diimpor.
+ </p>
+ <p className="mt-1 text-sm text-slate-500">
+ Bobot aktif: Laporan Akhir {dplWeights.final_report}%, Pelaksanaan {dplWeights.execution}%, Artikel {dplWeights.article}%.
  </p>
  </section>
 
@@ -63,7 +81,7 @@ export default function ImportPreview({ preview, group }: Props) {
  onClick={() => {
  router.post('/dpl/evaluations/import', {
  group_id: group.id,
- data: preview,
+ data: payloadRows,
  });
  }}
  className="rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
@@ -77,8 +95,9 @@ export default function ImportPreview({ preview, group }: Props) {
  <thead className="bg-slate-50">
  <tr>
  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Mahasiswa</th>
- <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Kedisiplinan</th>
- <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Sikap</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Laporan Akhir</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Pelaksanaan</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Artikel</th>
  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Status</th>
  </tr>
  </thead>
@@ -89,8 +108,9 @@ export default function ImportPreview({ preview, group }: Props) {
  <p className="text-sm font-medium text-slate-900">{item.name}</p>
  <p className="text-xs text-slate-500">{item.nim}</p>
  </td>
- <td className="px-6 py-4 text-sm text-slate-600">{item.discipline}</td>
- <td className="px-6 py-4 text-sm text-slate-600">{item.attitude}</td>
+ <td className="px-6 py-4 text-sm text-slate-600">{item.final_report_score}</td>
+ <td className="px-6 py-4 text-sm text-slate-600">{item.execution_score}</td>
+ <td className="px-6 py-4 text-sm text-slate-600">{item.article_score}</td>
  <td className="px-6 py-4">
  <span
  className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${

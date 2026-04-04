@@ -1,16 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { StatusBadge } from '@/Components/ui';
-import {
- Download,
- FileText,
- FileUp,
- Film,
- ImageIcon,
- Map,
- ShieldCheck,
- UploadCloud,
-} from 'lucide-react';
 
 interface ProgressItem {
  type: string;
@@ -37,19 +27,6 @@ interface Props {
  reportTypes: ReportTypeOption[];
 }
 
-function getReportIcon(type: string) {
- switch (type) {
- case 'video_documentation':
- return <Film className="h-5 w-5" />;
- case 'photo_documentation':
- return <ImageIcon className="h-5 w-5" />;
- case 'village_map':
- return <Map className="h-5 w-5" />;
- default:
- return <FileText className="h-5 w-5" />;
- }
-}
-
 export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  const form = useForm({
  type: reportTypes[0]?.type ?? '',
@@ -57,11 +34,10 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  file: null as File | null,
  });
 
- const selectedType = reportTypes.find((item) => item.type === form.data.type) ?? reportTypes[0] ?? null;
+ const selectedType = reportTypes.find((item) => item.type === form.data.type) ?? null;
 
- const submit = (event: React.FormEvent) => {
+ const handleSubmit = (event: React.FormEvent) => {
  event.preventDefault();
-
  form.post('/student/reports/upload', {
  forceFormData: true,
  onSuccess: () => form.reset('title', 'file'),
@@ -69,114 +45,62 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  };
 
  return (
- <AppLayout title="Pusat Dokumen Kelompok">
- <Head title="Pusat Dokumen Kelompok" />
+ <AppLayout title="Dokumen Kelompok">
+ <Head title="Dokumen Kelompok" />
 
- <div className="space-y-8 pb-24">
- <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-10 border-b border-slate-200">
+ <div className="space-y-6">
+ <section className="rounded-lg border border-slate-200 bg-white p-8">
+ <h1 className="text-2xl font-semibold text-slate-900">Dokumen Kelompok</h1>
+ <p className="mt-2 text-sm text-slate-500">
+ Unggah dokumen pendukung kelompok dan pantau status dokumen yang sudah terkirim.
+ </p>
+ </section>
+
+ <div className="grid gap-6 lg:grid-cols-3">
+ <section className="space-y-4 lg:col-span-2">
+ {progress.length > 0 ? (
+ progress.map((item) => (
+ <article key={item.type} className="rounded-lg border border-slate-200 bg-white p-6">
+ <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
  <div>
- <div className="flex items-center gap-2 mb-4">
- <ShieldCheck className="h-4 w-4 text-primary" />
- <span className="text-xs text-sm text-slate-400 ">
- Arsip Pendukung KKN
- </span>
- </div>
- <h1 className="text-4xl font-extrabold text-slate-900 ">
- Pusat <span className="text-primary">Dokumen</span> Kelompok
- </h1>
- <p className="text-slate-500 text-sm mt-4 font-medium leading-normal max-w-2xl">
- Unggah dokumen pendukung kelompok seperti peta desa, dokumentasi foto, video kegiatan, daftar hadir, dan laporan evaluasi.
- </p>
- </div>
-
- <div className="bg-whiterounded-lg border border-slate-200 p-6 min-w-[240px]">
- <p className="text-xs font-semibold text-slate-400 mb-2">
- Status Arsip
- </p>
- <p className="text-2xl font-semibold text-slate-900 
- {progress.filter((item) => item.report).length}
- <span className="text-xs text-sm text-slate-300 ml-2">
- Terkirim
- </span>
- </p>
- </div>
- </div>
-
- <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
- <section className="xl:col-span-2 space-y-6">
- {progress.map((item) => (
- <article
- key={item.type}
- className="bg-white rounded-lg border border-slate-100 p-8 hover:border-primary"
- >
- <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
- <div className="flex items-start gap-5">
- <div className="h-14 w-14 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400">
- {getReportIcon(item.type)}
- </div>
- <div className="space-y-2">
- <p className="text-xs font-semibold text-slate-400 ">
- {item.name}
- </p>
- <h3 className="text-xl font-semibold text-slate-900 ">
- {item.name}
- </h3>
- <p className="text-sm font-medium text-slate-500">
- {item.report?.title ?? 'Belum ada dokumen yang diunggah untuk kategori ini.'}
+ <h2 className="text-lg font-semibold text-slate-900">{item.name}</h2>
+ <p className="mt-1 text-sm text-slate-500">
+ {item.report?.title || 'Belum ada dokumen pada kategori ini.'}
  </p>
  {item.report?.file_name && (
- <p className="text-sm text-slate-400 ">
- File: {item.report.file_name}
- </p>
+ <p className="mt-1 text-xs text-slate-500">{item.report.file_name}</p>
  )}
  </div>
- </div>
-
  <div className="flex items-center gap-3">
- <StatusBadge
- status={item.report?.status ?? item.status}
- className="px-5 py-2 rounded-lg text-xs font-semibold border-none
- />
+ <StatusBadge status={item.report?.status || item.status} />
  {item.report && (
  <a
  href={`/reports/${item.report.id}/download`}
- className="h-11 px-5 rounded-lg border border-slate-200 text-slate-500 hover:text-primary hover:border-primary/30inline-flex items-center gap-2 text-xs font-semibold 
+ className="inline-flex items-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
  >
- <Download className="h-4 w-4" />
  Unduh
  </a>
  )}
  </div>
  </div>
  </article>
- ))}
+ ))
+ ) : (
+ <div className="rounded-lg border border-slate-200 bg-white px-6 py-12 text-center text-sm text-slate-500">
+ Belum ada dokumen yang dipantau.
+ </div>
+ )}
  </section>
 
- <section className="bg-white rounded-lg border border-slate-100 p-8 h-fit">
- <div className="flex items-center gap-4 mb-8">
- <div className="p-3 bg-primary/10 rounded-lg text-primary">
- <UploadCloud className="h-6 w-6" />
- </div>
- <div>
- <h2 className="text-sm font-semibold text-slate-900">
- Upload Dokumen
- </h2>
- <p className="text-xs text-sm text-slate-400 mt-1">
- Kirim arsip pendukung kelompok
- </p>
- </div>
- </div>
-
- <form onSubmit={submit} className="space-y-6">
- <div className="space-y-3">
- <label className="text-xs font-semibold text-slate-400 ">
- Jenis Dokumen
- </label>
+ <section className="rounded-lg border border-slate-200 bg-white p-6">
+ <h2 className="text-lg font-semibold text-slate-900">Unggah Dokumen</h2>
+ <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+ <div className="space-y-2">
+ <label className="block text-sm font-medium text-slate-700">Jenis dokumen</label>
  <select
  value={form.data.type}
  onChange={(event) => form.setData('type', event.target.value)}
- className="w-full h-14 rounded-lg border border-slate-200 bg-slate-50 px-5 text-sm text-slate-900 outline-none focus:border-primary/40"
- required
+ className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
  >
  {reportTypes.map((type) => (
  <option key={type.type} value={type.type}>
@@ -184,67 +108,45 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  </option>
  ))}
  </select>
- {form.errors.type && (
- <p className="text-xs font-semibold text-rose-500 ">
- {form.errors.type}
- </p>
- )}
  </div>
 
- <div className="space-y-3">
- <label className="text-xs font-semibold text-slate-400 ">
- Judul Dokumen
- </label>
+ <div className="space-y-2">
+ <label className="block text-sm font-medium text-slate-700">Judul dokumen</label>
  <input
  type="text"
  value={form.data.title}
  onChange={(event) => form.setData('title', event.target.value)}
- placeholder={selectedType ? `Contoh: ${selectedType.name} Kelompok` : 'Masukkan judul dokumen'}
- className="w-full h-14 rounded-lg border border-slate-200 bg-slate-50 px-5 text-sm text-slate-900 outline-none focus:border-primary/40"
- required
+ className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
  />
- {form.errors.title && (
- <p className="text-xs font-semibold text-rose-500 ">
- {form.errors.title}
- </p>
- )}
+ {form.errors.title && <p className="text-xs text-red-600">{form.errors.title}</p>}
  </div>
 
- <div className="space-y-3">
- <label className="text-xs font-semibold text-slate-400 ">
- File Dokumen
- </label>
- <label className="flex flex-col items-center justify-centerrounded-lg border-2 border-dashed border-slate-200 bg-slate-50 px-6 py-6 text-center cursor-pointer hover:border-primary/40">
- <FileUp className="h-8 w-8 text-slate-300 mb-4" />
- <span className="text-sm font-semibold text-slate-700 ">
- {form.data.file ? form.data.file.name : 'Klik untuk memilih file'}
- </span>
- {selectedType && (
- <span className="text-xs text-sm text-slate-400 mt-3">
- Format: {selectedType.allowed_types.join(', ')} • Maks {selectedType.max_size_mb} MB
- </span>
- )}
+ <div className="space-y-2">
+ <label className="block text-sm font-medium text-slate-700">File</label>
  <input
  type="file"
- className="hidden"
  onChange={(event) => form.setData('file', event.target.files?.[0] ?? null)}
- accept={selectedType ? selectedType.allowed_types.map((extension) => `.${extension}`).join(',') : undefined}
- required
+ accept={
+ selectedType
+ ? selectedType.allowed_types.map((extension) => `.${extension}`).join(',')
+ : undefined
+ }
+ className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary"
  />
- </label>
- {form.errors.file && (
- <p className="text-xs font-semibold text-rose-500 ">
- {form.errors.file}
+ {selectedType && (
+ <p className="text-xs text-slate-500">
+ Format: {selectedType.allowed_types.join(', ')}. Maksimal {selectedType.max_size_mb} MB.
  </p>
  )}
+ {form.errors.file && <p className="text-xs text-red-600">{form.errors.file}</p>}
  </div>
 
  <button
  type="submit"
  disabled={form.processing || reportTypes.length === 0}
- className="w-full h-14 rounded-lg bg-slate-900 text-white font-semibold text-xs hover:bg-blackdisabled:opacity-50"
+ className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-60"
  >
- {form.processing ? 'Mengirim Dokumen...' : 'Kirim Dokumen'}
+ {form.processing ? 'Mengirim...' : 'Unggah dokumen'}
  </button>
  </form>
  </section>

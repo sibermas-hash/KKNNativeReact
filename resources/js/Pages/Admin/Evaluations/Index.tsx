@@ -63,7 +63,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
+ <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200">
  <BarChart3 className="h-4 w-4 text-emerald-300" />
  </div>
  <span className="text-xs font-semibold text-emerald-100 ">
@@ -176,7 +176,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  <tr>
  <td colSpan={6} className="px-6 py-40 text-center">
  <div className="flex flex-col items-center gap-6">
- <div className="p-10 bg-slate-50 rounded-lg border border-slate-200
+ <div className="p-10 bg-slate-50 rounded-lg border border-slate-200">
  <Star className="h-20 w-20 text-slate-200" />
  </div>
  <p className="text-sm font-semibold text-slate-400">SYSTEM_INFO: NO_EVALUATION_RECORDS_DETECTED</p>

@@ -10,8 +10,6 @@ import {
     ShieldCheck,
     Database,
     Zap,
-    Cpu,
-    ArrowRight,
     Terminal,
 } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -42,7 +40,7 @@ export default function AuditLogShow({ log }: Props) {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6 uppercase italic">
                     <div className="flex items-center gap-6">
                         <Link 
-                            href={route('admin.audit-logs.index')}
+                            href={route('admin.audit-log.index')}
                             className="h-12 w-12 bg-white border border-slate-200 text-slate-400 hover:text-emerald-600 rounded-xl flex items-center justify-center transition-all shadow-sm active:scale-95"
                         >
                             <ChevronLeft className="w-5 h-5" />

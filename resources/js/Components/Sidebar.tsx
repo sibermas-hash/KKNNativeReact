@@ -19,7 +19,8 @@ import {
  Shuffle,
  FileSpreadsheet,
  SlidersHorizontal,
- GraduationCap
+ GraduationCap,
+ Globe
 } from 'lucide-react';
 
 interface NavItem {
@@ -83,6 +84,13 @@ const adminNav: NavGroup[] = [
  ],
  },
  {
+ title: 'Manajemen Konten',
+ items: [
+ { label: 'Arsip Pengumuman', href: '/admin/announcements', icon: Globe },
+ { label: 'Profil LPPM (Tentang)', href: '/admin/settings/system', icon: SlidersHorizontal },
+ ],
+ },
+ {
  title: 'Pengaturan',
  items: [
  { label: 'Sistem Nilai', href: '/admin/grading-settings', icon: Hammer },
@@ -113,24 +121,9 @@ const dplNav: NavGroup[] = [
 
 const facultyAdminNav: NavGroup[] = [
  {
- title: 'Manajemen Fakultas',
+ title: 'Nilai Fakultas',
  items: [
- { label: 'Dasbor', href: '/admin', icon: LayoutDashboard },
- { label: 'Mahasiswa', href: '/admin/mahasiswa', icon: GraduationCap },
- { label: 'Kelompok', href: '/admin/groups', icon: Users2 },
- ],
- },
- {
- title: 'Monitoring Lapangan',
- items: [
- { label: 'Laporan Harian', href: '/admin/reports/daily', icon: FileText },
- { label: 'Program Kerja', href: '/admin/reports/work-programs', icon: FolderKanban },
- ],
- },
- {
- title: 'Hasil & Evaluasi',
- items: [
- { label: 'Evaluasi & Nilai', href: '/admin/evaluations', icon: BarChart3 },
+ { label: 'Dasbor', href: '/dashboard', icon: LayoutDashboard },
  { label: 'Rekap Nilai', href: '/admin/rekap-nilai', icon: Award },
  ],
  },
@@ -222,11 +215,16 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
  <aside className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-white border-r border-slate-200 lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
 
- {/* Logo */}
- <div className="h-16 flex items-center gap-2 px-4 border-b border-slate-200">
- <div className="h-8 w-8 bg-primary rounded flex items-center justify-center text-white text-sm font-semibold">U</div>
- <span className="font-bold text-sm text-slate-900">KKN Portal</span>
- </div>
+  {/* Logo Sinar Dunia Style */}
+  <div className="h-20 flex items-center gap-4 px-6 border-b-4 border-emerald-500 bg-white">
+  <div className="h-10 w-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
+  <Globe className="w-6 h-6" />
+  </div>
+  <div>
+  <span className="font-black text-[13px] text-slate-950 tracking-tighter block leading-none uppercase">UIN <span className="text-emerald-500">Prof. K.H. Saifuddin Zuhri</span></span>
+  <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest mt-1">SIM_PORTAL_V3</span>
+  </div>
+  </div>
 
  {/* Navigation */}
  <nav ref={navRef} className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
@@ -251,15 +249,18 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
  }
  if (window.innerWidth < 1024) onClose();
  }}
- className={`flex items-center gap-2 px-3 py-2 rounded text-sm font-medium ${
- isActive
- ? 'bg-primary/10 text-primary'
- : 'text-slate-600 hover:bg-slate-100'
- }`}
- >
- <item.icon className="w-4 h-4" />
- <span>{item.label}</span>
- </Link>
+  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-black transition-all relative overflow-hidden group ${
+  isActive
+  ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+  : 'text-slate-500 hover:bg-slate-50 hover:text-emerald-600'
+  }`}
+  >
+  {isActive && (
+  <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-400" />
+  )}
+  <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-emerald-500'}`} />
+  <span className="uppercase tracking-widest text-[11px]">{item.label}</span>
+  </Link>
  );
  })}
  </div>

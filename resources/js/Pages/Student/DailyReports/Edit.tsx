@@ -1,205 +1,162 @@
-import { useForm, Head } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { 
- ChevronLeft, 
- FileEdit, 
- Calendar, 
- Sparkles, 
- Activity, 
- 
- RotateCcw,
- FileText,
- History,
- Info,
- CheckCircle2
-} from 'lucide-react';
-import type { PageProps } from '@/types';
-import { clsx } from 'clsx';
+import { FormInput, FormTextarea } from '@/Components/ui';
 
-interface Props extends PageProps {
- report: { id: number; date: string; title: string; activity: string; output?: string };
+interface ReportFile {
+ id: number;
+ file_name?: string | null;
+}
+
+interface ReportData {
+ id: number;
+ date: string;
+ title: string;
+ activity: string;
+ reflection?: string | null;
+ output?: string | null;
+ location_name?: string | null;
+ latitude?: number | string | null;
+ longitude?: number | string | null;
+ file_kegiatan?: ReportFile[];
+ fileKegiatan?: ReportFile[];
+}
+
+interface Props {
+ report: ReportData;
 }
 
 export default function StudentDailyReportEdit({ report }: Props) {
+ const files = report.file_kegiatan ?? report.fileKegiatan ?? [];
+
  const form = useForm({
- date: report.date,
- title: report.title,
- activity: report.activity,
+ date: report.date ?? '',
+ title: report.title ?? '',
+ activity: report.activity ?? '',
+ reflection: report.reflection ?? '',
  output: report.output ?? '',
+ location_name: report.location_name ?? '',
+ latitude: report.latitude ? String(report.latitude) : '',
+ longitude: report.longitude ? String(report.longitude) : '',
  });
 
- function handleSubmit(e: React.FormEvent) {
- e.preventDefault();
+ const handleSubmit = (event: React.FormEvent) => {
+ event.preventDefault();
  form.put(`/student/daily-reports/${report.id}`);
- }
+ };
 
  return (
- <AppLayout title="Edit Laporan">
- <Head title={`Kalibrasi Laporan #${report.id.toString().padStart(4, '0')}`} />
- 
- <div className="max-w-4xl mx-auto space-y-6 pb-24">
- {/* Clean Professional Header */}
- <header className="flex flex-col md:flex-row md:items-end justify-between border-b border-slate-200 pb-10 gap-8">
- <div className="space-y-5">
- <button 
- onClick={() => window.history.back()}
- className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-primarygroup"
+ <AppLayout title="Ubah Laporan Harian">
+ <Head title="Ubah Laporan Harian" />
+
+ <div className="mx-auto max-w-4xl space-y-6">
+ <section className="rounded-lg border border-slate-200 bg-white p-8">
+ <Link
+ href="/student/daily-reports"
+ className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
  >
- <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
- Kembali ke Riwayat
- </button>
- <h1 className="text-4xl font-extrabold text-slate-900 ">
- Kalibrasi <span className="text-primary">Laporan</span>
- </h1>
- <p className="text-slate-500 text-sm font-medium flex items-center gap-2">
- <FileEdit className="h-4 w-4 text-primary/40" />
- Lakukan perbaikan pada entri laporan harian Anda sesuai catatan instruktur atau DPL.
+ Kembali ke laporan
+ </Link>
+ <h1 className="mt-4 text-2xl font-semibold text-slate-900">Ubah Laporan Harian</h1>
+ <p className="mt-2 text-sm text-slate-500">
+ Perbarui data laporan dan kirim ulang untuk ditinjau DPL.
  </p>
- </div>
- 
- <div className="flex items-center gap-5 bg-white border border-slate-200 p-6rounded-lg min-w-[220px]">
- <div className="h-14 w-14 rounded-lg bg-slate-900 text-primary flex items-center justify-center
- <History className="h-7 w-7" />
- </div>
- <div>
- <span className="text-xs text-sm text-slate-400 block mb-1.5">ID Laporan</span>
- <span className="text-sm font-semibold text-slate-900 ">Entry #{report.id.toString().padStart(4, '0')}</span>
- </div>
- </div>
- </header>
+ </section>
 
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
- <div className="lg:col-span-2">
- <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-slate-100 p-12 space-y-6 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-16 text-slate-900 pointer-events-none group-transition-transform[2000ms]">
- <FileText className="h-96 w-full" />
- </div>
-
- <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
- <div className="space-y-4">
- <label className="text-sm font-semibold text-slate-400 ml-2 block mb-1">Tanggal Kegiatan</label>
- <div className="relative group/input">
- <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-slate-300 group-focus-within/input:text-primary transition-colors">
- <Calendar className="w-5 h-5" />
- </div>
- <input 
+ <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-6">
+ <div className="grid gap-6 md:grid-cols-2">
+ <FormInput
  type="date"
+ label="Tanggal kegiatan"
+ required
  value={form.data.date}
- onChange={(e) => form.setData('date', e.target.value)}
- className="w-full bg-slate-50 border-slate-200 rounded-lg pl-16 py-5 text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primaryoutline-none"
- required
+ onChange={(event) => form.setData('date', event.target.value)}
+ error={form.errors.date}
  />
- </div>
- {form.errors.date && <p className="text-xs font-semibold text-rose-500 ml-2">{form.errors.date}</p>}
- </div>
- <div className="space-y-4">
- <label className="text-sm font-semibold text-slate-400 ml-2 block mb-1">Judul Aktivitas</label>
- <div className="relative group/input">
- <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-slate-300 group-focus-within/input:text-primary transition-colors">
- <Sparkles className="w-5 h-5" />
- </div>
- <input 
- placeholder="JUDUL KEGIATAN..."
+ <FormInput
+ label="Lokasi kegiatan"
+ value={form.data.location_name}
+ onChange={(event) => form.setData('location_name', event.target.value)}
+ error={form.errors.location_name}
+ />
+ <div className="md:col-span-2">
+ <FormInput
+ label="Judul kegiatan"
+ required
  value={form.data.title}
- onChange={(e) => form.setData('title', e.target.value)}
- className="w-full bg-slate-50 border-slate-200 rounded-lg pl-16 py-5 text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primaryoutline-none"
- required
+ onChange={(event) => form.setData('title', event.target.value)}
+ error={form.errors.title}
  />
  </div>
- {form.errors.title && <p className="text-xs font-semibold text-rose-500 ml-2">{form.errors.title}</p>}
- </div>
- </div>
-
- <div className="space-y-4 relative z-10">
- <label className="text-sm font-semibold text-slate-400 ml-2 block mb-1">Deskripsi Kegiatan Lengkap</label>
- <textarea 
- rows={8}
- placeholder="Jelaskan secara detail proses, rintangan, dan pencapaian hari ini..."
+ <div className="md:col-span-2">
+ <FormTextarea
+ label="Uraian kegiatan"
+ required
  value={form.data.activity}
- onChange={(e) => form.setData('activity', e.target.value)}
- className="w-full bg-slate-50 border-slate-200 rounded-lg p-8 text-sm text-slate-700 focus:ring-4 focus:ring-primary/5 focus:border-primaryleading-normal outline-none"
- required
+ onChange={(event) => form.setData('activity', event.target.value)}
+ error={form.errors.activity}
  />
- {form.errors.activity && <p className="text-xs font-semibold text-rose-500 ml-2">{form.errors.activity}</p>}
  </div>
-
- <div className="space-y-4 relative z-10">
- <label className="text-sm font-semibold text-slate-400 ml-2 block mb-1">Luaran / Hasil (Opsional)</label>
- <input 
- placeholder="HASIL NYATA..."
+ <div className="md:col-span-2">
+ <FormTextarea
+ label="Refleksi"
+ value={form.data.reflection}
+ onChange={(event) => form.setData('reflection', event.target.value)}
+ error={form.errors.reflection}
+ />
+ </div>
+ <div className="md:col-span-2">
+ <FormTextarea
+ label="Luaran"
  value={form.data.output}
- onChange={(e) => form.setData('output', e.target.value)}
- className="w-full bg-slate-50 border-slate-200 rounded-lg px-6 py-5 text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primaryoutline-none"
+ onChange={(event) => form.setData('output', event.target.value)}
+ error={form.errors.output}
  />
- {form.errors.output && <p className="text-xs font-semibold text-rose-500 ml-2">{form.errors.output}</p>}
+ </div>
+ <FormInput
+ type="number"
+ step="any"
+ label="Latitude"
+ value={form.data.latitude}
+ onChange={(event) => form.setData('latitude', event.target.value)}
+ error={form.errors.latitude}
+ />
+ <FormInput
+ type="number"
+ step="any"
+ label="Longitude"
+ value={form.data.longitude}
+ onChange={(event) => form.setData('longitude', event.target.value)}
+ error={form.errors.longitude}
+ />
  </div>
 
- <div className="flex pt-8 relative z-10 border-t border-slate-200 justify-between items-center">
- <button 
- type="button"
- onClick={() => window.history.back()}
- className="text-xs font-semibold text-slate-400 hover:text-slate-950 transition-colors"
+ {files.length > 0 && (
+ <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4">
+ <h2 className="text-sm font-semibold text-slate-900">Lampiran yang sudah tersimpan</h2>
+ <ul className="mt-3 space-y-2 text-sm text-slate-600">
+ {files.map((file) => (
+ <li key={file.id}>{file.file_name || `Lampiran #${file.id}`}</li>
+ ))}
+ </ul>
+ </div>
+ )}
+
+ <div className="mt-6 flex justify-end gap-3">
+ <Link
+ href="/student/daily-reports"
+ className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
  >
- Batalkan Perubahan
- </button>
- <button 
+ Batal
+ </Link>
+ <button
  type="submit"
  disabled={form.processing}
- className="h-20 px-16 bg-slate-900 text-whiterounded-lg text-xs font-semibold hover:bg-blackactive:disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-5 group group/submit"
+ className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-60"
  >
- <RotateCcw className={clsx("w-6 h-6 text-primary", form.processing ? : "")} />
- {form.processing ? 'Sedang Memproses...' : 'Kirim Ulang Laporan'}
+ {form.processing ? 'Menyimpan...' : 'Simpan perubahan'}
  </button>
  </div>
  </form>
- </div>
-
- <aside className="space-y-8">
- <section className="bg-slate-900 rounded-lg p-12 border border-slate-900 text-white relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-8 text-primary group-transition-transform[2000ms] pointer-events-none">
- <Activity className="h-40 w-40" />
- </div>
- <h4 className="text-sm font-semibold mb-8 flex items-center gap-3">
- <Info className="h-4 w-4 text-primary" />
- Prosedur Revisi
- </h4>
- <div className="space-y-8 relative z-10">
- <div className="space-y-2">
- <p className="text-xs font-semibold text-primary Data</p>
- <p className="text-sm text-slate-400 leading-normal">Pastikan seluruh data yang diperbaiki sudah sesuai dengan draf fisik atau instruksi dari supervisor lapangan.</p>
- </div>
- <div className="space-y-2 pt-6 border-t border-slate-200">
- <p className="text-xs font-semibold text-slate-400 ">Verifikasi Ulang</p>
- <p className="text-sm text-slate-400 leading-normal">Laporan yang telah diperbaiki akan masuk kembali ke antrian verifikasi DPL untuk divalidasi statusnya.</p>
- </div>
- </div>
- </section>
-
- <div className="bg-white border border-slate-200 rounded-lg p-10 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-4 text-slate-900 ">
- <Zap className="h-[200px] w-full" />
- </div>
- <h4 className="text-xs font-semibold mb-10 flex items-center gap-3 text-slate-400">
- <CheckCircle2 className="h-4 w-4 text-emerald-500" />
- Integritas Laporan
- </h4>
- <p className="text-sm leading-normal relative z-10 text-slate-500 mb-6">
- Konsistensi antara data digital dan realita lapangan adalah metrik utama dalam penilaian akhir KKN Anda.
- </p>
- <div className="flex -space-x-3">
- {[1,2,3].map(i => (
- <div key={i} className="h-8 w-8 rounded-lg border-4 border-white bg-slate-100 transition-transform hover:translate-y-[-4px] hover:z-20 cursor-default" />
- ))}
- </div>
- </div>
- </aside>
- </div>
-
- <div className="text-center pt-8">
- <p className="text-xs font-semibold text-slate-300 ">
- Pusat Aktivitas • UIN SAIZU © 2024
- </p>
- </div>
  </div>
  </AppLayout>
  );

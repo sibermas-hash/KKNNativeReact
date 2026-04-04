@@ -132,7 +132,12 @@ class WorkshopService
             // 2. Validate Geofence (GPS)
             if ($workshop->latitude && $workshop->longitude) {
                 $distance = $this->calculateDistance($lat, $lng, (float)$workshop->latitude, (float)$workshop->longitude);
-                if ($distance > $workshop->radius_meters) {
+                
+                // Add 10% tolerance for GPS jitter (min 5 meters)
+                $tolerance = max(5, $workshop->radius_meters * 0.1);
+                $maxAllowedDistance = $workshop->radius_meters + $tolerance;
+
+                if ($distance > $maxAllowedDistance) {
                     throw new \InvalidArgumentException("Posisi Anda berada di luar radius lokasi pembekalan (" . round($distance) . "m).");
                 }
             }

@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
-import { CalendarDaysIcon, ChevronDownIcon, CheckIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { CalendarDaysIcon, CheckIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import type { PageProps } from '@/types';
 
 interface Period {
@@ -23,108 +23,89 @@ type PeriodPageProps = PageProps<{
 
 export default function PeriodSelector({ className = '' }: PeriodSelectorProps) {
  const { activePeriod, availablePeriods } = usePage<PeriodPageProps>().props;
- const [isOpen, setIsOpen] = useState(false);
- const dropdownRef = useRef<HTMLDivElement>(null);
+ const [open, setOpen] = useState(false);
+ const containerRef = useRef<HTMLDivElement>(null);
 
- // Close dropdown when clicking outside
  useEffect(() => {
- function handleClickOutside(event: MouseEvent) {
- if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
- setIsOpen(false);
+ const handleOutsideClick = (event: MouseEvent) => {
+ if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+ setOpen(false);
  }
- }
- document.addEventListener('mousedown', handleClickOutside);
- return () => document.removeEventListener('mousedown', handleClickOutside);
- }, []);
-
- const handlePeriodChange = (periodId: number) => {
- setIsOpen(false);
- router.get(
- window.location.pathname,
- { period_id: periodId },
- {
- preserveState: true,
- preserveScroll: true,
- }
- );
  };
 
- if (!activePeriod && (!availablePeriods || Object.keys(availablePeriods).length === 0)) {
+ document.addEventListener('mousedown', handleOutsideClick);
+ return () => document.removeEventListener('mousedown', handleOutsideClick);
+ }, []);
+
+ if (!activePeriod && Object.keys(availablePeriods ?? {}).length === 0) {
  return null;
  }
 
+ const changePeriod = (periodId: number) => {
+ setOpen(false);
+ router.get(
+ window.location.pathname,
+ { period_id: periodId },
+ { preserveState: true, preserveScroll: true, replace: true },
+ );
+ };
+
  return (
- <div ref={dropdownRef} className={`relative ${className}`}>
+ <div ref={containerRef} className={`relative ${className}`}>
  <button
- onClick={() => setIsOpen(!isOpen)}
- className="group flex items-center gap-3 px-5 py-2.5 rounded-lg
- bg-white border border-slate-200 hover:border-primary/30 active:"
+ type="button"
+ onClick={() => setOpen((current) => !current)}
+ className="flex items-center gap-3 rounded-lg border border-slate-300 bg-white px-4 py-2 text-left shadow-sm hover:border-primary"
  >
- <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/5 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
- <CalendarDaysIcon className="w-5 h-5 flex-shrink-0" />
+ <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+ <CalendarDaysIcon className="h-5 w-5" />
  </div>
- <div className="flex flex-col items-start min-w-0">
- <span className="text-[9px] text-slate-400 font-semibold leading-tight">
- Periode KKN
+ <div className="min-w-0">
+ <span className="block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+ Periode aktif
  </span>
- <span className="font-bold text-sm text-slate-900 truncate max-w-[140px]">
- {activePeriod
- ? `KKN ${activePeriod.angkatan ?? ''} • ${activePeriod.jenis ?? ''}`
- : 'Pilih Periode'}
+ <span className="block truncate text-sm font-semibold text-slate-900">
+ {activePeriod ? `${activePeriod.angkatan} - ${activePeriod.jenis}` : 'Pilih periode'}
  </span>
  </div>
- <ChevronDownIcon
- className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180 text-primary' : ''}`}
- />
+ <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition ${open ? 'rotate-180' : ''}`} />
  </button>
 
- {isOpen && (
- <div className="absolute top-full mt-3 right-0 w-80 bg-white rounded-lg
- border border-slate-100 overflow-hidden z-50
- zoom-in-95
- <div className="px-6 py-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
- <p className="text-[10px] font-semibold text-slate-500 
- Pilih Angkatan KKN
- </p>
- <SparklesIcon className="w-4 h-4 text-primary opacity-50" />
+ {open && (
+ <div className="absolute right-0 top-full z-50 mt-3 w-80 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl">
+ <div className="border-b border-slate-200 px-5 py-4">
+ <h3 className="text-sm font-semibold text-slate-900">Pilih Periode KKN</h3>
+ <p className="mt-1 text-xs text-slate-500">Periode yang dipilih akan dipakai sebagai konteks halaman.</p>
  </div>
- <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+
+ <div className="max-h-96 overflow-y-auto">
  {Object.entries(availablePeriods)
- .sort(([a], [b]) => Number(b) - Number(a))
+ .sort(([left], [right]) => Number(right) - Number(left))
  .map(([angkatan, periods]) => (
- <div key={angkatan} className="mb-2">
- <div className="px-6 py-2.5 bg-white text-[10px] font-semibold text-primary/60 sticky top-0 z-10 border-b border-slate-50">
+ <div key={angkatan} className="border-b border-slate-100 last:border-b-0">
+ <div className="bg-slate-50 px-5 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
  Angkatan {angkatan}
  </div>
- <div className="p-2 space-y-1">
+ <div className="space-y-1 p-2">
  {periods.map((period) => {
- const isSelected = activePeriod?.id === period.id;
+ const selected = activePeriod?.id === period.id;
  return (
  <button
  key={period.id}
- onClick={() => handlePeriodChange(period.id)}
- className={`w-full px-4 py-3.5 flex items-center gap-4 rounded-lg
- group/item
- ${isSelected ? 'bg-primary/5 border border-primary/10' : 'hover:bg-slate-50 border border-transparent'}`}
+ type="button"
+ onClick={() => changePeriod(period.id)}
+ className={`flex w-full items-center justify-between rounded-lg px-3 py-3 text-left ${
+ selected ? 'bg-primary/10 text-primary' : 'hover:bg-slate-50'
+ }`}
  >
- <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${isSelected
- ? 'bg-primary text-white
- : 'bg-white text-slate-400 border border-slate-100 group-hover/item:border-primary/20 group-hover/item:text-primary group-hover/item:'
- }`}>
- <CalendarDaysIcon className="w-5 h-5" />
+ <div>
+ <p className="text-sm font-semibold">{period.jenis}</p>
+ <p className="mt-1 text-xs text-slate-500">{period.name}</p>
  </div>
- <div className="flex-1 min-w-0">
- <p className={`font-bold text-sm truncate transition-colors ${isSelected ? 'text-primary' : 'text-slate-900 group-hover/item:text-primary'}`}>
- {period.jenis}
- </p>
- <p className="text-[10px] font-semibold text-slate-400 truncate mt-0.5 group-hover/item:text-slate-500">
- {period.name}
- </p>
- </div>
- {isSelected && (
- <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-primary">
- <CheckIcon className="w-3.5 h-3.5 stroke-[3]" />
- </div>
+ {selected && (
+ <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white">
+ <CheckIcon className="h-4 w-4" />
+ </span>
  )}
  </button>
  );
@@ -132,9 +113,6 @@ export default function PeriodSelector({ className = '' }: PeriodSelectorProps) 
  </div>
  </div>
  ))}
- </div>
- <div className="p-4 bg-slate-50/50 border-t border-slate-100 text-[9px] text-slate-400 text-center font-semibold 
- Data sinkron dengan Database Pusat
  </div>
  </div>
  )}

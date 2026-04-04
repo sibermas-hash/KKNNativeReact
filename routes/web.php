@@ -21,6 +21,9 @@ Route::middleware(['guest', 'kkn.throttle'])->group(function () {
     Route::post('/reset-password', [PasswordResetController::class , 'reset'])->name('password.update');
 });
 
+// Home / Landing Page
+Route::get('/', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
 // Authenticated routes
 Route::middleware(['auth', 'kkn.throttle'])->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class , 'destroy'])->name('logout');
@@ -31,8 +34,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
     Route::post('/profile/avatar', [ProfileController::class , 'updateAvatar'])->name('profile.avatar');
     Route::post('/profile/password', [ProfileController::class , 'updatePassword'])->name('profile.password');
 
-    // Root redirect based on role
-    Route::get('/', [DashboardController::class , 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class , 'index'])->name('dashboard');
 
     Route::middleware(['role:superadmin|faculty_admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('rekap-nilai', [Admin\RekapNilaiController::class , 'index'])->name('rekap-nilai.index');
@@ -90,6 +92,9 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::get('peserta/transfer', [Admin\StudentTransferController::class , 'index'])->name('peserta.transfer.index');
         Route::post('peserta/transfer', [Admin\StudentTransferController::class , 'transfer'])->name('peserta.transfer');
         
+        Route::resource('announcements', Admin\AnnouncementController::class)->except(['create', 'edit', 'show']);
+        Route::resource('downloads', Admin\DownloadController::class);
+
         Route::get('registrations', [Admin\PesertaKknController::class , 'index'])->name('registrations.index');
         Route::get('registrations/{pesertaKkn}', [Admin\PesertaKknController::class , 'show'])->name('registrations.show');
         Route::patch('registrations/{pesertaKkn}/approve', [Admin\PesertaKknController::class , 'approve'])->name('registrations.approve');
@@ -107,6 +112,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
 
         // Grading Master
         Route::get('grades', [Admin\GradeController::class , 'index'])->name('grades.index');
+        Route::get('groups/{group}/students', [Admin\GradeController::class , 'students'])->name('groups.students');
         Route::post('grades', [Admin\GradeController::class , 'store'])->name('grades.store');
         Route::get('grading-settings', [Admin\KonfigurasiPenilaianController::class , 'index'])->name('grading-settings.index');
         Route::post('grading-settings', [Admin\KonfigurasiPenilaianController::class , 'update'])->name('grading-settings.update');

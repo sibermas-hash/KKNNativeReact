@@ -24,8 +24,13 @@ class LogAuditController extends Controller
             ->when($request->search, fn($q, $v) => $q->where(function($q) use ($v) {
                 $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $v);
                 $q->where('description', 'like', "%{$escaped}%")
-                  ->orWhere('ip_address', 'like', "%{$escaped}%")
-                  ->orWhereHas('user', fn($q) => $q->where('name', 'like', "%{$escaped}%"));
+                  ->orWhere('ip_address', 'like', "%{$escaped}%");
+                
+                // VULN-014 Fix: Cross-database search for user name
+                $userIds = \App\Models\User::where('name', 'like', "%{$escaped}%")->pluck('id');
+                if ($userIds->isNotEmpty()) {
+                    $q->orWhereIn('user_id', $userIds);
+                }
             }));
 
         $logs = $query->latest()

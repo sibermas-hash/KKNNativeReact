@@ -29,17 +29,23 @@ interface EvaluationRow {
 interface Props {
  groups: GroupWithStudents[];
  evaluations: EvaluationRow[];
+ dplWeights: {
+ final_report: number;
+ execution: number;
+ article: number;
+ };
 }
 
-export default function DplEvaluationsPage({ groups, evaluations }: Props) {
+export default function DplEvaluationsPage({ groups, evaluations, dplWeights }: Props) {
  const manualForm = useForm({
  group_id: '',
  student_id: '',
  evaluator_type: 'dpl',
  notes: '',
  items: [
- { criterion: 'Kedisiplinan', score: '', weight: 50 },
- { criterion: 'Sikap', score: '', weight: 50 },
+ { criterion: 'Laporan Akhir', score: '', weight: dplWeights.final_report },
+ { criterion: 'Pelaksanaan Program', score: '', weight: dplWeights.execution },
+ { criterion: 'Artikel Ilmiah', score: '', weight: dplWeights.article },
  ],
  });
 
@@ -59,13 +65,13 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
  <section className="rounded-lg border border-slate-200 bg-white p-8">
  <h1 className="text-2xl font-semibold text-slate-900">Evaluasi Mahasiswa</h1>
  <p className="mt-2 text-sm text-slate-500">
- Input nilai manual atau impor dari Excel untuk mahasiswa pada kelompok yang Anda dampingi.
+ Input nilai manual atau impor dari Excel untuk komponen penilaian DPL pada kelompok yang Anda dampingi.
  </p>
  </section>
 
  <section className="grid gap-6 lg:grid-cols-2">
  <div className="rounded-lg border border-slate-200 bg-white p-6">
- <h2 className="text-lg font-semibold text-slate-900">Input Manual</h2>
+ <h2 className="text-lg font-semibold text-slate-900">Input Nilai DPL</h2>
  <form
  className="mt-4 space-y-4"
  onSubmit={(event) => {
@@ -117,7 +123,7 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
  </select>
  </div>
 
- <div className="grid gap-4 md:grid-cols-2">
+ <div className="grid gap-4 md:grid-cols-3">
  {manualForm.data.items.map((item, index) => (
  <div key={item.criterion} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
  <p className="text-sm font-medium text-slate-800">{item.criterion}</p>
@@ -163,7 +169,10 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
  </div>
 
  <div className="rounded-lg border border-slate-200 bg-white p-6">
- <h2 className="text-lg font-semibold text-slate-900">Impor dari Excel</h2>
+ <h2 className="text-lg font-semibold text-slate-900">Impor Nilai DPL dari Excel</h2>
+ <p className="mt-2 text-sm text-slate-500">
+ Template harus memuat kolom NIM, Laporan Akhir, Pelaksanaan, dan Artikel.
+ </p>
  <form
  className="mt-4 space-y-4"
  onSubmit={(event) => {

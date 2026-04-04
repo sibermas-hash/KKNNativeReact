@@ -1,29 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { Head, useForm } from '@inertiajs/react';
-import AppLayout from '@/Layouts/AppLayout';
-import { FormSelect, FormInput } from '@/Components/ui';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Head, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import {
- ShieldAlert,
- Users,
- 
- ShieldCheck,
- Info,
- Sparkles,
- Fingerprint,
- RotateCcw,
- Cpu,
- Save,
- TriangleAlert
-} from 'lucide-react';
-import { clsx } from 'clsx';
+import AppLayout from '@/Layouts/AppLayout';
+import { FormInput, FormSelect } from '@/Components/ui';
 
 interface Group {
  id: number;
  code: string;
  name: string;
- lecturer?: { user?: { name: string } };
+ lecturer?: {
+ user?: {
+ name: string;
+ };
+ };
 }
 
 interface StudentOption {
@@ -38,9 +28,9 @@ interface Props {
  groups: Group[];
 }
 
-export default function Index({ groups }: Props) {
+export default function AdminGradesIndex({ groups }: Props) {
  const { data, setData, post, processing, reset, errors } = useForm({
- group_id: '',
+ kelompok_id: '',
  student_id: '',
  execution_score: '',
  article_score: '',
@@ -51,15 +41,19 @@ export default function Index({ groups }: Props) {
  const [students, setStudents] = useState<StudentOption[]>([]);
  const [loadingStudents, setLoadingStudents] = useState(false);
 
- const fetchStudents = async (groupId: string) => {
- if (!groupId) {
+ useEffect(() => {
+ const fetchStudents = async () => {
+ if (!data.kelompok_id) {
  setStudents([]);
+ setData('student_id', '');
  return;
  }
+
  setLoadingStudents(true);
+
  try {
- const res = await axios.get(route('admin.groups.students', groupId));
- setStudents(res.data);
+ const response = await axios.get(route('admin.groups.students', data.kelompok_id));
+ setStudents(response.data);
  } catch {
  setStudents([]);
  } finally {
@@ -67,245 +61,144 @@ export default function Index({ groups }: Props) {
  }
  };
 
- useEffect(() => {
- if (data.group_id) {
- fetchStudents(data.group_id as string);
- }
- }, [data.group_id]);
+ void fetchStudents();
+ }, [data.kelompok_id, setData]);
 
- const handleSubmit = (e: React.FormEvent) => {
- e.preventDefault();
+ return (
+ <AppLayout title="Input Nilai Manual">
+ <Head title="Input Nilai Manual" />
+
+ <div className="space-y-6">
+ <section className="rounded-lg border border-slate-200 bg-white p-8">
+ <h1 className="text-2xl font-semibold text-slate-900">Input Nilai Manual</h1>
+ <p className="mt-2 text-sm text-slate-500">
+ Gunakan halaman ini hanya untuk koreksi manual yang memang membutuhkan intervensi admin.
+ </p>
+ </section>
+
+ <section className="grid gap-6 lg:grid-cols-[2fr,1fr]">
+ <form
+ onSubmit={(event) => {
+ event.preventDefault();
  post(route('admin.grades.store'), {
  onSuccess: () => {
  reset('execution_score', 'article_score', 'discipline_score', 'attitude_score');
  },
  });
- };
-
- return (
- <AppLayout title="Inisiasi Koreksi Nilai Manual">
- <Head title="Koreksi Nilai Manual" />
- 
- <div className="space-y-8 pb-24">
- {/* 
- Emerald Premium Header 
- Refining from heavy rose to lush tactical emerald/rose gradient hybrid
- */}
- <div className="relative overflow-hidden rounded-lg bg-whitep-6 border border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
- 
- <div className="relative z-10 space-y-5 flex-1">
- <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
- <ShieldAlert className="h-4 w-4 text-rose-300" />
- </div>
- <span className="text-xs font-semibold text-rose-100 ">
- _V3
- </span>
- </div>
- <h1 className="text-4xl md:text-5xl font-semibold text-white ">
- Koreksi <span className="text-rose-300 Nilai</span>
- </h1>
- <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
- Inisiasi penimpaan manual parameter nilai mahasiswa. Protokol ini melewati alur evaluasi standar dan memerlukan otorisasi admin pusat.
- </p>
- </div>
-
- <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
- <div className="bg-white/10 p-6 rounded-lg border border-slate-200 flex items-center gap-6 min-w-[200px] group/stat">
- <div className="p-3 bg-white rounded-lg text-rose-600 group-hover/stat:transition-transform">
- <Zap className="h-6 w-6" />
- </div>
- <div>
- <span className="text-xs font-semibold text-rose-200/60 block mb-1.5">Status Gateway</span>
- <span className="text-2xl font-semibold text-white"></span>
- </div>
- </div>
- </div>
- </div>
-
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:mx-2">
- {/* Warning Policy Section */}
- <div className="lg:col-span-1 space-y-8">
- <div className="bg-white rounded-lg p-10 border border-slate-200 sticky top-12 group overflow-hidden">
- <div className="absolute top-0 right-0 p-12 text-rose-600 pointer-events-none ">
- <TriangleAlert className="h-64 w-64" />
- </div>
-
- <div className="relative z-10 space-y-6">
- <div className="flex items-center gap-5 border-b border-slate-200 pb-8">
- <div className="p-3.5 bg-rose-500 rounded-lg text-white
- <ShieldCheck className="h-6 w-6" />
- </div>
- <div>
- <h3 className="text-xl font-semibold text-slate-900 ">Audit_Integrity</h3>
- <p className="text-xs font-semibold text-slate-400 mt-2">KEBIJAKAN LPPM</p>
- </div>
- </div>
-
- <div className="space-y-6">
- <div className="p-8 bg-rose-50 rounded-lg border border-rose-100
- <p className="text-sm text-rose-900 leading-normal">
- <strong className="uppercase">Peringatan:</strong> Injeksi manual akan melewati alur evaluasi standar (DPL & Desa). Tindakan ini hanya diperuntukkan bagi admin dengan otorisasi khusus.
- </p>
- </div>
-
- <div className="space-y-5">
- <div className="flex items-start gap-4 p-5 bg-slate-50 rounded-lg border border-slate-200">
- <div className="p-2 bg-white rounded-lg text-rose-500">
- <Fingerprint className="h-4 w-4" />
- </div>
- <p className="text-sm text-slate-500 text-sm leading-normal">
- Setiap perubahan nilai manual akan dicatat permanen dalam audit log keamanan sistem.
- </p>
- </div>
- <div className="flex items-start gap-4 p-5 bg-slate-50 rounded-lg border border-slate-200">
- <div className="p-2 bg-white rounded-lg text-primary">
- <Cpu className="h-4 w-4" />
- </div>
- <p className="text-sm text-slate-500 text-sm leading-normal">
- Sistem akan melakukan re-kalkulasi skor total secara otomatis setelah data dikirimkan.
- </p>
- </div>
- </div>
- </div>
- </div>
- </div>
- </div>
-
- {/* Form Section */}
- <div className="lg:col-span-2 space-y-6">
- <form onSubmit={handleSubmit} className="bg-white rounded-lg p-12 border border-slate-200 relative overflow-hidden group mx-1">
- <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none group-transition-transform">
- <Sparkles className="h-64 w-64" />
- </div>
-
- <div className="relative z-10 space-y-6">
- <div className="flex items-center gap-6 border-b border-slate-200 pb-10">
- <div className="p-4 bg-emerald-50 text-primary rounded-lg border border-primary
- <RotateCcw className="h-7 w-7" />
- </div>
- <div>
- <h3 className="text-2xl font-semibold text-slate-900 ">Parameter_Kalibrasi</h3>
- <p className="text-sm font-semibold text-slate-400 mt-2">INPUT DATA NILAI SEKTORAL</p>
- </div>
- </div>
-
- <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
- <div className="space-y-3 group/field">
- <label className="text-xs font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors flex items-center gap-2">
- <Users className="h-3 w-3" /> PILIH KELOMPOK TARGET
- </label>
- <FormSelect
- value={data.group_id}
- onChange={(e) => setData('group_id', e.target.value)}
- error={errors.group_id}
- className="bg-slate-50 border-slate-200 text-sm font-semibold text-slate-900 h-16 rounded-lg focus:bg-white focus:border-primary/40px-6"
+ }}
+ className="rounded-lg border border-slate-200 bg-white p-8"
  >
- <option value="">PILIH OPERASIONAL KELOMPOK</option>
- {groups.map((g) => (
- <option key={g.id} value={g.id}>
- KELOMPOK {g.code || g.name} {g.lecturer?.user?.name ? `- DPL: ${g.lecturer.user.name}` : ''}
+ <div className="grid gap-6 md:grid-cols-2">
+ <div>
+ <label className="mb-2 block text-sm font-medium text-slate-700">Kelompok</label>
+ <FormSelect
+ value={data.kelompok_id}
+ onChange={(event) => setData('kelompok_id', event.target.value)}
+ error={errors.kelompok_id}
+ className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700"
+ >
+ <option value="">Pilih kelompok</option>
+ {groups.map((group) => (
+ <option key={group.id} value={group.id}>
+ {group.code || group.name}
+ {group.lecturer?.user?.name ? ` - DPL: ${group.lecturer.user.name}` : ''}
  </option>
  ))}
  </FormSelect>
  </div>
 
- <div className="space-y-3 group/field">
- <label className="text-xs font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors flex items-center gap-2">
- <Fingerprint className="h-3 w-3" /> IDENTITAS MAHASISWA
- </label>
+ <div>
+ <label className="mb-2 block text-sm font-medium text-slate-700">Mahasiswa</label>
  <FormSelect
  value={data.student_id}
- onChange={(e) => setData('student_id', e.target.value)}
+ onChange={(event) => setData('student_id', event.target.value)}
  error={errors.student_id}
- disabled={!data.group_id || loadingStudents}
- className="bg-slate-50 border-slate-200 text-sm font-semibold text-slate-900 h-16 rounded-lg focus:bg-white focus:border-primary/40px-6"
+ disabled={!data.kelompok_id || loadingStudents}
+ className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700"
  >
- <option value="">{loadingStudents ? 'MENYINKRONKAN DATA...' : 'PILIH PESERTA UNIT'}</option>
- {students.map((s) => (
- <option key={s.id} value={s.id}>
- {s.username || s.name} {s.nim ? `(${s.nim})` : ''}
+ <option value="">{loadingStudents ? 'Memuat mahasiswa...' : 'Pilih mahasiswa'}</option>
+ {students.map((student) => (
+ <option key={student.id} value={student.id}>
+ {student.nim ? `${student.nim} - ` : ''}
+ {student.name}
  </option>
  ))}
  </FormSelect>
  </div>
- </div>
 
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
- {[
- { id: 'execution_score' as const, label: 'SKOR EKSEKUSI (%)', color: 'primary' },
- { id: 'article_score' as const, label: 'SKOR ARTIKEL (%)', color: 'primary' },
- { id: 'discipline_score' as const, label: 'KEDISIPLINAN (%)', color: 'slate' },
- { id: 'attitude_score' as const, label: 'SKOR SIKAP (%)', color: 'slate' },
- ].map((field) => (
- <div key={field.id} className="space-y-3">
- <label className="text-xs font-semibold text-slate-400 text-center block">{field.label}</label>
+ <div>
+ <label className="mb-2 block text-sm font-medium text-slate-700">Nilai Pelaksanaan</label>
  <FormInput
  type="number"
- value={data[field.id]}
- onChange={(e) => setData(field.id, e.target.value)}
- error={errors[field.id]}
- min={0}
- max={100}
- step="0.01"
- className={clsx(
- "bg-slate-50 border-slate-200 text-2xl font-semibold h-20 rounded-lg focus:bg-white focus:border-primary/40text-center",
- field.color === 'primary' ? 'text-primary' : 'text-slate-900'
- )}
+ min="0"
+ max="100"
+ value={data.execution_score}
+ onChange={(event) => setData('execution_score', event.target.value)}
+ error={errors.execution_score}
+ className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700"
  />
  </div>
- ))}
+
+ <div>
+ <label className="mb-2 block text-sm font-medium text-slate-700">Nilai Artikel</label>
+ <FormInput
+ type="number"
+ min="0"
+ max="100"
+ value={data.article_score}
+ onChange={(event) => setData('article_score', event.target.value)}
+ error={errors.article_score}
+ className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700"
+ />
  </div>
 
- <div className="flex justify-end pt-8 border-t border-slate-200">
+ <div>
+ <label className="mb-2 block text-sm font-medium text-slate-700">Nilai Kedisiplinan</label>
+ <FormInput
+ type="number"
+ min="0"
+ max="100"
+ value={data.discipline_score}
+ onChange={(event) => setData('discipline_score', event.target.value)}
+ error={errors.discipline_score}
+ className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700"
+ />
+ </div>
+
+ <div>
+ <label className="mb-2 block text-sm font-medium text-slate-700">Nilai Sikap</label>
+ <FormInput
+ type="number"
+ min="0"
+ max="100"
+ value={data.attitude_score}
+ onChange={(event) => setData('attitude_score', event.target.value)}
+ error={errors.attitude_score}
+ className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700"
+ />
+ </div>
+ </div>
+
+ <div className="mt-6 flex justify-end">
  <button
  type="submit"
- disabled={processing || loadingStudents}
- className="px-14 py-6 bg-rose-600 text-white text-xs font-semibold rounded-lg hover:bg-rose-700flex items-center gap-4"
+ disabled={processing}
+ className="rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
  >
- <Save className="w-5 h-5" />
- Otorisasi_Overide_Manual
+ Simpan Nilai Manual
  </button>
- </div>
  </div>
  </form>
 
- <div className="p-12 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group mx-1">
- <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
-
- <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
- <div className="space-y-6">
- <div className="flex items-center gap-5">
- <div className="p-3 bg-rose-500/10 rounded-lg border border-rose-500/20">
- <ShieldCheck className="h-7 w-7 text-rose-500" />
- </div>
- <div>
- <h4 className="text-sm font-semibold text-white ">_V3</h4>
- <p className="text-xs text-rose-400 text-sm mt-2 whitespace-nowrap">STATUS: </p>
- </div>
- </div>
- <p className="text-sm text-slate-400 text-sm leading-normal max-w-4xl">
- Petunjuk Keamanan: Penilaian manual adalah tindakan intervensi tingkat tinggi. 
- Seluruh record akan di-hash dan disimpan dalam ledger audit untuk keperluan review oleh pimpinan universitas. 
- Pastikan justifikasi koreksi telah terdokumentasi secara luring.
- </p>
- </div>
- <div className="flex flex-col items-end gap-5 shrink-0 border-l border-slate-800 pl-12 hidden lg:flex">
- <div className="flex items-center gap-3 mb-1 px-5 py-2.5 bg-rose-500/5 rounded-lg border border-rose-500/10">
- <div className="h-2.5 w-2.5 rounded-lg bg-rose-500" />
- <span className="text-sm font-semibold text-slate-100 ">AUDIT_LOG_STREAMING</span>
- </div>
- <div className="flex gap-5">
- <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-rose-300 transition-colors group/ic cursor-help">
- <Info className="h-7 w-7" />
- </div>
- </div>
- </div>
- </div>
- </div>
- </div>
- </div>
+ <aside className="rounded-lg border border-amber-200 bg-amber-50 p-8">
+ <h2 className="text-lg font-semibold text-amber-900">Catatan</h2>
+ <ul className="mt-4 space-y-3 text-sm leading-6 text-amber-800">
+ <li>Gunakan fitur ini hanya jika koreksi tidak bisa dilakukan dari jalur penilaian normal.</li>
+ <li>Nilai akan dihitung ulang otomatis setelah disimpan.</li>
+ <li>Pastikan kelompok dan mahasiswa yang dipilih sudah benar sebelum menyimpan.</li>
+ </ul>
+ </aside>
+ </section>
  </div>
  </AppLayout>
  );

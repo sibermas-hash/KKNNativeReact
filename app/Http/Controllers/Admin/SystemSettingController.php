@@ -33,7 +33,7 @@ class SystemSettingController extends Controller
         Gate::authorize('manage-settings');
         $this->initializeDefaults();
 
-        $settings = SystemSetting::whereIn('group', ['master_api', 'general', 'ai_settings', 'storage_settings', 'registration_rules'])->get();
+        $settings = SystemSetting::query()->whereIn('group', ['master_api', 'general', 'ai_settings', 'storage_settings', 'registration_rules', 'content_settings'])->get();
 
         // Mask secret values for display (only show last 4 chars)
         $settings->transform(function ($setting) {
@@ -271,6 +271,27 @@ class SystemSettingController extends Controller
                 'value' => '30',
                 'type' => 'text',
                 'group' => 'registration_rules',
+            ],
+            [
+                'config_key' => 'site_about',
+                'label' => 'Tentang LPPM (About)',
+                'value' => 'Lembaga Penelitian dan Pengabdian kepada Masyarakat (LPPM) UIN Profesor Kiai Haji Saifuddin Zuhri Purwokerto.',
+                'type' => 'textarea',
+                'group' => 'content_settings',
+            ],
+            [
+                'config_key' => 'site_visi',
+                'label' => 'Visi LPPM',
+                'value' => 'Menjadi pusat unggulan penelitian dan pengabdian masyarakat berbasis kearifan lokal.',
+                'type' => 'textarea',
+                'group' => 'content_settings',
+            ],
+            [
+                'config_key' => 'site_misi',
+                'label' => 'Misi LPPM',
+                'value' => 'Mengembangkan riset aplikatif dan pengabdian masyarakat yang terukur.',
+                'type' => 'textarea',
+                'group' => 'content_settings',
             ],
         ];
 

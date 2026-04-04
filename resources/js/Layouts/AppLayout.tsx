@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import type { User } from '@/types';
-import { Menu, LogOut } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import Sidebar from '@/Components/Sidebar';
 
 interface AppLayoutProps {
@@ -10,7 +10,7 @@ interface AppLayoutProps {
  breadcrumbs?: Array<{ label: string; href?: string }>;
 }
 
-export default function AppLayout({ children, title, breadcrumbs }: AppLayoutProps) {
+export default function AppLayout({ children, title }: AppLayoutProps) {
  const [sidebarOpen, setSidebarOpen] = useState(false);
  const { auth } = usePage<{ auth: { user: User | null } }>().props;
 

@@ -9,6 +9,7 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\User;
@@ -200,5 +201,36 @@ class DplModuleTest extends TestCase
         $this->actingAs($ownerContext['dplUser'])
             ->get(route('dpl.final-reports.show', $foreignContext['finalReport']))
             ->assertForbidden();
+    }
+
+    public function test_dpl_manual_evaluation_updates_dpl_component_in_unified_score(): void
+    {
+        $context = $this->createDplScenario();
+
+        $this->actingAs($context['dplUser'])
+            ->post(route('dpl.evaluations.store'), [
+                'student_id' => $context['student']->id,
+                'group_id' => $context['group']->id,
+                'evaluator_type' => 'dpl',
+                'notes' => 'Penilaian DPL manual.',
+                'items' => [
+                    ['criterion' => 'Laporan Akhir', 'score' => 88, 'weight' => 30],
+                    ['criterion' => 'Pelaksanaan Program', 'score' => 90, 'weight' => 40],
+                    ['criterion' => 'Artikel Ilmiah', 'score' => 86, 'weight' => 30],
+                ],
+            ])
+            ->assertRedirect(route('dpl.evaluations.index'));
+
+        $score = NilaiKkn::query()
+            ->where('user_id', $context['student']->user_id)
+            ->where('kelompok_id', $context['group']->id)
+            ->first();
+
+        $this->assertNotNull($score);
+        $this->assertSame(88.0, (float) $score->final_report_score);
+        $this->assertSame(90.0, (float) $score->execution_score);
+        $this->assertSame(86.0, (float) $score->article_score);
+        $this->assertNotNull($score->dpl_graded_at);
+        $this->assertNull($score->village_graded_at);
     }
 }

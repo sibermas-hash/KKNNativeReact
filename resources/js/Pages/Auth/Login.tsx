@@ -25,6 +25,7 @@ export default function Login() {
  });
 
  const [showPassword, setShowPassword] = useState(false);
+ // Order of precedence: Flash message (from backend redirect) > Component Prop (initial load)
  const activeCaptchaQuestion = flash?.captcha_question || captcha_question || 'Silakan muat ulang captcha';
 
  const submit = (e: React.FormEvent) => {
@@ -37,7 +38,7 @@ export default function Login() {
  };
 
  const refreshCaptcha = () => {
- router.get(route('login'), {}, {
+ router.get('/login', { refresh: 1 }, {
  replace: true,
  preserveScroll: true,
  });
@@ -154,6 +155,7 @@ export default function Login() {
  placeholder="?"
  required
  />
+ </div>
  </div>
  </div>
  </div>

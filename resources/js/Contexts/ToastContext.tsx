@@ -1,109 +1,168 @@
-import type { ReactNode } from 'react';
-import { createContext, useContext, useState, useCallback, useRef } from 'react'
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type ComponentType, type ReactNode, type SVGProps } from 'react';
 import {
- CheckCircleIcon, ExclamationTriangleIcon, XCircleIcon,
- InformationCircleIcon, XMarkIcon,
-} from '@heroicons/react/24/outline'
+ CheckCircleIcon,
+ ExclamationTriangleIcon,
+ InformationCircleIcon,
+ XCircleIcon,
+ XMarkIcon,
+} from '@heroicons/react/24/outline';
 
-// ── Types ──────────────────────────────────────────────────────────────────────
-export type ToastPriority = 'success' | 'warning' | 'error' | 'info'
+export type ToastPriority = 'success' | 'warning' | 'error' | 'info';
+
+interface ToastAction {
+ label: string;
+ href: string;
+}
 
 interface Toast {
- id: string
- title: string
- message?: string
- priority: ToastPriority
- action?: { label: string; href: string }
- duration?: number
+ id: string;
+ title: string;
+ message?: string;
+ priority: ToastPriority;
+ action?: ToastAction;
+ duration?: number;
 }
 
 interface ToastContextValue {
- toasts: Toast[]
- toast: (opts: Omit<Toast, 'id'>) => void
- dismiss: (id: string) => void
+ toasts: Toast[];
+ toast: (options: Omit<Toast, 'id'>) => void;
+ dismiss: (id: string) => void;
 }
 
-// ── Context ────────────────────────────────────────────────────────────────────
 const ToastContext = createContext<ToastContextValue>({
- toasts: [], toast: () => { }, dismiss: () => { },
-})
+ toasts: [],
+ toast: () => undefined,
+ dismiss: () => undefined,
+});
 
-export const useToast = () => useContext(ToastContext)
+type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
-// ── Config ─────────────────────────────────────────────────────────────────────
-type IconComponent = React.ComponentType<React.SVGProps<SVGSVGElement>>;
+const toastConfig: Record<
+ ToastPriority,
+ {
+ icon: IconComponent;
+ border: string;
+ background: string;
+ iconColor: string;
+ }
+> = {
+ success: {
+ icon: CheckCircleIcon,
+ border: 'border-emerald-500/40',
+ background: 'bg-emerald-500/15',
+ iconColor: 'text-emerald-400',
+ },
+ warning: {
+ icon: ExclamationTriangleIcon,
+ border: 'border-amber-500/40',
+ background: 'bg-amber-500/15',
+ iconColor: 'text-amber-400',
+ },
+ error: {
+ icon: XCircleIcon,
+ border: 'border-red-500/40',
+ background: 'bg-red-500/15',
+ iconColor: 'text-red-400',
+ },
+ info: {
+ icon: InformationCircleIcon,
+ border: 'border-blue-500/40',
+ background: 'bg-blue-500/15',
+ iconColor: 'text-blue-400',
+ },
+};
 
-const toastConfig: Record<ToastPriority, {
- icon: IconComponent; border: string; bg: string; iconColor: string
-}> = {
- success: { icon: CheckCircleIcon, border: 'border-emerald-500/40', bg: 'bg-emerald-500/15', iconColor: 'text-emerald-400' },
- warning: { icon: ExclamationTriangleIcon, border: 'border-amber-500/40', bg: 'bg-amber-500/15', iconColor: 'text-amber-400' },
- error: { icon: XCircleIcon, border: 'border-red-500/40', bg: 'bg-red-500/15', iconColor: 'text-red-400' },
- info: { icon: InformationCircleIcon, border: 'border-blue-500/40', bg: 'bg-blue-500/15', iconColor: 'text-blue-400' },
+export function useToast() {
+ return useContext(ToastContext);
 }
 
-// ── Provider ───────────────────────────────────────────────────────────────────
 export function ToastProvider({ children }: { children: ReactNode }) {
- const [toasts, setToasts] = useState<Toast[]>([])
- const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
+ const [toasts, setToasts] = useState<Toast[]>([]);
+ const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
  const dismiss = useCallback((id: string) => {
- clearTimeout(timers.current[id])
- setToasts(prev => prev.filter(t => t.id !== id))
- }, [])
+ if (timers.current[id]) {
+ window.clearTimeout(timers.current[id]);
+ delete timers.current[id];
+ }
 
- const toast = useCallback((opts: Omit<Toast, 'id'>) => {
- const id = Math.random().toString(36).slice(2)
- const duration = opts.duration ?? (opts.priority === 'error' ? 8000 : 5000)
+ setToasts((current) => current.filter((toast) => toast.id !== id));
+ }, []);
 
- setToasts(prev => [{ ...opts, id }, ...prev].slice(0, 5)) // max 5
+ const toast = useCallback(
+ (options: Omit<Toast, 'id'>) => {
+ const id = Math.random().toString(36).slice(2);
+ const duration = options.duration ?? (options.priority === 'error' ? 8000 : 5000);
 
- timers.current[id] = setTimeout(() => dismiss(id), duration)
- }, [dismiss])
+ setToasts((current) => [{ ...options, id, duration }, ...current].slice(0, 5));
+ timers.current[id] = window.setTimeout(() => dismiss(id), duration);
+ },
+ [dismiss],
+ );
+
+ const value = useMemo(
+ () => ({
+ toasts,
+ toast,
+ dismiss,
+ }),
+ [dismiss, toast, toasts],
+ );
 
  return (
- <ToastContext.Provider value={{ toasts, toast, dismiss }}>
+ <ToastContext.Provider value={value}>
  {children}
  <ToastContainer toasts={toasts} onDismiss={dismiss} />
  </ToastContext.Provider>
- )
+ );
 }
 
-// ── Toast Container ────────────────────────────────────────────────────────────
-function ToastContainer({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: string) => void }) {
+function ToastContainer({
+ toasts,
+ onDismiss,
+}: {
+ toasts: Toast[];
+ onDismiss: (id: string) => void;
+}) {
  return (
- <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 w-80">
- {toasts.map(t => {
- const cfg = toastConfig[t.priority]
- const Icon = cfg.icon
+ <div className="fixed bottom-6 right-6 z-[9999] flex w-80 flex-col gap-3">
+ {toasts.map((toast) => {
+ const config = toastConfig[toast.priority];
+ const Icon = config.icon;
+
  return (
- <div key={t.id}
- className={`relative rounded-lg border p-5 overflow-hidden
- ${cfg.border} ${cfg.bg}`}
- style={{ background: 'rgba(15, 23, 42, 0.9)' }}>
+ <div
+ key={toast.id}
+ className={`relative overflow-hidden rounded-lg border p-5 shadow-lg ${config.border} ${config.background}`}
+ style={{ background: 'rgba(15, 23, 42, 0.92)' }}
+ >
  <div className="flex gap-4">
- <Icon className={`w-6 h-6 flex-shrink-0 mt-0.5 ${cfg.iconColor}`} />
- <div className="flex-1 min-w-0">
- <p className="text-white text-sm font-semibold">{t.title}</p>
- {t.message && (
- <p className="text-slate-400 text-xs mt-1 font-medium leading-relaxed">{t.message}</p>
+ <Icon className={`mt-0.5 h-6 w-6 flex-shrink-0 ${config.iconColor}`} />
+ <div className="min-w-0 flex-1">
+ <p className="text-sm font-semibold text-white">{toast.title}</p>
+ {toast.message && (
+ <p className="mt-1 text-xs leading-relaxed text-slate-300">{toast.message}</p>
  )}
- {t.action && (
- <a href={t.action.href}
- className={`inline-block mt-3 text-xs font-semibold underline ${cfg.iconColor}`}>
- {t.action.label} →
+ {toast.action && (
+ <a
+ href={toast.action.href}
+ className={`mt-3 inline-block text-xs font-semibold underline ${config.iconColor}`}
+ >
+ {toast.action.label}
  </a>
  )}
  </div>
- <button onClick={() => onDismiss(t.id)}
- className="flex-shrink-0 p-1 rounded-lg text-slate-500 hover:text-white hover:bg-white/10 self-start">
- <XMarkIcon className="w-4 h-4" />
+ <button
+ type="button"
+ onClick={() => onDismiss(toast.id)}
+ className="rounded-lg p-1 text-slate-500 transition hover:bg-white/10 hover:text-white"
+ >
+ <XMarkIcon className="h-4 w-4" />
  </button>
  </div>
- {/* Status bar */}
- <div className={`absolute bottom-0 left-0 h-1 ${cfg.iconColor.replace('text', 'bg')} opacity-20`}
- style={{ width: '100%' }} />
  </div>
- )
+ );
+ })}
+ </div>
+ );
 }
-

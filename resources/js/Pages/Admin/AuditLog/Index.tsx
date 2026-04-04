@@ -5,17 +5,13 @@ import { route } from 'ziggy-js';
 import {
     History,
     Search,
-    RefreshCw,
     Filter,
-    ArrowRight,
     Eye,
     ShieldCheck,
-    AlertCircle,
     User,
     Activity,
     ShieldAlert,
 } from 'lucide-react';
-import { clsx } from 'clsx';
 import { Pagination } from '@/Components/ui';
 
 interface AuditLog {
@@ -40,7 +36,7 @@ export default function AuditLogIndex({ logs, filters }: Props) {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        router.get(route('admin.audit-logs.index'), { search }, { preserveState: true });
+        router.get(route('admin.audit-log.index'), { search }, { preserveState: true });
     };
 
     return (
@@ -107,7 +103,7 @@ export default function AuditLogIndex({ logs, filters }: Props) {
                                 <div className="flex flex-col items-end gap-5">
                                     <span className="text-xs font-bold text-slate-300 uppercase tracking-widest whitespace-nowrap">{log.created_at}</span>
                                     <Link 
-                                        href={route('admin.audit-logs.show', log.id)}
+                                        href={route('admin.audit-log.show', log.id)}
                                         className="h-10 px-6 bg-slate-900 text-primary border border-slate-800 rounded-xl font-bold uppercase italic tracking-widest text-xs shadow-lg shadow-slate-900/10 flex items-center gap-3 transition-all active:scale-95 group/btn hover:bg-emerald-600 hover:text-white"
                                     >
                                         <Eye className="w-4 h-4 shadow-sm" />

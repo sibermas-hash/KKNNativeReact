@@ -43,19 +43,19 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  Emerald Premium Header 
  Refining from heavy black to lush tactical emerald gradient
  */}
- <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
+ <div className="relative overflow-hidden rounded-lg bg-emerald-600 p-6 border border-emerald-500 flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+ <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg" />
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
+ <div className="p-2.5 bg-white/10 rounded-lg border border-white/20">
  <Activity className="h-4 w-4 text-emerald-300" />
  </div>
- <span className="text-xs font-semibold text-emerald-100 ">
+ <span className="text-xs font-semibold text-emerald-100">
  FIELD_ACTIVITY_LOG_V3
  </span>
  </div>
- <h1 className="text-4xl md:text-5xl font-semibold text-white ">
+ <h1 className="text-4xl md:text-5xl font-semibold text-white">
  Arsip <span className="text-emerald-300">Harian</span>
  </h1>
  <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
@@ -64,8 +64,8 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  </div>
 
  <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
- <div className="bg-white/10 p-6 rounded-lg border border-slate-200 flex items-center gap-6 min-w-[200px] group/stat">
- <div className="p-3 bg-white rounded-lg text-primary group-hover/stat:transition-transform">
+ <div className="bg-white/10 p-6 rounded-lg border border-white/20 flex items-center gap-6 min-w-[200px] group/stat">
+ <div className="p-3 bg-white rounded-lg text-emerald-600 group-hover/stat:scale-110 transition-transform">
  <List className="h-6 w-6" />
  </div>
  <div>
@@ -79,16 +79,16 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  {/* Operations Toolbar */}
  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 lg:mx-2">
  <div className="relative group flex-1 max-w-2xl">
- <Search className="absolute left-6 top-1/2 -/2 h-5 w-5 text-slate-300 group-focus-within:text-primaryz-10" />
+ <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within:text-emerald-500 z-10" />
  <input
  placeholder="Cari logbook atau nama personel mahasiswa..."
- className="w-full pl-16 pr-8 py-2 bg-white border border-slate-200rounded-lg text-sm font-semibold text-slate-900 outline-none focus:border-primary/50placeholder:opacity-30"
+ className="w-full pl-16 pr-8 py-3 bg-white border border-slate-200 rounded-lg text-sm font-semibold text-slate-900 outline-none focus:border-emerald-500/50 placeholder:text-slate-300"
  />
  </div>
 
  <div className="flex items-center gap-6 shrink-0">
- <div className="flex items-center gap-4 bg-white/50 p-2rounded-lg border border-slate-200
- <div className="p-3.5 bg-white text-slate-400 border border-slate-200 rounded-lg
+ <div className="flex items-center gap-4 bg-white p-1 rounded-lg border border-slate-200">
+ <div className="p-3 bg-slate-50 text-slate-400 border border-slate-200 rounded-lg">
  <Filter className="h-5 w-5" />
  </div>
  <select
@@ -121,27 +121,27 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  </thead>
  <tbody className="divide-y divide-slate-50 bg-white">
  {(reports.data ?? []).length > 0 ? (reports.data ?? []).map((r) => (
- <tr key={r.id} className="group/row hover:bg-slate-50/20cursor-default">
+ <tr key={r.id} className="group/row hover:bg-slate-50/20 cursor-default">
  <td className="px-6 py-3 whitespace-nowrap">
  <div className="flex items-center gap-5">
- <div className="p-3 bg-white border border-slate-200 rounded-lg text-slate-300 group-hover/row:text-primary group-hover/row:bg-primary/5 group-hover/row:border-primary
+ <div className="p-3 bg-white border border-slate-200 rounded-lg text-slate-300 group-hover/row:text-emerald-600 group-hover/row:bg-emerald-50 group-hover/row:border-emerald-200">
  <Calendar className="h-5 w-5 stroke-[2px]" />
  </div>
- <span className="text-sm font-semibold text-slate-900 
+ <span className="text-sm font-semibold text-slate-900">{r.date}</span>
  </div>
  </td>
  <td className="px-6 py-3">
- <span className="text-[17px] font-semibold text-slate-900 group-hover/row:text-primary transition-colors line-clamp-1 max-w-[300px]">
+ <span className="text-[17px] font-semibold text-slate-900 group-hover/row:text-emerald-600 transition-colors line-clamp-1 max-w-[300px]">
  {r.title}
  </span>
  </td>
  <td className="px-6 py-3">
  <div className="flex items-center gap-5">
- <div className="h-12 w-12 rounded-lg bg-slate-900 border border-slate-800 text-primary flex items-center justify-center font-semibold text-lg group-hover/row:transition-transform shrink-0">
+ <div className="h-12 w-12 rounded-lg bg-slate-900 border border-slate-800 text-emerald-400 flex items-center justify-center font-semibold text-lg group-hover/row:scale-105 transition-transform shrink-0">
  {r.student?.name.charAt(0)}
  </div>
  <div className="flex flex-col gap-1.5 min-w-0">
- <span className="text-sm font-semibold text-slate-900 truncate group-hover/row:text-primary transition-colors">{r.student?.name}</span>
+ <span className="text-sm font-semibold text-slate-900 truncate group-hover/row:text-emerald-600 transition-colors">{r.student?.name}</span>
  <div className="flex items-center gap-2">
  <IdCard className="h-3.5 w-3.5 text-slate-300" />
  <span className="text-xs font-semibold text-slate-400 px-2 bg-slate-50 rounded-lg py-0.5 border border-slate-200">NIM: {r.student?.nim}</span>
@@ -151,12 +151,12 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  </td>
  <td className="px-6 py-3">
  <div className="flex items-center gap-4">
- <div className="h-2 w-2 rounded-lg bg-primary shrink-0" />
- <span className="text-sm font-semibold text-slate-900 group-hover/row:text-primary transition-colors">{r.group?.name}</span>
+ <div className="h-2 w-2 rounded-lg bg-emerald-500 shrink-0" />
+ <span className="text-sm font-semibold text-slate-900 group-hover/row:text-emerald-600 transition-colors">{r.group?.name}</span>
  </div>
  </td>
  <td className="px-6 py-3 text-right pr-14">
- <StatusBadge status={r.status} className="px-5 py-2 rounded-lg text-xs font-semibold border-none />
+ <StatusBadge status={r.status} className="px-5 py-2 rounded-lg text-xs font-semibold border-none" />
  </td>
  </tr>
  )) : (
@@ -183,27 +183,27 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
  <div className="space-y-6">
  <div className="flex items-center gap-4">
- <div className="p-3 bg-primary/10 rounded-lg border border-primary">
- <ShieldCheck className="h-7 w-7 text-primary" />
+ <div className="p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+ <ShieldCheck className="h-7 w-7 text-emerald-500" />
  </div>
- <h4 className="text-sm font-semibold text-white ">_V3</h4>
+ <h4 className="text-sm font-semibold text-white">_V3</h4>
  </div>
- <p className="text-sm text-slate-400 text-sm leading-normal max-w-4xl">
+ <p className="text-sm text-slate-400 leading-normal max-w-4xl">
  Logbook merupakan bukti operasional primer yang menjadi basis penilaian kompetensi mahasiswa KKN UIN SAIZU. 
  Seluruh data laporan harian diaudit secara temporal untuk menjamin akuntabilitas pengabdian yang presisi. 
- Pastikan verifikasi <span className="text-primary font-semibold">"Verified"</span> dilakukan berdasarkan validasi lapangan yang akurat.
+ Pastikan verifikasi <span className="text-emerald-500 font-semibold">"Verified"</span> dilakukan berdasarkan validasi lapangan yang akurat.
  </p>
  </div>
  <div className="flex flex-col items-end gap-5 shrink-0 border-l border-slate-800 pl-12 hidden lg:flex">
  <div className="flex items-center gap-3 mb-1 px-5 py-2.5 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
- <div className="h-2.5 w-2.5 rounded-lg bg-emerald-500 />
- <span className="text-sm font-semibold text-slate-100 "></span>
+ <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+ <span className="text-sm font-semibold text-slate-100">SYSTEM_ONLINE</span>
  </div>
  <div className="flex gap-5">
- <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
+ <div className="h-14 w-14 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
  <Fingerprint className="h-7 w-7" />
  </div>
- <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
+ <div className="h-14 w-14 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
  <Cpu className="h-7 w-7" />
  </div>
  </div>
@@ -212,7 +212,7 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  </div>
 
  <div className="text-center pt-8">
- <p className="text-xs font-semibold text-slate-300 ">
+ <p className="text-xs font-semibold text-slate-300">
  Field Activity Monitor • System Integrity Ver. 3.2.0 • UIN SAIZU © 2024
  </p>
  </div>

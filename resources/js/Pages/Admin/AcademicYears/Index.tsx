@@ -1,159 +1,231 @@
-import { useState } from 'react';
-import { useForm, router, Head } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
+import { Pagination } from '@/Components/ui';
+import type { PaginationMeta } from '@/Components/UI/Pagination';
 import { route } from 'ziggy-js';
-import {
-    Calendar,
-    Plus,
-    Search,
-    RefreshCw,
-    ToggleLeft,
-    ToggleRight,
-    Trash2,
-    CalendarCheck,
-    History,
-    AlertCircle,
-} from 'lucide-react';
-import { clsx } from 'clsx';
 
 interface AcademicYear {
-    id: number;
-    year: string;
-    is_active: boolean;
+ id: number;
+ year: string;
+ is_active: boolean;
+}
+
+interface PaginationPayload<T> {
+ data: T[];
+ meta?: PaginationMeta;
+ current_page?: number;
+ last_page?: number;
+ per_page?: number;
+ total?: number;
+ from?: number | null;
+ to?: number | null;
+ links?: PaginationMeta['links'];
 }
 
 interface Props {
-    academicYears: AcademicYear[];
-    filters: { search?: string };
+ academicYears: PaginationPayload<AcademicYear>;
+ filters: { search?: string };
+}
+
+function resolvePaginationMeta(payload: PaginationPayload<unknown>): PaginationMeta | null {
+ if (payload.meta) {
+ return payload.meta;
+ }
+
+ if (typeof payload.last_page === 'number' && Array.isArray(payload.links)) {
+ return {
+ current_page: payload.current_page ?? 1,
+ last_page: payload.last_page,
+ per_page: payload.per_page ?? payload.data.length,
+ total: payload.total ?? payload.data.length,
+ from: payload.from ?? null,
+ to: payload.to ?? null,
+ links: payload.links,
+ };
+ }
+
+ return null;
 }
 
 export default function AcademicYearsIndex({ academicYears, filters }: Props) {
-    const [search, setSearch] = useState(filters.search || '');
-    const { data, setData, post, processing, errors, reset } = useForm({
-        year: '',
-    });
+ const [search, setSearch] = useState(filters.search ?? '');
+ const form = useForm({
+ year: '',
+ is_active: false,
+ });
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        router.get(route('admin.academic-years.index'), { search }, { preserveState: true });
-    };
+ useEffect(() => {
+ const timer = window.setTimeout(() => {
+ if (search !== (filters.search ?? '')) {
+ router.get(route('admin.academic-years.index'), { search: search || undefined }, { preserveState: true, replace: true });
+ }
+ }, 300);
 
-    const submit = (e: React.FormEvent) => {
-        e.preventDefault();
-        post(route('admin.academic-years.store'), {
-            onSuccess: () => reset(),
-        });
-    };
+ return () => window.clearTimeout(timer);
+ }, [filters.search, search]);
 
-    const toggleStatus = (id: number) => {
-        if (confirm('Apakah Anda yakin ingin mengubah status aktivasi tahun akademik ini?')) {
-            router.patch(route('admin.academic-years.toggle', id));
-        }
-    };
+ const paginationMeta = resolvePaginationMeta(academicYears);
+ const rows = academicYears.data ?? [];
 
-    const destroy = (id: number) => {
-        if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-            router.delete(route('admin.academic-years.destroy', id));
-        }
-    };
+ const submit = (event: React.FormEvent) => {
+ event.preventDefault();
+ form.post(route('admin.academic-years.store'), {
+ preserveScroll: true,
+ onSuccess: () => form.reset(),
+ });
+ };
 
-    return (
-        <AppLayout title="Tahun Akademik">
-            <Head title="Manajemen Tahun Akademik" />
+ const toggleStatus = (year: AcademicYear) => {
+ if (!window.confirm(`Ubah status tahun akademik "${year.year}"?`)) {
+ return;
+ }
 
-            <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-xl font-semibold text-slate-900">Tahun Akademik</h1>
-                </div>
+ router.patch(
+ route('admin.academic-years.update', year.id),
+ { year: year.year, is_active: !year.is_active },
+ { preserveScroll: true },
+ );
+ };
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="border border-slate-200 rounded-lg p-6">
-                        <h3 className="font-semibold text-slate-900 mb-4">Tambah Tahun</h3>
-                        <form onSubmit={submit} className="space-y-4">
-                            <div>
-                                <label className="block text-sm text-slate-600 mb-2">Tahun</label>
-                                <input
-                                    type="text"
-                                    placeholder="2024/2025"
-                                    value={data.year}
-                                    onChange={(e) => setData('year', e.target.value)}
-                                    className={clsx(
-                                        "w-full px-3 py-2 rounded-lg border text-sm",
-                                        errors.year ? "border-rose-300 bg-rose-50" : "border-slate-200 bg-white"
-                                    )}
-                                />
-                                {errors.year && <p className="text-xs text-rose-500 mt-1">{errors.year}</p>}
-                            </div>
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className="w-full px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium text-sm hover:bg-emerald-700"
-                            >
-                                {processing ? 'Menyimpan...' : 'Simpan'}
-                            </button>
-                        </form>
-                    </div>
+ const destroy = (year: AcademicYear) => {
+ if (!window.confirm(`Hapus tahun akademik "${year.year}"?`)) {
+ return;
+ }
 
-                    <div className="lg:col-span-2 border border-slate-200 rounded-lg overflow-hidden">
-                        <div className="p-6 border-b border-slate-200">
-                            <form onSubmit={handleSearch}>
-                                <input
-                                    type="search"
-                                    placeholder="Cari..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
-                                />
-                            </form>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead className="bg-slate-50 border-b border-slate-200">
-                                    <tr>
-                                        <th className="px-6 py-2 text-left font-medium text-slate-600">Tahun</th>
-                                        <th className="px-6 py-2 text-left font-medium text-slate-600">Status</th>
-                                        <th className="px-6 py-2 text-right font-medium text-slate-600">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-200">
-                                    {academicYears.map((year) => (
-                                        <tr key={year.id} className="hover:bg-slate-50">
-                                            <td className="px-6 py-3">{year.year}</td>
-                                            <td className="px-6 py-3">
-                                                <span className={clsx(
-                                                    "text-xs px-2 py-1 rounded",
-                                                    year.is_active ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"
-                                                )}>
-                                                    {year.is_active ? 'Aktif' : 'Nonaktif'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-3 text-right space-x-2">
-                                                <button
-                                                    onClick={() => toggleStatus(year.id)}
-                                                    className="text-sm text-primary hover:underline"
-                                                >
-                                                    {year.is_active ? 'Nonaktifkan' : 'Aktifkan'}
-                                                </button>
-                                                <button
-                                                    onClick={() => destroy(year.id)}
-                                                    className="text-sm text-rose-500 hover:underline"
-                                                >
-                                                    Hapus
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {academicYears.length === 0 && (
-                                        <tr>
-                                            <td colSpan={3} className="px-6 py-8 text-center text-slate-500">Belum ada data</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </AppLayout>
-    );
+ router.delete(route('admin.academic-years.destroy', year.id), { preserveScroll: true });
+ };
+
+ return (
+ <AppLayout title="Tahun Akademik">
+ <Head title="Tahun Akademik" />
+
+ <div className="space-y-6">
+ <section className="rounded-lg border border-slate-200 bg-white p-8">
+ <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+ <div>
+ <h1 className="text-2xl font-semibold text-slate-900">Tahun Akademik</h1>
+ <p className="mt-2 text-sm text-slate-500">
+ Kelola referensi tahun akademik yang dipakai pada periode KKN.
+ </p>
+ </div>
+ <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+ Total data: <span className="font-semibold text-slate-900">{paginationMeta?.total ?? rows.length}</span>
+ </div>
+ </div>
+ </section>
+
+ <div className="grid gap-6 lg:grid-cols-3">
+ <section className="rounded-lg border border-slate-200 bg-white p-6">
+ <h2 className="text-lg font-semibold text-slate-900">Tambah Tahun Akademik</h2>
+ <form onSubmit={submit} className="mt-6 space-y-4">
+ <div>
+ <label className="mb-2 block text-sm font-medium text-slate-700">Tahun</label>
+ <input
+ type="text"
+ placeholder="2026/2027"
+ value={form.data.year}
+ onChange={(event) => form.setData('year', event.target.value)}
+ className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-800 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10"
+ />
+ {form.errors.year && <p className="mt-2 text-xs text-rose-600">{form.errors.year}</p>}
+ </div>
+
+ <label className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+ <input
+ type="checkbox"
+ checked={form.data.is_active}
+ onChange={(event) => form.setData('is_active', event.target.checked)}
+ className="rounded border-slate-300 text-primary focus:ring-primary"
+ />
+ Jadikan aktif setelah disimpan
+ </label>
+
+ <button
+ type="submit"
+ disabled={form.processing}
+ className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-60"
+ >
+ {form.processing ? 'Menyimpan...' : 'Simpan tahun akademik'}
+ </button>
+ </form>
+ </section>
+
+ <section className="overflow-hidden rounded-lg border border-slate-200 bg-white lg:col-span-2">
+ <div className="border-b border-slate-200 px-6 py-4">
+ <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+ <div>
+ <h2 className="text-lg font-semibold text-slate-900">Daftar Tahun Akademik</h2>
+ <p className="mt-1 text-sm text-slate-500">Cari dan ubah status tahun akademik yang sudah ada.</p>
+ </div>
+ <input
+ type="search"
+ placeholder="Cari tahun akademik..."
+ value={search}
+ onChange={(event) => setSearch(event.target.value)}
+ className="w-full max-w-sm rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10"
+ />
+ </div>
+ </div>
+
+ <div className="overflow-x-auto">
+ <table className="min-w-full divide-y divide-slate-200">
+ <thead className="bg-slate-50">
+ <tr>
+ <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Tahun</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
+ <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Aksi</th>
+ </tr>
+ </thead>
+ <tbody className="divide-y divide-slate-100 bg-white">
+ {rows.length > 0 ? (
+ rows.map((year) => (
+ <tr key={year.id}>
+ <td className="px-6 py-4 text-sm font-medium text-slate-900">{year.year}</td>
+ <td className="px-6 py-4">
+ <span className={year.is_active ? 'inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700' : 'inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600'}>
+ {year.is_active ? 'Aktif' : 'Tidak aktif'}
+ </span>
+ </td>
+ <td className="px-6 py-4">
+ <div className="flex justify-end gap-3">
+ <button
+ type="button"
+ onClick={() => toggleStatus(year)}
+ className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
+ >
+ {year.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+ </button>
+ <button
+ type="button"
+ onClick={() => destroy(year)}
+ className="rounded-lg border border-rose-300 px-3 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50"
+ >
+ Hapus
+ </button>
+ </div>
+ </td>
+ </tr>
+ ))
+ ) : (
+ <tr>
+ <td colSpan={3} className="px-6 py-12 text-center text-sm text-slate-500">
+ Belum ada data tahun akademik.
+ </td>
+ </tr>
+ )}
+ </tbody>
+ </table>
+ </div>
+
+ {paginationMeta && (
+ <div className="border-t border-slate-200 px-6 py-4">
+ <Pagination meta={paginationMeta} />
+ </div>
+ )}
+ </section>
+ </div>
+ </div>
+ </AppLayout>
+ );
 }

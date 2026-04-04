@@ -5,7 +5,6 @@ import { Badge, Pagination } from '@/Components/ui';
 import type { PageProps } from '@/types';
 import type { PaginationMeta } from '@/Components/UI/Pagination';
 import {
- Mail,
  UserPlus,
  Users,
  ShieldCheck,
@@ -226,7 +225,7 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  <Activity className="h-6 w-6 text-primary" />
  </div>
  <div>
- <h4 className="text-sm font-semibold text-white"></h4>
+ <h4 className="text-sm font-semibold text-white">STUDENT_SECURITY_PROTOCOL_ACTIVE</h4>
  <p className="text-xs font-semibold text-slate-500 mt-1  max-w-2xl">
  Kontrol akses mahasiswa terintegrasi dengan SIAKAD. <br/>
  STATUS: MONITORING_SESSION_STREAM

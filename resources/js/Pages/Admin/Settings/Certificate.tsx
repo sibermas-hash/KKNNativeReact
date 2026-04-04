@@ -1,18 +1,6 @@
-import { useForm, Head } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import {
- RefreshCw,
- FileText,
- CheckCircle2,
- ImageIcon,
- Code2,
- Save,
- Layout,
- Type,
- 
- ShieldCheck
-} from 'lucide-react';
-import { route } from 'ziggy-js';
+import { FormInput, FormTextarea } from '@/Components/ui';
 
 interface ConfigItem {
  id: number;
@@ -27,207 +15,113 @@ interface Props {
 }
 
 export default function CertificateSettings({ configs }: Props) {
- const { data, setData, post, processing, recentlySuccessful } = useForm({
- configs: configs.map(c => ({ id: c.id, value: c.value || '' }))
+ const form = useForm({
+ configs: configs.map((config) => ({
+ id: config.id,
+ value: config.value ?? '',
+ })),
  });
 
- const handleSubmit = (e: React.FormEvent) => {
- e.preventDefault();
- post(route('admin.settings.certificate.update'));
+ const updateValue = (id: number, value: string) => {
+ form.setData(
+ 'configs',
+ form.data.configs.map((item) => (item.id === id ? { ...item, value } : item)),
+ );
  };
 
- const handleValueChange = (id: number, newValue: string) => {
- setData('configs', data.configs.map(c => c.id === id ? { ...c, value: newValue } : c));
+ const handleSubmit = (event: React.FormEvent) => {
+ event.preventDefault();
+ form.post('/admin/settings/certificate');
  };
+
+ const getValue = (id: number) => form.data.configs.find((item) => item.id === id)?.value ?? '';
 
  return (
- <AppLayout title="Protokol Sertifikasi Digital">
- <Head title="Konfigurasi Sertifikat" />
- 
- <div className="space-y-8 pb-24">
- {/* 
- Emerald Premium Header 
- Refining from heavy black to lush tactical emerald gradient
- */}
- <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
- 
- <div className="relative z-10 space-y-5 flex-1">
- <div className="flex items-center gap-3 mb-2">
- <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
- <FileText className="h-4 w-4 text-emerald-300" />
- </div>
- <span className="text-xs font-semibold text-emerald-100 ">
- CREDENTIAL_ENGINE_V3
- </span>
- </div>
- <h1 className="text-4xl md:text-5xl font-semibold text-white ">
- Arsitektur <span className="text-emerald-300">Sertifikat</span>
- </h1>
- <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl">
- Konfigurasi narasi akademik, tata letak visual, dan parameter otentikasi sertifikat kelulusan KKN UIN SAIZU untuk seluruh peserta.
+ <AppLayout title="Pengaturan Sertifikat">
+ <Head title="Pengaturan Sertifikat" />
+
+ <div className="space-y-6">
+ <section className="rounded-lg border border-slate-200 bg-white p-8">
+ <h1 className="text-2xl font-semibold text-slate-900">Pengaturan Sertifikat</h1>
+ <p className="mt-2 max-w-3xl text-sm text-slate-500">
+ Atur teks, aset, dan template yang dipakai saat sistem membuat sertifikat peserta KKN.
  </p>
- </div>
+ </section>
 
- <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
- {recentlySuccessful && (
- <div className="flex items-center gap-4 bg-white/20 text-white px-6 py-2 rounded-lg border border-slate-200 zoom-in-95">
- <CheckCircle2 className="w-6 h-6 text-emerald-400 stroke-[3px]" />
- <span className="text-sm font-semibold ">_SUCCESS</span>
- </div>
- )}
- </div>
- </div>
+ <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-3">
+ <section className="space-y-6 lg:col-span-2">
+ <div className="rounded-lg border border-slate-200 bg-white p-6">
+ <h2 className="text-lg font-semibold text-slate-900">Konten Sertifikat</h2>
+ <p className="mt-1 text-sm text-slate-500">
+ Gunakan tag seperti <code>[StudentName]</code>, <code>[NIM]</code>,{' '}
+ <code>[LOKASI]</code>, dan <code>[PERIODE]</code> pada isi narasi.
+ </p>
 
- <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:mx-2">
- {/* Main Settings Area */}
- <div className="lg:col-span-2 space-y-6">
- <section className="bg-white rounded-lg p-12 border border-slate-200 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none group-transition-transform">
- <Layout className="h-48 w-48" />
- </div>
-
- <div className="relative z-10 space-y-6">
- <div className="flex items-center gap-5 border-b border-slate-200 pb-8">
- <div className="p-3.5 bg-primary rounded-lg text-white
- <Type className="h-7 w-7" />
- </div>
- <div>
- <h3 className="text-2xl font-semibold text-slate-900 ">Narasi_Akademik</h3>
- <p className="text-xs font-semibold text-slate-400 mt-2">KONTEN TEKS DINAMIS SERTIFIKAT</p>
- </div>
- </div>
-
- <div className="space-y-8">
- {configs.filter(c => c.type !== 'image').map((config) => (
- <div key={config.id} className="space-y-5 group/item">
- <label className="text-sm font-semibold text-slate-400 group-hover/item:text-primary transition-colors ml-2 block">
- {config.label}
- </label>
- {config.type === 'longtext' ? (
- <div className="space-y-5">
- <textarea
- className="w-full min-h-[250px] rounded-lg bg-slate-50 border border-slate-200 focus:bg-white focus:border-primary/50p-10 text-slate-700 text-sm leading-normal outline-none
- value={data.configs.find(c => c.id === config.id)?.value || ''}
- onChange={e => handleValueChange(config.id, e.target.value)}
- placeholder={`Masukkan konten record untuk ${config.label.toLowerCase()}...`}
+ <div className="mt-6 space-y-5">
+ {configs
+ .filter((config) => config.type !== 'image')
+ .map((config) =>
+ config.type === 'longtext' ? (
+ <FormTextarea
+ key={config.id}
+ label={config.label}
+ value={getValue(config.id)}
+ onChange={(event) => updateValue(config.id, event.target.value)}
+ error={form.errors[`configs.${form.data.configs.findIndex((item) => item.id === config.id)}.value`]}
+ rows={8}
  />
- <div className="flex items-center gap-3 px-5 py-2.5 bg-emerald-50 rounded-lg border border-emerald-100 w-fit">
- <Code2 className="w-4 h-4 text-primary" />
- <span className="text-xs font-semibold text-primary">SCRIPT_ENGINE: HTML_SUPPORT_ENABLED</span>
- </div>
- </div>
  ) : (
- <input
- className="w-full h-18 rounded-lg bg-slate-50 border border-slate-200 focus:bg-white focus:border-primary/50px-6 text-slate-800 text-sm font-semibold outline-none"
- value={data.configs.find(c => c.id === config.id)?.value || ''}
- onChange={e => handleValueChange(config.id, e.target.value)}
- placeholder={`Masukkan ${config.label.toLowerCase()}...`}
+ <FormInput
+ key={config.id}
+ label={config.label}
+ value={getValue(config.id)}
+ onChange={(event) => updateValue(config.id, event.target.value)}
+ error={form.errors[`configs.${form.data.configs.findIndex((item) => item.id === config.id)}.value`]}
  />
+ )
  )}
- {config.config_key === 'cert_body' && (
- <div className="flex flex-wrap gap-3 mt-4 px-2">
- <span className="text-xs font-semibold text-slate-300 mr-3 pt-1.5">Sistem_Variabel:</span>
- {['[StudentName]', '[NIM]', '[LOKASI]', '[PERIODE]'].map(tag => (
- <button 
- key={tag} 
- type="button"
- className="px-4 py-1.5 bg-white border border-slate-200 text-slate-500 text-xs font-semibold rounded-lg group-hover/item:border-primary/40 group-hover/item:text-primarylowercase"
- >
- {tag}
- </button>
- ))}
- </div>
- )}
- </div>
- ))}
  </div>
  </div>
  </section>
- </div>
 
- {/* Aesthetic Control Sidebar */}
- <div className="space-y-8">
- {/* Visual Assets Card */}
- <section className="bg-white rounded-lg p-10 border border-slate-200 group">
- <div className="flex items-center gap-5 border-b border-slate-200 pb-8 mb-10">
- <div className="p-4 bg-slate-50 rounded-lg text-slate-300 border border-slate-200    <ImageIcon className="h-6 w-6 stroke-[2px]" />
- </div>
- <h3 className="text-lg font-semibold text-slate-900">Aset_Visual</h3>
- </div>
+ <section className="space-y-6">
+ <div className="rounded-lg border border-slate-200 bg-white p-6">
+ <h2 className="text-lg font-semibold text-slate-900">Aset Visual</h2>
+ <p className="mt-1 text-sm text-slate-500">
+ Simpan URL gambar yang dipakai sebagai logo, tanda tangan, atau latar sertifikat.
+ </p>
 
- <div className="space-y-8">
- {configs.filter(c => c.type === 'image').map((config) => (
- <div key={config.id} className="space-y-5">
- <div className="aspect-[1.6/1] bg-slate-50 border-2 border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center p-10 text-center hover:bg-emerald-50/10 hover:border-primarygroup/preview relative overflow-hidden cursor-help">
- <ImageIcon className="w-12 h-12 text-slate-200 mb-5 group-hover/preview:group-hover/preview:text-primary/30" />
- <p className="text-sm font-semibold text-slate-300 leading-normal group-hover/preview:text-primary transition-colors">{config.label}</p>
- </div>
- <div className="space-y-3 px-1 group/field">
- <span className="text-xs font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors">Endpoint_URL_Record</span>
- <input
- className="w-full bg-slate-50 border border-slate-200 text-slate-700 placeholder-slate-300 rounded-lg h-14 px-6 text-xs font-semibold focus:bg-white focus:border-primary/50 outline-none
- value={data.configs.find(c => c.id === config.id)?.value || ''}
- onChange={e => handleValueChange(config.id, e.target.value)}
- placeholder="https://storage.uinsaizu.ac.id/..."
+ <div className="mt-6 space-y-5">
+ {configs
+ .filter((config) => config.type === 'image')
+ .map((config) => (
+ <FormInput
+ key={config.id}
+ label={config.label}
+ value={getValue(config.id)}
+ onChange={(event) => updateValue(config.id, event.target.value)}
+ error={form.errors[`configs.${form.data.configs.findIndex((item) => item.id === config.id)}.value`]}
+ placeholder="https://..."
  />
- </div>
- </div>
  ))}
  </div>
- </section>
+ </div>
 
- {/* Tactical Guidelines Emerald */}
- <section className="bg-slate-900 rounded-lg p-12 border border-slate-800 space-y-6 relative overflow-hidden">
- <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
-
- <div className="space-y-8 relative z-10">
- <div className="flex items-center gap-5">
- <div className="p-3 bg-primary/10 rounded-lg border border-primary">
- <ShieldCheck className="h-6 w-6 text-primary" />
- </div>
- <p className="text-sm font-semibold text-white ">Petunjuk_Otoritas</p>
- </div>
- <ul className="space-y-8">
- <li className="flex gap-5">
- <div className="w-2 h-2 rounded-lg bg-primary mt-2 shrink-0" />
- <p className="text-sm text-slate-400 text-sm leading-normal rasio aset sertifikat <span className="text-emerald-400 font-semibold">A4_LANDSCAPE</span> untuk resolusi pracetak optimal.</p>
- </li>
- <li className="flex gap-5">
- <div className="w-2 h-2 rounded-lg bg-primary mt-2 shrink-0" />
- <p className="text-sm text-slate-400 text-sm leading-normal akan mengeksekusi render narasi secara dinamis ke dalam <span className="text-emerald-400 font-semibold">FILE_PDF_Mahasiswa</span>.</p>
- </li>
- <li className="flex gap-5">
- <div className="w-2 h-2 rounded-lg bg-primary mt-2 shrink-0" />
- <p className="text-sm text-slate-400 text-sm leading-normal variabel terenkapsulasi <span className="text-emerald-400 font-semibold">[tag]</span> dengan akurat untuk injeksi data otomatis.</p>
- </li>
- </ul>
- </div>
+ <div className="rounded-lg border border-slate-200 bg-white p-6">
+ <h2 className="text-lg font-semibold text-slate-900">Simpan Perubahan</h2>
+ <p className="mt-1 text-sm text-slate-500">
+ Perubahan ini langsung dipakai oleh proses pembuatan sertifikat berikutnya.
+ </p>
 
  <button
  type="submit"
- disabled={processing}
- className="group relative w-full h-20 bg-primary hover:bg-primary-dark text-white rounded-lg flex items-center justify-center gap-5 font-semibold text-xs disabled:opacity-50 overflow-hidden relative z-10"
+ disabled={form.processing}
+ className="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-60"
  >
- {processing ? (
- <>
- <RefreshCw className="h-6 w-6" />
- SYNCING_CONFIG...
- </>
- ) : (
- <>
- <Save className="h-6 w-6 group-stroke-[2.5px]" />
- Implementasikan_Perubahan
- </>
- )}
+ {form.processing ? 'Menyimpan...' : 'Simpan konfigurasi'}
  </button>
+ </div>
  </section>
-
- <div className="flex items-center justify-center gap-4 text-slate-300 pt-6">
- <Zap className="h-5 w-5 text-emerald-500 fill-emerald-500" />
- <p className="text-xs font-semibold ">Credential_Registry_System • v.3.2.0</p>
- </div>
- </div>
  </form>
  </div>
  </AppLayout>

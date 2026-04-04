@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\KKN\Evaluasi;
 use App\Models\KKN\ItemEvaluasi;
 use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\KonfigurasiPenilaian;
 use App\Models\KKN\Mahasiswa;
 use App\Services\GradingService;
 use Illuminate\Http\RedirectResponse;
@@ -32,6 +33,40 @@ class EvaluationController extends Controller
             }
         }
         return true;
+    }
+
+    /**
+     * @return array{final_report: float, execution: float, article: float}
+     */
+    private function dplWeights(): array
+    {
+        KonfigurasiPenilaian::ensureDefaults();
+
+        $weights = KonfigurasiPenilaian::query()
+            ->whereIn('config_key', [
+                'weight_dpl_report',
+                'weight_dpl_execution',
+                'weight_dpl_article',
+            ])
+            ->pluck('percentage', 'config_key');
+
+        return [
+            'final_report' => (float) ($weights['weight_dpl_report'] ?? 30),
+            'execution' => (float) ($weights['weight_dpl_execution'] ?? 40),
+            'article' => (float) ($weights['weight_dpl_article'] ?? 30),
+        ];
+    }
+
+    private function calculateWeightedDplScore(float $reportScore, float $executionScore, float $articleScore): float
+    {
+        $weights = $this->dplWeights();
+
+        return round(
+            ($reportScore * ($weights['final_report'] / 100)) +
+            ($executionScore * ($weights['execution'] / 100)) +
+            ($articleScore * ($weights['article'] / 100)),
+            2
+        );
     }
 
     /**
@@ -86,6 +121,7 @@ class EvaluationController extends Controller
                     'name' => $registration->mahasiswa?->nama ?? 'Mahasiswa tidak ditemukan',
                 ])->filter(fn ($student) => $student['id'] !== null)->values(),
             ])->values(),
+            'dplWeights' => $this->dplWeights(),
         ]);
     }
 
@@ -113,8 +149,9 @@ class EvaluationController extends Controller
         $colMapping = [
             'nim' => -1,
             'name' => -1,
-            'discipline' => -1,
-            'attitude' => -1
+            'final_report' => -1,
+            'execution' => -1,
+            'article' => -1,
         ];
 
         // Search for header row (max 20 rows deep)
@@ -123,19 +160,30 @@ class EvaluationController extends Controller
                 $clean = Str::lower(trim($content));
                 if (Str::contains($clean, ['nim', 'nomor induk'])) $colMapping['nim'] = $colIndex;
                 if (Str::contains($clean, ['nama', 'name', 'mahasiswa'])) $colMapping['name'] = $colIndex;
-                if (Str::contains($clean, ['disiplin', 'kedisiplinan', 'discipline'])) $colMapping['discipline'] = $colIndex;
-                if (Str::contains($clean, ['sikap', 'attitude', 'etika'])) $colMapping['attitude'] = $colIndex;
+                if (Str::contains($clean, ['laporan akhir', 'final report', 'laporan'])) $colMapping['final_report'] = $colIndex;
+                if (Str::contains($clean, ['pelaksanaan', 'execution', 'implementasi', 'program'])) $colMapping['execution'] = $colIndex;
+                if (Str::contains($clean, ['artikel', 'article', 'jurnal'])) $colMapping['article'] = $colIndex;
             }
 
-            // If we found at least NIM and one score, we assume this is the header row
-            if ($colMapping['nim'] !== -1 && ($colMapping['discipline'] !== -1 || $colMapping['attitude'] !== -1)) {
+            if (
+                $colMapping['nim'] !== -1
+                && $colMapping['final_report'] !== -1
+                && $colMapping['execution'] !== -1
+                && $colMapping['article'] !== -1
+            ) {
                 $headerRowIndex = $index;
                 break;
             }
         }
 
-        if ($headerRowIndex === -1 || $colMapping['nim'] === -1) {
-            return back()->with('error', 'Format file tidak dikenali. Pastikan ada kolom NIM dan Nilai (Disiplin/Sikap).');
+        if (
+            $headerRowIndex === -1
+            || $colMapping['nim'] === -1
+            || $colMapping['final_report'] === -1
+            || $colMapping['execution'] === -1
+            || $colMapping['article'] === -1
+        ) {
+            return back()->with('error', 'Format file tidak dikenali. Pastikan ada kolom NIM, Laporan Akhir, Pelaksanaan, dan Artikel.');
         }
 
         $dataRows = $rows->slice($headerRowIndex + 1);
@@ -151,8 +199,9 @@ class EvaluationController extends Controller
             $preview[] = [
                 'nim' => $nim,
                 'name' => $row[$colMapping['name']] ?? 'Unknown',
-                'discipline' => $colMapping['discipline'] !== -1 ? ($row[$colMapping['discipline']] ?? 0) : 0,
-                'attitude' => $colMapping['attitude'] !== -1 ? ($row[$colMapping['attitude']] ?? 0) : 0,
+                'final_report_score' => $row[$colMapping['final_report']] ?? 0,
+                'execution_score' => $row[$colMapping['execution']] ?? 0,
+                'article_score' => $row[$colMapping['article']] ?? 0,
                 'status' => $mahasiswa ? ($isMember ? 'READY' : 'NOT_IN_GROUP') : 'NOT_FOUND',
                 'id' => $mahasiswa?->id
             ];
@@ -165,6 +214,7 @@ class EvaluationController extends Controller
                 'name' => $group->nama_kelompok,
                 'period_name' => $group->periode?->name ?? '-',
             ],
+            'dplWeights' => $this->dplWeights(),
             'mapping' => $colMapping // Send mapping for transparency
         ]);
     }
@@ -174,8 +224,9 @@ class EvaluationController extends Controller
         $request->validate([
             'group_id' => ['required', 'exists:kelompok_kkn,id'],
             'data' => ['required', 'array'],
-            'data.*.discipline' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'data.*.attitude' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'data.*.final_report_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'data.*.execution_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'data.*.article_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
 
         $this->authorizeGroupOwnership($request->group_id);
@@ -187,8 +238,9 @@ class EvaluationController extends Controller
 
         $lecturerId = auth()->id();
         $groupId = $request->group_id;
+        $weights = $this->dplWeights();
 
-        DB::transaction(function () use ($request, $lecturerId, $groupId) {
+        DB::transaction(function () use ($request, $lecturerId, $groupId, $weights) {
             foreach ($request->data as $item) {
                 if ($item['status'] !== 'READY') continue;
 
@@ -218,20 +270,41 @@ class EvaluationController extends Controller
 
                 $eval->item()->delete();
 
-                ItemEvaluasi::create(['evaluasi_id' => $eval->id, 'criterion' => 'Kedisiplinan', 'score' => $item['discipline'], 'weight' => 50]);
-                ItemEvaluasi::create(['evaluasi_id' => $eval->id, 'criterion' => 'Sikap', 'score' => $item['attitude'], 'weight' => 50]);
+                ItemEvaluasi::create([
+                    'evaluasi_id' => $eval->id,
+                    'criterion' => 'Laporan Akhir',
+                    'score' => $item['final_report_score'],
+                    'weight' => $weights['final_report'],
+                ]);
+                ItemEvaluasi::create([
+                    'evaluasi_id' => $eval->id,
+                    'criterion' => 'Pelaksanaan Program',
+                    'score' => $item['execution_score'],
+                    'weight' => $weights['execution'],
+                ]);
+                ItemEvaluasi::create([
+                    'evaluasi_id' => $eval->id,
+                    'criterion' => 'Artikel Ilmiah',
+                    'score' => $item['article_score'],
+                    'weight' => $weights['article'],
+                ]);
 
-                $total = ($item['discipline'] * 0.5) + ($item['attitude'] * 0.5);
+                $total = $this->calculateWeightedDplScore(
+                    (float) $item['final_report_score'],
+                    (float) $item['execution_score'],
+                    (float) $item['article_score']
+                );
                 $eval->update(['total_score' => $total, 'grade' => $this->calculateGrade($total)]);
 
                 // Sync to NilaiKkn (Centralized)
                 $mahasiswa = Mahasiswa::find($item['id']);
                 if ($mahasiswa) {
-                    $this->gradingService->submitVillageHeadScores(
+                    $this->gradingService->submitDPLScores(
                         $mahasiswa->user_id,
                         $groupId,
-                        $item['discipline'],
-                        $item['attitude'],
+                        (float) $item['final_report_score'],
+                        (float) $item['execution_score'],
+                        (float) $item['article_score'],
                         $lecturerId
                     );
                 }
@@ -268,9 +341,9 @@ class EvaluationController extends Controller
         $validated = $request->validate([
             'student_id' => ['required', 'exists:mahasiswa,id'],
             'group_id' => ['required', 'exists:kelompok_kkn,id'],
-            'evaluator_type' => ['required', 'in:dpl,peer,community'],
+            'evaluator_type' => ['required', 'in:dpl'],
             'notes' => ['nullable', 'string'],
-            'items' => ['required', 'array', 'min:1'],
+            'items' => ['required', 'array', 'size:3'],
             'items.*.criterion' => ['required', 'string'],
             'items.*.score' => ['required', 'numeric', 'min:0', 'max:100'],
             'items.*.weight' => ['required', 'numeric', 'min:0', 'max:100'],
@@ -294,8 +367,9 @@ class EvaluationController extends Controller
 
         $totalScore = 0;
         $totalWeight = 0;
-        $discipline = 0;
-        $attitude = 0;
+        $reportScore = 0;
+        $executionScore = 0;
+        $articleScore = 0;
 
         foreach ($validated['items'] as $item) {
             ItemEvaluasi::create([
@@ -305,8 +379,9 @@ class EvaluationController extends Controller
                 'weight' => $item['weight'],
             ]);
 
-            if (stripos($item['criterion'], 'disiplin') !== false) $discipline = $item['score'];
-            if (stripos($item['criterion'], 'sikap') !== false) $attitude = $item['score'];
+            if (stripos($item['criterion'], 'laporan') !== false) $reportScore = (float) $item['score'];
+            if (stripos($item['criterion'], 'pelaksanaan') !== false) $executionScore = (float) $item['score'];
+            if (stripos($item['criterion'], 'artikel') !== false) $articleScore = (float) $item['score'];
 
             $totalScore += $item['score'] * ($item['weight'] / 100);
             $totalWeight += $item['weight'];
@@ -323,11 +398,12 @@ class EvaluationController extends Controller
         // Sync to NilaiKkn (Centralized)
         $mahasiswa = Mahasiswa::find($validated['student_id']);
         if ($mahasiswa && $validated['evaluator_type'] === 'dpl') {
-            $this->gradingService->submitVillageHeadScores(
+            $this->gradingService->submitDPLScores(
                 $mahasiswa->user_id,
                 $validated['group_id'],
-                $discipline,
-                $attitude,
+                $reportScore,
+                $executionScore,
+                $articleScore,
                 auth()->id()
             );
         }

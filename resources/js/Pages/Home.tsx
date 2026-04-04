@@ -101,18 +101,18 @@ export default function Home({ stats, auth, announcements, aboutContent, downloa
                             </h1>
                         </Link>
                         <p className="text-[10px] font-black text-slate-400 mt-1 uppercase tracking-[0.3em] flex items-center gap-2">
-                            <span>OPERATIONAL_PORTAL</span>
+                            <span>PORTAL OPERASIONAL</span>
                             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                            <span>V3.5_VIBRANT</span>
+                            <span>VERSI 3.5 VIBRANT</span>
                         </p>
                     </div>
                 </div>
 
                 <div className="hidden lg:flex items-center gap-10">
-                    <a href="#about" className="text-[13px] font-black text-slate-500 hover:text-emerald-500 transition-colors uppercase tracking-widest">Profil</a>
-                    <a href="#schemes" className="text-[13px] font-black text-slate-500 hover:text-emerald-500 transition-colors uppercase tracking-widest">Skema_KKN</a>
-                    <a href="#announcements" className="text-[13px] font-black text-slate-500 hover:text-emerald-500 transition-colors uppercase tracking-widest">Warta_Utama</a>
-                    <a href="#downloads" className="text-[13px] font-black text-slate-500 hover:text-emerald-500 transition-colors uppercase tracking-widest">Repositori</a>
+                    <a href="#profil" className="text-[13px] font-black text-slate-500 hover:text-emerald-500 transition-colors uppercase tracking-widest">Profil</a>
+                    <a href="#skema" className="text-[13px] font-black text-slate-500 hover:text-emerald-500 transition-colors uppercase tracking-widest">Skema KKN</a>
+                    <a href="#warta" className="text-[13px] font-black text-slate-500 hover:text-emerald-500 transition-colors uppercase tracking-widest">Warta Utama</a>
+                    <a href="#repositori" className="text-[13px] font-black text-slate-500 hover:text-emerald-500 transition-colors uppercase tracking-widest">Repositori</a>
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -121,22 +121,16 @@ export default function Home({ stats, auth, announcements, aboutContent, downloa
                             href={route('dashboard')}
                             className="bg-slate-950 text-white px-8 py-3 rounded-xl text-xs font-black hover:bg-emerald-600 transition-all flex items-center gap-3 group shadow-xl"
                         >
-                            <span>DASHBOARD_PANEL</span>
+                            <span>PANEL DASHBOARD</span>
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </Link>
                     ) : (
                         <>
                             <Link 
                                 href={route('login')}
-                                className="text-slate-900 hover:text-emerald-500 px-4 py-2 text-xs font-black transition-all uppercase tracking-[0.2em]"
+                                className="bg-slate-950 text-white px-8 py-3 rounded-xl text-xs font-black hover:bg-emerald-600 transition-all shadow-xl uppercase tracking-[0.2em]"
                             >
                                 LOGIN
-                            </Link>
-                            <Link 
-                                href={route('login')}
-                                className="bg-amber-400 text-slate-950 px-8 py-3 rounded-xl text-xs font-black hover:bg-amber-500 transition-all shadow-xl shadow-amber-500/20 uppercase tracking-[0.2em]"
-                            >
-                                DAFTAR_BARU
                             </Link>
                         </>
                     )}
@@ -175,7 +169,7 @@ export default function Home({ stats, auth, announcements, aboutContent, downloa
                             className="inline-flex items-center gap-4 px-6 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full mb-10"
                         >
                             <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                            <span className="text-[12px] font-black text-white uppercase tracking-[0.3em]">PENDAFTARAN_KKN_2026_AKTIF</span>
+                            <span className="text-[12px] font-black text-white uppercase tracking-[0.3em]">PENDAFTARAN KKN 2026 AKTIF</span>
                         </motion.div>
 
                         <motion.h2
@@ -211,10 +205,10 @@ export default function Home({ stats, auth, announcements, aboutContent, downloa
                                 <ChevronRight className="w-6 h-6" />
                             </Link>
                             <a 
-                                href="#about"
+                                href="#profil"
                                 className="w-full sm:w-auto bg-white/20 backdrop-blur-xl border-2 border-white/30 text-white px-10 py-6 rounded-2xl font-black text-sm tracking-[0.1em] hover:bg-white/30 transition-all flex items-center justify-center gap-4"
                             >
-                                INFORMASI_LPPM
+                                INFORMASI LPPM
                             </a>
                         </motion.div>
                     </div>
@@ -235,9 +229,9 @@ export default function Home({ stats, auth, announcements, aboutContent, downloa
                             <Users className="w-8 h-8" />
                         </div>
                         <div>
-                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] block mb-2">TOTAL_PESERTA</span>
+                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] block mb-2">TOTAL PESERTA</span>
                             <span className="text-4xl font-black text-slate-950 tracking-tighter">{stats.students.toLocaleString()}+</span>
-                            <p className="text-xs font-bold text-emerald-600 mt-2">MAHASISWA_TERDAFTAR</p>
+                            <p className="text-xs font-bold text-emerald-600 mt-2">MAHASISWA TERDAFTAR</p>
                         </div>
                     </motion.div>
 
@@ -252,9 +246,9 @@ export default function Home({ stats, auth, announcements, aboutContent, downloa
                             <Layers className="w-8 h-8" />
                         </div>
                         <div>
-                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] block mb-2">UNIT_DISTRIBUSI</span>
+                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] block mb-2">UNIT DISTRIBUSI</span>
                             <span className="text-4xl font-black text-slate-950 tracking-tighter">{stats.groups.toLocaleString()}</span>
-                            <p className="text-xs font-bold text-amber-600 mt-2">KELOMPOK_PENEMPATAN</p>
+                            <p className="text-xs font-bold text-amber-600 mt-2">KELOMPOK PENEMPATAN</p>
                         </div>
                     </motion.div>
 
@@ -269,23 +263,23 @@ export default function Home({ stats, auth, announcements, aboutContent, downloa
                             <MapPin className="w-8 h-8" />
                         </div>
                         <div>
-                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] block mb-2">RADIUS_LOKASI</span>
+                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] block mb-2">RADIUS LOKASI</span>
                             <span className="text-4xl font-black text-slate-950 tracking-tighter">{stats.locations.toLocaleString()}</span>
-                            <p className="text-xs font-bold text-emerald-600 mt-2">DESA_TERJANGKAU</p>
+                            <p className="text-xs font-bold text-emerald-600 mt-2">DESA TERJANGKAU</p>
                         </div>
                     </motion.div>
                 </div>
             </section>
 
             {/* ABOUT SECTION */}
-            <section id="about" className="py-24 lg:py-48 bg-white">
+            <section id="profil" className="py-24 lg:py-48 bg-white">
                 <div className="container mx-auto px-6 lg:px-12">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-32 items-center">
                         <div className="space-y-14">
                             <div>
                                 <div className="flex items-center gap-4 mb-8">
                                     <div className="h-1.5 w-16 bg-amber-400 rounded-full" />
-                                    <span className="text-[12px] font-black text-emerald-600 uppercase tracking-[0.4em]">INSTITUTIONAL_PROFILE</span>
+                                    <span className="text-[12px] font-black text-emerald-600 uppercase tracking-[0.4em]">PROFIL INSTITUSI</span>
                                 </div>
                                 <h3 className="text-5xl lg:text-7xl font-black text-slate-950 mb-10 tracking-tighter leading-tight">Sekilas LPPM <br /> <span className="text-emerald-500 italic">UIN Prof. K.H. Saifuddin Zuhri.</span></h3>
                                 <div className="p-10 bg-emerald-50 rounded-[2rem] border-r-8 border-emerald-500 relative">
@@ -303,7 +297,7 @@ export default function Home({ stats, auth, announcements, aboutContent, downloa
                                     <div className="absolute inset-0 bg-amber-400 rounded-3xl translate-x-2 translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 transition-transform" />
                                     <div className="relative p-10 bg-white rounded-3xl border-2 border-slate-900">
                                         <ShieldCheck className="w-8 h-8 text-emerald-600 mb-6" />
-                                        <h5 className="text-[12px] font-black text-slate-400 mb-4 uppercase tracking-[0.3em]">VISI_PUSAT</h5>
+                                        <h5 className="text-[12px] font-black text-slate-400 mb-4 uppercase tracking-[0.3em]">VISI PUSAT</h5>
                                         <p className="text-sm font-black text-slate-900 leading-relaxed italic uppercase">
                                             "{aboutContent.visi}"
                                         </p>
@@ -313,7 +307,7 @@ export default function Home({ stats, auth, announcements, aboutContent, downloa
                                     <div className="absolute inset-0 bg-emerald-500 rounded-3xl translate-x-2 translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 transition-transform" />
                                     <div className="relative p-10 bg-white rounded-3xl border-2 border-slate-900">
                                         <Zap className="w-8 h-8 text-amber-500 mb-6" />
-                                        <h5 className="text-[12px] font-black text-slate-400 mb-4 uppercase tracking-[0.3em]">MISI_OPERASI</h5>
+                                        <h5 className="text-[12px] font-black text-slate-400 mb-4 uppercase tracking-[0.3em]">MISI OPERASI</h5>
                                         <p className="text-sm font-black text-slate-900 leading-relaxed italic uppercase">
                                             "{aboutContent.misi}"
                                         </p>
@@ -347,13 +341,13 @@ export default function Home({ stats, auth, announcements, aboutContent, downloa
             </section>
 
             {/* SCHEMES SECTION */}
-            <section id="schemes" className="py-24 lg:py-48 bg-slate-50">
+            <section id="skema" className="py-24 lg:py-48 bg-slate-50">
                 <div className="container mx-auto px-6 lg:px-12 relative z-10">
                     <div className="flex flex-col lg:flex-row items-end justify-between gap-12 mb-24">
                         <div className="max-w-3xl">
                             <div className="flex items-center gap-4 mb-8">
                                 <div className="h-1.5 w-16 bg-emerald-600 rounded-full" />
-                                <span className="text-[12px] font-black text-emerald-600 uppercase tracking-[0.4em]">DISTRIBUTION_SCHEMES</span>
+                                <span className="text-[12px] font-black text-emerald-600 uppercase tracking-[0.4em]">SKEMA DISTRIBUSI</span>
                             </div>
                             <h3 className="text-5xl lg:text-7xl font-black text-slate-950 mb-8 tracking-tighter">
                                 Skema Operasional <br /> <span className="text-emerald-500 italic">Terintegrasi.</span>
@@ -394,12 +388,12 @@ export default function Home({ stats, auth, announcements, aboutContent, downloa
             </section>
 
             {/* ANNOUNCEMENTS & DOWNLOADS SECTION */}
-            <section id="announcements" className="py-24 lg:py-48 bg-white">
+            <section id="warta" className="py-24 lg:py-48 bg-white">
                 <div className="container mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-24">
                     <div className="lg:col-span-12 mb-12">
                          <div className="flex items-center gap-4 mb-4">
                             <div className="h-1.5 w-16 bg-amber-400 rounded-full" />
-                            <span className="text-[12px] font-black text-emerald-600 uppercase tracking-[0.5em]">COMMUNICATION_HUB</span>
+                            <span className="text-[12px] font-black text-emerald-600 uppercase tracking-[0.5em]">PUSAT KOMUNIKASI</span>
                         </div>
                         <h3 className="text-5xl lg:text-7xl font-black text-slate-950 tracking-tighter leading-[0.9]">Pusat Informasi.</h3>
                     </div>
@@ -407,7 +401,7 @@ export default function Home({ stats, auth, announcements, aboutContent, downloa
                     <div className="lg:col-span-7 space-y-12">
                         <h5 className="text-[14px] font-black text-slate-950 uppercase tracking-[0.4em] mb-10 flex items-center gap-4">
                             <BookOpen className="w-6 h-6 text-emerald-500" />
-                            WARTA_TERBARU
+                            WARTA TERBARU
                         </h5>
                         {displayAnnouncements.map((news, i) => (
                             <motion.div
@@ -434,10 +428,10 @@ export default function Home({ stats, auth, announcements, aboutContent, downloa
                         ))}
                     </div>
 
-                    <div id="downloads" className="lg:col-span-5 space-y-12">
+                    <div id="repositori" className="lg:col-span-5 space-y-12">
                         <h5 className="text-[14px] font-black text-slate-950 uppercase tracking-[0.4em] mb-10 flex items-center gap-4">
                             <DownloadIcon className="w-6 h-6 text-amber-500" />
-                            REPOSITORI_FILE
+                            REPOSITORI FILE
                         </h5>
                         <div className="grid grid-cols-1 gap-6">
                             {downloads.map((d) => (
@@ -478,7 +472,7 @@ export default function Home({ stats, auth, announcements, aboutContent, downloa
                                 href={route('login')}
                                 className="w-full sm:w-auto bg-slate-950 text-white px-16 py-8 rounded-3xl font-black text-xl tracking-[0.2em] shadow-2xl hover:bg-white hover:text-emerald-600 transition-all"
                             >
-                                DAFTAR SEKARANG
+                                MASUK SEKARANG
                             </Link>
                         </div>
                     </motion.div>
@@ -495,10 +489,18 @@ export default function Home({ stats, auth, announcements, aboutContent, downloa
                         Lembaga Penelitian dan Pengabdian kepada Masyarakat (LPPM). <br /> Purwokerto, Jawa Tengah, Indonesia.
                     </p>
                     <div className="pt-12 flex justify-center gap-10 text-[10px] font-black text-slate-300 uppercase tracking-[0.8em]">
-                        <span>&copy; 2026 ARCHITECTURE_OF_IMPACT</span>
+                        <span>&copy; 2026 ARSITEKTUR PENGABDIAN</span>
                     </div>
                 </div>
             </footer>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
         </div>
     );
 }

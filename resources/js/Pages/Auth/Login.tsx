@@ -135,10 +135,10 @@ export default function Login() {
  <span className="text-2xl font-semibold text-primary">
  {activeCaptchaQuestion}
  </span>
- <button 
- type="button" 
+ <button
+ type="button"
  onClick={refreshCaptcha}
- className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-transform active"
+ className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-transform"
  title="Muat ulang captcha"
  >
  <RefreshCw size={14} />
@@ -156,11 +156,6 @@ export default function Login() {
  />
  </div>
  </div>
- <p className="mt-3 text-xs text-primary/70">
- {activeCaptchaQuestion}
- </p>
- {/* Background pattern for captcha */}
- <div className="absolute top-0 right-0 h-32 w-32 -translate-y-1/2 translate-x-1/2 rounded-full bg-primary/5 blur-2xl transition-colors group-hover:bg-primary/10" />
  </div>
  </div>
 
@@ -192,7 +187,7 @@ export default function Login() {
  <RefreshCw className="h-5 w-5" />
  ) : (
  <>
- <ShieldCheck className="h-5 w-5 transition-transform " />
+ <ShieldCheck className="h-5 w-5 transition-transform" />
  <span>Verifikasi dan Masuk</span>
  </>
  )}

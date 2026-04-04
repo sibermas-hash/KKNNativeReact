@@ -78,7 +78,7 @@ export default function Login() {
  <div className="space-y-4">
  {/* USERNAME */}
  <div className="space-y-2">
- <label className="text-[11px] font-semibold text-slate-400 ml-1">
+ <label className="text-sm font-semibold text-slate-400 ml-1">
  Username
  </label>
  <div className="relative group">
@@ -98,7 +98,7 @@ export default function Login() {
 
  {/* PASSWORD */}
  <div className="space-y-2">
- <label className="text-[11px] font-semibold text-slate-400 ml-1">
+ <label className="text-sm font-semibold text-slate-400 ml-1">
  Kata Sandi
  </label>
  <div className="relative group">
@@ -128,11 +128,11 @@ export default function Login() {
  <div className="p-5 bg-primary/5 rounded-lg border border-primary/10 relative overflow-hidden group">
  <div className="flex items-center justify-between relative z-10">
  <div className="space-y-1">
- <span className="text-[10px] font-semibold text-primary/60">
+ <span className="text-xs font-semibold text-primary/60">
  Verifikasi Manusia
  </span>
  <div className="flex items-center gap-3">
- <span className="text-2xl font-semibold text-primary font-mono">
+ <span className="text-2xl font-semibold text-primary">
  {activeCaptchaQuestion}
  </span>
  <button 

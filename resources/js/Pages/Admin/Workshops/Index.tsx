@@ -190,7 +190,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <Zap className="h-4 w-4 text-emerald-300" />
  </div>
- <span className="text-[10px] font-semibold text-emerald-100 ">
+ <span className="text-xs font-semibold text-emerald-100 ">
  WORKSHOP_STRATEGY_UNIT_V3
  </span>
  </div>
@@ -232,7 +232,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <h2 className="text-lg font-semibold text-slate-900 ">
  {editingWorkshopId !== null ? 'Perbarui_Data_Pembekalan' : 'Input_Data_Pembekalan'}
  </h2>
- <p className="text-[9px] font-semibold text-slate-400 mt-2 ">
+ <p className="text-xs font-semibold text-slate-400 mt-2 ">
  {editingWorkshopId !== null ? 'MODE PEMBARUAN AKTIF' : 'SIAP INPUT DATA'}
  </p>
  </div>
@@ -241,7 +241,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <form onSubmit={submit} className="p-12 space-y-6 relative z-10">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div className="md:col-span-2 space-y-3 group/field">
- <label className="text-[10px] font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors">Nama_Pembekalan</label>
+ <label className="text-xs font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors">Nama_Pembekalan</label>
  <input
  type="text"
  value={data.title}
@@ -253,7 +253,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  </div>
 
  <div className="space-y-3 group/field">
- <label className="text-[10px] font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors">Tanggal_Kegiatan</label>
+ <label className="text-xs font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors">Tanggal_Kegiatan</label>
  <div className="relative">
  <Calendar className="absolute left-6 top-1/2 -/2 h-5 w-5 text-slate-300 group-focus-within/field:text-primary transition-colors z-10" />
  <input
@@ -266,7 +266,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  </div>
 
  <div className="space-y-3 group/field">
- <label className="text-[10px] font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors">Waktu_Mulai</label>
+ <label className="text-xs font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors">Waktu_Mulai</label>
  <div className="relative">
  <Clock3 className="absolute left-6 top-1/2 -/2 h-5 w-5 text-slate-300 group-focus-within/field:text-primary transition-colors z-10" />
  <input
@@ -280,7 +280,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  </div>
 
  <div className="space-y-3 group/field">
- <label className="text-[10px] font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors">Waktu_Selesai</label>
+ <label className="text-xs font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors">Waktu_Selesai</label>
  <div className="relative">
  <Clock3 className="absolute left-6 top-1/2 -/2 h-5 w-5 text-slate-300 group-focus-within/field:text-primary transition-colors z-10" />
  <input
@@ -294,7 +294,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  </div>
 
  <div className="space-y-3 group/field">
- <label className="text-[10px] font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors">Lokasi_Kegiatan</label>
+ <label className="text-xs font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors">Lokasi_Kegiatan</label>
  <div className="relative">
  <MapPin className="absolute left-6 top-1/2 -/2 h-5 w-5 text-slate-300 group-focus-within/field:text-primary transition-colors z-10" />
  <input
@@ -308,7 +308,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  </div>
 
  <div className="space-y-3 group/field">
- <label className="text-[10px] font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors">Kuota_Peserta</label>
+ <label className="text-xs font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors">Kuota_Peserta</label>
  <div className="relative">
  <Users className="absolute left-6 top-1/2 -/2 h-5 w-5 text-slate-300 group-focus-within/field:text-primary transition-colors z-10" />
  <input
@@ -324,7 +324,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  </div>
 
  <div className="md:col-span-2 space-y-3 group/field">
- <label className="text-[10px] font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors">Deskripsi_Pembekalan</label>
+ <label className="text-xs font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors">Deskripsi_Pembekalan</label>
  <textarea
  value={data.description}
  onChange={e => setData('description', e.target.value)}
@@ -341,8 +341,8 @@ export default function WorkshopIndex({ workshops }: Props) {
  <ShieldCheck className="h-6 w-6 stroke-[2px]" />
  </div>
  <div className="flex flex-col">
- <span className="text-[10px] font-semibold text-slate-400 mb-1.5">Validasi_Formulir</span>
- <span className="text-[8px] font-semibold text-slate-300 ">Data siap disimpan</span>
+ <span className="text-xs font-semibold text-slate-400 mb-1.5">Validasi_Formulir</span>
+ <span className="text-xs font-semibold text-slate-300 ">Data siap disimpan</span>
  </div>
  </div>
  <div className="flex gap-4">
@@ -388,12 +388,12 @@ export default function WorkshopIndex({ workshops }: Props) {
  <div>
  <div className="flex items-center gap-2 mb-3">
  <span className="h-2 w-2 rounded-lg bg-primary />
- <span className="text-[10px] font-semibold text-slate-300 pt-0.5">Kode: {workshop.id.toString().padStart(4, '0')}</span>
+ <span className="text-xs font-semibold text-slate-300 pt-0.5">Kode: {workshop.id.toString().padStart(4, '0')}</span>
  </div>
  <h3 className="text-3xl font-semibold text-slate-900  transition-colors">{workshop.title}</h3>
  </div>
  <div className={clsx(
- "px-5 py-2 rounded-lg border text-[9px] font-semibold shrink-0",
+ "px-5 py-2 rounded-lg border text-xs font-semibold shrink-0",
  workshop.status === 'cancelled'
  ? "bg-slate-200 text-slate-600 border-slate-300"
  : workshop.status === 'completed'
@@ -463,7 +463,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <div className="p-10 bg-slate-50 rounded-lg group-transition-transform">
  <Sparkles className="h-20 w-20 text-slate-200" />
  </div>
- <p className="text-[12px] font-semibold text-slate-300 text-center leading-normal">
+ <p className="text-sm font-semibold text-slate-300 text-center leading-normal">
  Belum ada pembekalan tersedia<br />
  <span className="text-primary opacity-50 mt-2 block lowercase">Siap untuk ditambahkan</span>
  </p>
@@ -481,8 +481,8 @@ export default function WorkshopIndex({ workshops }: Props) {
  <div className="p-3 bg-primary/10 rounded-lg border border-primary">
  <BarChart3 className="h-6 w-6 text-primary" />
  </div>
- <h4 className="text-[11px] font-semibold text-white ">STRATEGIC_PREP_PROTOCOL_V3</h4>
- <p className="text-[10px] text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: SECURE_DATA_TRANSMISSION</p>
+ <h4 className="text-sm font-semibold text-white ">_V3</h4>
+ <p className="text-xs text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: SECURE_DATA_TRANSMISSION</p>
  </div>
  <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-4xl opacity-75">
  Pembekalan menjadi gerbang persiapan mahasiswa sebelum terjun ke lapangan. 
@@ -493,7 +493,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <div className="flex flex-col items-end gap-5 shrink-0 border-l border-slate-800 pl-12 hidden lg:flex">
  <div className="flex items-center gap-3 mb-2 px-5 py-2.5 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
  <div className="h-2.5 w-2.5 rounded-lg bg-emerald-500" />
- <span className="text-[11px] font-semibold text-slate-100 ">MONITOR_VERIFIED</span>
+ <span className="text-sm font-semibold text-slate-100 ">MONITOR_VERIFIED</span>
  </div>
  <div className="flex gap-5">
  <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
@@ -517,10 +517,10 @@ export default function WorkshopIndex({ workshops }: Props) {
 
  <div className="flex items-center justify-between mb-10 relative z-10">
  <div className="p-4 rounded-lg bg-primary text-white
- <Zap className="h-8 w-8 stroke-[2.5px]" />
+ <Zap className="h-8 w-8" />
  </div>
  <button onClick={() => setShowAttendanceModal(false)} className="p-3 bg-slate-50 rounded-lg hover:bg-slate-100 text-slate-300 hover:text-rose-500hover">
- <X className="h-7 w-7 stroke-[2.5px]" />
+ <X className="h-7 w-7" />
  </button>
  </div>
 
@@ -528,7 +528,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <h3 className="text-3xl font-semibold text-slate-900 ">
  {modalMode === 'attendance' ? 'Input Presensi' : 'Daftar Peserta'}
  </h3>
- <p className="text-[12px] font-semibold text-primary border-l-4 border-primary pl-4">{selectedWorkshop?.title}</p>
+ <p className="text-sm font-semibold text-primary border-l-4 border-primary pl-4">{selectedWorkshop?.title}</p>
  </div>
 
  <form onSubmit={submitAttendance} className="space-y-8 relative z-10">
@@ -536,7 +536,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <div className="p-3 bg-white/5 rounded-lg text-primary shrink-0 group-transition-transform">
  <Fingerprint className="h-8 w-8 stroke-[2px]" />
  </div>
- <p className="text-[12px] text-sm text-slate-400 leading-normal pt-1">
+ <p className="text-sm text-sm text-slate-400 leading-normal pt-1">
  {modalMode === 'attendance'
  ? 'Protokol operasional: data presensi pada kegiatan ini akan memperbarui sertifikat dan komponen nilai pembekalan sesuai status kehadiran peserta.'
  : 'Daftar peserta: tinjau peserta pembekalan, status hadir, dan status sertifikat sebelum melakukan perubahan presensi.'}
@@ -553,7 +553,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  className="flex items-center justify-between gap-6rounded-lg border border-slate-200 bg-slate-50 px-6 py-5"
  >
  <div className="min-w-0">
- <p className="text-[12px] font-semibold text-slate-900">
+ <p className="text-sm font-semibold text-slate-900">
  {participant.name}
  </p>
  <p className="mt-1 text-xs text-sm text-slate-400">
@@ -561,7 +561,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  </p>
  <div className="mt-3 flex flex-wrap items-center gap-2">
  <span className={clsx(
- 'rounded-lg px-3 py-1 text-[9px] font-semibold ',
+ 'rounded-lg px-3 py-1 text-xs font-semibold ',
  participant.attendance_status === 'attended'
  ? 'bg-emerald-50 text-emerald-600'
  : participant.attendance_status === 'absent'
@@ -571,7 +571,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  {formatAttendanceStatus(participant.attendance_status)}
  </span>
  <span className={clsx(
- 'rounded-lg px-3 py-1 text-[9px] font-semibold ',
+ 'rounded-lg px-3 py-1 text-xs font-semibold ',
  participant.certificate_generated
  ? 'bg-primary/10 text-primary'
  : 'bg-slate-200 text-slate-500'
@@ -589,13 +589,13 @@ export default function WorkshopIndex({ workshops }: Props) {
  onChange={() => toggleParticipant(participant.user_id)}
  className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
  />
- <span className="text-[10px] font-semibold text-slate-500 group-hover/check:text-primary transition-colors">
+ <span className="text-xs font-semibold text-slate-500 group-hover/check:text-primary transition-colors">
  Hadir
  </span>
  </label>
  ) : (
  <div className="shrink-0 text-right">
- <p className="text-[9px] font-semibold text-slate-300">Check In</p>
+ <p className="text-xs font-semibold text-slate-300">Check In</p>
  <p className="mt-1 text-xs text-sm text-slate-500">
  {participant.checked_in_at ?? 'Belum tercatat'}
  </p>
@@ -605,7 +605,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  );
  }) : (
  <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-6 py-6 text-center">
- <p className="text-[11px] font-semibold text-slate-400">
+ <p className="text-sm font-semibold text-slate-400">
  Belum ada peserta terdaftar pada pembekalan ini.
  </p>
  </div>
@@ -648,10 +648,10 @@ function InfoItem({ icon: Icon, label, value, color }: any) {
  return (
  <div className="flex flex-col gap-2 min-w-0 group/info">
  <div className={clsx("flex items-center gap-2.5", color)}>
- <Icon className="h-3.5 w-3.5 stroke-[2.5px]" />
- <span className="text-[10px] font-semibold pt-0.5"> {label}</span>
+ <Icon className="h-3.5 w-3.5" />
+ <span className="text-xs font-semibold pt-0.5"> {label}</span>
  </div>
- <span className="text-[11px] font-semibold text-slate-900 truncate opacity-75 group-hover/info:opacity-100">{value}</span>
+ <span className="text-sm font-semibold text-slate-900 truncate opacity-75 group-hover/info:opacity-100">{value}</span>
  </div>
  );
 }

@@ -67,13 +67,13 @@ export default function AuditLogShow({ log }: Props) {
                                         <ShieldCheck className="h-8 w-8" />
                                     </div>
                                     <div className="flex flex-col">
-                                        <h2 className="text-lg font-bold text-slate-900 tracking-tight leading-none mb-3">{log.description}</h2>
+                                        <h2 className="text-lg font-bold text-slate-900 tracking-tight  mb-3">{log.description}</h2>
                                         <div className="flex items-center gap-4">
-                                            <span className="text-[10px] font-bold text-emerald-500 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded uppercase tracking-widest leading-none">INTEGRITY_OK</span>
+                                            <span className="text-xs font-bold text-emerald-500 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded uppercase tracking-widest ">INTEGRITY_OK</span>
                                             <div className="h-1 w-1 rounded-full bg-slate-200" />
                                             <div className="flex items-center gap-2">
                                                 <Clock className="w-3.5 h-3.5 text-slate-400" />
-                                                <span className="text-[10px] font-black italic text-slate-400 uppercase tracking-widest">{log.created_at}</span>
+                                                <span className="text-xs font-black italic text-slate-400 uppercase tracking-widest">{log.created_at}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -89,10 +89,10 @@ export default function AuditLogShow({ log }: Props) {
                                 <div className="p-8 bg-slate-900 rounded-xl border border-slate-800 shadow-xl space-y-6">
                                     <div className="flex items-center gap-4 border-b border-slate-800 pb-4">
                                         <Terminal className="h-5 w-5 text-emerald-400" />
-                                        <h3 className="text-[11px] font-bold text-white uppercase tracking-widest leading-none">Payload_Properties_Matrix</h3>
+                                        <h3 className="text-sm font-bold text-white uppercase tracking-widest ">Payload_Properties_Matrix</h3>
                                     </div>
                                     <div className="overflow-x-auto">
-                                        <pre className="text-[11px] font-mono text-emerald-500 font-bold p-6 bg-slate-950/50 rounded-xl border border-slate-800 shadow-inner leading-relaxed">
+                                        <pre className="text-sm text-emerald-500 font-bold p-6 bg-slate-950/50 rounded-xl border border-slate-800 shadow-inner ">
                                             {JSON.stringify(log.properties, null, 4)}
                                         </pre>
                                     </div>
@@ -111,7 +111,7 @@ export default function AuditLogShow({ log }: Props) {
                                 <div className="h-10 w-10 flex items-center justify-center bg-emerald-50 rounded-xl border border-emerald-100 text-emerald-600 shadow-sm">
                                     <Database className="w-5 h-5 shadow-sm shadow-emerald-500/20" />
                                 </div>
-                                <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-widest">Metadata_Trace</h3>
+                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Metadata_Trace</h3>
                             </div>
                             <div className="space-y-6">
                                 <MetadataItem label="SUBJECT_ID" value={`#${log.subject_id?.toString().padStart(4, '0') || 'N/A'}`} color="emerald" />
@@ -127,8 +127,8 @@ export default function AuditLogShow({ log }: Props) {
                                     <Zap className="h-10 w-10 text-primary shadow-sm animate-pulse" />
                                 </div>
                                 <div>
-                                    <h4 className="text-[11px] font-bold text-white uppercase tracking-widest mb-3 leading-none">Security_Governance</h4>
-                                    <p className="text-[11px] text-slate-500 font-medium italic italic leading-relaxed opacity-75 uppercase">
+                                    <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-3 ">Security_Governance</h4>
+                                    <p className="text-sm text-slate-500 font-medium italic italic  opacity-75 uppercase">
                                         Seluruh rekaman audit bersifat permanen dan tidak dapat dimanipulasi secara operasional.
                                     </p>
                                 </div>
@@ -152,7 +152,7 @@ function ManifestItem({ label, value, icon: Icon, color }: any) {
                 <div className={clsx("p-2 rounded-lg border flex items-center justify-center transition-all group-hover/manifest:rotate-12 shadow-sm shadow-slate-100", colors[color])}>
                     <Icon className="w-4 h-4" />
                 </div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</span>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{label}</span>
             </div>
             <p className="text-sm font-bold text-slate-900 uppercase tracking-tighter truncate italic">{value}</p>
         </div>
@@ -167,8 +167,8 @@ function MetadataItem({ label, value, color }: { label: string, value: string, c
     };
     return (
         <div className="flex items-center justify-between group/meta font-bold">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover/meta:text-primary transition-colors">{label}:</span>
-            <span className={clsx("text-[10px] font-black italic tracking-tighter uppercase", colors[color])}>{value}</span>
+            <span className="text-xs font-black text-slate-400 uppercase tracking-widest group-hover/meta:text-primary transition-colors">{label}:</span>
+            <span className={clsx("text-xs font-black italic tracking-tighter uppercase", colors[color])}>{value}</span>
         </div>
     );
 }

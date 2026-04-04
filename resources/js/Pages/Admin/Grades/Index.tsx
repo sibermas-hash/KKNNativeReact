@@ -99,8 +99,8 @@ export default function Index({ groups }: Props) {
  <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <ShieldAlert className="h-4 w-4 text-rose-300" />
  </div>
- <span className="text-[10px] font-semibold text-rose-100 ">
- MANUAL_OVERRIDE_PROTOCOL_V3
+ <span className="text-xs font-semibold text-rose-100 ">
+ _V3
  </span>
  </div>
  <h1 className="text-4xl md:text-5xl font-semibold text-white ">
@@ -117,8 +117,8 @@ export default function Index({ groups }: Props) {
  <Zap className="h-6 w-6" />
  </div>
  <div>
- <span className="text-[9px] font-semibold text-rose-200/60 block mb-1.5">Status Gateway</span>
- <span className="text-2xl font-semibold text-white">OVERRIDE_ACTIVE</span>
+ <span className="text-xs font-semibold text-rose-200/60 block mb-1.5">Status Gateway</span>
+ <span className="text-2xl font-semibold text-white"></span>
  </div>
  </div>
  </div>
@@ -135,11 +135,11 @@ export default function Index({ groups }: Props) {
  <div className="relative z-10 space-y-6">
  <div className="flex items-center gap-5 border-b border-slate-200 pb-8">
  <div className="p-3.5 bg-rose-500 rounded-lg text-white
- <ShieldCheck className="h-6 w-6 stroke-[2.5px]" />
+ <ShieldCheck className="h-6 w-6" />
  </div>
  <div>
  <h3 className="text-xl font-semibold text-slate-900 ">Audit_Integrity</h3>
- <p className="text-[10px] font-semibold text-slate-400 mt-2 opacity-50">KEBIJAKAN LPPM</p>
+ <p className="text-xs font-semibold text-slate-400 mt-2 opacity-50">KEBIJAKAN LPPM</p>
  </div>
  </div>
 
@@ -155,7 +155,7 @@ export default function Index({ groups }: Props) {
  <div className="p-2 bg-white rounded-lg text-rose-500">
  <Fingerprint className="h-4 w-4" />
  </div>
- <p className="text-[11px] text-slate-500 text-sm leading-normal opacity-50">
+ <p className="text-sm text-slate-500 text-sm leading-normal opacity-50">
  Setiap perubahan nilai manual akan dicatat permanen dalam audit log keamanan sistem.
  </p>
  </div>
@@ -163,7 +163,7 @@ export default function Index({ groups }: Props) {
  <div className="p-2 bg-white rounded-lg text-primary">
  <Cpu className="h-4 w-4" />
  </div>
- <p className="text-[11px] text-slate-500 text-sm leading-normal opacity-50">
+ <p className="text-sm text-slate-500 text-sm leading-normal opacity-50">
  Sistem akan melakukan re-kalkulasi skor total secara otomatis setelah data dikirimkan.
  </p>
  </div>
@@ -183,17 +183,17 @@ export default function Index({ groups }: Props) {
  <div className="relative z-10 space-y-6">
  <div className="flex items-center gap-6 border-b border-slate-200 pb-10">
  <div className="p-4 bg-emerald-50 text-primary rounded-lg border border-primary
- <RotateCcw className="h-7 w-7 stroke-[2.5px]" />
+ <RotateCcw className="h-7 w-7" />
  </div>
  <div>
  <h3 className="text-2xl font-semibold text-slate-900 ">Parameter_Kalibrasi</h3>
- <p className="text-[11px] font-semibold text-slate-400 mt-2 opacity-50">INPUT DATA NILAI SEKTORAL</p>
+ <p className="text-sm font-semibold text-slate-400 mt-2 opacity-50">INPUT DATA NILAI SEKTORAL</p>
  </div>
  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div className="space-y-3 group/field">
- <label className="text-[10px] font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors flex items-center gap-2">
+ <label className="text-xs font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors flex items-center gap-2">
  <Users className="h-3 w-3" /> PILIH KELOMPOK TARGET
  </label>
  <FormSelect
@@ -212,7 +212,7 @@ export default function Index({ groups }: Props) {
  </div>
 
  <div className="space-y-3 group/field">
- <label className="text-[10px] font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors flex items-center gap-2">
+ <label className="text-xs font-semibold text-slate-400 ml-2 group-focus-within/field:text-primary transition-colors flex items-center gap-2">
  <Fingerprint className="h-3 w-3" /> IDENTITAS MAHASISWA
  </label>
  <FormSelect
@@ -240,7 +240,7 @@ export default function Index({ groups }: Props) {
  { id: 'attitude_score' as const, label: 'SKOR SIKAP (%)', color: 'slate' },
  ].map((field) => (
  <div key={field.id} className="space-y-3">
- <label className="text-[9px] font-semibold text-slate-400 text-center block">{field.label}</label>
+ <label className="text-xs font-semibold text-slate-400 text-center block">{field.label}</label>
  <FormInput
  type="number"
  value={data[field.id]}
@@ -281,8 +281,8 @@ export default function Index({ groups }: Props) {
  <ShieldCheck className="h-7 w-7 text-rose-500" />
  </div>
  <div>
- <h4 className="text-[11px] font-semibold text-white ">OVERRIDE_GOVERNANCE_PROTOCOL_V3</h4>
- <p className="text-[10px] text-rose-400 text-sm mt-2 whitespace-nowrap">STATUS: AUDIT_STREAMS_ACTIVE</p>
+ <h4 className="text-sm font-semibold text-white ">_V3</h4>
+ <p className="text-xs text-rose-400 text-sm mt-2 whitespace-nowrap">STATUS: </p>
  </div>
  </div>
  <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-4xl opacity-75">
@@ -294,7 +294,7 @@ export default function Index({ groups }: Props) {
  <div className="flex flex-col items-end gap-5 shrink-0 border-l border-slate-800 pl-12 hidden lg:flex">
  <div className="flex items-center gap-3 mb-1 px-5 py-2.5 bg-rose-500/5 rounded-lg border border-rose-500/10">
  <div className="h-2.5 w-2.5 rounded-lg bg-rose-500" />
- <span className="text-[11px] font-semibold text-slate-100 ">AUDIT_LOG_STREAMING</span>
+ <span className="text-sm font-semibold text-slate-100 ">AUDIT_LOG_STREAMING</span>
  </div>
  <div className="flex gap-5">
  <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-rose-300 transition-colors group/ic cursor-help">

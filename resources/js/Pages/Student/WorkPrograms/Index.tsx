@@ -40,7 +40,7 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
  <div>
  <div className="flex items-center gap-2 mb-4">
  <Target className="h-4 w-4 text-primary" />
- <span className="text-[10px] text-sm text-slate-400 decoration-slate-100">Implementasi Program Pengabdian</span>
+ <span className="text-xs text-sm text-slate-400 decoration-slate-100">Implementasi Program Pengabdian</span>
  </div>
  <h1 className="text-4xl font-extrabold text-slate-900 ">
  Program <span className="text-primary">Kerja</span> KKN
@@ -67,8 +67,8 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
  <LayoutGrid className="h-7 w-7" />
  </div>
  <div>
- <p className="text-[9px] font-semibold text-slate-400 mb-2">Volume Proker</p>
- <p className="text-2xl font-semibold text-slate-900">{workPrograms.length} <span className="text-[10px] text-sm text-slate-300 ml-1">Program</span></p>
+ <p className="text-xs font-semibold text-slate-400 mb-2">Volume Proker</p>
+ <p className="text-2xl font-semibold text-slate-900">{workPrograms.length} <span className="text-xs text-sm text-slate-300 ml-1">Program</span></p>
  </div>
  </div>
  
@@ -77,8 +77,8 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
  <CheckCircle2 className="h-7 w-7" />
  </div>
  <div>
- <p className="text-[9px] font-semibold text-slate-400 mb-2">Tervalidasi</p>
- <p className="text-2xl font-semibold text-slate-900">{workPrograms.filter(wp => wp.status === 'approved').length} <span className="text-[10px] text-sm text-slate-300 ml-1">Unit</span></p>
+ <p className="text-xs font-semibold text-slate-400 mb-2">Tervalidasi</p>
+ <p className="text-2xl font-semibold text-slate-900">{workPrograms.filter(wp => wp.status === 'approved').length} <span className="text-xs text-sm text-slate-300 ml-1">Unit</span></p>
  </div>
  </div>
 
@@ -90,8 +90,8 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
  <Activity className="h-7 w-7" />
  </div>
  <div className="relative z-10">
- <p className="text-[9px] font-semibold text-slate-400 mb-2">Status Pelaksanaan</p>
- <p className="text-[10px] font-semibold text-slate-900 ">Program Aktif</p>
+ <p className="text-xs font-semibold text-slate-400 mb-2">Status Pelaksanaan</p>
+ <p className="text-xs font-semibold text-slate-900 ">Program Aktif</p>
  </div>
  </div>
  </div>
@@ -125,15 +125,15 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
  <div className="flex items-start justify-between gap-4 font-semibold">
  <div className="flex items-center gap-3">
  <div className="h-1.5 w-1.5 rounded-lg bg-primary/40" />
- <p className="text-[10px] font-semibold text-slate-400 ">ID Proker: #{wp.id.toString().padStart(3, '0')}</p>
+ <p className="text-xs font-semibold text-slate-400 ">ID Proker: #{wp.id.toString().padStart(3, '0')}</p>
  </div>
- <StatusBadge status={wp.status} className="px-5 py-1.5 rounded-lg text-[8px] font-semibold border-none" />
+ <StatusBadge status={wp.status} className="px-5 py-1.5 rounded-lg text-xs font-semibold border-none" />
  </div>
 
  <div className="space-y-3">
  <h3 className="text-xl font-semibold text-slate-900 group-hover:text-primary transition-colors leading-normal line-clamp-2">{wp.title}</h3>
  {wp.description && (
- <p className="text-[12px] text-sm text-slate-400 leading-normal line-clamp-2 opacity-75">{wp.description}</p>
+ <p className="text-sm text-sm text-slate-400 leading-normal line-clamp-2 opacity-75">{wp.description}</p>
  )}
  </div>
  </div>
@@ -144,7 +144,7 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
  <Banknote className="h-5 w-5" />
  </div>
  <div>
- <p className="text-[8px] font-semibold text-slate-400 mb-1">Estimasi Anggaran</p>
+ <p className="text-xs font-semibold text-slate-400 mb-1">Estimasi Anggaran</p>
  <p className="text-sm font-semibold text-slate-900">Rp {wp.budget.toLocaleString('id-ID')}</p>
  </div>
  </div>
@@ -163,7 +163,7 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
  </div>
 
  <div className="text-center pt-8 opacity-20">
- <p className="text-[10px] font-semibold text-slate-300 ">
+ <p className="text-xs font-semibold text-slate-300 ">
  Pusat Perencanaan Program • UIN SAIZU © 2024
  </p>
  </div>

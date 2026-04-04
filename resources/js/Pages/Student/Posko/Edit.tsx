@@ -118,7 +118,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  {isLeader ? <ShieldCheck className="h-7 w-7" /> : <Users className="h-7 w-7" />}
  </div>
  <div>
- <span className="text-[9px] text-sm text-slate-400 block mb-1">Status Otoritas</span>
+ <span className="text-xs text-sm text-slate-400 block mb-1">Status Otoritas</span>
  <p className="text-base font-semibold text-slate-900 ">
  {isLeader ? 'Ketua Terverifikasi' : 'Anggota Unit'}
  </p>
@@ -139,11 +139,11 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  </div>
  <div>
  <h3 className="text-xs font-semibold text-slate-900">Wilayah Penempatan</h3>
- <p className="text-[9px] text-sm text-slate-400 mt-1.5">{group.location?.village_name}</p>
+ <p className="text-xs text-sm text-slate-400 mt-1.5">{group.location?.village_name}</p>
  </div>
  </div>
  <div className="p-7 bg-slate-50 border border-slate-200 rounded-lg
- <p className="text-[10px] font-semibold text-slate-400 mb-3">Koordinat Saat Ini</p>
+ <p className="text-xs font-semibold text-slate-400 mb-3">Koordinat Saat Ini</p>
  <div className="space-y-2">
  <p className="text-xs font-semibold text-slate-900">LAT: {posko?.latitude ?? '---'}</p>
  <p className="text-xs font-semibold text-slate-900">LNG: {posko?.longitude ?? '---'}</p>
@@ -168,13 +168,13 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  <div className="relative aspect-videorounded-lg overflow-hidden border border-slate-200">
  <img src={posko.photo_url} alt={posko.photo_name ?? 'Foto posko kelompok'} className="w-full h-full object-cover" />
  <div className="absolute inset-0  flex-col justify-end p-6">
- <p className="text-[10px] font-semibold text-white/80 truncate">{posko.photo_name}</p>
+ <p className="text-xs font-semibold text-white/80 truncate">{posko.photo_name}</p>
  </div>
  </div>
  ) : (
  <div className="py-12 border-2 border-dashed border-slate-200 rounded-lg text-center">
  <ImageIcon className="w-10 h-10 text-slate-100 mx-auto mb-4" />
- <p className="text-[9px] text-sm text-slate-300 ada dokumentasi</p>
+ <p className="text-xs text-sm text-slate-300 ada dokumentasi</p>
  </div>
  )}
  </section>
@@ -194,10 +194,10 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  </div>
  <div>
  <h3 className="text-2xl font-semibold text-slate-900 Lokasi</h3>
- <p className="text-[10px] font-semibold text-slate-400 mt-1.5">Panel Ketua Kelompok</p>
+ <p className="text-xs font-semibold text-slate-400 mt-1.5">Panel Ketua Kelompok</p>
  </div>
  </div>
- <button type="button" onClick={detectLocation} className="flex items-center gap-2 px-6 py-3 bg-emerald-50 text-emerald-600 rounded-lg text-[9px] font-semibold border border-emerald-100 hover:bg-emerald-600 hover:text-white">
+ <button type="button" onClick={detectLocation} className="flex items-center gap-2 px-6 py-3 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-semibold border border-emerald-100 hover:bg-emerald-600 hover:text-white">
  <Navigation className={clsx("w-3.5 h-3.5", geoStatus === 'detecting' && )} />
  {geoStatus === 'detecting' ? 'Mendeteksi...' : 'Deteksi Otomatis'}
  </button>
@@ -205,27 +205,27 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
  <div className="space-y-4">
- <label className="text-[10px] font-semibold text-slate-400 ml-2">Latitude</label>
+ <label className="text-xs font-semibold text-slate-400 ml-2">Latitude</label>
  <input type="number" step="any" value={form.data.latitude} onChange={(e) => form.setData('latitude', e.target.value)} className="w-full bg-slate-50 border-slate-200 rounded-lg px-6 py-5 text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-primary/10 outline-none" required />
  </div>
  <div className="space-y-4">
- <label className="text-[10px] font-semibold text-slate-400 ml-2">Longitude</label>
+ <label className="text-xs font-semibold text-slate-400 ml-2">Longitude</label>
  <input type="number" step="any" value={form.data.longitude} onChange={(e) => form.setData('longitude', e.target.value)} className="w-full bg-slate-50 border-slate-200 rounded-lg px-6 py-5 text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-primary/10 outline-none" required />
  </div>
  </div>
 
  <div className="space-y-4 relative z-10">
- <label className="text-[10px] font-semibold text-slate-400 ml-2">Tautan Google Maps</label>
+ <label className="text-xs font-semibold text-slate-400 ml-2">Tautan Google Maps</label>
  <input type="url" value={form.data.gmaps_link} onChange={(e) => form.setData('gmaps_link', e.target.value)} className="w-full bg-slate-50 border-slate-200 rounded-lg px-6 py-5 text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-primary/10 outline-none" placeholder="https://maps.google.com/..." />
  </div>
 
  <div className="space-y-6 relative z-10">
- <label className="text-[10px] font-semibold text-slate-400 ml-2">Dokumentasi Foto</label>
+ <label className="text-xs font-semibold text-slate-400 ml-2">Dokumentasi Foto</label>
  <div className="relative h-48 border-2 border-dashed border-slate-200 rounded-lg bg-slate-50/50 hover:bg-whitecursor-pointer overflow-hidden group/upload">
  <input type="file" accept="image/*" onChange={handlePhotoChange} className="absolute inset-0 opacity-0 cursor-pointer z-20" />
  <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
  <ImageIcon className="w-8 h-8 text-slate-200 group-hover/upload:text-primary transition-colors" />
- <p className="text-[10px] font-semibold text-slate-400 mt-4">
+ <p className="text-xs font-semibold text-slate-400 mt-4">
  {selectedFileName || 'Klik untuk mengunggah foto posko'}
  </p>
  </div>

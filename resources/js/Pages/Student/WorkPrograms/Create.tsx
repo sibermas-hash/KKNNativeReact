@@ -78,7 +78,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  <div>
  <div className="flex items-center gap-2 mb-3">
  <Target className="h-4 w-4 text-primary" />
- <span className="text-[10px] font-semibold text-slate-400 decoration-slate-100">Inisiasi Program Pengabdian</span>
+ <span className="text-xs font-semibold text-slate-400 decoration-slate-100">Inisiasi Program Pengabdian</span>
  </div>
  <h1 className="text-4xl font-extrabold text-slate-900 ">
  Ajukan <span className="text-primary">Program</span> Kerja
@@ -91,7 +91,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  <TrendingUp className="h-6 w-6" />
  </div>
  <div>
- <span className="text-[9px] font-semibold text-slate-400 block mb-1 opacity-50">Status Target</span>
+ <span className="text-xs font-semibold text-slate-400 block mb-1 opacity-50">Status Target</span>
  <span className="text-xs font-semibold text-slate-900 ">Menuju Tujuan SDGs</span>
  </div>
  </div>
@@ -114,7 +114,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  </div>
  <div className="space-y-6">
  <div className="space-y-4">
- <label className="text-[11px] font-semibold text-slate-400 ml-2">Judul Program Kerja</label>
+ <label className="text-sm font-semibold text-slate-400 ml-2">Judul Program Kerja</label>
  <input 
  type="text" 
  value={form.data.title} 
@@ -123,10 +123,10 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  className="w-full bg-slate-50 border-slate-200 rounded-lg h-16 px-6 text-base font-semibold text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primaryoutline-none placeholder:text-slate-200"
  required 
  />
- {form.errors.title && <p className="text-[10px] text-rose-500 font-semibold ml-2">{form.errors.title}</p>}
+ {form.errors.title && <p className="text-xs text-rose-500 font-semibold ml-2">{form.errors.title}</p>}
  </div>
  <div className="space-y-4">
- <label className="text-[11px] font-semibold text-slate-400 ml-2">Deskripsi Operasional</label>
+ <label className="text-sm font-semibold text-slate-400 ml-2">Deskripsi Operasional</label>
  <textarea 
  value={form.data.description} 
  onChange={(e) => form.setData('description', e.target.value)} 
@@ -147,7 +147,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  <h3 className="text-xl font-semibold text-slate-900 SDG</h3>
  </div>
  <span className={clsx(
- "text-[10px] font-semibold px-5 py-2 rounded-lg",
+ "text-xs font-semibold px-5 py-2 rounded-lg",
  form.data.sdg_goals.length > 0 ? "bg-primary text-white : "bg-slate-50 text-slate-400"
  )}>
  {form.data.sdg_goals.length} Target Terpilih
@@ -174,7 +174,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  )}>
  {sdg.id}
  </div>
- <span className="text-[11px] font-semibold leading-normal line-clamp-2">{sdg.name}</span>
+ <span className="text-sm font-semibold leading-normal line-clamp-2">{sdg.name}</span>
  {isSelected && <CheckCircle2 className="h-5 w-5 absolute top-4 right-4 opacity-50" />}
  </button>
  );
@@ -191,7 +191,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  </div>
  <div className="space-y-6">
  <div className="space-y-4">
- <label className="text-[11px] font-semibold text-slate-400 ml-2">Tujuan & Luaran</label>
+ <label className="text-sm font-semibold text-slate-400 ml-2">Tujuan & Luaran</label>
  <textarea 
  value={form.data.objectives} 
  onChange={(e) => form.setData('objectives', e.target.value)} 
@@ -202,7 +202,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  </div>
  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 font-semibold">
  <div className="space-y-4">
- <label className="text-[11px] font-semibold text-slate-400 ml-2">Estimasi Peserta</label>
+ <label className="text-sm font-semibold text-slate-400 ml-2">Estimasi Peserta</label>
  <input 
  type="number" 
  value={form.data.target_participants} 
@@ -212,7 +212,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  />
  </div>
  <div className="space-y-4">
- <label className="text-[11px] font-semibold text-slate-400 ml-2">Anggaran (RP)</label>
+ <label className="text-sm font-semibold text-slate-400 ml-2">Anggaran (RP)</label>
  <input 
  type="number" 
  value={form.data.budget} 
@@ -246,7 +246,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  <Sparkles className="h-32 w-32" />
  </div>
  
- <h4 className="text-[11px] font-semibold mb-10 flex items-center gap-4 text-primary">
+ <h4 className="text-sm font-semibold mb-10 flex items-center gap-4 text-primary">
  <span className="flex h-2.5 w-2.5 rounded-lg bg-primary" />
  Validasi Program
  </h4>
@@ -274,8 +274,8 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  <div className="absolute top-0 right-0 p-4 text-slate-900 [2000ms]">
  <Activity className="h-[200px] w-full" />
  </div>
- <h4 className="text-[10px] font-semibold mb-8 text-slate-400">Arsip Strategis</h4>
- <p className="text-[12px] text-sm leading-normal relative z-10 text-slate-500 opacity-75">
+ <h4 className="text-xs font-semibold mb-8 text-slate-400">Arsip Strategis</h4>
+ <p className="text-sm text-sm leading-normal relative z-10 text-slate-500 opacity-75">
  Program kerja yang telah diajukan akan menjadi dasar evaluasi kinerja unit dan penentuan luaran KKN di akhir periode pelaksanaan.
  </p>
  </div>
@@ -283,7 +283,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  </div>
 
  <div className="text-center pt-8 opacity-20">
- <p className="text-[10px] font-semibold text-slate-300 ">
+ <p className="text-xs font-semibold text-slate-300 ">
  Pusat Perencanaan Program • UIN SAIZU © 2024
  </p>
  </div>
@@ -299,8 +299,8 @@ function InfoItem({ icon: Icon, title, desc }: any) {
  <Icon className="h-5 w-5" />
  </div>
  <div className="min-w-0">
- <p className="text-[11px] font-semibold text-white mb-1.5">{title}</p>
- <p className="text-[11px] text-sm text-slate-400 leading-normal opacity-50">{desc}</p>
+ <p className="text-sm font-semibold text-white mb-1.5">{title}</p>
+ <p className="text-sm text-sm text-slate-400 leading-normal opacity-50">{desc}</p>
  </div>
  </div>
  );

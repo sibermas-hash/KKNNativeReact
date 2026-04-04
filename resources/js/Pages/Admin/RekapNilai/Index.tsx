@@ -141,8 +141,8 @@ export default function RekapNilaiIndex({ grades, stats, filters }: Props) {
                                                     {grade.name.charAt(0)}
                                                 </div>
                                                 <div className="flex flex-col min-w-0">
-                                                    <span className="text-sm font-bold text-slate-900  transition-colors truncate max-w-[200px] leading-none mb-1.5">{grade.name}</span>
-                                                    <span className="text-[11px] font-bold text-slate-400 font-mono italic">#{grade.nim}</span>
+                                                    <span className="text-sm font-bold text-slate-900  transition-colors truncate max-w-[200px]  mb-1.5">{grade.name}</span>
+                                                    <span className="text-sm font-bold text-slate-400 italic">#{grade.nim}</span>
                                                 </div>
                                             </div>
                                         </td>
@@ -157,13 +157,13 @@ export default function RekapNilaiIndex({ grades, stats, filters }: Props) {
                                                 )}>
                                                     {grade.final_grade_letter || '---'}
                                                 </span>
-                                                <span className="text-[10px] font-bold text-slate-300 italic opacity-50 truncate">VAL: {grade.final_grade_value || '0.0'}</span>
+                                                <span className="text-xs font-bold text-slate-300 italic opacity-50 truncate">VAL: {grade.final_grade_value || '0.0'}</span>
                                             </div>
                                         </td>
                                         <td className="px-8 py-5 text-center">
                                             <div className="flex justify-center">
                                                 <span className={clsx(
-                                                    "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tight shadow-sm border",
+                                                    "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tight shadow-sm border",
                                                     grade.is_locked ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-400 border-slate-100"
                                                 )}>
                                                     {grade.is_locked ? 'Terkunci' : 'Draft'}
@@ -198,8 +198,8 @@ export default function RekapNilaiIndex({ grades, stats, filters }: Props) {
                                 )) : (
                                     <tr>
                                         <td colSpan={5} className="px-8 py-32 text-center opacity-20 italic">
-                                            <FileText className="h-12 w-12 mx-auto mb-4 text-slate-900 stroke-[1.5]" />
-                                            <p className="font-bold text-slate-900 tracking-widest leading-none">NO_ACADEMIC_REPORTS_DETECTED</p>
+                                            <FileText className="h-12 w-12 mx-auto mb-4 text-slate-900" />
+                                            <p className="font-bold text-slate-900 tracking-widest ">NO_ACADEMIC_REPORTS_DETECTED</p>
                                         </td>
                                     </tr>
                                 )}
@@ -221,12 +221,12 @@ export default function RekapNilaiIndex({ grades, stats, filters }: Props) {
                                 <ShieldCheck className="w-6 h-6 text-emerald-500" />
                                 <h4 className="text-sm font-bold text-white uppercase italic tracking-widest">Protocol Integrity Audit</h4>
                             </div>
-                            <p className="text-[11px] text-slate-400 font-medium leading-relaxed max-w-4xl opacity-75 italic">
+                            <p className="text-sm text-slate-400 font-medium  max-w-4xl opacity-75 italic">
                                 Nilai yang terkunci akan diintegrasikan secara otomatis ke dalam kanal transkrip akademik universitas. Pastikan seluruh input evaluasi dosen pembimbing telah terverifikasi secara internal.
                             </p>
                         </div>
                         <div className="flex gap-4">
-                            <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/10 text-emerald-500 text-[10px] font-bold">
+                            <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/10 text-emerald-500 text-xs font-bold">
                                 GOVERNANCE_OK
                             </div>
                         </div>
@@ -247,7 +247,7 @@ function StatCard({ label, value, icon: Icon, color }: any) {
     return (
         <div className="bg-white p-8 rounded-xl border border-slate-200 flex items-center justify-between group hover:border-emerald-300 transition-all shadow-sm">
             <div className="space-y-1">
-                <p className="text-[10px] font-bold text-slate-400 mb-1  transition-colors uppercase italic tracking-widest">{label}</p>
+                <p className="text-xs font-bold text-slate-400 mb-1  transition-colors uppercase italic tracking-widest">{label}</p>
                 <p className="text-3xl font-bold text-slate-900 italic tracking-tighter transition-transform  || 0}</p>
             </div>
             <div className={clsx('p-4 rounded-xl border transition-all  colors[color])}>

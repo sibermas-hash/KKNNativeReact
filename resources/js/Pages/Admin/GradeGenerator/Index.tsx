@@ -79,10 +79,10 @@ export default function GradeGeneratorIndex({ stats, recentLogs }: Props) {
                                         <Calculator className="h-8 w-8 animate-pulse" />
                                     </div>
                                     <div className="flex flex-col">
-                                        <h3 className="text-lg font-bold text-slate-900 leading-none">Status Generator</h3>
+                                        <h3 className="text-lg font-bold text-slate-900 ">Status Generator</h3>
                                         <div className="flex items-center gap-2 mt-2">
                                             <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest italic leading-none">Ready_Infection</span>
+                                            <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest italic ">Ready_Infection</span>
                                         </div>
                                     </div>
                                 </div>
@@ -91,13 +91,13 @@ export default function GradeGeneratorIndex({ stats, recentLogs }: Props) {
                             <div className="p-10 space-y-10 relative z-10">
                                  <div className="p-8 bg-slate-50 rounded-xl border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-8">
                                     <div className="space-y-4 flex-1">
-                                         <div className="flex items-center gap-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                         <div className="flex items-center gap-3 text-xs font-bold text-slate-400 uppercase tracking-widest">
                                             <Activity className="w-4 h-4 text-emerald-500" />
                                             Pantauan_Progres_Eksekusi
                                         </div>
                                         <div className="flex items-baseline gap-4">
-                                            <span className="text-4xl font-black italic tracking-tighter text-slate-900 leading-none">{progressPercentage.toFixed(1)}%</span>
-                                            <span className="text-[11px] font-bold text-slate-300 italic uppercase">Tersinkronisasi</span>
+                                            <span className="text-4xl font-black italic tracking-tighter text-slate-900 ">{progressPercentage.toFixed(1)}%</span>
+                                            <span className="text-sm font-bold text-slate-300 italic uppercase">Tersinkronisasi</span>
                                         </div>
                                         <div className="h-2.5 w-full bg-white rounded-full border border-slate-200 overflow-hidden shadow-inner">
                                             <div 
@@ -109,7 +109,7 @@ export default function GradeGeneratorIndex({ stats, recentLogs }: Props) {
 
                                     <div className="flex flex-col items-center md:items-end justify-center px-10 border-l border-slate-200">
                                         <span className="text-2xl font-black italic text-slate-900">{stats.generated_count} / {stats.total_eligible}</span>
-                                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mt-1.5 opacity-50 italic">PERSONEL_RECORDS</span>
+                                        <span className="text-xs font-bold text-slate-300 uppercase tracking-widest mt-1.5 opacity-50 italic">PERSONEL_RECORDS</span>
                                     </div>
                                 </div>
 
@@ -132,7 +132,7 @@ export default function GradeGeneratorIndex({ stats, recentLogs }: Props) {
                             <div className="px-8 py-5 border-b border-slate-50 flex items-center justify-between">
                                 <div className="flex items-center gap-3 text-slate-400">
                                     <History className="w-4 h-4" />
-                                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest leading-none">History_Logs</h3>
+                                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest ">History_Logs</h3>
                                 </div>
                             </div>
                             <div className="divide-y divide-slate-50 bg-slate-50/10 italic">
@@ -140,16 +140,16 @@ export default function GradeGeneratorIndex({ stats, recentLogs }: Props) {
                                     <div key={log.id} className="px-10 py-4 hover:bg-white transition-colors flex items-center justify-between group">
                                         <div className="flex items-center gap-4">
                                             <div className={clsx(
-                                                "h-6 w-6 rounded-lg flex items-center justify-center text-[8px] font-bold italic border",
+                                                "h-6 w-6 rounded-lg flex items-center justify-center text-xs font-bold italic border",
                                                 log.type === 'success' ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
                                                 log.type === 'warning' ? "bg-amber-50 text-amber-600 border-amber-100" :
                                                 "bg-slate-100 text-slate-400 border-slate-200"
                                             )}>
                                                 {log.type === 'success' ? 'OK' : 'WRN'}
                                             </div>
-                                            <p className="text-[11px] font-bold text-slate-500 leading-none  transition-colors">{log.message}</p>
+                                            <p className="text-sm font-bold text-slate-500   transition-colors">{log.message}</p>
                                         </div>
-                                        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">{log.created_at}</span>
+                                        <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">{log.created_at}</span>
                                     </div>
                                 )) : (
                                     <div className="p-20 text-center opacity-20 italic">
@@ -178,7 +178,7 @@ export default function GradeGeneratorIndex({ stats, recentLogs }: Props) {
                             <div className="space-y-6 relative z-10">
                                 <StatItem label="TOTAL_ELIGIBLE" value={stats.total_eligible} color="slate" />
                                 <StatItem label="GENERATED_SUCCESS" value={stats.generated_count} color="emerald" />
-                                <StatItem label="PENDING_CYCLES" value={stats.pending_count} color="amber" />
+                                <StatItem label="S" value={stats.pending_count} color="amber" />
                             </div>
                         </section>
 
@@ -189,8 +189,8 @@ export default function GradeGeneratorIndex({ stats, recentLogs }: Props) {
                                     <ShieldAlert className="h-10 w-10 text-primary shadow-sm" />
                                 </div>
                                 <div>
-                                    <h4 className="text-[10px] font-bold text-white uppercase italic tracking-[0.2em] mb-3 leading-none">Security_Governance</h4>
-                                    <p className="text-[10px] text-slate-400 font-medium italic italic leading-relaxed opacity-75 uppercase">
+                                    <h4 className="text-xs font-bold text-white uppercase italic tracking-[0.2em] mb-3 ">Security_Governance</h4>
+                                    <p className="text-xs text-slate-400 font-medium italic italic  opacity-75 uppercase">
                                         Sistem generator hanya dapat dieksekusi 1 kali per periode audit nilai. Pastikan bobot taktis telah sesuai.
                                     </p>
                                 </div>
@@ -212,7 +212,7 @@ function StatItem({ label, value, color }: { label: string, value: number, color
 
     return (
         <div className="flex items-center justify-between group/item">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover/item:text-primary transition-colors">{label}</span>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest group-hover/item:text-primary transition-colors">{label}</span>
             <div className="flex items-center gap-3">
                 <span className={clsx("text-lg font-black italic tracking-tighter", colors[color])}>{value.toLocaleString()}</span>
                 <div className={clsx("h-1.5 w-1.5 rounded-full", color === 'emerald' ? "bg-emerald-500 shadow-sm shadow-emerald-500/40" : "bg-slate-200")} />

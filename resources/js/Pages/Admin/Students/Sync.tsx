@@ -97,10 +97,10 @@ export default function StudentSync({ availableStudents, filters }: Props) {
                                                     {student.name.charAt(0)}
                                                 </div>
                                                 <div className="flex flex-col min-w-0">
-                                                    <span className="text-sm font-bold text-slate-900 uppercase tracking-tighter truncate max-w-[450px] group-hover/row:text-emerald-600 transition-colors leading-none mb-1.5">{student.name}</span>
+                                                    <span className="text-sm font-bold text-slate-900 uppercase tracking-tighter truncate max-w-[450px] group-hover/row:text-emerald-600 transition-colors  mb-1.5">{student.name}</span>
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">NIM: {student.nim}</span>
-                                                        <span className="text-[9px] font-bold text-slate-300 opacity-50 lowercase">[{student.email || 'NO_MAIL_CHANNEL'}]</span>
+                                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">NIM: {student.nim}</span>
+                                                        <span className="text-xs font-bold text-slate-300 opacity-50 lowercase">[{student.email || 'NO_MAIL_CHANNEL'}]</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -109,7 +109,7 @@ export default function StudentSync({ availableStudents, filters }: Props) {
                                             <button
                                                 onClick={() => handleSync(student)}
                                                 disabled={processing}
-                                                className="group/btn h-12 px-8 bg-white border border-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl text-[10px] font-black uppercase italic tracking-widest transition-all shadow-sm active:scale-95 disabled:opacity-20 flex items-center justify-center gap-3 ml-auto"
+                                                className="group/btn h-12 px-8 bg-white border border-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl text-xs font-black uppercase italic tracking-widest transition-all shadow-sm active:scale-95 disabled:opacity-20 flex items-center justify-center gap-3 ml-auto"
                                             >
                                                 <UserPlus className="w-4 h-4 text-emerald-400 group-hover/btn:text-white transition-colors" />
                                                 Ingest_Data
@@ -121,7 +121,7 @@ export default function StudentSync({ availableStudents, filters }: Props) {
                                     <tr>
                                         <td colSpan={2} className="px-8 py-32 text-center opacity-20 italic font-bold">
                                             <CloudDownload className="h-12 w-12 text-slate-900 mx-auto mb-4" />
-                                            <span className="text-[10px] uppercase tracking-[0.4em]">NO_RECORDS_DETECTED</span>
+                                            <span className="text-xs uppercase tracking-[0.4em]">NO_RECORDS_DETECTED</span>
                                         </td>
                                     </tr>
                                 )}
@@ -140,14 +140,14 @@ export default function StudentSync({ availableStudents, filters }: Props) {
                                 <div className="p-2.5 bg-primary/10 rounded-xl border border-primary/20 shadow-sm">
                                     <ShieldCheck className="h-6 w-6 text-primary" />
                                 </div>
-                                <h4 className="text-[11px] font-black text-white italic tracking-widest uppercase leading-none">Identity_Acquisition_V3.2</h4>
+                                <h4 className="text-sm font-black text-white italic tracking-widest uppercase ">Identity_Acquisition_V3.2</h4>
                             </div>
-                            <p className="text-[11px] text-slate-500 font-bold leading-relaxed max-w-4xl opacity-75 italic uppercase">
+                            <p className="text-sm text-slate-500 font-bold  max-w-4xl opacity-75 italic uppercase">
                                 Protokol Sinkronisasi: Data yang diinjeksi akan melewati validasi integritas repositori mahasiswa. Unit pendaftaran lokal akan otomatis terhubung dengan profil feeder.
                             </p>
                         </div>
                         <div className="flex gap-4 justify-center xl:justify-end">
-                            <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/10 text-slate-300 text-[10px] font-bold">
+                            <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/10 text-slate-300 text-xs font-bold">
                                 SYNC_TUNNEL_SAFE
                             </div>
                         </div>

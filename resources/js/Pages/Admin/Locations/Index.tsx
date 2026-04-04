@@ -94,7 +94,7 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  <div className="space-y-1">
  <div className="flex items-center gap-3">
  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
- <span className="text-[9px] font-semibold text-emerald-600">
+ <span className="text-xs font-semibold text-emerald-600">
  GEOGRAPHIC_ENTITY_DATABASE
  </span>
  </div>
@@ -102,7 +102,7 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  <div className="p-2 bg-slate-50 rounded-lg border border-slate-100 text-slate-400">
  <MapPin className="h-4 w-4" />
  </div>
- <h1 className="text-2xl font-semibold text-slate-900 leading-none">
+ <h1 className="text-2xl font-semibold text-slate-900 ">
  Master <span className="text-primary">Wilayah</span>
  </h1>
  </div>
@@ -115,8 +115,8 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  <Globe2 className="h-3 w-3" />
  </div>
  <div className="text-left">
- <span className="block text-[8px] font-semibold text-slate-400 leading-none mb-0.5">Sektor</span>
- <span className="text-xs font-semibold text-slate-900 leading-none">
+ <span className="block text-xs font-semibold text-slate-400  mb-0.5">Sektor</span>
+ <span className="text-xs font-semibold text-slate-900 ">
  {summary.total_locations} DESA
  </span>
  </div>
@@ -126,8 +126,8 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  <Users className="h-3 w-3" />
  </div>
  <div className="text-left">
- <span className="block text-[8px] font-semibold text-slate-400 leading-none mb-0.5">Plotting</span>
- <span className="text-xs font-semibold text-slate-900 leading-none">
+ <span className="block text-xs font-semibold text-slate-400  mb-0.5">Plotting</span>
+ <span className="text-xs font-semibold text-slate-900 ">
  {summary.assigned_groups} UNIT
  </span>
  </div>
@@ -148,7 +148,7 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
  <FileSpreadsheet className="h-4 w-4" />
  </div>
- <h3 className="text-[11px] font-semibold text-slate-900">BATCH_GEOGRAPHIC_INGESTION</h3>
+ <h3 className="text-sm font-semibold text-slate-900">BATCH_GEOGRAPHIC_INGESTION</h3>
  </div>
 
  <div className="space-y-4 relative z-10">
@@ -164,25 +164,25 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  <div className="h-8 w-8 text-slate-200 mx-auto group-hover/drop:text-primary transition-colors flex items-center justify-center">
  <UploadCloud className="h-6 w-6" />
  </div>
- <p className="text-[11px] font-semibold text-slate-400 group-hover/drop:text-primary transition-colors">
+ <p className="text-sm font-semibold text-slate-400 group-hover/drop:text-primary transition-colors">
  {importForm.data.file ? importForm.data.file.name : 'SELECT_DATABASE_FILE'}
  </p>
- <span className="text-[9px] font-semibold text-slate-200">.XLSX, .XLS, .CSV ONLY</span>
+ <span className="text-xs font-semibold text-slate-200">.XLSX, .XLS, .CSV ONLY</span>
  </div>
  </div>
 
  <button
  type="submit"
  disabled={!importForm.data.file || importForm.processing}
- className="w-full py-4 bg-primary text-white text-[10px] font-semibold rounded-lg transition-all disabled:opacity-50"
+ className="w-full py-4 bg-primary text-white text-xs font-semibold rounded-lg transition-all disabled:opacity-50"
  >
- {importForm.processing ? 'UPLOADING...' : 'START_IMPORT_PROTOCOL'}
+ {importForm.processing ? 'UPLOADING...' : ''}
  </button>
  </div>
 
  <div className="p-4 bg-emerald-50 rounded-lg flex gap-3 border border-emerald-100">
  <Info className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
- <p className="text-[9px] font-semibold text-emerald-800 leading-relaxed">
+ <p className="text-xs font-semibold text-emerald-800 ">
  PROSES: Pastikan struktur kolom sesuai dengan template standar (Desa, Kecamatan, Kabupaten).
  </p>
  </div>
@@ -198,7 +198,7 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  placeholder="SEARCH_LOCATION_DATABASE..."
  value={search}
  onChange={(e) => setSearch(e.target.value)}
- className="w-full pl-12 pr-6 py-4 bg-white border border-slate-100 rounded-lg text-[11px] font-semibold text-slate-900 placeholder:text-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 "
+ className="w-full pl-12 pr-6 py-4 bg-white border border-slate-100 rounded-lg text-sm font-semibold text-slate-900 placeholder:text-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 "
  />
  </div>
 
@@ -207,9 +207,9 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  <table className="w-full border-collapse divide-y divide-slate-50">
  <thead className="bg-slate-50/50">
  <tr>
- <th className="px-8 py-5 text-left text-[10px] font-semibold text-slate-400">IDENTITAS_WILAYAH</th>
- <th className="px-8 py-5 text-center text-[10px] font-semibold text-slate-400">INFO_UNIT</th>
- <th className="px-8 py-5 text-right text-[10px] font-semibold text-slate-400 pr-12">AKSI</th>
+ <th className="px-8 py-5 text-left text-xs font-semibold text-slate-400">IDENTITAS_WILAYAH</th>
+ <th className="px-8 py-5 text-center text-xs font-semibold text-slate-400">INFO_UNIT</th>
+ <th className="px-8 py-5 text-right text-xs font-semibold text-slate-400 pr-12">AKSI</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-slate-50/50">
@@ -218,7 +218,7 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  <td colSpan={3} className="px-8 py-24 text-center">
  <div className="flex flex-col items-center gap-4 opacity-30">
  <Globe2 className="h-10 w-10 text-slate-300" />
- <p className="text-[10px] font-semibold text-slate-400">GEODATA_KOSONG</p>
+ <p className="text-xs font-semibold text-slate-400">GEODATA_KOSONG</p>
  </div>
  </td>
  </tr>
@@ -232,14 +232,14 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  </div>
  <div className="flex flex-col">
  <span className="text-sm font-semibold text-slate-900 group-hover/row:text-primary transition-colors">{loc.village_name}</span>
- <span className="text-[9px] font-semibold text-slate-300">KEC. {loc.district_name} • {loc.regency_name}</span>
+ <span className="text-xs font-semibold text-slate-300">KEC. {loc.district_name} • {loc.regency_name}</span>
  </div>
  </div>
  </td>
  <td className="px-8 py-6 text-center">
  <div className="flex flex-col items-center gap-1">
  <span className="text-xs font-semibold text-slate-900 border-b border-primary/20 pb-0.5">{loc.groups_count} UNIT</span>
- <span className="text-[8px] font-semibold text-slate-300">POSKO: {loc.posko_count}</span>
+ <span className="text-xs font-semibold text-slate-300">POSKO: {loc.posko_count}</span>
  </div>
  </td>
  <td className="px-8 py-6 text-right pr-12">
@@ -282,10 +282,10 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  <ShieldCheck className="h-6 w-6 text-primary" />
  </div>
  <div>
- <h4 className="text-[11px] font-semibold text-white">GEOGRAPHIC_INTEL_PROTOCOL</h4>
- <p className="text-[9px] font-semibold text-slate-500 mt-1 leading-relaxed max-w-2xl">
+ <h4 className="text-sm font-semibold text-white"></h4>
+ <p className="text-xs font-semibold text-slate-500 mt-1  max-w-2xl">
  Data wilayah disinkronkan langsung dengan repositori pusat KKN. <br/>
- STATUS: SECURE_CORE_SYNC_OK
+ STATUS: SECURE_
  </p>
  </div>
  </div>

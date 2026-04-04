@@ -97,10 +97,10 @@ export default function DplSync({ availableDpls, filters }: Props) {
                                                     {dpl.name.charAt(0)}
                                                 </div>
                                                 <div className="flex flex-col min-w-0">
-                                                    <span className="text-sm font-bold text-slate-900 uppercase tracking-tighter truncate max-w-[450px] group-hover/row:text-emerald-600 transition-colors leading-none mb-2">{dpl.name}</span>
+                                                    <span className="text-sm font-bold text-slate-900 uppercase tracking-tighter truncate max-w-[450px] group-hover/row:text-emerald-600 transition-colors  mb-2">{dpl.name}</span>
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono opacity-50">NIP: {dpl.nip}</span>
-                                                        <span className="text-[9px] font-bold text-slate-300 italic opacity-30 lowercase">[{dpl.email || 'NO_MAIL_CHANNEL'}]</span>
+                                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest opacity-50">NIP: {dpl.nip}</span>
+                                                        <span className="text-xs font-bold text-slate-300 italic opacity-30 lowercase">[{dpl.email || 'NO_MAIL_CHANNEL'}]</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -109,7 +109,7 @@ export default function DplSync({ availableDpls, filters }: Props) {
                                             <button
                                                 onClick={() => handleSync(dpl)}
                                                 disabled={processing}
-                                                className="group/btn h-12 px-8 bg-white border border-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl text-[10px] uppercase italic tracking-widest transition-all shadow-sm active:scale-95 disabled:opacity-20 flex items-center justify-center gap-3 ml-auto opacity-70 group-hover/row:opacity-100"
+                                                className="group/btn h-12 px-8 bg-white border border-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl text-xs uppercase italic tracking-widest transition-all shadow-sm active:scale-95 disabled:opacity-20 flex items-center justify-center gap-3 ml-auto opacity-70 group-hover/row:opacity-100"
                                             >
                                                 <UserCheck className="w-4 h-4 text-emerald-400 group-hover/btn:text-white" />
                                                 Activate_Personel
@@ -122,9 +122,9 @@ export default function DplSync({ availableDpls, filters }: Props) {
                                         <td colSpan={2} className="px-8 py-32 text-center opacity-20 italic">
                                             <div className="flex flex-col items-center gap-8">
                                                 <div className="p-10 bg-slate-50 rounded-3xl border border-slate-100">
-                                                    <ShieldAlert className="h-12 w-12 text-slate-900 stroke-[1.5]" />
+                                                    <ShieldAlert className="h-12 w-12 text-slate-900" />
                                                 </div>
-                                                <span className="text-[10px] font-black text-slate-900 uppercase italic tracking-[0.4em]">NO_OFFICER_RECORDS_FOUND</span>
+                                                <span className="text-xs font-black text-slate-900 uppercase italic tracking-[0.4em]">NO_OFFICER_RECORDS_FOUND</span>
                                             </div>
                                         </td>
                                     </tr>
@@ -143,14 +143,14 @@ export default function DplSync({ availableDpls, filters }: Props) {
                                 <div className="p-3 bg-primary/10 rounded-xl border border-primary/20 shadow-sm">
                                     <ShieldCheck className="h-6 w-6 text-primary shadow-sm" />
                                 </div>
-                                <h4 className="text-[11px] font-black text-white italic tracking-widest uppercase leading-none">Authentication_Gateway_V3.2</h4>
+                                <h4 className="text-sm font-black text-white italic tracking-widest uppercase ">Authentication_Gateway_V3.2</h4>
                             </div>
-                            <p className="text-[11px] text-slate-500 font-bold leading-relaxed max-w-4xl opacity-75 italic uppercase">
+                            <p className="text-sm text-slate-500 font-bold  max-w-4xl opacity-75 italic uppercase">
                                 Protokol Otorisasi: Aktivasi personel akan memberikan hak akses kontrol penuh terhadap evaluasi akademik unit kelompok yang ditugaskan. Pastikan integritas akun terverifikasi melalui jalur internal.
                             </p>
                         </div>
                         <div className="flex gap-4 justify-center xl:justify-end">
-                            <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/10 text-emerald-500 text-[10px] font-bold">
+                            <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/10 text-emerald-500 text-xs font-bold">
                                 ACCESS_FEDERATION_OK
                             </div>
                         </div>

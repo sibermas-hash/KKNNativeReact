@@ -28,7 +28,7 @@ export default function TacticalDashboard() {
  <div className="space-y-8 max-w-4xl text-center lg:text-left">
  <div className="inline-flex items-center gap-4 px-6 py-2.5 bg-white/10 rounded-lg border border-slate-200
  <Zap className="w-4 h-4 text-emerald-300 fill-emerald-300" />
- <span className="text-[11px] font-semibold text-white ">
+ <span className="text-sm font-semibold text-white ">
  SYSTEM_COMMAND_V3.2
  </span>
  </div>
@@ -78,7 +78,7 @@ export default function TacticalDashboard() {
  <div className="flex items-center justify-between mb-12">
  <div className="flex items-center gap-6">
  <div className="p-5 bg-primary/5 rounded-lg text-primary">
- <TrendingUp className="w-8 h-8 stroke-[2.5px]" />
+ <TrendingUp className="w-8 h-8" />
  </div>
  <h3 className="text-2xl font-semibold text-slate-900 ">Telemetri Aktivitas</h3>
  </div>
@@ -115,7 +115,7 @@ export default function TacticalDashboard() {
  <div className="space-y-6">
  <div className="flex items-center justify-center md:justify-start gap-5">
  <Globe className="h-8 w-8 text-emerald-300" />
- <h4 className="text-[12px] font-semibold text-white ">GLOBAL_INTEGRITY_PROTOCOL</h4>
+ <h4 className="text-sm font-semibold text-white "></h4>
  </div>
  <p className="text-lg text-emerald-50/60 font-medium max-w-3xl">
  Sistem dalam kepatuhan penuh terhadap Kebijakan Otoritas Akademik UIN SAIZU. Otorisasi akses tingkat satu diaktifkan.
@@ -141,9 +141,9 @@ function MetricCard({ label, value, icon: Icon, color, unit, trend }: any) {
  <div className="bg-white rounded-lg p-10 border border-slate-200 hover:-group cursor-default">
  <div className="flex items-center gap-5 mb-8">
  <div className={clsx("p-5 rounded-lg ", colorMap[color])}>
- <Icon className="w-7 h-7 stroke-[2.5px]" />
+ <Icon className="w-7 h-7" />
  </div>
- <div className="text-[10px] font-semibold text-slate-400 ">{label}</div>
+ <div className="text-xs font-semibold text-slate-400 ">{label}</div>
  </div>
 
  <div className="flex items-baseline gap-3 mb-2">
@@ -153,7 +153,7 @@ function MetricCard({ label, value, icon: Icon, color, unit, trend }: any) {
  {unit && <span className="text-lg font-semibold text-slate-300">{unit}</span>}
  </div>
  
- <span className="text-[10px] font-semibold text-emerald-500 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100">{trend}</span>
+ <span className="text-xs font-semibold text-emerald-500 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100">{trend}</span>
  </div>
  );
 }
@@ -166,10 +166,10 @@ function FeedItem({ name, action, status }: any) {
  </div>
  <div className="flex-1 space-y-1">
  <h5 className="font-semibold text-xs text-slate-900">{name}</h5>
- <p className="text-[10px] text-sm text-slate-400">{action}</p>
+ <p className="text-xs text-sm text-slate-400">{action}</p>
  </div>
  <div className={clsx(
- "px-3 py-1 rounded-lg text-[9px] font-semibold 
+ "px-3 py-1 rounded-lg text-xs font-semibold 
  status === 'VERIFIED' || status === 'SYNC_OK' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
  )}>
  {status}

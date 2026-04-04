@@ -67,7 +67,7 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
  <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <Cpu className="h-4 w-4 text-emerald-300" />
  </div>
- <span className="text-[10px] font-semibold text-emerald-100 ">
+ <span className="text-xs font-semibold text-emerald-100 ">
  ACADEMIC_REGISTRY_UNIT_V3
  </span>
  </div>
@@ -85,7 +85,7 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
  <GraduationCap className="h-6 w-6" />
  </div>
  <div>
- <span className="text-[9px] font-semibold text-emerald-200/60 block mb-1.5">Total Unit</span>
+ <span className="text-xs font-semibold text-emerald-200/60 block mb-1.5">Total Unit</span>
  <span className="text-2xl font-semibold text-white">{programs.meta?.total || 0} Sektor</span>
  </div>
  </div>
@@ -107,7 +107,7 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
  </div>
  <div>
  <h3 className="text-xl font-semibold text-slate-900 ">Status_Record</h3>
- <p className="text-[10px] font-semibold text-slate-400 mt-2 opacity-50">SINKRONISASI EKSTERNAL</p>
+ <p className="text-xs font-semibold text-slate-400 mt-2 opacity-50">SINKRONISASI EKSTERNAL</p>
  </div>
  </div>
 
@@ -120,14 +120,14 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
 
  <div className="grid grid-cols-1 gap-6">
  <div className="bg-white border border-slate-200 rounded-lg p-6 group/item hover:border-primary">
- <span className="text-[9px] font-semibold text-slate-300 block mb-2 px-1">Kanal_Sumber_Data</span>
+ <span className="text-xs font-semibold text-slate-300 block mb-2 px-1">Kanal_Sumber_Data</span>
  <div className="flex items-center gap-3">
  <Globe className="h-4 w-4 text-primary" />
  <span className="text-[14px] font-semibold text-slate-900">{syncInfo.source}</span>
  </div>
  </div>
  <div className="bg-white border border-slate-200 rounded-lg p-6 border-l-4 border-l-primary group/item hover:border-primary">
- <span className="text-[9px] font-semibold text-slate-300 block mb-2 px-1">Audit_Sinkronisasi</span>
+ <span className="text-xs font-semibold text-slate-300 block mb-2 px-1">Audit_Sinkronisasi</span>
  <div className="flex items-center gap-3">
  <Activity className="h-4 w-4 text-emerald-500" />
  <span className="text-[14px] font-semibold text-primary">{syncInfo.last_synced_at || 'BELUM_TERCATAT'}</span>
@@ -138,11 +138,11 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
  <div className="space-y-4 pt-4">
  <div className="flex items-start gap-4 p-5 bg-white border border-slate-200 rounded-lg group/tip hover:bg-emerald-50/30
  <ShieldCheck className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
- <p className="text-[12px] text-slate-500 text-sm leading-normal pr-2">Pemetaan fakultas digunakan untuk delegasi otoritas admin departemen secara otomatis.</p>
+ <p className="text-sm text-slate-500 text-sm leading-normal pr-2">Pemetaan fakultas digunakan untuk delegasi otoritas admin departemen secara otomatis.</p>
  </div>
  <div className="flex items-start gap-4 p-5 bg-white border border-slate-200 rounded-lg group/tip hover:bg-primary/5
  <Fingerprint className="h-5 w-5 text-primary shrink-0 mt-0.5" />
- <p className="text-[12px] text-slate-500 text-sm leading-normal pr-2"> Kode unit prodi bersifat absolut dan tervalidasi oleh sistem informasi akademik.</p>
+ <p className="text-sm text-slate-500 text-sm leading-normal pr-2"> Kode unit prodi bersifat absolut dan tervalidasi oleh sistem informasi akademik.</p>
  </div>
  </div>
  </div>
@@ -164,7 +164,7 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
  </div>
  <div className="flex items-center gap-4 text-slate-400 shrink-0">
  <div className="h-2 w-2 rounded-lg bg-emerald-500" />
- <span className="text-[10px] font-semibold ">STATUS_SYNC: <span className="text-emerald-600">VERIFIED</span></span>
+ <span className="text-xs font-semibold ">: <span className="text-emerald-600">VERIFIED</span></span>
  </div>
  </div>
 
@@ -186,7 +186,7 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
  <div className="p-10 bg-slate-50 rounded-lg border border-slate-200
  <Globe className="h-20 w-20 text-slate-200" />
  </div>
- <p className="text-[12px] font-semibold text-slate-400">SYSTEM_MESSAGE: NO_ACADEMIC_UNIT_DETECTED</p>
+ <p className="text-sm font-semibold text-slate-400">SYSTEM_MESSAGE: NO_ACADEMIC_UNIT_DETECTED</p>
  </div>
  </td>
  </tr>
@@ -199,7 +199,7 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
  <td className="px-6 py-3">
  <div className="flex items-center gap-4">
  <div className="h-7 w-1.5 bg-slate-100 group-hover/row:bg-primaryrounded-lg" />
- <span className="text-[12px] font-semibold text-slate-500 group-hover/row:text-slate-900 transition-colors opacity-50  </div>
+ <span className="text-sm font-semibold text-slate-500 group-hover/row:text-slate-900 transition-colors opacity-50  </div>
  </td>
  <td className="px-6 py-3 text-right pr-14">
  <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-400 group-hover/row:bg-white group-hover/row:text-primary group-hover/row:border-primary">
@@ -231,8 +231,8 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
  <ShieldCheck className="h-7 w-7 text-primary" />
  </div>
  <div>
- <h4 className="text-[11px] font-semibold text-white ">ACADEMIC_SECTOR_PROTOCOL_V3</h4>
- <p className="text-[10px] text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: SECURE_CORE_SYNC_ESTABLISHED</p>
+ <h4 className="text-sm font-semibold text-white ">_V3</h4>
+ <p className="text-xs text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: SECURE_</p>
  </div>
  </div>
  <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-4xl opacity-75">
@@ -244,7 +244,7 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
  <div className="flex flex-col items-end gap-5 shrink-0 border-l border-slate-800 pl-12 hidden lg:flex">
  <div className="flex items-center gap-3 mb-1 px-5 py-2.5 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
  <div className="h-2.5 w-2.5 rounded-lg bg-emerald-500" />
- <span className="text-[11px] font-semibold text-slate-100 ">MONITOR_VERIFIED</span>
+ <span className="text-sm font-semibold text-slate-100 ">MONITOR_VERIFIED</span>
  </div>
  <div className="flex gap-5">
  <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">

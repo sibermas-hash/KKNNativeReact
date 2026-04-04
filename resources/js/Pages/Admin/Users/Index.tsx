@@ -99,24 +99,24 @@ export default function UsersIndex({ users, filters }: Props) {
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-3">
                                             <span className={clsx(
-                                                "text-[9px] font-black uppercase italic tracking-widest leading-none px-2 py-0.5 rounded border shadow-sm",
+                                                "text-xs font-black uppercase italic tracking-widest  px-2 py-0.5 rounded border shadow-sm",
                                                 user.roles[0]?.toLowerCase() === 'superadmin' ? "bg-emerald-50 text-emerald-500 border-emerald-100" : "bg-primary/10 text-primary border-primary/20"
                                             )}>
                                                 {user.roles[0]?.toUpperCase() || 'NO_ROLE'}
                                             </span>
                                             <div className="h-1 w-1 rounded-full bg-slate-200" />
-                                            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest font-mono">ACCOUNT_ID: #{user.id.toString().padStart(4, '0')}</span>
+                                            <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">ACCOUNT_ID: #{user.id.toString().padStart(4, '0')}</span>
                                         </div>
-                                        <h3 className="font-bold text-slate-900 uppercase italic tracking-tighter text-sm leading-none group-hover/row:text-emerald-600 transition-colors uppercase">{user.name}</h3>
+                                        <h3 className="font-bold text-slate-900 uppercase italic tracking-tighter text-sm  group-hover/row:text-emerald-600 transition-colors uppercase">{user.name}</h3>
                                         <div className="flex items-center gap-4 opacity-50">
                                             <div className="flex items-center gap-2">
                                                 <Mail className="h-3.5 w-3.5 text-slate-400" />
-                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{user.email}</span>
+                                                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{user.email}</span>
                                             </div>
                                             {user.email_verified_at && (
                                                 <div className="flex items-center gap-2 px-2 py-0.5 bg-emerald-50 rounded border border-emerald-100 text-emerald-600">
                                                     <ShieldCheck className="h-2.5 w-2.5 shadow-sm shadow-emerald-500/20" />
-                                                    <span className="text-[8px] font-black uppercase tracking-widest">VERIFIED</span>
+                                                    <span className="text-xs font-black uppercase tracking-widest">VERIFIED</span>
                                                 </div>
                                             )}
                                         </div>
@@ -133,7 +133,7 @@ export default function UsersIndex({ users, filters }: Props) {
                                         >
                                             <Trash2 className="w-4 h-4 shadow-sm px-[1px]" />
                                         </button>
-                                        <button className="h-10 px-6 bg-slate-900 text-primary border border-slate-800 rounded-xl font-bold uppercase italic tracking-widest text-[9px] shadow-lg shadow-slate-900/10 flex items-center gap-3 transition-all active:scale-95 group/btn hover:bg-emerald-600 hover:text-white">
+                                        <button className="h-10 px-6 bg-slate-900 text-primary border border-slate-800 rounded-xl font-bold uppercase italic tracking-widest text-xs shadow-lg shadow-slate-900/10 flex items-center gap-3 transition-all active:scale-95 group/btn hover:bg-emerald-600 hover:text-white">
                                             <ArrowRight className="w-4 h-4 shadow-sm" />
                                             Credentials
                                         </button>
@@ -157,12 +157,12 @@ export default function UsersIndex({ users, filters }: Props) {
                                 <ShieldAlert className="w-6 h-6 text-emerald-500 animate-pulse" />
                                 <h4 className="text-sm font-bold text-white uppercase italic tracking-widest">Authority_Audit_Governance</h4>
                             </div>
-                            <p className="text-[11px] text-slate-400 font-medium leading-relaxed max-w-4xl opacity-75 italic uppercase">
+                            <p className="text-sm text-slate-400 font-medium  max-w-4xl opacity-75 italic uppercase">
                                 Seluruh modifikasi hak akses personel terekam secara permanen dalam ledger kedaulatan data. Pastikan otorisasi telah sesuai dengan kebijakan keamanan institusi.
                             </p>
                         </div>
                         <div className="flex gap-4">
-                            <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/10 text-emerald-500 text-[10px] font-bold">
+                            <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/10 text-emerald-500 text-xs font-bold">
                                 FEDERATION_SECURED
                             </div>
                         </div>

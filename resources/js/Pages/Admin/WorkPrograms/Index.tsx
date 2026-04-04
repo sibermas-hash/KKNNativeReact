@@ -53,8 +53,8 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <Briefcase className="h-4 w-4 text-emerald-300" />
  </div>
- <span className="text-[10px] font-semibold text-emerald-100 ">
- INITIATIVE_HUB_ORCHESTRATOR_V3
+ <span className="text-xs font-semibold text-emerald-100 ">
+ _ORCHESTRATOR_V3
  </span>
  </div>
  <h1 className="text-4xl md:text-5xl font-semibold text-white ">
@@ -71,7 +71,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  <Activity className="h-6 w-6" />
  </div>
  <div>
- <span className="text-[9px] font-semibold text-emerald-200/60 block mb-1.5">Total Inisiatif</span>
+ <span className="text-xs font-semibold text-emerald-200/60 block mb-1.5">Total Inisiatif</span>
  <span className="text-xl font-semibold text-white ">{workPrograms.data?.length || 0} PROGJA</span>
  </div>
  </div>
@@ -130,7 +130,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  </div>
  <div className="flex flex-col gap-1.5 truncate max-w-sm">
  <span className="text-[14px] font-semibold text-slate-900 group-hover/row:text-primary transition-colors leading-normal truncate">{p.title}</span>
- <span className="text-[9px] text-sm text-slate-300 opacity-50">Entry ID: #{p.id.toString().padStart(4, '0')}</span>
+ <span className="text-xs text-sm text-slate-300 opacity-50">Entry ID: #{p.id.toString().padStart(4, '0')}</span>
  </div>
  </div>
  </td>
@@ -139,7 +139,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  <div className="p-2 bg-slate-50 rounded-lg text-slate-400 group-hover/row:bg-primary/10 group-hover/row:text-primary">
  <Users className="h-4 w-4" />
  </div>
- <span className="text-[11px] text-sm text-slate-700 ">{p.group?.name}</span>
+ <span className="text-sm text-sm text-slate-700 ">{p.group?.name}</span>
  </div>
  </td>
  <td className="px-6 py-3">
@@ -151,11 +151,11 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  <td className="px-6 py-3 text-center">
  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg">
  <Calendar className="h-3 w-3 text-slate-400" />
- <span className="text-[10px] font-semibold text-slate-700">{p.submitted_at ?? '--'}</span>
+ <span className="text-xs font-semibold text-slate-700">{p.submitted_at ?? '--'}</span>
  </div>
  </td>
  <td className="px-6 py-3 text-right">
- <StatusBadge status={p.status} className="px-4 py-1.5 rounded-lg text-[9px] text-sm border-none />
+ <StatusBadge status={p.status} className="px-4 py-1.5 rounded-lg text-xs text-sm border-none />
  </td>
  </tr>
  )) : (
@@ -165,7 +165,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  <div className="p-10 bg-slate-50 rounded-lg border border-slate-200
  <FileText className="h-12 w-12 text-slate-200" />
  </div>
- <p className="text-[11px] text-sm text-slate-400">Belum ada program kerja yang diajukan</p>
+ <p className="text-sm text-sm text-slate-400">Belum ada program kerja yang diajukan</p>
  </div>
  </td>
  </tr>
@@ -183,9 +183,9 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  <div className="p-2.5 bg-primary/10 rounded-lg border border-primary">
  <ShieldCheck className="h-5.5 w-5.5 text-primary" />
  </div>
- <h4 className="text-[11px] font-semibold text-white ">TATA_KELOLA_INISIATIF_STRATEGIS</h4>
+ <h4 className="text-sm font-semibold text-white ">TATA_KELOLA_INISIATIF_STRATEGIS</h4>
  </div>
- <p className="text-[12px] text-slate-400 text-sm leading-normal max-w-4xl opacity-50">
+ <p className="text-sm text-slate-400 text-sm leading-normal max-w-4xl opacity-50">
  Seluruh Program Kerja (PROGJA) yang terdaftar merepresentasikan rencana aksi strategis unit KKN. 
  Setiap pengajuan wajib divalidasi oleh Dosen Pembimbing Lapangan (DPL) sebelum diarsipkan sebagai basis 
  evaluasi integritas pengabdian mahasiswa dalam ekosistem KKN UIN SAIZU.
@@ -194,7 +194,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  <div className="flex flex-col items-end gap-3 shrink-0 border-l border-slate-800 pl-10">
  <div className="flex items-center gap-2 mb-2">
  <div className="h-2 w-2 rounded-lg bg-emerald-500 />
- <span className="text-[10px] font-semibold text-slate-100 ">DATA_INTEGRITY_VERIFIED</span>
+ <span className="text-xs font-semibold text-slate-100 ">DATA_INTEGRITY_VERIFIED</span>
  </div>
  <div className="flex gap-4">
  <div className="h-10 w-10 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-600 transition-colors hover:text-primary
@@ -209,7 +209,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  </div>
 
  <div className="text-center pt-8 opacity-20">
- <p className="text-[9px] font-semibold text-slate-300 ">
+ <p className="text-xs font-semibold text-slate-300 ">
  Strategic Initiative Archive • UIN SAIZU © 2024
  </p>
  </div>

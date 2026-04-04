@@ -99,8 +99,8 @@ export default function GroupsIndex({ groups, filters }: Props) {
                                             {group.name.replace('Kelompok ', '').charAt(0)}
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-slate-900  transition-colors tracking-tight truncate max-w-[180px]">{group.name}</h3>
-                                            <p className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">MOD_ID: #{group.id}</p>
+                                            <h3 className="font-bold text-slate-900 transition-colors tracking-tight truncate max-w-[180px]">{group.name}</h3>
+                                            <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">MOD_ID: #{group.id}</p>
                                         </div>
                                     </div>
                                     <Link 
@@ -112,17 +112,19 @@ export default function GroupsIndex({ groups, filters }: Props) {
                                 </div>
 
                                 <div className="space-y-3">
-                                    <div className="flex items-center gap-3 text-sm font-medium text-slate-600 transition-colors                                         <MapPin className="w-4 h-4 text-emerald-500" />
+                                    <div className="flex items-center gap-3 text-sm font-medium text-slate-600 transition-colors">
+                                        <MapPin className="w-4 h-4 text-emerald-500" />
                                         <span className="truncate">{group.location ? `${group.location.kecamatan}, ${group.location.kabupaten}` : 'Lokasi belum diatur'}</span>
                                     </div>
-                                    <div className="flex items-center gap-3 text-sm font-medium text-slate-600 transition-colors                                         <Users className="w-4 h-4 text-emerald-500" />
+                                    <div className="flex items-center gap-3 text-sm font-medium text-slate-600 transition-colors">
+                                        <Users className="w-4 h-4 text-emerald-500" />
                                         <span>{group.members_count} Mahasiswa</span>
                                     </div>
                                 </div>
 
                                 <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Dosen Pembimbing</span>
+                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Dosen Pembimbing</span>
                                         <span className="text-sm font-bold text-slate-700">{group.dosen?.name || 'Belum diatur'}</span>
                                     </div>
                                     <Link 

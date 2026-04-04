@@ -127,10 +127,10 @@ export default function RegistrationsIndex({ registrations, filters }: Props) {
                                                     {reg.mahasiswa.user.name.charAt(0)}
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-slate-900  transition-colors leading-none mb-1">
+                                                    <span className="text-sm font-bold text-slate-900  transition-colors  mb-1">
                                                         {reg.mahasiswa.user.name}
                                                     </span>
-                                                    <span className="text-[11px] font-medium text-slate-400">NIM: {reg.mahasiswa.nim}</span>
+                                                    <span className="text-sm font-medium text-slate-400">NIM: {reg.mahasiswa.nim}</span>
                                                 </div>
                                             </div>
                                         </td>
@@ -139,7 +139,7 @@ export default function RegistrationsIndex({ registrations, filters }: Props) {
                                         </td>
                                         <td className="px-6 py-5 text-center">
                                             <span className={clsx(
-                                                "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tight border",
+                                                "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tight border",
                                                 reg.status === 'pending' ? "bg-amber-50 text-amber-600 border-amber-100" :
                                                 reg.status === 'approved' ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
                                                 "bg-rose-50 text-rose-600 border-rose-100"
@@ -166,7 +166,7 @@ export default function RegistrationsIndex({ registrations, filters }: Props) {
                                                     </button>
                                                 </div>
                                             ) : (
-                                                <span className="text-[10px] font-bold text-slate-300 uppercase italic opacity-50 pr-4">Terverifikasi</span>
+                                                <span className="text-xs font-bold text-slate-300 uppercase italic opacity-50 pr-4">Terverifikasi</span>
                                             )}
                                         </td>
                                     </tr>

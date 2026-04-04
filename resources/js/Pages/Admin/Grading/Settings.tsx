@@ -68,15 +68,15 @@ export default function GradingSettings({ components }: Props) {
                                         <Scale className="h-6 w-6" />
                                     </div>
                                     <div className="flex flex-col">
-                                        <h3 className="text-lg font-bold text-slate-900 leading-none">Matriks Pembobotan</h3>
+                                        <h3 className="text-lg font-bold text-slate-900 ">Matriks Pembobotan</h3>
                                         <div className="flex items-center gap-2 mt-2">
                                             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest italic leading-none">Status: Ready_Calibration</span>
+                                            <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest italic ">Status: Ready_Calibration</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="hidden lg:flex items-center gap-2 italic">
-                                    <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest leading-none">Algorithm_V3.2</span>
+                                    <span className="text-xs font-bold text-slate-300 uppercase tracking-widest ">Algorithm_V3.2</span>
                                 </div>
                             </div>
 
@@ -89,9 +89,9 @@ export default function GradingSettings({ components }: Props) {
                                                     <div className="p-2 bg-white rounded-lg border border-slate-100 text-slate-400 group-hover/item:text-emerald-600 shadow-sm transition-colors">
                                                         <FileText className="w-4 h-4" />
                                                     </div>
-                                                    <span className="text-[11px] font-bold text-slate-900 uppercase tracking-widest">{component.name}</span>
+                                                    <span className="text-sm font-bold text-slate-900 uppercase tracking-widest">{component.name}</span>
                                                 </div>
-                                                <span className="text-[9px] font-bold text-slate-300 italic uppercase">Key: {component.key}</span>
+                                                <span className="text-xs font-bold text-slate-300 italic uppercase">Key: {component.key}</span>
                                             </div>
                                             <div className="relative">
                                                 <input
@@ -118,7 +118,7 @@ export default function GradingSettings({ components }: Props) {
                                             <Calculator className="h-6 w-6" />
                                         </div>
                                         <div className="space-y-1">
-                                            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Akumulasi Bobot Total</h4>
+                                            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest ">Akumulasi Bobot Total</h4>
                                             <p className={clsx(
                                                 "text-3xl font-black italic",
                                                 isWeightValid ? "text-emerald-600" : "text-rose-500"
@@ -129,7 +129,7 @@ export default function GradingSettings({ components }: Props) {
                                     <button
                                         type="submit"
                                         disabled={processing || !isWeightValid}
-                                        className="h-15 px-10 bg-emerald-600 text-white rounded-xl font-bold uppercase italic tracking-widest text-[11px] shadow-lg shadow-emerald-500/20 relative active:scale-95 disabled:opacity-20 transition-all hover:bg-emerald-700 flex items-center justify-center gap-3"
+                                        className="h-15 px-10 bg-emerald-600 text-white rounded-xl font-bold uppercase italic tracking-widest text-sm shadow-lg shadow-emerald-500/20 relative active:scale-95 disabled:opacity-20 transition-all hover:bg-emerald-700 flex items-center justify-center gap-3"
                                     >
                                         <ShieldCheck className="w-5 h-5" />
                                         Simpan Perubahan
@@ -155,14 +155,14 @@ export default function GradingSettings({ components }: Props) {
 
                             <div className="space-y-5 relative z-10">
                                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 italic">
-                                    <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-1 opacity-50">Aturan Total Bobot</p>
-                                    <p className="text-[11px] text-slate-600 font-medium italic leading-relaxed">
+                                    <p className="text-sm text-slate-400 font-bold uppercase tracking-widest mb-1 opacity-50">Aturan Total Bobot</p>
+                                    <p className="text-sm text-slate-600 font-medium italic ">
                                         Seluruh bobot komponen harus berjumlah tepat 100%. Jika tidak memenuhi syarat, perubahan tidak dapat disimpan.
                                     </p>
                                 </div>
                                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 italic">
-                                    <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-1 opacity-50">Efek Perubahan</p>
-                                    <p className="text-[11px] text-slate-600 font-medium italic leading-relaxed">
+                                    <p className="text-sm text-slate-400 font-bold uppercase tracking-widest mb-1 opacity-50">Efek Perubahan</p>
+                                    <p className="text-sm text-slate-600 font-medium italic ">
                                         Nilai agregat mahasiswa akan diperbarui secara otomatis menggunakan bobot terbaru pada proses sinkronisasi berikutnya.
                                     </p>
                                 </div>
@@ -176,8 +176,8 @@ export default function GradingSettings({ components }: Props) {
                                      <Cpu className="h-8 w-8 text-primary shadow-sm" />
                                 </div>
                                 <div>
-                                    <h4 className="text-[10px] font-bold text-white uppercase italic tracking-[0.2em] mb-2 leading-none">Infrastruktur_Audit</h4>
-                                    <p className="text-[10px] text-slate-500 font-medium italic leading-relaxed opacity-75 truncate uppercase">ENCRYPTED_ALGO_GOVERNANCE_SECURED</p>
+                                    <h4 className="text-xs font-bold text-white uppercase italic tracking-[0.2em] mb-2 ">Infrastruktur_Audit</h4>
+                                    <p className="text-xs text-slate-500 font-medium italic  opacity-75 truncate uppercase">ENCRYPTED_ALGO_GOVERNANCE_SECURED</p>
                                 </div>
                             </div>
                         </div>

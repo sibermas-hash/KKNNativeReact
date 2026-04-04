@@ -73,7 +73,7 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  <div className="space-y-1">
  <div className="flex items-center gap-3">
  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
- <span className="text-[9px] font-semibold text-emerald-600">
+ <span className="text-xs font-semibold text-emerald-600">
  STUDENT_REGISTRY_DATABASE
  </span>
  </div>
@@ -81,7 +81,7 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  <div className="p-2 bg-slate-50 rounded-lg border border-slate-100 text-slate-400">
  <Users className="h-4 w-4" />
  </div>
- <h1 className="text-2xl font-semibold text-slate-900 leading-none">
+ <h1 className="text-2xl font-semibold text-slate-900 ">
  Data <span className="text-primary">Mahasiswa</span>
  </h1>
  </div>
@@ -94,21 +94,21 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  <ShieldCheck className="h-3 w-3" />
  </div>
  <div className="text-left">
- <span className="block text-[8px] font-semibold text-slate-400 leading-none mb-0.5">Terdaftar</span>
- <span className="text-xs font-semibold text-slate-900 leading-none">
+ <span className="block text-xs font-semibold text-slate-400  mb-0.5">Terdaftar</span>
+ <span className="text-xs font-semibold text-slate-900 ">
  {users.meta?.total || 0} TOTAL
  </span>
  </div>
  </div>
  <Link href="/admin/mahasiswa/sync" className="flex items-center gap-2 text-primary hover:text-primary-dark transition-colors group">
  <RefreshCw className="w-3.5 h-3.5 " />
- <span className="text-[10px] font-semibold">SYNC_SIAKAD</span>
+ <span className="text-xs font-semibold">SYNC_SIAKAD</span>
  </Link>
  </div>
 
  <Link 
  href="/admin/users/create?role=student" 
- className="px-6 py-3 bg-slate-900 text-white text-[10px] font-semibold rounded-lg transition-all flex items-center gap-3"
+ className="px-6 py-3 bg-slate-900 text-white text-xs font-semibold rounded-lg transition-all flex items-center gap-3"
  >
  <UserPlus className="w-3.5 h-3.5 text-emerald-400" />
  ADD_NEW_STUDENT
@@ -124,7 +124,7 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  placeholder="SEARCH_STUDENT_IDENTIFIER (NIM / NAME)..."
  value={search}
  onChange={(e) => setSearch(e.target.value)}
- className="w-full pl-12 pr-6 py-4 bg-white border border-slate-100 rounded-lg text-[11px] font-semibold text-slate-900 placeholder:text-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 "
+ className="w-full pl-12 pr-6 py-4 bg-white border border-slate-100 rounded-lg text-sm font-semibold text-slate-900 placeholder:text-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 "
  />
  </div>
 
@@ -133,10 +133,10 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  <table className="w-full border-collapse divide-y divide-slate-50">
  <thead className="bg-slate-50/50">
  <tr>
- <th className="px-8 py-5 text-left text-[10px] font-semibold text-slate-400">IDENTITAS_PESERTA</th>
- <th className="px-8 py-5 text-left text-[10px] font-semibold text-slate-400">PROGRAM_AKADEMIK</th>
- <th className="px-8 py-5 text-center text-[10px] font-semibold text-slate-400">STATUS_AKSES</th>
- <th className="px-8 py-5 text-right text-[10px] font-semibold text-slate-400 pr-12">MANAJEMEN</th>
+ <th className="px-8 py-5 text-left text-xs font-semibold text-slate-400">IDENTITAS_PESERTA</th>
+ <th className="px-8 py-5 text-left text-xs font-semibold text-slate-400">PROGRAM_AKADEMIK</th>
+ <th className="px-8 py-5 text-center text-xs font-semibold text-slate-400">STATUS_AKSES</th>
+ <th className="px-8 py-5 text-right text-xs font-semibold text-slate-400 pr-12">MANAJEMEN</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-slate-50/50">
@@ -145,7 +145,7 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  <td colSpan={4} className="px-8 py-24 text-center">
  <div className="flex flex-col items-center gap-4 opacity-30">
  <Users className="h-10 w-10 text-slate-300" />
- <p className="text-[10px] font-semibold text-slate-400">DIREKTORI_MAHASISWA_KOSONG</p>
+ <p className="text-xs font-semibold text-slate-400">DIREKTORI_MAHASISWA_KOSONG</p>
  </div>
  </td>
  </tr>
@@ -158,21 +158,21 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  {getInitials(user.name)}
  </div>
  <div className="flex flex-col">
- <span className="text-sm font-semibold text-slate-900 group-hover/row:text-primary transition-colors leading-none mb-1">{user.name}</span>
+ <span className="text-sm font-semibold text-slate-900 group-hover/row:text-primary transition-colors  mb-1">{user.name}</span>
  <div className="flex items-center gap-2">
- <span className="text-[9px] font-semibold text-slate-300">NIM: {user.mahasiswa?.nim || '---'}</span>
- <span className="text-[9px] font-semibold text-slate-200">|</span>
- <span className="text-[9px] font-semibold text-slate-300">@{user.username}</span>
+ <span className="text-xs font-semibold text-slate-300">NIM: {user.mahasiswa?.nim || '---'}</span>
+ <span className="text-xs font-semibold text-slate-200">|</span>
+ <span className="text-xs font-semibold text-slate-300">@{user.username}</span>
  </div>
  </div>
  </div>
  </td>
  <td className="px-8 py-6">
  <div className="flex flex-col">
- <span className="text-[10px] font-semibold text-slate-700 leading-tight">
+ <span className="text-xs font-semibold text-slate-700 leading-tight">
  {user.mahasiswa?.prodi?.nama || 'UNASSIGNED_PROGRAM'}
  </span>
- <span className="text-[8px] font-semibold text-slate-300">
+ <span className="text-xs font-semibold text-slate-300">
  {user.mahasiswa?.fakultas?.nama || user.mahasiswa?.prodi?.fakultas?.nama || 'UNASSIGNED_FACULTY'}
  </span>
  </div>
@@ -180,7 +180,7 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  <td className="px-8 py-6 text-center">
  <Badge
  variant={user.is_active ? 'success' : 'danger'}
- className="px-4 py-1.5 rounded-lg text-[9px] font-semibold border-none"
+ className="px-4 py-1.5 rounded-lg text-xs font-semibold border-none"
  >
  {user.is_active ? 'ACTIVE_ACCESS' : 'ACCESS_BLOCKED'}
  </Badge>
@@ -226,8 +226,8 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  <Activity className="h-6 w-6 text-primary" />
  </div>
  <div>
- <h4 className="text-[11px] font-semibold text-white">STUDENT_SECURITY_PROTOCOL_ACTIVE</h4>
- <p className="text-[9px] font-semibold text-slate-500 mt-1 leading-relaxed max-w-2xl">
+ <h4 className="text-sm font-semibold text-white"></h4>
+ <p className="text-xs font-semibold text-slate-500 mt-1  max-w-2xl">
  Kontrol akses mahasiswa terintegrasi dengan SIAKAD. <br/>
  STATUS: MONITORING_SESSION_STREAM
  </p>

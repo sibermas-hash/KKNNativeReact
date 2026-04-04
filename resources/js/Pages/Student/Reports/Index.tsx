@@ -77,7 +77,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  <div>
  <div className="flex items-center gap-2 mb-4">
  <ShieldCheck className="h-4 w-4 text-primary" />
- <span className="text-[10px] text-sm text-slate-400 ">
+ <span className="text-xs text-sm text-slate-400 ">
  Arsip Pendukung KKN
  </span>
  </div>
@@ -90,12 +90,12 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  </div>
 
  <div className="bg-whiterounded-lg border border-slate-200 p-6 min-w-[240px]">
- <p className="text-[9px] font-semibold text-slate-400 mb-2">
+ <p className="text-xs font-semibold text-slate-400 mb-2">
  Status Arsip
  </p>
  <p className="text-2xl font-semibold text-slate-900 
  {progress.filter((item) => item.report).length}
- <span className="text-[10px] text-sm text-slate-300 ml-2">
+ <span className="text-xs text-sm text-slate-300 ml-2">
  Terkirim
  </span>
  </p>
@@ -115,7 +115,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  {getReportIcon(item.type)}
  </div>
  <div className="space-y-2">
- <p className="text-[10px] font-semibold text-slate-400 ">
+ <p className="text-xs font-semibold text-slate-400 ">
  {item.name}
  </p>
  <h3 className="text-xl font-semibold text-slate-900 ">
@@ -125,7 +125,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  {item.report?.title ?? 'Belum ada dokumen yang diunggah untuk kategori ini.'}
  </p>
  {item.report?.file_name && (
- <p className="text-[11px] text-sm text-slate-400 ">
+ <p className="text-sm text-sm text-slate-400 ">
  File: {item.report.file_name}
  </p>
  )}
@@ -135,7 +135,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  <div className="flex items-center gap-3">
  <StatusBadge
  status={item.report?.status ?? item.status}
- className="px-5 py-2 rounded-lg text-[9px] font-semibold border-none
+ className="px-5 py-2 rounded-lg text-xs font-semibold border-none
  />
  {item.report && (
  <a
@@ -161,7 +161,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  <h2 className="text-sm font-semibold text-slate-900">
  Upload Dokumen
  </h2>
- <p className="text-[10px] text-sm text-slate-400 mt-1">
+ <p className="text-xs text-sm text-slate-400 mt-1">
  Kirim arsip pendukung kelompok
  </p>
  </div>
@@ -169,7 +169,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
 
  <form onSubmit={submit} className="space-y-6">
  <div className="space-y-3">
- <label className="text-[10px] font-semibold text-slate-400 ">
+ <label className="text-xs font-semibold text-slate-400 ">
  Jenis Dokumen
  </label>
  <select
@@ -185,14 +185,14 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  ))}
  </select>
  {form.errors.type && (
- <p className="text-[10px] font-semibold text-rose-500 ">
+ <p className="text-xs font-semibold text-rose-500 ">
  {form.errors.type}
  </p>
  )}
  </div>
 
  <div className="space-y-3">
- <label className="text-[10px] font-semibold text-slate-400 ">
+ <label className="text-xs font-semibold text-slate-400 ">
  Judul Dokumen
  </label>
  <input
@@ -204,23 +204,23 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  required
  />
  {form.errors.title && (
- <p className="text-[10px] font-semibold text-rose-500 ">
+ <p className="text-xs font-semibold text-rose-500 ">
  {form.errors.title}
  </p>
  )}
  </div>
 
  <div className="space-y-3">
- <label className="text-[10px] font-semibold text-slate-400 ">
+ <label className="text-xs font-semibold text-slate-400 ">
  File Dokumen
  </label>
  <label className="flex flex-col items-center justify-centerrounded-lg border-2 border-dashed border-slate-200 bg-slate-50 px-6 py-6 text-center cursor-pointer hover:border-primary/40">
  <FileUp className="h-8 w-8 text-slate-300 mb-4" />
- <span className="text-[11px] font-semibold text-slate-700 ">
+ <span className="text-sm font-semibold text-slate-700 ">
  {form.data.file ? form.data.file.name : 'Klik untuk memilih file'}
  </span>
  {selectedType && (
- <span className="text-[9px] text-sm text-slate-400 mt-3">
+ <span className="text-xs text-sm text-slate-400 mt-3">
  Format: {selectedType.allowed_types.join(', ')} • Maks {selectedType.max_size_mb} MB
  </span>
  )}
@@ -233,7 +233,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  />
  </label>
  {form.errors.file && (
- <p className="text-[10px] font-semibold text-rose-500 ">
+ <p className="text-xs font-semibold text-rose-500 ">
  {form.errors.file}
  </p>
  )}

@@ -61,14 +61,14 @@ export default function UserForm({ faculties, programs }: Props) {
  className="group/back flex items-center gap-2.5 px-4 py-2 bg-white/10 hover:bg-white/20 border border-slate-200 rounded-lg
  >
  <ChevronLeft className="w-4 h-4 text-emerald-300 group-hover/back:-translate-x-1 transition-transform" />
- <span className="text-[10px] font-semibold text-white ">Kembali</span>
+ <span className="text-xs font-semibold text-white ">Kembali</span>
  </Link>
  <div className="h-4 w-px bg-white/10" />
  <div className="flex items-center gap-3">
  <div className="p-2 bg-emerald-500/20 rounded-lg border border-emerald-500/30">
  <Fingerprint className="h-3.5 w-3.5 text-emerald-300" />
  </div>
- <span className="text-[10px] font-semibold text-emerald-100 ">
+ <span className="text-xs font-semibold text-emerald-100 ">
  IDENTITY_PROVISIONING_V3
  </span>
  </div>
@@ -87,7 +87,7 @@ export default function UserForm({ faculties, programs }: Props) {
  <ShieldCheck className="h-6 w-6" />
  </div>
  <div>
- <span className="text-[9px] font-semibold text-emerald-200/60 block mb-1.5">Status Keamanan</span>
+ <span className="text-xs font-semibold text-emerald-200/60 block mb-1.5">Status Keamanan</span>
  <span className="text-xl font-semibold text-white ">Koneksi Terenkripsi</span>
  </div>
  </div>
@@ -139,7 +139,7 @@ export default function UserForm({ faculties, programs }: Props) {
  </div>
  <div>
  <h3 className="text-lg text-sm text-slate-900 ">Informasi Akun Utama</h3>
- <p className="text-[10px] text-sm text-slate-400 mt-2">Kredensial & Identitas Dasar</p>
+ <p className="text-xs text-sm text-slate-400 mt-2">Kredensial & Identitas Dasar</p>
  </div>
  </div>
 
@@ -161,7 +161,7 @@ export default function UserForm({ faculties, programs }: Props) {
  </div>
  <div>
  <h3 className="text-lg text-sm text-slate-900 ">Data Mahasiswa</h3>
- <p className="text-[10px] text-sm text-slate-400 mt-2">Distribusi Unit Akademik</p>
+ <p className="text-xs text-sm text-slate-400 mt-2">Distribusi Unit Akademik</p>
  </div>
  </div>
 
@@ -199,7 +199,7 @@ export default function UserForm({ faculties, programs }: Props) {
  </div>
  <div>
  <h3 className="text-lg text-sm text-slate-900 ">Data Dosen</h3>
- <p className="text-[10px] text-sm text-slate-400 mt-2">Identitas Tugas Lapangan</p>
+ <p className="text-xs text-sm text-slate-400 mt-2">Identitas Tugas Lapangan</p>
  </div>
  </div>
 
@@ -218,7 +218,7 @@ export default function UserForm({ faculties, programs }: Props) {
  </div>
  <div>
  <h3 className="text-lg text-sm text-slate-900 ">Akses Fakultas</h3>
- <p className="text-[10px] text-sm text-slate-400 mt-2">Akun ini hanya dapat melihat rekap nilai akhir fakultas.</p>
+ <p className="text-xs text-sm text-slate-400 mt-2">Akun ini hanya dapat melihat rekap nilai akhir fakultas.</p>
  </div>
  </div>
 
@@ -242,8 +242,8 @@ export default function UserForm({ faculties, programs }: Props) {
  <div className="flex items-start gap-4 max-w-xl self-start">
  <ShieldCheck className="w-5 h-5 text-slate-300 shrink-0 mt-0.5" />
  <div className="space-y-1">
- <h4 className="text-[10px] font-extrabold text-slate-400 ">Verifikasi Keamanan Dasar</h4>
- <p className="text-[10px] text-slate-400 font-medium leading-normal">
+ <h4 className="text-xs font-extrabold text-slate-400 ">Verifikasi Keamanan Dasar</h4>
+ <p className="text-xs text-slate-400 font-medium leading-normal">
  Pastikan data yang dimasukkan telah sesuai dengan identitas resmi. Akun akan langsung aktif setelah proses penyimpanan selesai.
  </p>
  </div>

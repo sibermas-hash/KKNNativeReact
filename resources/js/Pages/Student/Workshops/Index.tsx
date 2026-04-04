@@ -51,7 +51,7 @@ export default function StudentWorkshopsIndex({ workshops }: Props) {
  <div>
  <div className="flex items-center gap-2 mb-4">
  <Presentation className="h-4 w-4 text-primary" />
- <span className="text-[10px] text-sm text-slate-400 ">
+ <span className="text-xs text-sm text-slate-400 ">
  Pembekalan Mahasiswa
  </span>
  </div>
@@ -64,12 +64,12 @@ export default function StudentWorkshopsIndex({ workshops }: Props) {
  </div>
 
  <div className="bg-whiterounded-lg border border-slate-200 p-6 min-w-[260px]">
- <p className="text-[9px] font-semibold text-slate-400 mb-2">
+ <p className="text-xs font-semibold text-slate-400 mb-2">
  Ringkasan Agenda
  </p>
  <p className="text-2xl font-semibold text-slate-900 
  {workshops.length}
- <span className="text-[10px] text-sm text-slate-300 ml-2">
+ <span className="text-xs text-sm text-slate-300 ml-2">
  Sesi Aktif
  </span>
  </p>
@@ -103,7 +103,7 @@ export default function StudentWorkshopsIndex({ workshops }: Props) {
  >
  <div className="flex items-start justify-between gap-5 mb-8">
  <div className="space-y-3">
- <p className="text-[10px] font-semibold text-slate-400 ">
+ <p className="text-xs font-semibold text-slate-400 ">
  Agenda Pembekalan
  </p>
  <h2 className="text-2xl font-semibold text-slate-900 ">
@@ -141,7 +141,7 @@ export default function StudentWorkshopsIndex({ workshops }: Props) {
 
  {workshop.methodology && (
  <div className="rounded-lg bg-slate-50 border border-slate-200 p-5 mb-8">
- <p className="text-[9px] font-semibold text-slate-400 mb-2">
+ <p className="text-xs font-semibold text-slate-400 mb-2">
  Metodologi
  </p>
  <p className="text-sm font-medium text-slate-600">
@@ -211,7 +211,7 @@ function Metric({
  <Icon className="h-5 w-5" />
  </div>
  <div>
- <p className="text-[9px] font-semibold text-slate-400 mb-2">
+ <p className="text-xs font-semibold text-slate-400 mb-2">
  {label}
  </p>
  <p className="text-sm font-semibold text-slate-900 leading-normal">

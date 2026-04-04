@@ -41,7 +41,7 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
  <div>
  <div className="flex items-center gap-2 mb-4">
  <History className="h-4 w-4 text-primary" />
- <span className="text-[10px] text-sm text-slate-400 ">Dokumentasi Pelaksanaan KKN</span>
+ <span className="text-xs text-sm text-slate-400 ">Dokumentasi Pelaksanaan KKN</span>
  </div>
  <h1 className="text-4xl font-extrabold text-slate-900 ">
  Arsip <span className="text-primary">Laporan</span> Harian
@@ -66,8 +66,8 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
  <FileText className="h-7 w-7" />
  </div>
  <div>
- <p className="text-[9px] font-semibold text-slate-400 mb-2">Total Dokumentasi</p>
- <p className="text-2xl font-semibold text-slate-900">{reportList.length} <span className="text-[10px] text-sm text-slate-300 ml-1">Laporan</span></p>
+ <p className="text-xs font-semibold text-slate-400 mb-2">Total Dokumentasi</p>
+ <p className="text-2xl font-semibold text-slate-900">{reportList.length} <span className="text-xs text-sm text-slate-300 ml-1">Laporan</span></p>
  </div>
  </div>
  
@@ -77,7 +77,7 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
  <AlertTriangle className="h-7 w-7" />
  </div>
  <div>
- <p className="text-[9px] font-semibold text-rose-500 mb-2 Sistem</p>
+ <p className="text-xs font-semibold text-rose-500 mb-2 Sistem</p>
  <p className="text-lg font-semibold text-rose-600 ">Perlu Revisi Segera</p>
  </div>
  </div>
@@ -87,7 +87,7 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
  <Activity className="h-7 w-7" />
  </div>
  <div>
- <p className="text-[9px] font-semibold text-emerald-500 mb-2 Sinkronisasi</p>
+ <p className="text-xs font-semibold text-emerald-500 mb-2 Sinkronisasi</p>
  <p className="text-lg font-semibold text-emerald-600 ">Data Terkini (OK)</p>
  </div>
  </div>
@@ -101,8 +101,8 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
  <Zap className="h-7 w-7" />
  </div>
  <div className="relative z-10">
- <p className="text-[9px] font-semibold text-slate-400 mb-2">Koneksi Data</p>
- <p className="text-[10px] font-semibold text-slate-900 decoration-primary/30">Tersambung ke Server</p>
+ <p className="text-xs font-semibold text-slate-400 mb-2">Koneksi Data</p>
+ <p className="text-xs font-semibold text-slate-900 decoration-primary/30">Tersambung ke Server</p>
  </div>
  </div>
  </div>
@@ -135,13 +135,13 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
  <div className="flex flex-col items-center justify-center p-6 bg-slate-50 border border-slate-200 rounded-lg min-w-[120px]">
  <Calendar className="h-6 w-6 text-slate-300 mb-2.5" />
  <p className="text-[14px] font-semibold text-slate-900 mb-1.5">{r.date.split(' ')[0]}</p>
- <p className="text-[10px] text-sm text-slate-400 opacity-50">{r.date.split(' ')[1]}</p>
+ <p className="text-xs text-sm text-slate-400 opacity-50">{r.date.split(' ')[1]}</p>
  </div>
  
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-3 mb-3">
  <div className="h-1.5 w-1.5 rounded-lg bg-primary/40" />
- <p className="text-[10px] font-semibold text-slate-400 decoration-slate-100">ID Entri: #{r.id.toString().padStart(4, '0')}</p>
+ <p className="text-xs font-semibold text-slate-400 decoration-slate-100">ID Entri: #{r.id.toString().padStart(4, '0')}</p>
  </div>
  <h3 className="text-xl font-semibold text-slate-800 group-hover:text-primary transition-colors truncate leading-normal">{r.title}</h3>
  
@@ -149,7 +149,7 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
  <div className="mt-6 flex items-start gap-4 p-5 bg-rose-50 border border-rose-100 rounded-lg slide-in-from-top-3">
  <AlertTriangle className="h-5 w-5 text-rose-500 shrink-0 mt-0.5" />
  <div className="min-w-0">
- <p className="text-[10px] font-semibold text-rose-600 mb-1.5">Umpan Balik Auditor:</p>
+ <p className="text-xs font-semibold text-rose-600 mb-1.5">Umpan Balik Auditor:</p>
  <p className="text-[13px] text-sm text-rose-800 leading-normal opacity-75">"{r.review_notes}"</p>
  </div>
  </div>
@@ -158,7 +158,7 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
  </div>
 
  <div className="flex items-center justify-between md:flex-col md:items-end md:justify-center gap-6 relative z-10 shrink-0 border-t border-slate-200 md:border-t-0 pt-8 md:pt-0">
- <StatusBadge status={r.status} className="px-6 py-2 rounded-lg text-[9px] font-semibold border-none" />
+ <StatusBadge status={r.status} className="px-6 py-2 rounded-lg text-xs font-semibold border-none" />
  
  {r.status === 'revision' ? (
  <Link 
@@ -180,7 +180,7 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
  </div>
 
  <div className="text-center pt-8 opacity-20">
- <p className="text-[10px] font-semibold text-slate-300 ">
+ <p className="text-xs font-semibold text-slate-300 ">
  Pusat Kendali Dokumen • UIN SAIZU © 2024
  </p>
  </div>

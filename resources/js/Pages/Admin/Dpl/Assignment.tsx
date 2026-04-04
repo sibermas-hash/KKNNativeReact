@@ -139,7 +139,7 @@ export default function DplAssignment({ groups, availableDosen, filters }: Props
                                 <AlertCircle className="w-8 h-8 text-emerald-500 mb-2 shadow-sm" />
                                 <div>
                                     <h4 className="text-xs font-bold text-white uppercase tracking-widest mb-2">Informasi</h4>
-                                    <p className="text-[11px] text-slate-400 font-medium leading-relaxed opacity-75 italic">
+                                    <p className="text-sm text-slate-400 font-medium  opacity-75 italic">
                                         Perubahan penugasan akan secara otomatis memperbarui data di dashboard DPL yang bersangkutan.
                                     </p>
                                 </div>
@@ -157,8 +157,8 @@ export default function DplAssignment({ groups, availableDosen, filters }: Props
                                             <Briefcase className="w-5 h-5 shadow-sm" />
                                         </div>
                                         <div className="flex flex-col">
-                                            <h4 className="font-bold text-slate-900 leading-none mb-1">Status Penugasan</h4>
-                                            <span className="text-[11px] font-bold text-slate-400 uppercase">{progressPercentage.toFixed(1)}% Unit Terisi</span>
+                                            <h4 className="font-bold text-slate-900  mb-1">Status Penugasan</h4>
+                                            <span className="text-sm font-bold text-slate-400 uppercase">{progressPercentage.toFixed(1)}% Unit Terisi</span>
                                         </div>
                                     </div>
                                     <span className="text-sm font-bold text-slate-900">{assignedCount} / {groups.length} <span className="text-xs font-medium text-slate-400">Unit</span></span>
@@ -196,11 +196,11 @@ export default function DplAssignment({ groups, availableDosen, filters }: Props
                                                     <h3 className="font-bold text-slate-900 group-hover/card:text-emerald-600 transition-colors tracking-tighter text-sm mb-1">{group.name}</h3>
                                                     <div className="flex items-center gap-1.5 opacity-50">
                                                         <MapPin className="w-3 h-3 text-slate-400" />
-                                                        <span className="text-[10px] font-bold text-slate-600 truncate max-w-[150px]">{group.location ? `${group.location.kecamatan}` : 'Lokasi Belum Diatur'}</span>
+                                                        <span className="text-xs font-bold text-slate-600 truncate max-w-[150px]">{group.location ? `${group.location.kecamatan}` : 'Lokasi Belum Diatur'}</span>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="h-8 px-2 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-center text-[10px] font-bold text-slate-400 font-mono italic">#{group.id}</div>
+                                            <div className="h-8 px-2 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-center text-xs font-bold text-slate-400 italic">#{group.id}</div>
                                         </div>
 
                                         <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 relative group/officer overflow-hidden transition-all group-hover/card:bg-emerald-50/50 group-hover/card:border-emerald-100/50">
@@ -210,7 +210,7 @@ export default function DplAssignment({ groups, availableDosen, filters }: Props
                                                         <CheckCircle2 className="w-4 h-4" />
                                                     </div>
                                                     <div className="flex flex-col min-w-0">
-                                                        <span className="text-[9px] font-bold text-emerald-500 leading-none mb-1">Dosen Pembimbing</span>
+                                                        <span className="text-xs font-bold text-emerald-500  mb-1">Dosen Pembimbing</span>
                                                         <span className="text-xs font-bold text-slate-800 truncate max-w-[200px]">{availableDosen.find(d => d.id === group.dosen_id)?.name || 'Dosen Terdaftar'}</span>
                                                     </div>
                                                 </div>
@@ -220,7 +220,7 @@ export default function DplAssignment({ groups, availableDosen, filters }: Props
                                                         <AlertCircle className="w-4 h-4" />
                                                     </div>
                                                     <div className="flex flex-col min-w-0">
-                                                        <span className="text-[9px] font-bold text-slate-400 leading-none mb-1">Penugasan Kosong</span>
+                                                        <span className="text-xs font-bold text-slate-400  mb-1">Penugasan Kosong</span>
                                                         <span className="text-xs font-bold text-slate-300 italic">BELUM_ADA_DPL_TERDETEKSI</span>
                                                     </div>
                                                 </div>

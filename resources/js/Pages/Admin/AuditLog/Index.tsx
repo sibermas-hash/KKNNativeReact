@@ -87,28 +87,28 @@ export default function AuditLogIndex({ logs, filters }: Props) {
                                     </div>
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-3">
-                                            <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded leading-none">Security_OK</span>
-                                            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest font-mono">ID: #{log.id.toString().padStart(6, '0')}</span>
+                                            <span className="text-xs font-bold text-emerald-500 uppercase tracking-widest bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded ">Security_OK</span>
+                                            <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">ID: #{log.id.toString().padStart(6, '0')}</span>
                                         </div>
-                                        <h3 className="font-bold text-slate-900 tracking-tighter text-sm leading-none group-hover/row:text-emerald-600 transition-colors uppercase italic">{log.description}</h3>
+                                        <h3 className="font-bold text-slate-900 tracking-tighter text-sm  group-hover/row:text-emerald-600 transition-colors uppercase italic">{log.description}</h3>
                                         <div className="flex items-center gap-4">
                                             <div className="flex items-center gap-2">
                                                 <User className="h-3.5 w-3.5 text-slate-400" />
-                                                <span className="text-[10px] font-bold text-slate-500 uppercase">{log.causer?.name || 'SYSTEM_INTERNAL'}</span>
+                                                <span className="text-xs font-bold text-slate-500 uppercase">{log.causer?.name || 'SYSTEM_INTERNAL'}</span>
                                             </div>
                                             <div className="h-1 w-1 rounded-full bg-slate-200" />
                                             <div className="flex items-center gap-2">
                                                 <Activity className="h-3.5 w-3.5 text-slate-400" />
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest opacity-50 truncate max-w-[150px]">{log.subject_type?.split('\\').pop() || 'UNDEFINED_RESOURCE'}</span>
+                                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest opacity-50 truncate max-w-[150px]">{log.subject_type?.split('\\').pop() || 'UNDEFINED_RESOURCE'}</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="flex flex-col items-end gap-5">
-                                    <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest whitespace-nowrap">{log.created_at}</span>
+                                    <span className="text-xs font-bold text-slate-300 uppercase tracking-widest whitespace-nowrap">{log.created_at}</span>
                                     <Link 
                                         href={route('admin.audit-logs.show', log.id)}
-                                        className="h-10 px-6 bg-slate-900 text-primary border border-slate-800 rounded-xl font-bold uppercase italic tracking-widest text-[9px] shadow-lg shadow-slate-900/10 flex items-center gap-3 transition-all active:scale-95 group/btn hover:bg-emerald-600 hover:text-white"
+                                        className="h-10 px-6 bg-slate-900 text-primary border border-slate-800 rounded-xl font-bold uppercase italic tracking-widest text-xs shadow-lg shadow-slate-900/10 flex items-center gap-3 transition-all active:scale-95 group/btn hover:bg-emerald-600 hover:text-white"
                                     >
                                         <Eye className="w-4 h-4 shadow-sm" />
                                         Inspect_Log
@@ -117,8 +117,8 @@ export default function AuditLogIndex({ logs, filters }: Props) {
                             </div>
                         )) : (
                             <div className="py-32 text-center opacity-20 italic">
-                                <ShieldAlert className="h-16 w-16 mx-auto mb-6 text-slate-900 stroke-[1.5]" />
-                                <span className="text-[11px] font-black uppercase tracking-[0.4em]">NO_DATA_TRAFFIC_DETECTED</span>
+                                <ShieldAlert className="h-16 w-16 mx-auto mb-6 text-slate-900" />
+                                <span className="text-sm font-black uppercase tracking-[0.4em]">NO_DATA_TRAFFIC_DETECTED</span>
                             </div>
                         )}
                     </div>
@@ -137,12 +137,12 @@ export default function AuditLogIndex({ logs, filters }: Props) {
                                 <ShieldCheck className="w-6 h-6 text-emerald-500" />
                                 <h4 className="text-sm font-bold text-white uppercase italic tracking-widest">Permanent Surveillance Protocol</h4>
                             </div>
-                            <p className="text-[11px] text-slate-400 font-medium leading-relaxed max-w-4xl opacity-75 italic uppercase">
+                            <p className="text-sm text-slate-400 font-medium  max-w-4xl opacity-75 italic uppercase">
                                 Seluruh rekaman audit bersifat permanen dan tidak dapat dimodifikasi. Ledger ini berfungsi sebagai basis kedaulatan data dan integritas operasional universitas.
                             </p>
                         </div>
                         <div className="flex gap-4">
-                            <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/10 text-emerald-500 text-[10px] font-bold">
+                            <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/10 text-emerald-500 text-xs font-bold">
                                 DATA_INTEGRITY_SECURED
                             </div>
                         </div>

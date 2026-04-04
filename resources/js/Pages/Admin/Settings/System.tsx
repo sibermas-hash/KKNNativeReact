@@ -80,8 +80,8 @@ export default function SystemSettings({ settings }: Props) {
  <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <Settings className="h-4 w-4 text-emerald-300" />
  </div>
- <span className="text-[10px] font-semibold text-emerald-100 ">
- CORE_SYSTEM_GOVERNANCE_V3
+ <span className="text-xs font-semibold text-emerald-100 ">
+ 3
  </span>
  </div>
  <h1 className="text-4xl md:text-5xl font-semibold text-white ">
@@ -98,7 +98,7 @@ export default function SystemSettings({ settings }: Props) {
  <Server className="h-6 w-6" />
  </div>
  <div>
- <span className="text-[9px] font-semibold text-emerald-200/60 block mb-1.5">Status Gateway</span>
+ <span className="text-xs font-semibold text-emerald-200/60 block mb-1.5">Status Gateway</span>
  <span className="text-xl font-semibold text-white ">Cluster_Aktif</span>
  </div>
  </div>
@@ -131,7 +131,7 @@ export default function SystemSettings({ settings }: Props) {
  {getIcon(setting.config_key)}
  {setting.label}
  </label>
- <span className="text-[9px] text-sm text-slate-300 opacity-50 {setting.config_key}</span>
+ <span className="text-xs text-sm text-slate-300 opacity-50 {setting.config_key}</span>
  </div>
 
  <div className="relative group/input">
@@ -158,7 +158,7 @@ export default function SystemSettings({ settings }: Props) {
  )}
  </div>
  {errors[`settings.${data.settings.indexOf(formItem!)}.value`] && (
- <p className="text-[10px] text-sm text-rose-500 ml-1 ">{errors[`settings.${data.settings.indexOf(formItem!)}.value`]}</p>
+ <p className="text-xs text-sm text-rose-500 ml-1 ">{errors[`settings.${data.settings.indexOf(formItem!)}.value`]}</p>
  )}
  </div>
  );
@@ -181,8 +181,8 @@ export default function SystemSettings({ settings }: Props) {
  <ShieldCheck className="h-7 w-7 text-primary" />
  </div>
  <div>
- <h4 className="text-[11px] font-semibold text-white ">SECURITY_GOVERNANCE_PROTOCOL_V3</h4>
- <p className="text-[10px] text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: SYSTEM_INTEGRITY_VERIFIED</p>
+ <h4 className="text-sm font-semibold text-white ">_V3</h4>
+ <p className="text-xs text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: SYSTEM_INTEGRITY_VERIFIED</p>
  </div>
  </div>
  <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-2xl opacity-75">
@@ -213,7 +213,7 @@ export default function SystemSettings({ settings }: Props) {
  </form>
 
  <div className="text-center pt-8">
- <p className="text-[9px] text-sm text-slate-300 opacity-50">
+ <p className="text-xs text-sm text-slate-300 opacity-50">
  Pusat Kendali Sistem Global • UIN SAIZU © 2024
  </p>
  </div>

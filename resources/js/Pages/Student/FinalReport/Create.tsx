@@ -73,7 +73,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  <div>
  <div className="flex items-center gap-2 mb-3">
  <Activity className="h-4 w-4 text-primary" />
- <span className="text-[10px] font-semibold text-slate-400 decoration-slate-100">Dokumentasi Final Mahasiswa</span>
+ <span className="text-xs font-semibold text-slate-400 decoration-slate-100">Dokumentasi Final Mahasiswa</span>
  </div>
  <h1 className="text-4xl font-extrabold text-slate-900 ">
  Pusat <span className="text-primary">Laporan</span> Akhir
@@ -86,7 +86,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  <ShieldCheck className="h-6 w-6" />
  </div>
  <div>
- <span className="text-[9px] font-semibold text-slate-400 block mb-1">Akses Pengiriman</span>
+ <span className="text-xs font-semibold text-slate-400 block mb-1">Akses Pengiriman</span>
  <span className={clsx("text-xs font-semibold ", isLeader ? "text-emerald-600" : "text-amber-500")}>
  {isLeader ? 'Ketua Terotorisasi' : 'Anggota (Baca Saja)'}
  </span>
@@ -108,7 +108,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  </div>
  <div>
  <h3 className="text-xs font-semibold text-slate-900">Status Laporan Kelompok</h3>
- <p className="text-[9px] text-sm text-slate-400 mt-1 opacity-50">Arsip Dokumentasi Tersimpan</p>
+ <p className="text-xs text-sm text-slate-400 mt-1 opacity-50">Arsip Dokumentasi Tersimpan</p>
  </div>
  </div>
 
@@ -117,7 +117,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  <h4 className="text-xl font-semibold text-slate-900 leading-normal">{existingReport.title}</h4>
  <div className="flex items-center gap-3">
  <div className="h-1.5 w-1.5 rounded-lg bg-emerald-500" />
- <p className="text-[10px] font-semibold text-slate-400 truncate max-w-[300px]">{existingReport.file_name || 'Dokumen Terunggah'}</p>
+ <p className="text-xs font-semibold text-slate-400 truncate max-w-[300px]">{existingReport.file_name || 'Dokumen Terunggah'}</p>
  </div>
  </div>
  <StatusBadge status={existingReport.status} className="px-6 py-3 rounded-lg text-xs font-semibold border-none shrink-0" />
@@ -133,7 +133,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
 
  <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
  <div className="space-y-5">
- <label htmlFor="title" className="text-[11px] font-semibold text-slate-400 ml-1 group-hover:text-primary transition-colors">Judul Laporan Akhir</label>
+ <label htmlFor="title" className="text-sm font-semibold text-slate-400 ml-1 group-hover:text-primary transition-colors">Judul Laporan Akhir</label>
  <input 
  id="title" 
  type="text"
@@ -143,11 +143,11 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  required 
  className="w-full bg-slate-50 border-slate-200 rounded-lg h-16 px-6 text-base font-semibold text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary outline-noneplaceholder:text-slate-300"
  />
- {form.errors.title && <p className="text-[10px] font-semibold text-rose-500 ml-2">{form.errors.title}</p>}
+ {form.errors.title && <p className="text-xs font-semibold text-rose-500 ml-2">{form.errors.title}</p>}
  </div>
  
  <div className="space-y-5">
- <label htmlFor="abstract" className="text-[11px] font-semibold text-slate-400 ml-1">Ringkasan Laporan (Abstrak)</label>
+ <label htmlFor="abstract" className="text-sm font-semibold text-slate-400 ml-1">Ringkasan Laporan (Abstrak)</label>
  <textarea 
  id="abstract" 
  value={form.data.abstract} 
@@ -159,7 +159,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  </div>
  
  <div className="space-y-6">
- <label className="text-[11px] font-semibold text-slate-400 ml-1">Unggah Dokumen Laporan <span className="text-rose-500">*</span></label>
+ <label className="text-sm font-semibold text-slate-400 ml-1">Unggah Dokumen Laporan <span className="text-rose-500">*</span></label>
  <div className="relative group/dropzone overflow-hidden">
  <input 
  type="file" 
@@ -183,15 +183,15 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  )}>
  <FileUp className="h-8 w-8" />
  </div>
- <p className="text-[12px] font-semibold max-w-sm leading-normal">
+ <p className="text-sm font-semibold max-w-sm leading-normal">
  {form.data.file ? form.data.file.name : 'Klik untuk memilih arsip laporan final (.pdf, .doc, .docx)'}
  </p>
- <p className="text-[9px] text-sm text-slate-400 mt-4 opacity-50">
+ <p className="text-xs text-sm text-slate-400 mt-4 opacity-50">
  Maksimal Ukuran File: 20MB
  </p>
  </label>
  </div>
- {form.errors.file && <p className="text-[10px] font-semibold text-rose-500 mt-2 px-4">{form.errors.file}</p>}
+ {form.errors.file && <p className="text-xs font-semibold text-rose-500 mt-2 px-4">{form.errors.file}</p>}
  </div>
 
  <div className="flex flex-col sm:flex-row justify-end gap-6 pt-10 border-t border-slate-200">
@@ -230,7 +230,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  <Info className="h-40 w-40" />
  </div>
  
- <h4 className="text-[11px] font-semibold mb-10 flex items-center gap-4 text-primary">
+ <h4 className="text-sm font-semibold mb-10 flex items-center gap-4 text-primary">
  <span className="flex h-2.5 w-2.5 rounded-lg bg-primary" />
  Panduan Pengiriman
  </h4>
@@ -256,7 +256,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  
  <div className="rounded-lg bg-slate-950 p-12 text-white relative overflow-hidden group border border-slate-900">
  <div className="absolute inset-0 bg-white/>
- <h4 className="text-[10px] font-semibold mb-8 opacity-50">Audit Alur Evaluasi</h4>
+ <h4 className="text-xs font-semibold mb-8 opacity-50">Audit Alur Evaluasi</h4>
  <p className="text-[13px] text-sm leading-normal relative z-10 opacity-75">
  Laporan akhir kelompok Anda akan melewati proses verifikasi bertahap oleh Dosen Pembimbing Lapangan sebelum disetujui secara permanen dalam basis data Universitas.
  </p>
@@ -265,7 +265,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  </div>
 
  <div className="text-center pt-8 opacity-20">
- <p className="text-[10px] font-semibold text-slate-300 ">
+ <p className="text-xs font-semibold text-slate-300 ">
  Pusat Dokumentasi Akhir • UIN SAIZU © 2024
  </p>
  </div>
@@ -281,8 +281,8 @@ function GuideItem({ icon: Icon, title, desc }: any) {
  <Icon className="h-5 w-5" />
  </div>
  <div className="min-w-0">
- <p className="text-[11px] font-semibold text-slate-900 mb-1.5">{title}</p>
- <p className="text-[11px] text-sm text-slate-500 leading-normal opacity-50">{desc}</p>
+ <p className="text-sm font-semibold text-slate-900 mb-1.5">{title}</p>
+ <p className="text-sm text-sm text-slate-500 leading-normal opacity-50">{desc}</p>
  </div>
  </div>
  );

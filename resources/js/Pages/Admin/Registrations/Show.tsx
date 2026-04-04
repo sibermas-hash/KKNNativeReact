@@ -73,8 +73,8 @@ export default function RegistrationShow({ registration }: Props) {
  <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <FileSearch className="h-4 w-4 text-emerald-300" />
  </div>
- <span className="text-[10px] font-semibold text-emerald-100 ">
- REGISTRATION_AUDIT_PROTOCOL_V3
+ <span className="text-xs font-semibold text-emerald-100 ">
+ _V3
  </span>
  </div>
  <h1 className="text-4xl md:text-5xl font-semibold text-white ">
@@ -91,7 +91,7 @@ export default function RegistrationShow({ registration }: Props) {
  <BadgeCheck className="h-6 w-6" />
  </div>
  <div>
- <span className="text-[9px] font-semibold text-emerald-200/60 block mb-1.5">Status Verifikasi</span>
+ <span className="text-xs font-semibold text-emerald-200/60 block mb-1.5">Status Verifikasi</span>
  <StatusBadge status={registration.status} className="px-5 py-2 rounded-lg text-xs font-semibold " />
  </div>
  </div>
@@ -120,18 +120,18 @@ export default function RegistrationShow({ registration }: Props) {
  <div className="space-y-4">
  <h2 className="text-4xl md:text-5xl font-semibold text-slate-900 ">{registration.student.name}</h2>
  <div className="flex items-center gap-4">
- <div className="flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 text-[9px] font-semibold 
+ <div className="flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 text-xs font-semibold 
  <ShieldCheck className="w-3.5 h-3.5" /> ENTITAS_VALID
  </div>
- <span className="text-[10px] font-semibold text-slate-300 opacity-50">Sistem Identifikasi Terpadu</span>
+ <span className="text-xs font-semibold text-slate-300 opacity-50">Sistem Identifikasi Terpadu</span>
  </div>
  </div>
  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-10 border-t border-slate-200">
  <ProfileItem icon={IdCard} label="Nomor Induk Mahasiswa (NIM)" value={registration.student.nim} />
- <ProfileItem icon={GraduationCap} label="Fakultas / Unit Akademik" value={registration.student.faculty?.name || 'DATA_HUB_EMPTY'} />
- <ProfileItem icon={FileText} label="Program Studi / Jurusan" value={registration.student.program?.name || 'DATA_HUB_EMPTY'} />
+ <ProfileItem icon={GraduationCap} label="Fakultas / Unit Akademik" value={registration.student.faculty?.name || '_EMPTY'} />
+ <ProfileItem icon={FileText} label="Program Studi / Jurusan" value={registration.student.program?.name || '_EMPTY'} />
  <ProfileItem icon={Calendar} label="Angkatan / Tahun Masuk" value={registration.student.batch_year.toString()} />
  </div>
  </div>
@@ -147,11 +147,11 @@ export default function RegistrationShow({ registration }: Props) {
  <div className="space-y-2">
  <h3 className="text-2xl font-semibold text-slate-900 flex items-center gap-4">
  <div className="p-3 bg-primary/10 rounded-lg text-primary border border-primary">
- <FileText className="w-6 h-6 stroke-[2.5px]" />
+ <FileText className="w-6 h-6" />
  </div>
  Persyaratan_Dokumen
  </h3>
- <p className="text-[10px] font-semibold text-slate-400 opacity-50 ml-16">INTEGRITAS BERKAS PERSYARATAN</p>
+ <p className="text-xs font-semibold text-slate-400 opacity-50 ml-16">INTEGRITAS BERKAS PERSYARATAN</p>
  </div>
  </div>
 
@@ -162,18 +162,18 @@ export default function RegistrationShow({ registration }: Props) {
  <div className="p-3.5 bg-white rounded-lg border border-slate-100 group-hover/doc:bg-slate-900 group-hover/doc:border-slate-800 transition-colors">
  <FileText className="w-6 h-6 text-primary" />
  </div>
- <StatusBadge status={doc.status} className="text-[8px] font-semibold />
+ <StatusBadge status={doc.status} className="text-xs font-semibold />
  </div>
  <div className="space-y-1.5 min-w-0">
- <p className="text-[9px] font-semibold text-slate-400 group-hover/doc:text-primary transition-colors">{doc.document_type}</p>
+ <p className="text-xs font-semibold text-slate-400 group-hover/doc:text-primary transition-colors">{doc.document_type}</p>
  <p className="text-[15px] font-semibold text-slate-900 truncate leading-normal group-hover/doc:translate-x-1 transition-transform">{doc.file_name}</p>
  </div>
 
  <div className="mt-8 flex gap-4">
- <button className="flex-1 px-6 py-3.5 bg-white border border-slate-200 text-slate-400 text-[9px] font-semibold rounded-lg hover:bg-primary hover:text-white hover:border-primaryflex items-center justify-center gap-3">
+ <button className="flex-1 px-6 py-3.5 bg-white border border-slate-200 text-slate-400 text-xs font-semibold rounded-lg hover:bg-primary hover:text-white hover:border-primaryflex items-center justify-center gap-3">
  <Eye className="w-4 h-4" /> Preview
  </button>
- <button className="flex-1 px-6 py-3.5 bg-white border border-slate-200 text-slate-400 text-[9px] font-semibold rounded-lg hover:bg-slate-900 hover:text-white hover:border-slate-900flex items-center justify-center gap-3">
+ <button className="flex-1 px-6 py-3.5 bg-white border border-slate-200 text-slate-400 text-xs font-semibold rounded-lg hover:bg-slate-900 hover:text-white hover:border-slate-900flex items-center justify-center gap-3">
  <Download className="w-4 h-4" /> Get_File
  </button>
  </div>
@@ -183,7 +183,7 @@ export default function RegistrationShow({ registration }: Props) {
  <div className="p-6 bg-white rounded-lg text-slate-200">
  <FileSearch className="h-12 w-12" />
  </div>
- <p className="text-[11px] font-semibold text-slate-300 ">Belum ada dokumen yang diunggah ke gateway</p>
+ <p className="text-sm font-semibold text-slate-300 ">Belum ada dokumen yang diunggah ke gateway</p>
  </div>
  )}
  </div>
@@ -203,7 +203,7 @@ export default function RegistrationShow({ registration }: Props) {
  </div>
  <div>
  <h3 className="text-lg font-semibold text-white ">Intel_Pendaftaran</h3>
- <p className="text-[9px] font-semibold text-emerald-400 mt-2 opacity-50">METADATA_STREAM_OK</p>
+ <p className="text-xs font-semibold text-emerald-400 mt-2 opacity-50">METADATA_STREAM_OK</p>
  </div>
  </div>
  <div className="space-y-8">
@@ -224,11 +224,11 @@ export default function RegistrationShow({ registration }: Props) {
  <div className="relative z-10">
  <div className="flex items-center gap-5 border-b border-slate-200 pb-8 mb-10">
  <div className="p-3.5 bg-emerald-50 text-primary rounded-lg border border-primary
- <ShieldCheck className="w-6 h-6 stroke-[2.5px]" />
+ <ShieldCheck className="w-6 h-6" />
  </div>
  <div>
  <h3 className="text-2xl font-semibold text-slate-900 ">Otorisasi_Akses</h3>
- <p className="text-[10px] font-semibold text-slate-400 mt-2 opacity-50">KEPUTUSAN OPERASIONAL</p>
+ <p className="text-xs font-semibold text-slate-400 mt-2 opacity-50">KEPUTUSAN OPERASIONAL</p>
  </div>
  </div>
 
@@ -295,8 +295,8 @@ export default function RegistrationShow({ registration }: Props) {
  <ShieldAlert className="w-6 h-6" />
  </div>
  <div>
- <h4 className="text-[11px] font-semibold text-amber-600 ">REJECTION_LOG</h4>
- <p className="text-[8px] font-semibold text-amber-400 mt-1.5 opacity-50">CATATAN_AUDIT_HISTORIS</p>
+ <h4 className="text-sm font-semibold text-amber-600 ">REJECTION_LOG</h4>
+ <p className="text-xs font-semibold text-amber-400 mt-1.5 opacity-50">CATATAN_AUDIT_HISTORIS</p>
  </div>
  </div>
  <p className="text-[14px] text-sm text-amber-900 leading-normal bg-white/40 p-6 rounded-lg border border-amber-100/50">
@@ -319,7 +319,7 @@ function ProfileItem({ icon: Icon, label, value }: any) {
  <div className="p-2 bg-slate-50 rounded-lg border border-slate-200 group-hover/item:bg-primary/20 group-hover/item:border-primary/30">
  <Icon className="w-3.5 h-3.5 text-primary" />
  </div>
- <span className="text-[10px] font-semibold text-slate-300 group-hover/item:text-primary transition-colors">{label}</span>
+ <span className="text-xs font-semibold text-slate-300 group-hover/item:text-primary transition-colors">{label}</span>
  </div>
  <p className="text-[15px] font-semibold text-slate-900 pl-1 ml-0.5 group-hover/item:translate-x-1 transition-transform">
  {value}
@@ -333,7 +333,7 @@ function IntelRow({ label, value, color = 'text-slate-100' }: any) {
  <div className="flex flex-col gap-3 group/intel">
  <div className="flex items-center gap-2">
  <div className="h-1 w-3 bg-primary/40 rounded-lg group-hover/intel:w-6" />
- <span className="text-[9px] font-semibold text-slate-500 ">{label}</span>
+ <span className="text-xs font-semibold text-slate-500 ">{label}</span>
  </div>
  <span className={`text-[15px] font-semibold pl-5 ${color}`}>{value}</span>
  </div>

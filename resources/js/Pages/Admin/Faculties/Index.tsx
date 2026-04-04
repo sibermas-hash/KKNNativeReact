@@ -67,7 +67,7 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <School className="h-4 w-4 text-emerald-300" />
  </div>
- <span className="text-[10px] font-semibold text-emerald-100 ">
+ <span className="text-xs font-semibold text-emerald-100 ">
  INSTITUTIONAL_FACULTY_REGISTRY_V3
  </span>
  </div>
@@ -85,7 +85,7 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  <Building2 className="h-6 w-6" />
  </div>
  <div>
- <span className="text-[9px] font-semibold text-emerald-200/60 block mb-1.5">Total Sektor</span>
+ <span className="text-xs font-semibold text-emerald-200/60 block mb-1.5">Total Sektor</span>
  <span className="text-2xl font-semibold text-white">{faculties.meta?.total || 0} Record</span>
  </div>
  </div>
@@ -103,11 +103,11 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  <div className="relative z-10 space-y-6">
  <div className="flex items-center gap-5 border-b border-slate-200 pb-8">
  <div className="p-3.5 bg-primary rounded-lg text-white
- <Database className="h-6 w-6 stroke-[2.5px]" />
+ <Database className="h-6 w-6" />
  </div>
  <div>
  <h3 className="text-xl font-semibold text-slate-900 ">Master_Registry</h3>
- <p className="text-[10px] font-semibold text-slate-400 mt-2 opacity-50">SUMBER DATA TERMALIDASI</p>
+ <p className="text-xs font-semibold text-slate-400 mt-2 opacity-50">SUMBER DATA TERMALIDASI</p>
  </div>
  </div>
 
@@ -120,13 +120,13 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
 
  <div className="grid grid-cols-1 gap-6">
  <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 group/card hover:bg-white hover:border-primary">
- <span className="block text-[9px] font-semibold text-slate-400 mb-2">Source_Gateway_ID</span>
+ <span className="block text-xs font-semibold text-slate-400 mb-2">Source_Gateway_ID</span>
  <span className="block text-[15px] font-semibold text-slate-900 ">{syncInfo.source}</span>
  </div>
 
  <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 group/card hover:bg-white hover:border-primary">
- <span className="block text-[9px] font-semibold text-slate-400 mb-2">Last_Sync_Timestamp</span>
- <span className="block text-[15px] font-semibold text-slate-900 ">{syncInfo.last_synced_at || 'PENDING_INITIAL_SYNC'}</span>
+ <span className="block text-xs font-semibold text-slate-400 mb-2">Last_Sync_Timestamp</span>
+ <span className="block text-[15px] font-semibold text-slate-900 ">{syncInfo.last_synced_at || ''}</span>
  </div>
  </div>
 
@@ -135,7 +135,7 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  <div className="p-2 bg-white rounded-lg
  <Zap className="h-4 w-4 text-emerald-500" />
  </div>
- <p className="text-[11px] text-slate-500 text-sm leading-normal opacity-50">
+ <p className="text-sm text-slate-500 text-sm leading-normal opacity-50">
  Intervensi manual dinonaktifkan untuk menjaga integritas relasi antar record fakultas dan program studi.
  </p>
  </div>
@@ -143,7 +143,7 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  <div className="p-2 bg-white rounded-lg
  <Fingerprint className="h-4 w-4 text-primary" />
  </div>
- <p className="text-[11px] text-slate-500 text-sm leading-normal opacity-50">
+ <p className="text-sm text-slate-500 text-sm leading-normal opacity-50">
  Mendukung pemetaan otomatis untuk orkestrasi kelompok, monitoring pelaporan, dan audit akademik.
  </p>
  </div>
@@ -184,7 +184,7 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  <div className="p-10 bg-slate-50 rounded-lg border border-slate-200
  <Building2 className="h-20 w-20 text-slate-200" />
  </div>
- <p className="text-[12px] font-semibold text-slate-400">SYSTEM_INFO: NO_FACULTY_RECORDS_DETECTED</p>
+ <p className="text-sm font-semibold text-slate-400">SYSTEM_INFO: NO_FACULTY_RECORDS_DETECTED</p>
  </div>
  </td>
  </tr>
@@ -202,12 +202,12 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  <td className="px-6 py-3 text-center">
  <div className="inline-flex items-baseline gap-2 px-6 py-3 bg-slate-50 rounded-lg border border-slate-200 group-hover/row:bg-white group-hover/row:border-primary/30 group-hover/row:group-hover/row: group-hover/row:/5">
  <span className="text-xl font-semibold text-slate-900">{f.programs_count}</span>
- <span className="text-[9px] font-semibold text-slate-400 opacity-50">PRODI_UNIT</span>
+ <span className="text-xs font-semibold text-slate-400 opacity-50">PRODI_UNIT</span>
  </div>
  </td>
  <td className="px-6 py-3 text-right pr-14">
  <span className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 px-5 py-2.5 text-xs font-semibold text-slate-400 group-hover/row:bg-white">
- READ_ONLY_SYNC
+ 
  </span>
  </td>
  </tr>
@@ -234,8 +234,8 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  <ShieldCheck className="h-7 w-7 text-primary" />
  </div>
  <div>
- <h4 className="text-[11px] font-semibold text-white ">STRUCTURAL_GOVERNANCE_PROTOCOL_V3</h4>
- <p className="text-[10px] text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: HIERARCHY_INTEGRITY_VERIFIED</p>
+ <h4 className="text-sm font-semibold text-white ">_V3</h4>
+ <p className="text-xs text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: HIERARCHY_INTEGRITY_VERIFIED</p>
  </div>
  </div>
  <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-4xl opacity-75">
@@ -247,7 +247,7 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  <div className="flex flex-col items-end gap-5 shrink-0 border-l border-slate-800 pl-12 hidden lg:flex">
  <div className="flex items-center gap-3 mb-1 px-5 py-2.5 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
  <div className="h-2.5 w-2.5 rounded-lg bg-emerald-500" />
- <span className="text-[11px] font-semibold text-slate-100 ">HIERARCHY_OK</span>
+ <span className="text-sm font-semibold text-slate-100 ">HIERARCHY_OK</span>
  </div>
  <div className="flex gap-5">
  <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">

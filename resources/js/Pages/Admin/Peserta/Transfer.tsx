@@ -141,11 +141,11 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
                                             </div>
                                             <div>
                                                 <p className={clsx(
-                                                    "text-xs font-bold leading-none mb-1.5 truncate max-w-[150px]",
+                                                    "text-xs font-bold  mb-1.5 truncate max-w-[150px]",
                                                     selectedStudent?.id === student.id ? "text-white" : "text-slate-900"
                                                 )}>{student.user.name}</p>
                                                 <p className={clsx(
-                                                    "text-[10px] font-bold uppercase tracking-wider",
+                                                    "text-xs font-bold uppercase tracking-wider",
                                                     selectedStudent?.id === student.id ? "text-primary/50" : "text-slate-400"
                                                 )}>{student.nim}</p>
                                             </div>
@@ -166,7 +166,7 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
                                 <AlertTriangle className="w-8 h-8 text-emerald-500 mb-2 shadow-sm shadow-emerald-500/20" />
                                 <div>
                                     <h4 className="text-xs font-bold text-white uppercase tracking-widest mb-2">Peringatan Transmisi</h4>
-                                    <p className="text-[11px] text-slate-500 font-medium leading-relaxed opacity-75 italic">
+                                    <p className="text-sm text-slate-500 font-medium  opacity-75 italic">
                                         Pemindahan ini bersifat permanen dan akan memicu audit pembaruan logistik unit kelompok tujuan secara otomatis.
                                     </p>
                                 </div>
@@ -181,13 +181,13 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
                                 <div className="p-10 border-b border-slate-50 space-y-10">
                                     <div className="flex items-center gap-8 justify-center">
                                         <div className="flex flex-col items-center gap-4">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Asal Unit</span>
+                                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Asal Unit</span>
                                             <div className="w-20 h-20 rounded-2xl bg-slate-900 flex items-center justify-center text-primary text-3xl font-bold shadow-2xl  transition-transform italic">
                                                 {selectedStudent.user.name.charAt(0)}
                                             </div>
                                             <div className="text-center">
                                                 <p className="font-bold text-slate-900 text-sm mb-1">{selectedStudent.user.name}</p>
-                                                <div className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[10px] font-bold text-slate-400 font-mono italic">#{selectedStudent.nim}</div>
+                                                <div className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg text-xs font-bold text-slate-400 italic">#{selectedStudent.nim}</div>
                                             </div>
                                         </div>
 
@@ -199,15 +199,15 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
                                                 </div>
                                                 <div className="h-1 w-8 bg-slate-100 rounded-full" />
                                             </div>
-                                            <div className="px-3 py-1.5 bg-emerald-100 rounded-lg border border-emerald-200 text-[10px] font-black text-emerald-700 uppercase tracking-widest italic animate-pulse">Transmisi_Aktif</div>
+                                            <div className="px-3 py-1.5 bg-emerald-100 rounded-lg border border-emerald-200 text-xs font-black text-emerald-700 uppercase tracking-widest italic animate-pulse">Transmisi_Aktif</div>
                                         </div>
 
                                         <div className="flex flex-col items-center gap-4">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Target Unit</span>
+                                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Target Unit</span>
                                             <div className="w-20 h-20 rounded-2xl bg-white border-2 border-dashed border-slate-200 flex items-center justify-center animate-pulse">
                                                 <ArrowRight className="w-10 h-10 text-slate-200" />
                                             </div>
-                                            <span className="text-[10px] font-bold text-slate-300 italic">SIAP_INJEKSI</span>
+                                            <span className="text-xs font-bold text-slate-300 italic">SIAP_INJEKSI</span>
                                         </div>
                                     </div>
 
@@ -215,11 +215,11 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
                                         <div className="p-6 bg-slate-50 rounded-xl border border-slate-100 space-y-4">
                                             <div className="flex items-center gap-3">
                                                 <MapPin className="w-4 h-4 text-emerald-500" />
-                                                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Status Saat Ini</span>
+                                                <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Status Saat Ini</span>
                                             </div>
                                             <div>
-                                                <h4 className="text-sm font-bold text-slate-900 tracking-tight leading-none mb-2 italic uppercase">{selectedStudent.group?.name || 'BELUM_ADA_UNIT'}</h4>
-                                                <p className="text-[10px] font-bold text-slate-400 italic">
+                                                <h4 className="text-sm font-bold text-slate-900 tracking-tight  mb-2 italic uppercase">{selectedStudent.group?.name || 'BELUM_ADA_UNIT'}</h4>
+                                                <p className="text-xs font-bold text-slate-400 italic">
                                                     {selectedStudent.group?.location ? `${selectedStudent.group.location.kecamatan}` : 'LOKASI_TIDAK_TERDETEKSI'}
                                                 </p>
                                             </div>
@@ -228,7 +228,7 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
                                         <div className="p-6 bg-emerald-50/50 rounded-xl border border-emerald-100 space-y-4">
                                             <div className="flex items-center gap-3">
                                                 <RefreshCw className="w-4 h-4 text-emerald-600" />
-                                                <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest">Tujuan Baru</span>
+                                                <span className="text-sm font-bold text-emerald-600 uppercase tracking-widest">Tujuan Baru</span>
                                             </div>
                                             <select
                                                 value={targetGroupId}
@@ -247,7 +247,7 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
                                 <div className="p-10 bg-slate-50 border-t border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-8">
                                     <div className="flex items-center gap-4 text-slate-400 italic">
                                         <ShieldAlert className="w-8 h-8 opacity-20" />
-                                        <p className="text-[11px] font-medium leading-relaxed max-w-lg">Pastikan koordinasi internal antar unit telah terpenuhi sebelum mengeksekusi perpindahan personel.</p>
+                                        <p className="text-sm font-medium  max-w-lg">Pastikan koordinasi internal antar unit telah terpenuhi sebelum mengeksekusi perpindahan personel.</p>
                                     </div>
                                     <button
                                         onClick={handleTransfer}
@@ -262,11 +262,11 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
                         ) : (
                             <div className="h-full min-h-[500px] flex flex-col items-center justify-center bg-white rounded-xl border border-dashed border-slate-200 p-10 space-y-8 italic opacity-20">
                                 <div className="p-10 bg-slate-50 rounded-3xl text-slate-900 border border-slate-100 shadow-inner">
-                                    <ArrowRightLeft className="w-24 h-24 stroke-[1.5]" />
+                                    <ArrowRightLeft className="w-24 h-24" />
                                 </div>
                                 <div className="text-center space-y-2">
-                                    <h3 className="text-lg font-bold tracking-widest italic leading-none">AWAITING_PERSONNEL_SELECT</h3>
-                                    <p className="text-[11px] font-bold tracking-[0.2em] italic leading-none uppercase">PILIH_MAHASISWA_DARI_LEDGER_UNTUK_PENUGASAN_UNIT_BARU</p>
+                                    <h3 className="text-lg font-bold tracking-widest italic ">AWAITING_PERSONNEL_SELECT</h3>
+                                    <p className="text-sm font-bold tracking-[0.2em] italic  uppercase">PILIH_MAHASISWA_DARI_LEDGER_UNTUK_PENUGASAN_UNIT_BARU</p>
                                 </div>
                             </div>
                         )}

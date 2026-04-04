@@ -42,7 +42,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
  <div>
  <div className="flex items-center gap-2 mb-4">
  <Award className="h-4 w-4 text-primary" />
- <span className="text-[10px] text-sm text-slate-400 decoration-slate-100">Transkrip Penilaian Lapangan</span>
+ <span className="text-xs text-sm text-slate-400 decoration-slate-100">Transkrip Penilaian Lapangan</span>
  </div>
  <h1 className="text-4xl font-extrabold text-slate-900 ">
  Hasil <span className="text-primary">Evaluasi</span> & Nilai
@@ -57,7 +57,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
  <Trophy className="h-6 w-6" />
  </div>
  <div>
- <span className="text-[9px] text-sm text-slate-400 block mb-1">Status Akademik</span>
+ <span className="text-xs text-sm text-slate-400 block mb-1">Status Akademik</span>
  <span className="text-xs font-semibold text-slate-900 ">Evaluasi Final Aktif</span>
  </div>
  </div>
@@ -94,7 +94,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
  </div>
  <div>
  <h3 className="text-lg font-semibold text-slate-900 ">Penilaian {ev.evaluator_type === 'dpl' ? 'DPL' : ev.evaluator_type}</h3>
- <span className="text-[10px] text-sm text-slate-400 mt-1.5 block opacity-50">{ev.group.name}</span>
+ <span className="text-xs text-sm text-slate-400 mt-1.5 block opacity-50">{ev.group.name}</span>
  </div>
  </div>
  <div className="text-right">
@@ -121,7 +121,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
  <div className="space-y-2">
  {ev.items.map((item, i) => (
  <div key={i} className="grid grid-cols-3 items-center p-5 bg-slate-50 border border-slate-200 rounded-lg group/item hover:bg-white hover:border-primary">
- <span className="text-[11px] font-semibold text-slate-900 group-hover/item:text-primary transition-colors">{item.criterion}</span>
+ <span className="text-sm font-semibold text-slate-900 group-hover/item:text-primary transition-colors">{item.criterion}</span>
  <span className="text-center text-xs text-sm text-slate-400 ">{item.weight}%</span>
  <span className="text-right text-base font-semibold text-slate-900">{item.score}</span>
  </div>
@@ -135,7 +135,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
  <div className="relative z-10 flex gap-4">
  <Info className="h-5 w-5 text-primary shrink-0 opacity-50" />
  <div>
- <p className="text-[9px] font-semibold text-slate-500 mb-2">Catatan Penilai:</p>
+ <p className="text-xs font-semibold text-slate-500 mb-2">Catatan Penilai:</p>
  <p className="text-xs text-sm text-slate-400 leading-normal opacity-75">"{ev.notes}"</p>
  </div>
  </div>
@@ -149,7 +149,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
  )}
  
  <div className="text-center pt-8 opacity-20">
- <p className="text-[10px] font-semibold text-slate-300 ">
+ <p className="text-xs font-semibold text-slate-300 ">
  Pusat Evaluasi Akademik • UIN SAIZU © 2024
  </p>
  </div>

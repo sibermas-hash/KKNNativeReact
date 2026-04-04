@@ -94,7 +94,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
  <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <Archive className="h-4 w-4 text-emerald-300" />
  </div>
- <span className="text-[10px] font-semibold text-emerald-100 ">
+ <span className="text-xs font-semibold text-emerald-100 ">
  DIGITAL_ASSET_REPOSITORY_V3
  </span>
  </div>
@@ -112,7 +112,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
  <Activity className="h-6 w-6" />
  </div>
  <div>
- <span className="text-[9px] font-semibold text-emerald-200/60 block mb-1.5">Status Gateway</span>
+ <span className="text-xs font-semibold text-emerald-200/60 block mb-1.5">Status Gateway</span>
  <span className="text-xl font-semibold text-white ">Sinkron_Aktif</span>
  </div>
  </div>
@@ -139,13 +139,13 @@ export default function ReportsIndex({ reports, summary }: Props) {
  </div>
  <div className="relative z-10">
  <div className="flex items-center justify-between mb-6">
- <p className="text-[11px] font-semibold text-emerald-300 ">Audit Integritas Data</p>
+ <p className="text-sm font-semibold text-emerald-300 ">Audit Integritas Data</p>
  <span className="flex h-2 w-2 rounded-lg bg-emerald-400" />
  </div>
  <div className="space-y-2">
  <div className="flex items-center justify-between">
- <span className="text-[10px] text-sm text-emerald-100/60 ">Status Verifikasi Luaran</span>
- <span className="text-[10px] font-semibold text-white ">100% SECURE</span>
+ <span className="text-xs text-sm text-emerald-100/60 ">Status Verifikasi Luaran</span>
+ <span className="text-xs font-semibold text-white ">100% SECURE</span>
  </div>
  <div className="w-full h-1 bg-white/10 rounded-lg overflow-hidden">
  <div className="w-full h-full bg-emerald-400 rounded-lg" />
@@ -190,7 +190,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
  <div className="flex flex-col gap-1.5 max-w-sm">
  <span className="text-[14px] font-semibold text-slate-900 group-hover/row:text-primary transition-colors line-clamp-1">{report.title}</span>
  <div className="flex items-center gap-2">
- <span className="text-[9px] text-sm text-slate-400 ">{getTypeLabel(report.type)}</span>
+ <span className="text-xs text-sm text-slate-400 ">{getTypeLabel(report.type)}</span>
  </div>
  </div>
  </div>
@@ -200,20 +200,20 @@ export default function ReportsIndex({ reports, summary }: Props) {
  <div className="h-9 w-9 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-semibold text-slate-400 group-hover/row:bg-primary/10 group-hover/row:text-primary">
  {report.user.name.charAt(0)}
  </div>
- <span className="text-[11px] text-sm text-slate-700 ">{report.user.name}</span>
+ <span className="text-sm text-sm text-slate-700 ">{report.user.name}</span>
  </div>
  </td>
  <td className="px-6 py-3">
  <div className="flex flex-col gap-1.5">
- <span className="text-[10px] font-semibold text-slate-900 flex items-center gap-2">
+ <span className="text-xs font-semibold text-slate-900 flex items-center gap-2">
  <div className="h-2 w-1 bg-primary rounded-lg" />
  {report.group.name}
  </span>
- <span className="text-[9px] text-sm text-slate-400 ml-3 opacity-50 truncate max-w-[150px]">{report.group.village}</span>
+ <span className="text-xs text-sm text-slate-400 ml-3 opacity-50 truncate max-w-[150px]">{report.group.village}</span>
  </div>
  </td>
  <td className="px-6 py-3 text-center">
- <StatusBadge status={report.status} className="px-4 py-1.5 rounded-lg text-[9px] text-sm border-none />
+ <StatusBadge status={report.status} className="px-4 py-1.5 rounded-lg text-xs text-sm border-none />
  </td>
  <td className="px-6 py-3">
  <div className="flex justify-end gap-2x-4 opacity-0 group-hover/row:opacity-100 group-hover/row:translate-x-0">
@@ -233,7 +233,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
  <div className="p-8 bg-slate-50 rounded-lg border border-slate-200
  <FileText className="h-12 w-12 text-slate-200" />
  </div>
- <p className="text-[11px] text-sm text-slate-400 ">
+ <p className="text-sm text-sm text-slate-400 ">
  {reports.data.length > 0 ? 'Tidak ada laporan yang cocok dengan pencarian' : 'Arsip laporan tidak ditemukan'}
  </p>
  </div>
@@ -246,7 +246,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
  </div>
 
  <div className="flex items-center justify-center pt-8 opacity-20">
- <p className="text-[9px] font-semibold text-slate-300">
+ <p className="text-xs font-semibold text-slate-300">
  Sistem Dokumentasi Terenkripsi • UIN SAIZU © 2024
  </p>
  </div>
@@ -268,10 +268,10 @@ function SummaryCard({ icon: Icon, label, value, color }: { icon: any, label: st
  </div>
  <span className="h-2 w-2 rounded-lg bg-slate-100  transition-colors" />
  </div>
- <p className="text-[11px] text-sm text-slate-400 mb-2 text-sm">{label}</p>
+ <p className="text-sm text-sm text-slate-400 mb-2 text-sm">{label}</p>
  <div className="flex items-end gap-2">
  <p className="text-4xl font-semibold text-slate-900 ">{value}</p>
- <span className="text-[10px] text-sm text-slate-300 pb-1">Unit</span>
+ <span className="text-xs text-sm text-slate-300 pb-1">Unit</span>
  </div>
  </div>
  </div>

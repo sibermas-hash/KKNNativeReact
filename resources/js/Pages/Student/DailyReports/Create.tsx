@@ -72,7 +72,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
  <div className="p-12 bg-rose-50 border-2 border-dashed border-rose-100 rounded-lg text-center max-w-sm
  <AlertTriangle className="w-16 h-16 text-rose-300 mx-auto mb-8 />
  <h2 className="text-2xl font-semibold text-rose-900 mb-4">Akses Terkunci</h2>
- <p className="text-[11px] text-sm text-rose-600 leading-normal opacity-50 p-4 bg-white/50 rounded-lg">Identitas Anda belum terhubung dengan kelompok manapun. Hubungi Admin untuk aktivasi unit.</p>
+ <p className="text-sm text-sm text-rose-600 leading-normal opacity-50 p-4 bg-white/50 rounded-lg">Identitas Anda belum terhubung dengan kelompok manapun. Hubungi Admin untuk aktivasi unit.</p>
  </div>
  </div>
  </AppLayout>
@@ -108,9 +108,9 @@ export default function StudentDailyReportCreate({ group }: Props) {
  <MapPin className="w-7 h-7" />
  </div>
  <div>
- <span className="text-[9px] text-sm text-slate-400 block mb-1.5">Wilayah Pengabdian</span>
+ <span className="text-xs text-sm text-slate-400 block mb-1.5">Wilayah Pengabdian</span>
  <p className="text-base font-semibold text-slate-900 ">{group.location?.village_name || 'MENUNGGU'}</p>
- <p className="text-[10px] font-semibold text-primary mt-1.5">{group.name}</p>
+ <p className="text-xs font-semibold text-primary mt-1.5">{group.name}</p>
  </div>
  </div>
  </header>
@@ -135,8 +135,8 @@ export default function StudentDailyReportCreate({ group }: Props) {
  <AlertTriangle className="w-6 h-6" />}
  </div>
  <div className="flex-1 min-w-0">
- <p className="text-[10px] font-semibold mb-1.5">Status Lokasi (GPS)</p>
- <p className="text-[11px] text-sm truncate opacity-75">
+ <p className="text-xs font-semibold mb-1.5">Status Lokasi (GPS)</p>
+ <p className="text-sm text-sm truncate opacity-75">
  {locationStatus === 'acquired' ? `Koordinat Terdeteksi: ${form.data.latitude?.toFixed(6)}, ${form.data.longitude?.toFixed(6)}` :
  locationStatus === 'requesting' ? 'Mencari Titik Lokasi...' :
  'Gagal Mendeteksi Lokasi. Pastikan GPS Aktif.'}
@@ -151,7 +151,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
  <div className="space-y-4">
- <label className="text-[11px] font-semibold text-slate-400 ml-2 block mb-1">Tanggal Kegiatan</label>
+ <label className="text-sm font-semibold text-slate-400 ml-2 block mb-1">Tanggal Kegiatan</label>
  <div className="relative group/input">
  <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-slate-300 group-focus-within/input:text-primary transition-colors">
  <Calendar className="w-5 h-5" />
@@ -164,10 +164,10 @@ export default function StudentDailyReportCreate({ group }: Props) {
  required
  />
  </div>
- {form.errors.date && <p className="text-[10px] font-semibold text-rose-500 ml-2">{form.errors.date}</p>}
+ {form.errors.date && <p className="text-xs font-semibold text-rose-500 ml-2">{form.errors.date}</p>}
  </div>
  <div className="space-y-4">
- <label className="text-[11px] font-semibold text-slate-400 ml-2 block mb-1">Judul Aktivitas</label>
+ <label className="text-sm font-semibold text-slate-400 ml-2 block mb-1">Judul Aktivitas</label>
  <div className="relative group/input">
  <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-slate-300 group-focus-within/input:text-primary transition-colors">
  <Sparkles className="w-5 h-5" />
@@ -180,12 +180,12 @@ export default function StudentDailyReportCreate({ group }: Props) {
  required
  />
  </div>
- {form.errors.title && <p className="text-[10px] font-semibold text-rose-500 ml-2">{form.errors.title}</p>}
+ {form.errors.title && <p className="text-xs font-semibold text-rose-500 ml-2">{form.errors.title}</p>}
  </div>
  </div>
 
  <div className="space-y-4 relative z-10">
- <label className="text-[11px] font-semibold text-slate-400 ml-2 block mb-1">Deskripsi Kegiatan Lengkap</label>
+ <label className="text-sm font-semibold text-slate-400 ml-2 block mb-1">Deskripsi Kegiatan Lengkap</label>
  <textarea 
  rows={8}
  placeholder="Jelaskan secara detail proses, rintangan, dan pencapaian hari ini..."
@@ -194,18 +194,18 @@ export default function StudentDailyReportCreate({ group }: Props) {
  className="w-full bg-slate-50 border-slate-200 rounded-lg p-8 text-sm text-sm text-slate-700 placeholder:text-slate-300 focus:ring-4 focus:ring-primary/5 focus:border-primaryleading-normal outline-none"
  required
  />
- {form.errors.activity && <p className="text-[10px] font-semibold text-rose-500 ml-2">{form.errors.activity}</p>}
+ {form.errors.activity && <p className="text-xs font-semibold text-rose-500 ml-2">{form.errors.activity}</p>}
  </div>
 
  <div className="space-y-4 relative z-10">
- <label className="text-[11px] font-semibold text-slate-400 ml-2 block mb-1">Luaran / Hasil (Opsional)</label>
+ <label className="text-sm font-semibold text-slate-400 ml-2 block mb-1">Luaran / Hasil (Opsional)</label>
  <input 
  placeholder="CONTOH: 1 DRAF MODUL, 2 FOTO KEGIATAN..."
  value={form.data.output}
  onChange={(e) => form.setData('output', e.target.value)}
  className="w-full bg-slate-50 border-slate-200 rounded-lg px-6 py-5 text-sm font-semibold text-slate-900 placeholder:text-slate-200 focus:ring-4 focus:ring-primary/5 focus:border-primaryoutline-none"
  />
- {form.errors.output && <p className="text-[10px] font-semibold text-rose-500 ml-2">{form.errors.output}</p>}
+ {form.errors.output && <p className="text-xs font-semibold text-rose-500 ml-2">{form.errors.output}</p>}
  </div>
 
  <div className="flex pt-8 relative z-10 border-t border-slate-200">
@@ -229,7 +229,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
  </div>
  <div>
  <h3 className="text-xs font-semibold text-slate-900">Dokumentasi Visual</h3>
- <p className="text-[9px] text-sm text-slate-400 mt-1 opacity-50">Lampiran Bukti Lapangan</p>
+ <p className="text-xs text-sm text-slate-400 mt-1 opacity-50">Lampiran Bukti Lapangan</p>
  </div>
  </div>
  
@@ -248,8 +248,8 @@ export default function StudentDailyReportCreate({ group }: Props) {
  <div className="h-16 w-16 bg-white rounded-lg border border-slate-100 flex items-center justify-center text-slate-200 group-hover/dropzone:text-primary mb-6 transition-colors ">
  <FileUp className="w-8 h-8" />
  </div>
- <p className="text-[11px] font-semibold text-slate-900 mb-2 File</p>
- <p className="text-[9px] text-sm text-slate-400 max-w-[120px] opacity-50">JPG, PNG, ATAU PDF (MAKS. 5 FILE)</p>
+ <p className="text-sm font-semibold text-slate-900 mb-2 File</p>
+ <p className="text-xs text-sm text-slate-400 max-w-[120px] opacity-50">JPG, PNG, ATAU PDF (MAKS. 5 FILE)</p>
  </div>
  </div>
  </div>
@@ -259,15 +259,15 @@ export default function StudentDailyReportCreate({ group }: Props) {
  <div className="absolute top-0 right-0 p-4 text-primary">
  <Activity className="h-16 w-16" />
  </div>
- <p className="text-[10px] font-semibold text-primary mb-6 flex items-center gap-2">
+ <p className="text-xs font-semibold text-primary mb-6 flex items-center gap-2">
  <div className="h-2 w-2 rounded-lg bg-primary />
  Daftar Antrian File
  </p>
  <div className="space-y-4 relative z-10">
  {form.data.files.map((file, i) => (
  <div key={i} className="flex items-center justify-between gap-4 p-4 bg-white/5 border border-slate-200 rounded-lg hover:bg-white/10">
- <p className="text-[10px] font-semibold text-white/50 truncate decoration-primary flex-1">{file.name}</p>
- <span className="text-[9px] text-sm text-slate-500 shrink-0">{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
+ <p className="text-xs font-semibold text-white/50 truncate decoration-primary flex-1">{file.name}</p>
+ <span className="text-xs text-sm text-slate-500 shrink-0">{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
  </div>
  ))}
  </div>
@@ -280,11 +280,11 @@ export default function StudentDailyReportCreate({ group }: Props) {
  <div className="absolute top-0 right-0 p-8 text-primary pointer-events-none group-transition-transform">
  <Sparkles className="w-40 h-40" />
  </div>
- <h4 className="text-[11px] font-semibold mb-6 flex items-center gap-3">
+ <h4 className="text-sm font-semibold mb-6 flex items-center gap-3">
  <Info className="h-4 w-4 text-primary" />
  Panduan Pelaporan
  </h4>
- <p className="text-[11px] text-sm text-slate-400 leading-normal opacity-50
+ <p className="text-sm text-sm text-slate-400 leading-normal opacity-50
  Catat setiap progres dengan jujur dan detail. Pastikan dokumentasi visual yang diunggah relevan dengan judul laporan harian Anda.
  </p>
  </section>
@@ -292,7 +292,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
  </div>
 
  <div className="text-center pt-8 opacity-20">
- <p className="text-[10px] font-semibold text-slate-300 ">
+ <p className="text-xs font-semibold text-slate-300 ">
  Pusat Aktivitas • UIN SAIZU © 2024
  </p>
  </div>

@@ -108,7 +108,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 border-b border-slate-100 pb-10">
  <div className="flex items-center gap-6">
  <div className="relative shrink-0">
- <div className="h-16 w-16 rounded-lg bg-white border border-slate-100 text-primary flex items-center justify-center text-2xl font-semibold leading-none">
+ <div className="h-16 w-16 rounded-lg bg-white border border-slate-100 text-primary flex items-center justify-center text-2xl font-semibold ">
  {studentFirstName.charAt(0)}
  </div>
  <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-white rounded-full flex items-center justify-center border border-slate-100">
@@ -117,11 +117,11 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
  <div className="space-y-1">
  <div className="flex items-center gap-3">
- <span className="text-[10px] font-semibold text-emerald-600">
+ <span className="text-xs font-semibold text-emerald-600">
  STUDENT_TERMINAL_V3.2
  </span>
  </div>
- <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 leading-none">
+ <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 ">
  Halo, <span className="text-primary">{studentFirstName}!</span>
  </h1>
  <p className="text-slate-400 font-semibold text-xs flex items-center gap-2">
@@ -134,9 +134,9 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <div className="flex items-center gap-4">
  <div className="px-6 py-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-6 min-w-[220px]">
  <div className="text-right">
- <span className="block text-[9px] font-semibold text-slate-400 leading-none mb-1">Status Otoritas</span>
+ <span className="block text-xs font-semibold text-slate-400  mb-1">Status Otoritas</span>
  <span className={clsx(
- "text-sm font-semibold leading-none block",
+ "text-sm font-semibold  block",
  isApproved ? "text-emerald-600" : "text-amber-500"
  )}>
  {isApproved ? 'AKTIF_VERIFIED' : isPending ? 'PENDING' : 'DATA_KOSONG'}
@@ -166,8 +166,8 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <Activity className="h-6 w-6 text-primary" />
  </div>
  <div>
- <h3 className="text-sm font-semibold text-slate-900 leading-none">Alur Pelaksanaan KKN</h3>
- <p className="text-[10px] font-semibold text-slate-400 mt-1 opacity-60">Progress Perjalanan Anda (SOP UIN SAIZU)</p>
+ <h3 className="text-sm font-semibold text-slate-900 ">Alur Pelaksanaan KKN</h3>
+ <p className="text-xs font-semibold text-slate-400 mt-1 opacity-60">Progress Perjalanan Anda (SOP UIN SAIZU)</p>
  </div>
  </div>
 
@@ -189,12 +189,12 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
  <div className="mt-6 space-y-1">
  <p className={clsx(
- "text-[11px] font-semibold",
+ "text-sm font-semibold",
  phase.isActive ? "text-primary" : phase.isCompleted ? "text-emerald-600" : "text-slate-400"
  )}>
  {phase.label}
  </p>
- <p className="text-[10px] font-semibold text-slate-400 opacity-60 leading-none">{phase.desc}</p>
+ <p className="text-xs font-semibold text-slate-400 opacity-60 ">{phase.desc}</p>
  </div>
  {!phase.isCompleted && !phase.isActive && (
  <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-white p-1.5 rounded-lg border border-slate-100">
@@ -222,13 +222,13 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <MapPin className="h-6 w-6" />
  </div>
  <div>
- <h3 className="text-[11px] font-semibold text-slate-400">Informasi Lokasi & Posko</h3>
- <p className="text-[10px] font-semibold text-primary mt-0.5">Data Penempatan Terakreditasi</p>
+ <h3 className="text-sm font-semibold text-slate-400">Informasi Lokasi & Posko</h3>
+ <p className="text-xs font-semibold text-primary mt-0.5">Data Penempatan Terakreditasi</p>
  </div>
  </div>
  
  <div className="mb-10">
- <p className="text-[10px] font-semibold text-slate-400 mb-3">Desa / Kelurahan</p>
+ <p className="text-xs font-semibold text-slate-400 mb-3">Desa / Kelurahan</p>
  <h2 className="text-4xl md:text-5xl font-semibold text-slate-900 leading-tight">
  {registration.group.location?.name ?? 'Lokasi Belum Ditetapkan'}
  </h2>
@@ -237,7 +237,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  {registration.group.name}
  </span>
  <span className="h-2 w-2 rounded-full bg-primary" />
- <span className="text-[10px] font-semibold text-slate-400">Unit Aktif</span>
+ <span className="text-xs font-semibold text-slate-400">Unit Aktif</span>
  </div>
  </div>
 
@@ -247,7 +247,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <UserCircle className="h-7 w-7" />
  </div>
  <div>
- <p className="text-[10px] font-semibold text-slate-400 mb-1 leading-none">Dosen Pembimbing</p>
+ <p className="text-xs font-semibold text-slate-400 mb-1 ">Dosen Pembimbing</p>
  <p className="font-semibold text-sm text-slate-900 leading-tight">{registration.group.lecturer?.name ?? 'Belum Ditetapkan'}</p>
  </div>
  </div>
@@ -256,7 +256,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <Calendar className="h-7 w-7" />
  </div>
  <div>
- <p className="text-[10px] font-semibold text-slate-400 mb-1 leading-none">Periode KKN</p>
+ <p className="text-xs font-semibold text-slate-400 mb-1 ">Periode KKN</p>
  <p className="font-semibold text-sm text-slate-900 leading-tight">{registration.period?.name}</p>
  </div>
  </div>
@@ -272,7 +272,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <h3 className="text-2xl font-semibold text-slate-900 mb-3">
  {isPending ? 'Verifikasi Berlangsung' : 'Penempatan Menunggu'}
  </h3>
- <p className="text-slate-400 font-semibold text-xs mb-10 leading-relaxed max-w-sm mx-auto opacity-70">
+ <p className="text-slate-400 font-semibold text-xs mb-10  max-w-sm mx-auto opacity-70">
  {isPending 
  ? 'Data pendaftaran Anda sedang dalam tahap peninjauan oleh Admin LPPM.' 
  : 'Sistem belum menetapkan lokasi penempatan untuk profil Anda.'}
@@ -320,8 +320,8 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <Zap className="h-5 w-5" />
  </div>
  <div>
- <h3 className="text-[11px] font-semibold text-slate-900 leading-none">Menu Cepat</h3>
- <p className="text-[9px] font-semibold text-slate-400 mt-0.5 opacity-60">Akses Aktivitas Utama</p>
+ <h3 className="text-sm font-semibold text-slate-900 ">Menu Cepat</h3>
+ <p className="text-xs font-semibold text-slate-400 mt-0.5 opacity-60">Akses Aktivitas Utama</p>
  </div>
  </div>
  
@@ -362,32 +362,32 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <Info className="h-40 w-40" />
  </div>
  
- <h3 className="text-[11px] font-semibold mb-10 flex items-center gap-3 text-slate-400">
+ <h3 className="text-sm font-semibold mb-10 flex items-center gap-3 text-slate-400">
  <span className="flex h-2 w-2 rounded-full bg-primary" />
  Informasi Penting
  </h3>
  
  <div className="space-y-6 relative z-10">
  <div className="space-y-2">
- <p className="text-[10px] font-semibold text-primary flex items-center gap-2">
+ <p className="text-xs font-semibold text-primary flex items-center gap-2">
  <Lock className="h-3 w-3" />
  Batas Waktu
  </p>
- <p className="text-[11px] font-semibold text-slate-500 leading-relaxed opacity-80">Pastikan seluruh laporan harian telah diverifikasi sebelum periode pelaksanaan berakhir.</p>
+ <p className="text-sm font-semibold text-slate-500  opacity-80">Pastikan seluruh laporan harian telah diverifikasi sebelum periode pelaksanaan berakhir.</p>
  </div>
  <div className="space-y-2 pt-5 border-t border-slate-50">
- <p className="text-[10px] font-semibold text-slate-400 flex items-center gap-2">
+ <p className="text-xs font-semibold text-slate-400 flex items-center gap-2">
  <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
  Asuransi
  </p>
- <p className="text-[11px] font-semibold text-slate-500 leading-relaxed opacity-80">Mahasiswa terdaftar dalam program BPJS Ketenagakerjaan selama masa bakti KKN.</p>
+ <p className="text-sm font-semibold text-slate-500  opacity-80">Mahasiswa terdaftar dalam program BPJS Ketenagakerjaan selama masa bakti KKN.</p>
  </div>
  <div className="space-y-2 pt-5 border-t border-slate-50">
- <p className="text-[10px] font-semibold text-slate-400 flex items-center gap-2">
+ <p className="text-xs font-semibold text-slate-400 flex items-center gap-2">
  <IdCard className="h-3.5 w-3.5" />
  E-Sertifikat
  </p>
- <p className="text-[11px] font-semibold text-slate-500 leading-relaxed opacity-80">Sertifikat terbit otomatis setelah evaluasi DPL & Admin selesai divalidasi.</p>
+ <p className="text-sm font-semibold text-slate-500  opacity-80">Sertifikat terbit otomatis setelah evaluasi DPL & Admin selesai divalidasi.</p>
  </div>
  </div>
  </section>
@@ -395,7 +395,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
 
  <div className="text-center pt-8 opacity-20">
- <p className="text-[10px] font-semibold text-slate-300">
+ <p className="text-xs font-semibold text-slate-300">
  Pusat Layanan Mahasiswa • UIN SAIZU © 2026
  </p>
  </div>
@@ -425,10 +425,10 @@ function StatCard({ title, value, unit, icon: Icon, color }: any) {
  </div>
  
  <div className="relative z-10">
- <p className="text-[10px] font-semibold text-slate-400 mb-2 group-hover:text-primary transition-colors leading-none">{title}</p>
+ <p className="text-xs font-semibold text-slate-400 mb-2 group-hover:text-primary transition-colors ">{title}</p>
  <div className="flex items-baseline gap-1.5">
  <span className="text-3xl font-semibold text-slate-900">{value}</span>
- {unit && <span className="text-[10px] font-semibold text-slate-400 opacity-60">{unit}</span>}
+ {unit && <span className="text-xs font-semibold text-slate-400 opacity-60">{unit}</span>}
  </div>
  </div>
  </div>
@@ -443,8 +443,8 @@ function QuickActionButton({ href, icon: Icon, label, desc, disabled }: any) {
  <Icon className="h-6 w-6" />
  </div>
  <div>
- <p className="font-semibold text-xs text-slate-400 leading-none">{label}</p>
- <p className="text-[10px] text-slate-300 font-semibold mt-2 leading-none opacity-60">{desc}</p>
+ <p className="font-semibold text-xs text-slate-400 ">{label}</p>
+ <p className="text-xs text-slate-300 font-semibold mt-2  opacity-60">{desc}</p>
  </div>
  </div>
  );
@@ -459,8 +459,8 @@ function QuickActionButton({ href, icon: Icon, label, desc, disabled }: any) {
  <Icon className="h-6 w-6" />
  </div>
  <div className="min-w-0">
- <p className="font-semibold text-xs text-slate-900 leading-none group-hover:text-primary transition-colors">{label}</p>
- <p className="text-[10px] text-slate-400 font-semibold mt-2 truncate opacity-80 leading-none">{desc}</p>
+ <p className="font-semibold text-xs text-slate-900  group-hover:text-primary transition-colors">{label}</p>
+ <p className="text-xs text-slate-400 font-semibold mt-2 truncate opacity-80 ">{desc}</p>
  </div>
  <ChevronRight className="h-4 w-4 ml-auto text-slate-200 group-hover:text-primary group-hover:translate-x-1 transition-all" />
  </Link>

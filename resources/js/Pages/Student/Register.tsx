@@ -151,7 +151,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  <div className="space-y-4">
  <div className="flex items-center gap-2 mb-2">
  <ClipboardCheck className="h-4 w-4 text-primary" />
- <span className="text-[10px] text-sm text-slate-400 ">Sistem Plotting Mandiri Mahasiswa</span>
+ <span className="text-xs text-sm text-slate-400 ">Sistem Plotting Mandiri Mahasiswa</span>
  </div>
  <h1 className="text-4xl font-extrabold text-slate-900 ">
  Pusat <span className="text-primary">Pendaftaran</span> KKN
@@ -166,7 +166,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  <ShieldCheck className="h-6 w-6" />
  </div>
  <div>
- <span className="text-[9px] text-sm text-slate-400 block mb-1">Status Akademik</span>
+ <span className="text-xs text-sm text-slate-400 block mb-1">Status Akademik</span>
  <span className={clsx("text-xs font-semibold ", isAcademicQualified ? "text-emerald-600" : "text-rose-500")}>
  {isAcademicQualified ? 'Memenuhi Syarat' : 'Belum Memenuhi'}
  </span>
@@ -183,7 +183,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  </div>
  <div>
  <h3 className="text-xs font-semibold text-slate-900">Verifikasi Prasyarat Akademik</h3>
- <p className="text-[9px] text-sm text-slate-400 mt-1 opacity-50">SOP UIN SAIZU Compliance</p>
+ <p className="text-xs text-sm text-slate-400 mt-1 opacity-50">SOP UIN SAIZU Compliance</p>
  </div>
  </div>
 
@@ -206,7 +206,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  student_academic?.has_health_certificate ? "bg-emerald-50/50 border-emerald-100" : "bg-slate-50 border-slate-200"
  )}>
  <div>
- <p className="text-[9px] font-semibold text-slate-400 mb-2">Surat Keterangan Sehat</p>
+ <p className="text-xs font-semibold text-slate-400 mb-2">Surat Keterangan Sehat</p>
  <div className="flex items-center gap-3">
  {student_academic?.has_health_certificate ? (
  <CheckCircle className="w-4 h-4 text-emerald-500" />
@@ -229,7 +229,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  />
  <div className="px-4 py-2 bg-white border border-slate-200 rounded-lg flex items-center justify-center gap-2 group-hover/file:border-primary">
  <FilePlus className="w-3.5 h-3.5 text-primary" />
- <span className="text-[9px] font-semibold truncate max-w-[100px]">
+ <span className="text-xs font-semibold truncate max-w-[100px]">
  {certName || 'Unggah PDF'}
  </span>
  </div>
@@ -256,7 +256,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  </div>
  <div>
  <h3 className="text-xs font-semibold text-slate-900">Tentukan Periode</h3>
- <p className="text-[9px] text-sm text-slate-400 mt-1 ">Pilih masa pengabdian aktif</p>
+ <p className="text-xs text-sm text-slate-400 mt-1 ">Pilih masa pengabdian aktif</p>
  </div>
  </div>
  <select
@@ -270,7 +270,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  <option key={period.id} value={period.id}>{period.nama}</option>
  ))}
  </select>
- {errors.period_id && <p className="text-[10px] text-rose-500 font-semibold ml-2">{errors.period_id}</p>}
+ {errors.period_id && <p className="text-xs text-rose-500 font-semibold ml-2">{errors.period_id}</p>}
  </div>
 
  <div className="bg-slate-50 border border-slate-200 rounded-lg p-8 space-y-4 relative group-hover:bg-slate-900 transition-colors overflow-hidden">
@@ -280,7 +280,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  <Info className="h-6 w-6" />
  </div>
  <div>
- <p className="text-[10px] font-semibold text-slate-400 mb-1 group-hover:text-slate-500">Status Sistem</p>
+ <p className="text-xs font-semibold text-slate-400 mb-1 group-hover:text-slate-500">Status Sistem</p>
  <p className="text-sm font-semibold text-slate-900 group-hover:text-white">
  {periods.length > 0 ? 'Pendaftaran Tersedia' : 'Pendaftaran Ditutup'}
  </p>
@@ -302,7 +302,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  <div className="p-2 bg-emerald-50 rounded-lg border border-emerald-100">
  <CheckCircle2 className="h-5.5 w-5.5 text-emerald-500" />
  </div>
- <h3 className="text-[11px] font-semibold text-slate-400 ">Transmisi Data Berhasil</h3>
+ <h3 className="text-sm font-semibold text-slate-400 ">Transmisi Data Berhasil</h3>
  </div>
  <div className="italic">
  <h4 className="text-3xl font-semibold text-slate-900 mb-3">
@@ -341,11 +341,11 @@ export default function Register({ periods, student_gender, student_academic }: 
  <h3 className="text-2xl font-semibold text-slate-900 ">
  Pilih <span className="text-primary">Kelompok</span> & Lokasi
  </h3>
- <p className="text-[10px] text-sm text-slate-400 mt-2 opacity-50">Klik pada kartu kelompok untuk memilih tujuan Anda.</p>
+ <p className="text-xs text-sm text-slate-400 mt-2 opacity-50">Klik pada kartu kelompok untuk memilih tujuan Anda.</p>
  </div>
  <div className="flex items-center gap-3 bg-emerald-50 text-emerald-600 px-6 py-3 rounded-lg border border-emerald-100">
  <div className="h-2 w-2 rounded-lg bg-emerald-500" />
- <span className="text-[10px] font-semibold ">Sinkronisasi Kuota Aktif</span>
+ <span className="text-xs font-semibold ">Sinkronisasi Kuota Aktif</span>
  </div>
  </div>
 
@@ -382,14 +382,14 @@ export default function Register({ periods, student_gender, student_academic }: 
  )}>
  {group.nama_kelompok.charAt(0)}
  </div>
- <span className="text-[9px] font-semibold text-slate-400 ">ID: #{group.id.toString().padStart(3, '0')}</span>
+ <span className="text-xs font-semibold text-slate-400 ">ID: #{group.id.toString().padStart(3, '0')}</span>
  </div>
  <h4 className="text-xl font-semibold text-slate-900 leading-normal mb-2">
  {group.nama_kelompok}
  </h4>
  <div className="flex items-start gap-2 text-slate-400">
  <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5 opacity-50" />
- <p className="text-[10px] text-sm line-clamp-2 leading-normal">
+ <p className="text-xs text-sm line-clamp-2 leading-normal">
  {group.lokasi?.full_name || group.lokasi?.village_name || 'Lokasi Belum Terverifikasi'}
  </p>
  </div>
@@ -397,7 +397,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  {group.lokasi?.faculty_id && (
  <div className="mt-3 flex items-center gap-2 px-3 py-1.5 bg-rose-50 border border-rose-100 rounded-lg">
  <GraduationCap className="h-3 w-3 text-rose-500" />
- <span className="text-[9px] font-semibold text-rose-600">
+ <span className="text-xs font-semibold text-rose-600">
  KHUSUS {group.lokasi.fakultas_name}
  </span>
  </div>
@@ -425,7 +425,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  <CompositionMetric label="Gender L/P" value={`${group.male_member_count} / ${group.female_member_count}`} />
  {group.requires_more_male_members && (
  <div className="mt-3 p-3 bg-amber-50 rounded-lg border border-amber-100">
- <p className="text-[8px] font-semibold text-amber-700 leading-normal">
+ <p className="text-xs font-semibold text-amber-700 leading-normal">
  Prioritas Laki-laki Aktif (+{group.reserved_male_slots} Slot)
  </p>
  </div>
@@ -435,7 +435,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  {group.slot_terkunci.length > 0 && (
  <div className="flex flex-wrap gap-2">
  {group.slot_terkunci.map((slot) => (
- <span key={slot.id} className="px-2.5 py-1 bg-slate-900 text-white rounded-lg text-[8px] font-semibold ">
+ <span key={slot.id} className="px-2.5 py-1 bg-slate-900 text-white rounded-lg text-xs font-semibold ">
  {slot.label}
  </span>
  ))}
@@ -464,7 +464,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  </div>
  <div>
  <h3 className="text-sm font-semibold text-slate-900">Keterangan Opsional</h3>
- <p className="text-[9px] text-sm text-slate-400 mt-1 ">Informasi kesehatan atau keahlian khusus</p>
+ <p className="text-xs text-sm text-slate-400 mt-1 ">Informasi kesehatan atau keahlian khusus</p>
  </div>
  </div>
  <textarea
@@ -497,14 +497,14 @@ export default function Register({ periods, student_gender, student_academic }: 
  </button>
  <div className="flex items-center gap-4 opacity-50 group">
  <div className="h-px w-10 bg-slate-400 group-hover:w-20" />
- <p className="text-[10px] font-semibold text-slate-400 ">Data Validasi Akademik Terintegrasi</p>
+ <p className="text-xs font-semibold text-slate-400 ">Data Validasi Akademik Terintegrasi</p>
  <div className="h-px w-10 bg-slate-400 group-hover:w-20" />
  </div>
  </div>
  </form>
 
  <footer className="text-center pt-8 border-t border-slate-200">
- <p className="text-[10px] font-semibold text-slate-300 ">
+ <p className="text-xs font-semibold text-slate-300 ">
  Pusat Penempatan KKN UIN SAIZU © 2024
  </p>
  </footer>
@@ -525,7 +525,7 @@ function AcademicItem({ icon: Icon, label, value, isSuccess }: { icon: any; labe
  </div>
  {isSuccess ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <XCircle className="w-4 h-4 text-rose-500" />}
  </div>
- <p className="text-[9px] font-semibold text-slate-400 mb-1">{label}</p>
+ <p className="text-xs font-semibold text-slate-400 mb-1">{label}</p>
  <p className="text-sm font-semibold text-slate-900">{value}</p>
  </div>
  );
@@ -539,7 +539,7 @@ function MetricBadge({ label, value, light }: { label: string; value: string | n
  ? "bg-slate-50 border-slate-200 text-slate-900 
  : "bg-white/5 border-slate-200 text-white"
  )}>
- <span className="text-[9px] font-semibold text-slate-400 ">{label}</span>
+ <span className="text-xs font-semibold text-slate-400 ">{label}</span>
  <span className="h-1.5 w-1.5 rounded-lg bg-primary" />
  <span className={clsx("text-xs font-semibold", light ? "text-slate-900" : "text-white")}>{value}</span>
  </div>
@@ -548,9 +548,9 @@ function MetricBadge({ label, value, light }: { label: string; value: string | n
 
 function CompositionMetric({ label, value, color = 'text-slate-400' }: { label: string; value: string | number; color?: string }) {
  return (
- <div className="flex justify-between items-center text-[9px] font-semibold ">
+ <div className="flex justify-between items-center text-xs font-semibold ">
  <span className="opacity-40">{label}</span>
- <span className={clsx("leading-none", color)}>{value}</span>
+ <span className={clsx("", color)}>{value}</span>
  </div>
  );
 }

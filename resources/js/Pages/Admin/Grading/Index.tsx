@@ -227,7 +227,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <Activity className="h-4 w-4 text-emerald-300" />
  </div>
- <span className="text-[10px] font-semibold text-emerald-100 ">
+ <span className="text-xs font-semibold text-emerald-100 ">
  ACADEMIC_GRADING_CENTER_V3
  </span>
  </div>
@@ -243,14 +243,14 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  <div className="bg-white/10 p-6 rounded-lg border border-slate-200 flex items-center gap-8 min-w-[280px] group/stat">
  <div className="flex items-center gap-6 border-r border-slate-200 pr-6">
  <div className="text-center">
- <span className="text-[9px] font-semibold text-emerald-200/60 block mb-1.5">RATA-RATA</span>
+ <span className="text-xs font-semibold text-emerald-200/60 block mb-1.5">RATA-RATA</span>
  <span className="text-3xl font-semibold text-white">{Math.round(summary.average_score)}</span>
  </div>
  </div>
  <div>
- <span className="text-[9px] font-semibold text-emerald-200/60 block mb-1.5">PROGRES_INPUT</span>
+ <span className="text-xs font-semibold text-emerald-200/60 block mb-1.5">PROGRES_INPUT</span>
  <span className="text-2xl font-semibold text-white">
- {summary.fully_graded} <span className="text-[10px] text-white/30 lowercase font-medium ml-1">/ {summary.total_students}</span>
+ {summary.fully_graded} <span className="text-xs text-white/30 lowercase font-medium ml-1">/ {summary.total_students}</span>
  </span>
  </div>
  </div>
@@ -287,7 +287,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
 
  <div className="flex items-center gap-3 px-6 overflow-hidden bg-slate-50 border border-slate-200 rounded-lg h-14">
  {[1, 2, 3, 4, 5].map(i => (
- <div key={i} className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-[9px] font-semibold text-slate-300 first:z-40">
+ <div key={i} className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-xs font-semibold text-slate-300 first:z-40">
  {String.fromCharCode(64 + i)}
  </div>
  ))}
@@ -318,28 +318,28 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  </div>
  <div className="flex flex-col gap-1.5 min-w-0">
  <span className="text-[15px] font-semibold text-slate-900 group-hover/row:text-primary transition-colors truncate">{student.user.name}</span>
- <span className="text-[9px] font-semibold text-slate-300 opacity-50">NIM: {student.user.nim}</span>
+ <span className="text-xs font-semibold text-slate-300 opacity-50">NIM: {student.user.nim}</span>
  </div>
  </div>
  </td>
  <td className="px-6 py-8 text-center">
  {student.execution_score ? (
- <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-50 text-emerald-600 text-[9px] font-semibold border border-emerald-100
+ <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-semibold border border-emerald-100
  <CheckCircle className="h-3.5 w-3.5" /> DONE
  </div>
  ) : (
- <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-50 text-slate-400 text-[9px] font-semibold border border-slate-200">
+ <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-50 text-slate-400 text-xs font-semibold border border-slate-200">
  <Clock className="h-3.5 w-3.5" /> PENDING
  </div>
  )}
  </td>
  <td className="px-6 py-8 text-center">
  {student.attitude_score ? (
- <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-50 text-emerald-600 text-[9px] font-semibold border border-emerald-100
+ <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-semibold border border-emerald-100
  <CheckCircle className="h-3.5 w-3.5" /> DONE
  </div>
  ) : (
- <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-50 text-slate-400 text-[9px] font-semibold border border-slate-200">
+ <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-50 text-slate-400 text-xs font-semibold border border-slate-200">
  <Clock className="h-3.5 w-3.5" /> PENDING
  </div>
  )}
@@ -392,8 +392,8 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  <Scale className="h-7 w-7 text-primary" />
  </div>
  <div>
- <h4 className="text-[11px] font-semibold text-white ">GRADING_GOVERNANCE_PROTOCOL_V3</h4>
- <p className="text-[10px] text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: CALIBRATION_ENGINE_READY</p>
+ <h4 className="text-sm font-semibold text-white ">_V3</h4>
+ <p className="text-xs text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: CALIBRATION_ENGINE_READY</p>
  </div>
  </div>
  <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-4xl opacity-75">
@@ -405,7 +405,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  <div className="flex flex-col items-end gap-5 shrink-0 border-l border-slate-800 pl-12 hidden lg:flex">
  <div className="flex items-center gap-3 mb-1 px-5 py-2.5 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
  <div className="h-2.5 w-2.5 rounded-lg bg-emerald-500" />
- <span className="text-[11px] font-semibold text-slate-100 ">CALCULATION_SYNC_OK</span>
+ <span className="text-sm font-semibold text-slate-100 ">_OK</span>
  </div>
  <div className="flex gap-5">
  <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
@@ -432,7 +432,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  <div className="p-2 bg-primary/20 text-primary rounded-lg
  <Bolt className="h-4.5 w-4.5" />
  </div>
- <span className="text-[10px] font-semibold text-slate-400 ">MODUL_KALIBRASI_AKADEMIK_V3</span>
+ <span className="text-xs font-semibold text-slate-400 ">MODUL_KALIBRASI_AKADEMIK_V3</span>
  </div>
  <h3 className="text-4xl font-semibold text-slate-900 ">{selectedStudent?.user.name}</h3>
  <div className="flex items-center gap-4 mt-6">
@@ -443,16 +443,16 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
 
  <div className="flex items-center gap-6 px-6 py-8 bg-white rounded-lg border border-slate-100 relative z-10 group/preview transition-transform">
  <div className="text-right">
- <p className="text-[10px] font-semibold text-slate-300 mb-4">ESTIMASI_AKHIR_ABSOLUT</p>
+ <p className="text-xs font-semibold text-slate-300 mb-4">ESTIMASI_AKHIR_ABSOLUT</p>
  <div className="flex items-center gap-6">
  <div className="flex flex-col items-end">
  <span className="text-6xl font-semibold text-primary ">{preview.score}</span>
- <span className="text-[9px] font-semibold text-slate-400 mt-2 opacity-50">SKOR NUMERIK</span>
+ <span className="text-xs font-semibold text-slate-400 mt-2 opacity-50">SKOR NUMERIK</span>
  </div>
  <div className="w-px h-16 bg-slate-100" />
  <div className="flex flex-col items-center">
  <span className="text-4xl font-semibold px-6 py-3 bg-slate-900 text-white rounded-lg
- <span className="text-[9px] font-semibold text-slate-400 mt-2 opacity-50">INDEKS</span>
+ <span className="text-xs font-semibold text-slate-400 mt-2 opacity-50">INDEKS</span>
  </div>
  </div>
  </div>
@@ -505,7 +505,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  className="w-full bg-slate-50 border border-slate-200 text-5xl font-semibold text-slate-900 h-28rounded-lg focus:bg-white focus:border-primary/40outline-none text-center placeholder:opacity-20"
  placeholder="00"
  />
- <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[8px] font-semibold text-slate-300 opacity-0 group-focus-within/input:opacity-100 transition-opacity">{field.sub}</div>
+ <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs font-semibold text-slate-300 opacity-0 group-focus-within/input:opacity-100 transition-opacity">{field.sub}</div>
  </div>
  </div>
  ))}
@@ -537,7 +537,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  className="w-full bg-slate-50 border border-slate-200 text-6xl font-semibold text-slate-900 h-32 rounded-lg focus:bg-white focus:border-primary/40outline-none text-center placeholder:opacity-20"
  placeholder="00"
  />
- <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[8px] font-semibold text-slate-300 opacity-0 group-focus-within/input:opacity-100 transition-opacity">{field.sub}</div>
+ <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs font-semibold text-slate-300 opacity-0 group-focus-within/input:opacity-100 transition-opacity">{field.sub}</div>
  </div>
  </div>
  ))}
@@ -569,7 +569,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  className="w-full bg-slate-50 border border-slate-200 text-6xl font-semibold text-slate-900 h-32 rounded-lg focus:bg-white focus:border-primary/40outline-none text-center placeholder:opacity-20"
  placeholder="00"
  />
- <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[8px] font-semibold text-slate-300 opacity-0 group-focus-within/input:opacity-100 transition-opacity">{field.sub}</div>
+ <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs font-semibold text-slate-300 opacity-0 group-focus-within/input:opacity-100 transition-opacity">{field.sub}</div>
  </div>
  </div>
  ))}
@@ -592,13 +592,13 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  <Calculator className="h-6 w-6 text-primary />
  </div>
  <div>
- <span className="text-[10px] font-semibold text-white ">Automated_Calculation_Active</span>
- <p className="text-[9px] text-slate-500 text-sm mt-2">SINKRONISASI REALTIME KE BASIS DATA PUSAT</p>
+ <span className="text-xs font-semibold text-white ">Automated_Calculation_Active</span>
+ <p className="text-xs text-slate-500 text-sm mt-2">SINKRONISASI REALTIME KE BASIS DATA PUSAT</p>
  </div>
  </div>
  <div className="flex items-center gap-4 px-6 py-2.5 bg-emerald-500/5 rounded-lg border border-emerald-500/10 hidden md:flex">
  <div className="h-2 w-2 rounded-lg bg-emerald-500" />
- <span className="text-[9px] font-semibold text-slate-400 ">STREAMS_SECURED_BY_COMMAND_V3</span>
+ <span className="text-xs font-semibold text-slate-400 ">STREAMS_SECURED_BY_COMMAND_V3</span>
  </div>
  </div>
  </div>

@@ -66,7 +66,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  <div className="p-2.5 bg-white/10 rounded-lg border border-slate-200
  <BarChart3 className="h-4 w-4 text-emerald-300" />
  </div>
- <span className="text-[10px] font-semibold text-emerald-100 ">
+ <span className="text-xs font-semibold text-emerald-100 ">
  ACADEMIC_EVALUATION_ENGINE_V3
  </span>
  </div>
@@ -84,7 +84,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  <BarChart3 className="h-6 w-6" />
  </div>
  <div>
- <span className="text-[9px] font-semibold text-emerald-200/60 block mb-1.5">Total Evaluasi</span>
+ <span className="text-xs font-semibold text-emerald-200/60 block mb-1.5">Total Evaluasi</span>
  <span className="text-2xl font-semibold text-white">
  {evaluations.meta?.total ?? evaluations.data?.length ?? 0} Record
  </span>
@@ -119,14 +119,14 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  <div className="p-1 px-2.5 bg-slate-50 border border-slate-200 rounded-lg">
  <Fingerprint className="h-3 w-3 text-slate-300 group-hover/row:text-primary transition-colors" />
  </div>
- <span className="text-[9px] font-semibold text-slate-400 opacity-50">IDENTITY_VERIFIED_OK</span>
+ <span className="text-xs font-semibold text-slate-400 opacity-50">IDENTITY_VERIFIED_OK</span>
  </div>
  </div>
  </td>
  <td className="px-6 py-3">
  <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-lg bg-primary/5 border border-primary/10 group-hover/row:">
  <Users className="h-4 w-4 text-primary/40" />
- <span className="text-[11px] font-semibold text-primary pt-0.5">
+ <span className="text-sm font-semibold text-primary pt-0.5">
  {ev.group_name}
  </span>
  </div>
@@ -137,11 +137,11 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  <div className="h-3.5 w-3.5 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200">
  <User className="h-2 w-2 text-slate-400" />
  </div>
- <span className="text-[12px] font-semibold text-slate-600 truncate max-w-[150px]">
+ <span className="text-sm font-semibold text-slate-600 truncate max-w-[150px]">
  {ev.evaluator_name}
  </span>
  </div>
- <StatusBadge status={ev.evaluator_type} className="px-4 py-1.5 text-[9px] font-semibold border-none h-6 w-fit bg-slate-900 text-primary" />
+ <StatusBadge status={ev.evaluator_type} className="px-4 py-1.5 text-xs font-semibold border-none h-6 w-fit bg-slate-900 text-primary" />
  </div>
  </td>
  <td className="px-6 py-3 text-center">
@@ -163,11 +163,11 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  <div className="flex flex-col items-end gap-2 group-hover/row:translate-x-[-4px] transition-transform">
  <div className="flex items-center gap-3 text-slate-400 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
  <Calendar className="h-3.5 w-3.5 opacity-50" />
- <span className="text-[9px] font-semibold ">
+ <span className="text-xs font-semibold ">
  {ev.evaluated_at ?? 'LOG_PENDING'}
  </span>
  </div>
- <span className="text-[8px] font-semibold text-slate-300 pr-2">SECURE_PAYLOAD_SAFE</span>
+ <span className="text-xs font-semibold text-slate-300 pr-2">SECURE_PAYLOAD_SAFE</span>
  </div>
  </td>
  </tr>
@@ -179,7 +179,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  <div className="p-10 bg-slate-50 rounded-lg border border-slate-200
  <Star className="h-20 w-20 text-slate-200" />
  </div>
- <p className="text-[12px] font-semibold text-slate-400">SYSTEM_INFO: NO_EVALUATION_RECORDS_DETECTED</p>
+ <p className="text-sm font-semibold text-slate-400">SYSTEM_INFO: NO_EVALUATION_RECORDS_DETECTED</p>
  </div>
  </td>
  </tr>
@@ -200,8 +200,8 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  <ShieldCheck className="h-7 w-7 text-primary" />
  </div>
  <div>
- <h4 className="text-[11px] font-semibold text-white ">ACADEMIC_VALIDATION_GOVERNANCE_V3</h4>
- <p className="text-[10px] text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: AUDIT_ALGORITHM_VERIFIED</p>
+ <h4 className="text-sm font-semibold text-white ">ACADEMIC_VALIDATION_GOVERNANCE_V3</h4>
+ <p className="text-xs text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: AUDIT_ALGORITHM_VERIFIED</p>
  </div>
  </div>
  <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-4xl opacity-75">
@@ -213,7 +213,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  <div className="flex flex-col items-end gap-5 shrink-0 border-l border-slate-800 pl-12 hidden lg:flex">
  <div className="flex items-center gap-3 mb-1 px-5 py-2.5 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
  <div className="h-2.5 w-2.5 rounded-lg bg-emerald-500" />
- <span className="text-[11px] font-semibold text-slate-100 ">VAL_INTEGRITY_OK</span>
+ <span className="text-sm font-semibold text-slate-100 ">VAL_INTEGRITY_OK</span>
  </div>
  <div className="flex gap-5">
  <div className="h-14 w-14 bg-white/5 border border-slate-200 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
@@ -228,7 +228,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  </div>
 
  <div className="text-center pt-8 opacity-20">
- <p className="text-[9px] font-semibold text-slate-300 ">
+ <p className="text-xs font-semibold text-slate-300 ">
  Evaluation Monitor System • Audit Registry Ver. 3.2.0 • UIN SAIZU © 2024
  </p>
  </div>

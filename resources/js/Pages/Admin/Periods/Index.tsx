@@ -153,45 +153,18 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  <AppLayout title="Protokol Siklus KKN">
  <Head title="Manajemen Periode KKN" />
  
- <div className="space-y-8 pb-20">
- {/* Minimalist Tactical Header Strip */}
- <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-100 pb-8">
- <div className="space-y-1">
- <div className="flex items-center gap-3">
- <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
- <span className="text-[9px] font-semibold text-emerald-600">
- CORE_CYCLE_ORCHESTRATION
- </span>
- </div>
- <div className="flex items-center gap-3">
- <div className="p-2 bg-slate-50 rounded-lg border border-slate-100 text-slate-400">
- <Calendar className="h-4 w-4" />
- </div>
- <h1 className="text-2xl font-semibold text-slate-900 leading-none">
- Manajemen <span className="text-primary">Periode</span>
- </h1>
- </div>
- </div>
-
- <div className="flex items-center gap-4">
- <div className="px-4 py-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-4">
- <div className="text-right border-r border-slate-200 pr-4">
- <span className="block text-[8px] font-semibold text-slate-400 leading-none mb-1">Total Sesi</span>
- <span className="text-xs font-semibold text-slate-900">
- {periods.data.length} RECORDS
- </span>
- </div>
+ <div className="space-y-6 pb-20">
+ <div className="flex items-center justify-between">
+ <h1 className="text-xl font-semibold text-slate-900">Periode KKN</h1>
  {!showForm && (
  <button
  onClick={openCreateForm}
- className="flex items-center gap-3 px-4 py-2 bg-primary text-white rounded-lg font-semibold text-[10px] hover: hover:shadow-primary/20 transition-all"
+ className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold"
  >
- <Plus className="w-3.5 h-3.5 stroke-[3px]" />
- INISIASI_BARU
+ <Plus className="w-4 h-4" />
+ Tambah Periode
  </button>
  )}
- </div>
- </div>
  </div>
 
  {/* Entry Form */}
@@ -200,13 +173,13 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  <div className="flex items-center justify-between border-b border-slate-50 pb-6">
  <div className="flex items-center gap-4">
  <div className="p-3 bg-slate-50 rounded-lg text-primary border border-slate-100 ">
- {editing ? <Edit2 className="h-5 w-5" /> : <Plus className="h-5 w-5 stroke-[2.5px]" />}
+ {editing ? <Edit2 className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
  </div>
  <div>
  <h3 className="text-sm font-semibold text-slate-900">
- {editing ? 'KOREKSI_PARAMETER_SESI' : 'KONFIGURASI_SIKLUS_BARU'}
+ {editing ? 'Edit Periode' : 'Tambah Periode'}
  </h3>
- <p className="text-[10px] font-semibold text-slate-400">Entitas administratif operasional KKN</p>
+ 
  </div>
  </div>
  </div>
@@ -214,17 +187,17 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  <form onSubmit={handleSubmit} className="space-y-8">
  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
  <div className="space-y-2">
- <label className="text-[9px] font-semibold text-slate-400 ml-1">Basis Akademik</label>
+ <label className="text-xs font-semibold text-slate-400 ml-1">Tahun Akademik</label>
  <FormSelect
  options={academicYears.map((ay) => ({ value: ay.id, label: ay.year }))}
  value={form.data.academic_year_id}
  onChange={(e) => form.setData('academic_year_id', e.target.value)}
  required
- className="bg-slate-50 border-slate-100 text-xs font-semibold font-mono rounded-lg"
+ className="bg-slate-50 border-slate-100 text-xs font-semibold rounded-lg"
  />
  </div>
  <div className="space-y-2">
- <label className="text-[9px] font-semibold text-slate-400 ml-1">Digit Periode</label>
+ <label className="text-xs font-semibold text-slate-400 ml-1">Periode</label>
  <FormInput
  type="number"
  placeholder="53"
@@ -235,7 +208,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  />
  </div>
  <div className="space-y-2">
- <label className="text-[9px] font-semibold text-slate-400 ml-1">Klasifikasi KKN</label>
+ <label className="text-xs font-semibold text-slate-400 ml-1">Jenis KKN</label>
  <FormInput
  placeholder="KKN REGULER"
  value={form.data.jenis}
@@ -245,7 +218,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  />
  </div>
  <div className="space-y-2">
- <label className="text-[9px] font-semibold text-slate-400 ml-1">Kapasitas Slot</label>
+ <label className="text-xs font-semibold text-slate-400 ml-1">Kuota</label>
  <FormInput
  type="number"
  value={form.data.kuota}
@@ -260,15 +233,15 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  <div className="p-6 bg-slate-50/50 rounded-lg border border-slate-100 space-y-6">
  <div className="flex items-center gap-3 pb-3 border-b border-white">
  <Calendar className="h-4 w-4 text-primary" />
- <span className="text-[10px] font-semibold text-slate-400 font-mono">TIMELINE_PENDAFTARAN</span>
+ <span className="text-xs font-semibold text-slate-400">Tanggal Pendaftaran</span>
  </div>
  <div className="grid grid-cols-2 gap-6">
  <div className="space-y-2">
- <label className="text-[8px] font-semibold text-slate-400">OPEN_GATE</label>
+ <label className="text-xs font-semibold text-slate-400">Mulai</label>
  <FormInput type="date" value={form.data.registration_start} onChange={(e) => form.setData('registration_start', e.target.value)} required className="bg-white border-slate-200 rounded-lg text-xs font-semibold" />
  </div>
  <div className="space-y-2">
- <label className="text-[8px] font-semibold text-slate-400">CLOSE_GATE</label>
+ <label className="text-xs font-semibold text-slate-400">Selesai</label>
  <FormInput type="date" value={form.data.registration_end} onChange={(e) => form.setData('registration_end', e.target.value)} required className="bg-white border-slate-200 rounded-lg text-xs font-semibold" />
  </div>
  </div>
@@ -277,15 +250,15 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  <div className="p-6 bg-slate-50/50 rounded-lg border border-slate-100 space-y-6">
  <div className="flex items-center gap-3 pb-3 border-b border-white">
  <Map className="h-4 w-4 text-primary" />
- <span className="text-[10px] font-semibold text-slate-400 font-mono">TIMELINE_LAPANGAN</span>
+ <span className="text-xs font-semibold text-slate-400">Tanggal Lapangan</span>
  </div>
  <div className="grid grid-cols-2 gap-6">
  <div className="space-y-2">
- <label className="text-[8px] font-semibold text-slate-400">DEPLOYMENT</label>
+ <label className="text-xs font-semibold text-slate-400">Mulai</label>
  <FormInput type="date" value={form.data.start_date} onChange={(e) => form.setData('start_date', e.target.value)} required className="bg-white border-slate-200 rounded-lg text-xs font-semibold" />
  </div>
  <div className="space-y-2">
- <label className="text-[8px] font-semibold text-slate-400">WITHDRAWAL</label>
+ <label className="text-xs font-semibold text-slate-400">Selesai</label>
  <FormInput type="date" value={form.data.end_date} onChange={(e) => form.setData('end_date', e.target.value)} required className="bg-white border-slate-200 rounded-lg text-xs font-semibold" />
  </div>
  </div>
@@ -308,19 +281,19 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  )} />
  </div>
  <div className="text-left">
- <span className={clsx("text-[10px] font-semibold transition-colors", form.data.is_active ? 'text-primary' : 'text-slate-400')}>
- {form.data.is_active ? 'OPS_ACTIVE' : 'SYSTEM_DRAFT'}
+ <span className={clsx("text-xs font-semibold transition-colors", form.data.is_active ? 'text-primary' : 'text-slate-400')}>
+ {form.data.is_active ? 'Aktif' : 'Draft'}
  </span>
  </div>
  </button>
  <div className="flex gap-3">
- <button type="button" onClick={cancelForm} className="px-6 py-4 text-[10px] font-semibold text-slate-400 hover:text-slate-600 transition-colors">BATALKAN</button>
+ <button type="button" onClick={cancelForm} className="px-6 py-4 text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors">Batal</button>
  <button 
  type="submit" 
  disabled={form.processing}
- className="px-10 py-4 bg-primary text-white rounded-lg font-semibold text-[10px] hover: hover:shadow-primary/20 transition-all disabled:opacity-50"
+ className="px-10 py-4 bg-primary text-white rounded-lg font-semibold text-xs hover: hover:shadow-primary/20 transition-all disabled:opacity-50"
  >
- {editing ? 'SIMPAN_KOREKSI' : 'LAUNCH_PERIODE'}
+ {editing ? 'Simpan' : 'Simpan'}
  </button>
  </div>
  </div>
@@ -334,10 +307,10 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  <div className="relative group max-w-md w-full">
  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-primary transition-colors" />
  <input
- placeholder="SEARCH_CYCLE_NAME_OR_TYPE..."
+ placeholder="Cari..."
  value={search}
  onChange={(e) => setSearch(e.target.value)}
- className="w-full pl-12 pr-6 py-4 bg-white border border-slate-100 rounded-lg text-[11px] font-semibold text-slate-900 placeholder:text-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 "
+ className="w-full pl-12 pr-6 py-4 bg-white border border-slate-100 rounded-lg text-sm font-semibold text-slate-900 placeholder:text-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 "
  />
  </div>
  </div>
@@ -347,12 +320,12 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  <table className="w-full border-collapse divide-y divide-slate-50">
  <thead className="bg-slate-50/50">
  <tr>
- <th className="px-8 py-5 text-left text-[10px] font-semibold text-slate-400">IDENTITAS_SIKLUS</th>
- <th className="px-8 py-5 text-center text-[10px] font-semibold text-slate-400">AKADEMIK</th>
- <th className="px-8 py-5 text-center text-[10px] font-semibold text-slate-400">SLOTS</th>
- <th className="px-8 py-5 text-center text-[10px] font-semibold text-slate-400">REGISTRASI</th>
- <th className="px-8 py-5 text-center text-[10px] font-semibold text-slate-400">STATUS</th>
- <th className="px-8 py-5 text-right text-[10px] font-semibold text-slate-400 pr-12">OPSI</th>
+ <th className="px-8 py-5 text-left text-xs font-semibold text-slate-400">Siklus</th>
+ <th className="px-8 py-5 text-center text-xs font-semibold text-slate-400">Akademik</th>
+ <th className="px-8 py-5 text-center text-xs font-semibold text-slate-400">Slot</th>
+ <th className="px-8 py-5 text-center text-xs font-semibold text-slate-400">Registrasi</th>
+ <th className="px-8 py-5 text-center text-xs font-semibold text-slate-400">Status</th>
+ <th className="px-8 py-5 text-right text-xs font-semibold text-slate-400 pr-12">Aksi</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-slate-50/50">
@@ -360,7 +333,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  <tr>
  <td colSpan={6} className="px-8 py-24 text-center">
  <Info className="h-12 w-12 text-slate-100 mx-auto mb-4" />
- <p className="text-[10px] font-semibold text-slate-300">DATABASE_EMPTY</p>
+ <p className="text-xs font-semibold text-slate-300">Belum ada data</p>
  </td>
  </tr>
  ) : (
@@ -368,49 +341,49 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  <tr key={period.id} className="group/row hover:bg-slate-50/50 transition-colors">
  <td className="px-8 py-6">
  <div className="flex items-center gap-5">
- <div className="h-12 w-12 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-xs font-semibold text-slate-400 group-hover/row:bg-primary group-hover/row:text-white group-hover/row:border-primary transition-all font-mono">
+ <div className="h-12 w-12 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-xs font-semibold text-slate-400 group-hover/row:bg-primary group-hover/row:text-white group-hover/row:border-primary transition-all">
  {period.periode ?? '--'}
  </div>
  <div className="flex flex-col">
  <span className="text-sm font-semibold text-slate-900 group-hover/row:text-primary transition-colors">{period.jenis ?? 'N/A'}</span>
- <span className="text-[9px] font-semibold text-slate-300">{period.name}</span>
+ <span className="text-xs font-semibold text-slate-300">{period.name}</span>
  </div>
  </div>
  </td>
  <td className="px-8 py-6 text-center">
- <span className="px-3 py-1 bg-slate-50 rounded-lg text-[10px] font-semibold text-slate-400 border border-slate-100 font-mono">
+ <span className="px-3 py-1 bg-slate-50 rounded-lg text-xs font-semibold text-slate-400 border border-slate-100">
  {period.academic_year?.year || '--'}
  </span>
  </td>
  <td className="px-8 py-6 text-center">
  <div className="flex flex-col items-center">
  <span className="text-sm font-semibold text-slate-900">{period.kuota ?? '--'}</span>
- <span className="text-[9px] font-semibold text-emerald-500">TAKEN: {period.participants_count}</span>
+ <span className="text-xs font-semibold text-emerald-500">Diambil: {period.participants_count}</span>
  </div>
  </td>
  <td className="px-8 py-6">
  <div className="flex flex-col items-center gap-1">
- <span className="text-[9px] font-semibold text-emerald-600">{period.registration_start}</span>
+ <span className="text-xs font-semibold text-emerald-600">{period.registration_start}</span>
  <div className="h-0.5 w-8 bg-slate-100" />
- <span className="text-[9px] font-semibold text-slate-300">{period.registration_end}</span>
+ <span className="text-xs font-semibold text-slate-300">{period.registration_end}</span>
  </div>
  </td>
  <td className="px-8 py-6 text-center">
  <Badge
  variant={period.is_active ? 'success' : 'default'}
  >
- {period.is_active ? 'OPERASIONAL' : 'INACTIVE'}
+ {period.is_active ? 'Aktif' : 'Nonaktif'}
  </Badge>
  </td>
  <td className="px-8 py-6 text-right pr-12">
  <div className="flex justify-end gap-2 opacity-30 group-hover/row:opacity-100 transition-opacity">
- <button onClick={() => setDuplicating(period)} className="p-2 text-slate-400 hover:text-emerald-500 border border-slate-100 hover:border-emerald-200 rounded-lg transition-all" title="DUPLIKASI">
+ <button onClick={() => setDuplicating(period)} className="p-2 text-slate-400 hover:text-emerald-500 border border-slate-100 hover:border-emerald-200 rounded-lg transition-all" title="Duplikasi">
  <Copy className="h-4 w-4" />
  </button>
- <button onClick={() => startEdit(period)} className="p-2 text-slate-400 hover:text-primary border border-slate-100 hover:border-primary/20 rounded-lg transition-all" title="KOREKSI">
+ <button onClick={() => startEdit(period)} className="p-2 text-slate-400 hover:text-primary border border-slate-100 hover:border-primary/20 rounded-lg transition-all" title="Edit">
  <Edit2 className="h-4 w-4" />
  </button>
- <button onClick={() => setDeleting(period)} disabled={!period.can_delete} className={clsx("p-2 border border-slate-100 rounded-lg transition-all", period.can_delete ? "text-slate-400 hover:text-rose-500 hover:border-rose-200" : "opacity-10 cursor-not-allowed")} title="HAPUS">
+ <button onClick={() => setDeleting(period)} disabled={!period.can_delete} className={clsx("p-2 border border-slate-100 rounded-lg transition-all", period.can_delete ? "text-slate-400 hover:text-rose-500 hover:border-rose-200" : "opacity-10 cursor-not-allowed")} title="Hapus">
  <Trash2 className="h-4 w-4" />
  </button>
  </div>
@@ -439,9 +412,9 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  <ShieldCheck className="h-6 w-6 text-primary" />
  </div>
  <div>
- <h4 className="text-[11px] font-semibold text-white">CYCLE_GOVERNANCE_PROTOCOL</h4>
- <p className="text-[9px] font-semibold text-slate-500 mt-1 leading-relaxed max-w-2xl">
- Seluruh parameter temporal terekam dalam audit sistem universitas. Mengaktifkan status <span className="text-primary">OPERASIONAL</span> akan membuka pintu pendaftaran bagi publik.
+ <h4 className="text-sm font-semibold text-white"></h4>
+ <p className="text-xs font-semibold text-slate-500 mt-1  max-w-2xl">
+ Seluruh parameter temporal terekam dalam audit sistem universitas. Mengaktifkan status <span className="text-primary">Aktif</span> akan membuka pintu pendaftaran bagi publik.
  </p>
  </div>
  </div>
@@ -453,20 +426,20 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  open={!!duplicating}
  onClose={() => !duplicateForm.processing && setDuplicating(null)}
  onConfirm={() => duplicating && duplicateForm.post(`/admin/periods/${duplicating.id}/duplicate`, { onSuccess: () => setDuplicating(null) })}
- title="DUPLIKASI_PERIODE"
+ title="Duplikasi_PERIODE"
  message={`Inisiasi database baru berbasis "${duplicating?.name}"?`}
  processing={duplicateForm.processing}
- confirmLabel="KONFIRMASI_DUPLIKASI"
+ confirmLabel="KONFIRMASI_Duplikasi"
  />
 
  <ConfirmDialog
  open={!!deleting}
  onClose={() => !deleteForm.processing && setDeleting(null)}
  onConfirm={() => deleting && deleteForm.delete(`/admin/periods/${deleting.id}`, { onSuccess: () => setDeleting(null) })}
- title="PENGHAPUSAN_DATA"
+ title="PENGHapusAN_DATA"
  message={deleting?.can_delete ? `Hapus siklus "${deleting.name}" dari basis data?` : deleting?.delete_blocker}
  processing={deleteForm.processing}
- confirmLabel="YA_EKSEKUSI"
+ confirmLabel="Ya, hapus"
  />
  </AppLayout>
 
@@ -480,7 +453,7 @@ function Badge({ variant, className, children }: any) {
  default: 'bg-slate-50 text-slate-400 border border-slate-200'
  };
  return (
- <span className={clsx("px-4 py-1 rounded-lg text-[9px] font-semibold whitespace-nowrap", variants[variant] || variants.default, className)}>
+ <span className={clsx("px-4 py-1 rounded-lg text-xs font-semibold whitespace-nowrap", variants[variant] || variants.default, className)}>
  {children}
  </span>
  );

@@ -57,7 +57,7 @@ export default function AuditLogShow({ log }: Props) {
                 <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
                     {/* Primary Manifest - Main Column */}
                     <div className="xl:col-span-8 space-y-8">
-                        <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-2xl shadow-slate-200/5 overflow-hidden group">
+                        <div className="bg-white rounded-lg border border-slate-200 shadow-2xl shadow-slate-200/5 overflow-hidden group">
                             <div className="p-10 border-b border-slate-50 relative overflow-hidden">
                                 <div className="absolute top-0 right-0 p-12 text-slate-900 opacity-[0.02] pointer-events-none group-hover:rotate-12 transition-transform duration-1000">
                                     <History className="h-48 w-48" />
@@ -86,7 +86,7 @@ export default function AuditLogShow({ log }: Props) {
                                     <ManifestItem label="SUBJECT_RESOURCE" value={log.subject_type?.split('\\').pop() || 'UNDEFINED_RESOURCE'} icon={Activity} color="emerald" />
                                 </div>
 
-                                <div className="p-8 bg-slate-900 rounded-[2rem] border border-slate-800 shadow-2xl shadow-slate-900/40 space-y-6">
+                                <div className="p-8 bg-slate-900 rounded-lg border border-slate-800 shadow-2xl shadow-slate-900/40 space-y-6">
                                     <div className="flex items-center gap-4 border-b border-slate-800 pb-4">
                                         <Terminal className="h-5 w-5 text-emerald-400" />
                                         <h3 className="text-[11px] font-black text-white uppercase italic tracking-widest leading-none">Payload_Properties_Matrix</h3>
@@ -103,7 +103,7 @@ export default function AuditLogShow({ log }: Props) {
 
                     {/* Operational Guard - Side Column */}
                     <div className="xl:col-span-4 space-y-8">
-                        <section className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/5 space-y-8 group/guard relative overflow-hidden">
+                        <section className="bg-white p-8 rounded-lg border border-slate-200 shadow-xl shadow-slate-200/5 space-y-8 group/guard relative overflow-hidden">
                             <div className="absolute -bottom-6 -right-6 text-slate-900 opacity-[0.02] pointer-events-none group-hover/guard:rotate-12 transition-transform duration-1000">
                                 <ShieldCheck className="h-32 w-32" />
                             </div>
@@ -120,7 +120,7 @@ export default function AuditLogShow({ log }: Props) {
                             </div>
                         </section>
 
-                        <div className="p-8 bg-slate-900 rounded-[2.5rem] border border-slate-800 relative overflow-hidden group/notice shadow-2xl shadow-slate-900/40">
+                        <div className="p-8 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group/notice shadow-2xl shadow-slate-900/40">
                              <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
                              <div className="relative z-10 flex flex-col items-center text-center space-y-6">
                                 <div className="p-4 bg-primary/10 rounded-3xl border border-primary/20">

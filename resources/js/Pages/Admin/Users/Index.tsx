@@ -96,7 +96,7 @@ export default function UsersIndex({ users, filters }: Props) {
                 </div>
 
                 {/* Users Registry List */}
-                <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/5 overflow-hidden group relative">
+                <div className="bg-white rounded-lg border border-slate-100 shadow-2xl shadow-slate-200/5 overflow-hidden group relative">
                     <div className="divide-y divide-slate-50 relative z-10">
                         {users.data.map((user) => (
                             <div key={user.id} className="p-8 hover:bg-slate-50/50 transition-all flex flex-col md:flex-row md:items-center justify-between gap-8 group/row">

@@ -77,7 +77,7 @@ export default function DplAssignment({ groups, availableDosen, filters }: Props
                     {/* Form Section */}
                     <div className="xl:col-span-4 space-y-6">
                         <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
-                           <div className="absolute top-0 right-0 p-8 text-emerald-500 opacity-[0.03] pointer-events-none  transition-transform">
+                           <div className="absolute top-0 right-0 p-8 text-emerald-500 pointer-events-none  transition-transform">
                                 <UserPlus className="h-48 w-48" />
                             </div>
 
@@ -139,7 +139,7 @@ export default function DplAssignment({ groups, availableDosen, filters }: Props
                                 <AlertCircle className="w-8 h-8 text-emerald-500 mb-2 shadow-sm" />
                                 <div>
                                     <h4 className="text-xs font-bold text-white uppercase tracking-widest mb-2">Informasi</h4>
-                                    <p className="text-sm text-slate-400 font-medium  opacity-75 italic">
+                                    <p className="text-sm text-slate-400 font-medium italic">
                                         Perubahan penugasan akan secara otomatis memperbarui data di dashboard DPL yang bersangkutan.
                                     </p>
                                 </div>
@@ -194,7 +194,7 @@ export default function DplAssignment({ groups, availableDosen, filters }: Props
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <h3 className="font-bold text-slate-900 group-hover/card:text-emerald-600 transition-colors tracking-tighter text-sm mb-1">{group.name}</h3>
-                                                    <div className="flex items-center gap-1.5 opacity-50">
+                                                    <div className="flex items-center gap-1.5">
                                                         <MapPin className="w-3 h-3 text-slate-400" />
                                                         <span className="text-xs font-bold text-slate-600 truncate max-w-[150px]">{group.location ? `${group.location.kecamatan}` : 'Lokasi Belum Diatur'}</span>
                                                     </div>
@@ -215,7 +215,7 @@ export default function DplAssignment({ groups, availableDosen, filters }: Props
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center gap-3 relative z-10 opacity-30 italic group-hover/card:opacity-100 transition-all">
+                                                <div className="flex items-center gap-3 relative z-10 italic group-hover/card:opacity-100 transition-all">
                                                     <div className="p-2 bg-white border border-slate-200 text-slate-300 rounded-lg shadow-sm">
                                                         <AlertCircle className="w-4 h-4" />
                                                     </div>

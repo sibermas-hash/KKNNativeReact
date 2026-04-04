@@ -142,7 +142,7 @@ export default function GradingSettings({ components }: Props) {
                      {/* Info Sidebar Section */}
                      <div className="xl:col-span-4 space-y-6">
                         <section className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm space-y-6 relative overflow-hidden group/notice">
-                            <div className="absolute -bottom-6 -right-6 text-slate-100 opacity-20 pointer-events-none group-hover/notice:rotate-12 transition-transform">
+                            <div className="absolute -bottom-6 -right-6 text-slate-100 pointer-events-none group-hover/notice:rotate-12 transition-transform">
                                 <Zap className="h-32 w-32" />
                             </div>
                             
@@ -155,13 +155,13 @@ export default function GradingSettings({ components }: Props) {
 
                             <div className="space-y-5 relative z-10">
                                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 italic">
-                                    <p className="text-sm text-slate-400 font-bold uppercase tracking-widest mb-1 opacity-50">Aturan Total Bobot</p>
+                                    <p className="text-sm text-slate-400 font-bold uppercase tracking-widest mb-1">Aturan Total Bobot</p>
                                     <p className="text-sm text-slate-600 font-medium italic ">
                                         Seluruh bobot komponen harus berjumlah tepat 100%. Jika tidak memenuhi syarat, perubahan tidak dapat disimpan.
                                     </p>
                                 </div>
                                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 italic">
-                                    <p className="text-sm text-slate-400 font-bold uppercase tracking-widest mb-1 opacity-50">Efek Perubahan</p>
+                                    <p className="text-sm text-slate-400 font-bold uppercase tracking-widest mb-1">Efek Perubahan</p>
                                     <p className="text-sm text-slate-600 font-medium italic ">
                                         Nilai agregat mahasiswa akan diperbarui secara otomatis menggunakan bobot terbaru pada proses sinkronisasi berikutnya.
                                     </p>
@@ -177,7 +177,7 @@ export default function GradingSettings({ components }: Props) {
                                 </div>
                                 <div>
                                     <h4 className="text-xs font-bold text-white uppercase italic tracking-[0.2em] mb-2 ">Infrastruktur_Audit</h4>
-                                    <p className="text-xs text-slate-500 font-medium italic  opacity-75 truncate uppercase">ENCRYPTED_ALGO_GOVERNANCE_SECURED</p>
+                                    <p className="text-xs text-slate-500 font-medium italic truncate uppercase">ENCRYPTED_ALGO_GOVERNANCE_SECURED</p>
                                 </div>
                             </div>
                         </div>

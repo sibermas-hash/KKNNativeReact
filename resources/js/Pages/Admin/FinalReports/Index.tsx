@@ -46,7 +46,7 @@ export default function AdminFinalReportsIndex({ reports, filters }: Props) {
  Refining from heavy black to lush tactical emerald gradient
  */}
  <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
+ <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
@@ -136,7 +136,7 @@ export default function AdminFinalReportsIndex({ reports, filters }: Props) {
  </span>
  <div className="flex items-center gap-3 mt-1 px-3 py-1 bg-slate-50 w-fit rounded-lg border border-slate-200">
  <Calendar className="h-3.5 w-3.5 text-slate-300" />
- <span className="text-xs font-semibold text-slate-400 opacity-50">Log_Submit: {r.submitted_at ?? 'MENUNGGU_ENTRY'}</span>
+ <span className="text-xs font-semibold text-slate-400">Log_Submit: {r.submitted_at ?? 'MENUNGGU_ENTRY'}</span>
  </div>
  </div>
  </div>
@@ -147,17 +147,17 @@ export default function AdminFinalReportsIndex({ reports, filters }: Props) {
  {r.student?.name.charAt(0)}
  </div>
  <div className="flex flex-col gap-1.5 min-w-0">
- <span className="text-[14px] font-semibold text-slate-900 truncate group-hover/row:text-primary transition-colors">{r.student?.name}</span>
+ <span className="text-sm font-semibold text-slate-900 truncate group-hover/row:text-primary transition-colors">{r.student?.name}</span>
  <div className="flex items-center gap-2">
  <IdCard className="h-3.5 w-3.5 text-slate-300" />
- <span className="text-xs font-semibold text-slate-400 opacity-50 px-2 bg-slate-50 rounded-lg py-0.5 border border-slate-200">NIM: {r.student?.nim}</span>
+ <span className="text-xs font-semibold text-slate-400 px-2 bg-slate-50 rounded-lg py-0.5 border border-slate-200">NIM: {r.student?.nim}</span>
  </div>
  </div>
  </div>
  </td>
  <td className="px-6 py-3">
  <div className="flex items-center gap-3 w-fit px-4 py-2 bg-primary/5 rounded-lg border border-primary/10">
- <Users className="h-4 w-4 text-primary opacity-50" />
+ <Users className="h-4 w-4 text-primary" />
  <span className="text-sm font-semibold text-primary group-hover/row:transition-transform">
  {r.group?.name}
  </span>
@@ -179,7 +179,7 @@ export default function AdminFinalReportsIndex({ reports, filters }: Props) {
  )) : (
  <tr>
  <td colSpan={5} className="px-6 py-40 text-center">
- <div className="flex flex-col items-center gap-6 opacity-50">
+ <div className="flex flex-col items-center gap-6">
  <div className="p-10 bg-slate-50 rounded-lg border border-slate-200
  <GraduationCap className="h-20 w-20 text-slate-200" />
  </div>
@@ -205,7 +205,7 @@ export default function AdminFinalReportsIndex({ reports, filters }: Props) {
  </div>
  <h4 className="text-sm font-semibold text-white ">FINAL_AUDIT_GOVERNANCE_V3</h4>
  </div>
- <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-4xl opacity-75">
+ <p className="text-sm text-slate-400 text-sm leading-normal max-w-4xl">
  Laporan Akhir merupakan dokumen akademik primer yang akan menentukan status kelulusan KKN mahasiswa UIN SAIZU. 
  Setiap laporan yang memiliki status <span className="text-primary font-semibold">"Approved"</span> akan memicu orkestrasi nilai akhir secara otomatis dan menjadi basis orisinal 
  dalam penerbitan sertifikat digital resmi. Pastikan audit akademik dilakukan secara mendalam sebelum validasi sistem.
@@ -228,7 +228,7 @@ export default function AdminFinalReportsIndex({ reports, filters }: Props) {
  </div>
  </div>
 
- <div className="text-center pt-8 opacity-20">
+ <div className="text-center pt-8">
  <p className="text-xs font-semibold text-slate-300 ">
  Academic Integrity Monitor • System Registry Ver. 3.2.0 • UIN SAIZU © 2024
  </p>

@@ -87,7 +87,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
  Refining from basic header to lush tactical emerald gradient
  */}
  <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
+ <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
@@ -134,7 +134,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
  color="amber"
  />
  <div className="bg-whitep-7rounded-lg border border-primary flex flex-col justify-between group overflow-hidden relative">
- <div className="absolute top-0 right-0 p-8 opacity-10 text-emerald-300 pointer-events-none group-transition-transform">
+ <div className="absolute top-0 right-0 p-8 text-emerald-300 pointer-events-none group-transition-transform">
  <ShieldCheck className="h-24 w-24" />
  </div>
  <div className="relative z-10">
@@ -162,7 +162,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
  value={search}
  onChange={(event) => setSearch(event.target.value)}
  placeholder="Cari laporan, mahasiswa, atau desa..."
- className="w-full pl-14 pr-8 py-2 bg-white border border-slate-200 rounded-lg text-sm text-sm text-slate-900 outline-none focus:border-primary/50
+ className="w-full pl-14 pr-8 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 outline-none focus:border-primary/50
  />
  </div>
 
@@ -188,7 +188,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
  {getIcon(report.type)}
  </div>
  <div className="flex flex-col gap-1.5 max-w-sm">
- <span className="text-[14px] font-semibold text-slate-900 group-hover/row:text-primary transition-colors line-clamp-1">{report.title}</span>
+ <span className="text-sm font-semibold text-slate-900 group-hover/row:text-primary transition-colors line-clamp-1">{report.title}</span>
  <div className="flex items-center gap-2">
  <span className="text-xs text-sm text-slate-400 ">{getTypeLabel(report.type)}</span>
  </div>
@@ -200,7 +200,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
  <div className="h-9 w-9 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-semibold text-slate-400 group-hover/row:bg-primary/10 group-hover/row:text-primary">
  {report.user.name.charAt(0)}
  </div>
- <span className="text-sm text-sm text-slate-700 ">{report.user.name}</span>
+ <span className="text-sm text-slate-700 ">{report.user.name}</span>
  </div>
  </td>
  <td className="px-6 py-3">
@@ -209,7 +209,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
  <div className="h-2 w-1 bg-primary rounded-lg" />
  {report.group.name}
  </span>
- <span className="text-xs text-sm text-slate-400 ml-3 opacity-50 truncate max-w-[150px]">{report.group.village}</span>
+ <span className="text-xs text-sm text-slate-400 ml-3 truncate max-w-[150px]">{report.group.village}</span>
  </div>
  </td>
  <td className="px-6 py-3 text-center">
@@ -229,11 +229,11 @@ export default function ReportsIndex({ reports, summary }: Props) {
  )) : (
  <tr>
  <td colSpan={5} className="px-6 py-24 text-center">
- <div className="flex flex-col items-center gap-5 opacity-50">
+ <div className="flex flex-col items-center gap-5">
  <div className="p-8 bg-slate-50 rounded-lg border border-slate-200
  <FileText className="h-12 w-12 text-slate-200" />
  </div>
- <p className="text-sm text-sm text-slate-400 ">
+ <p className="text-sm text-slate-400 ">
  {reports.data.length > 0 ? 'Tidak ada laporan yang cocok dengan pencarian' : 'Arsip laporan tidak ditemukan'}
  </p>
  </div>
@@ -245,7 +245,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
  </div>
  </div>
 
- <div className="flex items-center justify-center pt-8 opacity-20">
+ <div className="flex items-center justify-center pt-8">
  <p className="text-xs font-semibold text-slate-300">
  Sistem Dokumentasi Terenkripsi • UIN SAIZU © 2024
  </p>
@@ -268,7 +268,7 @@ function SummaryCard({ icon: Icon, label, value, color }: { icon: any, label: st
  </div>
  <span className="h-2 w-2 rounded-lg bg-slate-100  transition-colors" />
  </div>
- <p className="text-sm text-sm text-slate-400 mb-2 text-sm">{label}</p>
+ <p className="text-sm text-slate-400 mb-2 text-sm">{label}</p>
  <div className="flex items-end gap-2">
  <p className="text-4xl font-semibold text-slate-900 ">{value}</p>
  <span className="text-xs text-sm text-slate-300 pb-1">Unit</span>

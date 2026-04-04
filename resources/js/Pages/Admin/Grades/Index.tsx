@@ -92,7 +92,7 @@ export default function Index({ groups }: Props) {
  Refining from heavy rose to lush tactical emerald/rose gradient hybrid
  */}
  <div className="relative overflow-hidden rounded-lg bg-whitep-6 border border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
+ <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
@@ -139,13 +139,13 @@ export default function Index({ groups }: Props) {
  </div>
  <div>
  <h3 className="text-xl font-semibold text-slate-900 ">Audit_Integrity</h3>
- <p className="text-xs font-semibold text-slate-400 mt-2 opacity-50">KEBIJAKAN LPPM</p>
+ <p className="text-xs font-semibold text-slate-400 mt-2">KEBIJAKAN LPPM</p>
  </div>
  </div>
 
  <div className="space-y-6">
  <div className="p-8 bg-rose-50 rounded-lg border border-rose-100
- <p className="text-[13px] text-sm text-rose-900 leading-normal opacity-75">
+ <p className="text-sm text-rose-900 leading-normal">
  <strong className="uppercase">Peringatan:</strong> Injeksi manual akan melewati alur evaluasi standar (DPL & Desa). Tindakan ini hanya diperuntukkan bagi admin dengan otorisasi khusus.
  </p>
  </div>
@@ -155,7 +155,7 @@ export default function Index({ groups }: Props) {
  <div className="p-2 bg-white rounded-lg text-rose-500">
  <Fingerprint className="h-4 w-4" />
  </div>
- <p className="text-sm text-slate-500 text-sm leading-normal opacity-50">
+ <p className="text-sm text-slate-500 text-sm leading-normal">
  Setiap perubahan nilai manual akan dicatat permanen dalam audit log keamanan sistem.
  </p>
  </div>
@@ -163,7 +163,7 @@ export default function Index({ groups }: Props) {
  <div className="p-2 bg-white rounded-lg text-primary">
  <Cpu className="h-4 w-4" />
  </div>
- <p className="text-sm text-slate-500 text-sm leading-normal opacity-50">
+ <p className="text-sm text-slate-500 text-sm leading-normal">
  Sistem akan melakukan re-kalkulasi skor total secara otomatis setelah data dikirimkan.
  </p>
  </div>
@@ -187,7 +187,7 @@ export default function Index({ groups }: Props) {
  </div>
  <div>
  <h3 className="text-2xl font-semibold text-slate-900 ">Parameter_Kalibrasi</h3>
- <p className="text-sm font-semibold text-slate-400 mt-2 opacity-50">INPUT DATA NILAI SEKTORAL</p>
+ <p className="text-sm font-semibold text-slate-400 mt-2">INPUT DATA NILAI SEKTORAL</p>
  </div>
  </div>
 
@@ -285,7 +285,7 @@ export default function Index({ groups }: Props) {
  <p className="text-xs text-rose-400 text-sm mt-2 whitespace-nowrap">STATUS: </p>
  </div>
  </div>
- <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-4xl opacity-75">
+ <p className="text-sm text-slate-400 text-sm leading-normal max-w-4xl">
  Petunjuk Keamanan: Penilaian manual adalah tindakan intervensi tingkat tinggi. 
  Seluruh record akan di-hash dan disimpan dalam ledger audit untuk keperluan review oleh pimpinan universitas. 
  Pastikan justifikasi koreksi telah terdokumentasi secara luring.

@@ -46,7 +46,7 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
  <h1 className="text-4xl font-extrabold text-slate-900 ">
  Arsip <span className="text-primary">Laporan</span> Harian
  </h1>
- <p className="text-slate-500 text-sm mt-4 font-medium opacity-50 leading-normal max-w-xl">
+ <p className="text-slate-500 text-sm mt-4 font-medium leading-normal max-w-xl">
  Kelola rekaman aktivitas harian Anda. Pastikan setiap laporan dikirim tepat waktu untuk proses validasi oleh DPL.
  </p>
  </div>
@@ -118,7 +118,7 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
  <FileText className="h-16 w-16 text-slate-200" />
  </div>
  <h3 className="text-2xl font-semibold text-slate-900 mb-3">Belum Ada Laporan</h3>
- <p className="text-slate-400 text-sm text-xs max-w-sm mx-auto leading-normal opacity-50">Sistem belum mendeteksi catatan aktivitas untuk periode aktif ini.</p>
+ <p className="text-slate-400 text-sm text-xs max-w-sm mx-auto leading-normal">Sistem belum mendeteksi catatan aktivitas untuk periode aktif ini.</p>
  </div>
  </div>
  ) : (
@@ -134,8 +134,8 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
  <div className="flex flex-col md:flex-row md:items-center flex-1 gap-6 relative z-10">
  <div className="flex flex-col items-center justify-center p-6 bg-slate-50 border border-slate-200 rounded-lg min-w-[120px]">
  <Calendar className="h-6 w-6 text-slate-300 mb-2.5" />
- <p className="text-[14px] font-semibold text-slate-900 mb-1.5">{r.date.split(' ')[0]}</p>
- <p className="text-xs text-sm text-slate-400 opacity-50">{r.date.split(' ')[1]}</p>
+ <p className="text-sm font-semibold text-slate-900 mb-1.5">{r.date.split(' ')[0]}</p>
+ <p className="text-xs text-sm text-slate-400">{r.date.split(' ')[1]}</p>
  </div>
  
  <div className="flex-1 min-w-0">
@@ -150,7 +150,7 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
  <AlertTriangle className="h-5 w-5 text-rose-500 shrink-0 mt-0.5" />
  <div className="min-w-0">
  <p className="text-xs font-semibold text-rose-600 mb-1.5">Umpan Balik Auditor:</p>
- <p className="text-[13px] text-sm text-rose-800 leading-normal opacity-75">"{r.review_notes}"</p>
+ <p className="text-sm text-rose-800 leading-normal">"{r.review_notes}"</p>
  </div>
  </div>
  )}
@@ -179,7 +179,7 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
  )}
  </div>
 
- <div className="text-center pt-8 opacity-20">
+ <div className="text-center pt-8">
  <p className="text-xs font-semibold text-slate-300 ">
  Pusat Kendali Dokumen • UIN SAIZU © 2024
  </p>

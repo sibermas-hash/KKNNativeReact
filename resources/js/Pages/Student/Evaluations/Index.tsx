@@ -47,7 +47,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
  <h1 className="text-4xl font-extrabold text-slate-900 ">
  Hasil <span className="text-primary">Evaluasi</span> & Nilai
  </h1>
- <p className="text-slate-500 text-sm mt-4 font-medium opacity-50 leading-normal max-w-xl">
+ <p className="text-slate-500 text-sm mt-4 font-medium leading-normal max-w-xl">
  Lihat rincian penilaian kinerja Anda selama masa bakti KKN. Nilai akhir ditentukan berdasarkan akumulasi poin dari DPL dan Mitra.
  </p>
  </div>
@@ -73,7 +73,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
  <Award className="h-16 w-16 text-slate-200" />
  </div>
  <h3 className="text-2xl font-semibold text-slate-900 mb-3">Nilai Belum Dirilis</h3>
- <p className="text-slate-400 text-sm text-xs max-w-sm mx-auto leading-normal opacity-50">
+ <p className="text-slate-400 text-sm text-xs max-w-sm mx-auto leading-normal">
  Dosen Pembimbing Lapangan (DPL) sedang melakukan sinkronisasi nilai akhir Anda ke dalam basis data universitas.
  </p>
  </div>
@@ -94,7 +94,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
  </div>
  <div>
  <h3 className="text-lg font-semibold text-slate-900 ">Penilaian {ev.evaluator_type === 'dpl' ? 'DPL' : ev.evaluator_type}</h3>
- <span className="text-xs text-sm text-slate-400 mt-1.5 block opacity-50">{ev.group.name}</span>
+ <span className="text-xs text-sm text-slate-400 mt-1.5 block">{ev.group.name}</span>
  </div>
  </div>
  <div className="text-right">
@@ -113,7 +113,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
  </div>
 
  <div className="space-y-4">
- <div className="grid grid-cols-3 text-xs font-semibold text-slate-300 px-4 opacity-50">
+ <div className="grid grid-cols-3 text-xs font-semibold text-slate-300 px-4">
  <span className="col-span-1">Metrik Penilaian</span>
  <span className="text-center">Bobot</span>
  <span className="text-right">Skor</span>
@@ -133,10 +133,10 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
  <div className="mt-8 p-6 bg-slate-900rounded-lg relative overflow-hidden group/notes">
  <div className="absolute inset-0 bg-whitepointer-events-none" />
  <div className="relative z-10 flex gap-4">
- <Info className="h-5 w-5 text-primary shrink-0 opacity-50" />
+ <Info className="h-5 w-5 text-primary shrink-0" />
  <div>
  <p className="text-xs font-semibold text-slate-500 mb-2">Catatan Penilai:</p>
- <p className="text-xs text-sm text-slate-400 leading-normal opacity-75">"{ev.notes}"</p>
+ <p className="text-xs text-sm text-slate-400 leading-normal">"{ev.notes}"</p>
  </div>
  </div>
  </div>
@@ -148,7 +148,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
  </div>
  )}
  
- <div className="text-center pt-8 opacity-20">
+ <div className="text-center pt-8">
  <p className="text-xs font-semibold text-slate-300 ">
  Pusat Evaluasi Akademik • UIN SAIZU © 2024
  </p>

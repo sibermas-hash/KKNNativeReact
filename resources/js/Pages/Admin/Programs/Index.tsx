@@ -60,7 +60,7 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
  Refining from heavy black to lush tactical emerald gradient
  */}
  <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
+ <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
@@ -107,13 +107,13 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
  </div>
  <div>
  <h3 className="text-xl font-semibold text-slate-900 ">Status_Record</h3>
- <p className="text-xs font-semibold text-slate-400 mt-2 opacity-50">SINKRONISASI EKSTERNAL</p>
+ <p className="text-xs font-semibold text-slate-400 mt-2">SINKRONISASI EKSTERNAL</p>
  </div>
  </div>
 
  <div className="space-y-8">
  <div className="p-6 bg-slate-50 border border-slate-200rounded-lg
- <p className="text-[13px] text-sm text-slate-500 leading-normal">
+ <p className="text-sm text-slate-500 leading-normal">
  Pengelolaan manual dinonaktifkan untuk menjaga integritas relasi data mahasiswa dengan database utama UIN SAIZU.
  </p>
  </div>
@@ -123,14 +123,14 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
  <span className="text-xs font-semibold text-slate-300 block mb-2 px-1">Kanal_Sumber_Data</span>
  <div className="flex items-center gap-3">
  <Globe className="h-4 w-4 text-primary" />
- <span className="text-[14px] font-semibold text-slate-900">{syncInfo.source}</span>
+ <span className="text-sm font-semibold text-slate-900">{syncInfo.source}</span>
  </div>
  </div>
  <div className="bg-white border border-slate-200 rounded-lg p-6 border-l-4 border-l-primary group/item hover:border-primary">
  <span className="text-xs font-semibold text-slate-300 block mb-2 px-1">Audit_Sinkronisasi</span>
  <div className="flex items-center gap-3">
  <Activity className="h-4 w-4 text-emerald-500" />
- <span className="text-[14px] font-semibold text-primary">{syncInfo.last_synced_at || 'BELUM_TERCATAT'}</span>
+ <span className="text-sm font-semibold text-primary">{syncInfo.last_synced_at || 'BELUM_TERCATAT'}</span>
  </div>
  </div>
  </div>
@@ -182,7 +182,7 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
  {programs.data.length === 0 ? (
  <tr>
  <td colSpan={3} className="px-6 py-40 text-center">
- <div className="flex flex-col items-center gap-8 opacity-50">
+ <div className="flex flex-col items-center gap-8">
  <div className="p-10 bg-slate-50 rounded-lg border border-slate-200
  <Globe className="h-20 w-20 text-slate-200" />
  </div>
@@ -199,7 +199,7 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
  <td className="px-6 py-3">
  <div className="flex items-center gap-4">
  <div className="h-7 w-1.5 bg-slate-100 group-hover/row:bg-primaryrounded-lg" />
- <span className="text-sm font-semibold text-slate-500 group-hover/row:text-slate-900 transition-colors opacity-50  </div>
+ <span className="text-sm font-semibold text-slate-500 group-hover/row:text-slate-900 transition-colors  </div>
  </td>
  <td className="px-6 py-3 text-right pr-14">
  <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-400 group-hover/row:bg-white group-hover/row:text-primary group-hover/row:border-primary">
@@ -235,7 +235,7 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
  <p className="text-xs text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: SECURE_</p>
  </div>
  </div>
- <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-4xl opacity-75">
+ <p className="text-sm text-slate-400 text-sm leading-normal max-w-4xl">
  Petunjuk Strategis: Program studi merupakan unit granula terkecil dalam sistem distribusi personel KKN. 
  Pastikan mapping fakultas akurat untuk menjamin sinkronisasi pelaporan akademik di seluruh ekosistem digital UIN SAIZU. 
  Record ini bersifat <span className="text-primary font-semibold">Read-Only</span> berbasis otentikasi database pusat.

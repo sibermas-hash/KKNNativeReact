@@ -58,7 +58,7 @@ export default function StudentWorkshopsIndex({ workshops }: Props) {
  <h1 className="text-4xl font-extrabold text-slate-900 ">
  Jadwal <span className="text-primary">Pembekalan</span>
  </h1>
- <p className="text-slate-500 text-sm mt-4 font-medium opacity-50 leading-normal max-w-2xl">
+ <p className="text-slate-500 text-sm mt-4 font-medium leading-normal max-w-2xl">
  Pantau agenda pembekalan resmi dan daftarkan diri Anda ke sesi yang masih tersedia.
  </p>
  </div>

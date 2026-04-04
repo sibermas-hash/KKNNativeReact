@@ -45,7 +45,7 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
  <h1 className="text-4xl font-extrabold text-slate-900 ">
  Program <span className="text-primary">Kerja</span> KKN
  </h1>
- <p className="text-slate-500 text-sm mt-4 font-medium opacity-50 leading-normal max-w-xl">
+ <p className="text-slate-500 text-sm mt-4 font-medium leading-normal max-w-xl">
  Kelola draf dan pelaksanaan program kerja kelompok Anda. Pastikan setiap program selaras dengan target SDGs universitas.
  </p>
  </div>
@@ -107,7 +107,7 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
  <BookOpen className="h-16 w-16 text-slate-200" />
  </div>
  <h3 className="text-2xl font-semibold text-slate-900 mb-3">Daftar Proker Kosong</h3>
- <p className="text-slate-400 text-sm text-xs max-w-sm mx-auto leading-normal opacity-50 ajukan program kerja kelompok Anda untuk diverifikasi oleh Dosen Pembimbing Lapangan.</p>
+ <p className="text-slate-400 text-sm text-xs max-w-sm mx-auto leading-normal ajukan program kerja kelompok Anda untuk diverifikasi oleh Dosen Pembimbing Lapangan.</p>
  </div>
  </div>
  ) : (
@@ -131,9 +131,9 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
  </div>
 
  <div className="space-y-3">
- <h3 className="text-xl font-semibold text-slate-900 group-hover:text-primary transition-colors leading-normal line-clamp-2">{wp.title}</h3>
+ <h3 className="text-xl font-semibold text-slate-900 group-hover:text-primary transition-colors leading-normal">{wp.title}</h3>
  {wp.description && (
- <p className="text-sm text-sm text-slate-400 leading-normal line-clamp-2 opacity-75">{wp.description}</p>
+ <p className="text-sm text-slate-400 leading-normal">{wp.description}</p>
  )}
  </div>
  </div>
@@ -162,7 +162,7 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
  )}
  </div>
 
- <div className="text-center pt-8 opacity-20">
+ <div className="text-center pt-8">
  <p className="text-xs font-semibold text-slate-300 ">
  Pusat Perencanaan Program • UIN SAIZU © 2024
  </p>

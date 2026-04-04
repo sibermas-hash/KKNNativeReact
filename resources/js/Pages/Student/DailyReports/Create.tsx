@@ -72,7 +72,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
  <div className="p-12 bg-rose-50 border-2 border-dashed border-rose-100 rounded-lg text-center max-w-sm
  <AlertTriangle className="w-16 h-16 text-rose-300 mx-auto mb-8 />
  <h2 className="text-2xl font-semibold text-rose-900 mb-4">Akses Terkunci</h2>
- <p className="text-sm text-sm text-rose-600 leading-normal opacity-50 p-4 bg-white/50 rounded-lg">Identitas Anda belum terhubung dengan kelompok manapun. Hubungi Admin untuk aktivasi unit.</p>
+ <p className="text-sm text-rose-600 leading-normal p-4 bg-white/50 rounded-lg">Identitas Anda belum terhubung dengan kelompok manapun. Hubungi Admin untuk aktivasi unit.</p>
  </div>
  </div>
  </AppLayout>
@@ -97,7 +97,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
  <h1 className="text-4xl font-extrabold text-slate-900 ">
  Entri <span className="text-primary">Laporan</span> Baru
  </h1>
- <p className="text-slate-500 text-sm font-medium opacity-50 flex items-center gap-2">
+ <p className="text-slate-500 text-sm font-medium flex items-center gap-2">
  <Activity className="h-4 w-4 text-primary/40" />
  Dokumentasikan aktivitas lapangan Anda secara langsung disertai koordinat GPS.
  </p>
@@ -136,7 +136,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
  </div>
  <div className="flex-1 min-w-0">
  <p className="text-xs font-semibold mb-1.5">Status Lokasi (GPS)</p>
- <p className="text-sm text-sm truncate opacity-75">
+ <p className="text-sm truncate">
  {locationStatus === 'acquired' ? `Koordinat Terdeteksi: ${form.data.latitude?.toFixed(6)}, ${form.data.longitude?.toFixed(6)}` :
  locationStatus === 'requesting' ? 'Mencari Titik Lokasi...' :
  'Gagal Mendeteksi Lokasi. Pastikan GPS Aktif.'}
@@ -191,7 +191,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
  placeholder="Jelaskan secara detail proses, rintangan, dan pencapaian hari ini..."
  value={form.data.activity}
  onChange={(e) => form.setData('activity', e.target.value)}
- className="w-full bg-slate-50 border-slate-200 rounded-lg p-8 text-sm text-sm text-slate-700 placeholder:text-slate-300 focus:ring-4 focus:ring-primary/5 focus:border-primaryleading-normal outline-none"
+ className="w-full bg-slate-50 border-slate-200 rounded-lg p-8 text-sm text-slate-700 placeholder:text-slate-300 focus:ring-4 focus:ring-primary/5 focus:border-primaryleading-normal outline-none"
  required
  />
  {form.errors.activity && <p className="text-xs font-semibold text-rose-500 ml-2">{form.errors.activity}</p>}
@@ -229,7 +229,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
  </div>
  <div>
  <h3 className="text-xs font-semibold text-slate-900">Dokumentasi Visual</h3>
- <p className="text-xs text-sm text-slate-400 mt-1 opacity-50">Lampiran Bukti Lapangan</p>
+ <p className="text-xs text-sm text-slate-400 mt-1">Lampiran Bukti Lapangan</p>
  </div>
  </div>
  
@@ -249,7 +249,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
  <FileUp className="w-8 h-8" />
  </div>
  <p className="text-sm font-semibold text-slate-900 mb-2 File</p>
- <p className="text-xs text-sm text-slate-400 max-w-[120px] opacity-50">JPG, PNG, ATAU PDF (MAKS. 5 FILE)</p>
+ <p className="text-xs text-sm text-slate-400 max-w-[120px]">JPG, PNG, ATAU PDF (MAKS. 5 FILE)</p>
  </div>
  </div>
  </div>
@@ -284,14 +284,14 @@ export default function StudentDailyReportCreate({ group }: Props) {
  <Info className="h-4 w-4 text-primary" />
  Panduan Pelaporan
  </h4>
- <p className="text-sm text-sm text-slate-400 leading-normal opacity-50
+ <p className="text-sm text-slate-400 leading-normal
  Catat setiap progres dengan jujur dan detail. Pastikan dokumentasi visual yang diunggah relevan dengan judul laporan harian Anda.
  </p>
  </section>
  </aside>
  </div>
 
- <div className="text-center pt-8 opacity-20">
+ <div className="text-center pt-8">
  <p className="text-xs font-semibold text-slate-300 ">
  Pusat Aktivitas • UIN SAIZU © 2024
  </p>

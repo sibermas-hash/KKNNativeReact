@@ -99,8 +99,8 @@ export default function DplSync({ availableDpls, filters }: Props) {
                                                 <div className="flex flex-col min-w-0">
                                                     <span className="text-sm font-bold text-slate-900 uppercase tracking-tighter truncate max-w-[450px] group-hover/row:text-emerald-600 transition-colors  mb-2">{dpl.name}</span>
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest opacity-50">NIP: {dpl.nip}</span>
-                                                        <span className="text-xs font-bold text-slate-300 italic opacity-30 lowercase">[{dpl.email || 'NO_MAIL_CHANNEL'}]</span>
+                                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">NIP: {dpl.nip}</span>
+                                                        <span className="text-xs font-bold text-slate-300 italic lowercase">[{dpl.email || 'NO_MAIL_CHANNEL'}]</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -119,7 +119,7 @@ export default function DplSync({ availableDpls, filters }: Props) {
                                 ))}
                                 {availableDpls.length === 0 && (
                                     <tr>
-                                        <td colSpan={2} className="px-8 py-32 text-center opacity-20 italic">
+                                        <td colSpan={2} className="px-8 py-32 text-center italic">
                                             <div className="flex flex-col items-center gap-8">
                                                 <div className="p-10 bg-slate-50 rounded-3xl border border-slate-100">
                                                     <ShieldAlert className="h-12 w-12 text-slate-900" />
@@ -145,7 +145,7 @@ export default function DplSync({ availableDpls, filters }: Props) {
                                 </div>
                                 <h4 className="text-sm font-black text-white italic tracking-widest uppercase ">Authentication_Gateway_V3.2</h4>
                             </div>
-                            <p className="text-sm text-slate-500 font-bold  max-w-4xl opacity-75 italic uppercase">
+                            <p className="text-sm text-slate-500 font-bold  max-w-4xl italic uppercase">
                                 Protokol Otorisasi: Aktivasi personel akan memberikan hak akses kontrol penuh terhadap evaluasi akademik unit kelompok yang ditugaskan. Pastikan integritas akun terverifikasi melalui jalur internal.
                             </p>
                         </div>

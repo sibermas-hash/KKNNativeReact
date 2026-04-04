@@ -51,7 +51,7 @@ export default function StudentDailyReportEdit({ report }: Props) {
  <h1 className="text-4xl font-extrabold text-slate-900 ">
  Kalibrasi <span className="text-primary">Laporan</span>
  </h1>
- <p className="text-slate-500 text-sm font-medium opacity-50 flex items-center gap-2">
+ <p className="text-slate-500 text-sm font-medium flex items-center gap-2">
  <FileEdit className="h-4 w-4 text-primary/40" />
  Lakukan perbaikan pada entri laporan harian Anda sesuai catatan instruktur atau DPL.
  </p>
@@ -117,7 +117,7 @@ export default function StudentDailyReportEdit({ report }: Props) {
  placeholder="Jelaskan secara detail proses, rintangan, dan pencapaian hari ini..."
  value={form.data.activity}
  onChange={(e) => form.setData('activity', e.target.value)}
- className="w-full bg-slate-50 border-slate-200 rounded-lg p-8 text-sm text-sm text-slate-700 focus:ring-4 focus:ring-primary/5 focus:border-primaryleading-normal outline-none"
+ className="w-full bg-slate-50 border-slate-200 rounded-lg p-8 text-sm text-slate-700 focus:ring-4 focus:ring-primary/5 focus:border-primaryleading-normal outline-none"
  required
  />
  {form.errors.activity && <p className="text-xs font-semibold text-rose-500 ml-2">{form.errors.activity}</p>}
@@ -166,11 +166,11 @@ export default function StudentDailyReportEdit({ report }: Props) {
  <div className="space-y-8 relative z-10">
  <div className="space-y-2">
  <p className="text-xs font-semibold text-primary Data</p>
- <p className="text-sm text-sm text-slate-400 leading-normal opacity-75">Pastikan seluruh data yang diperbaiki sudah sesuai dengan draf fisik atau instruksi dari supervisor lapangan.</p>
+ <p className="text-sm text-slate-400 leading-normal">Pastikan seluruh data yang diperbaiki sudah sesuai dengan draf fisik atau instruksi dari supervisor lapangan.</p>
  </div>
  <div className="space-y-2 pt-6 border-t border-slate-200">
  <p className="text-xs font-semibold text-slate-400 ">Verifikasi Ulang</p>
- <p className="text-sm text-sm text-slate-400 leading-normal opacity-50">Laporan yang telah diperbaiki akan masuk kembali ke antrian verifikasi DPL untuk divalidasi statusnya.</p>
+ <p className="text-sm text-slate-400 leading-normal">Laporan yang telah diperbaiki akan masuk kembali ke antrian verifikasi DPL untuk divalidasi statusnya.</p>
  </div>
  </div>
  </section>
@@ -183,7 +183,7 @@ export default function StudentDailyReportEdit({ report }: Props) {
  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
  Integritas Laporan
  </h4>
- <p className="text-sm text-sm leading-normal relative z-10 text-slate-500 opacity-75 mb-6">
+ <p className="text-sm leading-normal relative z-10 text-slate-500 mb-6">
  Konsistensi antara data digital dan realita lapangan adalah metrik utama dalam penilaian akhir KKN Anda.
  </p>
  <div className="flex -space-x-3">
@@ -195,7 +195,7 @@ export default function StudentDailyReportEdit({ report }: Props) {
  </aside>
  </div>
 
- <div className="text-center pt-8 opacity-20">
+ <div className="text-center pt-8">
  <p className="text-xs font-semibold text-slate-300 ">
  Pusat Aktivitas • UIN SAIZU © 2024
  </p>

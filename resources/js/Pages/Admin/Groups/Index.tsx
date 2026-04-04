@@ -141,7 +141,7 @@ export default function GroupsIndex({ groups, filters }: Props) {
                 </div>
 
                 {groups.data.length === 0 && (
-                    <div className="py-24 text-center opacity-30 italic">
+                    <div className="py-24 text-center italic">
                         <Users className="w-12 h-12 text-slate-100 mx-auto mb-4" />
                         <p className="font-bold text-slate-400">Tidak ada kelompok yang ditemukan</p>
                     </div>

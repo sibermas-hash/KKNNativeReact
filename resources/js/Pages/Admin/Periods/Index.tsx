@@ -376,7 +376,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  </Badge>
  </td>
  <td className="px-8 py-6 text-right pr-12">
- <div className="flex justify-end gap-2 opacity-30 group-hover/row:opacity-100 transition-opacity">
+ <div className="flex justify-end gap-2 group-hover/row:opacity-100 transition-opacity">
  <button onClick={() => setDuplicating(period)} className="p-2 text-slate-400 hover:text-emerald-500 border border-slate-100 hover:border-emerald-200 rounded-lg transition-all" title="Duplikasi">
  <Copy className="h-4 w-4" />
  </button>

@@ -46,7 +46,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  Refining from basic header to lush tactical emerald gradient
  */}
  <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
+ <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
@@ -84,7 +84,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  <Search className="absolute left-6 top-1/2 -/2 h-4.5 w-4.5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
  <input
  placeholder="Cari program kerja, judul, atau kelompok..."
- className="w-full h-15 pl-14 pr-8 py-2 bg-white border border-slate-200 rounded-lg text-sm text-sm text-slate-900 outline-none focus:border-primary/50
+ className="w-full h-15 pl-14 pr-8 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 outline-none focus:border-primary/50
  />
  </div>
 
@@ -129,8 +129,8 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  <Flag className="h-5.5 w-5.5" />
  </div>
  <div className="flex flex-col gap-1.5 truncate max-w-sm">
- <span className="text-[14px] font-semibold text-slate-900 group-hover/row:text-primary transition-colors leading-normal truncate">{p.title}</span>
- <span className="text-xs text-sm text-slate-300 opacity-50">Entry ID: #{p.id.toString().padStart(4, '0')}</span>
+ <span className="text-sm font-semibold text-slate-900 group-hover/row:text-primary transition-colors leading-normal truncate">{p.title}</span>
+ <span className="text-xs text-sm text-slate-300">Entry ID: #{p.id.toString().padStart(4, '0')}</span>
  </div>
  </div>
  </td>
@@ -139,12 +139,12 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  <div className="p-2 bg-slate-50 rounded-lg text-slate-400 group-hover/row:bg-primary/10 group-hover/row:text-primary">
  <Users className="h-4 w-4" />
  </div>
- <span className="text-sm text-sm text-slate-700 ">{p.group?.name}</span>
+ <span className="text-sm text-slate-700 ">{p.group?.name}</span>
  </div>
  </td>
  <td className="px-6 py-3">
  <div className="flex items-center gap-2 text-xs text-sm text-slate-400 group-hover/row:text-slate-600 transition-colors">
- <MapPin className="h-3.5 w-3.5 opacity-50 group-hover/row:opacity-100 transition-opacity" />
+ <MapPin className="h-3.5 w-3.5 group-hover/row:opacity-100 transition-opacity" />
  <span className="truncate max-w-[150px]">{p.group?.location?.name ?? 'Belum Diatur'}</span>
  </div>
  </td>
@@ -161,11 +161,11 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  )) : (
  <tr>
  <td colSpan={5} className="px-6 py-24 text-center">
- <div className="flex flex-col items-center gap-5 opacity-50">
+ <div className="flex flex-col items-center gap-5">
  <div className="p-10 bg-slate-50 rounded-lg border border-slate-200
  <FileText className="h-12 w-12 text-slate-200" />
  </div>
- <p className="text-sm text-sm text-slate-400">Belum ada program kerja yang diajukan</p>
+ <p className="text-sm text-slate-400">Belum ada program kerja yang diajukan</p>
  </div>
  </td>
  </tr>
@@ -185,7 +185,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  </div>
  <h4 className="text-sm font-semibold text-white ">TATA_KELOLA_INISIATIF_STRATEGIS</h4>
  </div>
- <p className="text-sm text-slate-400 text-sm leading-normal max-w-4xl opacity-50">
+ <p className="text-sm text-slate-400 text-sm leading-normal max-w-4xl">
  Seluruh Program Kerja (PROGJA) yang terdaftar merepresentasikan rencana aksi strategis unit KKN. 
  Setiap pengajuan wajib divalidasi oleh Dosen Pembimbing Lapangan (DPL) sebelum diarsipkan sebagai basis 
  evaluasi integritas pengabdian mahasiswa dalam ekosistem KKN UIN SAIZU.
@@ -208,7 +208,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  </div>
  </div>
 
- <div className="text-center pt-8 opacity-20">
+ <div className="text-center pt-8">
  <p className="text-xs font-semibold text-slate-300 ">
  Strategic Initiative Archive • UIN SAIZU © 2024
  </p>

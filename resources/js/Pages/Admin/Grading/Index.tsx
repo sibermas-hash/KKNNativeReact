@@ -180,7 +180,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  <FileText className="h-10 w-10" />
  </div>
  <h2 className="text-3xl font-semibold text-slate-900 mb-6 ">Seleksi_Unit_Operasional</h2>
- <p className="text-slate-400 text-sm text-sm leading-normal mb-12 max-w-md mx-auto opacity-50">
+ <p className="text-slate-400 text-sm leading-normal mb-12 max-w-md mx-auto">
  {error || 'Silakan pilih kelompok untuk memulai sinkronisasi data mahasiswa dan eksekusi parameter penilaian akademik.'}
  </p>
 
@@ -220,7 +220,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  Refining from basic header to lush tactical emerald gradient
  */}
  <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
+ <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
@@ -317,8 +317,8 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  {student.user.name.charAt(0)}
  </div>
  <div className="flex flex-col gap-1.5 min-w-0">
- <span className="text-[15px] font-semibold text-slate-900 group-hover/row:text-primary transition-colors truncate">{student.user.name}</span>
- <span className="text-xs font-semibold text-slate-300 opacity-50">NIM: {student.user.nim}</span>
+ <span className="text-base font-semibold text-slate-900 group-hover/row:text-primary transition-colors truncate">{student.user.name}</span>
+ <span className="text-xs font-semibold text-slate-300">NIM: {student.user.nim}</span>
  </div>
  </div>
  </td>
@@ -372,7 +372,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  {summary.students.length === 0 && (
  <tr>
  <td colSpan={6} className="py-40 text-center">
- <p className="text-slate-300 font-semibold text-xs opacity-50">TIDAK ADA DATA ENTITAS DALAM KELOMPOK INI</p>
+ <p className="text-slate-300 font-semibold text-xs">TIDAK ADA DATA ENTITAS DALAM KELOMPOK INI</p>
  </td>
  </tr>
  )}
@@ -396,7 +396,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  <p className="text-xs text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: CALIBRATION_ENGINE_READY</p>
  </div>
  </div>
- <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-4xl opacity-75">
+ <p className="text-sm text-slate-400 text-sm leading-normal max-w-4xl">
  Seluruh parameter penilaian yang diinjeksikan akan diolah secara herarkis untuk mendapatkan skor akhir absolut. 
  Protokol evaluasi LPPM menjamin objektivitas melalui pembobotan multisumber yang tervalidasi oleh sistem inti. 
  Gunakan fitur <span className="text-primary font-semibold">"Input Nilai"</span> untuk mengaktifkan antarmuka kalibrasi manual.
@@ -447,12 +447,12 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  <div className="flex items-center gap-6">
  <div className="flex flex-col items-end">
  <span className="text-6xl font-semibold text-primary ">{preview.score}</span>
- <span className="text-xs font-semibold text-slate-400 mt-2 opacity-50">SKOR NUMERIK</span>
+ <span className="text-xs font-semibold text-slate-400 mt-2">SKOR NUMERIK</span>
  </div>
  <div className="w-px h-16 bg-slate-100" />
  <div className="flex flex-col items-center">
  <span className="text-4xl font-semibold px-6 py-3 bg-slate-900 text-white rounded-lg
- <span className="text-xs font-semibold text-slate-400 mt-2 opacity-50">INDEKS</span>
+ <span className="text-xs font-semibold text-slate-400 mt-2">INDEKS</span>
  </div>
  </div>
  </div>

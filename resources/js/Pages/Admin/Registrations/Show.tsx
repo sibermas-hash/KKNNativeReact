@@ -62,7 +62,7 @@ export default function RegistrationShow({ registration }: Props) {
  Refining from basic header to lush tactical emerald gradient
  */}
  <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
+ <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
  
  <div className="relative z-10 space-y-5 flex-1">
  <Link href="/admin/registrations" className="inline-flex items-center gap-3 px-4 py-2 bg-white/10 rounded-lg border border-slate-200 text-xs font-semibold text-emerald-100 hover:bg-white/20mb-2">
@@ -123,7 +123,7 @@ export default function RegistrationShow({ registration }: Props) {
  <div className="flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 text-xs font-semibold 
  <ShieldCheck className="w-3.5 h-3.5" /> ENTITAS_VALID
  </div>
- <span className="text-xs font-semibold text-slate-300 opacity-50">Sistem Identifikasi Terpadu</span>
+ <span className="text-xs font-semibold text-slate-300">Sistem Identifikasi Terpadu</span>
  </div>
  </div>
  </div>
@@ -151,7 +151,7 @@ export default function RegistrationShow({ registration }: Props) {
  </div>
  Persyaratan_Dokumen
  </h3>
- <p className="text-xs font-semibold text-slate-400 opacity-50 ml-16">INTEGRITAS BERKAS PERSYARATAN</p>
+ <p className="text-xs font-semibold text-slate-400 ml-16">INTEGRITAS BERKAS PERSYARATAN</p>
  </div>
  </div>
 
@@ -166,7 +166,7 @@ export default function RegistrationShow({ registration }: Props) {
  </div>
  <div className="space-y-1.5 min-w-0">
  <p className="text-xs font-semibold text-slate-400 group-hover/doc:text-primary transition-colors">{doc.document_type}</p>
- <p className="text-[15px] font-semibold text-slate-900 truncate leading-normal group-hover/doc:translate-x-1 transition-transform">{doc.file_name}</p>
+ <p className="text-base font-semibold text-slate-900 truncate leading-normal group-hover/doc:translate-x-1 transition-transform">{doc.file_name}</p>
  </div>
 
  <div className="mt-8 flex gap-4">
@@ -203,7 +203,7 @@ export default function RegistrationShow({ registration }: Props) {
  </div>
  <div>
  <h3 className="text-lg font-semibold text-white ">Intel_Pendaftaran</h3>
- <p className="text-xs font-semibold text-emerald-400 mt-2 opacity-50">METADATA_STREAM_OK</p>
+ <p className="text-xs font-semibold text-emerald-400 mt-2">METADATA_STREAM_OK</p>
  </div>
  </div>
  <div className="space-y-8">
@@ -228,7 +228,7 @@ export default function RegistrationShow({ registration }: Props) {
  </div>
  <div>
  <h3 className="text-2xl font-semibold text-slate-900 ">Otorisasi_Akses</h3>
- <p className="text-xs font-semibold text-slate-400 mt-2 opacity-50">KEPUTUSAN OPERASIONAL</p>
+ <p className="text-xs font-semibold text-slate-400 mt-2">KEPUTUSAN OPERASIONAL</p>
  </div>
  </div>
 
@@ -260,7 +260,7 @@ export default function RegistrationShow({ registration }: Props) {
  onChange={(e) => rejectForm.setData('notes', e.target.value)}
  error={rejectForm.errors.notes}
  required
- className="bg-white border-rose-100 text-slate-900 text-sm text-sm h-32 rounded-lg"
+ className="bg-white border-rose-100 text-slate-900 text-sm h-32 rounded-lg"
  />
  </div>
  <div className="flex flex-col gap-4">
@@ -296,10 +296,10 @@ export default function RegistrationShow({ registration }: Props) {
  </div>
  <div>
  <h4 className="text-sm font-semibold text-amber-600 ">REJECTION_LOG</h4>
- <p className="text-xs font-semibold text-amber-400 mt-1.5 opacity-50">CATATAN_AUDIT_HISTORIS</p>
+ <p className="text-xs font-semibold text-amber-400 mt-1.5">CATATAN_AUDIT_HISTORIS</p>
  </div>
  </div>
- <p className="text-[14px] text-sm text-amber-900 leading-normal bg-white/40 p-6 rounded-lg border border-amber-100/50">
+ <p className="text-sm text-amber-900 leading-normal bg-white/40 p-6 rounded-lg border border-amber-100/50">
  "{registration.notes}"
  </p>
  </div>
@@ -321,7 +321,7 @@ function ProfileItem({ icon: Icon, label, value }: any) {
  </div>
  <span className="text-xs font-semibold text-slate-300 group-hover/item:text-primary transition-colors">{label}</span>
  </div>
- <p className="text-[15px] font-semibold text-slate-900 pl-1 ml-0.5 group-hover/item:translate-x-1 transition-transform">
+ <p className="text-base font-semibold text-slate-900 pl-1 ml-0.5 group-hover/item:translate-x-1 transition-transform">
  {value}
  </p>
  </div>
@@ -335,7 +335,7 @@ function IntelRow({ label, value, color = 'text-slate-100' }: any) {
  <div className="h-1 w-3 bg-primary/40 rounded-lg group-hover/intel:w-6" />
  <span className="text-xs font-semibold text-slate-500 ">{label}</span>
  </div>
- <span className={`text-[15px] font-semibold pl-5 ${color}`}>{value}</span>
+ <span className={`text-base font-semibold pl-5 ${color}`}>{value}</span>
  </div>
  );
 }

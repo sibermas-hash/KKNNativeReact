@@ -49,7 +49,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  <AlertTriangle className="h-16 w-16 text-rose-200" />
  </div>
  <h3 className="text-3xl font-semibold text-slate-900 mb-4">Kelompok Belum Terdeteksi</h3>
- <p className="text-slate-400 text-sm text-xs max-w-sm mx-auto leading-normal opacity-50">Anda harus terdaftar dalam kelompok aktif sebelum dapat mengirimkan laporan akhir ke sistem pusat.</p>
+ <p className="text-slate-400 text-sm text-xs max-w-sm mx-auto leading-normal">Anda harus terdaftar dalam kelompok aktif sebelum dapat mengirimkan laporan akhir ke sistem pusat.</p>
  </div>
  </div>
  </AppLayout>
@@ -108,7 +108,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  </div>
  <div>
  <h3 className="text-xs font-semibold text-slate-900">Status Laporan Kelompok</h3>
- <p className="text-xs text-sm text-slate-400 mt-1 opacity-50">Arsip Dokumentasi Tersimpan</p>
+ <p className="text-xs text-sm text-slate-400 mt-1">Arsip Dokumentasi Tersimpan</p>
  </div>
  </div>
 
@@ -186,7 +186,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  <p className="text-sm font-semibold max-w-sm leading-normal">
  {form.data.file ? form.data.file.name : 'Klik untuk memilih arsip laporan final (.pdf, .doc, .docx)'}
  </p>
- <p className="text-xs text-sm text-slate-400 mt-4 opacity-50">
+ <p className="text-xs text-sm text-slate-400 mt-4">
  Maksimal Ukuran File: 20MB
  </p>
  </label>
@@ -216,7 +216,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  <Lock className="h-16 w-16 text-amber-300" />
  </div>
  <h3 className="text-3xl font-semibold text-slate-900 mb-4">Otoritas Terbatas</h3>
- <p className="text-slate-400 text-sm text-xs max-w-sm mx-auto leading-normal opacity-50">
+ <p className="text-slate-400 text-sm text-xs max-w-sm mx-auto leading-normal">
  Hanya <span className="text-primary">Ketua Kelompok</span> yang diizinkan untuk mengelola pengiriman Laporan Akhir Kelompok. Anda tetap dapat melihat status laporan yang telah dikirimkan di atas.
  </p>
  </div>
@@ -256,15 +256,15 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  
  <div className="rounded-lg bg-slate-950 p-12 text-white relative overflow-hidden group border border-slate-900">
  <div className="absolute inset-0 bg-white/>
- <h4 className="text-xs font-semibold mb-8 opacity-50">Audit Alur Evaluasi</h4>
- <p className="text-[13px] text-sm leading-normal relative z-10 opacity-75">
+ <h4 className="text-xs font-semibold mb-8">Audit Alur Evaluasi</h4>
+ <p className="text-sm leading-normal relative z-10">
  Laporan akhir kelompok Anda akan melewati proses verifikasi bertahap oleh Dosen Pembimbing Lapangan sebelum disetujui secara permanen dalam basis data Universitas.
  </p>
  </div>
  </div>
  </div>
 
- <div className="text-center pt-8 opacity-20">
+ <div className="text-center pt-8">
  <p className="text-xs font-semibold text-slate-300 ">
  Pusat Dokumentasi Akhir • UIN SAIZU © 2024
  </p>
@@ -282,7 +282,7 @@ function GuideItem({ icon: Icon, title, desc }: any) {
  </div>
  <div className="min-w-0">
  <p className="text-sm font-semibold text-slate-900 mb-1.5">{title}</p>
- <p className="text-sm text-sm text-slate-500 leading-normal opacity-50">{desc}</p>
+ <p className="text-sm text-slate-500 leading-normal">{desc}</p>
  </div>
  </div>
  );

@@ -49,7 +49,7 @@ export default function AuditLogShow({ log }: Props) {
                         </Link>
                         <div>
                             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Audit_Inspection: #{log.id.toString().padStart(6, '0')}</h1>
-                            <p className="text-sm text-slate-500 mt-1 uppercase tracking-widest font-black opacity-50">Log_Manifest_Surveillance_Protocol</p>
+                            <p className="text-sm text-slate-500 mt-1 uppercase tracking-widest font-black">Log_Manifest_Surveillance_Protocol</p>
                         </div>
                     </div>
                 </div>
@@ -59,7 +59,7 @@ export default function AuditLogShow({ log }: Props) {
                     <div className="xl:col-span-8 space-y-8">
                         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden group">
                            <div className="p-10 border-b border-slate-50 relative overflow-hidden bg-slate-50/10">
-                                <div className="absolute top-0 right-0 p-12 text-slate-900 opacity-[0.02] pointer-events-none group-hover:rotate-12 transition-transform duration-1000">
+                                <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none group-hover:rotate-12 transition-transform duration-1000">
                                     <History className="h-48 w-48" />
                                 </div>
                                 <div className="flex items-center gap-6 relative z-10">
@@ -104,7 +104,7 @@ export default function AuditLogShow({ log }: Props) {
                     {/* Meta Sidebar */}
                     <div className="xl:col-span-4 space-y-6">
                          <section className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm space-y-8 group/guard relative overflow-hidden">
-                            <div className="absolute -bottom-6 -right-6 text-slate-900 opacity-[0.02] pointer-events-none group-hover/guard:rotate-12 transition-transform duration-1000">
+                            <div className="absolute -bottom-6 -right-6 text-slate-900 pointer-events-none group-hover/guard:rotate-12 transition-transform duration-1000">
                                 <ShieldCheck className="h-32 w-32" />
                             </div>
                             <div className="flex items-center gap-4 border-b border-slate-50 pb-6">
@@ -128,7 +128,7 @@ export default function AuditLogShow({ log }: Props) {
                                 </div>
                                 <div>
                                     <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-3 ">Security_Governance</h4>
-                                    <p className="text-sm text-slate-500 font-medium italic italic  opacity-75 uppercase">
+                                    <p className="text-sm text-slate-500 font-medium italic italic uppercase">
                                         Seluruh rekaman audit bersifat permanen dan tidak dapat dimanipulasi secara operasional.
                                     </p>
                                 </div>

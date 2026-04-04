@@ -183,7 +183,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  Replacing light header with a premium emerald tactical gradient
  */}
  <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
+ <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
@@ -329,7 +329,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  value={data.description}
  onChange={e => setData('description', e.target.value)}
  rows={4}
- className="w-full p-8 bg-slate-50 border border-slate-200rounded-lg text-sm text-sm text-slate-600 focus:bg-white focus:border-primary/50outline-none
+ className="w-full p-8 bg-slate-50 border border-slate-200rounded-lg text-sm text-slate-600 focus:bg-white focus:border-primary/50outline-none
  placeholder="Tuliskan tujuan kegiatan dan pokok bahasan pembekalan..."
  />
  </div>
@@ -412,7 +412,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  </div>
  </div>
  
- <p className="text-[13px] text-sm text-slate-400 leading-normal max-w-xl mb-10 line-clamp-3 opacity-75">
+ <p className="text-sm text-slate-400 leading-normal max-w-xl mb-10">
  {workshop.description}
  </p>
 
@@ -465,7 +465,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  </div>
  <p className="text-sm font-semibold text-slate-300 text-center leading-normal">
  Belum ada pembekalan tersedia<br />
- <span className="text-primary opacity-50 mt-2 block lowercase">Siap untuk ditambahkan</span>
+ <span className="text-primary mt-2 block lowercase">Siap untuk ditambahkan</span>
  </p>
  </div>
  )}
@@ -484,7 +484,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <h4 className="text-sm font-semibold text-white ">_V3</h4>
  <p className="text-xs text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: SECURE_DATA_TRANSMISSION</p>
  </div>
- <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-4xl opacity-75">
+ <p className="text-sm text-slate-400 text-sm leading-normal max-w-4xl">
  Pembekalan menjadi gerbang persiapan mahasiswa sebelum terjun ke lapangan. 
  Data presensi akan langsung memengaruhi sertifikat kegiatan dan komponen nilai pembekalan. 
  Pastikan tanggal, waktu, dan lokasi kegiatan telah diisi dengan benar agar tidak menimbulkan benturan jadwal operasional KKN UIN SAIZU.
@@ -536,7 +536,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <div className="p-3 bg-white/5 rounded-lg text-primary shrink-0 group-transition-transform">
  <Fingerprint className="h-8 w-8 stroke-[2px]" />
  </div>
- <p className="text-sm text-sm text-slate-400 leading-normal pt-1">
+ <p className="text-sm text-slate-400 leading-normal pt-1">
  {modalMode === 'attendance'
  ? 'Protokol operasional: data presensi pada kegiatan ini akan memperbarui sertifikat dan komponen nilai pembekalan sesuai status kehadiran peserta.'
  : 'Daftar peserta: tinjau peserta pembekalan, status hadir, dan status sertifikat sebelum melakukan perubahan presensi.'}
@@ -651,7 +651,7 @@ function InfoItem({ icon: Icon, label, value, color }: any) {
  <Icon className="h-3.5 w-3.5" />
  <span className="text-xs font-semibold pt-0.5"> {label}</span>
  </div>
- <span className="text-sm font-semibold text-slate-900 truncate opacity-75 group-hover/info:opacity-100">{value}</span>
+ <span className="text-sm font-semibold text-slate-900 truncate group-hover/info:opacity-100">{value}</span>
  </div>
  );
 }

@@ -58,7 +58,7 @@ export default function GroupShow({ group }: Props) {
  Replacing basic header with tactical emerald gradient monitor
  */}
  <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
+ <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
  
  <div className="relative z-10 space-y-5 flex-1">
  <Link href="/admin/groups" className="inline-flex items-center gap-3 px-4 py-2 bg-white/10 rounded-lg border border-slate-200 text-xs font-semibold text-emerald-100 hover:bg-white/20mb-2">
@@ -77,7 +77,7 @@ export default function GroupShow({ group }: Props) {
  Kelompok <span className="text-emerald-300">{group.code}</span>
  </h1>
  <p className="text-emerald-50/70 text-sm font-medium leading-normal max-w-2xl flex items-center gap-3">
- <Layers className="w-5 h-5 text-emerald-300 opacity-50" />
+ <Layers className="w-5 h-5 text-emerald-300" />
  {group.name} — Unit Pengabdian Masyarakat Terintegrasi
  </p>
  </div>
@@ -113,7 +113,7 @@ export default function GroupShow({ group }: Props) {
  </div>
  Lokasi_Penempatan
  </h3>
- <p className="text-xs font-semibold text-slate-400 opacity-50 ml-16">GEOGRAFIS OPERASIONAL SEKTOR</p>
+ <p className="text-xs font-semibold text-slate-400 ml-16">GEOGRAFIS OPERASIONAL SEKTOR</p>
  </div>
  </div>
 
@@ -139,7 +139,7 @@ export default function GroupShow({ group }: Props) {
  </div>
  Audit_Posko_Lapangan
  </h3>
- <p className="text-xs font-semibold text-slate-400 opacity-50 ml-16">INTEGRITAS FASILITAS OPERASIONAL</p>
+ <p className="text-xs font-semibold text-slate-400 ml-16">INTEGRITAS FASILITAS OPERASIONAL</p>
  </div>
  </div>
 
@@ -163,7 +163,7 @@ export default function GroupShow({ group }: Props) {
  </div>
  <div className="space-y-1.5 pt-1">
  <p className="text-sm font-semibold text-emerald-900 ">Geo_Lock_Verified</p>
- <p className="text-[13px] text-sm text-emerald-800/70 leading-normal">Koordinat lokasi telah terverifikasi secara presisi melalui sinkronisasi sensor perangkat mahasiswa.</p>
+ <p className="text-sm text-emerald-800/70 leading-normal">Koordinat lokasi telah terverifikasi secara presisi melalui sinkronisasi sensor perangkat mahasiswa.</p>
  </div>
  </div>
  <a 
@@ -185,7 +185,7 @@ export default function GroupShow({ group }: Props) {
  <div className="absolute inset-0  flex flex-col justify-end p-10
  <div className="transformy-4 group-hover/img:transition-transform">
  <p className="text-xs font-semibold text-primary/80 mb-2">Capture_Visual_Report</p>
- <p className="text-lg font-semibold text-white line-clamp-2 leading-normal">{group.posko.photo_name}</p>
+ <p className="text-lg font-semibold text-white leading-normal">{group.posko.photo_name}</p>
  <div className="mt-4 flex items-center gap-3 text-white/40 text-xs font-semibold ">
  <Activity className="h-3 w-3" /> Updated: {group.posko.updated_at}
  </div>
@@ -217,7 +217,7 @@ export default function GroupShow({ group }: Props) {
  </div>
  <div>
  <h3 className="text-3xl font-semibold text-white ">Manifest_Personel</h3>
- <p className="text-xs font-semibold text-emerald-400 mt-3 opacity-50">PERSONEL_LIST_AUTH_OK</p>
+ <p className="text-xs font-semibold text-emerald-400 mt-3">PERSONEL_LIST_AUTH_OK</p>
  </div>
  </div>
  <div className="px-6 py-3.5 bg-emerald-500/5 border border-emerald-500/20 rounded-lg flex items-center gap-4">
@@ -241,9 +241,9 @@ export default function GroupShow({ group }: Props) {
  {group.registrations.length === 0 ? (
  <tr>
  <td colSpan={3} className="px-12 py-32 text-center">
- <div className="flex flex-col items-center gap-8 opacity-20 group">
+ <div className="flex flex-col items-center gap-8 group">
  <Cpu className="h-16 w-16 text-white " />
- <p className="text-[13px] font-semibold text-white ">NULL_ALLOCATION_DETECTED</p>
+ <p className="text-sm font-semibold text-white ">NULL_ALLOCATION_DETECTED</p>
  </div>
  </td>
  </tr>
@@ -255,7 +255,7 @@ export default function GroupShow({ group }: Props) {
  <div className="h-10 w-10 rounded-lg bg-white/5 border border-slate-200 flex items-center justify-center text-emerald-400 font-semibold">
  {reg.student.name.charAt(0)}
  </div>
- <span className="text-[16px] font-semibold text-slate-100  transition-colors">{reg.student.name}</span>
+ <span className="text-base font-semibold text-slate-100  transition-colors">{reg.student.name}</span>
  </div>
  </td>
  <td className="px-12 py-8">
@@ -287,7 +287,7 @@ export default function GroupShow({ group }: Props) {
  </div>
  <div>
  <h3 className="text-2xl font-semibold text-slate-900 ">Leader_Intel</h3>
- <p className="text-xs font-semibold text-slate-400 mt-2 opacity-50">KOMANDO_LAPANGAN</p>
+ <p className="text-xs font-semibold text-slate-400 mt-2">KOMANDO_LAPANGAN</p>
  </div>
  </div>
 
@@ -319,7 +319,7 @@ export default function GroupShow({ group }: Props) {
  <div className="p-6 bg-white rounded-lg mb-6 text-slate-100 transition-transform">
  <GraduationCap className="w-12 h-12" />
  </div>
- <p className="text-sm font-semibold text-slate-400 text-center px-6 opacity-50 leading-normal">Command_Center: Dosen pembimbing belum didelegasikan.</p>
+ <p className="text-sm font-semibold text-slate-400 text-center px-6 leading-normal">Command_Center: Dosen pembimbing belum didelegasikan.</p>
  </div>
  )}
 
@@ -328,7 +328,7 @@ export default function GroupShow({ group }: Props) {
  <div className="p-2 bg-amber-50 text-amber-500 rounded-lg shrink-0">
  <Fingerprint className="h-4 w-4" />
  </div>
- <p className="text-xs text-sm text-slate-400 leading-normal opacity-50">
+ <p className="text-xs text-sm text-slate-400 leading-normal">
  Semua aktivitas lapangan berada di bawah protokol validasi bimbingan akademik.
  </p>
  </div>

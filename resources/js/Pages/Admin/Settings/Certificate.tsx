@@ -50,7 +50,7 @@ export default function CertificateSettings({ configs }: Props) {
  Refining from heavy black to lush tactical emerald gradient
  */}
  <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
+ <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
@@ -94,7 +94,7 @@ export default function CertificateSettings({ configs }: Props) {
  </div>
  <div>
  <h3 className="text-2xl font-semibold text-slate-900 ">Narasi_Akademik</h3>
- <p className="text-xs font-semibold text-slate-400 mt-2 opacity-50">KONTEN TEKS DINAMIS SERTIFIKAT</p>
+ <p className="text-xs font-semibold text-slate-400 mt-2">KONTEN TEKS DINAMIS SERTIFIKAT</p>
  </div>
  </div>
 
@@ -107,14 +107,14 @@ export default function CertificateSettings({ configs }: Props) {
  {config.type === 'longtext' ? (
  <div className="space-y-5">
  <textarea
- className="w-full min-h-[250px] rounded-lg bg-slate-50 border border-slate-200 focus:bg-white focus:border-primary/50p-10 text-slate-700 text-sm text-sm leading-normal outline-none
+ className="w-full min-h-[250px] rounded-lg bg-slate-50 border border-slate-200 focus:bg-white focus:border-primary/50p-10 text-slate-700 text-sm leading-normal outline-none
  value={data.configs.find(c => c.id === config.id)?.value || ''}
  onChange={e => handleValueChange(config.id, e.target.value)}
  placeholder={`Masukkan konten record untuk ${config.label.toLowerCase()}...`}
  />
  <div className="flex items-center gap-3 px-5 py-2.5 bg-emerald-50 rounded-lg border border-emerald-100 w-fit">
  <Code2 className="w-4 h-4 text-primary" />
- <span className="text-xs font-semibold text-primary opacity-75">SCRIPT_ENGINE: HTML_SUPPORT_ENABLED</span>
+ <span className="text-xs font-semibold text-primary">SCRIPT_ENGINE: HTML_SUPPORT_ENABLED</span>
  </div>
  </div>
  ) : (
@@ -127,7 +127,7 @@ export default function CertificateSettings({ configs }: Props) {
  )}
  {config.config_key === 'cert_body' && (
  <div className="flex flex-wrap gap-3 mt-4 px-2">
- <span className="text-xs font-semibold text-slate-300 mr-3 pt-1.5 opacity-50">Sistem_Variabel:</span>
+ <span className="text-xs font-semibold text-slate-300 mr-3 pt-1.5">Sistem_Variabel:</span>
  {['[StudentName]', '[NIM]', '[LOKASI]', '[PERIODE]'].map(tag => (
  <button 
  key={tag} 
@@ -194,11 +194,11 @@ export default function CertificateSettings({ configs }: Props) {
  <p className="text-sm text-slate-400 text-sm leading-normal rasio aset sertifikat <span className="text-emerald-400 font-semibold">A4_LANDSCAPE</span> untuk resolusi pracetak optimal.</p>
  </li>
  <li className="flex gap-5">
- <div className="w-2 h-2 rounded-lg bg-primary mt-2 shrink-0 opacity-50" />
+ <div className="w-2 h-2 rounded-lg bg-primary mt-2 shrink-0" />
  <p className="text-sm text-slate-400 text-sm leading-normal akan mengeksekusi render narasi secara dinamis ke dalam <span className="text-emerald-400 font-semibold">FILE_PDF_Mahasiswa</span>.</p>
  </li>
  <li className="flex gap-5">
- <div className="w-2 h-2 rounded-lg bg-primary mt-2 shrink-0 opacity-50" />
+ <div className="w-2 h-2 rounded-lg bg-primary mt-2 shrink-0" />
  <p className="text-sm text-slate-400 text-sm leading-normal variabel terenkapsulasi <span className="text-emerald-400 font-semibold">[tag]</span> dengan akurat untuk injeksi data otomatis.</p>
  </li>
  </ul>
@@ -223,7 +223,7 @@ export default function CertificateSettings({ configs }: Props) {
  </button>
  </section>
 
- <div className="flex items-center justify-center gap-4 text-slate-300 opacity-20 pt-6">
+ <div className="flex items-center justify-center gap-4 text-slate-300 pt-6">
  <Zap className="h-5 w-5 text-emerald-500 fill-emerald-500" />
  <p className="text-xs font-semibold ">Credential_Registry_System • v.3.2.0</p>
  </div>

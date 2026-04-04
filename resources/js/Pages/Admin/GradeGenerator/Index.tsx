@@ -71,7 +71,7 @@ export default function GradeGeneratorIndex({ stats, recentLogs }: Props) {
                     <div className="xl:col-span-8 space-y-8">
                         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden group">
                            <div className="px-10 py-10 border-b border-slate-50 relative overflow-hidden bg-slate-50/10">
-                                <div className="absolute top-0 right-0 p-12 text-primary opacity-[0.02] pointer-events-none  transition-transform">
+                                <div className="absolute top-0 right-0 p-12 text-primary pointer-events-none  transition-transform">
                                     <Cpu className="h-64 w-64" />
                                 </div>
                                 <div className="flex items-center gap-6 relative z-10">
@@ -109,7 +109,7 @@ export default function GradeGeneratorIndex({ stats, recentLogs }: Props) {
 
                                     <div className="flex flex-col items-center md:items-end justify-center px-10 border-l border-slate-200">
                                         <span className="text-2xl font-black italic text-slate-900">{stats.generated_count} / {stats.total_eligible}</span>
-                                        <span className="text-xs font-bold text-slate-300 uppercase tracking-widest mt-1.5 opacity-50 italic">PERSONEL_RECORDS</span>
+                                        <span className="text-xs font-bold text-slate-300 uppercase tracking-widest mt-1.5 italic">PERSONEL_RECORDS</span>
                                     </div>
                                 </div>
 
@@ -152,7 +152,7 @@ export default function GradeGeneratorIndex({ stats, recentLogs }: Props) {
                                         <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">{log.created_at}</span>
                                     </div>
                                 )) : (
-                                    <div className="p-20 text-center opacity-20 italic">
+                                    <div className="p-20 text-center italic">
                                         <Activity className="h-10 w-10 mx-auto mb-4 text-slate-900" />
                                         <p className="text-xs font-bold uppercase tracking-widest">LOG_MANIFEST_PENDING</p>
                                     </div>
@@ -164,7 +164,7 @@ export default function GradeGeneratorIndex({ stats, recentLogs }: Props) {
                     {/* Meta Stats Sidebar Section */}
                     <div className="xl:col-span-4 space-y-6">
                         <section className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm space-y-8 relative overflow-hidden group/summ">
-                             <div className="absolute -bottom-6 -right-6 text-slate-100 opacity-20 pointer-events-none group-hover/summ:scale-110 transition-transform">
+                             <div className="absolute -bottom-6 -right-6 text-slate-100 pointer-events-none group-hover/summ:scale-110 transition-transform">
                                 <Calculator className="h-32 w-32" />
                             </div>
                             
@@ -190,7 +190,7 @@ export default function GradeGeneratorIndex({ stats, recentLogs }: Props) {
                                 </div>
                                 <div>
                                     <h4 className="text-xs font-bold text-white uppercase italic tracking-[0.2em] mb-3 ">Security_Governance</h4>
-                                    <p className="text-xs text-slate-400 font-medium italic italic  opacity-75 uppercase">
+                                    <p className="text-xs text-slate-400 font-medium italic italic uppercase">
                                         Sistem generator hanya dapat dieksekusi 1 kali per periode audit nilai. Pastikan bobot taktis telah sesuai.
                                     </p>
                                 </div>

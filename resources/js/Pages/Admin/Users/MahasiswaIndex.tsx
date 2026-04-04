@@ -143,7 +143,7 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  {users.data.length === 0 ? (
  <tr>
  <td colSpan={4} className="px-8 py-24 text-center">
- <div className="flex flex-col items-center gap-4 opacity-30">
+ <div className="flex flex-col items-center gap-4">
  <Users className="h-10 w-10 text-slate-300" />
  <p className="text-xs font-semibold text-slate-400">DIREKTORI_MAHASISWA_KOSONG</p>
  </div>
@@ -186,7 +186,7 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  </Badge>
  </td>
  <td className="px-8 py-6 text-right pr-12">
- <div className="flex justify-end gap-2 opacity-30 group-hover/row:opacity-100 transition-opacity">
+ <div className="flex justify-end gap-2 group-hover/row:opacity-100 transition-opacity">
  <button
  onClick={() => toggleStatus(user.id)}
  disabled={toggleForm.processing}
@@ -233,7 +233,7 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  </p>
  </div>
  </div>
- <div className="flex gap-4 opacity-50 text-slate-400">
+ <div className="flex gap-4 text-slate-400">
  <RefreshCw className="h-6 w-6" />
  <ShieldCheck className="h-6 w-6" />
  </div>

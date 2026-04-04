@@ -216,7 +216,7 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  {locations.data.length === 0 ? (
  <tr>
  <td colSpan={3} className="px-8 py-24 text-center">
- <div className="flex flex-col items-center gap-4 opacity-30">
+ <div className="flex flex-col items-center gap-4">
  <Globe2 className="h-10 w-10 text-slate-300" />
  <p className="text-xs font-semibold text-slate-400">GEODATA_KOSONG</p>
  </div>
@@ -243,7 +243,7 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  </div>
  </td>
  <td className="px-8 py-6 text-right pr-12">
- <div className="flex justify-end gap-2 opacity-30 group-hover/row:opacity-100 transition-opacity">
+ <div className="flex justify-end gap-2 group-hover/row:opacity-100 transition-opacity">
  <button
  onClick={() => setDeleting(loc)}
  disabled={!loc.can_delete}

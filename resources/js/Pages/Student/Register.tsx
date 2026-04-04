@@ -156,7 +156,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  <h1 className="text-4xl font-extrabold text-slate-900 ">
  Pusat <span className="text-primary">Pendaftaran</span> KKN
  </h1>
- <p className="text-slate-500 text-sm font-medium opacity-50 leading-normal max-w-xl">
+ <p className="text-slate-500 text-sm font-medium leading-normal max-w-xl">
  Verifikasi persyaratan akademik dan tentukan lokasi pengabdian Anda secara mandiri.
  </p>
  </div>
@@ -183,7 +183,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  </div>
  <div>
  <h3 className="text-xs font-semibold text-slate-900">Verifikasi Prasyarat Akademik</h3>
- <p className="text-xs text-sm text-slate-400 mt-1 opacity-50">SOP UIN SAIZU Compliance</p>
+ <p className="text-xs text-sm text-slate-400 mt-1">SOP UIN SAIZU Compliance</p>
  </div>
  </div>
 
@@ -341,7 +341,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  <h3 className="text-2xl font-semibold text-slate-900 ">
  Pilih <span className="text-primary">Kelompok</span> & Lokasi
  </h3>
- <p className="text-xs text-sm text-slate-400 mt-2 opacity-50">Klik pada kartu kelompok untuk memilih tujuan Anda.</p>
+ <p className="text-xs text-sm text-slate-400 mt-2">Klik pada kartu kelompok untuk memilih tujuan Anda.</p>
  </div>
  <div className="flex items-center gap-3 bg-emerald-50 text-emerald-600 px-6 py-3 rounded-lg border border-emerald-100">
  <div className="h-2 w-2 rounded-lg bg-emerald-500" />
@@ -388,8 +388,8 @@ export default function Register({ periods, student_gender, student_academic }: 
  {group.nama_kelompok}
  </h4>
  <div className="flex items-start gap-2 text-slate-400">
- <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5 opacity-50" />
- <p className="text-xs text-sm line-clamp-2 leading-normal">
+ <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+ <p className="text-xs text-sm leading-normal">
  {group.lokasi?.full_name || group.lokasi?.village_name || 'Lokasi Belum Terverifikasi'}
  </p>
  </div>
@@ -495,7 +495,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  {submitLabel}
  </div>
  </button>
- <div className="flex items-center gap-4 opacity-50 group">
+ <div className="flex items-center gap-4 group">
  <div className="h-px w-10 bg-slate-400 group-hover:w-20" />
  <p className="text-xs font-semibold text-slate-400 ">Data Validasi Akademik Terintegrasi</p>
  <div className="h-px w-10 bg-slate-400 group-hover:w-20" />

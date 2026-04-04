@@ -60,7 +60,7 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  Refining from heavy black to lush tactical emerald gradient
  */}
  <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
+ <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
@@ -107,13 +107,13 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  </div>
  <div>
  <h3 className="text-xl font-semibold text-slate-900 ">Master_Registry</h3>
- <p className="text-xs font-semibold text-slate-400 mt-2 opacity-50">SUMBER DATA TERMALIDASI</p>
+ <p className="text-xs font-semibold text-slate-400 mt-2">SUMBER DATA TERMALIDASI</p>
  </div>
  </div>
 
  <div className="space-y-8">
  <div className="p-8 bg-primary/5 rounded-lg border border-primary/10
- <p className="text-[13px] text-sm text-slate-700 leading-normal opacity-75">
+ <p className="text-sm text-slate-700 leading-normal">
  Data fakultas tetap digunakan secara operasional oleh sistem KKN, namun sumber kebenarannya mengikuti sinkronisasi absolut dari basis data master universitas.
  </p>
  </div>
@@ -121,12 +121,12 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  <div className="grid grid-cols-1 gap-6">
  <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 group/card hover:bg-white hover:border-primary">
  <span className="block text-xs font-semibold text-slate-400 mb-2">Source_Gateway_ID</span>
- <span className="block text-[15px] font-semibold text-slate-900 ">{syncInfo.source}</span>
+ <span className="block text-base font-semibold text-slate-900 ">{syncInfo.source}</span>
  </div>
 
  <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 group/card hover:bg-white hover:border-primary">
  <span className="block text-xs font-semibold text-slate-400 mb-2">Last_Sync_Timestamp</span>
- <span className="block text-[15px] font-semibold text-slate-900 ">{syncInfo.last_synced_at || ''}</span>
+ <span className="block text-base font-semibold text-slate-900 ">{syncInfo.last_synced_at || ''}</span>
  </div>
  </div>
 
@@ -135,7 +135,7 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  <div className="p-2 bg-white rounded-lg
  <Zap className="h-4 w-4 text-emerald-500" />
  </div>
- <p className="text-sm text-slate-500 text-sm leading-normal opacity-50">
+ <p className="text-sm text-slate-500 text-sm leading-normal">
  Intervensi manual dinonaktifkan untuk menjaga integritas relasi antar record fakultas dan program studi.
  </p>
  </div>
@@ -143,7 +143,7 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  <div className="p-2 bg-white rounded-lg
  <Fingerprint className="h-4 w-4 text-primary" />
  </div>
- <p className="text-sm text-slate-500 text-sm leading-normal opacity-50">
+ <p className="text-sm text-slate-500 text-sm leading-normal">
  Mendukung pemetaan otomatis untuk orkestrasi kelompok, monitoring pelaporan, dan audit akademik.
  </p>
  </div>
@@ -180,7 +180,7 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  {faculties.data.length === 0 ? (
  <tr>
  <td colSpan={4} className="px-6 py-40 text-center">
- <div className="flex flex-col items-center gap-6 opacity-50">
+ <div className="flex flex-col items-center gap-6">
  <div className="p-10 bg-slate-50 rounded-lg border border-slate-200
  <Building2 className="h-20 w-20 text-slate-200" />
  </div>
@@ -197,12 +197,12 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  </div>
  </td>
  <td className="px-6 py-3">
- <span className="text-[15px] font-semibold text-slate-900 group-hover/row:text-primary transition-colors leading-normal 
+ <span className="text-base font-semibold text-slate-900 group-hover/row:text-primary transition-colors leading-normal 
  </td>
  <td className="px-6 py-3 text-center">
  <div className="inline-flex items-baseline gap-2 px-6 py-3 bg-slate-50 rounded-lg border border-slate-200 group-hover/row:bg-white group-hover/row:border-primary/30 group-hover/row:group-hover/row: group-hover/row:/5">
  <span className="text-xl font-semibold text-slate-900">{f.programs_count}</span>
- <span className="text-xs font-semibold text-slate-400 opacity-50">PRODI_UNIT</span>
+ <span className="text-xs font-semibold text-slate-400">PRODI_UNIT</span>
  </div>
  </td>
  <td className="px-6 py-3 text-right pr-14">
@@ -238,7 +238,7 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
  <p className="text-xs text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: HIERARCHY_INTEGRITY_VERIFIED</p>
  </div>
  </div>
- <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-4xl opacity-75">
+ <p className="text-sm text-slate-400 text-sm leading-normal max-w-4xl">
  Petunjuk Hirarki: Data fakultas merupakan pondasi absolut pemetaan program studi dan klasifikasi personel akademik KKN UIN SAIZU. 
  Sinkronisasi dilakukan secara herarkis untuk menjamin tidak adanya drift data antara <span className="text-primary font-semibold">"Academic Master"</span> dengan registry operasional KKN. 
  Gunakan audit log untuk memantau aktivitas sinkronisasi temporal.

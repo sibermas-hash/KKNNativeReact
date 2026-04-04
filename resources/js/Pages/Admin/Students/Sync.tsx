@@ -100,7 +100,7 @@ export default function StudentSync({ availableStudents, filters }: Props) {
                                                     <span className="text-sm font-bold text-slate-900 uppercase tracking-tighter truncate max-w-[450px] group-hover/row:text-emerald-600 transition-colors  mb-1.5">{student.name}</span>
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">NIM: {student.nim}</span>
-                                                        <span className="text-xs font-bold text-slate-300 opacity-50 lowercase">[{student.email || 'NO_MAIL_CHANNEL'}]</span>
+                                                        <span className="text-xs font-bold text-slate-300 lowercase">[{student.email || 'NO_MAIL_CHANNEL'}]</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -119,7 +119,7 @@ export default function StudentSync({ availableStudents, filters }: Props) {
                                 ))}
                                 {availableStudents.length === 0 && (
                                     <tr>
-                                        <td colSpan={2} className="px-8 py-32 text-center opacity-20 italic font-bold">
+                                        <td colSpan={2} className="px-8 py-32 text-center italic font-bold">
                                             <CloudDownload className="h-12 w-12 text-slate-900 mx-auto mb-4" />
                                             <span className="text-xs uppercase tracking-[0.4em]">NO_RECORDS_DETECTED</span>
                                         </td>
@@ -142,7 +142,7 @@ export default function StudentSync({ availableStudents, filters }: Props) {
                                 </div>
                                 <h4 className="text-sm font-black text-white italic tracking-widest uppercase ">Identity_Acquisition_V3.2</h4>
                             </div>
-                            <p className="text-sm text-slate-500 font-bold  max-w-4xl opacity-75 italic uppercase">
+                            <p className="text-sm text-slate-500 font-bold  max-w-4xl italic uppercase">
                                 Protokol Sinkronisasi: Data yang diinjeksi akan melewati validasi integritas repositori mahasiswa. Unit pendaftaran lokal akan otomatis terhubung dengan profil feeder.
                             </p>
                         </div>

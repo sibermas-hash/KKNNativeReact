@@ -108,7 +108,7 @@ export default function UsersIndex({ users, filters }: Props) {
                                             <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">ACCOUNT_ID: #{user.id.toString().padStart(4, '0')}</span>
                                         </div>
                                         <h3 className="font-bold text-slate-900 uppercase italic tracking-tighter text-sm  group-hover/row:text-emerald-600 transition-colors uppercase">{user.name}</h3>
-                                        <div className="flex items-center gap-4 opacity-50">
+                                        <div className="flex items-center gap-4">
                                             <div className="flex items-center gap-2">
                                                 <Mail className="h-3.5 w-3.5 text-slate-400" />
                                                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{user.email}</span>
@@ -157,7 +157,7 @@ export default function UsersIndex({ users, filters }: Props) {
                                 <ShieldAlert className="w-6 h-6 text-emerald-500 animate-pulse" />
                                 <h4 className="text-sm font-bold text-white uppercase italic tracking-widest">Authority_Audit_Governance</h4>
                             </div>
-                            <p className="text-sm text-slate-400 font-medium  max-w-4xl opacity-75 italic uppercase">
+                            <p className="text-sm text-slate-400 font-medium  max-w-4xl italic uppercase">
                                 Seluruh modifikasi hak akses personel terekam secara permanen dalam ledger kedaulatan data. Pastikan otorisasi telah sesuai dengan kebijakan keamanan institusi.
                             </p>
                         </div>

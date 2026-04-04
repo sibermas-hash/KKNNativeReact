@@ -84,7 +84,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  <h1 className="text-4xl font-extrabold text-slate-900 ">
  Pusat <span className="text-primary">Dokumen</span> Kelompok
  </h1>
- <p className="text-slate-500 text-sm mt-4 font-medium opacity-50 leading-normal max-w-2xl">
+ <p className="text-slate-500 text-sm mt-4 font-medium leading-normal max-w-2xl">
  Unggah dokumen pendukung kelompok seperti peta desa, dokumentasi foto, video kegiatan, daftar hadir, dan laporan evaluasi.
  </p>
  </div>
@@ -125,7 +125,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  {item.report?.title ?? 'Belum ada dokumen yang diunggah untuk kategori ini.'}
  </p>
  {item.report?.file_name && (
- <p className="text-sm text-sm text-slate-400 ">
+ <p className="text-sm text-slate-400 ">
  File: {item.report.file_name}
  </p>
  )}
@@ -175,7 +175,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  <select
  value={form.data.type}
  onChange={(event) => form.setData('type', event.target.value)}
- className="w-full h-14 rounded-lg border border-slate-200 bg-slate-50 px-5 text-sm text-sm text-slate-900 outline-none focus:border-primary/40"
+ className="w-full h-14 rounded-lg border border-slate-200 bg-slate-50 px-5 text-sm text-slate-900 outline-none focus:border-primary/40"
  required
  >
  {reportTypes.map((type) => (
@@ -200,7 +200,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  value={form.data.title}
  onChange={(event) => form.setData('title', event.target.value)}
  placeholder={selectedType ? `Contoh: ${selectedType.name} Kelompok` : 'Masukkan judul dokumen'}
- className="w-full h-14 rounded-lg border border-slate-200 bg-slate-50 px-5 text-sm text-sm text-slate-900 outline-none focus:border-primary/40"
+ className="w-full h-14 rounded-lg border border-slate-200 bg-slate-50 px-5 text-sm text-slate-900 outline-none focus:border-primary/40"
  required
  />
  {form.errors.title && (

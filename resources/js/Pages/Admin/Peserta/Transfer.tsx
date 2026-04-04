@@ -166,7 +166,7 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
                                 <AlertTriangle className="w-8 h-8 text-emerald-500 mb-2 shadow-sm shadow-emerald-500/20" />
                                 <div>
                                     <h4 className="text-xs font-bold text-white uppercase tracking-widest mb-2">Peringatan Transmisi</h4>
-                                    <p className="text-sm text-slate-500 font-medium  opacity-75 italic">
+                                    <p className="text-sm text-slate-500 font-medium italic">
                                         Pemindahan ini bersifat permanen dan akan memicu audit pembaruan logistik unit kelompok tujuan secara otomatis.
                                     </p>
                                 </div>
@@ -246,7 +246,7 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
 
                                 <div className="p-10 bg-slate-50 border-t border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-8">
                                     <div className="flex items-center gap-4 text-slate-400 italic">
-                                        <ShieldAlert className="w-8 h-8 opacity-20" />
+                                        <ShieldAlert className="w-8 h-8" />
                                         <p className="text-sm font-medium  max-w-lg">Pastikan koordinasi internal antar unit telah terpenuhi sebelum mengeksekusi perpindahan personel.</p>
                                     </div>
                                     <button
@@ -260,7 +260,7 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
                                 </div>
                             </div>
                         ) : (
-                            <div className="h-full min-h-[500px] flex flex-col items-center justify-center bg-white rounded-xl border border-dashed border-slate-200 p-10 space-y-8 italic opacity-20">
+                            <div className="h-full min-h-[500px] flex flex-col items-center justify-center bg-white rounded-xl border border-dashed border-slate-200 p-10 space-y-8 italic">
                                 <div className="p-10 bg-slate-50 rounded-3xl text-slate-900 border border-slate-100 shadow-inner">
                                     <ArrowRightLeft className="w-24 h-24" />
                                 </div>

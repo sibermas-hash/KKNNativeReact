@@ -157,7 +157,7 @@ export default function RekapNilaiIndex({ grades, stats, filters }: Props) {
                                                 )}>
                                                     {grade.final_grade_letter || '---'}
                                                 </span>
-                                                <span className="text-xs font-bold text-slate-300 italic opacity-50 truncate">VAL: {grade.final_grade_value || '0.0'}</span>
+                                                <span className="text-xs font-bold text-slate-300 italic truncate">VAL: {grade.final_grade_value || '0.0'}</span>
                                             </div>
                                         </td>
                                         <td className="px-8 py-5 text-center">
@@ -197,7 +197,7 @@ export default function RekapNilaiIndex({ grades, stats, filters }: Props) {
                                     </tr>
                                 )) : (
                                     <tr>
-                                        <td colSpan={5} className="px-8 py-32 text-center opacity-20 italic">
+                                        <td colSpan={5} className="px-8 py-32 text-center italic">
                                             <FileText className="h-12 w-12 mx-auto mb-4 text-slate-900" />
                                             <p className="font-bold text-slate-900 tracking-widest ">NO_ACADEMIC_REPORTS_DETECTED</p>
                                         </td>
@@ -221,7 +221,7 @@ export default function RekapNilaiIndex({ grades, stats, filters }: Props) {
                                 <ShieldCheck className="w-6 h-6 text-emerald-500" />
                                 <h4 className="text-sm font-bold text-white uppercase italic tracking-widest">Protocol Integrity Audit</h4>
                             </div>
-                            <p className="text-sm text-slate-400 font-medium  max-w-4xl opacity-75 italic">
+                            <p className="text-sm text-slate-400 font-medium  max-w-4xl italic">
                                 Nilai yang terkunci akan diintegrasikan secara otomatis ke dalam kanal transkrip akademik universitas. Pastikan seluruh input evaluasi dosen pembimbing telah terverifikasi secara internal.
                             </p>
                         </div>

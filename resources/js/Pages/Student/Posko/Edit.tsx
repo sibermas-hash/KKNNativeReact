@@ -107,7 +107,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  <h1 className="text-4xl font-extrabold text-slate-900 ">
  Lokasi <span className="text-primary">Posko</span>
  </h1>
- <p className="text-slate-500 text-sm font-medium opacity-50 flex items-center gap-2">
+ <p className="text-slate-500 text-sm font-medium flex items-center gap-2">
  <Navigation className="h-4 w-4 text-primary/40" />
  {isLeader ? 'Kelola titik koordinat dan dokumentasi unit kelompok.' : 'Akses informasi lokasi unit (Baca Saja).'}
  </p>
@@ -247,7 +247,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  <Lock className="h-16 w-16 text-amber-200" />
  </div>
  <h3 className="text-3xl font-semibold text-slate-900 mb-4">Akses Terbatas</h3>
- <p className="text-slate-400 text-sm text-xs max-w-md mx-auto leading-normal opacity-50">
+ <p className="text-slate-400 text-sm text-xs max-w-md mx-auto leading-normal">
  Hanya <span className="text-primary">Ketua Kelompok</span> yang diizinkan melakukan pembaruan data koordinat dan dokumentasi posko. Silakan hubungi ketua unit Anda untuk melakukan sinkronisasi lokasi.
  </p>
  </div>

@@ -99,7 +99,7 @@ export default function AuditLogIndex({ logs, filters }: Props) {
                                             <div className="h-1 w-1 rounded-full bg-slate-200" />
                                             <div className="flex items-center gap-2">
                                                 <Activity className="h-3.5 w-3.5 text-slate-400" />
-                                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest opacity-50 truncate max-w-[150px]">{log.subject_type?.split('\\').pop() || 'UNDEFINED_RESOURCE'}</span>
+                                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest truncate max-w-[150px]">{log.subject_type?.split('\\').pop() || 'UNDEFINED_RESOURCE'}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -116,7 +116,7 @@ export default function AuditLogIndex({ logs, filters }: Props) {
                                 </div>
                             </div>
                         )) : (
-                            <div className="py-32 text-center opacity-20 italic">
+                            <div className="py-32 text-center italic">
                                 <ShieldAlert className="h-16 w-16 mx-auto mb-6 text-slate-900" />
                                 <span className="text-sm font-black uppercase tracking-[0.4em]">NO_DATA_TRAFFIC_DETECTED</span>
                             </div>
@@ -137,7 +137,7 @@ export default function AuditLogIndex({ logs, filters }: Props) {
                                 <ShieldCheck className="w-6 h-6 text-emerald-500" />
                                 <h4 className="text-sm font-bold text-white uppercase italic tracking-widest">Permanent Surveillance Protocol</h4>
                             </div>
-                            <p className="text-sm text-slate-400 font-medium  max-w-4xl opacity-75 italic uppercase">
+                            <p className="text-sm text-slate-400 font-medium  max-w-4xl italic uppercase">
                                 Seluruh rekaman audit bersifat permanen dan tidak dapat dimodifikasi. Ledger ini berfungsi sebagai basis kedaulatan data dan integritas operasional universitas.
                             </p>
                         </div>

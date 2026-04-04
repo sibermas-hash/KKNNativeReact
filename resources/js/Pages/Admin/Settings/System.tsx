@@ -73,7 +73,7 @@ export default function SystemSettings({ settings }: Props) {
  Refining from basic header to lush tactical emerald gradient
  */}
  <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
+ <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
@@ -131,7 +131,7 @@ export default function SystemSettings({ settings }: Props) {
  {getIcon(setting.config_key)}
  {setting.label}
  </label>
- <span className="text-xs text-sm text-slate-300 opacity-50 {setting.config_key}</span>
+ <span className="text-xs text-sm text-slate-300 {setting.config_key}</span>
  </div>
 
  <div className="relative group/input">
@@ -185,7 +185,7 @@ export default function SystemSettings({ settings }: Props) {
  <p className="text-xs text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: SYSTEM_INTEGRITY_VERIFIED</p>
  </div>
  </div>
- <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-2xl opacity-75">
+ <p className="text-sm text-slate-400 text-sm leading-normal max-w-2xl">
  Pesan Keamanan: Setiap perubahan pada parameter global akan berdampak langsung pada siklus operasional KKN. 
  Pastikan orkestrasi data telah divalidasi melalui prosedur audit internal sebelum melakukan penyimpanan permanen.
  </p>
@@ -213,7 +213,7 @@ export default function SystemSettings({ settings }: Props) {
  </form>
 
  <div className="text-center pt-8">
- <p className="text-xs text-sm text-slate-300 opacity-50">
+ <p className="text-xs text-sm text-slate-300">
  Pusat Kendali Sistem Global • UIN SAIZU © 2024
  </p>
  </div>

@@ -52,7 +52,7 @@ export default function UserForm({ faculties, programs }: Props) {
  Refining from basic header to lush tactical emerald gradient
  */}
  <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
+ <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-6 mb-2">
@@ -103,7 +103,7 @@ export default function UserForm({ faculties, programs }: Props) {
  
  <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
  <div className="md:col-span-4 space-y-1">
- <h3 className="text-sm text-sm text-slate-900 Akses</h3>
+ <h3 className="text-sm text-slate-900 Akses</h3>
  <p className="text-xs text-slate-500 font-medium">Tentukan peran pengguna dalam sistem.</p>
  </div>
  <div className="md:col-span-8">

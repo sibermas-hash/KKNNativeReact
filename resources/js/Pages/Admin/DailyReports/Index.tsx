@@ -44,7 +44,7 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  Refining from heavy black to lush tactical emerald gradient
  */}
  <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
+ <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
@@ -127,7 +127,7 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  <div className="p-3 bg-white border border-slate-200 rounded-lg text-slate-300 group-hover/row:text-primary group-hover/row:bg-primary/5 group-hover/row:border-primary
  <Calendar className="h-5 w-5 stroke-[2px]" />
  </div>
- <span className="text-[13px] font-semibold text-slate-900 
+ <span className="text-sm font-semibold text-slate-900 
  </div>
  </td>
  <td className="px-6 py-3">
@@ -141,10 +141,10 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  {r.student?.name.charAt(0)}
  </div>
  <div className="flex flex-col gap-1.5 min-w-0">
- <span className="text-[14px] font-semibold text-slate-900 truncate group-hover/row:text-primary transition-colors">{r.student?.name}</span>
+ <span className="text-sm font-semibold text-slate-900 truncate group-hover/row:text-primary transition-colors">{r.student?.name}</span>
  <div className="flex items-center gap-2">
  <IdCard className="h-3.5 w-3.5 text-slate-300" />
- <span className="text-xs font-semibold text-slate-400 opacity-50 px-2 bg-slate-50 rounded-lg py-0.5 border border-slate-200">NIM: {r.student?.nim}</span>
+ <span className="text-xs font-semibold text-slate-400 px-2 bg-slate-50 rounded-lg py-0.5 border border-slate-200">NIM: {r.student?.nim}</span>
  </div>
  </div>
  </div>
@@ -162,7 +162,7 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  )) : (
  <tr>
  <td colSpan={5} className="px-6 py-40 text-center">
- <div className="flex flex-col items-center gap-6 opacity-50">
+ <div className="flex flex-col items-center gap-6">
  <div className="p-10 bg-slate-50 rounded-lg border border-slate-200">
  <Activity className="h-20 w-20 text-slate-200" />
  </div>
@@ -188,7 +188,7 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  </div>
  <h4 className="text-sm font-semibold text-white ">_V3</h4>
  </div>
- <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-4xl opacity-75">
+ <p className="text-sm text-slate-400 text-sm leading-normal max-w-4xl">
  Logbook merupakan bukti operasional primer yang menjadi basis penilaian kompetensi mahasiswa KKN UIN SAIZU. 
  Seluruh data laporan harian diaudit secara temporal untuk menjamin akuntabilitas pengabdian yang presisi. 
  Pastikan verifikasi <span className="text-primary font-semibold">"Verified"</span> dilakukan berdasarkan validasi lapangan yang akurat.
@@ -211,7 +211,7 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  </div>
  </div>
 
- <div className="text-center pt-8 opacity-20">
+ <div className="text-center pt-8">
  <p className="text-xs font-semibold text-slate-300 ">
  Field Activity Monitor • System Integrity Ver. 3.2.0 • UIN SAIZU © 2024
  </p>

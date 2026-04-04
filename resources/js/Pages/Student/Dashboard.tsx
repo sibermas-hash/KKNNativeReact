@@ -212,7 +212,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <div className="lg:col-span-2 space-y-8">
  {isGroupPinned ? (
  <section className="bg-white rounded-lg p-10 border border-slate-100 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-16 opacity-[0.02] text-slate-900 pointer-events-none group-transition-transform">
+ <div className="absolute top-0 right-0 p-16 text-slate-900 pointer-events-none group-transition-transform">
  <MapPin className="h-64 w-64" />
  </div>
  
@@ -358,7 +358,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </section>
 
  <section className="bg-white rounded-lg p-8 border border-slate-100 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-8 opacity-[0.02] text-primary group-transition-transform pointer-events-none">
+ <div className="absolute top-0 right-0 p-8 text-primary group-transition-transform pointer-events-none">
  <Info className="h-40 w-40" />
  </div>
  
@@ -394,7 +394,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
  </div>
 
- <div className="text-center pt-8 opacity-20">
+ <div className="text-center pt-8">
  <p className="text-xs font-semibold text-slate-300">
  Pusat Layanan Mahasiswa • UIN SAIZU © 2026
  </p>
@@ -413,7 +413,7 @@ function StatCard({ title, value, unit, icon: Icon, color }: any) {
 
  return (
  <div className="bg-white border border-slate-100 rounded-lg p-8 hover:-transition-all group overflow-hidden relative">
- <div className="absolute top-0 right-0 p-6 opacity-[0.02] text-slate-900 transition-transform group-">
+ <div className="absolute top-0 right-0 p-6 text-slate-900 transition-transform group-">
  <Icon className="h-24 w-24" />
  </div>
  

@@ -59,7 +59,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  Refining from heavy black to lush tactical emerald gradient
  */}
  <div className="relative overflow-hidden rounded-lg bg-white p-6 border border-primary flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
- <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2 opacity-50" />
+ <div className="absolute top-0 right-0 w-full h-auto bg-white/10 rounded-lg /2x-1/2" />
  
  <div className="relative z-10 space-y-5 flex-1">
  <div className="flex items-center gap-3 mb-2">
@@ -112,14 +112,14 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  <tr key={ev.id} className="group/row hover:bg-slate-50/20cursor-default">
  <td className="px-6 py-3">
  <div className="flex flex-col gap-2.5 min-w-0">
- <span className="text-[16px] font-semibold text-slate-900 group-hover/row:text-primary transition-colors truncate">
+ <span className="text-base font-semibold text-slate-900 group-hover/row:text-primary transition-colors truncate">
  {ev.student_name}
  </span>
  <div className="flex items-center gap-3">
  <div className="p-1 px-2.5 bg-slate-50 border border-slate-200 rounded-lg">
  <Fingerprint className="h-3 w-3 text-slate-300 group-hover/row:text-primary transition-colors" />
  </div>
- <span className="text-xs font-semibold text-slate-400 opacity-50">IDENTITY_VERIFIED_OK</span>
+ <span className="text-xs font-semibold text-slate-400">IDENTITY_VERIFIED_OK</span>
  </div>
  </div>
  </td>
@@ -162,7 +162,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  <td className="px-6 py-3 text-right pr-14">
  <div className="flex flex-col items-end gap-2 group-hover/row:translate-x-[-4px] transition-transform">
  <div className="flex items-center gap-3 text-slate-400 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
- <Calendar className="h-3.5 w-3.5 opacity-50" />
+ <Calendar className="h-3.5 w-3.5" />
  <span className="text-xs font-semibold ">
  {ev.evaluated_at ?? 'LOG_PENDING'}
  </span>
@@ -175,7 +175,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  {(evaluations.data ?? []).length === 0 && (
  <tr>
  <td colSpan={6} className="px-6 py-40 text-center">
- <div className="flex flex-col items-center gap-6 opacity-50">
+ <div className="flex flex-col items-center gap-6">
  <div className="p-10 bg-slate-50 rounded-lg border border-slate-200
  <Star className="h-20 w-20 text-slate-200" />
  </div>
@@ -204,7 +204,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  <p className="text-xs text-emerald-400 text-sm mt-2 whitespace-nowrap">STATUS: AUDIT_ALGORITHM_VERIFIED</p>
  </div>
  </div>
- <p className="text-[14px] text-slate-400 text-sm leading-normal max-w-4xl opacity-75">
+ <p className="text-sm text-slate-400 text-sm leading-normal max-w-4xl">
  Petunjuk Validasi: Seluruh hasil penilaian diverifikasi melalui algoritma validasi akademik terpusat UIN SAIZU. 
  Data evaluasi mencakup <span className="text-primary font-semibold">"Analytical Scoring"</span> yang secara otomatis menjadi basis 
  penentuan grade kelulusan. Log audit pusat mencatat setiap interaksi petugas untuk menjamin kedaulatan data akademik.
@@ -227,7 +227,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  </div>
  </div>
 
- <div className="text-center pt-8 opacity-20">
+ <div className="text-center pt-8">
  <p className="text-xs font-semibold text-slate-300 ">
  Evaluation Monitor System • Audit Registry Ver. 3.2.0 • UIN SAIZU © 2024
  </p>

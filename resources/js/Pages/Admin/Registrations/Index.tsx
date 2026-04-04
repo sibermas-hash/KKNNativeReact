@@ -166,13 +166,13 @@ export default function RegistrationsIndex({ registrations, filters }: Props) {
                                                     </button>
                                                 </div>
                                             ) : (
-                                                <span className="text-xs font-bold text-slate-300 uppercase italic opacity-50 pr-4">Terverifikasi</span>
+                                                <span className="text-xs font-bold text-slate-300 uppercase italic pr-4">Terverifikasi</span>
                                             )}
                                         </td>
                                     </tr>
                                 )) : (
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-20 text-center opacity-30">
+                                        <td colSpan={4} className="px-6 py-20 text-center">
                                             <SearchCheck className="h-10 w-10 mx-auto mb-4 text-slate-200" />
                                             <p className="text-sm font-semibold text-slate-400">Tidak ada pendaftaran yang ditemukan</p>
                                         </td>

@@ -91,7 +91,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  <TrendingUp className="h-6 w-6" />
  </div>
  <div>
- <span className="text-xs font-semibold text-slate-400 block mb-1 opacity-50">Status Target</span>
+ <span className="text-xs font-semibold text-slate-400 block mb-1">Status Target</span>
  <span className="text-xs font-semibold text-slate-900 ">Menuju Tujuan SDGs</span>
  </div>
  </div>
@@ -174,8 +174,8 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  )}>
  {sdg.id}
  </div>
- <span className="text-sm font-semibold leading-normal line-clamp-2">{sdg.name}</span>
- {isSelected && <CheckCircle2 className="h-5 w-5 absolute top-4 right-4 opacity-50" />}
+ <span className="text-sm font-semibold leading-normal">{sdg.name}</span>
+ {isSelected && <CheckCircle2 className="h-5 w-5 absolute top-4 right-4" />}
  </button>
  );
  })}
@@ -275,14 +275,14 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  <Activity className="h-[200px] w-full" />
  </div>
  <h4 className="text-xs font-semibold mb-8 text-slate-400">Arsip Strategis</h4>
- <p className="text-sm text-sm leading-normal relative z-10 text-slate-500 opacity-75">
+ <p className="text-sm leading-normal relative z-10 text-slate-500">
  Program kerja yang telah diajukan akan menjadi dasar evaluasi kinerja unit dan penentuan luaran KKN di akhir periode pelaksanaan.
  </p>
  </div>
  </div>
  </div>
 
- <div className="text-center pt-8 opacity-20">
+ <div className="text-center pt-8">
  <p className="text-xs font-semibold text-slate-300 ">
  Pusat Perencanaan Program • UIN SAIZU © 2024
  </p>
@@ -300,7 +300,7 @@ function InfoItem({ icon: Icon, title, desc }: any) {
  </div>
  <div className="min-w-0">
  <p className="text-sm font-semibold text-white mb-1.5">{title}</p>
- <p className="text-sm text-sm text-slate-400 leading-normal opacity-50">{desc}</p>
+ <p className="text-sm text-slate-400 leading-normal">{desc}</p>
  </div>
  </div>
  );

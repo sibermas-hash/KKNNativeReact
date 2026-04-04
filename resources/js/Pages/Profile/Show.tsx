@@ -148,7 +148,7 @@ export default function ProfileShow() {
  <input
  value={user.email}
  disabled
- className="w-full rounded-lg border border-slate-200 bg-white/5 px-3 py-2 text-slate-500 opacity-50"
+ className="w-full rounded-lg border border-slate-200 bg-white/5 px-3 py-2 text-slate-500"
  />
  </div>
 

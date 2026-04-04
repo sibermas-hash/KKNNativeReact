@@ -88,7 +88,7 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
  <AppLayout title="Evaluasi dan Arsip Nilai">
  <Head title="Audit Penilaian Mahasiswa" />
  
- <div className="space-y-10 pb-16">
+ <div className="space-y-8 pb-16">
  {/* Professional Header */}
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-slate-200">
  <div>
@@ -233,7 +233,7 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
  </div>
  )}
 
- <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+ <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
  <div className="overflow-x-auto">
  <table className="w-full text-left border-collapse">
  <thead>
@@ -299,8 +299,8 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
  </div>
  </div>
 
- <div className="space-y-10">
- <section className="bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group h-fit">
+ <div className="space-y-8">
+ <section className="bg-white rounded-lg border border-slate-100 p-10 relative overflow-hidden group h-fit">
  <div className="absolute top-0 right-0 p-8 text-primary group-transition-transform pointer-events-none">
  <CloudArrowUpIcon className="h-32 w-32" />
  </div>

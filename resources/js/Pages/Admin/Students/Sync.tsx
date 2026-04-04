@@ -75,7 +75,7 @@ export default function StudentSync(_props: Props) {
  <Database className="h-[40rem] w-[40rem]" />
  </div>
 
- <div className="p-12 flex flex-col items-center text-center space-y-12 relative z-10 max-w-2xl">
+ <div className="p-12 flex flex-col items-center text-center space-y-8 relative z-10 max-w-2xl">
  <div className="space-y-6">
  <div className="inline-flex p-8 rounded-lg bg-slate-50 border border-slate-100 text-slate-300 relative group-hover:text-primary transition-colors">
  <Cpu className="w-16 h-16" />

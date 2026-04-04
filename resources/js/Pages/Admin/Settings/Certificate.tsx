@@ -44,7 +44,7 @@ export default function CertificateSettings({ configs }: Props) {
  <AppLayout title="Protokol Sertifikasi Digital">
  <Head title="Konfigurasi Sertifikat" />
  
- <div className="space-y-12 pb-24">
+ <div className="space-y-8 pb-24">
  {/* 
  Emerald Premium Header 
  Refining from heavy black to lush tactical emerald gradient
@@ -98,7 +98,7 @@ export default function CertificateSettings({ configs }: Props) {
  </div>
  </div>
 
- <div className="space-y-12">
+ <div className="space-y-8">
  {configs.filter(c => c.type !== 'image').map((config) => (
  <div key={config.id} className="space-y-5 group/item">
  <label className="text-[11px] font-semibold text-slate-400 group-hover/item:text-primary transition-colors ml-2 block">
@@ -147,7 +147,7 @@ export default function CertificateSettings({ configs }: Props) {
  </div>
 
  {/* Aesthetic Control Sidebar */}
- <div className="space-y-10">
+ <div className="space-y-8">
  {/* Visual Assets Card */}
  <section className="bg-white rounded-lg p-10 border border-slate-200 group">
  <div className="flex items-center gap-5 border-b border-slate-200 pb-8 mb-10">
@@ -157,7 +157,7 @@ export default function CertificateSettings({ configs }: Props) {
  <h3 className="text-lg font-semibold text-slate-900">Aset_Visual</h3>
  </div>
 
- <div className="space-y-12">
+ <div className="space-y-8">
  {configs.filter(c => c.type === 'image').map((config) => (
  <div key={config.id} className="space-y-5">
  <div className="aspect-[1.6/1] bg-slate-50 border-2 border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center p-10 text-center hover:bg-emerald-50/10 hover:border-primarygroup/preview relative overflow-hidden cursor-help">

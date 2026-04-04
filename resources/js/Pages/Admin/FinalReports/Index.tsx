@@ -40,7 +40,7 @@ export default function AdminFinalReportsIndex({ reports, filters }: Props) {
  <AppLayout title="Validasi Dokumentasi Akhir">
  <Head title="Validasi Laporan Akhir" />
  
- <div className="space-y-12 pb-24">
+ <div className="space-y-8 pb-24">
  {/* 
  Emerald Premium Header 
  Refining from heavy black to lush tactical emerald gradient
@@ -110,7 +110,7 @@ export default function AdminFinalReportsIndex({ reports, filters }: Props) {
  </div>
 
  {/* Data Table */}
- <div className="bg-white rounded-lg border border-slate-200 overflow-hidden group lg:mx-2">
+ <div className="bg-white rounded-lg border border-slate-100 overflow-hidden group lg:mx-2">
  <div className="overflow-x-auto relative z-10 custom-scrollbar pr-1">
  <table className="min-w-full divide-y divide-slate-50">
  <thead className="bg-slate-50/50">

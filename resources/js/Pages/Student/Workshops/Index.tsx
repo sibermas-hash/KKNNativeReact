@@ -46,7 +46,7 @@ export default function StudentWorkshopsIndex({ workshops }: Props) {
  <AppLayout title="Pembekalan Mahasiswa">
  <Head title="Pembekalan Mahasiswa" />
 
- <div className="space-y-12 pb-24">
+ <div className="space-y-8 pb-24">
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-10 border-b border-slate-200">
  <div>
  <div className="flex items-center gap-2 mb-4">
@@ -77,7 +77,7 @@ export default function StudentWorkshopsIndex({ workshops }: Props) {
  </div>
 
  {workshops.length === 0 ? (
- <div className="bg-white rounded-lg border border-slate-200 p-20 text-center
+ <div className="bg-white rounded-lg border border-slate-100 p-20 text-center
  <div className="inline-flex p-8 bg-slate-50 rounded-lg border border-slate-200 mb-6">
  <Calendar className="h-12 w-12 text-slate-200" />
  </div>
@@ -99,7 +99,7 @@ export default function StudentWorkshopsIndex({ workshops }: Props) {
  return (
  <article
  key={workshop.id}
- className="bg-white rounded-lg border border-slate-200 p-8 hover:border-primary"
+ className="bg-white rounded-lg border border-slate-100 p-8 hover:border-primary"
  >
  <div className="flex items-start justify-between gap-5 mb-8">
  <div className="space-y-3">

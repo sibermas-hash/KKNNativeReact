@@ -59,9 +59,9 @@ export default function DplGroupShow({ group }: Props) {
  <AppLayout title={group.name}>
  <Head title={`Arsip Unit: ${group.code}`} />
  
- <div className="space-y-10 pb-16">
+ <div className="space-y-8 pb-16">
  {/* Modern Header */}
- <div className="bg-white rounded-lg border border-slate-200 p-10 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden group">
+ <div className="bg-white rounded-lg border border-slate-100 p-10 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-10 text-primary group-transition-transform pointer-events-none">
  <SparklesIcon className="h-48 w-48" />
  </div>
@@ -89,7 +89,7 @@ export default function DplGroupShow({ group }: Props) {
 
  <div className="relative z-10 flex flex-col items-center md:items-end gap-3 shrink-0">
  <StatusBadge status={group.status} className="px-6 py-3 rounded-lg text-xs font-semibold border-slate-200" />
- <div className="flex items-center gap-2 px-4 py-1.5 bg-white rounded-lg border border-slate-200
+ <div className="flex items-center gap-2 px-4 py-1.5 bg-white rounded-lg border border-slate-100
  <span className="h-2 w-2 rounded-lg bg-emerald-500" />
  <span className="text-[10px] font-extrabold text-slate-400 Lokasi Aktif</span>
  </div>
@@ -99,7 +99,7 @@ export default function DplGroupShow({ group }: Props) {
  {/* Info Grid */}
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
  <div className="lg:col-span-1 space-y-6">
- <section className="bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group h-fit">
+ <section className="bg-white rounded-lg border border-slate-100 p-10 relative overflow-hidden group h-fit">
  <div className="flex items-center gap-4 mb-10 border-b border-slate-200 pb-6">
  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
  <InformationCircleIcon className="h-5 w-5 text-slate-400" />
@@ -135,7 +135,7 @@ export default function DplGroupShow({ group }: Props) {
  </section>
 
  {/* Data Posko Lapangan */}
- <section className="bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group h-fit">
+ <section className="bg-white rounded-lg border border-slate-100 p-10 relative overflow-hidden group h-fit">
  <div className="flex items-center gap-4 mb-8 border-b border-slate-200 pb-6">
  <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
  <ShieldCheckIcon className="h-5 w-5 text-emerald-600" />
@@ -190,7 +190,7 @@ export default function DplGroupShow({ group }: Props) {
  </section>
  </div>
 
- <section className="lg:col-span-2 bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group">
+ <section className="lg:col-span-2 bg-white rounded-lg border border-slate-100 p-10 relative overflow-hidden group">
  <div className="flex items-center justify-between mb-10 border-b border-slate-200 pb-6 px-2">
  <div className="flex items-center gap-4">
  <div className="p-3 bg-primary/10 rounded-lg border border-primary">
@@ -230,10 +230,10 @@ export default function DplGroupShow({ group }: Props) {
  </div>
 
  {/* Member Ledger */}
- <section className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+ <section className="bg-white rounded-lg border border-slate-100 overflow-hidden">
  <div className="p-10 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-50/50">
  <div className="flex items-center gap-4">
- <div className="p-3 bg-white rounded-lg border border-slate-200
+ <div className="p-3 bg-white rounded-lg border border-slate-100
  <UserGroupIcon className="h-5 w-5 text-slate-400" />
  </div>
  <div>
@@ -241,7 +241,7 @@ export default function DplGroupShow({ group }: Props) {
  <p className="text-[9px] text-sm text-slate-400 mt-0.5">Manajemen Profil Mahasiswa</p>
  </div>
  </div>
- <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-slate-200
+ <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-slate-100
  <span className="text-[9px] font-semibold text-slate-300 Aktif</span>
  <span className="h-4 w-full bg-slate-100 mx-2" />
  <span className="text-sm font-semibold text-slate-900">{group.registrations.length} <span className="text-[10px] text-slate-400">UNIT</span></span>

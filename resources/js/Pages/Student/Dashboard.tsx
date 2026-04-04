@@ -103,7 +103,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <AppLayout title="Dasbor Mahasiswa">
  <Head title="Portal Mahasiswa" />
  
- <div className="space-y-12 pb-24">
+ <div className="space-y-8 pb-24">
  {/* Sleek Minimalist Operational Header */}
  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 border-b border-slate-100 pb-10">
  <div className="flex items-center gap-6">

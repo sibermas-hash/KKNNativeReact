@@ -50,7 +50,7 @@ export default function DplDailyReportsIndex({ reports, filters }: Props) {
  </div>
 
  <div className="overflow-hidden rounded-lg border border-slate-200 bg-white
- <table className="min-w-full divide-y divide-slate-200">
+ <table className="min-w-full divide-y divide-slate-50">
  <thead className="bg-slate-50">
  <tr>
  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500">Tanggal</th>
@@ -61,7 +61,7 @@ export default function DplDailyReportsIndex({ reports, filters }: Props) {
  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500">Aksi</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-slate-100">
+ <tbody className="divide-y divide-slate-50">
  {(reports.data ?? []).map((r) => (
  <tr key={r.id} className="transition hover:bg-slate-50/80">
  <td className="px-4 py-3 text-sm text-slate-600">{r.date}</td>

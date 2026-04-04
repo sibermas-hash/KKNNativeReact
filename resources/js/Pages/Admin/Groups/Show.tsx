@@ -52,7 +52,7 @@ export default function GroupShow({ group }: Props) {
  <AppLayout title={`Audit Sektor: ${group.code}`}>
  <Head title={`Sektor ${group.code} | KKN UIN SAIZU`} />
  
- <div className="space-y-12 pb-24">
+ <div className="space-y-8 pb-24">
  {/* 
  Emerald Premium Header 
  Replacing basic header with tactical emerald gradient monitor
@@ -144,9 +144,9 @@ export default function GroupShow({ group }: Props) {
  </div>
 
  {group.posko ? (
- <div className="space-y-12 relative z-10">
+ <div className="space-y-8 relative z-10">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
- <div className="space-y-10">
+ <div className="space-y-8">
  <div className="grid grid-cols-2 gap-6">
  <div className="p-6 bg-slate-50 border border-slate-200 rounded-lg group/lathover:bg-white">
  <p className="text-[9px] font-semibold text-slate-400 mb-3 group-hover/lat:text-primary">Garis Lintang</p>
@@ -274,7 +274,7 @@ export default function GroupShow({ group }: Props) {
  </div>
 
  {/* Secondary Intelligence Panel (Right) */}
- <div className="space-y-12">
+ <div className="space-y-8">
  {/* Lecturer Panel - Tactical Profile */}
  <div className="bg-white p-12 rounded-lg border border-slate-200 relative overflow-hidden group">
  <div className="absolute -top-12 -right-12 p-12 text-primary pointer-events-none group-transition-transform">
@@ -292,7 +292,7 @@ export default function GroupShow({ group }: Props) {
  </div>
 
  {group.lecturer ? (
- <div className="space-y-10 relative z-10">
+ <div className="space-y-8 relative z-10">
  <div className="flex flex-col gap-6 items-center text-center">
  <div className="relative">
  <div className="h-32 w-32 rounded-lg bg-slate-900 text-primary border-4 border-white flex items-center justify-center text-5xl font-semibold ring-1 ring-slate-100">

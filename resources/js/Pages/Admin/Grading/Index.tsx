@@ -172,7 +172,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  return (
  <AppLayout title="Protokol Penilaian">
  <div className="flex h-auto items-center justify-center p-8">
- <div className="text-center p-14 bg-white rounded-lg border border-slate-200 max-w-2xl relative overflow-hidden group">
+ <div className="text-center p-14 bg-white rounded-lg border border-slate-100 max-w-2xl relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-14 text-slate-900 ">
  <GraduationCap className="h-64 w-64" />
  </div>
@@ -213,7 +213,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  <AppLayout title="Evaluasi & Capaian Akademik">
  <Head title="Evaluasi & Penilaian" />
 
- <div className="space-y-12 pb-24">
+ <div className="space-y-8 pb-24">
  
  {/* 
  Emerald Premium Header 
@@ -295,7 +295,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  </div>
 
  {/* Table Section */}
- <div className="bg-white rounded-lg border border-slate-200 overflow-hidden relative group mx-1">
+ <div className="bg-white rounded-lg border border-slate-100 overflow-hidden relative group mx-1">
  <div className="overflow-x-auto relative z-10 custom-scrollbar pr-1">
  <table className="min-w-full divide-y divide-slate-50 text-left">
  <thead className="bg-slate-50/50">
@@ -422,7 +422,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/80">
  <div className="bg-white rounded-lg w-full max-w-5xl border border-slate-200 overflow-hidden zoom-in-95 group/modal relative">
  {/* Modal Header Section */}
- <div className="px-12 py-6 border-b border-slate-200 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 bg-slate-50/50 relative overflow-hidden">
+ <div className="px-8 py-6 border-b border-slate-50 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 bg-slate-50/50 relative overflow-hidden">
  <div className="absolute top-0 right-0 p-14 text-slate-900 pointer-events-none group-hover/modal:transition-transform">
  <Calculator className="h-64 w-64" />
  </div>
@@ -441,7 +441,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  </div>
  </div>
 
- <div className="flex items-center gap-6 px-6 py-8 bg-white rounded-lg border border-slate-200 relative z-10 group/preview transition-transform">
+ <div className="flex items-center gap-6 px-6 py-8 bg-white rounded-lg border border-slate-100 relative z-10 group/preview transition-transform">
  <div className="text-right">
  <p className="text-[10px] font-semibold text-slate-300 mb-4">ESTIMASI_AKHIR_ABSOLUT</p>
  <div className="flex items-center gap-6">

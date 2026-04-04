@@ -40,7 +40,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  <AppLayout title="Arsip Program Kerja">
  <Head title="Repositori Program Kerja" />
  
- <div className="space-y-12 pb-24">
+ <div className="space-y-8 pb-24">
  {/* 
  Emerald Premium Header 
  Refining from basic header to lush tactical emerald gradient
@@ -108,7 +108,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  </div>
 
  {/* Data Table */}
- <div className="bg-white rounded-lg border border-slate-200 overflow-hidden group">
+ <div className="bg-white rounded-lg border border-slate-100 overflow-hidden group">
  <div className="overflow-x-auto relative z-10 custom-scrollbar">
  <table className="min-w-full divide-y divide-slate-50">
  <thead className="bg-slate-50/50">

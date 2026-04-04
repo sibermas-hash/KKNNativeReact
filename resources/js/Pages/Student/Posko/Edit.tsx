@@ -128,7 +128,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
 
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
  <div className="lg:col-span-1 space-y-6">
- <section className="bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group">
+ <section className="bg-white rounded-lg border border-slate-100 p-10 relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-10 text-slate-900 pointer-events-none group-transition-transform[2000ms]">
  <Map className="h-64 w-64" />
  </div>
@@ -182,7 +182,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
 
  <div className="lg:col-span-2">
  {isLeader ? (
- <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-slate-200 p-12 space-y-6 relative overflow-hidden group">
+ <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-slate-100 p-12 space-y-6 relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-16 text-slate-900 pointer-events-none group-transition-transform[2000ms]">
  <Settings2 className="h-96 w-full" />
  </div>
@@ -238,7 +238,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  </button>
  </form>
  ) : (
- <section className="bg-white rounded-lg border border-slate-200 p-20 text-center relative overflow-hidden group">
+ <section className="bg-white rounded-lg border border-slate-100 p-20 text-center relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none group-transition-transform[2000ms]">
  <Lock className="h-64 w-64" />
  </div>

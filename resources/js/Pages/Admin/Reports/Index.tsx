@@ -81,7 +81,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
  <AppLayout title="Laporan Kegiatan KKN">
  <Head title="Manajemen Laporan" />
  
- <div className="space-y-10 pb-16">
+ <div className="space-y-8 pb-16">
  {/* 
  Emerald Premium Header 
  Refining from basic header to lush tactical emerald gradient
@@ -167,7 +167,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
  </div>
 
  {/* Data Table */}
- <div className="bg-white rounded-lg border border-slate-200 overflow-hidden group">
+ <div className="bg-white rounded-lg border border-slate-100 overflow-hidden group">
  <div className="overflow-x-auto relative z-10 custom-scrollbar">
  <table className="min-w-full divide-y divide-slate-50">
  <thead className="bg-slate-50/50">

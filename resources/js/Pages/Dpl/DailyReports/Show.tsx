@@ -80,7 +80,7 @@ export default function DplDailyReportShow({ report }: Props) {
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
  <div className="lg:col-span-2 space-y-6">
  {/* Main Content Card */}
- <section className="bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group">
+ <section className="bg-white rounded-lg border border-slate-100 p-10 relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none group-transition-transform[2000ms]">
  <FileText className="h-64 w-64" />
  </div>
@@ -100,7 +100,7 @@ export default function DplDailyReportShow({ report }: Props) {
  <MetaInfo icon={MapPin} label="Sektor Penugasan" value={report.group.location?.village_name ?? 'Belum ditetapkan'} />
  </div>
 
- <div className="space-y-10 pt-10 border-t border-slate-200">
+ <div className="space-y-8 pt-10 border-t border-slate-200">
  <div className="space-y-4">
  <h3 className="text-[10px] font-semibold text-primary flex items-center gap-2">
  <Activity className="w-4 h-4" /> Uraian Operasional
@@ -126,7 +126,7 @@ export default function DplDailyReportShow({ report }: Props) {
 
  {/* Attachments Section */}
  {report.file_kegiatan.length > 0 && (
- <section className="bg-white rounded-lg border border-slate-200 p-10">
+ <section className="bg-white rounded-lg border border-slate-100 p-10">
  <h3 className="text-xs font-semibold text-slate-900 mb-8 flex items-center gap-3">
  <ImageIcon className="w-5 h-5 text-slate-400" /> Bukti Dokumentasi Lapangan
  </h3>
@@ -153,7 +153,7 @@ export default function DplDailyReportShow({ report }: Props) {
  )}
  </div>
 
- <aside className="space-y-10">
+ <aside className="space-y-8">
  {/* Geotagging Verification Card */}
  <section className="bg-slate-900 rounded-lg p-10 border border-slate-800 relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-8 opacity-10 text-primary group-transition-transform pointer-events-none">
@@ -192,7 +192,7 @@ export default function DplDailyReportShow({ report }: Props) {
 
  {/* Review Action Card */}
  {canReview && (
- <section className="bg-white rounded-lg border border-slate-200 p-10">
+ <section className="bg-white rounded-lg border border-slate-100 p-10">
  <h3 className="text-xs font-semibold text-slate-900 mb-8 border-b border-slate-200 pb-6">Otoritas Verifikasi</h3>
  <div className="space-y-5">
  <button 

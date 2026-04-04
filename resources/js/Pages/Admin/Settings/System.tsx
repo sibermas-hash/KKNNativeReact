@@ -105,9 +105,9 @@ export default function SystemSettings({ settings }: Props) {
  </div>
  </div>
 
- <form onSubmit={submit} className="space-y-12">
+ <form onSubmit={submit} className="space-y-8">
  {Object.entries(settings).map(([group, items]) => (
- <div key={group} className="bg-white rounded-lg border border-slate-200 overflow-hidden group/card">
+ <div key={group} className="bg-white rounded-lg border border-slate-100 overflow-hidden group/card">
  <div className="px-6 py-6 bg-slate-50/50 border-b border-slate-200 flex items-center justify-between">
  <div className="flex items-center gap-4">
  <div className="p-2.5 bg-white rounded-lg text-slate-400 border border-slate-200 group-hover/card:text-primary

@@ -36,7 +36,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
  <AppLayout title="Hasil Evaluasi">
  <Head title="Pusat Nilai & Sertifikasi" />
  
- <div className="space-y-12 pb-24">
+ <div className="space-y-8 pb-24">
  {/* Clean Professional Header */}
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-10 border-b border-slate-200">
  <div>
@@ -64,7 +64,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
  </div>
 
  {evaluations.length === 0 ? (
- <div className="bg-white rounded-lg border border-slate-200 p-32 text-center group overflow-hidden relative">
+ <div className="bg-white rounded-lg border border-slate-100 p-32 text-center group overflow-hidden relative">
  <div className="absolute top-0 left-0 w-full h-full text-slate-900 pointer-events-none group-transition-transform[2000ms]">
  <GraduationCap className="h-[400px] w-full -translate-x-1/2/2" />
  </div>
@@ -81,7 +81,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
  ) : (
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
  {evaluations.map((ev) => (
- <div key={ev.id} className="group bg-white rounded-lg border border-slate-200 overflow-hidden hover:border-primary relative">
+ <div key={ev.id} className="group bg-white rounded-lg border border-slate-100 overflow-hidden hover:border-primary relative">
  <div className="absolute top-0 right-0 p-10 text-slate-900 pointer-events-none group-transition-transform">
  <Sparkles className="h-40 w-40" />
  </div>

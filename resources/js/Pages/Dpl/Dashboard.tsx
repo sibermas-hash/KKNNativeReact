@@ -50,7 +50,7 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
  <AppLayout title="Dasbor Pembimbing">
  <Head title="Pusat Komando Pembimbing" />
  
- <div className="space-y-10 pb-16">
+ <div className="space-y-8 pb-16">
  {/* Sleek Minimalist Operational Header */}
  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 border-b border-slate-200 pb-10">
  <div className="space-y-1">
@@ -75,7 +75,7 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
  <span className="block text-[9px] font-semibold text-slate-400 mb-1">Status Otoritas</span>
  <span className="text-sm font-semibold text-slate-900 
  </div>
- <div className="h-10 w-10 bg-white rounded-lg border border-slate-200 flex items-center justify-center text-primary">
+ <div className="h-10 w-10 bg-white rounded-lg border border-slate-100 flex items-center justify-center text-primary">
  <ShieldCheck className="h-5 w-5 stroke-[2.5px]" />
  </div>
  </div>
@@ -117,7 +117,7 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
  {/* Activity Heatmap & Unit List */}
  <div className="lg:col-span-2 space-y-6">
  {/* Heatmap Section */}
- <div className="bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group">
+ <div className="bg-white rounded-lg border border-slate-100 p-10 relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-8 text-slate-900 pointer-events-none ">
  <Cpu className="h-32 w-32" />
  </div>
@@ -156,8 +156,8 @@ export default function DplDashboard({ groups, pendingReports, gradingProgress, 
  </div>
 
  {/* Groups Registry */}
- <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
- <div className="px-6 py-8 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+ <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
+ <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
  <div>
  <h3 className="text-xl font-semibold text-slate-900 ">Daftar Unit Bimbingan</h3>
  <p className="text-[10px] text-sm text-slate-400 mt-2">Daftar kelompok dalam jurisdiksi Anda</p>

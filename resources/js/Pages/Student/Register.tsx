@@ -174,9 +174,9 @@ export default function Register({ periods, student_gender, student_academic }: 
  </div>
  </div>
 
- <form onSubmit={submit} className="space-y-12">
+ <form onSubmit={submit} className="space-y-8">
  {/* Academic Checklist Card */}
- <section className="bg-white rounded-lg border border-slate-200 p-10">
+ <section className="bg-white rounded-lg border border-slate-100 p-10">
  <div className="flex items-center gap-4 mb-10 border-b border-slate-200 pb-8">
  <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200 text-slate-400">
  <GraduationCap className="h-6 w-6" />
@@ -242,7 +242,7 @@ export default function Register({ periods, student_gender, student_academic }: 
 
  {/* Period Selection Card */}
  <section className={clsx(
- "bg-white rounded-lg border border-slate-200 p-10 group overflow-hidden relative transition-opacity",
+ "bg-white rounded-lg border border-slate-100 p-10 group overflow-hidden relative transition-opacity",
  !isAcademicQualified && "opacity-50 pointer-events-none"
  )}>
  <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none group-transition-transform[2000ms]">
@@ -292,7 +292,7 @@ export default function Register({ periods, student_gender, student_academic }: 
 
  {/* Registration Summary & Actions */}
  {selectedPeriod && currentRegistration && (
- <section className="bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group">
+ <section className="bg-white rounded-lg border border-slate-100 p-10 relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-12 text-primary pointer-events-none ">
  <ShieldCheck className="h-64 w-64" />
  </div>
@@ -457,7 +457,7 @@ export default function Register({ periods, student_gender, student_academic }: 
 
  {/* Notes Section */}
  {selectedPeriod && requirementsMet && (
- <section className="bg-white rounded-lg border border-slate-200 p-10 space-y-8">
+ <section className="bg-white rounded-lg border border-slate-100 p-10 space-y-8">
  <div className="flex items-center gap-4">
  <div className="p-3 bg-slate-50 rounded-lg text-slate-400 font-semibold
  <ArrowRight className="h-6 w-6" />

@@ -70,7 +70,7 @@ export default function StudentDailyReportEdit({ report }: Props) {
 
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
  <div className="lg:col-span-2">
- <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-slate-200 p-12 space-y-6 relative overflow-hidden group">
+ <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-slate-100 p-12 space-y-6 relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-16 text-slate-900 pointer-events-none group-transition-transform[2000ms]">
  <FileText className="h-96 w-full" />
  </div>
@@ -154,7 +154,7 @@ export default function StudentDailyReportEdit({ report }: Props) {
  </form>
  </div>
 
- <aside className="space-y-12">
+ <aside className="space-y-8">
  <section className="bg-slate-900 rounded-lg p-12 border border-slate-900 text-white relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-8 text-primary group-transition-transform[2000ms] pointer-events-none">
  <Activity className="h-40 w-40" />

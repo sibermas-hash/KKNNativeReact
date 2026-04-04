@@ -177,7 +177,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <AppLayout title="Protokol Pembekalan">
  <Head title="Pusat Pembekalan" />
  
- <div className="space-y-12 pb-24">
+ <div className="space-y-8 pb-24">
  {/* 
  Emerald Premium Header 
  Replacing light header with a premium emerald tactical gradient
@@ -219,12 +219,12 @@ export default function WorkshopIndex({ workshops }: Props) {
  </div>
 
  {showForm && (
- <div className="bg-white rounded-lg border border-slate-200 overflow-hidden zoom-in-95 relative group mx-2">
+ <div className="bg-white rounded-lg border border-slate-100 overflow-hidden zoom-in-95 relative group mx-2">
  <div className="absolute top-0 right-0 p-16 text-slate-900 pointer-events-none ">
  <GraduationCap className="h-80 w-full" />
  </div>
 
- <div className="px-12 py-8 border-b border-slate-200 bg-slate-50/50 flex items-center gap-6 relative z-10">
+ <div className="px-8 py-6 border-b border-slate-50 bg-slate-50/50 flex items-center gap-6 relative z-10">
  <div className="p-3 bg-primary rounded-lg text-white
  <Cpu className="h-6 w-6 stroke-[2px]" />
  </div>
@@ -373,7 +373,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  {/* Modules Grid - Tactical Card Engine */}
  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:mx-2">
  {workshops.length > 0 ? workshops.map((workshop) => (
- <div key={workshop.id} className="bg-white rounded-lg border border-slate-200 group hover:border-primary/30 hover:-overflow-hidden relative flex flex-col">
+ <div key={workshop.id} className="bg-white rounded-lg border border-slate-100 group hover:border-primary/30 hover:-overflow-hidden relative flex flex-col">
  <div className={clsx(
  "h-2 w-full",
  workshop.is_full ? "bg-rose-500" : "bg-primary"
@@ -531,7 +531,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <p className="text-[12px] font-semibold text-primary border-l-4 border-primary pl-4">{selectedWorkshop?.title}</p>
  </div>
 
- <form onSubmit={submitAttendance} className="space-y-10 relative z-10">
+ <form onSubmit={submitAttendance} className="space-y-8 relative z-10">
  <div className="p-8 bg-slate-900 rounded-lg border border-slate-800 flex gap-6 group hover:border-primary/30">
  <div className="p-3 bg-white/5 rounded-lg text-primary shrink-0 group-transition-transform">
  <Fingerprint className="h-8 w-8 stroke-[2px]" />

@@ -56,7 +56,7 @@ export default function RegistrationShow({ registration }: Props) {
  <AppLayout title="Audit Berkas Mahasiswa">
  <Head title={`Audit: ${registration.student.name}`} />
  
- <div className="space-y-12 pb-24">
+ <div className="space-y-8 pb-24">
  {/* 
  Emerald Premium Header 
  Refining from basic header to lush tactical emerald gradient
@@ -102,7 +102,7 @@ export default function RegistrationShow({ registration }: Props) {
  {/* Primary Data Panel (Left) */}
  <div className="lg:col-span-2 space-y-6">
  {/* Student Core Profile - Tactical Overhaul */}
- <div className="bg-white rounded-lg border border-slate-200 p-12 relative overflow-hidden group">
+ <div className="bg-white rounded-lg border border-slate-100 p-12 relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-14 text-slate-900 pointer-events-none group-">
  <User className="w-80 h-auto" />
  </div>
@@ -138,7 +138,7 @@ export default function RegistrationShow({ registration }: Props) {
  </div>
 
  {/* Documents & Assets - Tactical Grid */}
- <div className="bg-white rounded-lg border border-slate-200 p-12 relative group">
+ <div className="bg-white rounded-lg border border-slate-100 p-12 relative group">
  <div className="absolute top-0 right-0 p-12 text-primary ">
  <FileSearch className="w-48 h-48" />
  </div>
@@ -159,7 +159,7 @@ export default function RegistrationShow({ registration }: Props) {
  {registration.documents.length > 0 ? registration.documents.map((doc) => (
  <div key={doc.id} className="group/doc relative bg-slate-50 border border-slate-200 rounded-lg p-8 hover:bg-white hover:border-primary/30cursor-default">
  <div className="flex items-center justify-between mb-6">
- <div className="p-3.5 bg-white rounded-lg border border-slate-200 group-hover/doc:bg-slate-900 group-hover/doc:border-slate-800 transition-colors">
+ <div className="p-3.5 bg-white rounded-lg border border-slate-100 group-hover/doc:bg-slate-900 group-hover/doc:border-slate-800 transition-colors">
  <FileText className="w-6 h-6 text-primary" />
  </div>
  <StatusBadge status={doc.status} className="text-[8px] font-semibold />
@@ -191,7 +191,7 @@ export default function RegistrationShow({ registration }: Props) {
  </div>
 
  {/* Secondary Intel Panel (Right) */}
- <div className="space-y-12">
+ <div className="space-y-8">
  {/* Enrolment Metadata - Tactical Dark */}
  <div className="bg-slate-900 rounded-lg p-12 border border-slate-800 relative overflow-hidden group">
  <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
@@ -206,7 +206,7 @@ export default function RegistrationShow({ registration }: Props) {
  <p className="text-[9px] font-semibold text-emerald-400 mt-2 opacity-50">METADATA_STREAM_OK</p>
  </div>
  </div>
- <div className="space-y-10">
+ <div className="space-y-8">
  <IntelRow label="Periode KKN" value={registration.period.name} />
  <IntelRow label="Waktu Sinkronisasi" value={registration.registration_date} />
  <IntelRow label="Penempatan Unit" value={registration.group?.name || 'WAITING_ALLOCATION'} color={registration.group ? 'text-primary' : 'text-slate-500'} />
@@ -216,7 +216,7 @@ export default function RegistrationShow({ registration }: Props) {
 
  {/* Decision Nexus - Emerald Tactical */}
  {isPending && (
- <div className="bg-white rounded-lg border border-slate-200 p-12 relative overflow-hidden group/nexus">
+ <div className="bg-white rounded-lg border border-slate-100 p-12 relative overflow-hidden group/nexus">
  <div className="absolute top-0 right-0 p-10 text-slate-900 pointer-events-none group-hover/nexus:transition-transform">
  <Cpu className="h-40 w-40" />
  </div>

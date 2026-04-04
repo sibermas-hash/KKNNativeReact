@@ -144,7 +144,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
  </div>
  </div>
 
- <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-slate-200 p-12 space-y-6 relative overflow-hidden group">
+ <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-slate-100 p-12 space-y-6 relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-16 text-slate-900 pointer-events-none group-transition-transform[2000ms]">
  <FileText className="h-96 w-full" />
  </div>
@@ -221,8 +221,8 @@ export default function StudentDailyReportCreate({ group }: Props) {
  </form>
  </div>
 
- <aside className="space-y-12">
- <section className="bg-white rounded-lg border border-slate-200 p-10 h-fit">
+ <aside className="space-y-8">
+ <section className="bg-white rounded-lg border border-slate-100 p-10 h-fit">
  <div className="flex items-center gap-4 mb-10 pb-8 border-b border-slate-200">
  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-slate-400">
  <ImageIcon className="w-6 h-6" />
@@ -245,7 +245,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
  className="absolute inset-0 opacity-0 cursor-pointer z-20"
  />
  <div className="flex flex-col items-center text-center relative z-10 group-hover/dropzone:transition-transform">
- <div className="h-16 w-16 bg-white rounded-lg border border-slate-200 flex items-center justify-center text-slate-200 group-hover/dropzone:text-primary mb-6 transition-colors ">
+ <div className="h-16 w-16 bg-white rounded-lg border border-slate-100 flex items-center justify-center text-slate-200 group-hover/dropzone:text-primary mb-6 transition-colors ">
  <FileUp className="w-8 h-8" />
  </div>
  <p className="text-[11px] font-semibold text-slate-900 mb-2 File</p>

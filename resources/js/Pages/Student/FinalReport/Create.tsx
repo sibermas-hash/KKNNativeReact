@@ -40,7 +40,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  return (
  <AppLayout title="Laporan Akhir">
  <Head title="Akses Ditolak - Laporan Akhir" />
- <div className="bg-white rounded-lg border border-slate-200 p-24 text-center group max-w-4xl mx-auto mt-20 relative overflow-hidden">
+ <div className="bg-white rounded-lg border border-slate-100 p-24 text-center group max-w-4xl mx-auto mt-20 relative overflow-hidden">
  <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none group-transition-transform[2000ms]">
  <AlertTriangle className="h-64 w-64" />
  </div>
@@ -97,7 +97,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
  <div className="lg:col-span-2 space-y-6">
  {existingReport && (
- <section className="bg-white rounded-lg border border-slate-200 p-10 relative overflow-hidden group">
+ <section className="bg-white rounded-lg border border-slate-100 p-10 relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none ">
  <Sparkles className="h-40 w-40" />
  </div>
@@ -126,12 +126,12 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  )}
 
  {isLeader ? (
- <section className="bg-white rounded-lg border border-slate-200 p-12 relative overflow-hidden group">
+ <section className="bg-white rounded-lg border border-slate-100 p-12 relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-16 text-primary group-transition-transform[2000ms] pointer-events-none">
  <UploadCloud className="h-96 w-full" />
  </div>
 
- <form onSubmit={handleSubmit} className="space-y-12 relative z-10">
+ <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
  <div className="space-y-5">
  <label htmlFor="title" className="text-[11px] font-semibold text-slate-400 ml-1 group-hover:text-primary transition-colors">Judul Laporan Akhir</label>
  <input 
@@ -207,7 +207,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  </form>
  </section>
  ) : (
- <section className="bg-white rounded-lg border border-slate-200 p-16 text-center relative overflow-hidden group">
+ <section className="bg-white rounded-lg border border-slate-100 p-16 text-center relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none group-transition-transform[2000ms]">
  <Lock className="h-64 w-64" />
  </div>
@@ -224,7 +224,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  )}
  </div>
 
- <div className="space-y-12">
+ <div className="space-y-8">
  <section className="bg-primary/5 rounded-lg p-12 border border-primary/10 relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-10 text-primary group-transition-transform pointer-events-none">
  <Info className="h-40 w-40" />
@@ -235,7 +235,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  Panduan Pengiriman
  </h4>
  
- <div className="space-y-10 relative z-10">
+ <div className="space-y-8 relative z-10">
  <GuideItem 
  icon={UploadCloud} 
  title="Integritas File" 

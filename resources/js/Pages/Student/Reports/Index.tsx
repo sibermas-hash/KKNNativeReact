@@ -72,7 +72,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  <AppLayout title="Pusat Dokumen Kelompok">
  <Head title="Pusat Dokumen Kelompok" />
 
- <div className="space-y-12 pb-24">
+ <div className="space-y-8 pb-24">
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-10 border-b border-slate-200">
  <div>
  <div className="flex items-center gap-2 mb-4">
@@ -107,7 +107,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  {progress.map((item) => (
  <article
  key={item.type}
- className="bg-white rounded-lg border border-slate-200 p-8 hover:border-primary"
+ className="bg-white rounded-lg border border-slate-100 p-8 hover:border-primary"
  >
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
  <div className="flex items-start gap-5">
@@ -152,7 +152,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  ))}
  </section>
 
- <section className="bg-white rounded-lg border border-slate-200 p-8 h-fit">
+ <section className="bg-white rounded-lg border border-slate-100 p-8 h-fit">
  <div className="flex items-center gap-4 mb-8">
  <div className="p-3 bg-primary/10 rounded-lg text-primary">
  <UploadCloud className="h-6 w-6" />

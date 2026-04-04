@@ -18,14 +18,14 @@ export default function TacticalDashboard() {
  <AppLayout title="Pusat Komando Taktis">
  <Head title="Gerbang Akses Otoritas" />
  
- <div className="space-y-12 pb-24">
+ <div className="space-y-8 pb-24">
  
  {/* Simple & Powerful Hero Banner */}
  <section className="relative overflow-hidden rounded-lg bg-whitep-12 md:p-20 border border-slate-200 group">
  <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.1),transparent_50%)]" />
  
  <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-16">
- <div className="space-y-10 max-w-4xl text-center lg:text-left">
+ <div className="space-y-8 max-w-4xl text-center lg:text-left">
  <div className="inline-flex items-center gap-4 px-6 py-2.5 bg-white/10 rounded-lg border border-slate-200
  <Zap className="w-4 h-4 text-emerald-300 fill-emerald-300" />
  <span className="text-[11px] font-semibold text-white ">
@@ -74,7 +74,7 @@ export default function TacticalDashboard() {
 
  {/* Intelligence Split View */}
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
- <div className="lg:col-span-2 bg-white rounded-lg border border-slate-200 p-12">
+ <div className="lg:col-span-2 bg-white rounded-lg border border-slate-100 p-12">
  <div className="flex items-center justify-between mb-12">
  <div className="flex items-center gap-6">
  <div className="p-5 bg-primary/5 rounded-lg text-primary">
@@ -97,7 +97,7 @@ export default function TacticalDashboard() {
  </div>
  </div>
 
- <div className="bg-white rounded-lg border border-slate-200 p-12 space-y-6 relative overflow-hidden">
+ <div className="bg-white rounded-lg border border-slate-100 p-12 space-y-6 relative overflow-hidden">
  <div className="relative z-10">
  <h3 className="text-2xl font-semibold text-slate-900 mb-10">Feed Aktivitas</h3>
  <div className="space-y-8">

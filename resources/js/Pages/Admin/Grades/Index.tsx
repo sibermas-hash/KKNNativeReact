@@ -86,7 +86,7 @@ export default function Index({ groups }: Props) {
  <AppLayout title="Inisiasi Koreksi Nilai Manual">
  <Head title="Koreksi Nilai Manual" />
  
- <div className="space-y-12 pb-24">
+ <div className="space-y-8 pb-24">
  {/* 
  Emerald Premium Header 
  Refining from heavy rose to lush tactical emerald/rose gradient hybrid

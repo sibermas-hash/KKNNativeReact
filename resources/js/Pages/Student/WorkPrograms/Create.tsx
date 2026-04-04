@@ -99,7 +99,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
 
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
  <div className="lg:col-span-2">
- <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-slate-200 p-12 space-y-6 relative overflow-hidden group">
+ <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-slate-100 p-12 space-y-6 relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-16 text-slate-900 pointer-events-none group-transition-transform[2000ms]">
  <FileText className="h-96 w-full" />
  </div>
@@ -240,7 +240,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  </form>
  </div>
 
- <div className="space-y-12">
+ <div className="space-y-8">
  <section className="bg-slate-900 rounded-lg p-10 border border-slate-800 relative overflow-hidden group
  <div className="absolute top-0 right-0 p-8 text-primary group-transition-transform pointer-events-none">
  <Sparkles className="h-32 w-32" />
@@ -251,7 +251,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  Validasi Program
  </h4>
  
- <div className="space-y-10 relative z-10">
+ <div className="space-y-8 relative z-10">
  <InfoItem 
  icon={Activity} 
  title="Penyelarasan SDG" 

@@ -64,7 +64,7 @@ export default function DplFinalReportsIndex({ reports }: Props) {
 
  <div className="overflow-hiddenrounded-lg border border-slate-200 bg-white
  <div className="overflow-x-auto">
- <table className="min-w-full divide-y divide-slate-100">
+ <table className="min-w-full divide-y divide-slate-50">
  <thead className="bg-slate-50/80">
  <tr>
  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400">
@@ -84,7 +84,7 @@ export default function DplFinalReportsIndex({ reports }: Props) {
  </th>
  </tr>
  </thead>
- <tbody className="divide-y divide-slate-100">
+ <tbody className="divide-y divide-slate-50">
  {rows.length > 0 ? rows.map((report) => (
  <tr key={report.id} className="hover:bg-slate-50/60 transition-colors">
  <td className="px-6 py-5 align-top">

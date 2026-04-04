@@ -248,7 +248,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
  <div>
  <p className="text-[10px] font-semibold text-slate-400 mb-1 leading-none">Dosen Pembimbing</p>
- <p className="font-black text-sm text-slate-900 leading-tight">{registration.group.lecturer?.name ?? 'Belum Ditetapkan'}</p>
+ <p className="font-semibold text-sm text-slate-900 leading-tight">{registration.group.lecturer?.name ?? 'Belum Ditetapkan'}</p>
  </div>
  </div>
  <div className="flex items-center gap-5 p-6 rounded-lg bg-slate-50 border border-slate-100 group/item hover:bg-white hover:border-primary/20 transition-all cursor-default">
@@ -257,7 +257,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
  <div>
  <p className="text-[10px] font-semibold text-slate-400 mb-1 leading-none">Periode KKN</p>
- <p className="font-black text-sm text-slate-900 leading-tight">{registration.period?.name}</p>
+ <p className="font-semibold text-sm text-slate-900 leading-tight">{registration.period?.name}</p>
  </div>
  </div>
  </div>
@@ -443,7 +443,7 @@ function QuickActionButton({ href, icon: Icon, label, desc, disabled }: any) {
  <Icon className="h-6 w-6" />
  </div>
  <div>
- <p className="font-black text-xs text-slate-400 leading-none">{label}</p>
+ <p className="font-semibold text-xs text-slate-400 leading-none">{label}</p>
  <p className="text-[10px] text-slate-300 font-semibold mt-2 leading-none opacity-60">{desc}</p>
  </div>
  </div>
@@ -459,7 +459,7 @@ function QuickActionButton({ href, icon: Icon, label, desc, disabled }: any) {
  <Icon className="h-6 w-6" />
  </div>
  <div className="min-w-0">
- <p className="font-black text-xs text-slate-900 leading-none group-hover:text-primary transition-colors">{label}</p>
+ <p className="font-semibold text-xs text-slate-900 leading-none group-hover:text-primary transition-colors">{label}</p>
  <p className="text-[10px] text-slate-400 font-semibold mt-2 truncate opacity-80 leading-none">{desc}</p>
  </div>
  <ChevronRight className="h-4 w-4 ml-auto text-slate-200 group-hover:text-primary group-hover:translate-x-1 transition-all" />

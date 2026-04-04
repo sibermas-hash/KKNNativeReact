@@ -165,7 +165,7 @@ function FeedItem({ name, action, status }: any) {
  {name.charAt(0)}
  </div>
  <div className="flex-1 space-y-1">
- <h5 className="font-black text-xs text-slate-900">{name}</h5>
+ <h5 className="font-semibold text-xs text-slate-900">{name}</h5>
  <p className="text-[10px] text-sm text-slate-400">{action}</p>
  </div>
  <div className={clsx(

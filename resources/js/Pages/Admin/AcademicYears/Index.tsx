@@ -224,7 +224,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
  <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center text-[10px] font-semibold text-slate-300 group-hover/row:text-primary transition-colors">
  {ay.year.charAt(2)}{ay.year.charAt(3)}
  </div>
- <span className="font-black text-[13px] text-slate-900 group-hover/row:text-primary transition-colors">{ay.year}</span>
+ <span className="font-semibold text-[13px] text-slate-900 group-hover/row:text-primary transition-colors">{ay.year}</span>
  </div>
  </td>
  <td className="px-8 py-4 text-center">

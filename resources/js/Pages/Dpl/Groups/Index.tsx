@@ -62,9 +62,7 @@ export default function DplGroupsIndex({ groups }: Props) {
  <StatusBadge status={group.status} />
  </td>
  <td className="px-6 py-4 text-right">
- <Link href={`/dpl/groups/${group.id}`} className="text-sm font-medium text-primary hover:underline">
- Detail
- </Link>
+ <Link href={`/dpl/groups/${group.id}`} className="text-sm font-medium text-primary hover:underline">Detail</Link>
  </td>
  </tr>
  ))

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\Announcement;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class AnnouncementController extends Controller
@@ -18,6 +19,8 @@ class AnnouncementController extends Controller
 
     public function store(Request $request)
     {
+        Gate::authorize('manage-announcements');
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'category' => 'required|string',
@@ -33,6 +36,8 @@ class AnnouncementController extends Controller
 
     public function update(Request $request, Announcement $announcement)
     {
+        Gate::authorize('manage-announcements');
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'category' => 'required|string',
@@ -48,6 +53,8 @@ class AnnouncementController extends Controller
 
     public function destroy(Announcement $announcement)
     {
+        Gate::authorize('manage-announcements');
+
         $announcement->delete();
         return redirect()->back()->with('success', 'Pengumuman berhasil dihapus.');
     }

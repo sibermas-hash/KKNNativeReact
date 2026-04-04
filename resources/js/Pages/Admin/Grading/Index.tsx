@@ -149,7 +149,7 @@ export default function AdminGradingIndex({ summary, groups, selectedGroupId, er
  <p className="text-xs text-slate-500">{student.letter_grade ?? '-'}</p>
  </td>
  <td className="px-6 py-4">
- <StatusBadge status={student.is_finalized ? 'approved' : 'submitted'} />
+ <StatusBadge status={student.is_finalized ? 'disetujui' : 'submitted'} />
  </td>
  </tr>
  ))

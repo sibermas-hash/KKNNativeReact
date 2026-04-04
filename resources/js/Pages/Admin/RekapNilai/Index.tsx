@@ -111,7 +111,7 @@ export default function RekapNilaiIndex({ grades, stats, filters }: Props) {
                     <form onSubmit={handleSearch} className="flex-1 w-full xl:max-w-2xl relative group">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-300 group-focus-within:text-emerald-500 transition-colors z-10" />
                         <input
-                            type="search"
+                            type="cari"
                             placeholder="Cari NIM, Nama, atau Kelompok..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -184,7 +184,7 @@ export default function RekapNilaiIndex({ grades, stats, filters }: Props) {
                                                     "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tight shadow-sm border",
                                                     grade.is_locked ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-400 border-slate-100"
                                                 )}>
-                                                    {grade.is_locked ? 'Terkunci' : 'Draft'}
+                                                    {grade.is_locked ? 'Terkunci' : 'Draf'}
                                                 </span>
                                             </div>
                                         </td>
@@ -251,7 +251,6 @@ export default function RekapNilaiIndex({ grades, stats, filters }: Props) {
                     </div>
                 </div>
             </div>
-        </div>
         </AppLayout>
     );
 }

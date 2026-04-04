@@ -43,7 +43,7 @@ export default function RegistrationShow({ registration }: Props) {
  });
 
  const documents = useMemo(() => registration.dokumen ?? [], [registration.dokumen]);
- const isPending = registration.status === 'pending' || registration.status === 'document_submitted';
+ const isPending = registration.status === 'menunggu' || registration.status === 'document_submitted';
 
  return (
  <AppLayout title="Detail Pendaftaran">
@@ -125,7 +125,7 @@ export default function RegistrationShow({ registration }: Props) {
  </p>
  <p className="mt-1 text-xs text-slate-500">{document.file_name || '-'}</p>
  </div>
- <StatusBadge status={document.status || 'pending'} />
+ <StatusBadge status={document.status || 'menunggu'} />
  </div>
  </div>
  ))

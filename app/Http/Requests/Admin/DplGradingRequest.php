@@ -2,13 +2,19 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\KKN\NilaiKkn;
 use Illuminate\Foundation\Http\FormRequest;
 
 class DplGradingRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // Checked in controller
+        $score = NilaiKkn::firstOrNew([
+            'user_id' => $this->input('student_id'),
+            'kelompok_id' => $this->input('group_id'),
+        ]);
+
+        return $this->user()->can('update', $score);
     }
 
     public function rules(): array

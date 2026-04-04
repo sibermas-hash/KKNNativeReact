@@ -7,7 +7,7 @@ interface ConfigItem {
  config_key: string;
  label: string;
  value: string | null;
- type: 'text' | 'longtext' | 'image';
+ type: 'text' | 'longtext' | 'gambar';
 }
 
 interface Props {
@@ -59,7 +59,7 @@ export default function CertificateSettings({ configs }: Props) {
 
  <div className="mt-6 space-y-5">
  {configs
- .filter((config) => config.type !== 'image')
+ .filter((config) => config.type !== 'gambar')
  .map((config) =>
  config.type === 'longtext' ? (
  <FormTextarea
@@ -93,7 +93,7 @@ export default function CertificateSettings({ configs }: Props) {
 
  <div className="mt-6 space-y-5">
  {configs
- .filter((config) => config.type === 'image')
+ .filter((config) => config.type === 'gambar')
  .map((config) => (
  <FormInput
  key={config.id}

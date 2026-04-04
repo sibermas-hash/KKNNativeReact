@@ -234,7 +234,7 @@ export default function DownloadIndex({ downloads }: Props) {
                                     <label className="text-[11px] font-black text-slate-400 tracking-[0.4em] uppercase ml-1">Judul_Dokumen</label>
                                     <input 
                                         value={data.title}
-                                        onChange={e => setData('title', e.target.value)}
+                                        onChange={e => setData('judul', e.target.value)}
                                         className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-8 py-5 text-sm font-black text-slate-900 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none uppercase italic"
                                         placeholder="PEDOMAN KKN 2026..."
                                     />
@@ -245,8 +245,8 @@ export default function DownloadIndex({ downloads }: Props) {
                                     <label className="text-[11px] font-black text-slate-400 tracking-[0.4em] uppercase ml-1">Unggah_File (Opsional)</label>
                                     <div className="relative">
                                         <input 
-                                            type="file"
-                                            onChange={e => setData('file', e.target.files?.[0] || null)}
+                                            type="berkas"
+                                            onChange={e => setData('berkas', e.target.files?.[0] || null)}
                                             className="w-full bg-white border-2 border-dashed border-slate-300 rounded-2xl px-6 py-4 text-[10px] font-black text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:bg-emerald-500 file:text-white hover:border-emerald-500 transition-colors"
                                         />
                                         <p className="mt-2 text-[9px] font-bold text-slate-400 ml-1">PDF, DOC, XLS (MAX 10MB)</p>
@@ -281,16 +281,16 @@ export default function DownloadIndex({ downloads }: Props) {
                             </div>
 
                             <div className="pt-10 flex items-center justify-end gap-6">
-                                <Button 
-                                    type="button" 
-                                    variant="secondary" 
+                                <Button
+                                    type="button"
+                                    variant="secondary"
                                     onClick={() => setIsModalOpen(false)}
                                     className="px-12 h-16 rounded-2xl text-[11px] font-black tracking-[0.4em] uppercase border-4 border-slate-900"
                                 >
                                     ABORT_MISSION
                                 </Button>
-                                <Button 
-                                    type="submit" 
+                                <Button
+                                    type="submit"
                                     disabled={processing}
                                     className="px-12 h-16 rounded-2xl text-[11px] font-black tracking-[0.4em] uppercase bg-emerald-500 hover:bg-emerald-600 shadow-2xl shadow-emerald-500/20 text-white border-4 border-slate-900"
                                 >
@@ -301,7 +301,6 @@ export default function DownloadIndex({ downloads }: Props) {
                     </motion.div>
                 </div>
             )}
-        </div>
         </AppLayout>
     );
 }

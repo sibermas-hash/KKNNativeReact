@@ -32,8 +32,8 @@ const statusOptions = [
  { value: '', label: 'Semua Status' },
  { value: 'submitted', label: 'Terkirim' },
  { value: 'reviewed', label: 'Sedang Ditinjau' },
- { value: 'approved', label: 'Disetujui' },
- { value: 'revision', label: 'Perlu Revisi' },
+ { value: 'disetujui', label: 'Disetujui' },
+ { value: 'revisi', label: 'Perlu Revisi' },
 ];
 
 export default function AdminFinalReportsIndex({ reports, filters }: Props) {

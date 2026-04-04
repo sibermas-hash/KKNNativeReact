@@ -27,7 +27,7 @@ export default function GuestLayout({
   <div className="flex items-center justify-center gap-4 mt-4">
   <div className="h-1.5 w-8 bg-amber-400 rounded-full" />
   <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">
-  VIRTUAL_GATEWAY
+  GERBANG_VIRTUAL
   </p>
   <div className="h-1.5 w-8 bg-emerald-500 rounded-full" />
   </div>
@@ -50,9 +50,9 @@ export default function GuestLayout({
   Lembaga Penelitian dan Pengabdian kepada Masyarakat UIN Prof. K.H. Saifuddin Zuhri
   </p>
   <div className="flex justify-center items-center gap-4 text-[10px] text-slate-300 font-black uppercase tracking-[0.5em]">
-  <span>v3.5 VIBRANT</span>
+  <span>v3.5 SEMARAK</span>
   <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-  <span>SECURE_v2</span>
+  <span>AMAN_v2</span>
   </div>
   </div>
   </div>

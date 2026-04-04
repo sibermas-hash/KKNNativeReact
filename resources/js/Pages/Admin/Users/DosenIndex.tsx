@@ -118,7 +118,7 @@ export default function DosenIndex({ users, filters }: Props) {
  <form onSubmit={handleSearch} className="relative group max-w-lg">
  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-primary transition-colors" />
  <input
- type="search"
+ type="cari"
  placeholder="SEARCH_PERSONNEL_IDENTIFIER (NIP / NAME)..."
  value={search}
  onChange={(e) => setSearch(e.target.value)}
@@ -175,7 +175,7 @@ export default function DosenIndex({ users, filters }: Props) {
  </td>
  <td className="px-8 py-6 text-center">
  <Badge
- variant={user.is_active ? 'success' : 'danger'}
+ variant={user.is_active ? 'berhasil' : 'danger'}
  className="px-4 py-1.5 rounded-lg text-xs font-semibold border-none"
  >
  {user.is_active ? 'ACTIVE_ACCESS' : 'ACCESS_BLOCKED'}
@@ -235,8 +235,6 @@ export default function DosenIndex({ users, filters }: Props) {
  </div>
  </div>
  </div>
-        </div>
-        </div>
  </AppLayout>
  );
 }

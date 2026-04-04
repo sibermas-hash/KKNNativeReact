@@ -233,9 +233,6 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  </p>
  </div>
  </div>
-        </div>
-        </div>
-        </div>
  </AppLayout>
  );
 }

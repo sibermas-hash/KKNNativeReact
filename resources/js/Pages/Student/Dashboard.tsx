@@ -10,7 +10,6 @@ import {
  ArrowRight,
  Sparkles,
  IdCard,
- 
  Info,
  Rocket,
  Lock,
@@ -22,11 +21,11 @@ import {
  ChevronRight,
  Presentation,
  BadgeCheck,
- UserCircle
+ UserCircle,
+ LucideIcon
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { PageProps } from '@/types';
-import { LucideIcon } from 'lucide-react';
 
 interface Student {
  id?: number;
@@ -34,10 +33,17 @@ interface Student {
 }
 
 interface Registration {
- status: 'pending' | 'approved' | 'rejected';
+ status: 'menunggu' | 'disetujui' | 'ditolak';
+ period?: {
+  id: number;
+  name: string;
+  min_logbook: number;
+ };
  group?: {
   id: number;
   name: string;
+  location?: { name: string };
+  lecturer?: { name: string };
  };
 }
 
@@ -49,6 +55,7 @@ interface FinalReport {
 interface Grade {
  score?: number;
  status?: string;
+ is_finalized?: boolean;
 }
 
 interface Props {
@@ -79,12 +86,12 @@ interface QuickActionButtonProps {
 
 export default function StudentDashboard({ student, registration, dailyReportCount, workProgramCount, workshopRegistered, finalReport, grade }: Props) {
  const { auth } = usePage<PageProps>().props;
- const isApproved = registration?.status === 'approved';
- const isPending = registration?.status === 'pending';
+ const isApproved = registration?.status === 'disetujui';
+ const isPending = registration?.status === 'menunggu';
  const isGroupPinned = isApproved && Boolean(registration?.group);
  const studentFirstName = student?.name?.split(' ')?.[0] ?? auth.user?.name?.split(' ')?.[0] ?? 'Mahasiswa';
 
- // Alur Pelaksanaan KKN (SOP UIN SAIZU Compliance)
+ // Alur Pelaksanaan KKN (Sesuai SOP UIN SAIZU)
  const phases = [
  {
  id: 1,
@@ -144,7 +151,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <Head title="Portal Mahasiswa" />
  
  <div className="space-y-8 pb-24">
- {/* Sleek Minimalist Operational Header */}
+ {/* Header Operasional Minimalis */}
  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 border-b border-slate-100 pb-10">
  <div className="flex items-center gap-6">
  <div className="relative shrink-0">
@@ -156,17 +163,12 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
  </div>
  <div className="space-y-1">
- <div className="flex items-center gap-3">
- <span className="text-xs font-semibold text-emerald-600">
- 
- </span>
- </div>
  <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 ">
  Halo, <span className="text-primary">{studentFirstName}!</span>
  </h1>
  <p className="text-slate-400 font-semibold text-xs flex items-center gap-2">
  <Sparkles className="w-3 h-3 text-emerald-400 fill-emerald-100" />
- Anda sedang dalam tahap <span className="text-slate-600 underline decoration-emerald-200 decoration-2 underline-offset-4">{isPending ? 'Verifikasi Admin' : currentPhase.label.toUpperCase()}</span>.
+ Anda sedang dalam tahap <span className="text-slate-600 underline decoration-emerald-200 decoration-2 underline-offset-4">{isPending ? 'Perlu verifikasi admin' : currentPhase.label}</span>.
  </p>
  </div>
  </div>
@@ -252,7 +254,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <div className="lg:col-span-2 space-y-8">
  {isGroupPinned ? (
  <section className="bg-white rounded-lg p-10 border border-slate-100 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-16 text-slate-900 pointer-events-none group-transition-transform">
+ <div className="absolute top-0 right-0 p-16 text-slate-900 pointer-events-none group-hover:scale-110 transition-transform duration-500">
  <MapPin className="h-64 w-64" />
  </div>
  
@@ -270,11 +272,11 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  <div className="mb-10">
  <p className="text-xs font-semibold text-slate-400 mb-3">Desa / Kelurahan</p>
  <h2 className="text-4xl md:text-5xl font-semibold text-slate-900 leading-tight">
- {registration.group.location?.name ?? 'Lokasi Belum Ditetapkan'}
+ {registration?.group?.location?.name ?? 'Lokasi Belum Ditetapkan'}
  </h2>
  <div className="mt-6 flex items-center gap-4">
  <span className="text-slate-900 text-lg font-semibold bg-slate-50 border border-slate-100 px-5 py-2.5 rounded-lg tabular-nums">
- {registration.group.name}
+ {registration?.group?.name}
  </span>
  <span className="h-2 w-2 rounded-full bg-primary" />
  <span className="text-xs font-semibold text-slate-400">Unit Aktif</span>
@@ -288,7 +290,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
  <div>
  <p className="text-xs font-semibold text-slate-400 mb-1 ">Dosen Pembimbing</p>
- <p className="font-semibold text-sm text-slate-900 leading-tight">{registration.group.lecturer?.name ?? 'Belum Ditetapkan'}</p>
+ <p className="font-semibold text-sm text-slate-900 leading-tight">{registration?.group?.lecturer?.name ?? 'Belum Ditetapkan'}</p>
  </div>
  </div>
  <div className="flex items-center gap-5 p-6 rounded-lg bg-slate-50 border border-slate-100 group/item hover:bg-white hover:border-primary/20 transition-all cursor-default">
@@ -297,7 +299,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </div>
  <div>
  <p className="text-xs font-semibold text-slate-400 mb-1 ">Periode KKN</p>
- <p className="font-semibold text-sm text-slate-900 leading-tight">{registration.period?.name}</p>
+ <p className="font-semibold text-sm text-slate-900 leading-tight">{registration?.period?.name}</p>
  </div>
  </div>
  </div>
@@ -337,14 +339,14 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  />
  <StatCard
  title="Laporan Akhir"
- value={finalReport ? 'TERKIRIM' : 'BELUM'}
+ value={finalReport ? 'Terkirim' : 'Belum'}
  unit="Status"
  icon={ShieldCheck}
  color="emerald"
  />
  <StatCard
  title="Status Akun"
- value={isApproved ? 'Terverifikasi' : isPending ? 'Menunggu' : 'NULL'}
+ value={isApproved ? 'Terverifikasi' : isPending ? 'Menunggu' : 'Belum Terdaftar'}
  unit="Status"
  icon={GraduationCap}
  color="slate"
@@ -398,7 +400,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </section>
 
  <section className="bg-white rounded-lg p-8 border border-slate-100 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-8 text-primary group-transition-transform pointer-events-none">
+ <div className="absolute top-0 right-0 p-8 text-primary group-hover:scale-110 transition-transform duration-500 pointer-events-none">
  <Info className="h-40 w-40" />
  </div>
  
@@ -440,8 +442,6 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </p>
  </div>
  </div>
-        </div>
-        </div>
  </AppLayout>
  );
 }

@@ -207,7 +207,7 @@ export default function AnnouncementIndex({ announcements }: Props) {
                                     <label className="text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">Judul_Publikasi</label>
                                     <input 
                                         value={data.title}
-                                        onChange={e => setData('title', e.target.value)}
+                                        onChange={e => setData('judul', e.target.value)}
                                         className="w-full bg-slate-50 border border-slate-200 rounded-xl px-6 py-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none"
                                         placeholder="Masukkan judul pengumuman..."
                                     />
@@ -273,8 +273,8 @@ export default function AnnouncementIndex({ announcements }: Props) {
                                 >
                                     BATALKAN
                                 </Button>
-                                <Button 
-                                    type="submit" 
+                                <Button
+                                    type="submit"
                                     disabled={processing}
                                     className="px-10 h-14 rounded-xl text-[11px] font-black tracking-widest bg-emerald-500 hover:bg-emerald-600 shadow-xl shadow-emerald-500/20"
                                 >
@@ -285,7 +285,6 @@ export default function AnnouncementIndex({ announcements }: Props) {
                     </motion.div>
                 </div>
             )}
-        </div>
         </AppLayout>
     );
 }

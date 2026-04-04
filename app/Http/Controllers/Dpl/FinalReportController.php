@@ -130,7 +130,7 @@ class FinalReportController extends Controller
             $report->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
                 'type' => 'success',
                 'title' => 'Laporan Akhir Disetujui',
-                'message' => "Laporan akhir Anda (" . $report->title . ") telah disetujui oleh DPL.",
+                'message' => "Laporan akhir Anda (" . e($report->title) . ") telah disetujui oleh DPL.",
                 'icon' => 'check-circle',
                 'url' => route('student.dashboard'),
             ]));
@@ -164,7 +164,7 @@ class FinalReportController extends Controller
             $report->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
                 'type' => 'warning',
                 'title' => 'Revisi Laporan Akhir',
-                'message' => "Laporan akhir Anda memerlukan perbaikan. Catatan: " . $validated['notes'],
+                'message' => "Laporan akhir Anda memerlukan perbaikan. Catatan: " . e($validated['notes']),
                 'icon' => 'exclamation-triangle',
                 'url' => route('student.dashboard'),
             ]));

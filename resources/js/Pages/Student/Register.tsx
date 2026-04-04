@@ -182,7 +182,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  <div className="space-y-2">
  <label className="block text-sm font-medium text-slate-700">Unggah surat sehat</label>
  <input
- type="file"
+ type="berkas"
  accept=".pdf,.jpg,.jpeg,.png"
  onChange={(event) => form.setData('health_certificate', event.target.files?.[0] ?? null)}
  className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary"
@@ -193,7 +193,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  <div className="space-y-2">
  <label className="block text-sm font-medium text-slate-700">Unggah izin orang tua</label>
  <input
- type="file"
+ type="berkas"
  accept=".pdf,.jpg,.jpeg,.png"
  onChange={(event) => form.setData('parent_permission', event.target.files?.[0] ?? null)}
  className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary"

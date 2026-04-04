@@ -80,7 +80,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  label="Judul laporan"
  required
  value={form.data.title}
- onChange={(event) => form.setData('title', event.target.value)}
+ onChange={(event) => form.setData('judul', event.target.value)}
  error={form.errors.title}
  />
  <FormTextarea
@@ -92,9 +92,9 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  <div className="space-y-2">
  <label className="block text-sm font-medium text-slate-700">File laporan</label>
  <input
- type="file"
+ type="berkas"
  accept=".pdf,.doc,.docx"
- onChange={(event) => form.setData('file', event.target.files?.[0] ?? null)}
+ onChange={(event) => form.setData('berkas', event.target.files?.[0] ?? null)}
  className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary"
  required
  />

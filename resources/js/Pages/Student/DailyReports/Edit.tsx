@@ -74,6 +74,7 @@ export default function StudentDailyReportEdit({ report }: Props) {
  />
  <FormInput
  label="Lokasi kegiatan"
+ required
  value={form.data.location_name}
  onChange={(event) => form.setData('location_name', event.target.value)}
  error={form.errors.location_name}

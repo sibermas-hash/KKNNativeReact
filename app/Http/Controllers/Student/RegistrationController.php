@@ -83,7 +83,7 @@ class RegistrationController extends Controller
 
         if ($request->hasFile('health_certificate')) {
             if ($mahasiswa->health_certificate_path) {
-                Storage::disk('public')->delete($mahasiswa->health_certificate_path);
+                Storage::disk('local')->delete($mahasiswa->health_certificate_path);
             }
 
             // VULN-013 Fix: Store sensitive documents in private storage
@@ -93,7 +93,7 @@ class RegistrationController extends Controller
 
         if ($request->hasFile('parent_permission')) {
             if ($mahasiswa->parent_permission_path) {
-                Storage::disk('public')->delete($mahasiswa->parent_permission_path);
+                Storage::disk('local')->delete($mahasiswa->parent_permission_path);
             }
 
             // VULN-013 Fix: Store sensitive documents in private storage

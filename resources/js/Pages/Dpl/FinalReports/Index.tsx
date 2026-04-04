@@ -66,9 +66,7 @@ export default function DplFinalReportsIndex({ reports }: Props) {
  <StatusBadge status={report.status} />
  </td>
  <td className="px-6 py-4 text-right">
- <Link href={`/dpl/final-reports/${report.id}`} className="text-sm font-medium text-primary hover:underline">
- Detail
- </Link>
+ <Link href={`/dpl/final-reports/${report.id}`} className="text-sm font-medium text-primary hover:underline">Detail</Link>
  </td>
  </tr>
  ))

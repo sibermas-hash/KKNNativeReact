@@ -65,7 +65,7 @@ export default function StudentSync({ availableStudents, filters }: Props) {
                     <div className="relative group flex-1 w-full max-w-2xl">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
                         <input
-                            type="search"
+                            type="cari"
                             placeholder="Cari Identitas (NIM / Nama)..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -154,7 +154,6 @@ export default function StudentSync({ availableStudents, filters }: Props) {
                     </div>
                 </div>
             </div>
-        </div>
         </AppLayout>
     );
 }

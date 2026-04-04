@@ -68,7 +68,7 @@ export default function UsersIndex({ users, filters }: Props) {
                     <form onSubmit={handleSearch} className="flex-1 w-full xl:max-w-2xl relative group">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-300 group-focus-within:text-emerald-500 transition-colors z-10" />
                         <input
-                            type="search"
+                            type="cari"
                             placeholder="Cari Berdasarkan Nama / Email..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -169,8 +169,6 @@ export default function UsersIndex({ users, filters }: Props) {
                     </div>
                 </div>
             </div>
-        </div>
-        </div>
         </AppLayout>
     );
 }

@@ -19,10 +19,16 @@ class Dosen extends Model
         'user_id',
         'nip',
         'nama',
+        'birth_date',
+        'gender',
         'faculty_id',
         'phone',
         'master_id',
         'master_synced_at',
+    ];
+
+    protected $casts = [
+        'birth_date' => 'date',
     ];
 
     public function user(): BelongsTo

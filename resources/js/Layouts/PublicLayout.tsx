@@ -1,14 +1,16 @@
 import { Link, usePage } from '@inertiajs/react';
 import { Globe, ArrowRight, Menu, X } from 'lucide-react';
 import { useState } from 'react';
-import { PageProps } from '@/types';
+import type { PageProps } from '@/types';
 
 interface Props {
     children: React.ReactNode;
 }
 
 export default function PublicLayout({ children }: Props) {
-    const { auth } = usePage<PageProps>().props;
+    const page = usePage<PageProps>();
+    const { auth } = page.props;
+    const currentUrl = page.url;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const navLinks = [
@@ -47,7 +49,7 @@ export default function PublicLayout({ children }: Props) {
                             key={link.name} 
                             href={link.href} 
                             className={`text-[13px] font-black transition-colors uppercase tracking-widest ${
-                                usePage().url === link.href ? 'text-emerald-600' : 'text-slate-500 hover:text-emerald-500'
+                                currentUrl === link.href ? 'text-emerald-600' : 'text-slate-500 hover:text-emerald-500'
                             }`}
                         >
                             {link.name}
@@ -68,9 +70,7 @@ export default function PublicLayout({ children }: Props) {
                         <Link 
                             href={route('login')}
                             className="bg-slate-950 text-white px-8 py-3 rounded-xl text-xs font-black hover:bg-emerald-600 transition-all shadow-xl uppercase tracking-[0.2em]"
-                        >
-                            LOGIN
-                        </Link>
+                        >MASUK</Link>
                     )}
                     
                     {/* Mobile Menu Toggle */}

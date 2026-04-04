@@ -5,7 +5,7 @@ import { Pagination } from '@/Components/ui';
 import type { PaginationMeta } from '@/Components/UI/Pagination';
 import type { Faculty, PageProps, Program } from '@/types';
 
-interface ProgramWithFaculty extends Omit<Program, 'faculty'> {
+interface ProgramWithFaculty extends Omit<Program, 'fakultas'> {
  faculty?: Faculty | null;
 }
 
@@ -119,7 +119,7 @@ export default function ProgramsIndex({ programs, filters, syncInfo }: Props) {
 
  <div className="w-full max-w-sm">
  <input
- type="search"
+ type="cari"
  value={search}
  onChange={(event) => setSearch(event.target.value)}
  placeholder="Cari program studi..."

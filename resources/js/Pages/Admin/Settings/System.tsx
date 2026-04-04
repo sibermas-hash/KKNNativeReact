@@ -33,7 +33,7 @@ export default function SystemSettings({ settings }: Props) {
 
  const updateValue = (id: number, value: string) => {
  form.setData(
- 'settings',
+ 'pengaturan',
  form.data.settings.map((item) => (item.id === id ? { ...item, value } : item)),
  );
  };
@@ -75,7 +75,7 @@ export default function SystemSettings({ settings }: Props) {
 
  <div className="grid gap-6 px-6 py-6 md:grid-cols-2">
  {items.map((setting) => {
- const isSecret = setting.type === 'password';
+ const isSecret = setting.type === 'kata sandi';
  const isLongText = setting.type === 'longtext';
 
  return (
@@ -113,7 +113,7 @@ export default function SystemSettings({ settings }: Props) {
  <div className="flex gap-2">
  <FormInput
  id={`setting-${setting.id}`}
- type={isSecret && !visiblePasswords[setting.id] ? 'password' : 'text'}
+ type={isSecret && !visiblePasswords[setting.id] ? 'kata sandi' : 'text'}
  value={getValue(setting.id)}
  onChange={(event) => updateValue(setting.id, event.target.value)}
  error={getError(setting.id)}

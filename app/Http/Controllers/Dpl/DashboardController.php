@@ -7,11 +7,16 @@ use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\NilaiKkn;
+use App\Services\DplScopeService;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
+    public function __construct(
+        private DplScopeService $scopeService,
+    ) {}
+
     public function index(): Response
     {
         $user = auth()->user();
@@ -24,18 +29,19 @@ class DashboardController extends Controller
                 'gradingProgress' => "0%",
                 'atRiskStudents' => [],
                 'activityTrend' => [],
+                'coordinatorAreas' => [],
             ]);
         }
 
-        // Multi-DPL Logic: Fetch all groups assigned to this lecturer through the pivot table
-        $kelompok = $dosen->kelompokKkn()
+        $groupIds = $this->scopeService->assignedGroupIds($dosen);
+
+        $kelompok = KelompokKkn::query()
+            ->whereIn('id', $groupIds)
             ->withCount(['peserta' => function($q) {
                 $q->where('status', 'approved');
             }, 'kegiatan'])
             ->with(['lokasi', 'periode'])
             ->get();
-
-        $groupIds = $kelompok->pluck('id');
 
         $pendingReports = KegiatanKkn::whereIn('kelompok_id', $groupIds)
             ->where('status', 'submitted')
@@ -71,6 +77,8 @@ class DashboardController extends Controller
             ->orderBy('date')
             ->get();
 
+        $coordinatorAreas = $this->scopeService->coordinatorAreaSummaries($dosen);
+
         return Inertia::render('Dpl/Dashboard', [
             'groups' => $kelompok->map(fn (KelompokKkn $group) => [
                 'id' => $group->id,
@@ -93,6 +101,7 @@ class DashboardController extends Controller
                 'date' => (string) $item->date,
                 'count' => (int) $item->count,
             ])->values(),
+            'coordinatorAreas' => $coordinatorAreas,
         ]);
     }
 }

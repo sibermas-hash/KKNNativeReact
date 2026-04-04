@@ -1,21 +1,10 @@
-import { useState } from 'react';
-import { useForm, router, Link, Head } from '@inertiajs/react';
-import AppLayout from '@/Layouts/AppLayout';
+import { type FormEvent, useState } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import {
-    CloudDownload,
-    UserCheck,
-    Search,
-    RefreshCw,
-    Cpu,
-    ShieldCheck,
-    Zap,
-    ShieldAlert,
-    ChevronLeft,
-} from 'lucide-react';
-import { clsx } from 'clsx';
+import { CloudDownload, Database, RefreshCw, Search, UserRoundPlus } from 'lucide-react';
+import AppLayout from '@/Layouts/AppLayout';
 
-interface AvailableDpl {
+interface AvailableDosen {
     id?: number | null;
     nip: string;
     name: string;
@@ -23,140 +12,169 @@ interface AvailableDpl {
 }
 
 interface Props {
-    availableDpls: AvailableDpl[];
+    availableDosen: AvailableDosen[];
     filters: {
         search?: string;
     };
 }
 
-export default function DplSync({ availableDpls, filters }: Props) {
-    const [search, setSearch] = useState(filters.search || '');
-    const { processing } = useForm({});
+export default function DplSync({ availableDosen, filters }: Props) {
+    const [search, setSearch] = useState(filters.search ?? '');
+    const [syncingNip, setSyncingNip] = useState<string | null>(null);
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        router.get(route('admin.dpl.sync'), { search }, { preserveState: true });
+    const handleSearch = (event: FormEvent) => {
+        event.preventDefault();
+        router.get(route('admin.dpl.sync'), { search }, { preserveState: true, preserveScroll: true });
     };
 
-    const handleSync = (dpl: AvailableDpl) => {
-        router.post(route('admin.dpl.sync.store'), {
-            master_id: dpl.id,
-            nip: dpl.nip,
-            name: dpl.name,
-            email: dpl.email,
-        });
+    const handleSync = (dosen: AvailableDosen) => {
+        setSyncingNip(dosen.nip);
+        router.post(
+            route('admin.dpl.sync.store'),
+            {
+                master_id: dosen.id,
+                nip: dosen.nip,
+                name: dosen.name,
+                email: dosen.email,
+            },
+            {
+                preserveScroll: true,
+                onFinish: () => setSyncingNip(null),
+            },
+        );
     };
 
     return (
-        <AppLayout title="Aktivasi Personel">
-            <Head title="Gerbang Aktivasi DPL" />
-            
+        <AppLayout title="Sinkronisasi Master Dosen">
+            <Head title="Sinkronisasi Master Dosen" />
+
             <div className="space-y-8 pb-20">
-                {/* Simple Clean Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
+                <div className="flex flex-col gap-3 border-b border-slate-100 pb-6 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Gerbang Aktivasi DPL</h1>
-                        <p className="text-sm text-slate-500 mt-1">Otorisasi dan aktivasi personel bimbingan dari repositori dosen.</p>
+                        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Sinkronisasi Master Dosen</h1>
+                        <p className="mt-1 text-sm text-slate-500">
+                            Ambil data dosen dari master kampus ke basis data lokal. Proses ini belum membuat akun
+                            login DPL.
+                        </p>
                     </div>
+                    <Link
+                        href={route('admin.dpl.assignment')}
+                        className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
+                    >
+                        Lanjut ke penugasan DPL
+                    </Link>
                 </div>
 
-                {/* Operations Toolbar */}
-                <form onSubmit={handleSearch} className="flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div className="relative group flex-1 w-full max-w-2xl">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-300 group-focus-within:text-emerald-500 transition-colors z-10" />
+                <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
+                    <form onSubmit={handleSearch} className="relative">
+                        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300" />
                         <input
                             type="search"
-                            placeholder="Cari Identitas (NIP / Nama)..."
                             value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="w-full h-15 pl-16 pr-8 py-2 bg-white border border-slate-100 rounded-xl text-sm font-semibold tracking-tight text-slate-900 placeholder:text-slate-200 focus:outline-none focus:ring-8 focus:ring-emerald-500/5 transition-all shadow-sm focus:border-emerald-500 outline-none italic"
+                            onChange={(event) => setSearch(event.target.value)}
+                            placeholder="Cari NIP atau nama dosen..."
+                            className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-12 pr-4 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5"
                         />
-                    </div>
-                    <div className="px-6 py-3 bg-emerald-50 border border-emerald-100 rounded-xl text-xs font-bold text-emerald-600 shadow-sm flex items-center gap-3">
-                        <CloudDownload className="w-4 h-4" />
-                        {availableDpls.length} Personel Terdeteksi
-                    </div>
-                </form>
+                    </form>
 
-                {/* Main Table Matrix */}
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden group">
-                    <div className="overflow-x-auto relative z-10 custom-scrollbar pr-1">
-                        <table className="min-w-full divide-y divide-slate-100 italic font-bold">
-                            <thead className="bg-slate-50/50">
-                                <tr>
-                                    <th className="px-8 py-6 text-left text-xs font-bold text-slate-500 uppercase tracking-widest">Data Manifest Petugas</th>
-                                    <th className="px-8 py-6 text-right text-xs font-bold text-slate-500 uppercase tracking-widest pr-12">Authorization</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {availableDpls.map((dpl) => (
-                                    <tr key={dpl.nip} className="group/row hover:bg-slate-50 transition-colors">
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center gap-6">
-                                                <div className="h-14 w-14 rounded-2xl bg-slate-900 border border-slate-800 text-primary text-lg font-black flex items-center justify-center italic shadow-2xl  transition-transform">
-                                                    {dpl.name.charAt(0)}
-                                                </div>
-                                                <div className="flex flex-col min-w-0">
-                                                    <span className="text-sm font-bold text-slate-900 uppercase tracking-tighter truncate max-w-[450px] group-hover/row:text-emerald-600 transition-colors  mb-2">{dpl.name}</span>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">NIP: {dpl.nip}</span>
-                                                        <span className="text-xs font-bold text-slate-300 italic lowercase">[{dpl.email || 'NO_MAIL_CHANNEL'}]</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6 text-right pr-12">
-                                            <button
-                                                onClick={() => handleSync(dpl)}
-                                                disabled={processing}
-                                                className="group/btn h-12 px-8 bg-white border border-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl text-xs uppercase italic tracking-widest transition-all shadow-sm active:scale-95 disabled:opacity-20 flex items-center justify-center gap-3 ml-auto opacity-70 group-hover/row:opacity-100"
-                                            >
-                                                <UserCheck className="w-4 h-4 text-emerald-400 group-hover/btn:text-white" />
-                                                Aktivasi Personel
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {availableDpls.length === 0 && (
-                                    <tr>
-                                        <td colSpan={2} className="px-8 py-32 text-center italic">
-                                            <div className="flex flex-col items-center gap-8">
-                                                <div className="p-10 bg-slate-50 rounded-3xl border border-slate-100">
-                                                    <ShieldAlert className="h-12 w-12 text-slate-900" />
-                                                </div>
-                                                <span className="text-xs font-black text-slate-900 uppercase italic tracking-[0.4em]">DATA PETUGAS TIDAK DITEMUKAN</span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                    <div className="flex items-center justify-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+                        <CloudDownload className="h-4 w-4" />
+                        {availableDosen.length} dosen siap disinkronkan
                     </div>
                 </div>
 
-                {/* Footer Governance Section */}
-                <div className="p-8 bg-slate-900 rounded-xl border border-slate-800 text-white relative overflow-hidden group shadow-xl">
-                    <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
-                    <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-8 text-center xl:text-left">
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-4 justify-center xl:justify-start">
-                                <div className="p-3 bg-primary/10 rounded-xl border border-primary/20 shadow-sm">
-                                    <ShieldCheck className="h-6 w-6 text-primary shadow-sm" />
-                                </div>
-                                <h4 className="text-sm font-black text-white italic tracking-widest uppercase ">Gerbang Autentikasi V3.2</h4>
-                            </div>
-                            <p className="text-sm text-slate-500 font-bold  max-w-4xl italic uppercase">
-                                Protokol Otorisasi: Aktivasi personel akan memberikan hak akses kontrol penuh terhadap evaluasi akademik unit kelompok yang ditugaskan. Pastikan integritas akun terverifikasi melalui jalur internal.
+                <div className="grid gap-6 xl:grid-cols-[2fr,1fr]">
+                    <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
+                        <div className="border-b border-slate-200 px-6 py-4">
+                            <h2 className="text-lg font-semibold text-slate-900">Daftar dosen dari master kampus</h2>
+                            <p className="mt-1 text-sm text-slate-500">
+                                Setelah tersinkron, dosen dapat diaktifkan sebagai DPL pada periode tertentu.
                             </p>
                         </div>
-                        <div className="flex gap-4 justify-center xl:justify-end">
-                            <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/10 text-emerald-500 text-xs font-bold">
-                                AKSES FEDERASI OKE
-                            </div>
+
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-slate-200">
+                                <thead className="bg-slate-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                            Identitas dosen
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                            Email
+                                        </th>
+                                        <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                            Aksi
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {availableDosen.length > 0 ? (
+                                        availableDosen.map((dosen) => (
+                                            <tr key={dosen.nip}>
+                                                <td className="px-6 py-4">
+                                                    <p className="font-semibold text-slate-900">{dosen.name}</p>
+                                                    <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">
+                                                        NIP {dosen.nip}
+                                                    </p>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-slate-600">
+                                                    {dosen.email || 'Belum tersedia'}
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleSync(dosen)}
+                                                        disabled={syncingNip === dosen.nip}
+                                                        className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+                                                    >
+                                                        {syncingNip === dosen.nip ? (
+                                                            <RefreshCw className="h-4 w-4 animate-spin" />
+                                                        ) : (
+                                                            <Database className="h-4 w-4" />
+                                                        )}
+                                                        Sinkronkan
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={3} className="px-6 py-16 text-center text-sm text-slate-500">
+                                                Tidak ada dosen baru yang cocok dengan filter saat ini.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
+                    </section>
+
+                    <aside className="space-y-6">
+                        <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                            <div className="flex items-start gap-3">
+                                <div className="rounded-lg bg-emerald-50 p-3 text-emerald-600">
+                                    <UserRoundPlus className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-semibold text-slate-900">Pola baru DPL</h2>
+                                    <div className="mt-3 space-y-3 text-sm text-slate-600">
+                                        <p>Sinkronisasi ini hanya mengisi master dosen lokal.</p>
+                                        <p>Akun login DPL baru dibuat saat dosen diaktifkan pada periode tertentu.</p>
+                                        <p>Penugasan kelompok dan koordinator kecamatan dilakukan dari halaman penugasan DPL.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="rounded-xl border border-amber-200 bg-amber-50 p-6">
+                            <h2 className="text-lg font-semibold text-amber-900">Catatan keamanan</h2>
+                            <p className="mt-2 text-sm leading-6 text-amber-800">
+                                Dosen yang baru diaktifkan sebagai DPL akan menerima kata sandi sementara dan wajib
+                                menggantinya saat login pertama.
+                            </p>
+                        </section>
+                    </aside>
                 </div>
-            </div>
             </div>
         </AppLayout>
     );

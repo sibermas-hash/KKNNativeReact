@@ -52,7 +52,7 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  <Activity className="h-4 w-4 text-emerald-300" />
  </div>
  <span className="text-xs font-semibold text-emerald-100">
- FIELD_ACTIVITY_LOG_V3
+ LOG_AKTIVITAS_LAPANGAN_V3
  </span>
  </div>
  <h1 className="text-4xl md:text-5xl font-semibold text-white">
@@ -98,9 +98,9 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  >
  <option value="">SEMUA STATUS OPERASIONAL</option>
  <option value="submitted">STATUS: TERKIRIM</option>
- <option value="approved">STATUS: TERVERIFIKASI</option>
- <option value="revision">STATUS: PERLU REVISI</option>
- <option value="draft">STATUS: DRAF</option>
+ <option value="disetujui">STATUS: TERVERIFIKASI</option>
+ <option value="revisi">STATUS: PERLU REVISI</option>
+ <option value="draf">STATUS: DRAF</option>
  </select>
  </div>
  </div>
@@ -166,7 +166,7 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  <div className="p-10 bg-slate-50 rounded-lg border border-slate-200">
  <Activity className="h-20 w-20 text-slate-200" />
  </div>
- <p className="text-sm font-semibold text-slate-400">SYSTEM_INFO: NO_ACTIVITY_LOGS_DETECTED</p>
+ <p className="text-sm font-semibold text-slate-400">INFO_SISTEM: TIDAK_ADA_LOG_AKTIVITAS_TERDETEKSI</p>
  </div>
  </td>
  </tr>
@@ -176,7 +176,7 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  </div>
  </div>
 
- {/* Tactical Emerald Footer Monitor */}
+ {/* Monitor Lapangan Emerald Taktis */}
  <div className="p-12 bg-slate-900 rounded-lg border border-slate-800 relative overflow-hidden group mx-2">
  <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
 
@@ -191,13 +191,13 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  <p className="text-sm text-slate-400 leading-normal max-w-4xl">
  Logbook merupakan bukti operasional primer yang menjadi basis penilaian kompetensi mahasiswa KKN UIN SAIZU. 
  Seluruh data laporan harian diaudit secara temporal untuk menjamin akuntabilitas pengabdian yang presisi. 
- Pastikan verifikasi <span className="text-emerald-500 font-semibold">"Verified"</span> dilakukan berdasarkan validasi lapangan yang akurat.
+ Pastikan verifikasi <span className="text-emerald-500 font-semibold">"Terverifikasi"</span> dilakukan berdasarkan validasi lapangan yang akurat.
  </p>
  </div>
  <div className="flex flex-col items-end gap-5 shrink-0 border-l border-slate-800 pl-12 hidden lg:flex">
  <div className="flex items-center gap-3 mb-1 px-5 py-2.5 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
  <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
- <span className="text-sm font-semibold text-slate-100">SYSTEM_ONLINE</span>
+ <span className="text-sm font-semibold text-slate-100">SISTEM_ONLINE</span>
  </div>
  <div className="flex gap-5">
  <div className="h-14 w-14 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-300 transition-colors group/ic cursor-help">
@@ -213,14 +213,10 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
 
  <div className="text-center pt-8">
  <p className="text-xs font-semibold text-slate-300">
- Field Activity Monitor • System Integrity Ver. 3.2.0 • UIN SAIZU © 2024
+ Monitor Aktivitas Lapangan • Integritas Sistem Ver. 3.2.0 • UIN SAIZU © 2024
  </p>
  </div>
  </div>
-        </div>
-        </div>
-        </div>
-        </div>
  </AppLayout>
  );
 }

@@ -135,9 +135,7 @@ export default function GroupShow({ group }: Props) {
  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
  Peran
  </th>
- <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
- Status
- </th>
+ <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-slate-100 bg-white">

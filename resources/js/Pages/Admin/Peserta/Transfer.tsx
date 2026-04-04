@@ -112,7 +112,7 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
                             <form onSubmit={handleSearch} className="relative group mb-6">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
                                 <input
-                                    type="search"
+                                    type="cari"
                                     placeholder="Cari NIM atau Nama..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
@@ -274,8 +274,6 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
                     </div>
                 </div>
             </div>
-        </div>
-        </div>
         </AppLayout>
     );
 }

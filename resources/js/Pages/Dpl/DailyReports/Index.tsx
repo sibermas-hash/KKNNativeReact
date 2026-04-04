@@ -61,9 +61,7 @@ export default function DplDailyReportsIndex({ reports, filters }: Props) {
  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
  <p className="text-sm text-slate-500">{reports.data.length} laporan pada halaman ini.</p>
  <div>
- <label htmlFor="status" className="mr-3 text-sm text-slate-500">
- Status
- </label>
+ <label htmlFor="status" className="mr-3 text-sm text-slate-500">Status</label>
  <select
  id="status"
  value={filters.status ?? ''}
@@ -74,8 +72,8 @@ export default function DplDailyReportsIndex({ reports, filters }: Props) {
  >
  <option value="">Semua status</option>
  <option value="submitted">Diajukan</option>
- <option value="approved">Disetujui</option>
- <option value="revision">Revisi</option>
+ <option value="disetujui">Disetujui</option>
+ <option value="revisi">Revisi</option>
  </select>
  </div>
  </div>

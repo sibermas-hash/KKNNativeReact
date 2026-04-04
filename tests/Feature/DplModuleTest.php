@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\KKN\Dosen;
+use App\Models\KKN\DplKecamatanAssignment;
+use App\Models\KKN\DplPeriod;
 use App\Models\KKN\FileKegiatanKkn;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\KelompokKkn;
@@ -15,6 +17,7 @@ use App\Models\KKN\PesertaKkn;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -115,6 +118,37 @@ class DplModuleTest extends TestCase
             ->get(route('dpl.groups.show', $context['group']))
             ->assertOk()
             ->assertSee($context['student']->nama);
+    }
+
+    public function test_dpl_dashboard_shows_coordinator_area_summary(): void
+    {
+        $context = $this->createDplScenario();
+
+        $dplPeriod = DplPeriod::create([
+            'dosen_id' => $context['dosen']->id,
+            'period_id' => $context['period']->id,
+            'max_groups' => 5,
+            'is_active' => true,
+        ]);
+
+        DplKecamatanAssignment::create([
+            'dpl_period_id' => $dplPeriod->id,
+            'dosen_id' => $context['dosen']->id,
+            'period_id' => $context['period']->id,
+            'district_id' => $context['group']->lokasi->district_id,
+            'district_name' => $context['group']->lokasi->district_name,
+            'regency_name' => $context['group']->lokasi->regency_name,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($context['dplUser'])
+            ->get(route('dpl.dashboard'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Dpl/Dashboard')
+                ->has('coordinatorAreas', 1)
+                ->where('coordinatorAreas.0.district_name', $context['group']->lokasi->district_name)
+            );
     }
 
     public function test_dpl_can_review_daily_reports_and_download_attachments(): void

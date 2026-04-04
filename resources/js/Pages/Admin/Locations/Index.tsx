@@ -69,8 +69,8 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  }, [search, filters.search]);
 
  function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
- importForm.setData('file', event.target.files?.[0] ?? null);
- importForm.clearErrors('file');
+ importForm.setData('berkas', event.target.files?.[0] ?? null);
+ importForm.clearErrors('berkas');
  }
 
  function handleImport(event: FormEvent<HTMLFormElement>) {
@@ -152,7 +152,7 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  <div className="space-y-4 relative z-10">
  <div className="p-8 border-2 border-dashed border-slate-100 rounded-lg bg-slate-50/50 hover:bg-slate-50 hover:border-primary/20 transition-all group/drop text-center relative">
  <input
- type="file"
+ type="berkas"
  onChange={handleFileChange}
  accept=".xlsx,.xls,.csv"
  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
@@ -192,7 +192,7 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  <div className="relative group">
  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-primary transition-colors" />
  <input
- type="search"
+ type="cari"
  placeholder="SEARCH_LOCATION_DATABASE..."
  value={search}
  onChange={(e) => setSearch(e.target.value)}
@@ -301,14 +301,12 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  });
  }}
  title="EKSEKUSI_PENGHAPUSAN_WILAYAH"
- message={deleting?.can_delete 
- ? `Apakah Anda yakin ingin menghapus "${deleting.full_name}"?` 
+ message={deleting?.can_delete
+ ? `Apakah Anda yakin ingin menghapus "${deleting.full_name}"?`
  : (deleting?.delete_blocker ?? 'Wilayah ini terikat dengan entitas aktif.')}
  processing={deleteForm.processing}
  confirmLabel="HAPUS_DATA"
  />
-        </div>
-        </div>
  </AppLayout>
  );
 }

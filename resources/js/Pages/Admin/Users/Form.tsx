@@ -23,7 +23,7 @@ export default function UserForm({ faculties, programs }: Props) {
  gender: '',
  });
 
- const isStudent = form.data.role === 'student';
+ const isStudent = form.data.role === 'mahasiswa';
  const isDpl = form.data.role === 'dpl';
  const isFacultyAdmin = form.data.role === 'faculty_admin';
 
@@ -64,28 +64,28 @@ export default function UserForm({ faculties, programs }: Props) {
  <h2 className="text-lg font-semibold text-slate-900">Akun Utama</h2>
  <div className="mt-6 grid gap-6 md:grid-cols-2">
  <FormSelect
- id="role"
+ id="peran"
  label="Peran"
  required
  value={form.data.role}
- onChange={(event) => form.setData('role', event.target.value)}
+ onChange={(event) => form.setData('peran', event.target.value)}
  error={form.errors.role}
  placeholder="Pilih peran"
  options={[
  { value: 'superadmin', label: 'Superadmin' },
  { value: 'faculty_admin', label: 'Admin fakultas' },
  { value: 'dpl', label: 'DPL' },
- { value: 'student', label: 'Mahasiswa' },
+ { value: 'mahasiswa', label: 'Mahasiswa' },
  ]}
  />
  <div />
 
  <FormInput
- id="name"
+ id="nama"
  label="Nama lengkap"
  required
  value={form.data.name}
- onChange={(event) => form.setData('name', event.target.value)}
+ onChange={(event) => form.setData('nama', event.target.value)}
  error={form.errors.name}
  />
  <FormInput
@@ -106,7 +106,7 @@ export default function UserForm({ faculties, programs }: Props) {
  error={form.errors.email}
  />
  <FormInput
- id="password"
+ id="kata sandi"
  type="password"
  label="Kata sandi"
  required
@@ -165,11 +165,11 @@ export default function UserForm({ faculties, programs }: Props) {
  error={form.errors.batch_year}
  />
  <FormSelect
- id="gender"
+ id="jenis kelamin"
  label="Jenis kelamin"
  required
  value={form.data.gender}
- onChange={(event) => form.setData('gender', event.target.value)}
+ onChange={(event) => form.setData('jenis kelamin', event.target.value)}
  error={form.errors.gender}
  placeholder="Pilih jenis kelamin"
  options={[
@@ -243,7 +243,6 @@ export default function UserForm({ faculties, programs }: Props) {
  </section>
  </form>
  </div>
-        </div>
  </AppLayout>
  );
 }

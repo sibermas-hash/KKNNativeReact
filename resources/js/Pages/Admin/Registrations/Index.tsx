@@ -24,7 +24,7 @@ import { Pagination, Badge } from '@/Components/ui'
 
 interface Registration {
     id: number;
-    status: 'pending' | 'approved' | 'rejected';
+    status: 'menunggu' | 'disetujui' | 'ditolak';
     student: {
         nim: string;
         name: string;
@@ -69,8 +69,8 @@ export default function RegistrationsIndex({ registrations, filters, stats }: Pr
         router.get(route('admin.registrations.index'), { search, status }, { preserveState: true });
     };
 
-    const handleStatusUpdate = (id: number, newStatus: 'approved' | 'rejected') => {
-        if (newStatus === 'approved') {
+    const handleStatusUpdate = (id: number, newStatus: 'disetujui' | 'ditolak') => {
+        if (newStatus === 'disetujui') {
             router.patch(route('admin.registrations.approve', id), {}, { preserveScroll: true });
         } else {
             const notes = prompt('Alasan penolakan (wajib):');
@@ -111,7 +111,7 @@ export default function RegistrationsIndex({ registrations, filters, stats }: Pr
 
     const toggleSelectAll = () => {
         const pendingIds = registrations.data
-            .filter(r => r.status === 'pending')
+            .filter(r => r.status === 'menunggu')
             .map(r => r.id);
         setSelectedIds(prev => prev.length === pendingIds.length ? [] : pendingIds);
     };
@@ -233,7 +233,7 @@ export default function RegistrationsIndex({ registrations, filters, stats }: Pr
                     <form onSubmit={handleSearch} className="flex-1 w-full xl:max-w-2xl relative group">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
                         <input
-                            type="search"
+                            type="cari"
                             placeholder="Cari Nama, NIM, atau Email..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -249,9 +249,9 @@ export default function RegistrationsIndex({ registrations, filters, stats }: Pr
                                 className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 appearance-none cursor-pointer font-semibold text-slate-600"
                             >
                                 <option value="">Semua Status</option>
-                                <option value="pending">Menunggu Verifikasi</option>
-                                <option value="approved">Diterima</option>
-                                <option value="rejected">Ditolak</option>
+                                <option value="menunggu">Menunggu Verifikasi</option>
+                                <option value="disetujui">Diterima</option>
+                                <option value="ditolak">Ditolak</option>
                             </select>
                         </div>
 
@@ -294,7 +294,7 @@ export default function RegistrationsIndex({ registrations, filters, stats }: Pr
                                         selectedIds.includes(reg.id) && "bg-blue-50"
                                     )}>
                                         <td className="px-6 py-5">
-                                            {reg.status === 'pending' && (
+                                            {reg.status === 'menunggu' && (
                                                 <input
                                                     type="checkbox"
                                                     checked={selectedIds.includes(reg.id)}
@@ -324,23 +324,23 @@ export default function RegistrationsIndex({ registrations, filters, stats }: Pr
                                         </td>
                                         <td className="px-6 py-5 text-center">
                                             <Badge
-                                                variant={reg.status === 'approved' ? 'success' : reg.status === 'rejected' ? 'danger' : 'warning'}
+                                                variant={reg.status === 'disetujui' ? 'berhasil' : reg.status === 'ditolak' ? 'danger' : 'peringatan'}
                                             >
-                                                {reg.status === 'pending' ? 'Menunggu' : reg.status === 'approved' ? 'Disetujui' : 'Ditolak'}
+                                                {reg.status === 'menunggu' ? 'Menunggu' : reg.status === 'disetujui' ? 'Disetujui' : 'Ditolak'}
                                             </Badge>
                                         </td>
                                         <td className="px-6 py-5 text-right">
-                                            {reg.status === 'pending' ? (
+                                            {reg.status === 'menunggu' ? (
                                                 <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button
-                                                        onClick={() => handleStatusUpdate(reg.id, 'approved')}
+                                                        onClick={() => handleStatusUpdate(reg.id, 'disetujui')}
                                                         className="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-lg transition-all border border-emerald-100"
                                                         title="Terima"
                                                     >
                                                         <CheckCircle2 className="w-4 h-4" />
                                                     </button>
                                                     <button
-                                                        onClick={() => handleStatusUpdate(reg.id, 'rejected')}
+                                                        onClick={() => handleStatusUpdate(reg.id, 'ditolak')}
                                                         className="p-2 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg transition-all border border-rose-100"
                                                         title="Tolak"
                                                     >

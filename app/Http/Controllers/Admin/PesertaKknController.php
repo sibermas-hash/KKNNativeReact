@@ -12,8 +12,30 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
 class PesertaKknController extends Controller
 {
+    /**
+     * Download registration documents from local storage.
+     */
+    public function downloadDocument(Request $request): StreamedResponse
+    {
+        $path = $request->input('path');
+        
+        if (!$path || !Storage::disk('local')->exists($path)) {
+            abort(404, 'Dokumen tidak ditemukan.');
+        }
+
+        // Security check: Only allow specific folders
+        if (!str_starts_with($path, 'health-certificates/') && !str_starts_with($path, 'parent-permissions/')) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        return Storage::disk('local')->download($path);
+    }
+
     public function index(Request $request): Response
     {
         $registrations = PesertaKkn::with('mahasiswa.fakultas', 'mahasiswa.prodi', 'periode', 'kelompok')

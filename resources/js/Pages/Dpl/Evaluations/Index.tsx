@@ -206,9 +206,9 @@ export default function DplEvaluationsPage({ groups, evaluations, dplWeights }: 
  </label>
  <input
  id="import_file"
- type="file"
+ type="berkas"
  accept=".xlsx,.xls"
- onChange={(event) => importForm.setData('file', event.target.files?.[0] ?? null)}
+ onChange={(event) => importForm.setData('berkas', event.target.files?.[0] ?? null)}
  className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700"
  required
  />
@@ -235,7 +235,7 @@ export default function DplEvaluationsPage({ groups, evaluations, dplWeights }: 
  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Mahasiswa</th>
  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Kelompok</th>
  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Nilai</th>
- <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Grade</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Nilai</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-slate-100">
@@ -249,7 +249,7 @@ export default function DplEvaluationsPage({ groups, evaluations, dplWeights }: 
  <td className="px-6 py-4 text-sm text-slate-600">{evaluation.group.name}</td>
  <td className="px-6 py-4 text-sm text-slate-600">{evaluation.total_score ?? '-'}</td>
  <td className="px-6 py-4">
- <StatusBadge status={evaluation.grade?.toLowerCase() === 'd' ? 'rejected' : 'approved'} className="mr-2" />
+ <StatusBadge status={evaluation.grade?.toLowerCase() === 'd' ? 'ditolak' : 'disetujui'} className="mr-2" />
  <span className="text-sm font-medium text-slate-700">{evaluation.grade ?? '-'}</span>
  </td>
  </tr>

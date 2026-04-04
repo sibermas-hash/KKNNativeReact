@@ -1,6 +1,6 @@
 import { clsx } from 'clsx';
 
-type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary';
+type BadgeVariant = 'default' | 'berhasil' | 'peringatan' | 'danger' | 'info' | 'primary';
 
 interface BadgeProps {
  variant?: BadgeVariant;

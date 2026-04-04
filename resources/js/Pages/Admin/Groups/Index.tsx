@@ -72,7 +72,7 @@ export default function GroupsIndex({ groups, filters }: Props) {
                     <form onSubmit={handleSearch} className="relative group flex-1 w-full max-w-2xl">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
                         <input
-                            type="search"
+                            type="cari"
                             placeholder="Cari Kelompok, Lokasi, atau DPL..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -130,9 +130,7 @@ export default function GroupsIndex({ groups, filters }: Props) {
                                     <Link 
                                         href={route('admin.groups.show', group.id)}
                                         className="text-xs font-bold text-emerald-600 flex items-center gap-2 group/link"
-                                    >
-                                        Detail
-                                        <ArrowRight className="w-3.5 h-3.5 group-hover/link:translate-x-1 transition-transform" />
+                                    >Detail<ArrowRight className="w-3.5 h-3.5 group-hover/link:translate-x-1 transition-transform" />
                                     </Link>
                                 </div>
                             </div>

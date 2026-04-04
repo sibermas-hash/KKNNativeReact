@@ -6,7 +6,7 @@ import type { PageProps } from '@/types';
 import type { PaginationMeta } from '@/Components/UI/Pagination';
 
 interface BadgeProps {
- variant?: 'success' | 'danger' | 'default';
+ variant?: 'berhasil' | 'danger' | 'default';
  className?: string;
  children: ReactNode;
 }
@@ -109,7 +109,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  useEffect(() => {
  if (!editing && form.data.periode && form.data.jenis) {
  const name = `Periode ${form.data.periode} - ${form.data.jenis}`;
- form.setData('name', name);
+ form.setData('nama', name);
  }
  }, [form, form.data.periode, form.data.jenis, editing]);
 
@@ -319,11 +319,11 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  <div className="grid grid-cols-2 gap-6">
  <div className="space-y-2">
  <label className="text-xs font-semibold text-slate-400">Mulai</label>
- <FormInput type="date" value={form.data.registration_start} onChange={(e) => form.setData('registration_start', e.target.value)} required className="bg-white border-slate-200 rounded-lg text-xs font-semibold" />
+ <FormInput type="tanggal" value={form.data.registration_start} onChange={(e) => form.setData('registration_start', e.target.value)} required className="bg-white border-slate-200 rounded-lg text-xs font-semibold" />
  </div>
  <div className="space-y-2">
  <label className="text-xs font-semibold text-slate-400">Selesai</label>
- <FormInput type="date" value={form.data.registration_end} onChange={(e) => form.setData('registration_end', e.target.value)} required className="bg-white border-slate-200 rounded-lg text-xs font-semibold" />
+ <FormInput type="tanggal" value={form.data.registration_end} onChange={(e) => form.setData('registration_end', e.target.value)} required className="bg-white border-slate-200 rounded-lg text-xs font-semibold" />
  </div>
  </div>
  </div>
@@ -336,11 +336,11 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  <div className="grid grid-cols-2 gap-6">
  <div className="space-y-2">
  <label className="text-xs font-semibold text-slate-400">Mulai</label>
- <FormInput type="date" value={form.data.start_date} onChange={(e) => form.setData('start_date', e.target.value)} required className="bg-white border-slate-200 rounded-lg text-xs font-semibold" />
+ <FormInput type="tanggal" value={form.data.start_date} onChange={(e) => form.setData('start_date', e.target.value)} required className="bg-white border-slate-200 rounded-lg text-xs font-semibold" />
  </div>
  <div className="space-y-2">
  <label className="text-xs font-semibold text-slate-400">Selesai</label>
- <FormInput type="date" value={form.data.end_date} onChange={(e) => form.setData('end_date', e.target.value)} required className="bg-white border-slate-200 rounded-lg text-xs font-semibold" />
+ <FormInput type="tanggal" value={form.data.end_date} onChange={(e) => form.setData('end_date', e.target.value)} required className="bg-white border-slate-200 rounded-lg text-xs font-semibold" />
  </div>
  </div>
  </div>
@@ -363,7 +363,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  </div>
  <div className="text-left">
  <span className={clsx("text-xs font-semibold transition-colors", form.data.is_active ? 'text-primary' : 'text-slate-400')}>
- {form.data.is_active ? 'Aktif' : 'Draft'}
+ {form.data.is_active ? 'Aktif' : 'Draf'}
  </span>
  </div>
  </button>
@@ -469,7 +469,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  </td>
  <td className="px-8 py-6 text-center">
  <Badge
- variant={period.is_active ? 'success' : 'default'}
+ variant={period.is_active ? 'berhasil' : 'default'}
  >
  {period.is_active ? 'Aktif' : 'Nonaktif'}
  </Badge>
@@ -479,7 +479,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  <button onClick={() => setDuplicating(period)} className="p-2 text-slate-400 hover:text-emerald-500 border border-slate-100 hover:border-emerald-200 rounded-lg transition-all" title="Duplikasi">
  <Copy className="h-4 w-4" />
  </button>
- <button onClick={() => startEdit(period)} className="p-2 text-slate-400 hover:text-primary border border-slate-100 hover:border-primary/20 rounded-lg transition-all" title="Edit">
+ <button onClick={() => startEdit(period)} className="p-2 text-slate-400 hover:text-primary border border-slate-100 hover:border-primary/20 rounded-lg transition-all" title="Ubah">
  <Edit2 className="h-4 w-4" />
  </button>
  <button onClick={() => setDeleting(period)} disabled={!period.can_delete} className={clsx("p-2 border border-slate-100 rounded-lg transition-all", period.can_delete ? "text-slate-400 hover:text-rose-500 hover:border-rose-200" : "opacity-10 cursor-not-allowed")} title="Hapus">
@@ -540,9 +540,6 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  processing={deleteForm.processing}
  confirmLabel="Ya, hapus"
  />
-        </div>
-        </div>
-        </div>
  </AppLayout>
 
  );

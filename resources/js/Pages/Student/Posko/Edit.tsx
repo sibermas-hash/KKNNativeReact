@@ -40,7 +40,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
 
  const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
  const file = event.target.files?.[0] ?? null;
- form.setData('photo', file);
+ form.setData('foto', file);
  setSelectedFileName(file?.name ?? null);
  };
 
@@ -158,7 +158,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  <div className="md:col-span-2 space-y-2">
  <label className="block text-sm font-medium text-slate-700">Foto posko</label>
  <input
- type="file"
+ type="berkas"
  accept=".jpg,.jpeg,.png,.webp"
  onChange={handlePhotoChange}
  className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary"

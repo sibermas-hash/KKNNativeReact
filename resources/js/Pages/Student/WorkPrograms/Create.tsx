@@ -40,13 +40,13 @@ export default function StudentWorkProgramCreate() {
  label="Judul program kerja"
  required
  value={form.data.title}
- onChange={(event) => form.setData('title', event.target.value)}
+ onChange={(event) => form.setData('judul', event.target.value)}
  error={form.errors.title}
  />
  <FormTextarea
  label="Deskripsi"
  value={form.data.description}
- onChange={(event) => form.setData('description', event.target.value)}
+ onChange={(event) => form.setData('deskripsi', event.target.value)}
  error={form.errors.description}
  />
  <FormTextarea

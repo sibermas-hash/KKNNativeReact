@@ -87,8 +87,8 @@ class DailyReportController extends Controller
             'output' => ['nullable', 'string'],
             'latitude' => ['nullable', 'numeric'],
             'longitude' => ['nullable', 'numeric'],
-            'location_name' => ['nullable', 'string', 'max:255'],
-            'files.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf,doc,docx', 'max:5120'],
+            'location_name' => ['required', 'string', 'max:255'],
+            'files.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
         ]);
 
         $kegiatan = KegiatanKkn::create([

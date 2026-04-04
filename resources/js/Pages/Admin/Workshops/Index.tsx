@@ -57,7 +57,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  const [showForm, setShowForm] = useState(false);
  const [editingWorkshopId, setEditingWorkshopId] = useState<number | null>(null);
  const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
- const [modalMode, setModalMode] = useState<'attendance' | 'participants'>('participants');
+ const [modalMode, setModalMode] = useState<'kehadiran' | 'peserta'>('peserta');
 
  const selectedParticipants = selectedWorkshop?.participants ?? [];
 
@@ -98,12 +98,12 @@ export default function WorkshopIndex({ workshops }: Props) {
 
  const openParticipants = (workshop: Workshop) => {
  setSelectedWorkshop(workshop);
- setModalMode('participants');
+ setModalMode('peserta');
  };
 
  const openAttendance = (workshop: Workshop) => {
  setSelectedWorkshop(workshop);
- setModalMode('attendance');
+ setModalMode('kehadiran');
  attendanceForm.setData(
  'user_ids',
  workshop.participants
@@ -165,7 +165,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  };
 
  return (
- <AppLayout title="Workshop">
+ <AppLayout title="Pembekalan">
  <Head title="Manajemen Workshop" />
 
  <div className="space-y-6">
@@ -200,12 +200,12 @@ export default function WorkshopIndex({ workshops }: Props) {
  label="Judul"
  required
  value={workshopForm.data.title}
- onChange={(event) => workshopForm.setData('title', event.target.value)}
+ onChange={(event) => workshopForm.setData('judul', event.target.value)}
  error={workshopForm.errors.title}
  />
  </div>
  <FormInput
- type="date"
+ type="tanggal"
  label="Tanggal"
  required
  value={workshopForm.data.workshop_date}
@@ -215,7 +215,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <FormInput
  label="Lokasi"
  value={workshopForm.data.location}
- onChange={(event) => workshopForm.setData('location', event.target.value)}
+ onChange={(event) => workshopForm.setData('lokasi', event.target.value)}
  error={workshopForm.errors.location}
  />
  <FormInput
@@ -251,7 +251,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <FormTextarea
  label="Deskripsi"
  value={workshopForm.data.description}
- onChange={(event) => workshopForm.setData('description', event.target.value)}
+ onChange={(event) => workshopForm.setData('deskripsi', event.target.value)}
  error={workshopForm.errors.description}
  />
  </div>
@@ -359,7 +359,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <div className="flex items-start justify-between border-b border-slate-200 px-6 py-4">
  <div>
  <h2 className="text-lg font-semibold text-slate-900">
- {modalMode === 'attendance' ? 'Presensi workshop' : 'Daftar peserta'}
+ {modalMode === 'kehadiran' ? 'Presensi workshop' : 'Daftar peserta'}
  </h2>
  <p className="mt-1 text-sm text-slate-500">{selectedWorkshop.title}</p>
  </div>
@@ -383,7 +383,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <table className="min-w-full divide-y divide-slate-200">
  <thead className="bg-slate-50">
  <tr>
- {modalMode === 'attendance' && (
+ {modalMode === 'kehadiran' && (
  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
  Hadir
  </th>
@@ -394,9 +394,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
  Email
  </th>
- <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
- Status
- </th>
+ <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
  Sertifikat
  </th>
@@ -409,7 +407,7 @@ export default function WorkshopIndex({ workshops }: Props) {
 
  return (
  <tr key={participant.id}>
- {modalMode === 'attendance' && (
+ {modalMode === 'kehadiran' && (
  <td className="px-4 py-3">
  <input
  type="checkbox"
@@ -431,7 +429,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  ) : (
  <tr>
  <td
- colSpan={modalMode === 'attendance' ? 5 : 4}
+ colSpan={modalMode === 'kehadiran' ? 5 : 4}
  className="px-4 py-8 text-center text-sm text-slate-500"
  >
  Belum ada peserta pada workshop ini.
@@ -442,7 +440,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  </table>
  </div>
 
- {modalMode === 'attendance' && (
+ {modalMode === 'kehadiran' && (
  <div className="mt-4 flex justify-end gap-3">
  <button
  type="button"

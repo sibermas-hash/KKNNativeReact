@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { 
+import {
     Users, 
     MapPin, 
     Layers, 
@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import { route } from 'ziggy-js';
 import PublicLayout from '@/Layouts/PublicLayout';
-import type { User } from '@/types';
 
 interface Props {
     stats: {
@@ -18,12 +17,9 @@ interface Props {
         groups: number;
         locations: number;
     };
-    auth: {
-        user: User | null;
-    };
 }
 
-export default function Home({ stats, auth }: Props) {
+export default function Home({ stats }: Props) {
     return (
         <PublicLayout>
             <Head title="SIM-KKN | Portal Kuliah Kerja Nyata UIN Prof. K.H. Saifuddin Zuhri" />

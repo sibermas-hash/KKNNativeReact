@@ -34,4 +34,9 @@ class AdminOperationPolicy extends BasePolicy
     {
         return $this->superAdminBypass($user, 'transferStudents') ?? false;
     }
+
+    public function manageAnnouncements(User $user): bool
+    {
+        return $this->superAdminBypass($user, 'manageAnnouncements') ?? false;
+    }
 }

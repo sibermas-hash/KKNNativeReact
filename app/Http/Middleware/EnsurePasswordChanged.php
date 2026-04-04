@@ -18,7 +18,11 @@ class EnsurePasswordChanged
 
         $routeName = $request->route()?->getName();
 
-        if ($routeName && (str_starts_with($routeName, 'profile.') || $routeName === 'logout')) {
+        if ($routeName && (
+            str_starts_with($routeName, 'profil.')
+            || str_starts_with($routeName, 'profile.')
+            || in_array($routeName, ['keluar', 'logout'], true)
+        )) {
             return $next($request);
         }
 

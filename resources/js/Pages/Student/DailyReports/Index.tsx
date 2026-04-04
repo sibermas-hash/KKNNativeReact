@@ -105,9 +105,7 @@ export default function StudentDailyReportsIndex({ reports, isWorkshopPassed = t
  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
  Judul
  </th>
- <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
- Status
- </th>
+ <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
  Catatan
  </th>

@@ -48,7 +48,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
     // ADMIN AREA (Superadmin Only)
     // ==========================================
     Route::middleware(['role:superadmin'])->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/', [Admin\DashboardController::class , 'index'])->name('dashboard');
+        Route::get('/', [Admin\DashboardController::class , 'index'])->name('dasbor');
         Route::get('tactical-preview', function () {
             return inertia('Admin/TacticalDashboard');
         })->name('tactical-preview');
@@ -92,7 +92,10 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::post('dpl/sync', [Admin\DplSyncController::class , 'sync'])->name('dpl.sync.store');
         Route::post('dpl/assign-period', [Admin\DplAssignmentController::class , 'assignToPeriod'])->name('dpl.assign-period');
         Route::post('dpl/assign-group/{group}', [Admin\DplAssignmentController::class , 'assignToGroup'])->name('dpl.assign-group');
+        Route::post('dpl/assign-district', [Admin\DplAssignmentController::class , 'assignDistrictCoordinator'])->name('dpl.assign-district');
+        Route::post('dpl/import', [Admin\DplAssignmentController::class , 'import'])->name('dpl.import');
         Route::patch('dpl/remove-period/{dplPeriod}', [Admin\DplAssignmentController::class , 'removeDplFromPeriod'])->name('dpl.remove-period');
+        Route::patch('dpl/remove-district/{districtCoordinator}', [Admin\DplAssignmentController::class , 'removeDistrictCoordinator'])->name('dpl.remove-district');
         
         Route::get('peserta/transfer', [Admin\StudentTransferController::class , 'index'])->name('peserta.transfer.index');
         Route::post('peserta/transfer', [Admin\StudentTransferController::class , 'transfer'])->name('peserta.transfer');
@@ -101,6 +104,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::resource('downloads', Admin\DownloadController::class);
 
         Route::get('registrations', [Admin\PesertaKknController::class , 'index'])->name('registrations.index');
+        Route::get('registrations/documents/download', [Admin\PesertaKknController::class, 'downloadDocument'])->name('registrations.document.download');
         Route::get('registrations/{pesertaKkn}', [Admin\PesertaKknController::class , 'show'])->name('registrations.show');
         Route::get('registrations/export', [Admin\PesertaKknController::class , 'export'])->name('registrations.export');
         Route::patch('registrations/{pesertaKkn}/approve', [Admin\PesertaKknController::class , 'approve'])->name('registrations.approve');

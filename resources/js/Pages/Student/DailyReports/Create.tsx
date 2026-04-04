@@ -68,6 +68,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
  />
  <FormInput
  label="Lokasi kegiatan"
+ required
  value={form.data.location_name}
  onChange={(event) => form.setData('location_name', event.target.value)}
  error={form.errors.location_name}
@@ -125,7 +126,7 @@ export default function StudentDailyReportCreate({ group }: Props) {
  <div className="md:col-span-2 space-y-2">
  <label className="block text-sm font-medium text-slate-700">Lampiran</label>
  <input
- type="file"
+ type="berkas"
  multiple
  onChange={handleFilesChange}
  className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary"

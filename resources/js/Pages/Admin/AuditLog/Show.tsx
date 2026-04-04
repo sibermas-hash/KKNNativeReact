@@ -121,7 +121,7 @@ export default function AuditLogShow({ log }: Props) {
                             </div>
                             <div className="space-y-6">
                                 <MetadataItem label="SUBJECT_ID" value={`#${log.subject_id?.toString().padStart(4, '0') || 'N/A'}`} color="emerald" />
-                                <MetadataItem label="CAUSER_TYPE" value={log.causer_type?.split('\\').pop() || 'SYSTEM'} color="slate" />
+                                <MetadataItem label="CAUSER_TYPE" value={log.causer_type?.split('\\').pop() || 'SISTEM'} color="slate" />
                                 <MetadataItem label="LOG_EVENT" value={log.description.split(' ')[0].toUpperCase()} color="primary" />
                             </div>
                         </section>
@@ -143,8 +143,6 @@ export default function AuditLogShow({ log }: Props) {
                     </div>
                 </div>
             </div>
-        </div>
-        </div>
         </AppLayout>
     );
 }

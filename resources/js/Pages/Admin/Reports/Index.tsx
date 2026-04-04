@@ -97,7 +97,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
 
  <div className="w-full max-w-sm">
  <input
- type="search"
+ type="cari"
  value={search}
  onChange={(event) => setSearch(event.target.value)}
  placeholder="Cari judul, mahasiswa, atau kelompok..."
@@ -123,9 +123,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
  Tipe
  </th>
- <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
- Status
- </th>
+ <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
  <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
  Aksi
  </th>

@@ -21,16 +21,16 @@ export default function ResetPassword({ token, email }: Props) {
  };
 
  return (
- <GuestLayout title="Reset Password">
+ <GuestLayout title="Atur Ulang Kata Sandi">
  <div className="mb-4 text-sm text-slate-600">
- Masukkan password baru Anda. Pastikan password kuat dengan
+ Masukkan kata sandi baru Anda. Pastikan kata sandi kuat dengan
  kombinasi huruf besar, kecil, angka, dan simbol.
  </div>
 
  <form onSubmit={submit} className="space-y-5">
  <div>
  <label htmlFor="email" className="block text-sm font-medium text-slate-700">
- Email
+ Alamat Email
  </label>
  <input
  id="email"
@@ -45,7 +45,7 @@ export default function ResetPassword({ token, email }: Props) {
 
  <div>
  <label htmlFor="password" className="block text-sm font-medium text-slate-700">
- Password Baru
+ Kata Sandi Baru
  </label>
  <input
  id="password"
@@ -64,7 +64,7 @@ export default function ResetPassword({ token, email }: Props) {
 
  <div>
  <label htmlFor="password_confirmation" className="block text-sm font-medium text-slate-700">
- Konfirmasi Password Baru
+ Konfirmasi Kata Sandi Baru
  </label>
  <input
  id="password_confirmation"
@@ -81,12 +81,12 @@ export default function ResetPassword({ token, email }: Props) {
  disabled={processing}
  className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
  >
- {processing ? 'Menyimpan...' : 'Reset Password'}
+ {processing ? 'Menyimpan...' : 'Atur Ulang Kata Sandi'}
  </button>
 
  <div className="text-center">
  <Link href="/login" className="text-sm text-emerald-600 hover:text-emerald-700">
- ← Kembali ke login
+ ← Kembali ke halaman masuk
  </Link>
  </div>
  </form>

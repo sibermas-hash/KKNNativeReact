@@ -30,7 +30,7 @@ export default function Login() {
 
  const submit = (e: React.FormEvent) => {
  e.preventDefault();
- post(route('login'), {
+ post(route('login.store'), {
  onFinish: () => {
  reset('password', 'captcha_answer');
  },
@@ -194,7 +194,6 @@ export default function Login() {
  )}
  </button>
  </form>
- </div>
  </GuestLayout>
  );
 }

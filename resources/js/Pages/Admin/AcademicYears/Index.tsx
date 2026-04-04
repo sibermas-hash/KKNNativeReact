@@ -159,7 +159,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
  <p className="mt-1 text-sm text-slate-500">Cari dan ubah status tahun akademik yang sudah ada.</p>
  </div>
  <input
- type="search"
+ type="cari"
  placeholder="Cari tahun akademik..."
  value={search}
  onChange={(event) => setSearch(event.target.value)}

@@ -63,11 +63,11 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  onChange={(event) => handleFilterChange(event.target.value)}
  options={[
  { value: '', label: 'Semua status' },
- { value: 'draft', label: 'Draf' },
+ { value: 'draf', label: 'Draf' },
  { value: 'submitted', label: 'Diajukan' },
- { value: 'approved', label: 'Disetujui' },
- { value: 'revision', label: 'Perlu revisi' },
- { value: 'rejected', label: 'Ditolak' },
+ { value: 'disetujui', label: 'Disetujui' },
+ { value: 'revisi', label: 'Perlu revisi' },
+ { value: 'ditolak', label: 'Ditolak' },
  { value: 'completed', label: 'Selesai' },
  ]}
  />
@@ -96,9 +96,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, filters }: Props)
  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
  Diajukan
  </th>
- <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
- Status
- </th>
+ <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-slate-100 bg-white">

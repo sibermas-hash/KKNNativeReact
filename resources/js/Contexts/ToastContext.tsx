@@ -7,7 +7,7 @@ import {
  XMarkIcon,
 } from '@heroicons/react/24/outline';
 
-export type ToastPriority = 'success' | 'warning' | 'error' | 'info';
+export type ToastPriority = 'berhasil' | 'peringatan' | 'kesalahan' | 'info';
 
 interface ToastAction {
  label: string;
@@ -92,7 +92,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
  const toast = useCallback(
  (options: Omit<Toast, 'id'>) => {
  const id = Math.random().toString(36).slice(2);
- const duration = options.duration ?? (options.priority === 'error' ? 8000 : 5000);
+ const duration = options.duration ?? (options.priority === 'kesalahan' ? 8000 : 5000);
 
  setToasts((current) => [{ ...options, id, duration }, ...current].slice(0, 5));
  timers.current[id] = window.setTimeout(() => dismiss(id), duration);

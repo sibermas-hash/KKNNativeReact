@@ -150,14 +150,14 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
     ];
 
     return (
-        <AppLayout title="Dashboard">
+        <AppLayout title="Dasbor">
             <Head title="Dashboard Admin" />
             
             <div className="space-y-6">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-xl font-semibold text-slate-900">Dashboard</h1>
+                        <h1 className="text-xl font-semibold text-slate-900">Dasbor</h1>
                         {stats?.active_period && (
                             <p className="text-sm text-slate-500 mt-1">
                                 Periode Aktif: <span className="font-medium text-slate-700">{stats.active_period}</span>
@@ -333,9 +333,7 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                                                 <Link 
                                                     href={`/admin/registrations/${reg.id}`}
                                                     className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-                                                >
-                                                    Detail
-                                                </Link>
+                                                >Detail</Link>
                                             </td>
                                         </tr>
                                     ))

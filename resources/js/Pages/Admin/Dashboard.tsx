@@ -1,5 +1,6 @@
 import { Link, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import { LucideIcon } from 'lucide-react';
 import { 
     Users, 
     Users2, 
@@ -90,17 +91,17 @@ function StatusBadge({ status }: { status: string }) {
     );
 }
 
-function StatCard({ 
-    title, 
-    value, 
-    icon: Icon, 
+function StatCard({
+    title,
+    value,
+    icon: Icon,
     color = "blue",
     link,
-    subtitle 
-}: { 
-    title: string; 
-    value: number; 
-    icon: any; 
+    subtitle
+}: {
+    title: string;
+    value: number;
+    icon: LucideIcon;
     color?: string;
     link?: string;
     subtitle?: string;

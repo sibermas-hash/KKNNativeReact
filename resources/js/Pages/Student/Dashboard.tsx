@@ -26,15 +26,55 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { PageProps } from '@/types';
+import { LucideIcon } from 'lucide-react';
+
+interface Student {
+ id?: number;
+ name: string;
+}
+
+interface Registration {
+ status: 'pending' | 'approved' | 'rejected';
+ group?: {
+  id: number;
+  name: string;
+ };
+}
+
+interface FinalReport {
+ id?: number;
+ status?: string;
+}
+
+interface Grade {
+ score?: number;
+ status?: string;
+}
 
 interface Props {
- student: any;
- registration: any;
+ student: Student;
+ registration: Registration | null;
  dailyReportCount: number;
  workProgramCount: number;
  workshopRegistered: boolean;
- finalReport: any;
- grade: any;
+ finalReport: FinalReport | null;
+ grade: Grade | null;
+}
+
+interface StatCardProps {
+ title: string;
+ value: number | string;
+ unit?: string;
+ icon: LucideIcon;
+ color: 'primary' | 'emerald' | 'slate';
+}
+
+interface QuickActionButtonProps {
+ href: string;
+ icon: LucideIcon;
+ label: string;
+ desc: string;
+ disabled?: boolean;
 }
 
 export default function StudentDashboard({ student, registration, dailyReportCount, workProgramCount, workshopRegistered, finalReport, grade }: Props) {
@@ -406,8 +446,8 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  );
 }
 
-function StatCard({ title, value, unit, icon: Icon, color }: any) {
- const colorClasses: any = {
+function StatCard({ title, value, unit, icon: Icon, color }: StatCardProps) {
+ const colorClasses: Record<string, string> = {
  primary: 'bg-primary/5 text-primary border-primary/10',
  emerald: 'bg-emerald-50 text-emerald-500 border-emerald-100',
  slate: 'bg-slate-50 text-slate-400 border-slate-200'
@@ -437,7 +477,7 @@ function StatCard({ title, value, unit, icon: Icon, color }: any) {
  );
 }
 
-function QuickActionButton({ href, icon: Icon, label, desc, disabled }: any) {
+function QuickActionButton({ href, icon: Icon, label, desc, disabled }: QuickActionButtonProps) {
  if (disabled) {
  return (
  <div className="flex items-center gap-5 p-5 rounded-lg bg-slate-50 border border-slate-100 opacity-40 cursor-not-allowed">

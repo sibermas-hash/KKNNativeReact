@@ -83,10 +83,6 @@ export default function About({ aboutContent }: Props) {
                     </div>
                 </div>
             </section>
-        </div>
-        </div>
-        </div>
-        </div>
         </PublicLayout>
     );
 }

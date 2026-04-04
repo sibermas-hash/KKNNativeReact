@@ -1,9 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, ReactNode } from 'react';
 import { router, useForm, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { ConfirmDialog, FormInput, FormSelect, Pagination, Badge } from '@/Components/ui';
 import type { PageProps } from '@/types';
 import type { PaginationMeta } from '@/Components/UI/Pagination';
+
+interface BadgeProps {
+ variant?: 'success' | 'danger' | 'default';
+ className?: string;
+ children: ReactNode;
+}
 import {
  Plus,
  Search,
@@ -542,7 +548,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  );
 }
 
-function Badge({ variant, className, children }: any) {
+function Badge({ variant, className, children }: BadgeProps) {
  const variants: Record<string, string> = {
  success: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
  danger: 'bg-rose-50 text-rose-600 border border-rose-100',

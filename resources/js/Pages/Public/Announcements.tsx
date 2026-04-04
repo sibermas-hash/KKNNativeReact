@@ -82,7 +82,6 @@ export default function Announcements({ announcements }: Props) {
                     )}
                 </div>
             </section>
-        </div>
         </PublicLayout>
     );
 }

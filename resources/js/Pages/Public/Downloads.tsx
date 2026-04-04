@@ -74,7 +74,6 @@ export default function Downloads({ downloads }: Props) {
                     </div>
                 </div>
             </section>
-        </div>
         </PublicLayout>
     );
 }

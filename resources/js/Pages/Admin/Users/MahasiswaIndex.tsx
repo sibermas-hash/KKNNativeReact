@@ -13,6 +13,8 @@ import {
  UserMinus,
  RefreshCw,
  Activity,
+ CheckCircle2,
+ XCircle,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -134,6 +136,8 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  <tr>
  <th className="px-8 py-5 text-left text-xs font-semibold text-slate-400">IDENTITAS_PESERTA</th>
  <th className="px-8 py-5 text-left text-xs font-semibold text-slate-400">PROGRAM_AKADEMIK</th>
+ <th className="px-8 py-5 text-center text-xs font-semibold text-slate-400">SKS & IPK</th>
+ <th className="px-8 py-5 text-center text-xs font-semibold text-slate-400">BTA-PPI</th>
  <th className="px-8 py-5 text-center text-xs font-semibold text-slate-400">STATUS_AKSES</th>
  <th className="px-8 py-5 text-right text-xs font-semibold text-slate-400 pr-12">MANAJEMEN</th>
  </tr>
@@ -141,7 +145,7 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  <tbody className="divide-y divide-slate-50/50">
  {users.data.length === 0 ? (
  <tr>
- <td colSpan={4} className="px-8 py-24 text-center">
+ <td colSpan={6} className="px-8 py-24 text-center">
  <div className="flex flex-col items-center gap-4">
  <Users className="h-10 w-10 text-slate-300" />
  <p className="text-xs font-semibold text-slate-400">DIREKTORI_MAHASISWA_KOSONG</p>
@@ -175,6 +179,29 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  {user.mahasiswa?.fakultas?.nama || user.mahasiswa?.prodi?.fakultas?.nama || 'UNASSIGNED_FACULTY'}
  </span>
  </div>
+ </td>
+ <td className="px-8 py-6 text-center">
+ <div className="flex flex-col items-center gap-1">
+ <span className="text-xs font-semibold text-slate-700">
+ {user.mahasiswa?.sks_completed ?? 0} SKS
+ </span>
+ <span className="text-xs text-slate-400">
+ IPK: {user.mahasiswa?.gpa ? user.mahasiswa.gpa.toFixed(2) : '-'}
+ </span>
+ </div>
+ </td>
+ <td className="px-8 py-6 text-center">
+ {user.mahasiswa?.is_bta_ppi_passed ? (
+ <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded text-xs font-semibold border border-emerald-100">
+ <CheckCircle2 className="w-3 h-3" />
+ LULUS
+ </span>
+ ) : (
+ <span className="inline-flex items-center gap-1 px-2 py-1 bg-rose-50 text-rose-700 rounded text-xs font-semibold border border-rose-100">
+ <XCircle className="w-3 h-3" />
+ BELUM
+ </span>
+ )}
  </td>
  <td className="px-8 py-6 text-center">
  <Badge

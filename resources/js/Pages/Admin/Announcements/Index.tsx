@@ -35,7 +35,7 @@ export default function AnnouncementIndex({ announcements }: Props) {
         category: 'PENGUMUMAN',
         content: '',
         is_active: true,
-        published_at: dayjs().format('YYYY-MM-DD HH:mm'),
+        published_at: dayjs().format('YYYY-MM-DDTHH:mm'),
     });
 
     const openCreateModal = () => {
@@ -51,7 +51,7 @@ export default function AnnouncementIndex({ announcements }: Props) {
             category: announcement.category,
             content: announcement.content,
             is_active: announcement.is_active,
-            published_at: dayjs(announcement.published_at).format('YYYY-MM-DD HH:mm'),
+            published_at: dayjs(announcement.published_at).format('YYYY-MM-DDTHH:mm'),
         });
         setIsModalOpen(true);
     };
@@ -207,7 +207,7 @@ export default function AnnouncementIndex({ announcements }: Props) {
                                     <label className="text-[11px] font-black text-slate-400 tracking-widest uppercase ml-1">Judul_Publikasi</label>
                                     <input 
                                         value={data.title}
-                                        onChange={e => setData('judul', e.target.value)}
+                                        onChange={e => setData('title', e.target.value)}
                                         className="w-full bg-slate-50 border border-slate-200 rounded-xl px-6 py-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none"
                                         placeholder="Masukkan judul pengumuman..."
                                     />

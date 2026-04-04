@@ -80,6 +80,32 @@ class UserController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        // Map data to include academic fields
+        $users->through(function ($user) {
+            return [
+                'id' => $user->id,
+                'username' => $user->username,
+                'name' => $user->name,
+                'email' => $user->email,
+                'is_active' => $user->is_active,
+                'mahasiswa' => $user->mahasiswa ? [
+                    'nim' => $user->mahasiswa->nim,
+                    'sks_completed' => $user->mahasiswa->sks_completed,
+                    'gpa' => $user->mahasiswa->gpa,
+                    'is_bta_ppi_passed' => $user->mahasiswa->is_bta_ppi_passed,
+                    'prodi' => $user->mahasiswa->prodi ? [
+                        'nama' => $user->mahasiswa->prodi->nama,
+                        'fakultas' => $user->mahasiswa->prodi->fakultas ? [
+                            'nama' => $user->mahasiswa->prodi->fakultas->nama,
+                        ] : null,
+                    ] : null,
+                    'fakultas' => $user->mahasiswa->fakultas ? [
+                        'nama' => $user->mahasiswa->fakultas->nama,
+                    ] : null,
+                ] : null,
+            ];
+        });
+
         return Inertia::render('Admin/Users/MahasiswaIndex', [
             'users' => $users,
             'filters' => $request->only('search'),

@@ -2,8 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Models\KKN\Announcement;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\DplPeriod;
+use App\Models\KKN\Download;
 use App\Models\KKN\Evaluasi;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\ItemEvaluasi;
@@ -21,6 +23,7 @@ use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\PoskoKelompok;
 use App\Models\KKN\Prodi;
 use App\Models\KKN\ProgramKerja;
+use App\Models\KKN\SystemSetting;
 use App\Models\KKN\TahunAkademik;
 use App\Models\KKN\Workshop;
 use App\Models\User;
@@ -50,6 +53,7 @@ class SeedDemoTestingCommand extends Command
 
         $this->ensureRoles();
         $this->ensureDemoFiles();
+        $this->seedPublicContent();
 
         [$facultyA, $facultyB] = $this->seedFacultiesAndPrograms();
         [$activeYear, $archiveYear] = $this->seedAcademicYears();
@@ -224,6 +228,14 @@ class SeedDemoTestingCommand extends Command
             'final-reports/laporan-akhir-demo-arsip.pdf',
             $this->demoPdf('Laporan Akhir Demo Arsip')
         );
+        Storage::disk('public')->put(
+            'downloads/panduan-operasional-kkn-demo.pdf',
+            $this->demoPdf('Panduan Operasional KKN Demo')
+        );
+        Storage::disk('public')->put(
+            'downloads/template-laporan-harian-demo.docx',
+            'Dokumen contoh template laporan harian untuk pengujian repositori publik.'
+        );
         Storage::disk('local')->put(
             'reports/demo/evaluation-report-demo.pdf',
             $this->demoPdf('Laporan Evaluasi Demo')
@@ -284,6 +296,100 @@ startxref
 422
 %%EOF
 PDF;
+    }
+
+    private function seedPublicContent(): void
+    {
+        SystemSetting::set('site_about', 'LPPM UIN Prof. K.H. Saifuddin Zuhri menghubungkan riset, pengabdian, dan kerja kolaboratif kampus agar hadir sebagai solusi nyata di tengah masyarakat.');
+        SystemSetting::set('site_visi', 'Menjadi pusat unggulan penelitian dan pengabdian masyarakat yang kolaboratif, terukur, dan berdampak.');
+        SystemSetting::set('site_misi', 'Mengembangkan riset aplikatif, memperkuat kemitraan masyarakat, dan memastikan program pengabdian berjalan tertata.');
+        SystemSetting::set('site_schemes_title', 'Skema KKN yang fleksibel dan kontekstual.');
+        SystemSetting::set('site_schemes_intro', 'Pilihan skema ini disiapkan sebagai contoh isi halaman publik dan sekaligus bisa langsung dipakai sebagai draf awal konten resmi kampus.');
+        SystemSetting::set('site_schemes_items', json_encode([
+            [
+                'title' => 'KKN Reguler',
+                'description' => 'Skema umum untuk penempatan mahasiswa pada desa dampingan dengan fokus pemberdayaan berbasis kebutuhan lokal.',
+                'color' => 'emerald',
+            ],
+            [
+                'title' => 'KKN Tematik',
+                'description' => 'Skema berbasis isu prioritas seperti literasi, stunting, ekonomi desa, atau transformasi digital masyarakat.',
+                'color' => 'blue',
+            ],
+            [
+                'title' => 'KKN Kolaboratif',
+                'description' => 'Skema yang memungkinkan kerja lintas mitra, lintas disiplin, dan dukungan program institusi atau pemerintah daerah.',
+                'color' => 'amber',
+            ],
+            [
+                'title' => 'KKN Mandiri',
+                'description' => 'Skema pengabdian yang memberi ruang bagi kelompok untuk membawa rancangan program spesifik dengan pengawalan sistematis.',
+                'color' => 'slate',
+            ],
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+
+        Announcement::updateOrCreate(
+            ['title' => 'Pembukaan Pendaftaran KKN Semester Ganjil 2026'],
+            [
+                'category' => 'PENDAFTARAN',
+                'content' => 'Pendaftaran KKN resmi dibuka. Mahasiswa diminta melengkapi dokumen, memantau periode aktif, dan memilih kelompok sesuai jadwal yang ditetapkan.',
+                'is_active' => true,
+                'published_at' => now()->subDays(3),
+            ]
+        );
+
+        Announcement::updateOrCreate(
+            ['title' => 'Sosialisasi Teknis Kelompok dan Penugasan DPL'],
+            [
+                'category' => 'PENGUMUMAN',
+                'content' => 'LPPM akan menyelenggarakan sosialisasi teknis mengenai pengelompokan mahasiswa, penugasan DPL, dan standar pelaporan selama masa KKN.',
+                'is_active' => true,
+                'published_at' => now()->subDays(6),
+            ]
+        );
+
+        Announcement::updateOrCreate(
+            ['title' => 'Rilis Pedoman Laporan Harian dan Laporan Akhir'],
+            [
+                'category' => 'PEDOMAN',
+                'content' => 'Pedoman terbaru untuk pelaporan harian, laporan akhir, dan unggah dokumen pendukung telah tersedia untuk dijadikan acuan seluruh peserta.',
+                'is_active' => true,
+                'published_at' => now()->subDays(8),
+            ]
+        );
+
+        Download::updateOrCreate(
+            ['title' => 'Panduan Operasional KKN 2026'],
+            [
+                'file_name' => 'panduan-operasional-kkn-demo.pdf',
+                'file_path' => Storage::url('public/downloads/panduan-operasional-kkn-demo.pdf'),
+                'external_url' => null,
+                'file_type' => 'pdf',
+                'is_active' => true,
+            ]
+        );
+
+        Download::updateOrCreate(
+            ['title' => 'Template Laporan Harian Kelompok'],
+            [
+                'file_name' => 'template-laporan-harian-demo.docx',
+                'file_path' => Storage::url('public/downloads/template-laporan-harian-demo.docx'),
+                'external_url' => null,
+                'file_type' => 'docx',
+                'is_active' => true,
+            ]
+        );
+
+        Download::updateOrCreate(
+            ['title' => 'Akses Folder Repositori KKN'],
+            [
+                'file_name' => null,
+                'file_path' => null,
+                'external_url' => 'https://example.test/repositori-kkn-demo',
+                'file_type' => null,
+                'is_active' => true,
+            ]
+        );
     }
 
     private function seedFacultiesAndPrograms(): array

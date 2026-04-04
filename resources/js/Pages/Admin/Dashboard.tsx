@@ -1,20 +1,22 @@
 import { Link, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { 
     Users, 
     Users2, 
     FileText, 
-    CheckCircle2, 
     ClipboardList,
     Clock,
     AlertCircle,
-    TrendingUp,
     GraduationCap,
     BookOpen,
     ArrowRight,
     BarChart3,
-    Target
+    Target,
+    Globe,
+    Download,
+    Megaphone,
+    FolderKanban
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -47,6 +49,15 @@ interface Props {
     stats?: DashboardStats;
     sdg_distribution?: SdgDistributionItem[];
     recentRegistrations?: Registration[];
+    demoPreview?: {
+        stats: {
+            total_students: number;
+            total_groups: number;
+            total_reports: number;
+            pending_registrations: number;
+        };
+        recentRegistrations: Registration[];
+    };
 }
 
 const SDG_COLORS = [
@@ -141,13 +152,39 @@ function StatCard({
     return Card;
 }
 
-export default function AdminDashboard({ stats, sdg_distribution, recentRegistrations }: Props) {
+export default function AdminDashboard({ stats, sdg_distribution, recentRegistrations, demoPreview }: Props) {
     const quickActions = [
         { label: 'Kelola Pendaftaran', href: '/admin/registrations', icon: Users, color: 'blue' },
         { label: 'Kelola Kelompok', href: '/admin/groups', icon: Users2, color: 'green' },
         { label: 'Input Nilai', href: '/admin/grades', icon: GraduationCap, color: 'orange' },
         { label: 'Rekap Nilai', href: '/admin/rekap-nilai', icon: FileText, color: 'purple' },
     ];
+
+    const publicContentActions = [
+        { label: 'Profil LPPM', href: '/admin/content/profile', icon: Globe },
+        { label: 'Skema KKN', href: '/admin/content/schemes', icon: FolderKanban },
+        { label: 'Warta', href: '/admin/announcements', icon: Megaphone },
+        { label: 'Repositori', href: '/admin/downloads', icon: Download },
+    ];
+
+    const hasLoadedOperationalData = Boolean(stats) && Array.isArray(recentRegistrations);
+
+    const shouldShowDemoPreview =
+        Boolean(demoPreview) &&
+        hasLoadedOperationalData &&
+        recentRegistrations.length === 0 &&
+        (
+            (stats?.total_students ?? 0) === 0 &&
+            (stats?.total_groups ?? 0) === 0 &&
+            (stats?.total_reports ?? 0) === 0
+        );
+
+    const displayedRegistrations =
+        recentRegistrations && recentRegistrations.length > 0
+            ? recentRegistrations
+            : shouldShowDemoPreview && demoPreview
+                ? demoPreview.recentRegistrations
+                : [];
 
     return (
         <AppLayout title="Dasbor">
@@ -190,6 +227,58 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                         ))}
                     </div>
                 </div>
+
+                <div className="border border-slate-200 rounded-lg p-4 bg-white">
+                    <h2 className="text-sm font-semibold text-slate-700 mb-3">Konten Publik</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {publicContentActions.map((action) => (
+                            <Link
+                                key={action.href}
+                                href={action.href}
+                                className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 rounded-lg hover:border-emerald-300 hover:bg-emerald-50/50 transition-all"
+                            >
+                                <action.icon className="w-4 h-4 text-slate-600" />
+                                <span className="text-sm font-medium text-slate-700">{action.label}</span>
+                                <ArrowRight className="w-3 h-3 text-slate-400 ml-auto" />
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+
+                {shouldShowDemoPreview && demoPreview ? (
+                    <div className="border border-dashed border-emerald-300 bg-emerald-50/60 rounded-lg p-4">
+                        <div className="flex items-start justify-between gap-4">
+                            <div>
+                                <h2 className="text-sm font-semibold text-emerald-800">Pratinjau Data Contoh</h2>
+                                <p className="mt-1 text-sm text-emerald-700">
+                                    Ini hanya contoh tampilan dasbor saat data operasional mulai masuk.
+                                </p>
+                            </div>
+                            <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700">
+                                Contoh
+                            </span>
+                        </div>
+
+                        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div className="rounded-lg border border-white bg-white p-4">
+                                <p className="text-xs text-slate-500">Mahasiswa Aktif</p>
+                                <p className="mt-2 text-2xl font-bold text-slate-900">{demoPreview.stats.total_students}</p>
+                            </div>
+                            <div className="rounded-lg border border-white bg-white p-4">
+                                <p className="text-xs text-slate-500">Kelompok</p>
+                                <p className="mt-2 text-2xl font-bold text-slate-900">{demoPreview.stats.total_groups}</p>
+                            </div>
+                            <div className="rounded-lg border border-white bg-white p-4">
+                                <p className="text-xs text-slate-500">Laporan Masuk</p>
+                                <p className="mt-2 text-2xl font-bold text-slate-900">{demoPreview.stats.total_reports}</p>
+                            </div>
+                            <div className="rounded-lg border border-white bg-white p-4">
+                                <p className="text-xs text-slate-500">Menunggu Verifikasi</p>
+                                <p className="mt-2 text-2xl font-bold text-slate-900">{demoPreview.stats.pending_registrations}</p>
+                            </div>
+                        </div>
+                    </div>
+                ) : null}
 
                 {/* Main Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -314,8 +403,8 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200">
-                                {recentRegistrations && recentRegistrations.length > 0 ? (
-                                    recentRegistrations.map((reg) => (
+                                {displayedRegistrations.length > 0 ? (
+                                    displayedRegistrations.map((reg) => (
                                         <tr key={reg.id} className="hover:bg-slate-50">
                                             <td className="px-4 py-2 font-medium text-slate-900">
                                                 {reg.mahasiswa?.user?.name || '-'}
@@ -330,10 +419,16 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                                                 <StatusBadge status={reg.status} />
                                             </td>
                                             <td className="px-4 py-2">
-                                                <Link 
-                                                    href={`/admin/registrations/${reg.id}`}
-                                                    className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-                                                >Detail</Link>
+                                                {String(reg.id).startsWith('9000') ? (
+                                                    <span className="inline-flex rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                                                        Contoh
+                                                    </span>
+                                                ) : (
+                                                    <Link 
+                                                        href={`/admin/registrations/${reg.id}`}
+                                                        className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                                                    >Detail</Link>
+                                                )}
                                             </td>
                                         </tr>
                                     ))

@@ -27,6 +27,43 @@ class DashboardController extends Controller
             'masterGroups' => Inertia::defer(function (MasterApiService $api) {
                 return $api->getGroups();
             }),
+            'demoPreview' => [
+                'stats' => [
+                    'total_students' => 248,
+                    'total_groups' => 32,
+                    'total_reports' => 186,
+                    'pending_registrations' => 14,
+                ],
+                'recentRegistrations' => [
+                    [
+                        'id' => 900001,
+                        'status' => 'pending',
+                        'mahasiswa' => [
+                            'nim' => '2310401001',
+                            'user' => ['name' => 'Aisyah Nur Hidayah'],
+                        ],
+                        'periode' => ['name' => 'KKN Reguler 2026'],
+                    ],
+                    [
+                        'id' => 900002,
+                        'status' => 'approved',
+                        'mahasiswa' => [
+                            'nim' => '2310401042',
+                            'user' => ['name' => 'Muhammad Alif Pratama'],
+                        ],
+                        'periode' => ['name' => 'KKN Reguler 2026'],
+                    ],
+                    [
+                        'id' => 900003,
+                        'status' => 'approved',
+                        'mahasiswa' => [
+                            'nim' => '2310401098',
+                            'user' => ['name' => 'Nabila Khairunnisa'],
+                        ],
+                        'periode' => ['name' => 'KKN Tematik Desa 2026'],
+                    ],
+                ],
+            ],
             'stats' => Inertia::defer(function () use ($periodId, $facultyId) {
                 if (!$periodId) {
                     return [
@@ -73,4 +110,3 @@ class DashboardController extends Controller
         ]);
     }
 }
-

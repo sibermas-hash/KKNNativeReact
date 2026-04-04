@@ -1,7 +1,7 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import PublicLayout from '@/Layouts/PublicLayout';
 import { motion } from 'framer-motion';
-import { BookOpen, Calendar, ChevronRight } from 'lucide-react';
+import { BookOpen, Calendar } from 'lucide-react';
 import dayjs from 'dayjs';
 
 interface Announcement {
@@ -10,6 +10,7 @@ interface Announcement {
     content: string;
     category: string;
     published_at: string;
+    is_demo?: boolean;
 }
 
 interface Props {
@@ -20,6 +21,8 @@ interface Props {
 }
 
 export default function Announcements({ announcements }: Props) {
+    const previewMode = announcements.data.some((item) => item.is_demo);
+
     return (
         <PublicLayout>
             <Head title="Warta Utama | LPPM UIN Prof. K.H. Saifuddin Zuhri" />
@@ -35,6 +38,11 @@ export default function Announcements({ announcements }: Props) {
                         <p className="text-lg text-slate-500 font-bold max-w-2xl mt-8 italic">
                             Informasi terkini mengenai pelaksanaan KKN, pendaftaran periodik, dan pengumuman resmi LPPM.
                         </p>
+                        {previewMode && (
+                            <div className="mt-6 inline-flex rounded-full bg-amber-100 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-amber-700">
+                                Contoh Tampilan Saat Data Belum Tersedia
+                            </div>
+                        )}
                     </div>
 
                     <div className="space-y-12">
@@ -60,13 +68,9 @@ export default function Announcements({ announcements }: Props) {
                                         <div className="text-slate-500 text-xl leading-relaxed font-bold mb-10 italic line-clamp-3">
                                             {news.content}
                                         </div>
-                                        <Link 
-                                            href={`/warta/${news.id}`} 
-                                            className="inline-flex items-center gap-3 text-xs font-black text-emerald-600 border-2 border-emerald-500 px-8 py-4 rounded-2xl hover:bg-emerald-500 hover:text-white transition-all uppercase tracking-widest"
-                                        >
-                                            Baca Selengkapnya
-                                            <ChevronRight className="w-5 h-5" />
-                                        </Link>
+                                        <div className="inline-flex items-center gap-3 text-xs font-black text-emerald-600 border-2 border-emerald-500 px-8 py-4 rounded-2xl uppercase tracking-widest">
+                                            {news.is_demo ? 'Pratinjau Warta' : 'Publikasi Aktif'}
+                                        </div>
                                     </div>
                                 </div>
                             </motion.div>

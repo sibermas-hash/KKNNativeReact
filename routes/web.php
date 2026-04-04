@@ -7,6 +7,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\Dpl;
 use App\Http\Controllers\Student;
+use App\Http\Controllers\Admin\PublicContentController;
 use Illuminate\Support\Facades\Route;
 
 // Guest routes
@@ -102,6 +103,12 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         
         Route::resource('announcements', Admin\AnnouncementController::class)->except(['create', 'edit', 'show']);
         Route::resource('downloads', Admin\DownloadController::class);
+        Route::prefix('content')->name('content.')->group(function () {
+            Route::get('profile', [PublicContentController::class, 'profile'])->name('profile.index');
+            Route::post('profile', [PublicContentController::class, 'updateProfile'])->name('profile.update');
+            Route::get('schemes', [PublicContentController::class, 'schemes'])->name('schemes.index');
+            Route::post('schemes', [PublicContentController::class, 'updateSchemes'])->name('schemes.update');
+        });
 
         Route::get('registrations', [Admin\PesertaKknController::class , 'index'])->name('registrations.index');
         Route::get('registrations/documents/download', [Admin\PesertaKknController::class, 'downloadDocument'])->name('registrations.document.download');
@@ -113,6 +120,12 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::post('registrations/{registration}/make-leader', [Admin\PesertaKknController::class , 'makeLeader'])->name('admin.registrations.make-leader');
         Route::post('registrations/bulk-approve', [Admin\PesertaKknController::class , 'bulkApprove'])->name('registrations.bulk-approve');
         Route::post('registrations/bulk-reject', [Admin\PesertaKknController::class , 'bulkReject'])->name('registrations.bulk-reject');
+
+        // Eligibility Checker
+        Route::get('eligibility', [Admin\EligibilityController::class , 'index'])->name('eligibility.index');
+        Route::get('eligibility/export', [Admin\EligibilityController::class , 'export'])->name('eligibility.export');
+        Route::get('eligibility/{mahasiswa}/check', [Admin\EligibilityController::class , 'checkStudent'])->name('eligibility.check');
+        Route::post('eligibility/bulk-update-sks', [Admin\EligibilityController::class , 'bulkUpdateSks'])->name('eligibility.bulk-update-sks');
 
         // Settings
         Route::prefix('settings')->name('settings.')->group(function () {

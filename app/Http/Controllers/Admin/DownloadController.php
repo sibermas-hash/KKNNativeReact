@@ -27,7 +27,7 @@ class DownloadController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:10240',
-            'external_url' => 'nullable|url',
+            'external_url' => 'nullable|url|required_without:file',
         ]);
 
         $data = [
@@ -42,6 +42,7 @@ class DownloadController extends Controller
             $data['file_name'] = $file->getClientOriginalName();
             $data['file_path'] = Storage::url($path);
             $data['file_type'] = $file->getClientOriginalExtension();
+            $data['external_url'] = null;
         }
 
         Download::create($data);
@@ -55,11 +56,31 @@ class DownloadController extends Controller
         
         $request->validate([
             'title' => 'required|string|max:255',
+            'file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:10240',
             'external_url' => 'nullable|url',
             'is_active' => 'required|boolean',
         ]);
 
-        $download->update($request->only('title', 'external_url', 'is_active'));
+        $data = $request->only('title', 'external_url', 'is_active');
+
+        if ($request->hasFile('file')) {
+            $oldStoragePath = $download->file_path
+                ? str_replace('/storage/', 'public/', $download->file_path)
+                : null;
+
+            if ($oldStoragePath && Storage::exists($oldStoragePath)) {
+                Storage::delete($oldStoragePath);
+            }
+
+            $file = $request->file('file');
+            $path = $file->store('public/downloads');
+            $data['file_name'] = $file->getClientOriginalName();
+            $data['file_path'] = Storage::url($path);
+            $data['file_type'] = $file->getClientOriginalExtension();
+            $data['external_url'] = null;
+        }
+
+        $download->update($data);
 
         return back()->with('success', 'Data berhasil diperbarui.');
     }
@@ -67,7 +88,15 @@ class DownloadController extends Controller
     public function destroy(Download $download)
     {
         Gate::authorize('manage-settings');
-        
+
+        $storagePath = $download->file_path
+            ? str_replace('/storage/', 'public/', $download->file_path)
+            : null;
+
+        if ($storagePath && Storage::exists($storagePath)) {
+            Storage::delete($storagePath);
+        }
+
         $download->delete();
 
         return back()->with('success', 'File berhasil dihapus.');

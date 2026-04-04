@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { router, Head, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Pagination, Button } from '@/Components/UI';
+import { Pagination, Button } from '@/Components/ui';
 import type { PageProps, Download } from '@/types';
 import type { PaginationMeta } from '@/Components/UI/Pagination';
 import { route } from 'ziggy-js';
@@ -32,7 +32,7 @@ export default function DownloadIndex({ downloads }: Props) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingDownload, setEditingDownload] = useState<Download | null>(null);
 
-    const { data, setData, post, patch, processing, reset, errors } = useForm({
+    const { data, setData, post, processing, reset, errors } = useForm({
         title: '',
         file: null as File | null,
         external_url: '',
@@ -63,6 +63,7 @@ export default function DownloadIndex({ downloads }: Props) {
             router.post(route('admin.downloads.update', editingDownload.id), {
                 _method: 'patch',
                 title: data.title,
+                file: data.file,
                 external_url: data.external_url,
                 is_active: data.is_active ? 1 : 0,
             }, {
@@ -234,7 +235,7 @@ export default function DownloadIndex({ downloads }: Props) {
                                     <label className="text-[11px] font-black text-slate-400 tracking-[0.4em] uppercase ml-1">Judul_Dokumen</label>
                                     <input 
                                         value={data.title}
-                                        onChange={e => setData('judul', e.target.value)}
+                                        onChange={e => setData('title', e.target.value)}
                                         className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-8 py-5 text-sm font-black text-slate-900 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none uppercase italic"
                                         placeholder="PEDOMAN KKN 2026..."
                                     />
@@ -245,8 +246,8 @@ export default function DownloadIndex({ downloads }: Props) {
                                     <label className="text-[11px] font-black text-slate-400 tracking-[0.4em] uppercase ml-1">Unggah_File (Opsional)</label>
                                     <div className="relative">
                                         <input 
-                                            type="berkas"
-                                            onChange={e => setData('berkas', e.target.files?.[0] || null)}
+                                            type="file"
+                                            onChange={e => setData('file', e.target.files?.[0] || null)}
                                             className="w-full bg-white border-2 border-dashed border-slate-300 rounded-2xl px-6 py-4 text-[10px] font-black text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:bg-emerald-500 file:text-white hover:border-emerald-500 transition-colors"
                                         />
                                         <p className="mt-2 text-[9px] font-bold text-slate-400 ml-1">PDF, DOC, XLS (MAX 10MB)</p>

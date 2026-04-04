@@ -106,7 +106,7 @@ export default function ProfileShow() {
                             </button>
                             <input
                                 ref={avatarInputRef}
-                                type="berkas"
+                                type="file"
                                 accept="image/jpeg,image/png,image/webp"
                                 className="hidden"
                                 onChange={handleAvatarChange}
@@ -128,7 +128,7 @@ export default function ProfileShow() {
                                 <FormInput
                                     label="Nama lengkap"
                                     value={profileForm.data.name}
-                                    onChange={(event) => profileForm.setData('nama', event.target.value)}
+                                    onChange={(event) => profileForm.setData('name', event.target.value)}
                                     error={profileForm.errors.name}
                                 />
                                 <FormInput label="Email" value={user.email} disabled />
@@ -141,7 +141,7 @@ export default function ProfileShow() {
                                 <FormTextarea
                                     label="Alamat"
                                     value={profileForm.data.address}
-                                    onChange={(event) => profileForm.setData('alamat', event.target.value)}
+                                    onChange={(event) => profileForm.setData('address', event.target.value)}
                                     error={profileForm.errors.address}
                                 />
                                 <div className="flex justify-end">

@@ -21,7 +21,8 @@ import {
  SlidersHorizontal,
  GraduationCap,
  Globe,
- Download
+ Download,
+ Megaphone
 } from 'lucide-react';
 
 interface NavItem {
@@ -50,6 +51,7 @@ const adminNav: NavGroup[] = [
  { label: 'Lokasi KKN', href: '/admin/locations', icon: MapPin },
  { label: 'Dosen (DPL)', href: '/admin/dpl', icon: Users },
  { label: 'Mahasiswa', href: '/admin/mahasiswa', icon: GraduationCap },
+ { label: 'Cek Eligibility', href: '/admin/eligibility', icon: ShieldCheck },
  ],
  },
  {
@@ -87,8 +89,10 @@ const adminNav: NavGroup[] = [
  {
  title: 'Manajemen Konten',
  items: [
- { label: 'Arsip Pengumuman', href: '/admin/announcements', icon: Globe },
- { label: 'Profil LPPM (Tentang)', href: '/admin/settings/system', icon: SlidersHorizontal },
+ { label: 'Profil LPPM', href: '/admin/content/profile', icon: Globe },
+ { label: 'Skema KKN', href: '/admin/content/schemes', icon: FolderKanban },
+ { label: 'Warta', href: '/admin/announcements', icon: Megaphone },
+ { label: 'Repositori', href: '/admin/downloads', icon: Download },
  ],
  },
  {

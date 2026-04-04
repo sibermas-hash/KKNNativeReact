@@ -6,9 +6,10 @@ import { Download as DownloadIcon, ArrowRight, FileText, Globe } from 'lucide-re
 interface Download {
     id: number;
     title: string;
+    file_type?: string | null;
     file_path: string | null;
     external_url: string | null;
-    created_at: string;
+    is_demo?: boolean;
 }
 
 interface Props {
@@ -16,6 +17,8 @@ interface Props {
 }
 
 export default function Downloads({ downloads }: Props) {
+    const previewMode = downloads.some((item) => item.is_demo);
+
     return (
         <PublicLayout>
             <Head title="Repositori | LPPM UIN Prof. K.H. Saifuddin Zuhri" />
@@ -31,6 +34,11 @@ export default function Downloads({ downloads }: Props) {
                         <p className="text-lg text-slate-500 font-bold max-w-2xl mt-8 italic">
                             Unduh dokumen panduan, berkas administrasi, dan referensi akademik untuk kemudahan operasional KKN Anda.
                         </p>
+                        {previewMode && (
+                            <div className="mt-6 inline-flex rounded-full bg-amber-100 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-amber-700">
+                                Contoh Tampilan Saat Repositori Masih Kosong
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -52,15 +60,21 @@ export default function Downloads({ downloads }: Props) {
                                     <h4 className="text-3xl font-black text-slate-950 leading-tight uppercase italic tracking-tighter">
                                         {d.title}
                                     </h4>
-                                    <a 
-                                        href={d.external_url || d.file_path || '#'}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-4 px-10 py-5 bg-slate-950 text-white rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl group-hover:translate-x-2"
-                                    >
-                                        UNDUH SEKARANG
-                                        <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
-                                    </a>
+                                    {d.is_demo ? (
+                                        <div className="inline-flex items-center gap-4 px-10 py-5 bg-slate-200 text-slate-700 rounded-3xl font-black text-xs uppercase tracking-widest">
+                                            CONTOH DOKUMEN
+                                        </div>
+                                    ) : (
+                                        <a 
+                                            href={d.external_url || d.file_path || '#'}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-4 px-10 py-5 bg-slate-950 text-white rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl group-hover:translate-x-2"
+                                        >
+                                            UNDUH SEKARANG
+                                            <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+                                        </a>
+                                    )}
                                 </div>
                             </motion.div>
                         ))}

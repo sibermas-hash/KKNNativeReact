@@ -117,6 +117,9 @@ class StudentSyncService
                     'batch_year' => $data['batch_year'] ?? date('Y'),
                     'gender' => $data['gender'] ?? 'L',
                     'birth_date' => $data['birth_date'] ?? null,
+                    'sks_completed' => $data['sks_completed'] ?? $data['sks'] ?? 0,
+                    'gpa' => $data['gpa'] ?? $data['ipk'] ?? null,
+                    'is_bta_ppi_passed' => $data['is_bta_ppi_passed'] ?? $data['bta_ppi_passed'] ?? false,
                     'master_id' => $data['id'] ?? null,
                     'master_synced_at' => now(),
                 ]

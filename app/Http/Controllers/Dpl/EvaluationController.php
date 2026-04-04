@@ -8,12 +8,14 @@ use App\Models\KKN\ItemEvaluasi;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\KonfigurasiPenilaian;
 use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\PesertaKkn;
 use App\Services\GradingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Str;
 
@@ -67,6 +69,24 @@ class EvaluationController extends Controller
             ($articleScore * ($weights['article'] / 100)),
             2
         );
+    }
+
+    private function studentBelongsToGroup(int $studentId, int $groupId): bool
+    {
+        return PesertaKkn::query()
+            ->where('mahasiswa_id', $studentId)
+            ->where('kelompok_id', $groupId)
+            ->where('status', 'approved')
+            ->exists();
+    }
+
+    private function ensureStudentBelongsToGroup(int $studentId, int $groupId): void
+    {
+        if (!$this->studentBelongsToGroup($studentId, $groupId)) {
+            throw ValidationException::withMessages([
+                'student_id' => 'Mahasiswa tidak terdaftar pada kelompok yang dipilih.',
+            ]);
+        }
     }
 
     /**
@@ -245,10 +265,7 @@ class EvaluationController extends Controller
                 if ($item['status'] !== 'READY') continue;
 
                 // VULN-005 Fix: Verify student is actually a member of this group
-                $isMember = \App\Models\KKN\PesertaKkn::where('mahasiswa_id', $item['id'])
-                    ->where('kelompok_id', $groupId)
-                    ->whereIn('status', ['approved', 'pending'])
-                    ->exists();
+                $isMember = $this->studentBelongsToGroup((int) $item['id'], (int) $groupId);
                 
                 if (!$isMember) {
                     \Illuminate\Support\Facades\Log::warning("DPL attempted to grade non-member student", [
@@ -355,6 +372,8 @@ class EvaluationController extends Controller
         if (!$this->checkGradingPeriod($group)) {
             return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
         }
+
+        $this->ensureStudentBelongsToGroup((int) $validated['student_id'], (int) $validated['group_id']);
 
         $evaluation = Evaluasi::create([
             'mahasiswa_id' => $validated['student_id'],

@@ -243,6 +243,7 @@ export default function UserForm({ faculties, programs }: Props) {
  </section>
  </form>
  </div>
+        </div>
  </AppLayout>
  );
 }

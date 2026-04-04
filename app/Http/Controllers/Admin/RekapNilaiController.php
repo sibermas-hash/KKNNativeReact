@@ -318,4 +318,142 @@ class RekapNilaiController extends Controller
             'name' => $user->fakultas->nama,
         ];
     }
+
+    /**
+     * Bulk lock scores for a period
+     */
+    public function bulkLock(Request $request)
+    {
+        $this->authorize('bulkFinalize', NilaiKkn::class);
+
+        $validated = $request->validate([
+            'period_id' => 'required|exists:periode,id',
+            'faculty_id' => 'nullable|exists:fakultas,id',
+        ]);
+
+        $query = NilaiKkn::whereHas('kelompok', function ($q) use ($validated) {
+            $q->where('period_id', $validated['period_id']);
+        })->whereNull('admin_locked_at');
+
+        if ($validated['faculty_id']) {
+            $query->whereHas('mahasiswa', function ($q) use ($validated) {
+                $q->where('faculty_id', $validated['faculty_id']);
+            });
+        }
+
+        $count = $query->update(['admin_locked_at' => now(), 'admin_locked_by' => auth()->id()]);
+
+        return back()->with('success', "{$count} nilai berhasil dikunci.");
+    }
+
+    /**
+     * Bulk unlock scores for a period
+     */
+    public function bulkUnlock(Request $request)
+    {
+        $this->authorize('bulkFinalize', NilaiKkn::class);
+
+        $validated = $request->validate([
+            'period_id' => 'required|exists:periode,id',
+            'faculty_id' => 'nullable|exists:fakultas,id',
+        ]);
+
+        $query = NilaiKkn::whereHas('kelompok', function ($q) use ($validated) {
+            $q->where('period_id', $validated['period_id']);
+        })->whereNotNull('admin_locked_at');
+
+        if ($validated['faculty_id']) {
+            $query->whereHas('mahasiswa', function ($q) use ($validated) {
+                $q->where('faculty_id', $validated['faculty_id']);
+            });
+        }
+
+        $count = $query->update(['admin_locked_at' => null, 'admin_locked_by' => null]);
+
+        return back()->with('success', "{$count} nilai berhasil dibuka kuncinya.");
+    }
+
+    /**
+     * Export ledger/summary nilai ke Excel
+     */
+    public function exportLedger(Request $request)
+    {
+        $this->authorize('export', NilaiKkn::class);
+
+        $validated = $request->validate([
+            'period_id' => 'required|exists:periode,id',
+            'faculty_id' => 'nullable|exists:fakultas,id',
+        ]);
+
+        $rows = $this->repo->getRekapNilai($validated['period_id'], [
+            'faculty_id' => $validated['faculty_id'] ?? null,
+        ]);
+
+        $periode = Periode::find($validated['period_id']);
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Headers
+        $headers = ['No', 'NIM', 'Nama', 'Prodi', 'Fakultas', 'Kelompok', 'Nilai DPL', 'Nilai Mitra', 'Nilai Admin', 'Nilai Akhir', 'Grade', 'Status'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue("{$col}1", $header);
+            $col++;
+        }
+
+        // Styling header
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => '1E40AF']],
+        ];
+        $sheet->getStyle('A1:L1')->applyFromArray($headerStyle);
+
+        // Data
+        $row = 2;
+        foreach ($rows as $index => $r) {
+            $sheet->setCellValue("A{$row}", $index + 1);
+            $sheet->setCellValue("B{$row}", $r->nim ?? '-');
+            $sheet->setCellValue("C{$row}", $r->nama ?? '-');
+            $sheet->setCellValue("D{$row}", $r->prodi ?? '-');
+            $sheet->setCellValue("E{$row}", $r->fakultas ?? '-');
+            $sheet->setCellValue("F{$row}", $r->group_name ?? '-');
+            $sheet->setCellValue("G{$row}", $r->n_dpl ?? '-');
+            $sheet->setCellValue("H{$row}", $r->n_mitra ?? '-');
+            $sheet->setCellValue("I{$row}", $r->n_admin ?? '-');
+            $sheet->setCellValue("J{$row}", $r->nilai_akhir ?? '-');
+            $sheet->setCellValue("K{$row}", $r->huruf ?? '-');
+            $sheet->setCellValue("L{$row}", $r->is_finalized ? 'Final' : 'Draft');
+
+            // Color code grade
+            $gradeColor = match($r->huruf) {
+                'A' => '22C55E',
+                'A-' => '4ADE80',
+                'B+' => '60A5FA',
+                'B' => '3B82F6',
+                'B-' => '93C5FD',
+                'C+' => 'FBBF24',
+                'C' => 'F59E0B',
+                'D' => 'F97316',
+                'E' => 'EF4444',
+                default => '9CA3AF',
+            };
+            $sheet->getStyle("K{$row}")->getFont()->getColor()->setRGB($gradeColor);
+
+            $row++;
+        }
+
+        // Auto-size columns
+        foreach (range('A', 'L') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $facultyName = $validated['faculty_id'] ? Fakultas::find($validated['faculty_id'])?->nama : 'Semua';
+        $filename = "Ledger_Nilai_KKN_{$periode->name}_{$facultyName}_" . date('Y-m-d_His') . '.xlsx';
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $tempFile = tempnam(sys_get_temp_dir(), 'kkn_ledger_');
+        $writer->save($tempFile . '.xlsx');
+        $finalFile = $tempFile . '.xlsx';
+
+        return response()->download($finalFile, $filename)->deleteFileAfterSend(true);
+    }
 }

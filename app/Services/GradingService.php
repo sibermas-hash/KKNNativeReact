@@ -158,7 +158,7 @@ class GradingService
         $letterGrade = $this->determineLetterGrade($totalScore);
 
         // Update score record
-        $score->update([
+        NilaiKkn::where('id', $score->id)->update([
             'dpl_weighted_score' => round($aWeighted, 2),
             'village_weighted_score' => round($bWeighted, 2),
             'lppm_weighted_score' => round($cWeighted, 2),

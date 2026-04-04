@@ -42,6 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\HandleInertiaRequests::class,
             \App\Http\Middleware\HandleActivePeriod::class,
             \App\Http\Middleware\CspHeaders::class,
+            \App\Http\Middleware\EnsurePasswordChanged::class,
         ]);
 
         $middleware->alias([

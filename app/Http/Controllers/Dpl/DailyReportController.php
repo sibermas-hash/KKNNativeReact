@@ -22,6 +22,11 @@ class DailyReportController extends Controller
         return $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
     }
 
+    private function canReview(KegiatanKkn $dailyReport): bool
+    {
+        return in_array($dailyReport->status, ['submitted', 'revision'], true);
+    }
+
     public function index(Request $request): Response
     {
         $groupIds = $this->assignedGroupIds();
@@ -69,6 +74,7 @@ class DailyReportController extends Controller
                 'latitude' => $dailyReport->latitude,
                 'longitude' => $dailyReport->longitude,
                 'status' => $dailyReport->status,
+                'can_review' => $this->canReview($dailyReport),
                 'review_notes' => $dailyReport->review_notes,
                 'student' => [
                     'name' => $dailyReport->mahasiswa?->nama ?? 'Mahasiswa tidak ditemukan',
@@ -115,8 +121,13 @@ class DailyReportController extends Controller
         $groupIds = $this->assignedGroupIds();
         abort_if(!$groupIds->contains($dailyReport->kelompok_id), 403);
 
+        if (!$this->canReview($dailyReport)) {
+            return back()->with('error', 'Laporan harian ini sudah selesai ditinjau dan tidak dapat diproses ulang.');
+        }
+
         $dailyReport->update([
             'status' => 'approved',
+            'review_notes' => null,
             'reviewed_by' => auth()->id(),
             'reviewed_at' => now(),
         ]);
@@ -139,6 +150,10 @@ class DailyReportController extends Controller
     {
         $groupIds = $this->assignedGroupIds();
         abort_if(!$groupIds->contains($dailyReport->kelompok_id), 403);
+
+        if (!$this->canReview($dailyReport)) {
+            return back()->with('error', 'Laporan harian ini sudah selesai ditinjau dan tidak dapat diproses ulang.');
+        }
 
         $validated = $request->validate([
             'revision_notes' => ['required', 'string', 'max:1000'],

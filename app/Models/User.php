@@ -28,6 +28,8 @@ class User extends Authenticatable
         'name',
         'email',
         'is_active',
+        'must_change_password',
+        'password_changed_at',
         'password',
         'avatar',
         'phone',
@@ -55,6 +57,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'is_active' => 'boolean',
+            'must_change_password' => 'boolean',
+            'password_changed_at' => 'datetime',
             'faculty_id' => 'integer',
             'password' => 'hashed',
         ];

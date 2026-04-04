@@ -98,4 +98,9 @@ class Periode extends Model
     {
         return $this->hasMany(DplPeriod::class , 'period_id');
     }
+
+    public function dplKecamatanAssignments(): HasMany
+    {
+        return $this->hasMany(DplKecamatanAssignment::class, 'period_id');
+    }
 }

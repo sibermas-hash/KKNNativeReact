@@ -26,10 +26,16 @@ class StudentSyncController extends Controller
 
     public function sync(Request $request): RedirectResponse
     {
-        // For large datasets, this should ideally be queued, 
-        // but for now we'll run it synchronously as requested.
-        $results = $this->syncService->syncFromApi();
+        try {
+            // For large datasets, this should ideally be queued,
+            // but for now we'll run it synchronously as requested.
+            $results = $this->syncService->syncFromApi();
 
-        return back()->with('success', "Berhasil sinkronisasi {$results['synced']} mahasiswa. Terjadi {$results['errors']} kesalahan.");
+            return back()->with('success', "Berhasil sinkronisasi {$results['synced']} mahasiswa. Terjadi {$results['errors']} kesalahan.");
+        } catch (\Exception $e) {
+            return back()
+                ->with('error', "Gagal sinkronisasi: {$e->getMessage()}")
+                ->with('error_detail', $e->getMessage());
+        }
     }
 }

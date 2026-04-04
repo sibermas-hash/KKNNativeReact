@@ -168,7 +168,7 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                         className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
                     >
                         <BarChart3 className="w-4 h-4" />
-                        Tactical View
+                        Tampilan Taktis
                     </Link>
                 </div>
 
@@ -224,15 +224,15 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                 </div>
 
                 {/* Additional Stats */}
-                {(stats?.pending_registrations > 0 || stats?.total_work_programs > 0) && (
+                {(stats?.pending_registrations ?? 0) > 0 || (stats?.total_work_programs ?? 0) > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {stats?.pending_registrations > 0 && (
+                        {(stats?.pending_registrations ?? 0) > 0 && (
                             <div className="border border-amber-200 bg-amber-50 rounded-lg p-4">
                                 <div className="flex items-center gap-3">
                                     <AlertCircle className="w-5 h-5 text-amber-600" />
                                     <div>
                                         <p className="text-sm text-amber-700 font-medium">Pendaftaran Menunggu</p>
-                                        <p className="text-2xl font-bold text-amber-900">{stats.pending_registrations}</p>
+                                        <p className="text-2xl font-bold text-amber-900">{stats?.pending_registrations}</p>
                                         <Link href="/admin/registrations?filter=pending" className="text-xs text-amber-600 hover:text-amber-700 mt-1 inline-block">
                                             Lihat semua →
                                         </Link>
@@ -254,7 +254,7 @@ export default function AdminDashboard({ stats, sdg_distribution, recentRegistra
                             color="red"
                         />
                     </div>
-                )}
+                ) : null}
 
                 {/* SDG Distribution */}
                 {sdg_distribution && sdg_distribution.length > 0 && (

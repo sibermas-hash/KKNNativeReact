@@ -8,6 +8,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PesertaKknController extends Controller
 {
@@ -15,6 +18,7 @@ class PesertaKknController extends Controller
     {
         $registrations = PesertaKkn::with('mahasiswa.fakultas', 'mahasiswa.prodi', 'periode', 'kelompok')
             ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status))
+            ->when($request->input('period_id'), fn ($q, $periodId) => $q->where('period_id', $periodId))
             ->orderByDesc('created_at')
             ->paginate(15)
             ->withQueryString();
@@ -31,15 +35,144 @@ class PesertaKknController extends Controller
                     'faculty' => $reg->mahasiswa?->fakultas ? ['name' => $reg->mahasiswa->fakultas->nama] : null,
                     'program' => $reg->mahasiswa?->prodi ? ['name' => $reg->mahasiswa->prodi->nama] : null,
                 ],
-                'period' => $reg->periode ? ['name' => $reg->periode->name] : ['name' => '-'],
+                'period' => $reg->periode ? ['name' => $reg->periode->name, 'id' => $reg->periode->id] : ['name' => '-', 'id' => null],
                 'group' => $reg->kelompok ? ['name' => $reg->kelompok->nama_kelompok] : null,
             ];
         });
 
+        // Statistics
+        $stats = [
+            'total' => PesertaKkn::count(),
+            'pending' => PesertaKkn::where('status', 'pending')->count(),
+            'approved' => PesertaKkn::where('status', 'approved')->count(),
+            'rejected' => PesertaKkn::where('status', 'rejected')->count(),
+            'by_faculty' => PesertaKkn::with('mahasiswa.fakultas')
+                ->get()
+                ->groupBy('mahasiswa.faculty_id')
+                ->map(function ($group) {
+                    return [
+                        'faculty_name' => $group->first()->mahasiswa?->fakultas?->nama ?? 'Tidak Diketahui',
+                        'count' => $group->count(),
+                    ];
+                })
+                ->values()
+                ->sortByDesc('count')
+                ->values(),
+        ];
+
         return Inertia::render('Admin/Registrations/Index', [
             'registrations' => $registrations,
-            'filters' => $request->only('status'),
+            'filters' => $request->only('status', 'period_id'),
+            'stats' => $stats,
         ]);
+    }
+
+    /**
+     * Bulk approve registrations
+     */
+    public function bulkApprove(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['required', 'integer', 'exists:peserta_kkn,id'],
+        ]);
+
+        $count = PesertaKkn::whereIn('id', $validated['ids'])
+            ->where('status', 'pending')
+            ->update([
+                'status' => 'approved',
+                'approved_at' => now(),
+                'approved_by' => auth()->id(),
+            ]);
+
+        return redirect()->back()->with('success', "{$count} pendaftaran berhasil disetujui.");
+    }
+
+    /**
+     * Bulk reject registrations
+     */
+    public function bulkReject(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['required', 'integer', 'exists:peserta_kkn,id'],
+            'notes' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $count = PesertaKkn::whereIn('id', $validated['ids'])
+            ->where('status', 'pending')
+            ->update([
+                'status' => 'rejected',
+                'notes' => $validated['notes'],
+            ]);
+
+        return redirect()->back()->with('success', "{$count} pendaftaran ditolak.");
+    }
+
+    /**
+     * Export registrations to Excel
+     */
+    public function export(Request $request): BinaryFileResponse
+    {
+        $query = PesertaKkn::with('mahasiswa.fakultas', 'mahasiswa.prodi', 'periode', 'kelompok')
+            ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status));
+
+        $registrations = $query->orderByDesc('created_at')->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Header
+        $headers = ['No', 'NIM', 'Nama', 'Fakultas', 'Program Studi', 'Periode', 'Kelompok', 'Status', 'Tanggal Daftar'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue("{$col}1", $header);
+            $col++;
+        }
+
+        // Styling header
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => '2563EB']],
+        ];
+        $sheet->getStyle('A1:I1')->applyFromArray($headerStyle);
+
+        // Data
+        $row = 2;
+        foreach ($registrations as $index => $reg) {
+            $sheet->setCellValue("A{$row}", $index + 1);
+            $sheet->setCellValue("B{$row}", $reg->mahasiswa?->nim ?? '-');
+            $sheet->setCellValue("C{$row}", $reg->mahasiswa?->nama ?? '-');
+            $sheet->setCellValue("D{$row}", $reg->mahasiswa?->fakultas?->nama ?? '-');
+            $sheet->setCellValue("E{$row}", $reg->mahasiswa?->prodi?->nama ?? '-');
+            $sheet->setCellValue("F{$row}", $reg->periode?->name ?? '-');
+            $sheet->setCellValue("G{$row}", $reg->kelompok?->nama_kelompok ?? 'Belum ada');
+            $sheet->setCellValue("H{$row}", ucfirst($reg->status));
+            $sheet->setCellValue("I{$row}", $reg->created_at->format('d M Y H:i'));
+
+            // Color code status
+            $statusColor = [
+                'pending' => 'FFA500',
+                'approved' => '22C55E',
+                'rejected' => 'EF4444',
+            ][$reg->status] ?? '000000';
+
+            $sheet->getStyle("H{$row}")->getFont()->getColor()->setRGB($statusColor);
+            $row++;
+        }
+
+        // Auto-size columns
+        foreach (range('A', 'I') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $filename = 'data-pendaftaran-kkn-' . date('Y-m-d-His') . '.xlsx';
+        $writer = new Xlsx($spreadsheet);
+        $tempFile = tempnam(sys_get_temp_dir(), 'kkn_export_');
+        $writer->save($tempFile . '.xlsx');
+        $finalFile = $tempFile . '.xlsx';
+
+        return response()->download($finalFile, $filename)->deleteFileAfterSend(true);
     }
 
     public function show(PesertaKkn $registration): Response

@@ -8,6 +8,7 @@ interface ReportDetail {
  abstract?: string | null;
  file_name?: string | null;
  status: string;
+ can_review: boolean;
  submitted_at?: string | null;
  review_notes?: string | null;
  download_url: string;
@@ -42,6 +43,7 @@ export default function DplFinalReportsShow({ report }: Props) {
  const revisionForm = useForm({
  notes: report.review_notes ?? '',
  });
+ const canReview = report.can_review;
 
  return (
  <AppLayout title="Detail Laporan Akhir">
@@ -97,15 +99,17 @@ export default function DplFinalReportsShow({ report }: Props) {
  <div>
  <h2 className="text-lg font-semibold text-slate-900">Tinjauan DPL</h2>
  <p className="mt-1 text-sm text-slate-500">
- Setujui laporan akhir atau kembalikan dengan catatan revisi.
+ {canReview
+ ? 'Setujui laporan akhir atau kembalikan dengan catatan revisi.'
+ : 'Laporan ini sudah selesai ditinjau dan tidak dapat diproses ulang.'}
  </p>
  </div>
 
  <button
  type="button"
  onClick={() => approveForm.patch(`/dpl/final-reports/${report.id}/approve`)}
- disabled={approveForm.processing}
- className="w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+ disabled={!canReview || approveForm.processing}
+ className="w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
  >
  Setujui Laporan
  </button>
@@ -133,8 +137,8 @@ export default function DplFinalReportsShow({ report }: Props) {
  ) : null}
  <button
  type="submit"
- disabled={revisionForm.processing}
- className="w-full rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700 hover:bg-amber-100 disabled:opacity-60"
+ disabled={!canReview || revisionForm.processing}
+ className="w-full rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
  >
  Kirim Revisi
  </button>

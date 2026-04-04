@@ -23,6 +23,10 @@ Route::middleware(['guest', 'kkn.throttle'])->group(function () {
 
 // Home / Landing Page
 Route::get('/', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/profil', [\App\Http\Controllers\HomeController::class, 'about'])->name('public.about');
+Route::get('/skema-kkn', [\App\Http\Controllers\HomeController::class, 'schemes'])->name('public.schemes');
+Route::get('/warta', [\App\Http\Controllers\HomeController::class, 'announcements'])->name('public.announcements');
+Route::get('/repositori', [\App\Http\Controllers\HomeController::class, 'downloads'])->name('public.downloads');
 
 // Authenticated routes
 Route::middleware(['auth', 'kkn.throttle'])->group(function () {
@@ -57,6 +61,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
             ->only(['index', 'store', 'update', 'destroy'])
             ->parameters(['periods' => 'periode']);
         Route::post('periods/{periode}/duplicate', [Admin\PeriodeController::class , 'duplicate'])->name('periods.duplicate');
+        Route::get('periods/export', [Admin\PeriodeController::class, 'export'])->name('periods.export');
         Route::resource('faculties', Admin\FakultasController::class)
             ->only(['index', 'store', 'update', 'destroy'])
             ->parameters(['faculties' => 'fakultas']);
@@ -97,10 +102,13 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
 
         Route::get('registrations', [Admin\PesertaKknController::class , 'index'])->name('registrations.index');
         Route::get('registrations/{pesertaKkn}', [Admin\PesertaKknController::class , 'show'])->name('registrations.show');
+        Route::get('registrations/export', [Admin\PesertaKknController::class , 'export'])->name('registrations.export');
         Route::patch('registrations/{pesertaKkn}/approve', [Admin\PesertaKknController::class , 'approve'])->name('registrations.approve');
         Route::patch('registrations/{pesertaKkn}/reject', [Admin\PesertaKknController::class , 'reject'])->name('registrations.reject');
         Route::patch('registrations/{pesertaKkn}/assign-group', [Admin\PesertaKknController::class , 'assignGroup'])->name('registrations.assign-group');
         Route::post('registrations/{registration}/make-leader', [Admin\PesertaKknController::class , 'makeLeader'])->name('admin.registrations.make-leader');
+        Route::post('registrations/bulk-approve', [Admin\PesertaKknController::class , 'bulkApprove'])->name('registrations.bulk-approve');
+        Route::post('registrations/bulk-reject', [Admin\PesertaKknController::class , 'bulkReject'])->name('registrations.bulk-reject');
 
         // Settings
         Route::prefix('settings')->name('settings.')->group(function () {
@@ -117,6 +125,9 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::get('grading-settings', [Admin\KonfigurasiPenilaianController::class , 'index'])->name('grading-settings.index');
         Route::post('grading-settings', [Admin\KonfigurasiPenilaianController::class , 'update'])->name('grading-settings.update');
         Route::get('rekap-nilai/export', [Admin\RekapNilaiController::class , 'export'])->name('rekap-nilai.export');
+        Route::get('rekap-nilai/export/ledger', [Admin\RekapNilaiController::class , 'exportLedger'])->name('rekap-nilai.export-ledger');
+        Route::post('rekap-nilai/bulk-lock', [Admin\RekapNilaiController::class , 'bulkLock'])->name('rekap-nilai.bulk-lock');
+        Route::post('rekap-nilai/bulk-unlock', [Admin\RekapNilaiController::class , 'bulkUnlock'])->name('rekap-nilai.bulk-unlock');
         Route::get('rekap-nilai/bulk-certificates', [Admin\RekapNilaiController::class , 'bulkCertificates'])->name('rekap-nilai.bulk-certificates');
         Route::post('rekap-nilai/{score}/finalize', [Admin\RekapNilaiController::class , 'finalize'])->name('rekap-nilai.finalize');
         Route::post('rekap-nilai/finalize-mass', [Admin\RekapNilaiController::class , 'finalizeMass'])->name('rekap-nilai.finalize-mass');
@@ -138,7 +149,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         // Shared Activity Reports
         Route::get('reports', [App\Http\Controllers\ReportController::class , 'index'])->name('reports.index');
         Route::get('reports/daily', [Admin\KegiatanKknController::class , 'index'])->name('reports.daily.index');
-        Route::get('reports/daily/export-pdf', [Admin\KegiatanKknController::class , 'exportPdf'])->name('reports.daily.export-pdf');
+        Route::get('reports/daily/export-pdf/{studentId}', [App\Http\Controllers\ReportExportController::class , 'downloadStudentDailyReports'])->name('reports.daily.export-pdf');
         Route::get('reports/work-programs', [Admin\ProgramKerjaController::class , 'index'])->name('reports.work-programs.index');
         Route::get('reports/final', [Admin\LaporanAkhirController::class , 'index'])->name('reports.final.index');
 

@@ -274,6 +274,8 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
                     </div>
                 </div>
             </div>
+        </div>
+        </div>
         </AppLayout>
     );
 }

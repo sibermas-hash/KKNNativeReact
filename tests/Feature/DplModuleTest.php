@@ -28,6 +28,7 @@ class DplModuleTest extends TestCase
 
         Role::firstOrCreate(['name' => 'dpl', 'guard_name' => 'web']);
         Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web']);
     }
 
     private function createDplScenario(array $overrides = []): array
@@ -232,5 +233,77 @@ class DplModuleTest extends TestCase
         $this->assertSame(86.0, (float) $score->article_score);
         $this->assertNotNull($score->dpl_graded_at);
         $this->assertNull($score->village_graded_at);
+    }
+
+    public function test_dpl_cannot_manually_evaluate_student_outside_selected_group(): void
+    {
+        $context = $this->createDplScenario();
+        $outsider = Mahasiswa::factory()->create();
+        $outsider->user->assignRole('student');
+
+        $this->from(route('dpl.evaluations.index'))
+            ->actingAs($context['dplUser'])
+            ->post(route('dpl.evaluations.store'), [
+                'student_id' => $outsider->id,
+                'group_id' => $context['group']->id,
+                'evaluator_type' => 'dpl',
+                'notes' => 'Seharusnya ditolak.',
+                'items' => [
+                    ['criterion' => 'Laporan Akhir', 'score' => 88, 'weight' => 30],
+                    ['criterion' => 'Pelaksanaan Program', 'score' => 90, 'weight' => 40],
+                    ['criterion' => 'Artikel Ilmiah', 'score' => 86, 'weight' => 30],
+                ],
+            ])
+            ->assertRedirect(route('dpl.evaluations.index'))
+            ->assertSessionHasErrors('student_id');
+
+        $this->assertDatabaseMissing('evaluasi', [
+            'mahasiswa_id' => $outsider->id,
+            'kelompok_id' => $context['group']->id,
+        ], 'kkn');
+    }
+
+    public function test_dpl_cannot_re_review_approved_daily_report(): void
+    {
+        $context = $this->createDplScenario();
+
+        $this->actingAs($context['dplUser'])
+            ->patch(route('dpl.daily-reports.approve', $context['dailyReport']))
+            ->assertRedirect();
+
+        $this->from(route('dpl.daily-reports.show', $context['dailyReport']))
+            ->actingAs($context['dplUser'])
+            ->patch(route('dpl.daily-reports.revision', $context['dailyReport']), [
+                'revision_notes' => 'Tidak boleh berubah lagi.',
+            ])
+            ->assertRedirect(route('dpl.daily-reports.show', $context['dailyReport']))
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseHas('kegiatan_kkn', [
+            'id' => $context['dailyReport']->id,
+            'status' => 'approved',
+        ], 'kkn');
+    }
+
+    public function test_dpl_cannot_re_review_approved_final_report(): void
+    {
+        $context = $this->createDplScenario();
+
+        $this->actingAs($context['dplUser'])
+            ->patch(route('dpl.final-reports.approve', $context['finalReport']))
+            ->assertRedirect();
+
+        $this->from(route('dpl.final-reports.show', $context['finalReport']))
+            ->actingAs($context['dplUser'])
+            ->patch(route('dpl.final-reports.revision', $context['finalReport']), [
+                'notes' => 'Tidak boleh berubah lagi.',
+            ])
+            ->assertRedirect(route('dpl.final-reports.show', $context['finalReport']))
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseHas('laporan_akhir', [
+            'id' => $context['finalReport']->id,
+            'status' => 'approved',
+        ], 'kkn');
     }
 }

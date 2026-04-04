@@ -307,6 +307,8 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  processing={deleteForm.processing}
  confirmLabel="HAPUS_DATA"
  />
+        </div>
+        </div>
  </AppLayout>
  );
 }

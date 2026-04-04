@@ -21,6 +21,11 @@ class FinalReportController extends Controller
         return $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
     }
 
+    private function canReview(LaporanAkhir $report): bool
+    {
+        return in_array($report->status, ['submitted', 'revision'], true);
+    }
+
     public function index(Request $request): Response
     {
         $groupIds = $this->assignedGroupIds();
@@ -66,6 +71,7 @@ class FinalReportController extends Controller
                 'abstract' => $report->abstract,
                 'file_name' => $report->file_name,
                 'status' => $report->status,
+                'can_review' => $this->canReview($report),
                 'submitted_at' => optional($report->submitted_at)->format('d M Y H:i'),
                 'review_notes' => $report->review_notes,
                 'download_url' => route('dpl.final-reports.download', $report),
@@ -108,8 +114,13 @@ class FinalReportController extends Controller
         $groupIds = $this->assignedGroupIds();
         abort_if(!$groupIds->contains($report->kelompok_id), 403, 'Anda tidak memiliki akses ke laporan ini.');
 
+        if (!$this->canReview($report)) {
+            return back()->with('error', 'Laporan akhir ini sudah selesai ditinjau dan tidak dapat diproses ulang.');
+        }
+
         $report->update([
             'status' => 'approved',
+            'review_notes' => null,
             'reviewed_by' => auth()->id(),
             'reviewed_at' => now(),
         ]);
@@ -132,6 +143,10 @@ class FinalReportController extends Controller
     {
         $groupIds = $this->assignedGroupIds();
         abort_if(!$groupIds->contains($report->kelompok_id), 403, 'Anda tidak memiliki akses ke laporan ini.');
+
+        if (!$this->canReview($report)) {
+            return back()->with('error', 'Laporan akhir ini sudah selesai ditinjau dan tidak dapat diproses ulang.');
+        }
 
         $validated = $request->validate([
             'notes' => ['required', 'string', 'max:1000'],

@@ -45,6 +45,7 @@ class HandleInertiaRequests extends Middleware
                     'username' => $user->username,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'must_change_password' => $user->must_change_password,
                     'faculty' => $user->fakultas ? [
                         'id' => $user->fakultas->id,
                         'name' => $user->fakultas->nama,

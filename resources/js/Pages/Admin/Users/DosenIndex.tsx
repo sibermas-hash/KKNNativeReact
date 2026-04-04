@@ -235,6 +235,8 @@ export default function DosenIndex({ users, filters }: Props) {
  </div>
  </div>
  </div>
+        </div>
+        </div>
  </AppLayout>
  );
 }

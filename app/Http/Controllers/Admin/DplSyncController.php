@@ -2,17 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Helpers\PasswordHelper;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\Fakultas;
-use App\Models\User;
 use App\Services\MasterApiService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Response;
@@ -44,7 +40,7 @@ class DplSyncController extends Controller
         return Inertia::render('Admin/Dpl/Sync', [
             'availableDosen' => array_values($availableDosen),
             'filters' => $request->only('search'),
-            'title' => 'Sinkronisasi DPL dari API Master'
+            'title' => 'Sinkronisasi Master Dosen'
         ]);
     }
 
@@ -64,28 +60,7 @@ class DplSyncController extends Controller
 
         try {
             DB::transaction(function () use ($validated) {
-                // 1. Determine Password (DDMMYYYY from birth_date or fallback to NIP)
-                $password = PasswordHelper::fromBirthDate(
-                    $validated['birth_date'] ?? null,
-                    $validated['nip']
-                );
-
-                // 2. Create User
-                $user = User::firstOrCreate(
-                    ['username' => $validated['nip']],
-                    [
-                        'name' => $validated['name'],
-                        'email' => $validated['email'] ?? $validated['nip'] . '@kkn.uinsaizu.ac.id',
-                        'password' => Hash::make($password),
-                        'is_active' => true,
-                    ]
-                );
-
-                if (!$user->hasRole('dpl')) {
-                    $user->assignRole('dpl');
-                }
-
-                // 2. Create Dosen record
+                // Sinkronisasi master dosen lokal tanpa otomatis membuat akun login.
                 $facultyId = null;
                 if (!empty($validated['organization_id'])) {
                     $facultyId = Fakultas::where('master_id', $validated['organization_id'])->first()?->id;
@@ -99,7 +74,6 @@ class DplSyncController extends Controller
                 Dosen::updateOrCreate(
                     ['nip' => $validated['nip']],
                     [
-                        'user_id' => $user->id,
                         'nama' => $validated['name'],
                         'birth_date' => $validated['birth_date'],
                         'gender' => $validated['gender'],
@@ -110,7 +84,7 @@ class DplSyncController extends Controller
                 );
             });
 
-            return back()->with('success', "DPL {$validated['name']} berhasil ditambahkan dan akun telah dibuat.");
+            return back()->with('success', "Dosen {$validated['name']} berhasil disinkronkan ke master lokal. Akun DPL akan dibuat saat dosen diaktifkan pada periode.");
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('DPL sync failed', ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal melakukan sinkronisasi. Silakan coba lagi atau hubungi administrator.');

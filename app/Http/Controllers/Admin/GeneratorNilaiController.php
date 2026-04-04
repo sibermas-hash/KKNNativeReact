@@ -73,9 +73,7 @@ class GeneratorNilaiController extends Controller
         $groups = $query->orderBy('code')
             ->get()
             ->map(function (KelompokKkn $g) {
-                $addressParts = explode(',', $g->lokasi?->address ?? '');
                 $kelompokNum = preg_replace('/[^0-9]/', '', $g->code);
-                
                 $mainDpl = $g->dosen->where('pivot.role', 'Ketua')->first();
 
                 return [
@@ -84,8 +82,8 @@ class GeneratorNilaiController extends Controller
                     'code'       => $kelompokNum,
                     'name'       => "Kelompok " . $kelompokNum,
                     'desa'       => $g->lokasi?->village_name ?? '-',
-                    'kecamatan'  => trim($addressParts[0] ?? '-'),
-                    'kabupaten'  => trim($addressParts[1] ?? '-'),
+                    'kecamatan'  => $g->lokasi?->district_name ?? '-',
+                    'kabupaten'  => $g->lokasi?->regency_name ?? '-',
                     'dpl'        => $mainDpl?->user?->name ?? '-',
                 ];
             });
@@ -256,12 +254,11 @@ class GeneratorNilaiController extends Controller
         $mainDpl = $kelompokKkn->dosen->where('pivot.role', 'Ketua')->first();
 
         // === META DATA ===
-        $addressParts = explode(',', $kelompokKkn->lokasi?->address ?? '');
         $meta = [
             'KELOMPOK'  => preg_replace('/[^0-9]/', '', $kelompokKkn->code),
             'DESA'      => $kelompokKkn->lokasi?->village_name ?? '-',
-            'KECAMATAN' => trim($addressParts[0] ?? '-'),
-            'KABUPATEN' => trim($addressParts[1] ?? '-'),
+            'KECAMATAN' => $kelompokKkn->lokasi?->district_name ?? '-',
+            'KABUPATEN' => $kelompokKkn->lokasi?->regency_name ?? '-',
             'DPL'       => $mainDpl?->user?->name ?? '-',
         ];
 

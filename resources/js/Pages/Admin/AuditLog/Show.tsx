@@ -46,8 +46,8 @@ export default function AuditLogShow({ log }: Props) {
                             <ChevronLeft className="w-5 h-5" />
                         </Link>
                         <div>
-                            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Audit_Inspection: #{log.id.toString().padStart(6, '0')}</h1>
-                            <p className="text-sm text-slate-500 mt-1 uppercase tracking-widest font-black">Log_Manifest_Surveillance_Protocol</p>
+                            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Inspeksi Audit: #{log.id.toString().padStart(6, '0')}</h1>
+                            <p className="text-sm text-slate-500 mt-1 uppercase tracking-widest font-black">Protokol Manifest Surveilans Log</p>
                         </div>
                     </div>
                 </div>
@@ -67,7 +67,7 @@ export default function AuditLogShow({ log }: Props) {
                                     <div className="flex flex-col">
                                         <h2 className="text-lg font-bold text-slate-900 tracking-tight  mb-3">{log.description}</h2>
                                         <div className="flex items-center gap-4">
-                                            <span className="text-xs font-bold text-emerald-500 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded uppercase tracking-widest ">INTEGRITY_OK</span>
+                                            <span className="text-xs font-bold text-emerald-500 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded uppercase tracking-widest ">INTEGRITAS OKE</span>
                                             <div className="h-1 w-1 rounded-full bg-slate-200" />
                                             <div className="flex items-center gap-2">
                                                 <Clock className="w-3.5 h-3.5 text-slate-400" />
@@ -80,14 +80,14 @@ export default function AuditLogShow({ log }: Props) {
 
                             <div className="p-10 bg-slate-50/10 space-y-10 relative">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <ManifestItem label="CAUSER_ENTITY" value={log.causer?.name || 'SYSTEM_INTERNAL'} icon={User} color="primary" />
-                                    <ManifestItem label="SUBJECT_RESOURCE" value={log.subject_type?.split('\\').pop() || 'UNDEFINED_RESOURCE'} icon={Activity} color="emerald" />
+                                    <ManifestItem label="ENTITAS PENYEBAB" value={log.causer?.name || 'SISTEM INTERNAL'} icon={User} color="primary" />
+                                    <ManifestItem label="SUMBER SUBJEK" value={log.subject_type?.split('\\').pop() || 'SUMBER TIDAK TERDEFINISI'} icon={Activity} color="emerald" />
                                 </div>
 
                                 <div className="p-8 bg-slate-900 rounded-xl border border-slate-800 shadow-xl space-y-6">
                                     <div className="flex items-center gap-4 border-b border-slate-800 pb-4">
                                         <Terminal className="h-5 w-5 text-emerald-400" />
-                                        <h3 className="text-sm font-bold text-white uppercase tracking-widest ">Payload_Properties_Matrix</h3>
+                                        <h3 className="text-sm font-bold text-white uppercase tracking-widest ">Matriks Properti Data</h3>
                                     </div>
                                     <div className="overflow-x-auto">
                                         <pre className="text-sm text-emerald-500 font-bold p-6 bg-slate-950/50 rounded-xl border border-slate-800 shadow-inner ">
@@ -109,7 +109,7 @@ export default function AuditLogShow({ log }: Props) {
                                 <div className="h-10 w-10 flex items-center justify-center bg-emerald-50 rounded-xl border border-emerald-100 text-emerald-600 shadow-sm">
                                     <Database className="w-5 h-5 shadow-sm shadow-emerald-500/20" />
                                 </div>
-                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Metadata_Trace</h3>
+                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Pelacakan Metadata</h3>
                             </div>
                             <div className="space-y-6">
                                 <MetadataItem label="SUBJECT_ID" value={`#${log.subject_id?.toString().padStart(4, '0') || 'N/A'}`} color="emerald" />
@@ -125,7 +125,7 @@ export default function AuditLogShow({ log }: Props) {
                                     <Zap className="h-10 w-10 text-primary shadow-sm animate-pulse" />
                                 </div>
                                 <div>
-                                    <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-3 ">Security_Governance</h4>
+                                    <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-3 ">Tata Kelola Keamanan</h4>
                                     <p className="text-sm text-slate-500 font-medium italic italic uppercase">
                                         Seluruh rekaman audit bersifat permanen dan tidak dapat dimanipulasi secara operasional.
                                     </p>
@@ -135,6 +135,8 @@ export default function AuditLogShow({ log }: Props) {
                     </div>
                 </div>
             </div>
+        </div>
+        </div>
         </AppLayout>
     );
 }

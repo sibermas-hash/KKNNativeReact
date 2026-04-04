@@ -285,6 +285,7 @@ export default function AnnouncementIndex({ announcements }: Props) {
                     </motion.div>
                 </div>
             )}
+        </div>
         </AppLayout>
     );
 }

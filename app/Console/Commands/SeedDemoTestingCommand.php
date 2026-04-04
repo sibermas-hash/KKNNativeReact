@@ -183,60 +183,13 @@ class SeedDemoTestingCommand extends Command
 
         $this->seedGeneralReports($leaderA['user'], $groupA);
 
-        $this->seedDplEvaluation(
-            student: $leaderA,
-            group: $groupA,
-            evaluator: $dplA['user'],
-            reportScore: 88,
-            executionScore: 90,
-            articleScore: 86,
-            disciplineScore: 92,
-            attitudeScore: 94,
-            workshopScore: 100,
-            administrationScore: 95,
-            finalize: false,
-        );
-        $this->seedDplEvaluation(
-            student: $memberA,
-            group: $groupA,
-            evaluator: $dplA['user'],
-            reportScore: 84,
-            executionScore: 85,
-            articleScore: 83,
-            disciplineScore: 88,
-            attitudeScore: 90,
-            workshopScore: 100,
-            administrationScore: 92,
-            finalize: false,
-        );
-        $this->seedDplEvaluation(
-            student: $leaderB,
-            group: $groupB,
-            evaluator: $dplB['user'],
-            reportScore: 82,
-            executionScore: 84,
-            articleScore: 80,
-            disciplineScore: 86,
-            attitudeScore: 87,
-            workshopScore: 100,
-            administrationScore: 90,
-            finalize: false,
-        );
-        $archiveScore = $this->seedDplEvaluation(
-            student: $archiveLeader,
-            group: $archiveGroup,
-            evaluator: $dplA['user'],
-            reportScore: 90,
-            executionScore: 91,
-            articleScore: 89,
-            disciplineScore: 93,
-            attitudeScore: 94,
-            workshopScore: 100,
-            administrationScore: 96,
-            finalize: true,
-        );
-
-        $this->seedWorkshop([$leaderA['user'], $memberA['user'], $leaderB['user']]);
+        $this->seedWorkshop([
+            $leaderA['user'],
+            $memberA['user'],
+            $leaderB['user'],
+            $registrationStudent['user'],
+            $archiveLeader['user'],
+        ]);
         $this->seedAuditLogs($superadmin, $facultyAdmin, $dplA['user']);
 
         $this->outputSummary([
@@ -247,16 +200,8 @@ class SeedDemoTestingCommand extends Command
             'student_leader' => $leaderA['user'],
             'student_member' => $memberA['user'],
             'student_registration' => $registrationStudent['user'],
-            'student_other_faculty' => $leaderB['user'],
+            'student_leader_b' => $leaderB['user'],
             'student_archive' => $archiveLeader['user'],
-            'active_period' => $activePeriod,
-            'archive_period' => $archivePeriod,
-            'group_a' => $groupA,
-            'group_b' => $groupB,
-            'archive_group' => $archiveGroup,
-            'archive_score' => $archiveScore,
-            'current_final_report' => $currentFinalReport,
-            'archive_final_report' => $archiveFinalReport,
         ]);
 
         return self::SUCCESS;
@@ -931,20 +876,8 @@ PDF;
         foreach ($users as $user) {
             PesertaWorkshop::updateOrCreate(
                 ['workshop_id' => $workshop->id, 'user_id' => $user->id],
-                ['registered_at' => now()->subHours(6), 'attendance_status' => 'registered']
+                ['registered_at' => now()->subHours(6), 'attendance_status' => 'attended']
             );
-        }
-
-        $participants = PesertaWorkshop::where('workshop_id', $workshop->id)->get();
-        $alreadyProvisioned = $participants->count() === count($users)
-            && $participants->every(
-                fn (PesertaWorkshop $participant) => $participant->attendance_status === 'attended'
-                    && $participant->certificate_generated
-                    && !empty($participant->certificate_path)
-            );
-
-        if (!$alreadyProvisioned) {
-            $this->workshopService->bulkMarkAttendance($workshop->id, collect($users)->pluck('id')->all());
         }
 
         return $workshop;
@@ -992,7 +925,7 @@ PDF;
         );
     }
 
-    private function outputSummary(array $context): void
+    private function outputSummary(array $users): void
     {
         $this->newLine();
         $this->components->info('Dataset demo testing siap digunakan.');
@@ -1000,29 +933,15 @@ PDF;
         $this->table(
             ['Akun', 'Username', 'Password'],
             [
-                ['Superadmin', $context['superadmin']->username, 'Password#123'],
-                ['Admin Fakultas', $context['faculty_admin']->username, 'Password#123'],
-                ['DPL Utama', $context['dpl_primary']->username, 'Password#123'],
-                ['DPL Kedua', $context['dpl_secondary']->username, 'Password#123'],
-                ['Mahasiswa Ketua', $context['student_leader']->username, 'Password#123'],
-                ['Mahasiswa Anggota', $context['student_member']->username, 'Password#123'],
-                ['Mahasiswa Registrasi', $context['student_registration']->username, 'Password#123'],
-                ['Mahasiswa Fakultas B', $context['student_other_faculty']->username, 'Password#123'],
-                ['Mahasiswa Arsip', $context['student_archive']->username, 'Password#123'],
-            ]
-        );
-
-        $this->table(
-            ['Kategori', 'Nilai'],
-            [
-                ['Periode Aktif', $context['active_period']->name],
-                ['Periode Arsip', $context['archive_period']->name],
-                ['Kelompok Demo A', $context['group_a']->code],
-                ['Kelompok Demo B', $context['group_b']->code],
-                ['Kelompok Arsip', $context['archive_group']->code],
-                ['Laporan Akhir Aktif', $context['current_final_report']->status],
-                ['Laporan Akhir Arsip', $context['archive_final_report']->status],
-                ['Nilai Arsip Final', $context['archive_score']->letter_grade . ' / ' . $context['archive_score']->total_score],
+                ['Superadmin', $users['superadmin']->username, 'Password#123'],
+                ['Admin Fakultas', $users['faculty_admin']->username, 'Password#123'],
+                ['DPL Utama', $users['dpl_primary']->username, 'Password#123'],
+                ['DPL Kedua', $users['dpl_secondary']->username, 'Password#123'],
+                ['Mahasiswa Ketua', $users['student_leader']->username, 'Password#123'],
+                ['Mahasiswa Anggota', $users['student_member']->username, 'Password#123'],
+                ['Mahasiswa Registrasi', $users['student_registration']->username, 'Password#123'],
+                ['Mahasiswa Fakultas B', $users['student_leader_b']->username, 'Password#123'],
+                ['Mahasiswa Arsip', $users['student_archive']->username, 'Password#123'],
             ]
         );
     }

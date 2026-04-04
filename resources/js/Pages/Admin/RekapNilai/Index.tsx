@@ -66,8 +66,15 @@ export default function RekapNilaiIndex({ grades, stats, filters }: Props) {
 
     const handleBulkLock = () => {
         if (confirm('Apakah Anda yakin ingin mengunci seluruh nilai yang telah terinput pada periode ini?')) {
-            router.post(route('admin.rekap-nilai.bulk-lock'));
+            router.post(route('admin.rekap-nilai.bulk-lock'), { period_id: filters.period_id });
         }
+    };
+
+    const handleExportLedger = () => {
+        window.location.href = route('admin.rekap-nilai.export-ledger', { 
+            period_id: filters.period_id,
+            faculty_id: filters.faculty_id 
+        });
     };
 
     return (
@@ -112,7 +119,10 @@ export default function RekapNilaiIndex({ grades, stats, filters }: Props) {
                             <ShieldCheck className="w-4 h-4 text-emerald-400" />
                             Kunci Semua Nilai
                         </button>
-                        <button className="flex-1 xl:w-auto px-6 py-3.5 bg-white border border-slate-100 text-slate-900 rounded-xl font-bold text-xs shadow-sm shadow-slate-100/5 transition-all hover:bg-slate-50 flex items-center justify-center gap-3">
+                        <button
+                            onClick={handleExportLedger}
+                            className="flex-1 xl:w-auto px-6 py-3.5 bg-white border border-slate-100 text-slate-900 rounded-xl font-bold text-xs shadow-sm shadow-slate-100/5 transition-all hover:bg-slate-50 flex items-center justify-center gap-3"
+                        >
                             <Download className="w-4 h-4 text-emerald-600" />
                             Ekspor Ledger
                         </button>
@@ -233,6 +243,7 @@ export default function RekapNilaiIndex({ grades, stats, filters }: Props) {
                     </div>
                 </div>
             </div>
+        </div>
         </AppLayout>
     );
 }

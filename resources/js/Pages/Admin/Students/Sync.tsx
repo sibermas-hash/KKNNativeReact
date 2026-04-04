@@ -154,6 +154,7 @@ export default function StudentSync({ availableStudents, filters }: Props) {
                     </div>
                 </div>
             </div>
+        </div>
         </AppLayout>
     );
 }

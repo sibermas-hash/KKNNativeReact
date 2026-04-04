@@ -18,7 +18,16 @@ class ProfileController extends Controller
     public function show(): Response
     {
         return Inertia::render('Profile/Show', [
-            'user' => auth()->user()->only(['id', 'name', 'email', 'username', 'avatar', 'phone', 'address']),
+            'user' => auth()->user()->only([
+                'id',
+                'name',
+                'email',
+                'username',
+                'avatar',
+                'phone',
+                'address',
+                'must_change_password',
+            ]),
         ]);
     }
 
@@ -75,6 +84,8 @@ class ProfileController extends Controller
 
         $request->user()->update([
             'password' => Hash::make($validated['password']),
+            'must_change_password' => false,
+            'password_changed_at' => now(),
         ]);
 
         return redirect()->back()->with('success', 'Password berhasil diubah.');

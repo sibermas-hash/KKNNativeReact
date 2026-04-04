@@ -217,6 +217,10 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  </p>
  </div>
  </div>
+        </div>
+        </div>
+        </div>
+        </div>
  </AppLayout>
  );
 }

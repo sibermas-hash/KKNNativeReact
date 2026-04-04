@@ -17,6 +17,7 @@ interface ReportDetail {
  latitude?: number | null;
  longitude?: number | null;
  status: string;
+ can_review: boolean;
  review_notes?: string | null;
  student: {
  name: string;
@@ -42,7 +43,7 @@ export default function DplDailyReportShow({ report }: Props) {
  revision_notes: report.review_notes ?? '',
  });
 
- const canReview = report.status === 'submitted' || report.status === 'revision';
+ const canReview = report.can_review;
 
  return (
  <AppLayout title="Detail Laporan Harian">
@@ -128,6 +129,15 @@ export default function DplDailyReportShow({ report }: Props) {
  <section className="rounded-lg border border-slate-200 bg-white p-6">
  <h2 className="text-lg font-semibold text-slate-900">Tindakan DPL</h2>
  <div className="mt-4 space-y-4">
+ {canReview ? (
+ <p className="text-sm text-slate-500">
+ Laporan ini masih bisa disetujui atau dikembalikan untuk revisi.
+ </p>
+ ) : (
+ <p className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+ Laporan ini sudah selesai ditinjau dan tidak dapat diproses ulang.
+ </p>
+ )}
  <button
  type="button"
  disabled={!canReview || approveForm.processing}

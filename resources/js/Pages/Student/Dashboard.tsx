@@ -400,6 +400,8 @@ export default function StudentDashboard({ student, registration, dailyReportCou
  </p>
  </div>
  </div>
+        </div>
+        </div>
  </AppLayout>
  );
 }

@@ -301,6 +301,7 @@ export default function DownloadIndex({ downloads }: Props) {
                     </motion.div>
                 </div>
             )}
+        </div>
         </AppLayout>
     );
 }

@@ -239,6 +239,8 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  </div>
  </div>
  </div>
+        </div>
+        </div>
  </AppLayout>
  );
 }

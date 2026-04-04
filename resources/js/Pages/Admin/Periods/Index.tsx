@@ -1,19 +1,25 @@
 import { useEffect, useState } from 'react';
 import { router, useForm, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { ConfirmDialog, FormInput, FormSelect, Pagination } from '@/Components/ui';
+import { ConfirmDialog, FormInput, FormSelect, Pagination, Badge } from '@/Components/ui';
 import type { PageProps } from '@/types';
 import type { PaginationMeta } from '@/Components/UI/Pagination';
-import { 
- Plus, 
- Search, 
- Calendar, 
+import {
+ Plus,
+ Search,
+ Calendar,
  Edit2,
  Trash2,
  ShieldCheck,
  Info,
  Copy,
  Map,
+ Download,
+ AlertTriangle,
+ CheckCircle2,
+ Users,
+ Users2,
+ GraduationCap,
 } from "lucide-react";
 import { clsx } from 'clsx';
 
@@ -41,6 +47,9 @@ interface PeriodData {
  dpl_periods_count: number;
  can_delete: boolean;
  delete_blocker: string | null;
+ duration_days: number;
+ registration_duration_days: number;
+ capacity_percentage: number;
 }
 
 interface Props extends PageProps {
@@ -110,6 +119,10 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  setShowForm(true);
  }
 
+ function handleExport() {
+ window.location.href = '/admin/periods/export';
+ }
+
  function handleSubmit(e: React.FormEvent) {
  e.preventDefault();
  form.clearErrors();
@@ -149,19 +162,84 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  return (
  <AppLayout title="Protokol Siklus KKN">
  <Head title="Manajemen Periode KKN" />
- 
+
  <div className="space-y-6 pb-20">
+ {/* Header dengan Stats */}
+ <div className="space-y-6">
  <div className="flex items-center justify-between">
+ <div>
  <h1 className="text-xl font-semibold text-slate-900">Periode KKN</h1>
+ <p className="text-sm text-slate-500 mt-1">
+ Kelola siklus dan jadwal pelaksanaan KKN
+ </p>
+ </div>
+ <div className="flex gap-2">
+ <button
+ onClick={handleExport}
+ className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-700 transition-colors"
+ >
+ <Download className="w-4 h-4" />
+ Export Excel
+ </button>
  {!showForm && (
  <button
  onClick={openCreateForm}
- className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold"
+ className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
  >
  <Plus className="w-4 h-4" />
  Tambah Periode
  </button>
  )}
+ </div>
+ </div>
+
+ {/* Summary Cards */}
+ <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+ <div className="border border-slate-200 rounded-lg p-4 bg-gradient-to-br from-blue-50 to-white">
+ <div className="flex items-center gap-3">
+ <Calendar className="w-5 h-5 text-blue-600" />
+ <div>
+ <p className="text-xs text-slate-500">Total Periode</p>
+ <p className="text-2xl font-bold text-slate-900">{periods.meta?.total || 0}</p>
+ </div>
+ </div>
+ </div>
+ {periods.data.find(p => p.is_active) && (
+ <div className="border border-emerald-200 rounded-lg p-4 bg-gradient-to-br from-emerald-50 to-white">
+ <div className="flex items-center gap-3">
+ <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+ <div>
+ <p className="text-xs text-slate-500">Periode Aktif</p>
+ <p className="text-sm font-semibold text-emerald-900">
+ {periods.data.find(p => p.is_active)?.name}
+ </p>
+ </div>
+ </div>
+ </div>
+ )}
+ <div className="border border-slate-200 rounded-lg p-4">
+ <div className="flex items-center gap-3">
+ <Users className="w-5 h-5 text-slate-600" />
+ <div>
+ <p className="text-xs text-slate-500">Total Peserta</p>
+ <p className="text-2xl font-bold text-slate-900">
+ {periods.data.reduce((sum, p) => sum + p.participants_count, 0).toLocaleString()}
+ </p>
+ </div>
+ </div>
+ </div>
+ <div className="border border-slate-200 rounded-lg p-4">
+ <div className="flex items-center gap-3">
+ <Users2 className="w-5 h-5 text-slate-600" />
+ <div>
+ <p className="text-xs text-slate-500">Total Kelompok</p>
+ <p className="text-2xl font-bold text-slate-900">
+ {periods.data.reduce((sum, p) => sum + p.groups_count, 0).toLocaleString()}
+ </p>
+ </div>
+ </div>
+ </div>
+ </div>
  </div>
 
  {/* Entry Form */}
@@ -319,7 +397,8 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  <tr>
  <th className="px-8 py-5 text-left text-xs font-semibold text-slate-400">Siklus</th>
  <th className="px-8 py-5 text-center text-xs font-semibold text-slate-400">Akademik</th>
- <th className="px-8 py-5 text-center text-xs font-semibold text-slate-400">Slot</th>
+ <th className="px-8 py-5 text-center text-xs font-semibold text-slate-400">Durasi</th>
+ <th className="px-8 py-5 text-center text-xs font-semibold text-slate-400">Kapasitas</th>
  <th className="px-8 py-5 text-center text-xs font-semibold text-slate-400">Registrasi</th>
  <th className="px-8 py-5 text-center text-xs font-semibold text-slate-400">Status</th>
  <th className="px-8 py-5 text-right text-xs font-semibold text-slate-400 pr-12">Aksi</th>
@@ -328,7 +407,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  <tbody className="divide-y divide-slate-50/50">
  {periods.data.length === 0 ? (
  <tr>
- <td colSpan={6} className="px-8 py-24 text-center">
+ <td colSpan={7} className="px-8 py-24 text-center">
  <Info className="h-12 w-12 text-slate-100 mx-auto mb-4" />
  <p className="text-xs font-semibold text-slate-300">Belum ada data</p>
  </td>
@@ -353,16 +432,33 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  </span>
  </td>
  <td className="px-8 py-6 text-center">
- <div className="flex flex-col items-center">
- <span className="text-sm font-semibold text-slate-900">{period.kuota ?? '--'}</span>
- <span className="text-xs font-semibold text-emerald-500">Diambil: {period.participants_count}</span>
+ <div className="flex flex-col items-center gap-1">
+ <span className="text-xs font-semibold text-slate-700">{period.duration_days} hari</span>
+ <span className="text-[10px] text-slate-400">
+ {period.start_date ? new Date(period.start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '--'} - {period.end_date ? new Date(period.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '--'}
+ </span>
+ </div>
+ </td>
+ <td className="px-8 py-6 text-center">
+ <div className="flex flex-col items-center gap-1">
+ <span className="text-xs font-semibold text-slate-700">{period.participants_count} / {period.kuota || '∞'}</span>
+ <div className="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+ <div 
+ className="h-full bg-blue-500 transition-all"
+ style={{ width: `${Math.min(period.capacity_percentage, 100)}%` }}
+ />
+ </div>
+ <span className="text-[10px] text-slate-400">{period.capacity_percentage}%</span>
  </div>
  </td>
  <td className="px-8 py-6">
  <div className="flex flex-col items-center gap-1">
- <span className="text-xs font-semibold text-emerald-600">{period.registration_start}</span>
- <div className="h-0.5 w-8 bg-slate-100" />
- <span className="text-xs font-semibold text-slate-300">{period.registration_end}</span>
+ <span className="text-xs font-semibold text-slate-700">
+ {period.registration_duration_days} hari
+ </span>
+ <span className="text-[10px] text-slate-400">
+ {period.registration_start ? new Date(period.registration_start).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '--'} - {period.registration_end ? new Date(period.registration_end).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '--'}
+ </span>
  </div>
  </td>
  <td className="px-8 py-6 text-center">
@@ -438,6 +534,9 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  processing={deleteForm.processing}
  confirmLabel="Ya, hapus"
  />
+        </div>
+        </div>
+        </div>
  </AppLayout>
 
  );

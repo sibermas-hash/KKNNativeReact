@@ -15,7 +15,7 @@ interface Announcement {
 interface Props {
     announcements: {
         data: Announcement[];
-        links: any[];
+        links: unknown[];
     };
 }
 

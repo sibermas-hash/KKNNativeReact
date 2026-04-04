@@ -33,7 +33,7 @@ interface Group {
 interface Props {
     groups: {
         data: Group[];
-        meta: any;
+        meta: Record<string, unknown>;
     };
     filters: { search?: string };
 }

@@ -32,7 +32,7 @@ interface UserData {
 interface Props extends PageProps {
  users: {
  data: UserData[];
- links: any[];
+ links: unknown[];
  meta: PaginationMeta;
  };
  filters: { search?: string };

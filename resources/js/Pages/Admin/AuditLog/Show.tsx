@@ -13,6 +13,7 @@ import {
     Terminal,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { LucideIcon } from 'lucide-react';
 
 interface AuditLog {
     id: number;
@@ -22,12 +23,19 @@ interface AuditLog {
     causer_type: string | null;
     causer_id: number | null;
     causer?: { name: string; };
-    properties: any;
+    properties: Record<string, unknown>;
     created_at: string;
 }
 
 interface Props {
     log: AuditLog;
+}
+
+interface ManifestItemProps {
+    label: string;
+    value: string;
+    icon: LucideIcon;
+    color: 'primary' | 'emerald';
 }
 
 export default function AuditLogShow({ log }: Props) {
@@ -141,7 +149,7 @@ export default function AuditLogShow({ log }: Props) {
     );
 }
 
-function ManifestItem({ label, value, icon: Icon, color }: any) {
+function ManifestItem({ label, value, icon: Icon, color }: ManifestItemProps) {
     const colors: Record<string, string> = {
         primary: 'text-primary bg-primary/5 border-primary/10',
         emerald: 'text-emerald-500 bg-emerald-50 border-emerald-100'

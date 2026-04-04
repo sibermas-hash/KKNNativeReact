@@ -31,7 +31,7 @@ interface User {
 interface Props {
     users: {
         data: User[];
-        meta: any;
+        meta: Record<string, unknown>;
     };
     filters: { search?: string };
 }

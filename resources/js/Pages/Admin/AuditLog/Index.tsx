@@ -19,14 +19,14 @@ interface AuditLog {
     description: string;
     subject_type: string | null;
     causer?: { name: string; };
-    properties: any;
+    properties: Record<string, unknown>;
     created_at: string;
 }
 
 interface Props {
     logs: {
         data: AuditLog[];
-        meta: any;
+        meta: Record<string, unknown>;
     };
     filters: { search?: string };
 }

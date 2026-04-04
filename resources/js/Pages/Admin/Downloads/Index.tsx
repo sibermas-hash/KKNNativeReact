@@ -23,7 +23,7 @@ import dayjs from 'dayjs';
 interface Props extends PageProps {
     downloads: {
         data: Download[];
-        links: any[];
+        links: unknown[];
         meta: PaginationMeta;
     };
 }

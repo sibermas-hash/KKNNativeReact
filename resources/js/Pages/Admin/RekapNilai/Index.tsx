@@ -20,6 +20,7 @@ import {
     Zap,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { LucideIcon } from 'lucide-react';
 import { Pagination } from '@/Components/ui';
 
 interface StudentGrade {
@@ -35,7 +36,7 @@ interface StudentGrade {
 interface Props {
     grades: {
         data: StudentGrade[];
-        meta: any;
+        meta: Record<string, unknown>;
     };
     stats: {
         total_students: number;
@@ -47,6 +48,13 @@ interface Props {
         search?: string;
         group_id?: string;
     };
+}
+
+interface StatCardProps {
+    label: string;
+    value: number | string;
+    icon: LucideIcon;
+    color: 'emerald' | 'slate' | 'amber';
 }
 
 export default function RekapNilaiIndex({ grades, stats, filters }: Props) {
@@ -248,7 +256,7 @@ export default function RekapNilaiIndex({ grades, stats, filters }: Props) {
     );
 }
 
-function StatCard({ label, value, icon: Icon, color }: any) {
+function StatCard({ label, value, icon: Icon, color }: StatCardProps) {
     const colors: Record<string, string> = {
         emerald: 'text-emerald-600 bg-emerald-50 border-emerald-100',
         slate: 'text-slate-600 bg-slate-50 border-slate-100',

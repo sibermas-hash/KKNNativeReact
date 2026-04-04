@@ -21,7 +21,7 @@ import dayjs from 'dayjs';
 interface Props extends PageProps {
     announcements: {
         data: Announcement[];
-        links: any[];
+        links: unknown[];
         meta: PaginationMeta;
     };
 }

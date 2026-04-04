@@ -16,7 +16,7 @@ interface FacultyWithCount {
 interface Props extends PageProps {
     faculties: {
         data: FacultyWithCount[];
-        links: any[];
+        links: unknown[];
         meta: PaginationMeta;
     };
     filters: { search?: string };

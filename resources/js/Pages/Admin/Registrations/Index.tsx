@@ -44,7 +44,7 @@ interface FacultyStat {
 interface Props {
     registrations: {
         data: Registration[];
-        meta: any;
+        meta: Record<string, unknown>;
     };
     filters: {
         search?: string;

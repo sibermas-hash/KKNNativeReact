@@ -44,7 +44,7 @@ interface Group {
 interface Props {
     students: {
         data: Student[];
-        meta: any;
+        meta: Record<string, unknown>;
     };
     groups: Group[];
     filters: { search?: string };

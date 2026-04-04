@@ -289,7 +289,7 @@ function StatCard({ label, value, icon: Icon, color }: any) {
  <span className="text-[8px] font-semibold text-slate-300">PAYLOAD_REC</span>
  </div>
  </div>
- <div className={clsx('p-4 rounded-lg border transition-all group-hover:rotate-12 ', colors[color])}>
+ <div className={clsx('p-4 rounded-lg border transition-all ', colors[color])}>
  <Icon className="w-6 h-6" />
  </div>
  </div>

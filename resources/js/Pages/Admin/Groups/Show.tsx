@@ -84,7 +84,7 @@ export default function GroupShow({ group }: Props) {
 
  <div className="flex flex-wrap items-center gap-6 shrink-0 relative z-10">
  <div className="px-6 py-6 bg-white/10 rounded-lg border border-slate-200 flex items-center gap-8 min-w-[240px] group/token">
- <div className="p-4 bg-white rounded-lg text-primary group-hover/token:rotate-12 transition-transform">
+ <div className="p-4 bg-white rounded-lg text-primary transition-transform">
  <QrCode className="h-7 w-7" />
  </div>
  <div className="flex flex-col">
@@ -316,7 +316,7 @@ export default function GroupShow({ group }: Props) {
  </div>
  ) : (
  <div className="py-16 flex flex-col items-center justify-center border-3 border-dashed border-slate-200 rounded-lg bg-slate-50/50 group/dpl">
- <div className="p-6 bg-white rounded-lg mb-6 text-slate-100 group-hover/dpl:rotate-12 transition-transform">
+ <div className="p-6 bg-white rounded-lg mb-6 text-slate-100 transition-transform">
  <GraduationCap className="w-12 h-12" />
  </div>
  <p className="text-[12px] font-semibold text-slate-400 text-center px-6 opacity-50 leading-normal">Command_Center: Dosen pembimbing belum didelegasikan.</p>
@@ -373,7 +373,7 @@ function InfoItem({ icon: Icon, label, value, status }: { icon: any; label: stri
  <div className="group/item space-y-5">
  <div className="flex items-center gap-3.5">
  <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 group-hover/item:bg-primary/20 group-hover/item:border-primary/30">
- <Icon className="w-4 h-4 text-primary group-hover/item:rotate-12 transition-transform" />
+ <Icon className="w-4 h-4 text-primary transition-transform" />
  </div>
  <span className="text-[10px] font-semibold text-slate-300 group-hover/item:text-primary transition-colors">{label}</span>
  </div>

@@ -413,7 +413,7 @@ function StatCard({ title, value, unit, icon: Icon, color }: any) {
 
  return (
  <div className="bg-white border border-slate-100 rounded-lg p-8 hover:-transition-all group overflow-hidden relative">
- <div className="absolute top-0 right-0 p-6 opacity-[0.02] text-slate-900 transition-transform group-group-hover:rotate-12">
+ <div className="absolute top-0 right-0 p-6 opacity-[0.02] text-slate-900 transition-transform group-">
  <Icon className="h-24 w-24" />
  </div>
  

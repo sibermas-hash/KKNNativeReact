@@ -356,7 +356,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <button
  type="submit"
  disabled={processing}
- className="px-12 py-5 bg-primary text-whiterounded-lg text-xs font-semibold hover:scale-[1.02]disabled:opacity-50"
+ className="px-12 py-5 bg-primary text-whiterounded-lg text-xs font-semibolddisabled:opacity-50"
  >
  {processing
  ? 'MENYIMPAN...'
@@ -511,7 +511,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  {showAttendanceModal && (
  <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-slate-900/60">
  <div className="bg-white rounded-lg w-full max-w-xl p-12 border border-slate-200 relative zoom-in-95 overflow-hidden group/modal">
- <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none group-hover/modal:rotate-12 transition-transform">
+ <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none transition-transform">
  <BadgeCheck className="h-40 w-40" />
  </div>
 
@@ -519,7 +519,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <div className="p-4 rounded-lg bg-primary text-white
  <Zap className="h-8 w-8 stroke-[2.5px]" />
  </div>
- <button onClick={() => setShowAttendanceModal(false)} className="p-3 bg-slate-50 rounded-lg hover:bg-slate-100 text-slate-300 hover:text-rose-500hover:rotate-90">
+ <button onClick={() => setShowAttendanceModal(false)} className="p-3 bg-slate-50 rounded-lg hover:bg-slate-100 text-slate-300 hover:text-rose-500hover">
  <X className="h-7 w-7 stroke-[2.5px]" />
  </button>
  </div>
@@ -618,7 +618,7 @@ export default function WorkshopIndex({ workshops }: Props) {
  <button
  type="submit"
  disabled={participants.length === 0}
- className="flex-[2] py-5 bg-primary text-white text-xs font-semibold rounded-lg hover:scale-[1.03]disabled:opacity-50 disabled:"
+ className="flex-[2] py-5 bg-primary text-white text-xs font-semibold rounded-lgdisabled:opacity-50 disabled:"
  >
  SIMPAN PRESENSI
  </button>

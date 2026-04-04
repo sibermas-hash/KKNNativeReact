@@ -52,7 +52,7 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
  </div>
 
  <Link href="/student/daily-reports/create">
- <button className="h-16 px-6 rounded-lg bg-slate-900 text-white font-semibold text-xs flex items-center gap-4 grouphover:bg-black hover:scale-[1.02]">
+ <button className="h-16 px-6 rounded-lg bg-slate-900 text-white font-semibold text-xs flex items-center gap-4 grouphover:bg-black">
  <PlusCircle className="h-5.5 w-5.5 text-primary " />
  Buat Laporan Baru
  </button>
@@ -127,7 +127,7 @@ export default function StudentDailyReportsIndex({ reports }: Props) {
  key={r.id} 
  className="group bg-white rounded-lg border border-slate-200 p-10 hover:border-primary relative overflow-hidden flex flex-col md:flex-row md:items-center gap-6"
  >
- <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none group-hover:rotate-6 group-transition-transform">
+ <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none group-transition-transform">
  <Sparkles className="h-40 w-40" />
  </div>
  

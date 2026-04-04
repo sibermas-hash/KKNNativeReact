@@ -71,7 +71,7 @@ export default function StudentSync(_props: Props) {
 
  {/* Main Sync Interface */}
  <div className="bg-white rounded-lg border border-slate-100 overflow-hidden relative group min-h-[500px] flex items-center justify-center">
- <div className="absolute top-0 right-0 p-16 text-slate-900 opacity-[0.03] pointer-events-none  duration-1000">
+ <div className="absolute top-0 right-0 p-16 text-slate-900 opacity-[0.03] pointer-events-none ">
  <Database className="h-[40rem] w-[40rem]" />
  </div>
 
@@ -98,7 +98,7 @@ export default function StudentSync(_props: Props) {
  : "bg-slate-900 text-white hover:-translate-y-2 group/sync"
  )}
  >
- <RefreshCw className={clsx("w-6 h-6 text-primary transition-all duration-700", processing ? "animate-spin" : "group-hover/sync:rotate-180")} />
+ <RefreshCw className={clsx("w-6 h-6 text-primary transition-all", processing ? "animate-spin" : "")} />
  {processing ? 'COMMITTING_SYNC_STREAM...' : 'EXECUTE_MASTER_SYNC'}
  </button>
 
@@ -119,7 +119,7 @@ export default function StudentSync(_props: Props) {
  {/* Intelligence Modules */}
  <div className="grid md:grid-cols-2 gap-8">
  <div className="p-8 bg-white rounded-lg border border-slate-100 space-y-6 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-8 text-emerald-500 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform">
+ <div className="absolute top-0 right-0 p-8 text-emerald-500 opacity-[0.03] pointer-events-none transition-transform">
  <ShieldCheck className="h-32 w-32" />
  </div>
  <div className="flex items-center gap-4 relative z-10">
@@ -137,7 +137,7 @@ export default function StudentSync(_props: Props) {
  </div>
 
  <div className="p-8 bg-white rounded-lg border border-slate-100 space-y-8 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-8 text-primary opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform">
+ <div className="absolute top-0 right-0 p-8 text-primary opacity-[0.03] pointer-events-none transition-transform">
  <Lock className="h-32 w-32" />
  </div>
  <div className="flex items-center gap-4 relative z-10">

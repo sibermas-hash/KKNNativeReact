@@ -140,7 +140,7 @@ export default function LocationsIndex({ locations, filters, summary }: Props) {
  {/* Import Area */}
  <div className="xl:col-span-2">
  <form onSubmit={handleImport} className="bg-white p-6 border border-slate-100 rounded-lg space-y-6 relative overflow-hidden group">
- <div className="absolute -top-4 -right-4 p-8 text-emerald-500/5  duration-700">
+ <div className="absolute -top-4 -right-4 p-8 text-emerald-500/5 ">
  <UploadCloud className="h-32 w-32" />
  </div>
  

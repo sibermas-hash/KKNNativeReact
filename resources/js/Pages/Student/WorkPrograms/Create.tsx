@@ -232,7 +232,7 @@ export default function StudentWorkProgramCreate(_props: PageProps) {
  disabled={form.processing}
  className="h-20 px-16rounded-lg bg-slate-900 hover:bg-black text-white font-semibold text-xs w-full md:w-auto flex items-center justify-center gap-4 group/submit"
  >
- <PlusCircle className={clsx("h-6 w-6 text-primary", form.processing ? : "group-hover/submit:rotate-90")} />
+ <PlusCircle className={clsx("h-6 w-6 text-primary", form.processing ? : "")} />
  {form.processing ? 'Sedang Memproses...' : 'Luncurkan Program'}
  </button>
  </div>

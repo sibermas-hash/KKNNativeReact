@@ -423,7 +423,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  <div className="bg-white rounded-lg w-full max-w-5xl border border-slate-200 overflow-hidden zoom-in-95 group/modal relative">
  {/* Modal Header Section */}
  <div className="px-12 py-6 border-b border-slate-200 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 bg-slate-50/50 relative overflow-hidden">
- <div className="absolute top-0 right-0 p-14 text-slate-900 pointer-events-none group-hover/modal:rotate-12 group-hover/modal:transition-transform">
+ <div className="absolute top-0 right-0 p-14 text-slate-900 pointer-events-none group-hover/modal:transition-transform">
  <Calculator className="h-64 w-64" />
  </div>
  
@@ -456,7 +456,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  </div>
  </div>
  </div>
- <button onClick={() => setSelectedStudent(null)} className="absolute -top-4 -right-4 h-12 w-12 bg-white text-slate-400 hover:text-rose-500 rounded-lg flex items-center justify-center border border-slate-200 hover:rotate-90active:">
+ <button onClick={() => setSelectedStudent(null)} className="absolute -top-4 -right-4 h-12 w-12 bg-white text-slate-400 hover:text-rose-500 rounded-lg flex items-center justify-center border border-slate-200 hoveractive:">
  <X className="h-6 w-6" />
  </button>
  </div>
@@ -513,7 +513,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  <div className="flex justify-end pt-12 border-t border-slate-200 gap-6">
  <button type="button" onClick={() => setSelectedStudent(null)} className="px-6 py-5 bg-white border border-slate-200 text-slate-400 text-xs font-semibold rounded-lg hover:bg-slate-50hover:text-slate-600">MENUNDA_SESI</button>
  <button type="submit" disabled={dplForm.processing} className="px-12 py-5 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800hover:-flex items-center gap-4 group/submit">
- <Save className="h-4.5 w-4.5 text-primary group-hover/submit:rotate-12 transition-transform" />
+ <Save className="h-4.5 w-4.5 text-primary transition-transform" />
  COMMIT_NILAI_DPL
  </button>
  </div>
@@ -545,7 +545,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  <div className="flex justify-end pt-12 border-t border-slate-200 gap-6 max-w-4xl mx-auto w-full">
  <button type="button" onClick={() => setSelectedStudent(null)} className="px-6 py-5 bg-white border border-slate-200 text-slate-400 text-xs font-semibold rounded-lg hover:bg-slate-50hover:text-slate-600">MENUNDA_SESI</button>
  <button type="submit" disabled={villageForm.processing} className="px-12 py-5 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800hover:-flex items-center gap-4 group/submit">
- <Save className="h-4.5 w-4.5 text-primary group-hover/submit:rotate-12 transition-transform" />
+ <Save className="h-4.5 w-4.5 text-primary transition-transform" />
  COMMIT_NILAI_SEKTOR
  </button>
  </div>
@@ -577,7 +577,7 @@ export default function GradingIndex({ summary, groups, selectedGroupId, error }
  <div className="flex justify-end pt-12 border-t border-slate-200 gap-6 max-w-4xl mx-auto w-full">
  <button type="button" onClick={() => setSelectedStudent(null)} className="px-6 py-5 bg-white border border-slate-200 text-slate-400 text-xs font-semibold rounded-lg hover:bg-slate-50hover:text-slate-600">MENUNDA_SESI</button>
  <button type="submit" disabled={adminForm.processing} className="px-12 py-5 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800hover:-flex items-center gap-4 group/submit">
- <Save className="h-4.5 w-4.5 text-primary group-hover/submit:rotate-12 transition-transform" />
+ <Save className="h-4.5 w-4.5 text-primary transition-transform" />
  COMMIT_NILAI_ADMIN
  </button>
  </div>

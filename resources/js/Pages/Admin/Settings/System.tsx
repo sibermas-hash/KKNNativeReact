@@ -94,7 +94,7 @@ export default function SystemSettings({ settings }: Props) {
 
  <div className="flex flex-wrap items-center gap-5 shrink-0 relative z-10">
  <div className="bg-white/10 p-6 rounded-lg border border-slate-200 flex items-center gap-6 min-w-[200px] group/stattransition-transform">
- <div className="p-3 bg-white rounded-lg text-primary group-hover/stat:rotate-6">
+ <div className="p-3 bg-white rounded-lg text-primary ">
  <Server className="h-6 w-6" />
  </div>
  <div>

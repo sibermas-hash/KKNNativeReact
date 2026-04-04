@@ -74,7 +74,7 @@ export default function AuditLogShow({ log }: { log: any }) {
 
  {/* Main Hero Summary Card */}
  <div className="bg-white rounded-lg border border-slate-100 overflow-hidden relative group">
- <div className="absolute top-0 right-0 p-16 text-slate-900 opacity-[0.02] pointer-events-none  duration-1000">
+ <div className="absolute top-0 right-0 p-16 text-slate-900 opacity-[0.02] pointer-events-none ">
  <Activity className="h-[30rem] w-[30rem]" />
  </div>
  
@@ -135,7 +135,7 @@ export default function AuditLogShow({ log }: { log: any }) {
  {/* Technical Specification */}
  <div className="lg:col-span-1 space-y-8">
  <section className="bg-white rounded-lg p-8 border border-slate-100 relative overflow-hidden group/spec">
- <div className="absolute -bottom-6 -left-6 text-slate-900 opacity-[0.02] pointer-events-none group-hover:scale-110 transition-transform">
+ <div className="absolute -bottom-6 -left-6 text-slate-900 opacity-[0.02] pointer-events-none transition-transform">
  <Terminal className="h-48 w-48" />
  </div>
  
@@ -169,7 +169,7 @@ export default function AuditLogShow({ log }: { log: any }) {
  </section>
 
  <div className="bg-slate-900 rounded-lg p-8 text-white relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-10 opacity-10 text-primary  duration-1000">
+ <div className="absolute top-0 right-0 p-10 opacity-10 text-primary ">
  <ShieldCheck className="w-64 h-64" />
  </div>
  <div className="relative z-10 flex flex-col items-center text-center space-y-6">
@@ -188,7 +188,7 @@ export default function AuditLogShow({ log }: { log: any }) {
 
  {/* Mutation Inspector */}
  <div className="lg:col-span-2 bg-white rounded-lg p-8 border border-slate-100 group relative overflow-hidden">
- <div className="absolute -top-10 -right-10 text-slate-900 opacity-[0.02] pointer-events-none transition-transform group-hover:-rotate-12 duration-1000">
+ <div className="absolute -top-10 -right-10 text-slate-900 opacity-[0.02] pointer-events-none transition-transform group-hover:-rotate-12">
  <Cpu className="h-96 w-96" />
  </div>
 
@@ -237,7 +237,7 @@ function AttributeItem({ label, title, subtitle, icon: Icon }: any) {
  <Icon className="w-3.5 h-3.5 text-primary " />
  <span className="text-[9px] font-semibold text-slate-400 leading-none">{label}</span>
  </div>
- <div className="pl-6 border-l-2 border-slate-100 group-hover/attr:border-primary transition-all duration-500">
+ <div className="pl-6 border-l-2 border-slate-100 group-hover/attr:border-primary transition-all">
  <p className="text-slate-900 font-semibold text-xl mb-1 truncate">{title}</p>
  <p className="text-[10px] font-semibold text-slate-400 opacity-50 leading-none">{subtitle}</p>
  </div>

@@ -217,7 +217,7 @@ export default function CertificateSettings({ configs }: Props) {
  </>
  ) : (
  <>
- <Save className="h-6 w-6 group-group-hover:rotate-6stroke-[2.5px]" />
+ <Save className="h-6 w-6 group-stroke-[2.5px]" />
  Implementasikan_Perubahan
  </>
  )}

@@ -67,7 +67,7 @@ export default function DplGroupShow({ group }: Props) {
  </div>
 
  <div className="relative z-10 flex shrink-0">
- <div className="h-28 w-28rounded-lg bg-primary text-white flex items-center justify-center text-4xl font-extraboldgroup-hover:rotate-6 group-">
+ <div className="h-28 w-28rounded-lg bg-primary text-white flex items-center justify-center text-4xl font-extraboldgroup-">
  {group.code.charAt(0)}
  </div>
  </div>

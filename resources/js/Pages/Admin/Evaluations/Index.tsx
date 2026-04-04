@@ -124,7 +124,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  </div>
  </td>
  <td className="px-6 py-3">
- <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-lg bg-primary/5 border border-primary/10 group-hover/row:rotate-1 group-hover/row:">
+ <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-lg bg-primary/5 border border-primary/10 group-hover/row:">
  <Users className="h-4 w-4 text-primary/40" />
  <span className="text-[11px] font-semibold text-primary pt-0.5">
  {ev.group_name}
@@ -150,7 +150,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
  </span>
  </td>
  <td className="px-6 py-3 text-center">
- <div className="inline-flex items-center justify-center w-16 h-16rounded-lg bg-slate-50 border border-slate-200 group-hover/row:border-primary/30 group-hover/row:bg-whitegroup-hover/row:rotate-6 group-hover/row:group-hover/row: group-hover/row:/10">
+ <div className="inline-flex items-center justify-center w-16 h-16rounded-lg bg-slate-50 border border-slate-200 group-hover/row:border-primary/30 group-hover/row:bg-whitegroup-hover/row:group-hover/row: group-hover/row:/10">
  <span className={clsx(
  "text-xl font-semibold transition-colors",
  ev.grade === 'A' || ev.grade === 'A-' ? 'text-emerald-500' : 'text-slate-900'

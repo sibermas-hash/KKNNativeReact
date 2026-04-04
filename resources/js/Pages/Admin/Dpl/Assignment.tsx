@@ -230,7 +230,7 @@ export default function DplAssignment({ assignments, allDosen, allPeriods }: Pro
  <div className="w-full bg-slate-50 border border-slate-100 rounded-full h-1.5 overflow-hidden p-0.5">
  <div
  className={clsx(
- "h-full rounded-full transition-all duration-700",
+ "h-full rounded-full transition-all",
  (a.kelompok_count / a.max_groups) >= 0.8 ? 'bg-rose-500' : 'bg-primary'
  )}
  style={{ width: `${Math.min((a.kelompok_count / a.max_groups) * 100, 100)}%` }}
@@ -337,11 +337,11 @@ export default function DplAssignment({ assignments, allDosen, allPeriods }: Pro
  </div>
  <button 
  onClick={() => setShowModal(false)} 
- className="h-10 w-10 flex items-center justify-center bg-white border border-slate-200 text-slate-300 hover:text-rose-500 rounded-lg hover:rotate-90 transition-all z-10"
+ className="h-10 w-10 flex items-center justify-center bg-white border border-slate-200 text-slate-300 hover:text-rose-500 rounded-lg hover transition-all z-10"
  >
  <X className="h-5 w-5" />
  </button>
- <Briefcase className="absolute right-[-20px] bottom-[-20px] h-32 w-32 text-slate-100/50 -rotate-12 pointer-events-none" />
+ <Briefcase className="absolute right-[-20px] bottom-[-20px] h-32 w-32 text-slate-100/50 pointer-events-none" />
  </div>
 
  <form onSubmit={handleAssign} className="p-10 space-y-10">

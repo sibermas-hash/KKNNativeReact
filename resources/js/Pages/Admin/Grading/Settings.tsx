@@ -108,7 +108,7 @@ export default function GradingSettings({ sections }: Props) {
 
  <div className="flex items-center gap-4">
  <div className={clsx(
- "px-4 py-2 rounded-lg border flex items-center gap-4 transition-all duration-500",
+ "px-4 py-2 rounded-lg border flex items-center gap-4 transition-all",
  invalidSections.length === 0 ? "bg-emerald-50 border-emerald-100" : "bg-rose-50 border-rose-100"
  )}>
  <div className="flex items-center gap-3">
@@ -203,7 +203,7 @@ export default function GradingSettings({ sections }: Props) {
  </div>
 
  {!isValid && (
- <div className="p-6 bg-rose-50 border border-rose-100 rounded-lg flex items-center gap-4 fade-in slide-in-from-top-4 duration-300">
+ <div className="p-6 bg-rose-50 border border-rose-100 rounded-lg flex items-center gap-4 fade-in slide-in-from-top-4">
  <AlertTriangle className="h-5 w-5 text-rose-500 shrink-0" />
  <p className="text-[10px] font-semibold text-rose-600 leading-none">
  SYSTEM_ERROR: Aggregation mismatch. Total must equal exactly 100% for deployment.
@@ -254,7 +254,7 @@ export default function GradingSettings({ sections }: Props) {
  </p>
 
  {recentlySuccessful && (
- <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-600 text-[10px] font-semibold fade-in zoom-in duration-300">
+ <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-600 text-[10px] font-semibold fade-in zoom-in">
  SUCCESS: ALGORITHM_CALIBRATED
  </div>
  )}

@@ -257,7 +257,7 @@ export default function StudentTransfer({ students, targetPeriods }: Props) {
  onClick={() => openTransfer(s)}
  className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white hover:bg-primary transition-all rounded-lg text-[9px] font-semibold group/btn"
  >
- <RefreshCw className="w-3.5 h-3.5 text-primary group-hover/btn:rotate-180 " />
+ <RefreshCw className="w-3.5 h-3.5 text-primary " />
  EXECUTE_TRANSFER
  </button>
  ) : (
@@ -323,8 +323,8 @@ export default function StudentTransfer({ students, targetPeriods }: Props) {
 
  {/* Transfer Modal - V3 Premium */}
  {showModal && (
- <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm fade-in duration-300">
- <div className="bg-white rounded-lg w-full max-w-2xl border border-slate-100 overflow-hidden zoom-in-95 duration-300">
+ <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm fade-in">
+ <div className="bg-white rounded-lg w-full max-w-2xl border border-slate-100 overflow-hidden zoom-in-95">
  <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/50 relative">
  <div className="flex items-center gap-4 relative z-10">
  <div className="p-3 bg-slate-900 rounded-lg text-primary">
@@ -337,11 +337,11 @@ export default function StudentTransfer({ students, targetPeriods }: Props) {
  </div>
  <button 
  onClick={() => setShowModal(false)} 
- className="h-10 w-10 flex items-center justify-center bg-white border border-slate-200 text-slate-300 hover:text-rose-500 rounded-lg hover:rotate-90 transition-all z-10"
+ className="h-10 w-10 flex items-center justify-center bg-white border border-slate-200 text-slate-300 hover:text-rose-500 rounded-lg hover transition-all z-10"
  >
  <X className="h-5 w-5" />
  </button>
- <ArrowLeftRight className="absolute right-[-20px] bottom-[-20px] h-32 w-32 text-slate-100/50 -rotate-12 pointer-events-none" />
+ <ArrowLeftRight className="absolute right-[-20px] bottom-[-20px] h-32 w-32 text-slate-100/50 pointer-events-none" />
  </div>
 
  <form onSubmit={handleTransfer} className="p-10 space-y-8">

@@ -487,7 +487,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  "w-full h-24 rounded-lg text-xl font-semibold group",
  processing || periods.length === 0 || !data.period_id || !requirementsMet
  ? "bg-slate-50 text-slate-300 cursor-not-allowed"
- : "bg-slate-900 text-white hover:bg-black hover:scale-[1.01]
+ : "bg-slate-900 text-white hover:bg-black
  )}
  >
  <div className="flex items-center justify-center gap-4">

@@ -100,7 +100,7 @@ export default function MahasiswaIndex({ users, filters }: Props) {
  </div>
  </div>
  <Link href="/admin/mahasiswa/sync" className="flex items-center gap-2 text-primary hover:text-primary-dark transition-colors group">
- <RefreshCw className="w-3.5 h-3.5  duration-500" />
+ <RefreshCw className="w-3.5 h-3.5 " />
  <span className="text-[10px] font-semibold">SYNC_SIAKAD</span>
  </Link>
  </div>

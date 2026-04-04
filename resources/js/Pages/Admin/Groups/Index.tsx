@@ -175,7 +175,7 @@ export default function GroupsIndex({ groups, periods, locations, lecturers }: P
  </div>
 
  {showForm && (
- <div className="bg-white border border-slate-100 rounded-lg overflow-hidden mb-12 fade-in zoom-in-95 duration-300">
+ <div className="bg-white border border-slate-100 rounded-lg overflow-hidden mb-12 fade-in zoom-in-95">
  <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
  <div className="flex items-center gap-4">
  <div className="p-3 bg-primary rounded-lg text-white">
@@ -188,7 +188,7 @@ export default function GroupsIndex({ groups, periods, locations, lecturers }: P
  </div>
  <button 
  onClick={() => setShowForm(false)} 
- className="h-10 w-10 flex items-center justify-center bg-white border border-slate-200 text-slate-300 hover:text-rose-500 rounded-lg hover:rotate-90 transition-all"
+ className="h-10 w-10 flex items-center justify-center bg-white border border-slate-200 text-slate-300 hover:text-rose-500 rounded-lg hover transition-all"
  >
  <X className="h-5 w-5" />
  </button>
@@ -415,7 +415,7 @@ export default function GroupsIndex({ groups, periods, locations, lecturers }: P
  <div className="w-full bg-slate-50 rounded-lg h-2 overflow-hidden flex p-0.5 border border-slate-200/50">
  <div
  className={clsx(
- "h-full rounded-sm transition-all duration-700",
+ "h-full rounded-sm transition-all",
  g.status === 'active' ? 'bg-primary shadow-[0_0_8px_rgba(16,168,83,0.3)]' : 'bg-slate-300'
  )}
  style={{ width: `${Math.min((g.registrations_count / g.capacity) * 100, 100)}%` }}

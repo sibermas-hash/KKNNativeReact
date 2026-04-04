@@ -128,7 +128,7 @@ export default function DplEvaluationsPage({ groups, evaluations }: Props) {
  onClick={() => setShowForm(true)}
  className="h-12 px-6 rounded-lg bg-primary hover:bg-primary-dark flex items-center gap-3 group/btnactive:"
  >
- <PlusIcon className="h-4 w-4 group-hover/btn:rotate-90 transition-transform" />
+ <PlusIcon className="h-4 w-4 transition-transform" />
  <span className="text-[9px] font-semibold text-white">Input Nilai Manual</span>
  </Button>
  )}

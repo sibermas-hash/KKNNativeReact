@@ -82,7 +82,7 @@ export default function StudentEvaluationsIndex({ evaluations }: Props) {
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
  {evaluations.map((ev) => (
  <div key={ev.id} className="group bg-white rounded-lg border border-slate-200 overflow-hidden hover:border-primary relative">
- <div className="absolute top-0 right-0 p-10 text-slate-900 pointer-events-none group-hover:rotate-12 group-transition-transform">
+ <div className="absolute top-0 right-0 p-10 text-slate-900 pointer-events-none group-transition-transform">
  <Sparkles className="h-40 w-40" />
  </div>
  

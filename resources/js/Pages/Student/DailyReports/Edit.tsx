@@ -147,7 +147,7 @@ export default function StudentDailyReportEdit({ report }: Props) {
  disabled={form.processing}
  className="h-20 px-16 bg-slate-900 text-whiterounded-lg text-xs font-semibold hover:bg-blackactive:disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-5 group group/submit"
  >
- <RotateCcw className={clsx("w-6 h-6 text-primary", form.processing ? : "group-hover/submit:rotate-180")} />
+ <RotateCcw className={clsx("w-6 h-6 text-primary", form.processing ? : "")} />
  {form.processing ? 'Sedang Memproses...' : 'Kirim Ulang Laporan'}
  </button>
  </div>

@@ -196,7 +196,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
 
  {/* Entry Form */}
  {showForm && (
- <div className="bg-white p-6 border border-slate-100 rounded-lg space-y-8 fade-in slide-in-from-top-4 duration-500">
+ <div className="bg-white p-6 border border-slate-100 rounded-lg space-y-8 fade-in slide-in-from-top-4">
  <div className="flex items-center justify-between border-b border-slate-50 pb-6">
  <div className="flex items-center gap-4">
  <div className="p-3 bg-slate-50 rounded-lg text-primary border border-slate-100 ">
@@ -299,7 +299,7 @@ export default function PeriodsIndex({ periods, academicYears, filters }: Props)
  className="flex items-center gap-4 group transition-transform"
  >
  <div className={clsx(
- "w-12 h-6 rounded-full p-1 transition-all duration-300",
+ "w-12 h-6 rounded-full p-1 transition-all",
  form.data.is_active ? 'bg-primary' : 'bg-slate-200'
  )}>
  <div className={clsx(

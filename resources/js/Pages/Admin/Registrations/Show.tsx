@@ -139,7 +139,7 @@ export default function RegistrationShow({ registration }: Props) {
 
  {/* Documents & Assets - Tactical Grid */}
  <div className="bg-white rounded-lg border border-slate-200 p-12 relative group">
- <div className="absolute top-0 right-0 p-12 text-primary rotate-12 ">
+ <div className="absolute top-0 right-0 p-12 text-primary ">
  <FileSearch className="w-48 h-48" />
  </div>
 
@@ -239,7 +239,7 @@ export default function RegistrationShow({ registration }: Props) {
  disabled={approveForm.processing}
  className="w-full py-6 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-4 disabled:opacity-50 group/approve"
  >
- <CheckCircle2 className="w-6 h-6 text-primary group-hover/approve:rotate-12 transition-transform" />
+ <CheckCircle2 className="w-6 h-6 text-primary transition-transform" />
  SETUJUI_ENTITAS
  </button>
  <button

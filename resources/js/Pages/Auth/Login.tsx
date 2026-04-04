@@ -138,7 +138,7 @@ export default function Login() {
  <button 
  type="button" 
  onClick={refreshCaptcha}
- className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-transform active:rotate-180"
+ className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-transform active"
  title="Muat ulang captcha"
  >
  <RefreshCw size={14} />
@@ -174,7 +174,7 @@ export default function Login() {
  className="sr-only peer"
  />
  <div className="w-5 h-5 border-2 border-slate-200 rounded-md bg-white peer-checked:bg-primary peer-checked:border-primary" />
- <CheckCircle2 className="absolute inset-0 h-5 w-5 scale-75 text-white opacity-0 transition-all peer-checked:scale-100 peer-checked:opacity-100" />
+ <CheckCircle2 className="absolute inset-0 h-5 w-5 scale-75 text-white opacity-0 transition-all peer-checked peer-checked:opacity-100" />
  </div>
  <span className="text-sm text-slate-500 transition-colors group-hover:text-slate-700">Ingat Saya</span>
  </label>
@@ -192,7 +192,7 @@ export default function Login() {
  <RefreshCw className="h-5 w-5" />
  ) : (
  <>
- <ShieldCheck className="h-5 w-5 transition-transform group-hover:rotate-12" />
+ <ShieldCheck className="h-5 w-5 transition-transform " />
  <span>Verifikasi dan Masuk</span>
  </>
  )}

@@ -393,8 +393,8 @@ export default function RekapNilaiIndex({
 
  {/* Scale Inspection Modal */}
  {selectedStudent && (
- <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm fade-in duration-300">
- <div className="bg-white rounded-lg w-full max-w-2xl border border-slate-100 overflow-hidden zoom-in-95 duration-300">
+ <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm fade-in">
+ <div className="bg-white rounded-lg w-full max-w-2xl border border-slate-100 overflow-hidden zoom-in-95">
  <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/50 relative">
  <div className="flex items-center gap-4 relative z-10">
  <div className="p-3 bg-slate-900 rounded-lg text-primary">
@@ -407,11 +407,11 @@ export default function RekapNilaiIndex({
  </div>
  <button 
  onClick={() => setSelectedStudent(null)} 
- className="h-10 w-10 flex items-center justify-center bg-white border border-slate-200 text-slate-300 hover:text-rose-500 rounded-lg hover:rotate-90 transition-all z-10"
+ className="h-10 w-10 flex items-center justify-center bg-white border border-slate-200 text-slate-300 hover:text-rose-500 rounded-lg hover transition-all z-10"
  >
  <X className="h-5 w-5" />
  </button>
- <BarChart3 className="absolute right-[-20px] bottom-[-20px] h-32 w-32 text-slate-100/50 -rotate-12 pointer-events-none" />
+ <BarChart3 className="absolute right-[-20px] bottom-[-20px] h-32 w-32 text-slate-100/50 pointer-events-none" />
  </div>
 
  <div className="p-10 space-y-8">
@@ -494,7 +494,7 @@ function RekapStatCard({ label, value, icon: Icon, color }: any) {
  <p className="text-[9px] font-semibold text-slate-400 mb-1 group-hover:text-primary transition-colors">{label}</p>
  <p className={clsx('text-3xl font-semibold leading-none transition-transform', color)}>{value}</p>
  </div>
- <div className={clsx('p-4 rounded-lg border border-slate-50 transition-all group-hover:rotate-12 bg-slate-50/50', color)}>
+ <div className={clsx('p-4 rounded-lg border border-slate-50 transition-all bg-slate-50/50', color)}>
  <Icon className="w-6 h-6" />
  </div>
  </div>
@@ -520,13 +520,13 @@ function DetailMetric({ label, value, active }: any) {
  <div className="space-y-4 group text-center flex-1">
  <p className="text-[9px] font-semibold text-slate-400 group-hover:text-primary transition-colors">{label}</p>
  <div className={clsx(
- 'py-8 rounded-lg text-center border transition-all duration-500',
+ 'py-8 rounded-lg text-center border transition-all',
  active ? 'bg-white text-slate-900 border-slate-100 scale-105' : 'bg-slate-50 text-slate-200 border-slate-100 opacity-50'
  )}>
  <span className="text-3xl font-semibold leading-none">{value ?? '--'}</span>
  </div>
  <div className="flex justify-center transition-all group-hover:translate-y-1">
- <div className={clsx("h-1.5 w-1.5 rounded-full transition-all duration-500", active ? "bg-primary shadow-[0_0_8px_rgba(16,168,83,0.5)]" : "bg-slate-200")} />
+ <div className={clsx("h-1.5 w-1.5 rounded-full transition-all", active ? "bg-primary shadow-[0_0_8px_rgba(16,168,83,0.5)]" : "bg-slate-200")} />
  </div>
  </div>
  );

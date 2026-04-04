@@ -140,7 +140,7 @@ function MetricCard({ label, value, icon: Icon, color, unit, trend }: any) {
  return (
  <div className="bg-white rounded-lg p-10 border border-slate-200 hover:-group cursor-default">
  <div className="flex items-center gap-5 mb-8">
- <div className={clsx("p-5 rounded-lg group-hover:rotate-12", colorMap[color])}>
+ <div className={clsx("p-5 rounded-lg ", colorMap[color])}>
  <Icon className="w-7 h-7 stroke-[2.5px]" />
  </div>
  <div className="text-[10px] font-semibold text-slate-400 ">{label}</div>

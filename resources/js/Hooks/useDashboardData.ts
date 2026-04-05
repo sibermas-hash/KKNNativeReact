@@ -1,9 +1,11 @@
 import { usePage } from '@inertiajs/react';
-import { 
-    LayoutDashboard, 
-    Users2, 
-    FileText, 
-    Star, 
+import type { LucideIcon } from 'lucide-react';
+import type { PageProps } from '@/types';
+import {
+    LayoutDashboard,
+    Users2,
+    FileText,
+    Star,
     FileSpreadsheet,
     UserCircle,
     Settings,
@@ -15,18 +17,18 @@ export type UserRole = 'superadmin' | 'faculty_admin' | 'dpl' | 'mahasiswa';
 interface NavItem {
     label: string;
     href: string;
-    icon: any;
+    icon: LucideIcon;
     roles: UserRole[];
 }
 
 export const useDashboardData = () => {
-    const { auth } = usePage<any>().props;
-    const userRole = auth.user.role as UserRole;
+    const { auth } = usePage<PageProps>().props;
+    const userRole = auth.user?.role as UserRole | undefined;
 
     const getWelcomeMessage = () => {
         const hour = new Date().getHours();
         const greeting = hour < 12 ? 'Selamat Pagi' : hour < 18 ? 'Selamat Siang' : 'Selamat Malam';
-        return `${greeting}, ${auth.user.name}`;
+        return `${greeting}, ${auth.user?.name ?? 'User'}`;
     };
 
     const getDashboardConfig = () => {
@@ -69,6 +71,6 @@ export const useDashboardData = () => {
         role: userRole,
         welcomeMessage: getWelcomeMessage(),
         config: getDashboardConfig(),
-        isRegistrationLocked: !!auth.user.student_registration_locked,
+        isRegistrationLocked: !!auth.user?.student_registration_locked,
     };
 };

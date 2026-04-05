@@ -35,11 +35,11 @@ export default function StudentSync({ availableStudents, filters }: Props) {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        router.get(route('admin.students.sync'), { search }, { preserveState: true });
+        router.get(route('admin.mahasiswa.sinkron'), { search }, { preserveState: true });
     };
 
     const handleSync = (student: AvailableStudent) => {
-        router.post(route('admin.students.sync.store'), {
+        router.post(route('admin.mahasiswa.sinkron.store'), {
             master_id: student.id,
             nim: student.nim,
             name: student.name,
@@ -65,7 +65,7 @@ export default function StudentSync({ availableStudents, filters }: Props) {
                     <div className="relative group flex-1 w-full max-w-2xl">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
                         <input
-                            type="cari"
+                            type="search"
                             placeholder="Cari Identitas (NIM / Nama)..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -93,14 +93,14 @@ export default function StudentSync({ availableStudents, filters }: Props) {
                                     <tr key={student.nim} className="group/row hover:bg-slate-50 transition-colors">
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-6">
-                                                <div className="h-12 w-12 rounded-xl bg-slate-900 border border-slate-800 text-primary text-base font-black flex items-center justify-center italic shadow-lg group-hover/row:scale-110 transition-transform">
+                                                <div className="h-12 w-12 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 text-base font-black flex items-center justify-center italic shadow-sm group-hover/row:scale-110 transition-transform">
                                                     {student.name.charAt(0)}
                                                 </div>
                                                 <div className="flex flex-col min-w-0">
-                                                    <span className="text-sm font-bold text-slate-900 uppercase tracking-tighter truncate max-w-[450px] group-hover/row:text-emerald-600 transition-colors  mb-1.5">{student.name}</span>
+                                                    <span className="text-sm font-bold text-emerald-900 uppercase tracking-tighter truncate max-w-[450px] group-hover/row:text-emerald-600 transition-colors  mb-1.5">{student.name}</span>
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">NIM: {student.nim}</span>
-                                                        <span className="text-xs font-bold text-slate-300 lowercase">[{student.email || 'NO_MAIL_CHANNEL'}]</span>
+                                                         <span className="text-xs font-bold text-slate-300 lowercase">[{student.email || 'TANPA_SALURAN_SUREL'}]</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -112,7 +112,7 @@ export default function StudentSync({ availableStudents, filters }: Props) {
                                                 className="group/btn h-12 px-8 bg-white border border-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl text-xs font-black uppercase italic tracking-widest transition-all shadow-sm active:scale-95 disabled:opacity-20 flex items-center justify-center gap-3 ml-auto"
                                             >
                                                 <UserPlus className="w-4 h-4 text-emerald-400 group-hover/btn:text-white transition-colors" />
-                                                Ingest_Data
+                                                 Impor_Data
                                             </button>
                                         </td>
                                     </tr>
@@ -120,8 +120,8 @@ export default function StudentSync({ availableStudents, filters }: Props) {
                                 {availableStudents.length === 0 && (
                                     <tr>
                                         <td colSpan={2} className="px-8 py-32 text-center italic font-bold">
-                                            <CloudDownload className="h-12 w-12 text-slate-900 mx-auto mb-4" />
-                                            <span className="text-xs uppercase tracking-[0.4em]">NO_RECORDS_DETECTED</span>
+                                             <CloudDownload className="h-12 w-12 text-slate-200 mx-auto mb-4" />
+                                             <span className="text-xs uppercase tracking-[0.4em]">DATA_TIDAK_TERDETEKSI</span>
                                         </td>
                                     </tr>
                                 )}
@@ -131,24 +131,24 @@ export default function StudentSync({ availableStudents, filters }: Props) {
                 </div>
 
                 {/* Footer Info Section */}
-                <div className="p-8 bg-slate-900 rounded-xl border border-slate-800 text-white relative overflow-hidden group shadow-xl">
+                <div className="p-8 bg-emerald-50 rounded-xl border border-emerald-100 text-slate-900 relative overflow-hidden group shadow-sm">
                     <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
 
                     <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-8 text-center xl:text-left">
                         <div className="space-y-4">
                             <div className="flex items-center gap-4 justify-center xl:justify-start">
-                                <div className="p-2.5 bg-primary/10 rounded-xl border border-primary/20 shadow-sm">
-                                    <ShieldCheck className="h-6 w-6 text-primary" />
+                                <div className="p-2.5 bg-emerald-600 rounded-xl border border-emerald-500 shadow-lg shadow-emerald-600/20">
+                                    <ShieldCheck className="h-6 w-6 text-white" />
                                 </div>
-                                <h4 className="text-sm font-black text-white italic tracking-widest uppercase ">Identity_Acquisition_V3.2</h4>
+                                <h4 className="text-sm font-black text-emerald-900 italic tracking-widest uppercase ">Akuisisi_Identitas_V3.2</h4>
                             </div>
-                            <p className="text-sm text-slate-500 font-bold  max-w-4xl italic uppercase">
+                            <p className="text-sm text-slate-600 font-bold  max-w-4xl italic uppercase">
                                 Protokol Sinkronisasi: Data yang diinjeksi akan melewati validasi integritas repositori mahasiswa. Unit pendaftaran lokal akan otomatis terhubung dengan profil feeder.
                             </p>
                         </div>
                         <div className="flex gap-4 justify-center xl:justify-end">
-                            <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/10 text-slate-300 text-xs font-bold">
-                                SYNC_TUNNEL_SAFE
+                            <div className="px-4 py-2 bg-emerald-600 text-white rounded-lg shadow-lg shadow-emerald-600/20 text-xs font-bold">
+                                SALURAN_SINKRON_AMAN
                             </div>
                         </div>
                     </div>

@@ -12,15 +12,12 @@ use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Prodi;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class NilaiKknIdentityConsistencyTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -34,7 +31,7 @@ class NilaiKknIdentityConsistencyTest extends TestCase
         $group = KelompokKkn::factory()->create();
 
         $score = NilaiKkn::factory()->create([
-            'mahasiswa_id' => $studentUser->id,
+            'user_id' => $studentUser->id,
             'kelompok_id' => $group->id,
         ]);
 
@@ -75,7 +72,7 @@ class NilaiKknIdentityConsistencyTest extends TestCase
         ]);
 
         $score = NilaiKkn::create([
-            'mahasiswa_id' => $studentUser->id,
+            'user_id' => $studentUser->id,
             'kelompok_id' => $group->id,
             'final_report_score' => 88,
             'execution_score' => 86,
@@ -111,18 +108,17 @@ class NilaiKknIdentityConsistencyTest extends TestCase
             ->get(route('admin.rekap-nilai.index', ['period_id' => $period->id]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/RekapNilai/Index')
+                ->component('Admin/GradeReports/Index')
                 ->has('scores', 1)
-                ->where('scores.0.score_id', $score->id)
-                ->where('scores.0.nama', 'Mahasiswa Uji')
+                ->where('scores.0.id', $score->id)
+                ->where('scores.0.name', 'Mahasiswa Uji')
                 ->where('scores.0.nim', '240999')
             );
 
         $this->from(route('admin.rekap-nilai.index', ['period_id' => $period->id]))
             ->actingAs($superadmin)
-            ->post(route('admin.rekap-nilai.finalize', $score))
-            ->assertRedirect(route('admin.rekap-nilai.index', ['period_id' => $period->id]))
-            ->assertSessionHas('success');
+            ->patch(route('admin.rekap-nilai.finalisasi', $score))
+            ->assertRedirect(route('admin.rekap-nilai.index', ['period_id' => $period->id]));
 
         $this->assertDatabaseHas('nilai_kkn', [
             'id' => $score->id,

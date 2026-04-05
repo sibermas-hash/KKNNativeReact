@@ -41,6 +41,7 @@ class KknScoreRepository
             'fak.nama as fakultas',
             'prodi.nama as prodi',
             'g.code as kode_kelompok',
+            'g.nama_kelompok as group_name',
             'g.id as kelompok_id',
             'lok.village_name as desa',
             'dpl_u.name as nama_dpl',

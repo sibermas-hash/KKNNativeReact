@@ -3,7 +3,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Ringkasan Laporan Kelompok {{ $group->name }}</title>
+    <title>Ringkasan Laporan Kelompok {{ $group->nama_kelompok ?? $group->code }}</title>
     <style>
         body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; color: #1e293b; }
         .header { text-align: center; border-bottom: 3px solid #1e40af; padding-bottom: 10px; margin-bottom: 20px; }
@@ -21,13 +21,22 @@
 <body>
     <div class="header">
         <h1>UIN PROF. K.H. SAIFUDDIN ZUHRI PURWOKERTO</h1>
-        <h2>Ringkasan Laporan Harian Kelompok {{ $group->name }}</h2>
+        <h2>Ringkasan Laporan Harian Kelompok {{ $group->nama_kelompok ?? $group->code }}</h2>
     </div>
 
     <div class="info">
-        <p><strong>Lokasi:</strong> {{ $group->location->name ?? '-' }}</p>
-        <p><strong>DPL:</strong> {{ $group->lecturer->user->name ?? '-' }}</p>
-        <p><strong>Jumlah Anggota:</strong> {{ $group->registrations->count() }}</p>
+        @php
+            $lokasi = $group->lokasi;
+            $lokasiLabel = trim(implode(', ', array_filter([
+                $lokasi?->village_name,
+                $lokasi?->district_name,
+                $lokasi?->regency_name,
+            ])));
+            $dplName = $group->dpl?->user?->name ?? $group->ketua_dpl?->user?->name ?? '-';
+        @endphp
+        <p><strong>Lokasi:</strong> {{ $lokasiLabel !== '' ? $lokasiLabel : '-' }}</p>
+        <p><strong>DPL:</strong> {{ $dplName }}</p>
+        <p><strong>Jumlah Anggota:</strong> {{ $group->peserta->count() }}</p>
     </div>
 
     <table>
@@ -45,7 +54,7 @@
             <tr>
                 <td>{{ $loop->iteration }}</td>
                 <td>{{ $report->date ? \Carbon\Carbon::parse($report->date)->format('d/m/Y') : '-' }}</td>
-                <td>{{ $report->student->user->name ?? '-' }}</td>
+                <td>{{ $report->mahasiswa?->user?->name ?? '-' }}</td>
                 <td>{{ \Illuminate\Support\Str::limit($report->activity ?? '-', 80) }}</td>
                 <td>{{ strtoupper($report->status) }}</td>
             </tr>

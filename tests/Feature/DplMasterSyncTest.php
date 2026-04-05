@@ -6,7 +6,6 @@ use App\Models\KKN\Dosen;
 use App\Models\KKN\Fakultas;
 use App\Models\User;
 use App\Services\MasterApiService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Mockery;
 use Spatie\Permission\Models\Role;
@@ -14,8 +13,6 @@ use Tests\TestCase;
 
 class DplMasterSyncTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -53,11 +50,13 @@ class DplMasterSyncTest extends TestCase
         $admin = User::factory()->create();
         $admin->assignRole('superadmin');
 
-        $faculty = Fakultas::factory()->create();
+        $faculty = Fakultas::factory()->create([
+            'master_id' => 'FAC-001',
+        ]);
 
         $this->actingAs($admin)
             ->post(route('admin.dpl.sync.store'), [
-                'master_id' => 77,
+                'master_id' => '77',
                 'nip' => '198700010099',
                 'name' => 'Dosen Master Baru',
                 'organization_id' => $faculty->master_id,
@@ -69,7 +68,7 @@ class DplMasterSyncTest extends TestCase
         $this->assertDatabaseHas('dosen', [
             'nip' => '198700010099',
             'nama' => 'Dosen Master Baru',
-            'master_id' => 77,
+            'master_id' => '77',
             'faculty_id' => $faculty->id,
             'gender' => 'L',
         ], 'kkn');

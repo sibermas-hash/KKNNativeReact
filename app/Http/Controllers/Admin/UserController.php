@@ -35,7 +35,18 @@ class UserController extends Controller
             ->withQueryString();
 
         return Inertia::render('Admin/Users/Index', [
-            'users' => $users,
+            'users' => [
+                'data' => $users->items(),
+                'meta' => [
+                    'current_page' => $users->currentPage(),
+                    'last_page' => $users->lastPage(),
+                    'per_page' => $users->perPage(),
+                    'total' => $users->total(),
+                    'from' => $users->firstItem(),
+                    'to' => $users->lastItem(),
+                    'links' => $users->linkCollection()->toArray(),
+                ],
+            ],
             'filters' => $request->only('search', 'role'),
             'title' => 'Manajemen Semua Pengguna'
         ]);
@@ -58,7 +69,18 @@ class UserController extends Controller
             ->withQueryString();
 
         return Inertia::render('Admin/Users/DosenIndex', [
-            'users' => $users,
+            'users' => [
+                'data' => $users->items(),
+                'meta' => [
+                    'current_page' => $users->currentPage(),
+                    'last_page' => $users->lastPage(),
+                    'per_page' => $users->perPage(),
+                    'total' => $users->total(),
+                    'from' => $users->firstItem(),
+                    'to' => $users->lastItem(),
+                    'links' => $users->linkCollection()->toArray(),
+                ],
+            ],
             'filters' => $request->only('search'),
             'title' => 'Manajemen Data Dosen (DPL)'
         ]);
@@ -66,50 +88,165 @@ class UserController extends Controller
 
     public function mahasiswaIndex(Request $request): Response
     {
-        $users = User::role('student')
-            ->with(['mahasiswa.prodi.fakultas', 'mahasiswa.fakultas'])
-            ->when($request->input('search'), function ($q, $search) {
+        $filters = $request->only([
+            'search',
+            'faculty_id',
+            'program_id',
+            'batch_year',
+            'gender',
+            'bta_ppi',
+            'account_status',
+            'sync_status',
+        ]);
+
+        $studentsQuery = Mahasiswa::query()
+            ->with(['user:id,username,name,email,is_active,address', 'prodi.fakultas', 'fakultas'])
+            ->when($request->input('search'), function ($query, $search) {
                 $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
-                $q->where(function ($query) use ($s) {
-                    $query->where('name', 'like', "%{$s}%")
-                        ->orWhere('email', 'like', "%{$s}%")
-                        ->orWhereHas('mahasiswa', fn($sq) => $sq->where('nim', 'like', "%{$s}%"));
+                $query->where(function ($inner) use ($s) {
+                    $inner->where('nama', 'like', "%{$s}%")
+                        ->orWhere('nim', 'like', "%{$s}%")
+                        ->orWhere('nik', 'like', "%{$s}%")
+                        ->orWhere('mother_name', 'like', "%{$s}%")
+                        ->orWhereHas('user', function ($userQuery) use ($s) {
+                            $userQuery->where('username', 'like', "%{$s}%")
+                                ->orWhere('email', 'like', "%{$s}%")
+                                ->orWhere('name', 'like', "%{$s}%");
+                        })
+                        ->orWhereHas('user', function ($userQuery) use ($s) {
+                            $userQuery->where('address', 'like', "%{$s}%");
+                        })
+                        ->orWhereHas('prodi', fn ($programQuery) => $programQuery->where('nama', 'like', "%{$s}%"))
+                        ->orWhereHas('fakultas', fn ($facultyQuery) => $facultyQuery->where('nama', 'like', "%{$s}%"))
+                        ->orWhereHas('prodi.fakultas', fn ($facultyQuery) => $facultyQuery->where('nama', 'like', "%{$s}%"));
                 });
             })
-            ->orderBy('name')
+            ->when($request->filled('faculty_id'), function ($query) use ($request) {
+                $facultyId = (int) $request->input('faculty_id');
+
+                $query->where(function ($inner) use ($facultyId) {
+                    $inner->where('faculty_id', $facultyId)
+                        ->orWhereHas('prodi', fn ($programQuery) => $programQuery->where('faculty_id', $facultyId));
+                });
+            })
+            ->when($request->filled('program_id'), fn ($query) => $query->where('program_id', (int) $request->input('program_id')))
+            ->when($request->filled('batch_year'), fn ($query) => $query->where('batch_year', (int) $request->input('batch_year')))
+            ->when($request->filled('gender'), fn ($query) => $query->where('gender', $request->string('gender')->toString()))
+            ->when($request->filled('bta_ppi'), function ($query) use ($request) {
+                $query->where('is_bta_ppi_passed', $request->string('bta_ppi')->toString() === 'passed');
+            })
+            ->when($request->filled('account_status'), function ($query) use ($request) {
+                match ($request->string('account_status')->toString()) {
+                    'active' => $query->whereHas('user', fn ($userQuery) => $userQuery->where('is_active', true)),
+                    'locked' => $query->whereHas('user', fn ($userQuery) => $userQuery->where('is_active', false)),
+                    'no_account' => $query->whereDoesntHave('user'),
+                    default => null,
+                };
+            })
+            ->when($request->filled('sync_status'), function ($query) use ($request) {
+                match ($request->string('sync_status')->toString()) {
+                    'synced' => $query->whereNotNull('master_synced_at'),
+                    'unsynced' => $query->whereNull('master_synced_at'),
+                    default => null,
+                };
+            });
+
+        $statsQuery = clone $studentsQuery;
+
+        $students = $studentsQuery
+            ->orderByDesc('master_synced_at')
+            ->orderBy('nama')
             ->paginate(15)
             ->withQueryString();
 
-        // Map data to include academic fields
-        $users->through(function ($user) {
+        $students->through(function (Mahasiswa $mahasiswa) {
+            $faculty = $mahasiswa->fakultas ?? $mahasiswa->prodi?->fakultas;
+
             return [
-                'id' => $user->id,
-                'username' => $user->username,
-                'name' => $user->name,
-                'email' => $user->email,
-                'is_active' => $user->is_active,
-                'mahasiswa' => $user->mahasiswa ? [
-                    'nim' => $user->mahasiswa->nim,
-                    'sks_completed' => $user->mahasiswa->sks_completed,
-                    'gpa' => $user->mahasiswa->gpa,
-                    'is_bta_ppi_passed' => $user->mahasiswa->is_bta_ppi_passed,
-                    'prodi' => $user->mahasiswa->prodi ? [
-                        'nama' => $user->mahasiswa->prodi->nama,
-                        'fakultas' => $user->mahasiswa->prodi->fakultas ? [
-                            'nama' => $user->mahasiswa->prodi->fakultas->nama,
-                        ] : null,
-                    ] : null,
-                    'fakultas' => $user->mahasiswa->fakultas ? [
-                        'nama' => $user->mahasiswa->fakultas->nama,
-                    ] : null,
+                'id' => $mahasiswa->id,
+                'nim' => $mahasiswa->nim,
+                'nik' => $mahasiswa->nik,
+                'nama' => $mahasiswa->nama,
+                'mother_name' => $mahasiswa->mother_name,
+                'batch_year' => $mahasiswa->batch_year,
+                'gender' => $mahasiswa->gender,
+                'sks_completed' => $mahasiswa->sks_completed,
+                'gpa' => $mahasiswa->gpa,
+                'is_bta_ppi_passed' => $mahasiswa->is_bta_ppi_passed,
+                'master_id' => $mahasiswa->master_id,
+                'master_synced_at' => $mahasiswa->master_synced_at?->toIso8601String(),
+                'address' => $mahasiswa->user?->address,
+                'fakultas' => $faculty ? [
+                    'id' => $faculty->id,
+                    'nama' => $faculty->nama,
                 ] : null,
+                'prodi' => $mahasiswa->prodi ? [
+                    'id' => $mahasiswa->prodi->id,
+                    'nama' => $mahasiswa->prodi->nama,
+                ] : null,
+                'account' => $mahasiswa->user ? [
+                    'id' => $mahasiswa->user->id,
+                    'username' => $mahasiswa->user->username,
+                    'name' => $mahasiswa->user->name,
+                    'email' => $mahasiswa->user->email,
+                    'is_active' => $mahasiswa->user->is_active,
+                ] : null,
+                'has_account' => $mahasiswa->user !== null,
             ];
         });
 
+        $lastSyncedAt = Mahasiswa::query()
+            ->whereNotNull('master_synced_at')
+            ->latest('master_synced_at')
+            ->value('master_synced_at');
+
+        $batchYears = Mahasiswa::query()
+            ->whereNotNull('batch_year')
+            ->distinct()
+            ->orderByDesc('batch_year')
+            ->pluck('batch_year')
+            ->values();
+
         return Inertia::render('Admin/Users/MahasiswaIndex', [
-            'users' => $users,
-            'filters' => $request->only('search'),
-            'title' => 'Manajemen Data Mahasiswa'
+            'students' => [
+                'data' => $students->items(),
+                'meta' => [
+                    'current_page' => $students->currentPage(),
+                    'last_page' => $students->lastPage(),
+                    'per_page' => $students->perPage(),
+                    'total' => $students->total(),
+                    'from' => $students->firstItem(),
+                    'to' => $students->lastItem(),
+                    'links' => $students->linkCollection()->toArray(),
+                ],
+            ],
+            'filters' => $filters,
+            'faculties' => Fakultas::query()
+                ->orderBy('nama')
+                ->get(['id', 'nama'])
+                ->map(fn (Fakultas $faculty) => ['id' => $faculty->id, 'name' => $faculty->nama]),
+            'programs' => Prodi::query()
+                ->orderBy('nama')
+                ->get(['id', 'faculty_id', 'nama'])
+                ->map(fn (Prodi $program) => [
+                    'id' => $program->id,
+                    'faculty_id' => $program->faculty_id,
+                    'name' => $program->nama,
+                ]),
+            'batchYears' => $batchYears,
+            'stats' => [
+                'total' => (clone $statsQuery)->count(),
+                'with_account' => (clone $statsQuery)->whereHas('user')->count(),
+                'active_accounts' => (clone $statsQuery)->whereHas('user', fn ($query) => $query->where('is_active', true))->count(),
+                'bta_passed' => (clone $statsQuery)->where('is_bta_ppi_passed', true)->count(),
+                'synced' => (clone $statsQuery)->whereNotNull('master_synced_at')->count(),
+            ],
+            'syncInfo' => [
+                'mode' => 'sync-only',
+                'source' => 'Master API Kampus',
+                'last_synced_at' => optional($lastSyncedAt)->format('d M Y H:i'),
+            ],
+            'title' => 'Registry Mahasiswa Master',
         ]);
     }
 
@@ -184,7 +321,7 @@ class UserController extends Controller
             ]);
         }
 
-        return redirect()->route('admin.users.index')->with('success', 'Pengguna berhasil ditambahkan.');
+        return redirect()->route('admin.pengguna.index')->with('success', 'Pengguna berhasil ditambahkan.');
     }
 
     public function toggleActive(User $user): RedirectResponse

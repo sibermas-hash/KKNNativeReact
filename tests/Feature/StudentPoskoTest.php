@@ -7,6 +7,7 @@ use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\PoskoKelompok;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
 
@@ -53,6 +54,15 @@ test('approved student can open the posko page for their assigned group', functi
 
 test('approved group leader can upload group posko coordinates and photo', function () {
     Storage::fake('local');
+    Http::fake([
+        'nominatim.openstreetmap.org/*' => Http::response([
+            'address' => [
+                'village' => 'Desa Karangsari',
+                'city_district' => 'Kecamatan Kembaran',
+                'regency' => 'Kabupaten Banyumas',
+            ],
+        ], 200),
+    ]);
 
     ['user' => $user, 'group' => $group] = createApprovedStudentContext('Ketua');
 
@@ -60,6 +70,7 @@ test('approved group leader can upload group posko coordinates and photo', funct
         ->post(route('student.posko.store'), [
             'latitude' => '-7.3587905',
             'longitude' => '109.9030928',
+            'gmaps_link' => 'https://maps.google.com/?q=-7.3587905,109.9030928',
             'photo' => UploadedFile::fake()->image('posko.jpg', 1200, 800),
         ])
         ->assertRedirect(route('student.posko.edit'))
@@ -70,10 +81,58 @@ test('approved group leader can upload group posko coordinates and photo', funct
     expect($posko)->not->toBeNull()
         ->and((float) $posko->latitude)->toBe(-7.3587905)
         ->and((float) $posko->longitude)->toBe(109.9030928)
+        ->and($posko->gmaps_link)->toBe('https://maps.google.com/?q=-7.3587905,109.9030928')
         ->and($posko->uploaded_by)->toBe($user->id)
         ->and($posko->photo_name)->toBe('posko.jpg');
 
     Storage::disk('local')->assertExists($posko->photo_path);
+});
+
+test('approved group leader cannot save gmaps link with mismatched coordinates', function () {
+    Storage::fake('local');
+
+    ['user' => $user, 'group' => $group] = createApprovedStudentContext('Ketua');
+
+    $this->actingAs($user)
+        ->from(route('student.posko.edit'))
+        ->post(route('student.posko.store'), [
+            'latitude' => '-7.3587905',
+            'longitude' => '109.9030928',
+            'gmaps_link' => 'https://maps.google.com/?q=-7.111111,109.222222',
+            'photo' => UploadedFile::fake()->image('posko.jpg', 1200, 800),
+        ])
+        ->assertRedirect(route('student.posko.edit'))
+        ->assertSessionHasErrors('gmaps_link');
+
+    expect(PoskoKelompok::where('kelompok_id', $group->id)->exists())->toBeFalse();
+});
+
+test('approved group leader cannot save gmaps link outside assigned village area', function () {
+    Storage::fake('local');
+    Http::fake([
+        'nominatim.openstreetmap.org/*' => Http::response([
+            'address' => [
+                'village' => 'Desa Lain',
+                'city_district' => 'Kecamatan Lain',
+                'regency' => 'Kabupaten Lain',
+            ],
+        ], 200),
+    ]);
+
+    ['user' => $user, 'group' => $group] = createApprovedStudentContext('Ketua');
+
+    $this->actingAs($user)
+        ->from(route('student.posko.edit'))
+        ->post(route('student.posko.store'), [
+            'latitude' => '-7.3587905',
+            'longitude' => '109.9030928',
+            'gmaps_link' => 'https://maps.google.com/?q=-7.3587905,109.9030928',
+            'photo' => UploadedFile::fake()->image('posko.jpg', 1200, 800),
+        ])
+        ->assertRedirect(route('student.posko.edit'))
+        ->assertSessionHasErrors('gmaps_link');
+
+    expect(PoskoKelompok::where('kelompok_id', $group->id)->exists())->toBeFalse();
 });
 
 test('approved student can access the stored posko photo through the protected route', function () {

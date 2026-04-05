@@ -10,7 +10,6 @@ class DokumenPesertaKkn extends Model
 {
     use HasFactory;
 
-    protected $connection = 'kkn';
     protected $table = 'dokumen_peserta_kkn';
 
     public $timestamps = false;

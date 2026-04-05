@@ -3,7 +3,8 @@
 > **Last Updated:** 2026-02-15
 > **Maintained by:** Tholib (tholib_server)
 > **Repo:** https://github.com/putrihati-cmd/kknuinsaizu
-> **Production:** https://kkn.infiatin.cloud
+> **Local/Staging:** http://localhost:8000
+> **Production:** DECOMMISSIONED (Previously infiatin.cloud)
 > **Server Path:** /var/www/kknuinsaizu
 
 ---
@@ -24,7 +25,8 @@ A full-stack web application managing the entire KKN lifecycle: student registra
 | Auth | Spatie Laravel Permission (roles: `superadmin`, `admin`, `dpl`, `student`) |
 | Database | MySQL, connection name: `kkn` |
 | Server | Ubuntu, Nginx, path: `/var/www/kknuinsaizu` |
-| Domain | https://kkn.infiatin.cloud (Cloudflare Tunnel) |
+| Domain | localhost:8000 (Development) |
+| Server | Local-First (Mac mini) |
 
 ## 3. Custom UI Components
 
@@ -205,9 +207,8 @@ Seeder to run: `php artisan db:seed --class=MigrateDplPeriodDataSeeder`
 ## 10. Deployment
 
 ```bash
-# SSH to server
-ssh -o ProxyCommand="cloudflared access ssh --hostname server.infiatin.cloud" tholib_server@server.infiatin.cloud
-
+### Environment Access
+fokus pada localhost untuk pengembangan saat ini.
 # On server
 cd /var/www/kknuinsaizu
 git pull origin main

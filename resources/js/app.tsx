@@ -5,6 +5,19 @@ import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { initCapacitor } from '@/lib/capacitor-init';
+import axios from 'axios';
+
+// Setup CSRF token for all axios requests
+const token = document.head.querySelector('meta[name="csrf-token"]');
+if (token) {
+  axios.defaults.headers.common['X-CSRF-TOKEN'] = (token as HTMLMetaElement).content;
+} else {
+  console.error('CSRF token meta tag not found!');
+}
+
+// Ensure cookies are sent with requests
+axios.defaults.withCredentials = true;
+axios.defaults.withXSRFToken = true;
 
 const appName = import.meta.env.VITE_APP_NAME || 'KKN UIN SAIZU';
 

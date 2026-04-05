@@ -53,20 +53,14 @@ class RegistrationService
                 ]);
             }
 
-            // 2. ACADEMIC FILTER: Cek syarat minimal SKS & BTA-PPI
-            $minSks = (int) \App\Models\KKN\SystemSetting::get('min_sks_registration', 100);
-            if ($mahasiswa->sks_completed < $minSks) {
-                throw ValidationException::withMessages([
-                    'period_id' => "Pendaftaran ditolak. Syarat minimal SKS adalah {$minSks} SKS, sedangkan SKS Anda saat ini adalah {$mahasiswa->sks_completed} SKS.",
-                ]);
-            }
-
-            $hasBtaPpiStatus = array_key_exists('is_bta_ppi_passed', $mahasiswa->getAttributes());
-
-            if ($hasBtaPpiStatus && !$mahasiswa->is_bta_ppi_passed) {
-                throw ValidationException::withMessages([
-                    'period_id' => 'Pendaftaran ditolak. Anda belum dinyatakan LULUS ujian BTA-PPI. Silakan selesaikan kewajiban sertifikasi tersebut terlebih dahulu.',
-                ]);
+            // 2. DYNAMIC ACADEMIC FILTER: Evaluate all active requirements configured in the database
+            $requirements = \App\Models\KKN\KknRequirement::where('is_active', true)->get();
+            foreach ($requirements as $requirement) {
+                if (!$requirement->evaluate($mahasiswa)) {
+                    throw ValidationException::withMessages([
+                        'period_id' => $requirement->error_message,
+                    ]);
+                }
             }
 
             // 3. DOCUMENT FILTER: Cek keberadaan Surat Sehat & Izin Orang Tua
@@ -117,10 +111,23 @@ class RegistrationService
                     'status' => 'pending',
                     'registration_date' => now(),
                 ]);
-            } elseif (in_array($existing->status, ['rejected', 'completed'], true)) {
+            } elseif ($existing->status === 'completed') {
                 throw ValidationException::withMessages([
                     'period_id' => 'Status pendaftaran Anda pada periode ini tidak mengizinkan perubahan kelompok.',
                 ]);
+            } elseif ($existing->status === 'rejected') {
+                $existing->fill([
+                    'status' => 'pending',
+                    'notes' => $notes,
+                    'kelompok_id' => null,
+                    'approved_at' => null,
+                    'approved_by' => null,
+                    'joined_group_at' => null,
+                    'group_locked_until' => null,
+                    'resubmitted_at' => now(),
+                    'revision_count' => (int) ($existing->revision_count ?? 0) + 1,
+                ]);
+                $existing->save();
             } else {
                 $existing->notes = $notes;
                 $existing->save();
@@ -186,6 +193,10 @@ class RegistrationService
             'id' => $registration->id,
             'status' => $registration->status,
             'notes' => $registration->notes,
+            'rejection_reason' => $registration->rejection_reason,
+            'last_rejected_at' => $registration->last_rejected_at?->toIso8601String(),
+            'resubmitted_at' => $registration->resubmitted_at?->toIso8601String(),
+            'revision_count' => (int) ($registration->revision_count ?? 0),
             'kelompok_id' => $registration->kelompok_id,
             'joined_group_at' => $registration->joined_group_at?->toIso8601String(),
             'group_locked_until' => $registration->group_locked_until?->toIso8601String(),

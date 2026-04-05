@@ -38,7 +38,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
 
  const handleSubmit = (event: React.FormEvent) => {
  event.preventDefault();
- form.post('/student/reports/upload', {
+ form.post('/mahasiswa/reports/upload', {
  forceFormData: true,
  onSuccess: () => form.reset('judul', 'berkas'),
  });
@@ -115,7 +115,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  <input
  type="text"
  value={form.data.title}
- onChange={(event) => form.setData('judul', event.target.value)}
+ onChange={(event) => form.setData('title', event.target.value)}
  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
  />
  {form.errors.title && <p className="text-xs text-red-600">{form.errors.title}</p>}
@@ -125,7 +125,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
    <label className="block text-sm font-medium text-slate-700">Berkas</label>
    <input
      type="file"
-     onChange={(event) => form.setData('berkas', event.target.files?.[0] ?? null)}
+     onChange={(event) => form.setData('file', event.target.files?.[0] ?? null)}
      accept={
        selectedType
          ? selectedType.allowed_types.map((extension) => `.${extension}`).join(',')

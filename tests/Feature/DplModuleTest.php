@@ -15,7 +15,6 @@ use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\Models\Role;
@@ -23,8 +22,6 @@ use Tests\TestCase;
 
 class DplModuleTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -170,8 +167,9 @@ class DplModuleTest extends TestCase
             ->assertOk();
 
         $this->actingAs($context['dplUser'])
+            ->from(route('dpl.daily-reports.index'))
             ->patch(route('dpl.daily-reports.approve', $context['dailyReport']))
-            ->assertRedirect();
+            ->assertRedirect(route('dpl.daily-reports.index'));
 
         $this->assertDatabaseHas('kegiatan_kkn', [
             'id' => $context['dailyReport']->id,
@@ -183,11 +181,12 @@ class DplModuleTest extends TestCase
     {
         $context = $this->createDplScenario();
 
-        $this->actingAs($context['dplUser'])
+        $this->from(route('dpl.daily-reports.show', $context['dailyReport']))
+            ->actingAs($context['dplUser'])
             ->patch(route('dpl.daily-reports.revision', $context['dailyReport']), [
                 'revision_notes' => 'Mohon lengkapi dokumentasi kegiatan.',
             ])
-            ->assertRedirect();
+            ->assertRedirect(route('dpl.daily-reports.show', $context['dailyReport']));
 
         $this->assertDatabaseHas('kegiatan_kkn', [
             'id' => $context['dailyReport']->id,
@@ -215,8 +214,9 @@ class DplModuleTest extends TestCase
             ->assertOk();
 
         $this->actingAs($context['dplUser'])
+            ->from(route('dpl.final-reports.index'))
             ->patch(route('dpl.final-reports.approve', $context['finalReport']))
-            ->assertRedirect();
+            ->assertRedirect(route('dpl.final-reports.index'));
 
         $this->assertDatabaseHas('laporan_akhir', [
             'id' => $context['finalReport']->id,
@@ -302,8 +302,9 @@ class DplModuleTest extends TestCase
         $context = $this->createDplScenario();
 
         $this->actingAs($context['dplUser'])
+            ->from(route('dpl.daily-reports.show', $context['dailyReport']))
             ->patch(route('dpl.daily-reports.approve', $context['dailyReport']))
-            ->assertRedirect();
+            ->assertRedirect(route('dpl.daily-reports.show', $context['dailyReport']));
 
         $this->from(route('dpl.daily-reports.show', $context['dailyReport']))
             ->actingAs($context['dplUser'])
@@ -324,8 +325,9 @@ class DplModuleTest extends TestCase
         $context = $this->createDplScenario();
 
         $this->actingAs($context['dplUser'])
+            ->from(route('dpl.final-reports.show', $context['finalReport']))
             ->patch(route('dpl.final-reports.approve', $context['finalReport']))
-            ->assertRedirect();
+            ->assertRedirect(route('dpl.final-reports.show', $context['finalReport']));
 
         $this->from(route('dpl.final-reports.show', $context['finalReport']))
             ->actingAs($context['dplUser'])

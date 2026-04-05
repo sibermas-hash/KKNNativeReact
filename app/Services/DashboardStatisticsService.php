@@ -96,11 +96,9 @@ class DashboardStatisticsService
      */
     private function getStudentsByStatus(int $periodId, ?int $facultyId = null): array
     {
-        $query = DB::connection('kkn')
-            ->table('peserta_kkn')
+        $query = PesertaKkn::query()
             ->select('status', DB::raw('COUNT(*) as count'))
-            ->where('period_id', $periodId)
-            ->whereNull('deleted_at');
+            ->where('period_id', $periodId);
 
         if ($facultyId) {
             $query->join('mahasiswa', 'peserta_kkn.mahasiswa_id', '=', 'mahasiswa.id')
@@ -117,8 +115,7 @@ class DashboardStatisticsService
      */
     private function getGradeDistribution(int $periodId, ?int $facultyId = null): array
     {
-        $query = DB::connection('kkn')
-            ->table('nilai_kkn')
+        $query = NilaiKkn::query()
             ->select('letter_grade', DB::raw('COUNT(*) as count'))
             ->join('kelompok_kkn', 'nilai_kkn.kelompok_id', '=', 'kelompok_kkn.id')
             ->where('kelompok_kkn.period_id', $periodId)
@@ -134,6 +131,7 @@ class DashboardStatisticsService
 
         return $query->groupBy('letter_grade')
             ->pluck('count', 'letter_grade')
+            ->mapWithKeys(fn ($count, $grade) => [trim((string) $grade) => $count])
             ->toArray();
     }
 
@@ -142,8 +140,7 @@ class DashboardStatisticsService
      */
     private function getDplWorkload(int $periodId, ?int $facultyId = null): array
     {
-        $query = DB::connection('kkn')
-            ->table('kelompok_kkn')
+        $query = KelompokKkn::query()
             ->select(
                 'dosen.nama as dpl_name',
                 'dosen.nip',
@@ -152,8 +149,7 @@ class DashboardStatisticsService
             )
             ->join('dosen', 'kelompok_kkn.dpl_id', '=', 'dosen.id')
             ->leftJoin('peserta_kkn', 'kelompok_kkn.id', '=', 'peserta_kkn.kelompok_id')
-            ->where('kelompok_kkn.period_id', $periodId)
-            ->whereNull('kelompok_kkn.deleted_at');
+            ->where('kelompok_kkn.period_id', $periodId);
 
         if ($facultyId) {
             $query->join('mahasiswa', 'peserta_kkn.mahasiswa_id', '=', 'mahasiswa.id')

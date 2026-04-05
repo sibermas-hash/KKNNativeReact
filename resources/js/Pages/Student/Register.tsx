@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { FormInput } from '@/Components/ui';
 import type { PageProps } from '@/types';
@@ -36,6 +36,10 @@ interface PeriodRegistration {
  id: number;
  status: string;
  notes?: string | null;
+ rejection_reason?: string | null;
+ last_rejected_at?: string | null;
+ resubmitted_at?: string | null;
+ revision_count?: number;
  kelompok_id?: number | null;
  joined_group_at?: string | null;
  group_locked_until?: string | null;
@@ -70,14 +74,23 @@ interface RegisterProps extends PageProps {
  student_academic?: {
  sks_completed: number;
  is_bta_ppi_passed: boolean;
+ bta_ppi_status?: string | null;
  has_health_certificate: boolean;
  has_parent_permission?: boolean;
  parent_permission_template?: string | null;
  min_sks: number;
  } | null;
+ bpjs_profile?: {
+ is_complete: boolean;
+ missing_fields: Array<{
+ key: string;
+ label: string;
+ }>;
+ profile_url: string;
+ } | null;
 }
 
-export default function Register({ periods, student_gender, student_academic }: RegisterProps) {
+export default function Register({ periods, student_gender, student_academic, bpjs_profile }: RegisterProps) {
  const form = useForm({
  period_id: '',
  kelompok_id: '',
@@ -91,15 +104,40 @@ export default function Register({ periods, student_gender, student_academic }: 
  [form.data.period_id, periods],
  );
 
+ useEffect(() => {
+ if (form.data.period_id || periods.length === 0) {
+ return;
+ }
+
+ const preferredPeriod =
+ periods.find((period) => period.registration?.id) ??
+ (periods.length === 1 ? periods[0] : periods[0]);
+
+ if (!preferredPeriod) {
+ return;
+ }
+
+ form.setData((current) => ({
+ ...current,
+ period_id: String(preferredPeriod.id),
+ kelompok_id: preferredPeriod.registration?.kelompok_id ? String(preferredPeriod.registration.kelompok_id) : '',
+ notes: preferredPeriod.registration?.notes ?? current.notes,
+ }));
+ }, [form, periods]);
+
  const currentRegistration = selectedPeriod?.registration ?? null;
+ const isRejectedRegistration = currentRegistration?.status === 'rejected';
  const qualifiedBySks =
  (student_academic?.sks_completed ?? 0) >= (student_academic?.min_sks ?? 100);
- const qualifiedByBta = !!student_academic?.is_bta_ppi_passed;
+ const qualifiedByBta =
+ !!student_academic?.is_bta_ppi_passed ||
+ ['LULUS', 'PASSED', 'SUCCESS'].includes((student_academic?.bta_ppi_status ?? '').toUpperCase());
  const hasHealthCertificate =
  !!student_academic?.has_health_certificate || !!form.data.health_certificate;
  const hasParentPermission =
  !!student_academic?.has_parent_permission || !!form.data.parent_permission;
- const readyToRegister = qualifiedBySks && qualifiedByBta && hasHealthCertificate && hasParentPermission;
+ const hasCompleteBpjsProfile = bpjs_profile?.is_complete ?? true;
+ const readyToRegister = qualifiedBySks && qualifiedByBta && hasHealthCertificate && hasParentPermission && hasCompleteBpjsProfile;
 
  const handlePeriodChange = (value: string) => {
  const period = periods.find((item) => item.id === Number(value));
@@ -150,6 +188,28 @@ export default function Register({ periods, student_gender, student_academic }: 
  <RequirementCard label="Surat sehat" ok={hasHealthCertificate} value={hasHealthCertificate ? 'Siap' : 'Belum'} />
  <RequirementCard label="Izin orang tua" ok={hasParentPermission} value={hasParentPermission ? 'Siap' : 'Belum'} />
  </section>
+
+ {bpjs_profile && !bpjs_profile.is_complete && (
+ <section className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-sm text-amber-800">
+ <p className="font-semibold text-amber-900">Lengkapi biodata peserta terlebih dahulu</p>
+ <p className="mt-2">
+ Data berikut wajib diisi sebelum pendaftaran KKN dan ekspor peserta BPJS dapat diproses:
+ {` ${bpjs_profile.missing_fields.map((field) => field.label).join(', ')}.`}
+ </p>
+ <a
+ href={bpjs_profile.profile_url}
+ className="mt-4 inline-flex rounded-lg border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-100"
+ >
+ Buka Profil Saya
+ </a>
+ </section>
+ )}
+
+ {periods.length === 0 && (
+ <section className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-sm text-amber-800">
+ Belum ada periode pendaftaran yang aktif saat ini. Silakan hubungi admin LPPM atau tunggu jadwal pendaftaran dibuka.
+ </section>
+ )}
 
  <form onSubmit={handleSubmit} className="space-y-6">
  <section className="rounded-lg border border-slate-200 bg-white p-6">
@@ -230,6 +290,23 @@ export default function Register({ periods, student_gender, student_academic }: 
  )}
  </div>
 
+ {isRejectedRegistration && (
+ <div className="mt-6 rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+ <p className="font-semibold text-rose-900">Pendaftaran sebelumnya ditolak</p>
+ <p className="mt-2">
+ {currentRegistration?.rejection_reason || 'Admin meminta Anda memperbaiki data atau dokumen pendaftaran sebelum mengajukan ulang.'}
+ </p>
+ {currentRegistration?.revision_count ? (
+ <p className="mt-2 text-xs text-rose-700">
+ Riwayat pengajuan ulang: {currentRegistration.revision_count} kali.
+ </p>
+ ) : null}
+ <p className="mt-2 text-xs text-rose-700">
+ Perbaiki biodata, dokumen, atau pilihan kelompok Anda, lalu kirim kembali pendaftaran.
+ </p>
+ </div>
+ )}
+
  <div className="mt-6 grid gap-4 md:grid-cols-2">
  {selectedPeriod.kelompok.map((group) => {
  const isSelected = String(group.id) === form.data.kelompok_id;
@@ -275,6 +352,12 @@ export default function Register({ periods, student_gender, student_academic }: 
  })}
  </div>
 
+ {selectedPeriod.kelompok.length === 0 && (
+ <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-6 text-sm text-slate-600">
+ Belum ada kelompok aktif pada periode ini. Admin perlu membuat kelompok terlebih dahulu sebelum mahasiswa bisa memilih penempatan.
+ </div>
+ )}
+
  <div className="mt-6">
  <FormInput
  label="Catatan tambahan"
@@ -285,7 +368,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  </div>
 
  <div className="mt-6 flex flex-wrap justify-end gap-3">
- {currentRegistration && (
+ {currentRegistration && currentRegistration.status !== 'rejected' && (
  <button
  type="button"
  onClick={leaveGroup}
@@ -299,7 +382,7 @@ export default function Register({ periods, student_gender, student_academic }: 
  disabled={!readyToRegister || form.processing}
  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-60"
  >
- {form.processing ? 'Memproses...' : currentRegistration ? 'Perbarui pendaftaran' : 'Daftar sekarang'}
+ {form.processing ? 'Memproses...' : isRejectedRegistration ? 'Ajukan ulang pendaftaran' : currentRegistration ? 'Perbarui pendaftaran' : 'Daftar sekarang'}
  </button>
  </div>
  </section>

@@ -40,7 +40,7 @@ class StudentTransferController extends Controller
             ->orderBy('jenis')
             ->get(['id', 'name', 'periode', 'jenis', 'kuota']);
 
-        return Inertia::render('Admin/Peserta/Transfer', [
+        return Inertia::render('Admin/Registrations/Transfer', [
             'students' => $students,
             'targetPeriods' => $targetPeriods,
             'title' => 'Transfer Peserta',

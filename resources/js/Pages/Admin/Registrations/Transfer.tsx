@@ -46,31 +46,42 @@ interface Props {
         data: Student[];
         meta: Record<string, unknown>;
     };
-    groups: Group[];
+    targetPeriods: Array<{ id: number; name: string; periode: number; jenis: string; kuota: number }>;
     filters: { search?: string };
 }
 
-export default function StudentTransfer({ students, groups, filters }: Props) {
+export default function StudentTransfer({ students, targetPeriods, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
     const [targetGroupId, setTargetGroupId] = useState<string>('');
+    const [targetPeriodId, setTargetPeriodId] = useState<string>('');
+    const [reason, setReason] = useState('');
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        router.get(route('admin.peserta.transfer'), { search }, { preserveState: true });
+        router.get(route('admin.peserta.pindah'), { search }, { preserveState: true });
     };
 
     const handleTransfer = () => {
-        if (!selectedStudent || !targetGroupId) return;
-        
-        if (confirm(`Apakah Anda yakin ingin memindahkan mahasiswa ${selectedStudent.user.name} ke kelompok baru?`)) {
-            router.post(route('admin.peserta.transfer.store'), {
-                student_id: selectedStudent.id,
-                target_group_id: targetGroupId,
+        if (!selectedStudent || !targetPeriodId) return;
+
+        if (!reason.trim()) {
+            alert('Alasan transfer wajib diisi.');
+            return;
+        }
+
+        if (confirm(`Apakah Anda yakin ingin memindahkan mahasiswa ${selectedStudent.user.name} ke periode/kelompok baru?`)) {
+            router.post(route('admin.peserta.pindah'), {
+                peserta_kkn_id: selectedStudent.id,
+                target_period_id: targetPeriodId,
+                target_group_id: targetGroupId || null,
+                reason: reason,
             }, {
                 onSuccess: () => {
                     setSelectedStudent(null);
                     setTargetGroupId('');
+                    setTargetPeriodId('');
+                    setReason('');
                 }
             });
         }
@@ -112,7 +123,7 @@ export default function StudentTransfer({ students, groups, filters }: Props) {
                             <form onSubmit={handleSearch} className="relative group mb-6">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
                                 <input
-                                    type="cari"
+                                    type="search"
                                     placeholder="Cari NIM atau Nama..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}

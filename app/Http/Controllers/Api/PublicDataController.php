@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ApiKey;
+use App\Models\Project;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,7 @@ class PublicDataController extends Controller
      * Map table names to their respective Eloquent Models for integrity enforcement.
      */
     private const MODEL_MAP = [
+        '_projects'      => Project::class,
         'mahasiswa'      => \App\Models\KKN\Mahasiswa::class,
         'dosen'          => \App\Models\KKN\Dosen::class,
         'fakultas'       => \App\Models\KKN\Fakultas::class,
@@ -29,6 +31,7 @@ class PublicDataController extends Controller
      * Prevents mass assignment of sensitive fields.
      */
     private const WRITABLE_COLUMNS = [
+        '_projects' => ['email', 'project_name', 'use_case'],
         'mahasiswa' => ['batch_year'], // Only safe fields, NO is_bta_ppi_passed/sks_completed/gpa
         'dosen' => [], // Not writable via API
         'fakultas' => ['code', 'name'],
@@ -42,20 +45,26 @@ class PublicDataController extends Controller
     /**
      * Tables that can be deleted via public API (empty by default for safety).
      */
-    private const DELETABLE_TABLES = [];
+    private const DELETABLE_TABLES = ['_projects'];
 
     /**
      * Standard API response wrapper untuk consistency across all endpoints.
      */
-    private function apiResponse(bool $success, string $message, mixed $data = null, int $code = 200): JsonResponse
+    private function apiResponse(bool $success, string $message, mixed $data = null, int $code = 200, array $extra = []): JsonResponse
     {
-        return response()->json([
+        $payload = [
             'success' => $success,
             'status' => $success ? 'success' : 'error',
             'code' => $code,
             'message' => $message,
             'data' => $data,
-        ], $code);
+        ];
+
+        if (! $success) {
+            $payload['error'] = $message;
+        }
+
+        return response()->json(array_merge($payload, $extra), $code);
     }
 
     private function getModel(string $table)
@@ -106,15 +115,20 @@ class PublicDataController extends Controller
         $perPage = min((int)$request->get('per_page', 25), 100);
         $paginated = $query->paginate($perPage);
 
-        return $this->apiResponse(true, 'Data berhasil diambil', [
-            'items' => $paginated->items(),
-            'meta' => [
+        return $this->apiResponse(
+            true,
+            'Data berhasil diambil',
+            $paginated->items(),
+            200,
+            [
+                'meta' => [
                 'current_page' => $paginated->currentPage(),
                 'per_page' => $paginated->perPage(),
                 'total' => $paginated->total(),
                 'last_page' => $paginated->lastPage(),
             ],
-        ]);
+            ]
+        );
     }
 
     /**

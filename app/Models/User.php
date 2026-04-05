@@ -19,6 +19,12 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     /**
+     * Password policy: Minimum 8 characters, mixed case, numbers, and symbols.
+     * Apply this across all password validation rules for consistency.
+     */
+    private const PASSWORD_REQUIREMENTS = 'min:8|mixed_case|numbers|symbols';
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>

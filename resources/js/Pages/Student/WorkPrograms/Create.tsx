@@ -13,7 +13,7 @@ export default function StudentWorkProgramCreate() {
 
  const handleSubmit = (event: React.FormEvent) => {
  event.preventDefault();
- form.post('/student/work-programs');
+ form.post('/mahasiswa/work-programs');
  };
 
  return (
@@ -23,7 +23,7 @@ export default function StudentWorkProgramCreate() {
  <div className="mx-auto max-w-4xl space-y-6">
  <section className="rounded-lg border border-slate-200 bg-white p-8">
  <Link
- href="/student/work-programs"
+ href="/mahasiswa/work-programs"
  className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
  >
  Kembali ke program kerja
@@ -40,13 +40,13 @@ export default function StudentWorkProgramCreate() {
  label="Judul program kerja"
  required
  value={form.data.title}
- onChange={(event) => form.setData('judul', event.target.value)}
+ onChange={(event) => form.setData('title', event.target.value)}
  error={form.errors.title}
  />
  <FormTextarea
  label="Deskripsi"
  value={form.data.description}
- onChange={(event) => form.setData('deskripsi', event.target.value)}
+ onChange={(event) => form.setData('description', event.target.value)}
  error={form.errors.description}
  />
  <FormTextarea
@@ -76,7 +76,7 @@ export default function StudentWorkProgramCreate() {
 
  <div className="mt-6 flex justify-end gap-3">
  <Link
- href="/student/work-programs"
+ href="/mahasiswa/work-programs"
  className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
  >
  Batal

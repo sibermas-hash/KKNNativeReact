@@ -52,8 +52,9 @@ test('superadmin can duplicate a period with groups without reusing unique ident
         'status' => 'active',
     ]);
 
-    $this->post(route('admin.periods.duplicate', ['periode' => $period->id]))
-        ->assertRedirect();
+    $this->from(route('admin.periods.index'))
+        ->post(route('admin.periods.duplicate', ['periode' => $period->id]))
+        ->assertRedirect(route('admin.periods.index'));
 
     $copy = Periode::whereKeyNot($period->id)->firstOrFail();
     $copiedGroup = KelompokKkn::where('period_id', $copy->id)->firstOrFail();
@@ -75,40 +76,42 @@ test('superadmin can create and update period grading window data', function () 
 
     $academicYear = TahunAkademik::factory()->create(['year' => '2026/2027']);
 
-    $this->post(route('admin.periods.store'), [
-        'academic_year_id' => $academicYear->id,
-        'periode' => 57,
-        'jenis' => 'REGULER',
-        'name' => 'Periode 57 - REGULER',
-        'start_date' => '2026-05-01',
-        'end_date' => '2026-07-01',
-        'registration_start' => '2026-03-18',
-        'registration_end' => '2026-04-15',
-        'grading_start' => '2026-06-15',
-        'grading_end' => '2026-06-30',
-        'kuota' => 2000,
-        'is_active' => true,
-    ])->assertRedirect();
+    $this->from(route('admin.periods.index'))
+        ->post(route('admin.periods.store'), [
+            'academic_year_id' => $academicYear->id,
+            'periode' => 57,
+            'jenis' => 'REGULER',
+            'name' => 'Periode 57 - REGULER',
+            'start_date' => '2026-05-01',
+            'end_date' => '2026-07-01',
+            'registration_start' => '2026-03-18',
+            'registration_end' => '2026-04-15',
+            'grading_start' => '2026-06-15',
+            'grading_end' => '2026-06-30',
+            'kuota' => 2000,
+            'is_active' => true,
+        ])->assertRedirect(route('admin.periods.index'));
 
     $period = Periode::firstOrFail();
 
     expect($period->grading_start?->format('Y-m-d'))->toBe('2026-06-15')
         ->and($period->grading_end?->format('Y-m-d'))->toBe('2026-06-30');
 
-    $this->put(route('admin.periods.update', ['periode' => $period->id]), [
-        'academic_year_id' => $academicYear->id,
-        'periode' => 58,
-        'jenis' => 'MANDIRI',
-        'name' => 'Periode 58 - MANDIRI',
-        'start_date' => '2026-08-01',
-        'end_date' => '2026-09-30',
-        'registration_start' => '2026-06-01',
-        'registration_end' => '2026-07-01',
-        'grading_start' => '2026-09-15',
-        'grading_end' => '2026-09-29',
-        'kuota' => 1500,
-        'is_active' => false,
-    ])->assertRedirect();
+    $this->from(route('admin.periods.index'))
+        ->put(route('admin.periods.update', ['periode' => $period->id]), [
+            'academic_year_id' => $academicYear->id,
+            'periode' => 58,
+            'jenis' => 'MANDIRI',
+            'name' => 'Periode 58 - MANDIRI',
+            'start_date' => '2026-08-01',
+            'end_date' => '2026-09-30',
+            'registration_start' => '2026-06-01',
+            'registration_end' => '2026-07-01',
+            'grading_start' => '2026-09-15',
+            'grading_end' => '2026-09-29',
+            'kuota' => 1500,
+            'is_active' => false,
+        ])->assertRedirect(route('admin.periods.index'));
 
     $period->refresh();
 
@@ -128,8 +131,9 @@ test('superadmin cannot delete active or dependent periods', function () {
         'kuota' => 2000,
     ]);
 
-    $this->delete(route('admin.periods.destroy', ['periode' => $activePeriod->id]))
-        ->assertRedirect()
+    $this->from(route('admin.periods.index'))
+        ->delete(route('admin.periods.destroy', ['periode' => $activePeriod->id]))
+        ->assertRedirect(route('admin.periods.index'))
         ->assertSessionHas('error');
 
     expect(Periode::find($activePeriod->id))->not->toBeNull();
@@ -142,8 +146,9 @@ test('superadmin cannot delete active or dependent periods', function () {
 
     KelompokKkn::factory()->create(['period_id' => $inactivePeriod->id]);
 
-    $this->delete(route('admin.periods.destroy', ['periode' => $inactivePeriod->id]))
-        ->assertRedirect()
+    $this->from(route('admin.periods.index'))
+        ->delete(route('admin.periods.destroy', ['periode' => $inactivePeriod->id]))
+        ->assertRedirect(route('admin.periods.index'))
         ->assertSessionHas('error');
 
     expect(Periode::find($inactivePeriod->id))->not->toBeNull();
@@ -164,20 +169,21 @@ test('period actions flush cached context keys', function () {
     Cache::put('default_period_id', $period->id, 3600);
     Cache::put('available_periods', ['cached'], 3600);
 
-    $this->put(route('admin.periods.update', ['periode' => $period->id]), [
-        'academic_year_id' => $academicYear->id,
-        'periode' => 57,
-        'jenis' => 'REGULER',
-        'name' => $period->name,
-        'start_date' => $period->start_date->format('Y-m-d'),
-        'end_date' => $period->end_date->format('Y-m-d'),
-        'registration_start' => $period->registration_start->format('Y-m-d'),
-        'registration_end' => $period->registration_end->format('Y-m-d'),
-        'grading_start' => null,
-        'grading_end' => null,
-        'kuota' => 2100,
-        'is_active' => false,
-    ])->assertRedirect();
+    $this->from(route('admin.periods.index'))
+        ->put(route('admin.periods.update', ['periode' => $period->id]), [
+            'academic_year_id' => $academicYear->id,
+            'periode' => 57,
+            'jenis' => 'REGULER',
+            'name' => $period->name,
+            'start_date' => $period->start_date->format('Y-m-d'),
+            'end_date' => $period->end_date->format('Y-m-d'),
+            'registration_start' => $period->registration_start->format('Y-m-d'),
+            'registration_end' => $period->registration_end->format('Y-m-d'),
+            'grading_start' => null,
+            'grading_end' => null,
+            'kuota' => 2100,
+            'is_active' => false,
+        ])->assertRedirect(route('admin.periods.index'));
 
     expect(Cache::has('active_period'))->toBeFalse()
         ->and(Cache::has('default_period_id'))->toBeFalse()

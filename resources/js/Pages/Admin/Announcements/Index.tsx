@@ -3,7 +3,7 @@ import { router, Head, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Pagination, Button } from '@/Components/ui';
 import type { PageProps, Announcement } from '@/types';
-import type { PaginationMeta } from '@/Components/UI/Pagination';
+import type { PaginationMeta } from '@/Components/ui/Pagination';
 import { route } from 'ziggy-js';
 import { motion } from 'framer-motion';
 import {
@@ -59,11 +59,11 @@ export default function AnnouncementIndex({ announcements }: Props) {
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         if (editingAnnouncement) {
-            patch(route('admin.announcements.update', editingAnnouncement.id), {
+            patch(route('admin.warta-utama.update', editingAnnouncement.id), {
                 onSuccess: () => setIsModalOpen(false),
             });
         } else {
-            post(route('admin.announcements.store'), {
+            post(route('admin.warta-utama.store'), {
                 onSuccess: () => {
                     setIsModalOpen(false);
                     reset();
@@ -74,7 +74,7 @@ export default function AnnouncementIndex({ announcements }: Props) {
 
     const deleteAnnouncement = (id: number) => {
         if (confirm('Apakah Anda yakin ingin menghapus pengumuman ini?')) {
-            router.delete(route('admin.announcements.destroy', id));
+            router.delete(route('admin.warta-utama.destroy', id));
         }
     };
 

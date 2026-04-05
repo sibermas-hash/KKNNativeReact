@@ -57,7 +57,7 @@ export default function AuditLogIndex({ logs, filters }: Props) {
                     <form onSubmit={handleSearch} className="relative group flex-1 w-full max-w-2xl">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
                         <input
-                            type="cari"
+                            type="search"
                             placeholder="Cari Rekaman (Deskripsi / Aktor / Tipe)..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}

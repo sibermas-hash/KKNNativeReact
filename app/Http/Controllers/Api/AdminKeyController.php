@@ -11,6 +11,14 @@ use Illuminate\Support\Str;
 
 class AdminKeyController extends Controller
 {
+    private function hasValidAdminSecret(Request $request): bool
+    {
+        $adminSecret = config('api_keys.admin_secret');
+
+        return (bool) $adminSecret
+            && hash_equals($adminSecret, $request->header('x-admin-secret') ?? '');
+    }
+
     /**
      * Generate a new API key (admin-only, protected by admin secret).
      *
@@ -20,10 +28,7 @@ class AdminKeyController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        // Validate admin secret - use constant-time comparison to prevent timing attacks
-        $adminSecret = config('api_keys.admin_secret');
-
-        if (!$adminSecret || !hash_equals($adminSecret, $request->header('x-admin-secret') ?? '')) {
+        if (!$this->hasValidAdminSecret($request)) {
             return response()->json(['error' => 'Unauthorized. Admin secret tidak valid.'], 401);
         }
 
@@ -58,5 +63,18 @@ class AdminKeyController extends Controller
             'permissions' => $permissions,
             'project_id' => $project->id,
         ], 201);
+    }
+
+    public function revoke(Request $request, ApiKey $apiKey): JsonResponse
+    {
+        if (!$this->hasValidAdminSecret($request)) {
+            return response()->json(['error' => 'Unauthorized. Admin secret tidak valid.'], 401);
+        }
+
+        $apiKey->update(['is_active' => false]);
+
+        return response()->json([
+            'message' => 'API key berhasil dinonaktifkan.',
+        ]);
     }
 }

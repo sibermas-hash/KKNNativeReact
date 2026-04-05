@@ -14,7 +14,6 @@ class PesertaKkn extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $connection = 'kkn';
     protected $table = 'peserta_kkn';
 
     protected $fillable = [
@@ -24,9 +23,14 @@ class PesertaKkn extends Model
         'status',
         'role',
         'notes',
+        'rejection_reason',
         'registration_date',
         'approved_at',
         'approved_by',
+        'last_rejected_at',
+        'last_rejected_by',
+        'resubmitted_at',
+        'revision_count',
         'joined_group_at',
         'group_locked_until',
     ];
@@ -34,6 +38,9 @@ class PesertaKkn extends Model
     protected $casts = [
         'registration_date' => 'datetime',
         'approved_at' => 'datetime',
+        'last_rejected_at' => 'datetime',
+        'resubmitted_at' => 'datetime',
+        'revision_count' => 'integer',
         'joined_group_at' => 'datetime',
         'group_locked_until' => 'datetime',
     ];
@@ -61,6 +68,11 @@ class PesertaKkn extends Model
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function rejector(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'last_rejected_by');
     }
 
     /**

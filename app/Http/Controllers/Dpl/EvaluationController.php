@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Dpl;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Dpl\ImportEvaluationRequest;
+use App\Http\Requests\Dpl\StoreEvaluationRequest;
+use App\Http\Requests\Dpl\ValidateEvaluationImportRequest;
 use App\Models\KKN\Evaluasi;
 use App\Models\KKN\ItemEvaluasi;
 use App\Models\KKN\KelompokKkn;
@@ -89,20 +92,6 @@ class EvaluationController extends Controller
         }
     }
 
-    /**
-     * Verify the logged-in DPL is assigned to the given group.
-     */
-    private function authorizeGroupOwnership(int $groupId): \App\Models\KKN\Dosen
-    {
-        $dosen = auth()->user()->dosen;
-        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
-
-        $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
-        abort_if(!$groupIds->contains($groupId), 403, 'Anda tidak memiliki akses ke kelompok ini.');
-
-        return $dosen;
-    }
-
     public function index(): Response
     {
         $dosen = auth()->user()->dosen;
@@ -145,16 +134,10 @@ class EvaluationController extends Controller
         ]);
     }
 
-    public function validateImport(Request $request): Response|RedirectResponse
+    public function validateImport(ValidateEvaluationImportRequest $request): Response|RedirectResponse
     {
-        $request->validate([
-            'group_id' => ['required', 'exists:kelompok_kkn,id'],
-            'file' => ['required', 'file', 'mimes:xlsx,xls'],
-        ]);
-
-        $this->authorizeGroupOwnership($request->group_id);
-
-        $group = KelompokKkn::with(['peserta.mahasiswa', 'periode'])->find($request->group_id);
+        $group = KelompokKkn::with(['peserta.mahasiswa', 'periode'])->findOrFail($request->group_id);
+        \Illuminate\Support\Facades\Gate::authorize('update', [Evaluasi::class, $group]);
 
         if (!$this->checkGradingPeriod($group)) {
             return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
@@ -239,19 +222,11 @@ class EvaluationController extends Controller
         ]);
     }
 
-    public function import(Request $request): RedirectResponse
+    public function import(ImportEvaluationRequest $request): RedirectResponse
     {
-        $request->validate([
-            'group_id' => ['required', 'exists:kelompok_kkn,id'],
-            'data' => ['required', 'array'],
-            'data.*.final_report_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'data.*.execution_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'data.*.article_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
-        ]);
+        $group = KelompokKkn::with('periode')->findOrFail($request->group_id);
+        \Illuminate\Support\Facades\Gate::authorize('update', [Evaluasi::class, $group]);
 
-        $this->authorizeGroupOwnership($request->group_id);
-
-        $group = KelompokKkn::with('periode')->find($request->group_id);
         if (!$this->checkGradingPeriod($group)) {
             return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
         }
@@ -260,7 +235,11 @@ class EvaluationController extends Controller
         $groupId = $request->group_id;
         $weights = $this->dplWeights();
 
-        DB::transaction(function () use ($request, $lecturerId, $groupId, $weights) {
+        // N+1 Fix: Load all students at once
+        $studentIds = collect($request->data)->pluck('id')->filter()->all();
+        $students = Mahasiswa::whereIn('id', $studentIds)->get()->keyBy('id');
+
+        DB::transaction(function () use ($request, $lecturerId, $groupId, $weights, $students) {
             foreach ($request->data as $item) {
                 if ($item['status'] !== 'READY') continue;
 
@@ -314,7 +293,7 @@ class EvaluationController extends Controller
                 $eval->update(['total_score' => $total, 'grade' => $this->calculateGrade($total)]);
 
                 // Sync to NilaiKkn (Centralized)
-                $mahasiswa = Mahasiswa::find($item['id']);
+                $mahasiswa = $students->get($item['id']);
                 if ($mahasiswa) {
                     $this->gradingService->submitDPLScores(
                         $mahasiswa->user_id,
@@ -353,22 +332,12 @@ class EvaluationController extends Controller
             ->with('info', 'Form input manual tersedia di halaman evaluasi utama.');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreEvaluationRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'student_id' => ['required', 'exists:mahasiswa,id'],
-            'group_id' => ['required', 'exists:kelompok_kkn,id'],
-            'evaluator_type' => ['required', 'in:dpl'],
-            'notes' => ['nullable', 'string'],
-            'items' => ['required', 'array', 'size:3'],
-            'items.*.criterion' => ['required', 'string'],
-            'items.*.score' => ['required', 'numeric', 'min:0', 'max:100'],
-            'items.*.weight' => ['required', 'numeric', 'min:0', 'max:100'],
-        ]);
+        $validated = $request->validated();
+        $group = KelompokKkn::with('periode')->findOrFail($validated['group_id']);
+        \Illuminate\Support\Facades\Gate::authorize('create', [Evaluasi::class, $group]);
 
-        $this->authorizeGroupOwnership($validated['group_id']);
-
-        $group = KelompokKkn::with('periode')->find($validated['group_id']);
         if (!$this->checkGradingPeriod($group)) {
             return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
         }

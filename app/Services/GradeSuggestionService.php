@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\PesertaKkn;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class GradeSuggestionService
@@ -13,8 +14,8 @@ class GradeSuggestionService
      */
     public function suggestGrade(int $pesertaKknId): array
     {
-        $peserta = PesertaKkn::with('kegiatan')->findOrFail($pesertaKknId);
-        $reports = $peserta->kegiatan;
+        $peserta = PesertaKkn::with('mahasiswa.kegiatan')->findOrFail($pesertaKknId);
+        $reports = $peserta->mahasiswa?->kegiatan ?? new Collection();
         
         if ($reports->isEmpty()) {
             return [
@@ -37,7 +38,12 @@ class GradeSuggestionService
         $sentimentScore = 70; // Baseline
         
         foreach ($reports as $report) {
-            $content = Str::lower($report->deskripsi);
+            $content = Str::lower(implode(' ', array_filter([
+                $report->title,
+                $report->activity,
+                $report->reflection,
+                $report->output,
+            ])));
             foreach ($positiveWords as $word) {
                 if (Str::contains($content, $word)) $sentimentScore += 0.5;
             }

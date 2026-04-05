@@ -2,14 +2,11 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class HomePreviewContentTest extends TestCase
 {
-    use RefreshDatabase;
-
     public function test_home_page_exposes_fallback_preview_content_when_public_content_is_empty(): void
     {
         $this->get(route('home'))

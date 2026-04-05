@@ -1,23 +1,23 @@
 import Badge from './Badge';
 
-type StatusMap = Record<string, { label: string; variant: 'berhasil' | 'peringatan' | 'danger' | 'info' | 'default' | 'primary' }>;
+type StatusMap = Record<string, { label: string; variant: 'success' | 'warning' | 'danger' | 'info' | 'default' | 'primary' }>;
 
 const STATUS_MAP: StatusMap = {
- // Registration
- pending: { label: 'Menunggu', variant: 'peringatan' },
- document_submitted: { label: 'Dokumen Diajukan', variant: 'info' },
- approved: { label: 'Disetujui', variant: 'berhasil' },
- rejected: { label: 'Ditolak', variant: 'danger' },
- completed: { label: 'Selesai', variant: 'berhasil' },
- // Daily Report & Work Program
- draft: { label: 'Draf', variant: 'default' },
- submitted: { label: 'Diajukan', variant: 'info' },
- revision: { label: 'Revisi', variant: 'peringatan' },
- // Final Report
- reviewed: { label: 'Sudah Direview', variant: 'primary' },
- // Group
- active: { label: 'Aktif', variant: 'berhasil' },
- closed: { label: 'Ditutup', variant: 'default' },
+    // Registration
+    pending: { label: 'MENUNGGU_VERIFIKASI', variant: 'warning' },
+    document_submitted: { label: 'DOKUMEN_DIAJUKAN', variant: 'info' },
+    approved: { label: 'DISETUJUI_OPERASIONAL', variant: 'success' },
+    rejected: { label: 'DITOLAK_ADMINISTRASI', variant: 'danger' },
+    completed: { label: 'MISI_SELESAI', variant: 'success' },
+    // Daily Report & Work Program
+    draft: { label: 'DRAFT_ARSIP', variant: 'default' },
+    submitted: { label: 'DIAJUKAN', variant: 'info' },
+    revision: { label: 'REVISI_DPL', variant: 'warning' },
+    // Final Report
+    reviewed: { label: 'SUDAH_DIBACA', variant: 'primary' },
+    // Group
+    active: { label: 'AKUN_AKTIF', variant: 'success' },
+    closed: { label: 'AKUN_NONAKTIF', variant: 'default' },
 };
 
 interface StatusBadgeProps {

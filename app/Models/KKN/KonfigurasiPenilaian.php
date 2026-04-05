@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Cache;
 
 class KonfigurasiPenilaian extends Model
 {
-    protected $connection = 'kkn';
     protected $table = 'konfigurasi_penilaian';
 
     protected static function booted()

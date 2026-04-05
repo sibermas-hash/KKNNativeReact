@@ -13,13 +13,19 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Traits\HandlesPagination;
 
 class KelompokKknController extends Controller
 {
+    use HandlesPagination;
     public function index(Request $request): Response
     {
         Gate::authorize('manage-groups');
         
+        $user = auth()->user();
+        $isFacultyAdmin = $user?->hasRole('faculty_admin');
+        $facultyId = $isFacultyAdmin ? $user?->faculty_id : null;
+
         $groups = KelompokKkn::with('periode', 'lokasi', 'dosen')
             ->withCount('peserta')
             ->when($request->input('search'), function ($query, $search) {
@@ -41,6 +47,9 @@ class KelompokKknController extends Controller
             })
             ->when($request->input('status'), function ($query, $status) {
                 $query->where('status', $status);
+            })
+            ->when($facultyId, function ($query, $id) {
+                $query->whereHas('peserta.mahasiswa', fn($q) => $q->where('faculty_id', $id));
             })
             ->orderByDesc('created_at')
             ->paginate(15)
@@ -85,7 +94,7 @@ class KelompokKknController extends Controller
             ->map(fn($d) => ['id' => $d->id, 'name' => $d->nama]);
 
         return Inertia::render('Admin/Groups/Index', [
-            'groups' => $groups,
+            'groups' => $this->formatPaginator($groups),
             'periods' => $periods,
             'locations' => $locations,
             'lecturers' => $lecturers,

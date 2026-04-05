@@ -27,7 +27,7 @@ export default function StudentWorkshopsIndex({ workshops }: Props) {
  const register = (workshopId: number) => {
  setSubmittingId(workshopId);
  router.post(
- `/student/workshops/${workshopId}/register`,
+ `/mahasiswa/workshops/${workshopId}/register`,
  {},
  {
  preserveScroll: true,

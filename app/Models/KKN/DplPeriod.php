@@ -11,7 +11,6 @@ class DplPeriod extends Model
 {
     use HasFactory;
 
-    protected $connection = 'kkn';
     protected $table = 'dpl_periods';
 
     protected $fillable = [

@@ -49,11 +49,11 @@ class DplSyncController extends Controller
         Gate::authorize('sync-data');
 
         $validated = $request->validate([
-            'master_id' => 'nullable|integer',
+            'master_id' => 'nullable',
             'nip' => 'required|string',
             'name' => 'required|string',
             'email' => 'nullable|email',
-            'organization_id' => 'nullable|integer',
+            'organization_id' => 'nullable',
             'birth_date' => 'nullable|date',
             'gender' => 'nullable|string',
         ]);
@@ -62,8 +62,9 @@ class DplSyncController extends Controller
             DB::transaction(function () use ($validated) {
                 // Sinkronisasi master dosen lokal tanpa otomatis membuat akun login.
                 $facultyId = null;
-                if (!empty($validated['organization_id'])) {
-                    $facultyId = Fakultas::where('master_id', $validated['organization_id'])->first()?->id;
+                $organizationMasterId = $this->normalizeMasterId($validated['organization_id'] ?? null);
+                if ($organizationMasterId !== null) {
+                    $facultyId = Fakultas::where('master_id', $organizationMasterId)->first()?->id;
                 }
 
                 // Fallback faculty if none found
@@ -78,7 +79,7 @@ class DplSyncController extends Controller
                         'birth_date' => $validated['birth_date'],
                         'gender' => $validated['gender'],
                         'faculty_id' => $facultyId,
-                        'master_id' => $validated['master_id'] ?? null,
+                        'master_id' => $this->normalizeMasterId($validated['master_id'] ?? null),
                         'master_synced_at' => now(),
                     ]
                 );
@@ -89,5 +90,16 @@ class DplSyncController extends Controller
             \Illuminate\Support\Facades\Log::error('DPL sync failed', ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal melakukan sinkronisasi. Silakan coba lagi atau hubungi administrator.');
         }
+    }
+
+    private function normalizeMasterId(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $normalized = trim((string) $value);
+
+        return $normalized === '' ? null : $normalized;
     }
 }

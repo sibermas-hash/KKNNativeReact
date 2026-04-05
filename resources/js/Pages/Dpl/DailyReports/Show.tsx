@@ -159,7 +159,7 @@ export default function DplDailyReportShow({ report }: Props) {
  <button
  type="button"
  disabled={!canReview || approveForm.processing}
- onClick={() => approveForm.patch(`/dpl/daily-reports/${report.id}/approve`)}
+ onClick={() => approveForm.patch(`/dpl/daily-reports/${report.id}/setujui`)}
  className="w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
  >
  Setujui Laporan

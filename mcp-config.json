@@ -1,0 +1,32 @@
+{
+  "mcpServers": {
+    "postgresql-kkn": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://kknuinsaizu:kknuinsaizu2026@127.0.0.1:5433/kkn"
+      ],
+      "env": {
+        "PGPASSWORD": "kknuinsaizu2026",
+        "PGHOST": "127.0.0.1",
+        "PGPORT": "5433",
+        "PGUSER": "kknuinsaizu",
+        "PGDATABASE": "kkn",
+        "PGSCHEMA": "public"
+      }
+    },
+    "filesystem-kkn": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/macm4/Documents/Projek/KKN/kknuinsaizu/app",
+        "/Users/macm4/Documents/Projek/KKN/kknuinsaizu/database",
+        "/Users/macm4/Documents/Projek/KKN/kknuinsaizu/resources",
+        "/Users/macm4/Documents/Projek/KKN/kknuinsaizu/routes",
+        "/Users/macm4/Documents/Projek/KKN/kknuinsaizu/config"
+      ]
+    }
+  }
+}

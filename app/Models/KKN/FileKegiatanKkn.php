@@ -10,7 +10,6 @@ class FileKegiatanKkn extends Model
 {
     use HasFactory;
 
-    protected $connection = 'kkn';
     protected $table = 'file_kegiatan_kkn';
 
     protected $fillable = [

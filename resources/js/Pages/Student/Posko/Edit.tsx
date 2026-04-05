@@ -3,6 +3,7 @@ import { useState, type ChangeEvent } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { FormInput } from '@/Components/ui';
 import type { PageProps } from '@/types';
+import { route } from 'ziggy-js';
 
 interface Props extends PageProps {
  isLeader: boolean;
@@ -40,13 +41,13 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
 
  const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
  const file = event.target.files?.[0] ?? null;
- form.setData('foto', file);
+ form.setData('photo', file);
  setSelectedFileName(file?.name ?? null);
  };
 
  const handleSubmit = (event: React.FormEvent) => {
  event.preventDefault();
- form.post('/student/posko', {
+ form.post(route('student.posko.store'), {
  forceFormData: true,
  });
  };
@@ -60,7 +61,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
  <div>
  <Link
- href="/student/dashboard"
+ href={route('student.dashboard')}
  className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
  >
  Kembali ke dasbor
@@ -150,10 +151,14 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  <FormInput
  type="url"
  label="Tautan Google Maps"
+ placeholder="https://maps.google.com/?q=-7.42412,109.23963"
  value={form.data.gmaps_link}
  onChange={(event) => form.setData('gmaps_link', event.target.value)}
  error={form.errors.gmaps_link}
  />
+ <p className="mt-2 text-xs text-slate-500">
+  Tautan harus berasal dari Google Maps, koordinat di dalam tautan harus sama dengan latitude serta longitude posko, dan titiknya harus masih berada di wilayah {group.location?.full_name || 'desa penempatan kelompok'}.
+ </p>
  </div>
  <div className="md:col-span-2 space-y-2">
    <label className="block text-sm font-medium text-slate-700">Foto posko</label>
@@ -169,7 +174,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
 
  <div className="mt-6 flex justify-end gap-3">
  <Link
- href="/student/dashboard"
+ href={route('student.dashboard')}
  className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
  >
  Batal

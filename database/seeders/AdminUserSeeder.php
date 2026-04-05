@@ -16,20 +16,26 @@ class AdminUserSeeder extends Seeder
             return;
         }
 
-        $plainPassword = env('KKN_LOCAL_SEED_PASSWORD') ?: Str::password(16);
+        $forcedPassword = env('KKN_LOCAL_SEED_PASSWORD');
+        $plainPassword = $forcedPassword ?: Str::password(16);
 
-        $user = User::firstOrCreate(
-            ['email' => 'admin@kkn.uinsaizu.ac.id'],
-            [
-                'username' => 'admin',
-                'name' => 'Super Admin',
-                'is_active' => true,
-                'password' => Hash::make($plainPassword),
-            ]
-        );
+        $user = User::firstOrNew(['email' => 'admin@kkn.uinsaizu.ac.id']);
+        $wasRecentlyCreated = ! $user->exists;
 
-        if ($user->wasRecentlyCreated) {
+        $user->username = 'admin';
+        $user->name = 'Super Admin';
+        $user->is_active = true;
+
+        if ($wasRecentlyCreated || $forcedPassword) {
+            $user->password = $plainPassword;
+        }
+
+        $user->save();
+
+        if ($wasRecentlyCreated) {
             $this->command?->warn("Akun superadmin lokal dibuat. Password awal: {$plainPassword}");
+        } elseif ($forcedPassword) {
+            $this->command?->warn("Password akun superadmin lokal diperbarui ke nilai dari KKN_LOCAL_SEED_PASSWORD.");
         }
 
         if (! $user->hasRole('superadmin')) {

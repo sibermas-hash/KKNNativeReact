@@ -12,7 +12,6 @@ class Dosen extends Model
 {
     use HasFactory;
 
-    protected $connection = 'kkn';
     protected $table = 'dosen';
 
     protected $fillable = [

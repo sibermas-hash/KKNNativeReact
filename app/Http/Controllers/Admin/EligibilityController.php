@@ -26,8 +26,11 @@ class EligibilityController extends Controller
     {
         Gate::authorize('manage-master-data');
 
+        $user = auth()->user();
+        $isFacultyAdmin = $user?->hasRole('faculty_admin');
+        
         $periodeId = $request->integer('period_id');
-        $facultyId = $request->integer('faculty_id');
+        $facultyId = $isFacultyAdmin ? $user?->faculty_id : $request->integer('faculty_id');
         $showEligible = $request->boolean('show_eligible', true);
 
         $result = $this->eligibilityService->getEligibleStudents($periodeId, $facultyId);
@@ -41,7 +44,7 @@ class EligibilityController extends Controller
 
         $periods = Periode::orderByDesc('start_date')->get(['id', 'name']);
 
-        return Inertia::render('Admin/Eligibility/Index', [
+        return Inertia::render('Admin/EligibilityCheck/Index', [
             'students' => $paginatedStudents,
             'pagination' => [
                 'current_page' => $currentPage,
@@ -79,8 +82,11 @@ class EligibilityController extends Controller
     {
         Gate::authorize('manage-master-data');
 
+        $user = auth()->user();
+        $isFacultyAdmin = $user?->hasRole('faculty_admin');
+        
         $periodeId = $request->integer('period_id');
-        $facultyId = $request->integer('faculty_id');
+        $facultyId = $isFacultyAdmin ? $user?->faculty_id : $request->integer('faculty_id');
 
         $result = $this->eligibilityService->getEligibleStudents($periodeId, $facultyId);
 

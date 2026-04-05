@@ -38,6 +38,7 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage-groups', fn($user) => $adminPolicy->manageGroups($user));
         Gate::define('manage-settings', fn($user) => $adminPolicy->manageSettings($user));
         Gate::define('sync-data', fn($user) => $adminPolicy->syncData($user));
+        Gate::define('manageDplAssignment', fn($user) => $adminPolicy->manageDplAssignment($user));
         Gate::define('transfer-students', fn($user) => $adminPolicy->transferStudents($user));
     }
 }

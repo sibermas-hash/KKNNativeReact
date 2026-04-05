@@ -13,12 +13,14 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Traits\HandlesPagination;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PeriodeController extends Controller
 {
+    use HandlesPagination;
     public function index(Request $request): Response
     {
         Gate::authorize('manage-master-data');
@@ -63,7 +65,7 @@ class PeriodeController extends Controller
             ->map(fn ($ay) => ['id' => $ay->id, 'year' => $ay->year]);
 
         return Inertia::render('Admin/Periods/Index', [
-            'periods' => $periods,
+            'periods' => $this->formatPaginator($periods),
             'academicYears' => $academicYears,
             'filters' => $request->only('search'),
         ]);
@@ -105,7 +107,7 @@ class PeriodeController extends Controller
 
         Periode::create($validated);
 
-        return redirect()->back()->with('success', 'Periode KKN berhasil ditambahkan.');
+        return redirect()->route('admin.periods.index')->with('success', 'Periode KKN berhasil ditambahkan.');
     }
 
     public function update(Request $request, Periode $periode): RedirectResponse
@@ -134,7 +136,7 @@ class PeriodeController extends Controller
 
         $periode->update($validated);
 
-        return redirect()->back()->with('success', 'Periode KKN berhasil diperbarui.');
+        return redirect()->route('admin.periods.index')->with('success', 'Periode KKN berhasil diperbarui.');
     }
 
     public function duplicate(Periode $periode): RedirectResponse
@@ -166,7 +168,7 @@ class PeriodeController extends Controller
             }
         });
 
-        return redirect()->back()->with('success', 'Struktur periode dan kelompok berhasil diduplikasi.');
+        return redirect()->route('admin.periods.index')->with('success', 'Struktur periode dan kelompok berhasil diduplikasi.');
     }
 
     public function destroy(Periode $periode): RedirectResponse
@@ -174,12 +176,12 @@ class PeriodeController extends Controller
         $periode->loadCount(['kelompok', 'peserta', 'dplPeriods']);
 
         if (!$this->canDeletePeriod($periode)) {
-            return redirect()->back()->with('error', $this->getDeleteBlockerReason($periode));
+            return redirect()->route('admin.periods.index')->with('error', $this->getDeleteBlockerReason($periode));
         }
 
         $periode->delete();
 
-        return redirect()->back()->with('success', 'Periode KKN berhasil dihapus.');
+        return redirect()->route('admin.periods.index')->with('success', 'Periode KKN berhasil dihapus.');
     }
 
     private function canDeletePeriod(Periode $period): bool

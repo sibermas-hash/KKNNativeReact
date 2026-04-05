@@ -9,7 +9,6 @@ class Download extends Model
 {
     use HasFactory;
 
-    protected $connection = 'kkn';
 
     protected $fillable = [
         'title',

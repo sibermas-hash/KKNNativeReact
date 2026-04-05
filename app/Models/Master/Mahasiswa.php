@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Mahasiswa extends Model
 {
-    protected $connection = 'master';
     protected $table = 'mahasiswa';
 
     protected $fillable = [

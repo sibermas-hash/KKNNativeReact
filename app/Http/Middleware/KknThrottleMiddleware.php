@@ -47,12 +47,6 @@ class KknThrottleMiddleware extends ThrottleRequests
 
         $routeName = $request->route()->getName();
         
-        // ISSUE-MIDDLEWARE-004 Fix: Only bypass in local with debug enabled
-        // This prevents production misconfiguration from bypassing rate limits
-        if (config('app.env') === 'local' && config('app.debug') === true) {
-            return parent::handle($request, $next, $maxAttempts, $decayMinutes, $prefix);
-        }
-
         // Halaman login harus longgar agar mahasiswa dari IP yang sama tidak
         // saling menahan hanya untuk membuka form autentikasi.
         if ($routeName === 'login') {

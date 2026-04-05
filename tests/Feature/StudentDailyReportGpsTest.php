@@ -11,13 +11,10 @@ use App\Models\KKN\PoskoKelompok;
 use App\Models\KKN\Workshop;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class StudentDailyReportGpsTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -108,9 +105,12 @@ class StudentDailyReportGpsTest extends TestCase
      */
     private function createStudentContext(): array
     {
+        static $counter = 0;
+        $counter++;
+
         $user = User::factory()->create([
-            'username' => 'student_daily_gps_' . fake()->unique()->numerify('####'),
-            'email' => fake()->unique()->safeEmail(),
+            'username' => "student_daily_gps_{$counter}",
+            'email' => "student_daily_gps_{$counter}@test.com",
         ]);
         $user->assignRole('student');
 

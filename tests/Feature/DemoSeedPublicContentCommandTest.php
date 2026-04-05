@@ -5,13 +5,10 @@ namespace Tests\Feature;
 use App\Models\KKN\Announcement;
 use App\Models\KKN\Download;
 use App\Models\KKN\SystemSetting;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class DemoSeedPublicContentCommandTest extends TestCase
 {
-    use RefreshDatabase;
-
     public function test_demo_seed_command_also_populates_public_content(): void
     {
         $this->artisan('kkn:seed-demo-testing')

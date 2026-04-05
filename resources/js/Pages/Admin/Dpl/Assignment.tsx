@@ -79,6 +79,9 @@ interface Props {
     };
 }
 
+/**
+ * Memformat tampilan periode menjadi string yang mudah dibaca.
+ */
 function formatPeriod(period: PeriodOption): string {
     const parts = [period.name];
 
@@ -93,8 +96,14 @@ function formatPeriod(period: PeriodOption): string {
     return parts.join(' · ');
 }
 
+/**
+ * Memformat lokasi kelompok menjadi string alamat.
+ */
 function formatLocation(group: GroupRow): string {
-    return [group.location?.district_name, group.location?.regency_name].filter(Boolean).join(', ');
+    const parts = [];
+    if (group.location?.district_name) parts.push(group.location.district_name);
+    if (group.location?.regency_name) parts.push(group.location.regency_name);
+    return parts.join(', ') || 'Lokasi administratif belum tersedia';
 }
 
 export default function DplAssignment({
@@ -149,7 +158,7 @@ export default function DplAssignment({
     const handleSearch = (event: FormEvent) => {
         event.preventDefault();
         router.get(
-            route('admin.dpl.assignment'),
+            route('admin.dpl.penugasan'),
             { search },
             { preserveState: true, preserveScroll: true, replace: true },
         );
@@ -157,7 +166,7 @@ export default function DplAssignment({
 
     const submitPeriodAssignment = (event: FormEvent) => {
         event.preventDefault();
-        periodForm.post(route('admin.dpl.assign-period'), {
+        periodForm.post(route('admin.dpl.tugaskan-periode'), {
             preserveScroll: true,
             onSuccess: () => periodForm.reset('dosen_id', 'period_id'),
         });
@@ -170,7 +179,7 @@ export default function DplAssignment({
             return;
         }
 
-        groupForm.post(route('admin.dpl.assign-group', Number(groupForm.data.group_id)), {
+        groupForm.post(route('admin.dpl.tugaskan-kelompok', Number(groupForm.data.group_id)), {
             preserveScroll: true,
             onSuccess: () => groupForm.reset('group_id', 'dpl_period_id'),
         });
@@ -178,7 +187,7 @@ export default function DplAssignment({
 
     const submitDistrictCoordinator = (event: FormEvent) => {
         event.preventDefault();
-        districtForm.post(route('admin.dpl.assign-district'), {
+        districtForm.post(route('admin.dpl.tugaskan-wilayah'), {
             preserveScroll: true,
             onSuccess: () => districtForm.reset('dosen_id', 'period_id', 'district_id'),
         });
@@ -186,7 +195,7 @@ export default function DplAssignment({
 
     const submitImport = (event: FormEvent) => {
         event.preventDefault();
-        importForm.post(route('admin.dpl.import'), {
+        importForm.post(route('admin.dpl.impor'), {
             preserveScroll: true,
             forceFormData: true,
             onSuccess: () => importForm.reset(),
@@ -519,7 +528,7 @@ export default function DplAssignment({
                                         type="file"
                                         accept=".xlsx,.xls,.csv,.txt"
                                         onChange={handleImportFileChange}
-                                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
+                                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 file:mr-4 file:rounded-lg file:border-0 file:bg-emerald-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
                                         required
                                     />
                                     {importForm.errors.file ? (
@@ -542,12 +551,12 @@ export default function DplAssignment({
                             </form>
                         </section>
 
-                        <section className="rounded-xl border border-slate-200 bg-slate-900 p-6 text-white shadow-sm">
+                        <section className="rounded-xl border border-emerald-100 bg-emerald-50 p-6 text-emerald-900 shadow-sm">
                             <div className="flex items-start gap-3">
                                 <AlertCircle className="mt-0.5 h-5 w-5 text-emerald-400" />
                                 <div>
                                     <h3 className="font-semibold">Catatan operasional</h3>
-                                    <p className="mt-2 text-sm leading-6 text-slate-300">
+                                    <p className="mt-2 text-sm leading-6 text-emerald-800">
                                         Sinkronisasi master dosen, aktivasi DPL, penugasan kelompok, dan koordinator
                                         kecamatan sekarang dipisah. Dosen baru akan memiliki akun login hanya setelah
                                         diaktifkan pada periode tertentu.
@@ -610,7 +619,7 @@ export default function DplAssignment({
                                                         <p className="font-semibold text-slate-900">
                                                             {assignment.dosen.nama}
                                                         </p>
-                                                        <span className="rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
+                                                        <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
                                                             {assignment.dosen.nip}
                                                         </span>
                                                     </div>
@@ -629,7 +638,7 @@ export default function DplAssignment({
                                                     disabled={assignment.current_groups > 0}
                                                     onClick={() =>
                                                         router.patch(
-                                                            route('admin.dpl.remove-period', assignment.id),
+                                                            route('admin.dpl.lepas-periode', assignment.id),
                                                             {},
                                                             { preserveScroll: true },
                                                         )
@@ -681,7 +690,7 @@ export default function DplAssignment({
                                                 type="button"
                                                 onClick={() =>
                                                     router.patch(
-                                                        route('admin.dpl.remove-district', assignment.id),
+                                                        route('admin.dpl.lepas-wilayah', assignment.id),
                                                         {},
                                                         { preserveScroll: true },
                                                     )

@@ -33,12 +33,30 @@ test('determineLetterGrade returns correct grades', function () {
     expect(GradingService::determineLetterGrade(0))->toBe('D');
 });
 
+test('determineLetterGrade handles negative scores as D', function () {
+    expect(GradingService::determineLetterGrade(-10))->toBe('D');
+    expect(GradingService::determineLetterGrade(-100))->toBe('D');
+    expect(GradingService::determineLetterGrade(-0.01))->toBe('D');
+});
+
+test('determineLetterGrade handles scores above 100', function () {
+    expect(GradingService::determineLetterGrade(101))->toBe('D');
+    expect(GradingService::determineLetterGrade(150))->toBe('D');
+    expect(GradingService::determineLetterGrade(999))->toBe('D');
+});
+
+test('determineLetterGrade handles boundary values', function () {
+    expect(GradingService::determineLetterGrade(100))->toBe('A');
+    expect(GradingService::determineLetterGrade(85.5))->toBe('A');
+    expect(GradingService::determineLetterGrade(54.0))->toBe('D');
+});
+
 test('calculateFinalGrade saves lppm_weighted_score', function () {
     $student = User::factory()->create();
     $kelompok = KelompokKkn::factory()->create();
 
     $score = NilaiKkn::factory()->create([
-        'mahasiswa_id' => $student->id,
+        'user_id' => $student->id,
         'kelompok_id' => $kelompok->id,
         'final_report_score' => 80,
         'execution_score' => 85,

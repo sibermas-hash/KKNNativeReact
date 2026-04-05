@@ -18,7 +18,6 @@ class Periode extends Model
         'available_periods',
     ];
 
-    protected $connection = 'kkn';
     protected $table = 'periode';
 
     protected $fillable = [

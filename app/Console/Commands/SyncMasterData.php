@@ -109,7 +109,7 @@ class SyncMasterData extends Command
             // Only sync faculties (check if name contains 'Fakultas')
             if (str_contains($orgData['name'], 'Fakultas') || ($orgData['level'] ?? 0) == 2) {
                 Fakultas::on('kkn')->updateOrCreate(
-                    ['master_id' => $orgData['id']],
+                    ['master_id' => (string) $orgData['id']],
                     [
                         'code' => $orgData['code'],
                         'nama' => $orgData['name'],
@@ -160,7 +160,7 @@ class SyncMasterData extends Command
             $defaultFaculty = Fakultas::on('kkn')->create([
                 'code' => 'DEFAULT',
                 'nama' => 'Default Faculty',
-                'master_id' => 0,
+                'master_id' => '0',
                 'master_synced_at' => $now,
             ]);
             $this->info('  Created Default Faculty as fallback');
@@ -208,7 +208,7 @@ class SyncMasterData extends Command
             Dosen::on('kkn')->updateOrCreate(
                 ['nip' => $nip],
                 [
-                    'master_id' => $empData['id'],
+                    'master_id' => (string) $empData['id'],
                     'user_id' => $user->id,
                     'nama' => $empData['nama'] ?? $empData['name'] ?? 'Unknown',
                     'faculty_id' => $defaultFaculty?->id, // TO DO: logic to map unit_kerja to faculty
@@ -260,7 +260,7 @@ class SyncMasterData extends Command
             $defaultFaculty = Fakultas::on('kkn')->create([
                 'code' => 'DEFAULT',
                 'nama' => 'Default Faculty', 
-                'master_id' => 0,
+                'master_id' => '0',
                 'master_synced_at' => $now,
             ]);
             $this->info('  Created Default Faculty as fallback');
@@ -274,7 +274,7 @@ class SyncMasterData extends Command
             // Master API returns 'prodi' as string name usually
             $prodiName = $studData['prodi'] ?? 'Unknown Program';
             $programLookup = isset($studData['prodi_id'])
-                ? ['master_id' => $studData['prodi_id']]
+                ? ['master_id' => (string) $studData['prodi_id']]
                 : ['nama' => $prodiName];
 
             $program = Prodi::on('kkn')->updateOrCreate(
@@ -318,10 +318,11 @@ class SyncMasterData extends Command
 
             // 2. Ensure Student record exists (Local KKN)
             // Mapping fields: nama, batch_year (angkatan), gender (jenis_kelamin), birth_date (tanggal_lahir)
+            // Plus requirements: total_sks, status_bta_ppi, semester
             Mahasiswa::on('kkn')->updateOrCreate(
                 ['nim' => $nim],
                 [
-                    'master_id' => $studData['id'],
+                    'master_id' => (string) $studData['id'],
                     'user_id' => $user->id,
                     'nama' => $studData['nama'] ?? $studData['name'] ?? 'Unknown',
                     'faculty_id' => $defaultFaculty?->id, // Default for now
@@ -330,6 +331,9 @@ class SyncMasterData extends Command
                     'gender' => $studData['jenis_kelamin'] ?? $studData['gender'] ?? 'L',
                     'birth_place' => $studData['tempat_lahir'] ?? $studData['birth_place'] ?? null,
                     'birth_date' => $studData['tanggal_lahir'] ?? $studData['birth_date'] ?? null,
+                    'total_sks' => $studData['total_sks'] ?? 0,
+                    'status_bta_ppi' => $studData['status_bta_ppi'] ?? 'BELUM_LULUS',
+                    'semester' => $studData['semester'] ?? null,
                     'master_synced_at' => $now,
                 ]
             );

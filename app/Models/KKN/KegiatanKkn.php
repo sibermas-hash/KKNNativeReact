@@ -12,7 +12,6 @@ class KegiatanKkn extends Model
 {
     use HasFactory;
 
-    protected $connection = 'kkn';
     protected $table = 'kegiatan_kkn';
 
     protected $fillable = [

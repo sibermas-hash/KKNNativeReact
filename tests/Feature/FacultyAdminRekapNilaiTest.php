@@ -11,14 +11,11 @@ use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Prodi;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class FacultyAdminRekapNilaiTest extends TestCase
 {
-    use RefreshDatabase;
-
     private User $superadmin;
 
     protected function setUp(): void
@@ -39,7 +36,7 @@ class FacultyAdminRekapNilaiTest extends TestCase
     {
         $faculty = Fakultas::factory()->create(['nama' => 'Fakultas Tarbiyah']);
 
-        $response = $this->actingAs($this->superadmin)->post(route('admin.users.store'), [
+        $response = $this->actingAs($this->superadmin)->post('/admin/pengguna', [
             'username' => 'admin_fak_tarbiyah',
             'name' => 'Admin Fakultas Tarbiyah',
             'email' => 'admin-fakultas@example.test',
@@ -48,7 +45,7 @@ class FacultyAdminRekapNilaiTest extends TestCase
             'faculty_id' => $faculty->id,
         ]);
 
-        $response->assertRedirect(route('admin.users.index'));
+        $response->assertRedirect('/admin/pengguna');
 
         $user = User::where('username', 'admin_fak_tarbiyah')->firstOrFail();
 
@@ -80,14 +77,14 @@ class FacultyAdminRekapNilaiTest extends TestCase
 
         $response->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/RekapNilai/Index')
+                ->component('Admin/GradeReports/Index')
                 ->where('lockedFaculty.id', $facultyA->id)
                 ->where('lockedFaculty.name', $facultyA->nama)
                 ->where('canExport', false)
                 ->where('canBulkCertificates', false)
                 ->where('canFinalizeMass', false)
                 ->has('scores', 1)
-                ->where('scores.0.nama', 'Mahasiswa Dakwah')
+                ->where('scores.0.name', 'Mahasiswa Dakwah')
                 ->where('scores.0.fakultas', $facultyA->nama)
             );
 
@@ -108,11 +105,11 @@ class FacultyAdminRekapNilaiTest extends TestCase
         $facultyAdmin->assignRole('faculty_admin');
 
         $this->actingAs($facultyAdmin)
-            ->get(route('admin.rekap-nilai.export', ['period_id' => $period->id]))
+            ->get('/admin/rekap-nilai/ekspor?period_id=' . $period->id)
             ->assertForbidden();
 
         $this->actingAs($facultyAdmin)
-            ->post(route('admin.rekap-nilai.finalize', $score))
+            ->patch('/admin/rekap-nilai/' . $score->id . '/finalisasi')
             ->assertForbidden();
     }
 
@@ -128,7 +125,7 @@ class FacultyAdminRekapNilaiTest extends TestCase
 
         $this->actingAs($facultyAdmin)
             ->get(route('dashboard'))
-            ->assertRedirect(route('admin.rekap-nilai.index'));
+            ->assertRedirect('/admin/rekap-nilai');
     }
 
     private function createScoreRecord(
@@ -163,7 +160,7 @@ class FacultyAdminRekapNilaiTest extends TestCase
         ]);
 
         return NilaiKkn::create([
-            'mahasiswa_id' => $mahasiswa->id,
+            'user_id' => $studentUser->id,
             'kelompok_id' => $group->id,
             'final_report_score' => 88,
             'execution_score' => 84,

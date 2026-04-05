@@ -23,7 +23,10 @@ beforeEach(function () {
 
 function createStudentUser(array $studentOverrides = []): array
 {
-    $user = User::factory()->create();
+    $user = User::factory()->create([
+        'phone' => '081234567890',
+        'address' => 'Jl. Raya Karangsari No. 10',
+    ]);
     $user->assignRole('student');
 
     $student = Mahasiswa::factory()->create([
@@ -31,6 +34,10 @@ function createStudentUser(array $studentOverrides = []): array
         'nama' => 'Ahmad Fauzi',
         'nim' => '2024001234',
         'batch_year' => 2024,
+        'nik' => '3301010101010001',
+        'mother_name' => 'Siti Fauziah',
+        'birth_place' => 'Banyumas',
+        'birth_date' => '2003-01-01',
         ...$studentOverrides,
     ]);
 
@@ -121,6 +128,31 @@ test('student registration page uses configurable male ratio settings', function
         );
 });
 
+test('student registration page treats legacy bta status as passed for ui gating', function () {
+    ['user' => $user] = createStudentUser([
+        'is_bta_ppi_passed' => false,
+        'status_bta_ppi' => 'LULUS',
+    ]);
+
+    $period = Periode::factory()->active()->create([
+        'name' => 'KKN Legacy BTA 2026',
+    ]);
+
+    KelompokKkn::factory()->create([
+        'period_id' => $period->id,
+        'status' => 'active',
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('student.registration.create'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Student/Register')
+            ->where('student_academic.is_bta_ppi_passed', true)
+            ->where('student_academic.bta_ppi_status', 'LULUS')
+        );
+});
+
 test('student can submit registration to an active period and active group', function () {
     ['user' => $user, 'student' => $student] = createStudentUser();
 
@@ -172,6 +204,81 @@ test('student with approved group registration is redirected away from registrat
         ->get(route('student.registration.create'))
         ->assertRedirect(route('student.dashboard'))
         ->assertSessionHas('info');
+});
+
+test('rejected registration exposes rejection reason for student follow up', function () {
+    ['user' => $user, 'student' => $student] = createStudentUser();
+
+    $period = Periode::factory()->active()->create([
+        'name' => 'KKN Revisi 2026',
+    ]);
+
+    PesertaKkn::factory()->create([
+        'mahasiswa_id' => $student->id,
+        'period_id' => $period->id,
+        'status' => 'rejected',
+        'notes' => 'Catatan awal mahasiswa.',
+        'rejection_reason' => 'Surat sehat kurang jelas dan alamat belum lengkap.',
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('student.registration.create'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Student/Register')
+            ->where('periods.0.registration.status', 'rejected')
+            ->where('periods.0.registration.rejection_reason', 'Surat sehat kurang jelas dan alamat belum lengkap.')
+        );
+});
+
+test('rejected student can resubmit registration after fixing their data', function () {
+    ['user' => $user, 'student' => $student] = createStudentUser();
+
+    $period = Periode::factory()->active()->create();
+    $oldGroup = KelompokKkn::factory()->create([
+        'period_id' => $period->id,
+        'status' => 'active',
+    ]);
+    $newGroup = KelompokKkn::factory()->create([
+        'period_id' => $period->id,
+        'status' => 'active',
+    ]);
+
+    PesertaKkn::factory()->create([
+        'mahasiswa_id' => $student->id,
+        'period_id' => $period->id,
+        'kelompok_id' => $oldGroup->id,
+        'status' => 'rejected',
+        'notes' => 'Catatan awal mahasiswa.',
+        'rejection_reason' => 'Mohon lengkapi alamat domisili dan unggah ulang surat sehat.',
+        'revision_count' => 0,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('student.registration.store'), [
+            'period_id' => $period->id,
+            'kelompok_id' => $newGroup->id,
+            'notes' => 'Dokumen dan biodata sudah diperbaiki.',
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    $this->assertDatabaseHas('peserta_kkn', [
+        'mahasiswa_id' => $student->id,
+        'period_id' => $period->id,
+        'kelompok_id' => $newGroup->id,
+        'status' => 'pending',
+        'notes' => 'Dokumen dan biodata sudah diperbaiki.',
+        'rejection_reason' => 'Mohon lengkapi alamat domisili dan unggah ulang surat sehat.',
+        'revision_count' => 1,
+    ], 'kkn');
+
+    expect(
+        PesertaKkn::query()
+            ->where('mahasiswa_id', $student->id)
+            ->where('period_id', $period->id)
+            ->value('resubmitted_at')
+    )->not->toBeNull();
 });
 
 test('student with approved group registration cannot update or leave registration anymore', function () {

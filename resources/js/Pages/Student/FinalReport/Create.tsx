@@ -27,7 +27,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
 
  const handleSubmit = (event: React.FormEvent) => {
  event.preventDefault();
- form.post('/student/final-report', {
+ form.post('/mahasiswa/final-report', {
  forceFormData: true,
  });
  };
@@ -50,7 +50,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  <div className="mx-auto max-w-4xl space-y-6">
  <section className="rounded-lg border border-slate-200 bg-white p-8">
  <Link
- href="/student/dashboard"
+ href="/mahasiswa"
  className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
  >
  Kembali ke dasbor
@@ -80,7 +80,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  label="Judul laporan"
  required
  value={form.data.title}
- onChange={(event) => form.setData('judul', event.target.value)}
+ onChange={(event) => form.setData('title', event.target.value)}
  error={form.errors.title}
  />
  <FormTextarea
@@ -94,7 +94,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
    <input
      type="file"
      accept=".pdf,.doc,.docx"
-     onChange={(event) => form.setData('berkas', event.target.files?.[0] ?? null)}
+     onChange={(event) => form.setData('file', event.target.files?.[0] ?? null)}
      className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary"
      required
    />
@@ -103,7 +103,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  </div>
  <div className="mt-6 flex justify-end gap-3">
  <Link
- href="/student/dashboard"
+ href="/mahasiswa"
  className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
  >
  Batal

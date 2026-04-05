@@ -16,8 +16,13 @@ class KegiatanKknController extends Controller
         Gate::authorize('view-reports');
         $status = $request->input('status');
 
+        $user = auth()->user();
+        $isFacultyAdmin = $user?->hasRole('faculty_admin');
+        $facultyId = $isFacultyAdmin ? $user?->faculty_id : null;
+
         $reports = KegiatanKkn::with(['mahasiswa', 'kelompok'])
             ->when($status, fn ($q) => $q->where('status', $status))
+            ->when($facultyId, fn ($q) => $q->whereHas('mahasiswa', fn ($m) => $m->where('faculty_id', $facultyId)))
             ->orderByDesc('date')
             ->paginate(15)
             ->withQueryString();

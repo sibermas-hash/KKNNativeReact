@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\BpjsParticipantExport;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\PesertaKkn;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use Inertia\Inertia;
 use Inertia\Response;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -14,9 +16,48 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Traits\HandlesPagination;
 
 class PesertaKknController extends Controller
 {
+    use HandlesPagination;
+
+    private function normalizeStatus(?string $status): ?string
+    {
+        if ($status === null || $status === '') {
+            return null;
+        }
+
+        return match ($status) {
+            'menunggu' => 'pending',
+            'disetujui' => 'approved',
+            'ditolak' => 'rejected',
+            default => $status,
+        };
+    }
+
+    private function registrationQuery(Request $request, bool $approvedOnly = false)
+    {
+        $user = auth()->user();
+        $isFacultyAdmin = $user?->hasRole('faculty_admin');
+        $facultyId = $isFacultyAdmin ? $user?->faculty_id : null;
+        $status = $approvedOnly ? 'approved' : $this->normalizeStatus($request->input('status'));
+
+        return PesertaKkn::with([
+            'mahasiswa.user',
+            'mahasiswa.fakultas',
+            'mahasiswa.prodi.fakultas',
+            'periode',
+            'kelompok',
+        ])
+            ->when($request->input('search'), fn ($query, $search) => $query->search($search))
+            ->when($status, fn ($query, $value) => $query->where('status', $value))
+            ->when($request->input('period_id'), fn ($query, $periodId) => $query->where('period_id', $periodId))
+            ->when($facultyId, function ($query, $id) {
+                $query->whereHas('mahasiswa', fn ($studentQuery) => $studentQuery->where('faculty_id', $id));
+            });
+    }
+
     /**
      * Download registration documents from local storage.
      */
@@ -38,9 +79,11 @@ class PesertaKknController extends Controller
 
     public function index(Request $request): Response
     {
-        $registrations = PesertaKkn::with('mahasiswa.fakultas', 'mahasiswa.prodi', 'periode', 'kelompok')
-            ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status))
-            ->when($request->input('period_id'), fn ($q, $periodId) => $q->where('period_id', $periodId))
+        $user = auth()->user();
+        $isFacultyAdmin = $user?->hasRole('faculty_admin');
+        $facultyId = $isFacultyAdmin ? $user?->faculty_id : null;
+
+        $registrations = $this->registrationQuery($request)
             ->orderByDesc('created_at')
             ->paginate(15)
             ->withQueryString();
@@ -51,6 +94,10 @@ class PesertaKknController extends Controller
                 'id' => $reg->id,
                 'status' => $reg->status,
                 'registration_date' => $reg->registration_date,
+                'notes' => $reg->notes,
+                'rejection_reason' => $reg->rejection_reason,
+                'revision_count' => (int) ($reg->revision_count ?? 0),
+                'resubmitted_at' => $reg->resubmitted_at?->toIso8601String(),
                 'student' => [
                     'nim' => $reg->mahasiswa?->nim,
                     'name' => $reg->mahasiswa?->nama ?? $reg->mahasiswa?->user?->name ?? '-',
@@ -62,18 +109,22 @@ class PesertaKknController extends Controller
             ];
         });
 
-        // Statistics - OPTIMIZED: Use database-level aggregation instead of loading all records
+        // Statistics - OPTIMIZED: Use database-level aggregation
+        $byFacultyQuery = PesertaKkn::query()
+            ->selectRaw('mahasiswa.faculty_id, COUNT(*) as count')
+            ->join('mahasiswa', 'peserta_kkn.mahasiswa_id', '=', 'mahasiswa.id')
+            ->leftJoin('fakultas', 'mahasiswa.faculty_id', '=', 'fakultas.id')
+            ->selectRaw('COALESCE(fakultas.nama, \'Tidak Diketahui\') as faculty_name')
+            ->when($facultyId, fn ($query, $id) => $query->where('mahasiswa.faculty_id', $id))
+            ->groupBy('mahasiswa.faculty_id', 'fakultas.nama')
+            ->orderByDesc('count');
+
         $stats = [
-            'total' => PesertaKkn::count(),
-            'pending' => PesertaKkn::where('status', 'pending')->count(),
-            'approved' => PesertaKkn::where('status', 'approved')->count(),
-            'rejected' => PesertaKkn::where('status', 'rejected')->count(),
-            'by_faculty' => PesertaKkn::selectRaw('mahasiswa.faculty_id, COUNT(*) as count')
-                ->join('mahasiswa', 'peserta_kkn.mahasiswa_id', '=', 'mahasiswa.id')
-                ->leftJoin('fakultas', 'mahasiswa.faculty_id', '=', 'fakultas.id')
-                ->selectRaw('COALESCE(fakultas.nama, \'Tidak Diketahui\') as faculty_name')
-                ->groupBy('mahasiswa.faculty_id', 'fakultas.nama')
-                ->orderByDesc('count')
+            'total' => PesertaKkn::when($facultyId, fn($q) => $q->whereHas('mahasiswa', fn($m) => $m->where('faculty_id', $facultyId)))->count(),
+            'pending' => PesertaKkn::where('status', 'pending')->when($facultyId, fn($q) => $q->whereHas('mahasiswa', fn($m) => $m->where('faculty_id', $facultyId)))->count(),
+            'approved' => PesertaKkn::where('status', 'approved')->when($facultyId, fn($q) => $q->whereHas('mahasiswa', fn($m) => $m->where('faculty_id', $facultyId)))->count(),
+            'rejected' => PesertaKkn::where('status', 'rejected')->when($facultyId, fn($q) => $q->whereHas('mahasiswa', fn($m) => $m->where('faculty_id', $facultyId)))->count(),
+            'by_faculty' => $byFacultyQuery
                 ->get()
                 ->map(function ($row) {
                     return [
@@ -84,8 +135,12 @@ class PesertaKknController extends Controller
         ];
 
         return Inertia::render('Admin/Registrations/Index', [
-            'registrations' => $registrations,
-            'filters' => $request->only('status', 'period_id'),
+            'registrations' => $this->formatPaginator($registrations),
+            'filters' => [
+                'search' => $request->input('search'),
+                'status' => $this->normalizeStatus($request->input('status')),
+                'period_id' => $request->input('period_id'),
+            ],
             'stats' => $stats,
         ]);
     }
@@ -132,7 +187,9 @@ class PesertaKknController extends Controller
                 ->where('status', 'pending')
                 ->update([
                     'status' => 'rejected',
-                    'notes' => $validated['notes'],
+                    'rejection_reason' => $validated['notes'],
+                    'last_rejected_at' => now(),
+                    'last_rejected_by' => auth()->id(),
                 ]);
         });
 
@@ -145,10 +202,9 @@ class PesertaKknController extends Controller
      */
     public function export(Request $request): BinaryFileResponse
     {
-        $query = PesertaKkn::with('mahasiswa.fakultas', 'mahasiswa.prodi', 'periode', 'kelompok')
-            ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status));
-
-        $registrations = $query->orderByDesc('created_at')->get();
+        $registrations = $this->registrationQuery($request)
+            ->orderByDesc('created_at')
+            ->get();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -206,20 +262,33 @@ class PesertaKknController extends Controller
         return response()->download($finalFile, $filename)->deleteFileAfterSend(true);
     }
 
-    public function show(PesertaKkn $registration): Response
+    public function exportBpjs(Request $request): BinaryFileResponse
     {
-        $registration->load('mahasiswa.fakultas', 'mahasiswa.prodi', 'periode', 'kelompok', 'dokumen');
+        $registrations = $this->registrationQuery($request, approvedOnly: true)
+            ->orderBy('approved_at')
+            ->orderBy('created_at')
+            ->get();
+
+        return Excel::download(
+            new BpjsParticipantExport($registrations),
+            'peserta-bpjs-kkn.xlsx'
+        );
+    }
+
+    public function show(PesertaKkn $pesertaKkn): Response
+    {
+        $pesertaKkn->load('mahasiswa.fakultas', 'mahasiswa.prodi', 'periode', 'kelompok', 'dokumen', 'rejector');
 
         return Inertia::render('Admin/Registrations/Show', [
-            'registration' => $registration,
+            'registration' => $pesertaKkn,
         ]);
     }
 
-    public function approve(PesertaKkn $registration): RedirectResponse
+    public function approve(PesertaKkn $pesertaKkn): RedirectResponse
     {
         // Proteksi: Cek Kapasitas Kelompok jika mahasiswa sudah diplot ke kelompok
-        if ($registration->kelompok_id) {
-            $kelompok = $registration->kelompok()->withCount(['peserta' => function ($q) {
+        if ($pesertaKkn->kelompok_id) {
+            $kelompok = $pesertaKkn->kelompok()->withCount(['peserta' => function ($q) {
                 $q->where('status', 'approved');
             }])->first();
 
@@ -228,7 +297,7 @@ class PesertaKknController extends Controller
             }
         }
 
-        $registration->update([
+        $pesertaKkn->update([
             'status' => 'approved',
             'approved_at' => now(),
             'approved_by' => auth()->id(),
@@ -237,21 +306,23 @@ class PesertaKknController extends Controller
         return redirect()->back()->with('success', 'Pendaftaran berhasil disetujui.');
     }
 
-    public function reject(Request $request, PesertaKkn $registration): RedirectResponse
+    public function reject(Request $request, PesertaKkn $pesertaKkn): RedirectResponse
     {
         $validated = $request->validate([
             'notes' => ['required', 'string', 'max:1000'],
         ]);
 
-        $registration->update([
+        $pesertaKkn->update([
             'status' => 'rejected',
-            'notes' => $validated['notes'],
+            'rejection_reason' => $validated['notes'],
+            'last_rejected_at' => now(),
+            'last_rejected_by' => auth()->id(),
         ]);
 
         return redirect()->back()->with('success', 'Pendaftaran ditolak.');
     }
 
-    public function assignGroup(Request $request, PesertaKkn $registration): RedirectResponse
+    public function assignGroup(Request $request, PesertaKkn $pesertaKkn): RedirectResponse
     {
         $validated = $request->validate([
             'kelompok_id' => ['required', 'exists:kelompok_kkn,id'],
@@ -266,7 +337,7 @@ class PesertaKknController extends Controller
             return redirect()->back()->withErrors(['error' => "Gagal menempatkan. Kelompok tujuan {$kelompok->nama_kelompok} sudah penuh."]);
         }
 
-        $registration->update([
+        $pesertaKkn->update([
             'kelompok_id' => $validated['kelompok_id'],
             'role' => 'Anggota', // Reset to Anggota when moving group
         ]);

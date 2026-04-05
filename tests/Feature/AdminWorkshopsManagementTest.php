@@ -6,14 +6,11 @@ use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\Workshop;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class AdminWorkshopsManagementTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();

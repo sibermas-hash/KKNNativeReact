@@ -19,10 +19,10 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'login' => ['required', 'string'],
+            'login' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string'],
-            'remember' => ['boolean'],
-            'captcha_answer' => ['required', 'integer', 'min:0', 'max:999'],
+            'remember' => ['nullable', 'boolean'],
+            'captcha_answer' => ['required', 'numeric', 'min:0', 'max:999'],
         ];
     }
 

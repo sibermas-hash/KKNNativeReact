@@ -1,38 +1,180 @@
 <?php
 
+namespace Tests\Feature;
+
 use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
+use App\Models\User;
+use Database\Seeders\RoleSeeder;
+use Tests\TestCase;
 
-test('student can register for active period', function () {
-    $mahasiswa = Mahasiswa::factory()->create();
-    $periode = Periode::factory()->active()->create();
+class RegistrationTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-    $peserta = PesertaKkn::factory()->create([
-        'mahasiswa_id' => $mahasiswa->id,
-        'period_id' => $periode->id,
-        'status' => 'pending',
-    ]);
+        $this->seed(RoleSeeder::class);
+    }
 
-    expect($peserta)->toBeInstanceOf(PesertaKkn::class);
-    expect($peserta->mahasiswa_id)->toBe($mahasiswa->id);
-    expect($peserta->period_id)->toBe($periode->id);
-    expect($peserta->status)->toBe('pending');
-});
+    public function test_student_can_open_registration_page_for_active_period(): void
+    {
+        $user = User::factory()->create([
+            'phone' => '081111111111',
+            'address' => 'Jl. Pahlawan No. 1',
+        ]);
+        $user->assignRole('student');
 
-test('student cannot register twice for the same period', function () {
-    $mahasiswa = Mahasiswa::factory()->create();
-    $periode = Periode::factory()->active()->create();
+        Mahasiswa::factory()->create([
+            'user_id' => $user->id,
+            'nik' => '3301010101010011',
+            'mother_name' => 'Siti Salamah',
+            'birth_place' => 'Purwokerto',
+            'birth_date' => '2003-01-11',
+        ]);
 
-    PesertaKkn::factory()->create([
-        'mahasiswa_id' => $mahasiswa->id,
-        'period_id' => $periode->id,
-    ]);
+        Periode::factory()->active()->create();
 
-    // Attempt duplicate registration
-    $duplicate = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
-        ->where('period_id', $periode->id)
-        ->count();
+        $response = $this->actingAs($user)
+            ->get(route('student.registration.create'));
 
-    expect($duplicate)->toBe(1);
-});
+        $response->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Student/Register')
+                ->has('periods')
+            );
+    }
+
+    public function test_student_can_register_for_active_period(): void
+    {
+        $user = User::factory()->create([
+            'phone' => '081222222222',
+            'address' => 'Jl. Pahlawan No. 2',
+        ]);
+        $user->assignRole('student');
+
+        $mahasiswa = Mahasiswa::factory()->create([
+            'user_id' => $user->id,
+            'nik' => '3301010101010012',
+            'mother_name' => 'Nur Hidayah',
+            'birth_place' => 'Cilacap',
+            'birth_date' => '2003-02-12',
+        ]);
+
+        $period = Periode::factory()->active()->create();
+        $group = KelompokKkn::factory()->create([
+            'period_id' => $period->id,
+            'status' => 'active',
+        ]);
+
+        // First visit the registration page to establish session
+        $this->actingAs($user)
+            ->get(route('student.registration.create'));
+
+        $response = $this->actingAs($user)
+            ->from(route('student.registration.create'))
+            ->post(route('student.registration.store'), [
+                'period_id' => $period->id,
+                'kelompok_id' => $group->id,
+            ]);
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('peserta_kkn', [
+            'mahasiswa_id' => $mahasiswa->id,
+            'period_id' => $period->id,
+            'status' => 'pending',
+        ], 'kkn');
+    }
+
+    public function test_student_cannot_register_twice_for_the_same_period(): void
+    {
+        $user = User::factory()->create([
+            'phone' => '081333333333',
+            'address' => 'Jl. Pahlawan No. 3',
+        ]);
+        $user->assignRole('student');
+
+        $mahasiswa = Mahasiswa::factory()->create([
+            'user_id' => $user->id,
+            'nik' => '3301010101010013',
+            'mother_name' => 'Khadijah',
+            'birth_place' => 'Purbalingga',
+            'birth_date' => '2003-03-13',
+        ]);
+
+        $period = Periode::factory()->active()->create();
+        $group = KelompokKkn::factory()->create([
+            'period_id' => $period->id,
+            'status' => 'active',
+        ]);
+
+        // First registration
+        $this->actingAs($user)
+            ->get(route('student.registration.create'));
+
+        $this->actingAs($user)
+            ->post(route('student.registration.store'), [
+                'period_id' => $period->id,
+                'kelompok_id' => $group->id,
+            ]);
+
+        // Attempt duplicate registration
+        $response = $this->actingAs($user)
+            ->from(route('student.registration.create'))
+            ->post(route('student.registration.store'), [
+                'period_id' => $period->id,
+                'kelompok_id' => $group->id,
+            ]);
+
+        // Should only have one registration record
+        $count = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
+            ->where('period_id', $period->id)
+            ->count();
+
+        $this->assertSame(1, $count);
+    }
+
+    public function test_student_is_redirected_to_profile_when_bpjs_biodata_is_incomplete(): void
+    {
+        $user = User::factory()->create([
+            'phone' => null,
+            'address' => null,
+        ]);
+        $user->assignRole('student');
+
+        Mahasiswa::factory()->create([
+            'user_id' => $user->id,
+            'nik' => null,
+            'mother_name' => null,
+            'birth_place' => null,
+            'birth_date' => null,
+        ]);
+
+        $period = Periode::factory()->active()->create();
+
+        // Visit registration page first to establish session
+        $this->actingAs($user)
+            ->get(route('student.registration.create'));
+
+        $response = $this->actingAs($user)
+            ->post(route('student.registration.store'), [
+                'period_id' => $period->id,
+            ]);
+
+        $response
+            ->assertRedirect(route('profile.show'))
+            ->assertSessionHas('error');
+    }
+
+    public function test_guest_cannot_access_registration_page(): void
+    {
+        Periode::factory()->active()->create();
+
+        $response = $this->get(route('student.registration.create'));
+
+        $response->assertRedirect(route('login'));
+    }
+}

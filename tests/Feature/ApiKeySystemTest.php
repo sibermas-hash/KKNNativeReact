@@ -2,17 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Mail\ApiKeyGenerated;
 use App\Models\ApiKey;
 use App\Models\Project;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class ApiKeySystemTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -94,6 +92,7 @@ class ApiKeySystemTest extends TestCase
         ]);
         $this->assertStringStartsWith('sk_', $response->json('api_key'));
         $this->assertTrue(Hash::check($response->json('api_key'), ApiKey::firstOrFail()->getRawOriginal('key')));
+        Mail::assertSent(ApiKeyGenerated::class);
     }
 
     public function test_duplicate_email_returns_409(): void

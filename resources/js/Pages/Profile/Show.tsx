@@ -3,6 +3,7 @@ import { useRef, useState, type FormEventHandler } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { FormInput, FormTextarea } from '@/Components/ui';
 import type { PageProps } from '@/types';
+import { route } from 'ziggy-js';
 
 interface UserData {
     id: number;
@@ -15,12 +16,28 @@ interface UserData {
     must_change_password: boolean;
 }
 
+interface StudentData {
+    nim: string;
+    nik: string | null;
+    name: string;
+    mother_name: string | null;
+    faculty: string | null;
+    program: string | null;
+    batch_year: number | null;
+    gender: 'L' | 'P' | null;
+    birth_place: string | null;
+    birth_date: string | null;
+    bpjs_complete: boolean;
+    missing_bpjs_fields: string[];
+}
+
 interface Props extends PageProps {
- user: UserData;
+    user: UserData;
+    student: StudentData | null;
 }
 
 export default function ProfileShow() {
-    const { user } = usePage<Props>().props;
+    const { user, student } = usePage<Props>().props;
     const avatarInputRef = useRef<HTMLInputElement>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -28,6 +45,11 @@ export default function ProfileShow() {
         name: user.name ?? '',
         phone: user.phone ?? '',
         address: user.address ?? '',
+        nik: student?.nik ?? '',
+        mother_name: student?.mother_name ?? '',
+        gender: student?.gender ?? '',
+        birth_place: student?.birth_place ?? '',
+        birth_date: student?.birth_date ?? '',
     });
 
     const passwordForm = useForm({
@@ -42,12 +64,12 @@ export default function ProfileShow() {
 
     const handleProfileSubmit: FormEventHandler = (event) => {
         event.preventDefault();
-        profileForm.put('/profile', { preserveScroll: true });
+        profileForm.put(route('profile.update'), { preserveScroll: true });
     };
 
     const handlePasswordSubmit: FormEventHandler = (event) => {
         event.preventDefault();
-        passwordForm.post('/profile/password', {
+        passwordForm.post(route('profile.password'), {
             preserveScroll: true,
             onSuccess: () => passwordForm.reset(),
         });
@@ -61,7 +83,7 @@ export default function ProfileShow() {
 
         setPreviewUrl(URL.createObjectURL(file));
         avatarForm.setData('avatar', file);
-        avatarForm.post('/profile/avatar', {
+        avatarForm.post(route('profile.avatar'), {
             preserveScroll: true,
             forceFormData: true,
         });
@@ -123,23 +145,115 @@ export default function ProfileShow() {
 
                     <div className="space-y-6 lg:col-span-2">
                         <section className="rounded-lg border border-slate-200 bg-white p-6">
-                            <h2 className="text-lg font-semibold text-slate-900">Informasi Profil</h2>
+                            <h2 className="text-lg font-semibold text-slate-900">{student ? 'Biodata Peserta & BPJS' : 'Informasi Profil'}</h2>
+                            {student ? (
+                                <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                                    <div className="grid gap-3 md:grid-cols-2">
+                                        <div>
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Nama lengkap</p>
+                                            <p className="mt-1 font-medium text-slate-800">{student.name}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">NIM</p>
+                                            <p className="mt-1 font-medium text-slate-800">{student.nim}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Fakultas</p>
+                                            <p className="mt-1 font-medium text-slate-800">{student.faculty ?? '-'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Program studi</p>
+                                            <p className="mt-1 font-medium text-slate-800">{student.program ?? '-'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Angkatan</p>
+                                            <p className="mt-1 font-medium text-slate-800">{student.batch_year ?? '-'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Status biodata BPJS</p>
+                                            <p className={`mt-1 font-medium ${student.bpjs_complete ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                                {student.bpjs_complete ? 'Lengkap' : 'Masih perlu dilengkapi'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {!student.bpjs_complete && student.missing_bpjs_fields.length > 0 ? (
+                                        <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                                            Lengkapi data berikut sebelum mendaftar KKN: {student.missing_bpjs_fields.join(', ')}.
+                                        </div>
+                                    ) : null}
+                                </div>
+                            ) : null}
                             <form onSubmit={handleProfileSubmit} className="mt-6 space-y-4">
-                                <FormInput
-                                    label="Nama lengkap"
-                                    value={profileForm.data.name}
-                                    onChange={(event) => profileForm.setData('name', event.target.value)}
-                                    error={profileForm.errors.name}
-                                />
+                                {!student ? (
+                                    <FormInput
+                                        label="Nama lengkap"
+                                        value={profileForm.data.name}
+                                        onChange={(event) => profileForm.setData('name', event.target.value)}
+                                        error={profileForm.errors.name}
+                                    />
+                                ) : null}
                                 <FormInput label="Email" value={user.email} disabled />
-                                <FormInput
-                                    label="Nomor telepon"
-                                    value={profileForm.data.phone}
-                                    onChange={(event) => profileForm.setData('phone', event.target.value)}
-                                    error={profileForm.errors.phone}
-                                />
+
+                                {student ? (
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        <FormInput
+                                            label="NIK"
+                                            value={profileForm.data.nik}
+                                            onChange={(event) => profileForm.setData('nik', event.target.value)}
+                                            error={profileForm.errors.nik}
+                                            placeholder="16 digit NIK"
+                                        />
+                                        <FormInput
+                                            label="Nama ibu kandung"
+                                            value={profileForm.data.mother_name}
+                                            onChange={(event) => profileForm.setData('mother_name', event.target.value)}
+                                            error={profileForm.errors.mother_name}
+                                        />
+                                        <FormInput
+                                            label="Tempat lahir"
+                                            value={profileForm.data.birth_place}
+                                            onChange={(event) => profileForm.setData('birth_place', event.target.value)}
+                                            error={profileForm.errors.birth_place}
+                                        />
+                                        <FormInput
+                                            type="date"
+                                            label="Tanggal lahir"
+                                            value={profileForm.data.birth_date}
+                                            onChange={(event) => profileForm.setData('birth_date', event.target.value)}
+                                            error={profileForm.errors.birth_date}
+                                        />
+                                        <div>
+                                            <label className="mb-1.5 block text-sm font-medium text-slate-700">Jenis kelamin</label>
+                                            <select
+                                                value={profileForm.data.gender}
+                                                onChange={(event) => profileForm.setData('gender', event.target.value)}
+                                                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                            >
+                                                <option value="">Pilih jenis kelamin</option>
+                                                <option value="L">Laki-laki</option>
+                                                <option value="P">Perempuan</option>
+                                            </select>
+                                            {profileForm.errors.gender ? <p className="mt-1 text-sm text-red-600">{profileForm.errors.gender}</p> : null}
+                                        </div>
+                                        <FormInput
+                                            label="Nomor WhatsApp"
+                                            value={profileForm.data.phone}
+                                            onChange={(event) => profileForm.setData('phone', event.target.value)}
+                                            error={profileForm.errors.phone}
+                                            placeholder="08xxxxxxxxxx"
+                                        />
+                                    </div>
+                                ) : (
+                                    <FormInput
+                                        label="Nomor telepon"
+                                        value={profileForm.data.phone}
+                                        onChange={(event) => profileForm.setData('phone', event.target.value)}
+                                        error={profileForm.errors.phone}
+                                    />
+                                )}
                                 <FormTextarea
-                                    label="Alamat"
+                                    label={student ? 'Alamat lengkap domisili' : 'Alamat'}
                                     value={profileForm.data.address}
                                     onChange={(event) => profileForm.setData('address', event.target.value)}
                                     error={profileForm.errors.address}
@@ -150,7 +264,7 @@ export default function ProfileShow() {
                                         disabled={profileForm.processing}
                                         className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-60"
                                     >
-                                        {profileForm.processing ? 'Menyimpan...' : 'Simpan profil'}
+                                        {profileForm.processing ? 'Menyimpan...' : student ? 'Simpan biodata peserta' : 'Simpan profil'}
                                     </button>
                                 </div>
                             </form>

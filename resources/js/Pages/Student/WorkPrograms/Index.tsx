@@ -32,7 +32,7 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
  </div>
  {canCreate && (
  <Link
- href="/student/work-programs/create"
+ href="/mahasiswa/work-programs/create"
  className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark"
  >
  Ajukan program kerja

@@ -10,7 +10,6 @@ class Lokasi extends Model
 {
     use HasFactory;
 
-    protected $connection = 'kkn';
     protected $table = 'lokasi';
     protected $appends = ['full_name'];
 

@@ -41,12 +41,12 @@ export default function PublicLayout({ children }: Props) {
                 <div className="container mx-auto h-full px-6 lg:px-12 flex items-center justify-between">
                     <div className="flex items-center gap-4 group">
                         <Link href="/" className="flex items-center gap-3">
-                            <div className="p-3 bg-emerald-500 rounded-2xl text-white shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform duration-500">
-                                <Landmark className="w-7 h-7" />
+                            <div className="p-2.5 bg-emerald-600 rounded-xl text-white shadow-lg shadow-emerald-600/20 group-hover:scale-110 transition-transform duration-500">
+                                <GraduationCap className="w-6 h-6" />
                             </div>
-                            <h1 className="text-xl lg:text-2xl font-extrabold tracking-tighter text-slate-900 leading-none">
-                                SIM<span className="text-emerald-500">KKN</span>
-                                <span className="block text-[10px] font-bold text-slate-400 tracking-[0.2em] mt-1 uppercase">UIN SAIZU</span>
+                            <h1 className="text-xl font-bold tracking-tight text-slate-800 leading-none">
+                                KKN<span className="font-normal text-slate-400">UIN Saizu</span>
+                                <span className="block text-[8px] font-bold text-slate-400 tracking-[0.1em] mt-1 uppercase">Portal Resmi KKN</span>
                             </h1>
                         </Link>
                     </div>
@@ -67,22 +67,15 @@ export default function PublicLayout({ children }: Props) {
                     </div>
 
                     <div className="flex items-center gap-6">
-                        {auth.user ? (
-                            <Link 
-                                href={route('dashboard')}
-                                className="hidden sm:flex items-center gap-3 px-8 py-3.5 bg-slate-900 text-white rounded-full text-xs font-bold tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-slate-900/10"
-                            >
-                                PANEL KONTROL
-                                <ArrowRight size={14} />
-                            </Link>
-                        ) : (
-                            <Link 
-                                href={route('login')}
-                                className="hidden sm:flex items-center gap-3 px-10 py-4 bg-emerald-500 text-white rounded-full text-[13px] font-bold tracking-widest hover:bg-slate-900 transition-all shadow-xl shadow-emerald-500/20"
-                            >
-                                MASUK PORTAL
-                            </Link>
-                        )}
+                        <Link href="/cari-lokasi" className="hidden xl:flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-emerald-600 hover:text-emerald-700 transition-colors">
+                            Cari Lokasi
+                        </Link>
+                        <Link 
+                            href="/login" 
+                            className="px-8 py-3.5 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-3"
+                        >
+                            Login Portal <ArrowRight size={14} />
+                        </Link>
                         
                         <button 
                             className="lg:hidden p-3 bg-slate-50 rounded-xl text-slate-600"

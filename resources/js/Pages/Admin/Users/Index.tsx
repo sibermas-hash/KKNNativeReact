@@ -1,24 +1,21 @@
 import { useState } from 'react';
-import { useForm, router, Head } from '@inertiajs/react';
+import { router, Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { route } from 'ziggy-js';
 import {
     Users,
     Search,
-    RefreshCw,
     UserPlus,
-    Mail,
-    ShieldCheck,
+    Shield,
     Lock,
     Unlock,
-    Trash2,
-    Filter,
     ArrowRight,
-    ShieldAlert,
-    Fingerprint,
+    SearchCheck,
+    CheckCircle2,
+    ShieldAlert
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Pagination } from '@/Components/ui';
+import type { PaginationMeta } from '@/Components/ui/Pagination';
 
 interface User {
     id: number;
@@ -26,12 +23,13 @@ interface User {
     email: string;
     roles: string[];
     email_verified_at: string | null;
+    is_active?: boolean;
 }
 
 interface Props {
     users: {
         data: User[];
-        meta: Record<string, unknown>;
+        meta: PaginationMeta;
     };
     filters: { search?: string };
 }
@@ -41,132 +39,156 @@ export default function UsersIndex({ users, filters }: Props) {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        router.get(route('admin.users.index'), { search }, { preserveState: true });
+        router.get('/admin/pengguna', { search }, { preserveState: true });
     };
 
-    const destroy = (id: number) => {
-        if (confirm('AUDIT_CONFIRMATION: Apakah Anda yakin ingin mencabut hak akses bagi personel ini secara permanen?')) {
-            router.delete(route('admin.users.destroy', id));
+    const toggleStatus = (user: User) => {
+        const primaryRole = user.roles[0]?.toLowerCase();
+
+        if (primaryRole !== 'student') {
+            window.alert('Saat ini hanya akun mahasiswa yang dapat diaktifkan atau dinonaktifkan dari halaman ini.');
+            return;
+        }
+
+        const actionLabel = user.is_active ? 'menonaktifkan' : 'mengaktifkan';
+
+        if (confirm(`Apakah Anda yakin ingin ${actionLabel} akun ini?`)) {
+            router.patch(`/admin/pengguna/${user.id}/toggle-status`);
         }
     };
 
     return (
-        <AppLayout title="Manajemen Pengguna">
-            <Head title="Direktori Personel" />
+        <AppLayout title="DATA PENGGUNA">
+            <Head title="Manajemen Pengguna | KKN UIN SAIZU" />
 
-            <div className="space-y-8 pb-20">
-                {/* Simple Clean Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Direktori Personel</h1>
-                        <p className="text-sm text-slate-500 mt-1">Kelola otorisasi akun dan hak akses seluruh entitas pengguna sistem.</p>
+            <div className="space-y-6 pb-12">
+                
+                {/* --- COMPACT ACTION BAR --- */}
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center border border-emerald-100">
+                            <Users size={24} />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-800">Manajemen Pengguna</h2>
+                            <p className="text-sm text-slate-500 font-medium">Total: {users.meta?.total || 0} akun terdaftar</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <form onSubmit={handleSearch} className="relative w-full sm:w-80 group">
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                            <input
+                                placeholder="Cari berdasarkan nama/email..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="w-full h-11 pl-10 pr-4 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all shadow-sm font-medium"
+                            />
+                        </form>
+                        <Link 
+                            href="/admin/pengguna/buat" 
+                            className="h-11 px-6 bg-slate-900 text-white rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-emerald-600 transition-all shadow-sm active:scale-95 group"
+                        >
+                            <UserPlus className="w-4 h-4" />
+                            <span>Buat Akun</span>
+                        </Link>
                     </div>
                 </div>
 
-                {/* Operations Toolbar */}
-                <div className="flex flex-col xl:flex-row gap-4 items-center justify-between">
-                    <form onSubmit={handleSearch} className="flex-1 w-full xl:max-w-2xl relative group">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-300 group-focus-within:text-emerald-500 transition-colors z-10" />
-                        <input
-                            type="cari"
-                            placeholder="Cari Berdasarkan Nama / Email..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="w-full h-15 pl-16 pr-8 py-2 bg-white border border-slate-100 rounded-xl text-sm font-semibold tracking-tight text-slate-900 placeholder:text-slate-200 focus:outline-none focus:ring-8 focus:ring-emerald-500/5 transition-all shadow-sm focus:border-emerald-500 outline-none italic"
-                        />
-                    </form>
-
-                    <div className="flex flex-wrap gap-4 w-full xl:w-auto">
-                        <button className="flex-1 xl:w-auto h-15 px-8 bg-emerald-600 text-white rounded-xl font-bold transition-all shadow-xl shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-4 group/add">
-                            <UserPlus className="w-5 h-5 shadow-sm group-hover/add:scale-110 transition-transform" />
-                            Provision_New_Account
-                        </button>
-                         <button className="h-15 w-15 bg-white border border-slate-100 text-slate-400 hover:text-emerald-600 rounded-xl flex items-center justify-center shadow-sm active:scale-95 transition-all group/opt">
-                            <Filter className="w-5 h-5 shadow-sm group-hover/opt:rotate-12 transition-transform" />
-                        </button>
-                    </div>
-                </div>
-
-                {/* Main Table Content */}
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden group">
-                    <div className="divide-y divide-slate-50 relative z-10 font-bold italic">
-                        {users.data.map((user) => (
-                            <div key={user.id} className="p-8 hover:bg-slate-50/50 transition-all flex flex-col md:flex-row md:items-center justify-between gap-8 group/row">
-                                <div className="flex items-start gap-6">
-                                    <div className="h-14 w-14 rounded-2xl bg-slate-900 border border-slate-800 text-primary flex items-center justify-center shadow-lg group-hover/row:scale-110 transition-transform italic text-lg font-black">
-                                        {user.name.charAt(0)}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <div className="flex items-center gap-3">
-                                            <span className={clsx(
-                                                "text-xs font-black uppercase italic tracking-widest  px-2 py-0.5 rounded border shadow-sm",
-                                                user.roles[0]?.toLowerCase() === 'superadmin' ? "bg-emerald-50 text-emerald-500 border-emerald-100" : "bg-primary/10 text-primary border-primary/20"
-                                            )}>
-                                                {user.roles[0]?.toUpperCase() || 'NO_ROLE'}
-                                            </span>
-                                            <div className="h-1 w-1 rounded-full bg-slate-200" />
-                                            <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">ACCOUNT_ID: #{user.id.toString().padStart(4, '0')}</span>
-                                        </div>
-                                        <h3 className="font-bold text-slate-900 uppercase italic tracking-tighter text-sm  group-hover/row:text-emerald-600 transition-colors uppercase">{user.name}</h3>
-                                        <div className="flex items-center gap-4">
-                                            <div className="flex items-center gap-2">
-                                                <Mail className="h-3.5 w-3.5 text-slate-400" />
-                                                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{user.email}</span>
-                                            </div>
-                                            {user.email_verified_at && (
-                                                <div className="flex items-center gap-2 px-2 py-0.5 bg-emerald-50 rounded border border-emerald-100 text-emerald-600">
-                                                    <ShieldCheck className="h-2.5 w-2.5 shadow-sm shadow-emerald-500/20" />
-                                                    <span className="text-xs font-black uppercase tracking-widest">VERIFIED</span>
+                {/* --- DATA TABLE --- */}
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="bg-slate-50 border-b border-slate-200">
+                                    <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Identitas Personel</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">Hak Akses</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">Verifikasi</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-right">Opsi</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {users.data.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={4} className="px-6 py-20 text-center text-sm text-slate-400 italic">
+                                            Tidak ada data pengguna ditemukan.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    users.data.map((user) => (
+                                        <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
+                                            <td className="px-6 py-5">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="h-10 w-10 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center font-bold text-lg border border-slate-200">
+                                                        {user.name.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-sm font-bold text-slate-800">{user.name}</div>
+                                                        <div className="text-xs text-slate-500 font-medium lowercase tracking-tight">{user.email}</div>
+                                                    </div>
                                                 </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col items-end gap-5">
-                                    <div className="flex items-center gap-3 translate-x-3 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all">
-                                        <button className="h-10 w-10 bg-white border border-slate-100 text-slate-300 hover:text-emerald-600 shadow-sm rounded-lg flex items-center justify-center transition-all hover:border-emerald-100">
-                                            <Lock className="w-4 h-4 shadow-sm" />
-                                        </button>
-                                        <button 
-                                            onClick={() => destroy(user.id)}
-                                            className="h-10 w-10 bg-white border border-rose-50 text-rose-300 hover:text-rose-600 shadow-sm rounded-lg flex items-center justify-center transition-all hover:border-rose-100"
-                                        >
-                                            <Trash2 className="w-4 h-4 shadow-sm px-[1px]" />
-                                        </button>
-                                        <button className="h-10 px-6 bg-slate-900 text-primary border border-slate-800 rounded-xl font-bold uppercase italic tracking-widest text-xs shadow-lg shadow-slate-900/10 flex items-center gap-3 transition-all active:scale-95 group/btn hover:bg-emerald-600 hover:text-white">
-                                            <ArrowRight className="w-4 h-4 shadow-sm" />
-                                            Credentials
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                                            </td>
+                                            <td className="px-6 py-5 text-center">
+                                                <span className={clsx(
+                                                    "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+                                                    user.roles[0]?.toLowerCase() === 'superadmin' 
+                                                        ? "bg-emerald-600 text-white border-emerald-500 shadow-sm" 
+                                                        : "bg-slate-50 text-slate-600 border-slate-200"
+                                                )}>
+                                                    {user.roles[0]?.toUpperCase() || '-'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-5 text-center">
+                                                <div className="flex justify-center">
+                                                    {user.email_verified_at ? (
+                                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold border border-emerald-100">
+                                                            <CheckCircle2 size={12} />
+                                                            Verified
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex px-3 py-1 rounded-full bg-slate-50 text-slate-400 text-[10px] font-bold border border-slate-200">
+                                                            Unverified
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-5 text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    <button 
+                                                        onClick={() => toggleStatus(user)}
+                                                        disabled={user.roles[0]?.toLowerCase() !== 'student'}
+                                                        className={clsx(
+                                                            "h-9 w-9 flex items-center justify-center rounded-lg border transition-all active:scale-90",
+                                                            user.is_active 
+                                                                ? "bg-white border-slate-200 text-slate-300 hover:text-rose-500 hover:border-rose-200 shadow-sm" 
+                                                                : "bg-emerald-600 border-emerald-500 text-white hover:bg-emerald-700 shadow-sm"
+                                                        )}
+                                                        title={user.is_active ? 'Kunci Akses' : 'Buka Akses'}
+                                                    >
+                                                        {user.is_active ? <Lock size={16} /> : <Unlock size={16} />}
+                                                    </button>
+                                                    <button className="h-9 px-4 bg-white border border-slate-200 text-slate-600 rounded-lg text-[11px] font-bold hover:bg-slate-50 transition-all active:scale-95 shadow-sm inline-flex items-center gap-2">
+                                                        Detail
+                                                        <ArrowRight size={14} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                    {/* --- PAGINATION --- */}
+                    <div className="px-6 py-4 bg-slate-50 border-t border-slate-100">
+                        <Pagination meta={users.meta} />
                     </div>
                 </div>
 
-                <div className="mt-8">
-                    <Pagination meta={users.meta} />
-                </div>
-
-                {/* Footer Security Section */}
-                <div className="p-8 bg-slate-900 rounded-xl border border-slate-800 text-white relative overflow-hidden group shadow-xl">
-                    <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
-                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-                        <div className="space-y-3">
-                             <div className="flex items-center gap-3 justify-center md:justify-start">
-                                <ShieldAlert className="w-6 h-6 text-emerald-500 animate-pulse" />
-                                <h4 className="text-sm font-bold text-white uppercase italic tracking-widest">Authority_Audit_Governance</h4>
-                            </div>
-                            <p className="text-sm text-slate-400 font-medium  max-w-4xl italic uppercase">
-                                Seluruh modifikasi hak akses personel terekam secara permanen dalam ledger kedaulatan data. Pastikan otorisasi telah sesuai dengan kebijakan keamanan institusi.
-                            </p>
-                        </div>
-                        <div className="flex gap-4">
-                            <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/10 text-emerald-500 text-xs font-bold">
-                                FEDERATION_SECURED
-                            </div>
-                        </div>
-                    </div>
+                {/* --- SIMPLE FOOTER --- */}
+                <div className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 flex items-center justify-center gap-3">
+                    <ShieldAlert size={16} className="text-slate-400" />
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Keamanan Data Terjamin Melalui Protokol Enkripsi Internal</span>
                 </div>
             </div>
         </AppLayout>

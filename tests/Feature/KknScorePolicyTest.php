@@ -1,106 +1,120 @@
 <?php
 
+namespace Tests\Feature;
+
 use App\Models\User;
 use App\Models\KKN\NilaiKkn;
-use App\Models\KKN\KelompokKkn;
-use App\Policies\KknScorePolicy;
-use Spatie\Permission\Models\Role;
+use Database\Seeders\RoleSeeder;
+use Illuminate\Support\Facades\Gate;
+use Tests\TestCase;
 
-beforeEach(function () {
-    // Seed roles
-    Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web']);
-    
-    Role::firstOrCreate(['name' => 'dpl', 'guard_name' => 'web']);
-    Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
-});
+class KknScorePolicyTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-test('admin can view any score', function () {
-    $admin = User::factory()->create();
-    $admin->assignRole('superadmin');
+        $this->seed(RoleSeeder::class);
+    }
 
-    $policy = new KknScorePolicy();
-    expect($policy->viewAny($admin))->toBeTrue();
-});
+    public function test_admin_can_view_any_score(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('superadmin');
 
-test('admin can create scores', function () {
-    $admin = User::factory()->create();
-    $admin->assignRole('superadmin');
+        $this->actingAs($admin);
+        $this->assertTrue(Gate::allows('viewAny', NilaiKkn::class));
+    }
 
-    $policy = new KknScorePolicy();
-    expect($policy->create($admin))->toBeTrue();
-});
+    public function test_admin_can_create_scores(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('superadmin');
 
-test('admin can finalize scores', function () {
-    $admin = User::factory()->create();
-    $admin->assignRole('superadmin');
+        $this->actingAs($admin);
+        $this->assertTrue(Gate::allows('create', NilaiKkn::class));
+    }
 
-    $score = new NilaiKkn(['is_finalized' => false]);
+    public function test_admin_can_finalize_scores(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('superadmin');
 
-    $policy = new KknScorePolicy();
-    expect($policy->finalize($admin, $score))->toBeTrue();
-});
+        $score = new NilaiKkn(['is_finalized' => false]);
 
-test('admin can bulk finalize scores', function () {
-    $admin = User::factory()->create();
-    $admin->assignRole('superadmin');
+        $this->actingAs($admin);
+        $this->assertTrue(Gate::allows('finalize', $score));
+    }
 
-    $policy = new KknScorePolicy();
-    expect($policy->bulkFinalize($admin))->toBeTrue();
-});
+    public function test_admin_can_bulk_finalize_scores(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('superadmin');
 
-test('admin cannot update finalized scores', function () {
-    $admin = User::factory()->create();
-    $admin->assignRole('superadmin');
+        $this->actingAs($admin);
+        $this->assertTrue(Gate::allows('bulkFinalize', NilaiKkn::class));
+    }
 
-    $score = new NilaiKkn();
-    $score->is_finalized = true;
+    public function test_admin_cannot_update_finalized_scores(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('superadmin');
 
-    $policy = new KknScorePolicy();
-    expect($policy->update($admin, $score))->toBeFalse();
-});
+        $score = new NilaiKkn();
+        $score->is_finalized = true;
 
-test('admin can update non-finalized scores', function () {
-    $admin = User::factory()->create();
-    $admin->assignRole('superadmin');
+        $this->actingAs($admin);
+        $this->assertFalse(Gate::allows('update', $score));
+    }
 
-    $score = new NilaiKkn(['is_finalized' => false]);
+    public function test_admin_can_update_non_finalized_scores(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('superadmin');
 
-    $policy = new KknScorePolicy();
-    expect($policy->update($admin, $score))->toBeTrue();
-});
+        $score = new NilaiKkn(['is_finalized' => false]);
 
-test('student cannot create scores', function () {
-    $student = User::factory()->create();
-    $student->assignRole('student');
+        $this->actingAs($admin);
+        $this->assertTrue(Gate::allows('update', $score));
+    }
 
-    $policy = new KknScorePolicy();
-    expect($policy->create($student))->toBeFalse();
-});
+    public function test_student_cannot_create_scores(): void
+    {
+        $student = User::factory()->create();
+        $student->assignRole('student');
 
-test('student cannot finalize scores', function () {
-    $student = User::factory()->create();
-    $student->assignRole('student');
+        $this->actingAs($student);
+        $this->assertFalse(Gate::allows('create', NilaiKkn::class));
+    }
 
-    $score = new NilaiKkn(['is_finalized' => false]);
+    public function test_student_cannot_finalize_scores(): void
+    {
+        $student = User::factory()->create();
+        $student->assignRole('student');
 
-    $policy = new KknScorePolicy();
-    expect($policy->finalize($student, $score))->toBeFalse();
-});
+        $score = new NilaiKkn(['is_finalized' => false]);
 
-test('superadmin can finalize scores', function () {
-    $superadmin = User::factory()->create();
-    $superadmin->assignRole('superadmin');
+        $this->actingAs($student);
+        $this->assertFalse(Gate::allows('finalize', $score));
+    }
 
-    $score = new NilaiKkn(['is_finalized' => false]);
+    public function test_superadmin_can_finalize_scores(): void
+    {
+        $superadmin = User::factory()->create();
+        $superadmin->assignRole('superadmin');
 
-    $policy = new KknScorePolicy();
-    expect($policy->finalize($superadmin, $score))->toBeTrue();
-});
+        $score = new NilaiKkn(['is_finalized' => false]);
 
-test('dpl can create scores', function () {
-    $dpl = User::factory()->create();
-    $dpl->assignRole('dpl');
+        $this->actingAs($superadmin);
+        $this->assertTrue(Gate::allows('finalize', $score));
+    }
 
-    $policy = new KknScorePolicy();
-    expect($policy->create($dpl))->toBeTrue();
-});
+    public function test_dpl_can_create_scores(): void
+    {
+        $dpl = User::factory()->create();
+        $dpl->assignRole('dpl');
+
+        $this->actingAs($dpl);
+        $this->assertTrue(Gate::allows('create', NilaiKkn::class));
+    }
+}

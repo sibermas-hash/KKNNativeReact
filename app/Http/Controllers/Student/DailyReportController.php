@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Student\StoreDailyReportRequest;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\FileKegiatanKkn;
@@ -103,7 +104,7 @@ class DailyReportController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse|JsonResponse
+    public function store(StoreDailyReportRequest $request): RedirectResponse|JsonResponse
     {
         $mahasiswa = auth()->user()?->mahasiswa;
         abort_if(!$mahasiswa, 403, 'Profil mahasiswa tidak ditemukan.');
@@ -127,7 +128,7 @@ class DailyReportController extends Controller
                 ->with('error', 'Anda belum diizinkan mengirim laporan harian karena belum lulus pembekalan.');
         }
 
-        $validated = $this->validateDailyReportPayload($request);
+        $validated = $request->validated();
         $this->enforceGpsPolicy($validated, $pendaftaran->kelompok);
 
         $kegiatan = KegiatanKkn::create([
@@ -179,8 +180,7 @@ class DailyReportController extends Controller
 
     public function edit(KegiatanKkn $dailyReport): Response
     {
-        $mahasiswa = auth()->user()->mahasiswa;
-        abort_if($dailyReport->mahasiswa_id !== $mahasiswa->id, 403);
+        \Illuminate\Support\Facades\Gate::authorize('view', $dailyReport);
         $dailyReport->load(['fileKegiatan', 'kelompok.lokasi', 'kelompok.posko']);
 
         return Inertia::render('Student/DailyReports/Edit', [
@@ -189,13 +189,12 @@ class DailyReportController extends Controller
         ]);
     }
 
-    public function update(Request $request, KegiatanKkn $dailyReport): RedirectResponse|JsonResponse
+    public function update(StoreDailyReportRequest $request, KegiatanKkn $dailyReport): RedirectResponse|JsonResponse
     {
-        $mahasiswa = auth()->user()->mahasiswa;
-        abort_if($dailyReport->mahasiswa_id !== $mahasiswa->id, 403);
+        \Illuminate\Support\Facades\Gate::authorize('update', $dailyReport);
         $dailyReport->loadMissing(['kelompok.lokasi', 'kelompok.posko']);
 
-        $validated = $this->validateDailyReportPayload($request, false);
+        $validated = $request->validated();
         $this->enforceGpsPolicy($validated, $dailyReport->kelompok);
 
         $dailyReport->update([
@@ -226,15 +225,8 @@ class DailyReportController extends Controller
 
     public function destroy(KegiatanKkn $dailyReport): RedirectResponse
     {
-        $mahasiswa = auth()->user()?->mahasiswa;
-        abort_if(!$mahasiswa, 403, 'Profil mahasiswa tidak ditemukan.');
+        \Illuminate\Support\Facades\Gate::authorize('delete', $dailyReport);
         
-        // VULN-008 Fix: Verify ownership
-        abort_if($dailyReport->mahasiswa_id !== $mahasiswa->id, 403);
-        
-        // VULN-008 Fix: Prevent deletion of approved reports
-        abort_if($dailyReport->status === 'approved', 403, 'Laporan yang sudah disetujui tidak dapat dihapus.');
-
         foreach ($dailyReport->fileKegiatan as $file) {
             Storage::disk('local')->delete($file->file_path);
         }
@@ -243,29 +235,6 @@ class DailyReportController extends Controller
 
         return redirect()->route('student.laporan-harian.index')
             ->with('success', 'Laporan harian berhasil dihapus.');
-    }
-
-    private function validateDailyReportPayload(Request $request, bool $withFiles = true): array
-    {
-        $rules = [
-            'date' => ['required', 'date'],
-            'title' => ['required', 'string', 'max:200'],
-            'activity' => ['required', 'string'],
-            'reflection' => ['nullable', 'string'],
-            'output' => ['nullable', 'string'],
-            'latitude' => ['required', 'numeric', 'between:-90,90'],
-            'longitude' => ['required', 'numeric', 'between:-180,180'],
-            'gps_accuracy' => ['nullable', 'numeric', 'min:0', 'max:5000'],
-            'captured_at' => ['required', 'date'],
-            'location_source' => ['required', 'in:gps'],
-            'location_name' => ['required', 'string', 'max:255'],
-        ];
-
-        if ($withFiles) {
-            $rules['files.*'] = ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'];
-        }
-
-        return $request->validate($rules);
     }
 
     private function buildGeoPolicy(KelompokKkn $group): array

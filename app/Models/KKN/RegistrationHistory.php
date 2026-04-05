@@ -11,7 +11,6 @@ class RegistrationHistory extends Model
 {
     use HasFactory;
 
-    protected $connection = 'kkn';
     protected $table = 'registration_histories';
 
     protected $fillable = [

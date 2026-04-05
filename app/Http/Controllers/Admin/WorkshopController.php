@@ -86,6 +86,115 @@ class WorkshopController extends Controller
         return redirect()->back()->with('success', 'Presensi massal berhasil diproses.');
     }
 
+    public function previewAttendance(Request $request, int $workshopId): \Illuminate\Http\JsonResponse
+    {
+        Gate::authorize('manage-workshops');
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv'],
+        ]);
+
+        $rows = \Maatwebsite\Excel\Facades\Excel::toArray(new \stdClass(), $request->file('file'));
+        $data = $rows[0] ?? [];
+        
+        if (empty($data)) {
+            return response()->json(['error' => 'File Excel kosong.'], 422);
+        }
+
+        // Ambil header (baris pertama)
+        $headers = array_map('strtolower', array_values($data[0]));
+        $nimIndex = array_search('nim', $headers);
+
+        if ($nimIndex === false) {
+            return response()->json(['error' => 'Kolom "NIM" tidak ditemukan di baris pertama Excel.'], 422);
+        }
+
+        $results = [];
+        $processedNims = [];
+
+        // Skip header, mulai dari baris ke-2
+        for ($i = 1; $i < count($data); $i++) {
+            $row = $data[$i];
+            $nim = trim((string) ($row[$nimIndex] ?? ''));
+
+            if (empty($nim) || in_array($nim, $processedNims)) continue;
+            $processedNims[] = $nim;
+
+            $mahasiswa = \App\Models\KKN\Mahasiswa::where('nim', $nim)->first();
+            
+            if (!$mahasiswa) {
+                $results[] = [
+                    'nim' => $nim,
+                    'name' => 'TIDAK DITEMUKAN',
+                    'status' => 'error',
+                    'message' => 'NIM tidak terdaftar di sistem KKN.'
+                ];
+                continue;
+            }
+
+            $peserta = \App\Models\KKN\PesertaWorkshop::where('workshop_id', $workshopId)
+                ->where('user_id', $mahasiswa->user_id)
+                ->first();
+
+            if (!$peserta) {
+                $results[] = [
+                    'nim' => $nim,
+                    'name' => $mahasiswa->nama,
+                    'status' => 'warning',
+                    'message' => 'Mahasiswa tidak mendaftar di sesi workshop ini.'
+                ];
+            } elseif ($peserta->attended) {
+                $results[] = [
+                    'nim' => $nim,
+                    'name' => $mahasiswa->nama,
+                    'status' => 'info',
+                    'message' => 'Sudah melakukan absensi sebelumnya.'
+                ];
+            } else {
+                $results[] = [
+                    'nim' => $nim,
+                    'name' => $mahasiswa->nama,
+                    'status' => 'success',
+                    'message' => 'Valid & Siap di-import.'
+                ];
+            }
+        }
+
+        return response()->json([
+            'preview' => $results,
+            'summary' => [
+                'total' => count($results),
+                'valid' => count(array_filter($results, fn($r) => $row['status'] === 'success' || $r['status'] === 'success')),
+            ]
+        ]);
+    }
+
+    public function importAttendance(Request $request, int $workshopId): RedirectResponse
+    {
+        Gate::authorize('manage-workshops');
+
+        $validated = $request->validate([
+            'nims' => ['required', 'array'],
+            'nims.*' => ['string'],
+        ]);
+
+        $processedCount = 0;
+        foreach ($validated['nims'] as $nim) {
+            $mahasiswa = \App\Models\KKN\Mahasiswa::where('nim', $nim)->first();
+            if ($mahasiswa) {
+                $updated = \App\Models\KKN\PesertaWorkshop::where('workshop_id', $workshopId)
+                    ->where('user_id', $mahasiswa->user_id)
+                    ->update([
+                        'attended' => true,
+                        'attended_at' => now(),
+                    ]);
+                if ($updated) $processedCount++;
+            }
+        }
+
+        return redirect()->back()->with('success', "Berhasil memproses absensi. {$processedCount} mahasiswa telah dicatat kehadirannya.");
+    }
+
     public function destroy(Workshop $workshop): RedirectResponse
     {
         try {

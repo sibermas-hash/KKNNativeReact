@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Dosen extends Model
 {
-    protected $connection = 'master';
     protected $table = 'dosen';
 
     protected $fillable = [

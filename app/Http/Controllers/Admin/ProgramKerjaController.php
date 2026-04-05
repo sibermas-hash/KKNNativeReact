@@ -16,14 +16,40 @@ class ProgramKerjaController extends Controller
         Gate::authorize('view-reports');
         $status = $request->input('status');
 
-        $workPrograms = ProgramKerja::with(['kelompok.lokasi'])
+        $user = auth()->user();
+        $isFacultyAdmin = $user?->hasRole('faculty_admin');
+        $facultyId = $isFacultyAdmin ? $user?->faculty_id : null;
+
+        $query = ProgramKerja::query()
             ->when($status, fn ($q) => $q->where('status', $status))
+            ->when($facultyId, function ($query, $id) {
+                $query->whereHas('kelompok.peserta.mahasiswa', fn($q) => $q->where('faculty_id', $id));
+            });
+
+        $workPrograms = (clone $query)->with(['kelompok.lokasi'])
             ->orderByDesc('submitted_at')
             ->paginate(15)
             ->withQueryString();
 
+        // Calculate SDG distribution for the filtered set
+        $sdgCounts = array_fill(1, 17, 0);
+        (clone $query)->get(['sdg_goals'])->each(function ($item) use (&$sdgCounts) {
+            $goals = is_array($item->sdg_goals) ? $item->sdg_goals : [];
+            foreach ($goals as $goalId) {
+                if (isset($sdgCounts[$goalId])) {
+                    $sdgCounts[$goalId]++;
+                }
+            }
+        });
+
+        $sdgDistribution = collect($sdgCounts)->map(fn($count, $id) => [
+            'id' => $id,
+            'count' => $count
+        ])->values();
+
         return Inertia::render('Admin/WorkPrograms/Index', [
             'workPrograms' => $workPrograms,
+            'sdg_distribution' => $sdgDistribution,
             'filters' => $request->only('status'),
         ]);
     }

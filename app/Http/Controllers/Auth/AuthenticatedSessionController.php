@@ -4,55 +4,107 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class AuthenticatedSessionController extends Controller
 {
+    private const CAPTCHA_TTL_MINUTES = 10;
+
     public function create(Request $request): Response
     {
-        // Only generate new captcha if one doesn't exist in session OR if forced refresh
-        if ($request->has('refresh') || !$request->session()->has('captcha_hash')) {
-            $captcha = $this->generateCaptcha();
-            $request->session()->put('captcha_hash', $this->hashCaptchaAnswer($captcha['answer']));
-            $request->session()->put('captcha_question', $captcha['question']);
+        // Ensure fresh session for login page to prevent stale CSRF tokens
+        if (!$request->session()->isStarted()) {
+            $request->session()->start();
+        }
+
+        // Regenerate CSRF token only when the previous token is known missing.
+        if ($request->session()->get('_token_missing')) {
+            $request->session()->regenerateToken();
+            $request->session()->forget('_token_missing');
+        }
+
+        if (
+            $request->has('refresh')
+            || ! $request->session()->has('captcha_hash')
+            || ! $request->session()->has('captcha_question')
+            || $this->captchaExpired($request)
+        ) {
+            $this->refreshCaptcha($request);
         }
 
         return Inertia::render('Auth/Login', [
             'captcha_question' => $request->session()->get('captcha_question'),
+            'captcha_generated_at' => $request->session()->get('captcha_generated_at'),
+            'captcha_ttl_seconds' => self::CAPTCHA_TTL_MINUTES * 60,
+        ]);
+    }
+
+    public function refresh(Request $request): JsonResponse
+    {
+        if (! $request->session()->isStarted()) {
+            $request->session()->start();
+        }
+
+        $this->refreshCaptcha($request);
+
+        return response()->json([
+            'question' => $request->session()->get('captcha_question'),
+            'generated_at' => $request->session()->get('captcha_generated_at'),
+            'ttl_seconds' => self::CAPTCHA_TTL_MINUTES * 60,
         ]);
     }
 
     public function store(LoginRequest $request): RedirectResponse
     {
+        // Ensure session is started and regenerate token for security
+        if (!$request->session()->isStarted()) {
+            $request->session()->start();
+        }
+
         $userAnswer = $request->input('captcha_answer');
         $captchaHash = $request->session()->get('captcha_hash');
 
+        // If captcha is missing or invalid, refresh and return with error
         if (!$captchaHash || !$this->verifyCaptchaAnswer($userAnswer, $captchaHash)) {
-            // Force new captcha on failure
-            $captcha = $this->generateCaptcha();
-            $request->session()->put('captcha_hash', $this->hashCaptchaAnswer($captcha['answer']));
-            $request->session()->put('captcha_question', $captcha['question']);
+            $this->refreshCaptcha($request);
+
+            // Regenerate CSRF token to prevent "page expired" loop
+            $request->session()->regenerateToken();
 
             return back()->withErrors([
                 'captcha_answer' => 'Jawaban verifikasi keamanan salah.',
-            ])->with('captcha_question', $captcha['question']);
+            ])->withInput($request->except('password', 'captcha_answer'));
         }
 
         try {
             $request->authenticate();
-        } catch (\Exception $e) {
+        } catch (ValidationException $e) {
+            $this->refreshCaptcha($request);
+
+            // Regenerate CSRF token on auth failure
+            $request->session()->regenerateToken();
+
+            throw $e;
+        } catch (\Throwable) {
+            $this->refreshCaptcha($request);
+
+            // Regenerate CSRF token on unexpected error
+            $request->session()->regenerateToken();
+
             return back()->withErrors([
-                'login' => 'Gagal Otentikasi: Kredensial tidak valid.',
-            ]);
+                'login' => 'Gagal masuk ke sistem. Silakan coba lagi.',
+            ])->withInput($request->except('password', 'captcha_answer'));
         }
 
         $request->session()->regenerate();
 
         // Clean up captcha from session
-        $request->session()->forget('captcha_hash');
+        $request->session()->forget(['captcha_hash', 'captcha_question', 'captcha_generated_at']);
 
         return redirect()->intended(route('dashboard'));
     }
@@ -72,35 +124,50 @@ class AuthenticatedSessionController extends Controller
      */
     private function generateCaptcha(): array
     {
-        $operators = ['+', '-', '×'];
+        $operators = ['+', '-'];
         $operator = $operators[array_rand($operators)];
 
         switch ($operator) {
             case '+':
-                $a = rand(1, 20);
-                $b = rand(1, 20);
+                $a = random_int(1, 20);
+                $b = random_int(1, 20);
                 $answer = $a + $b;
                 break;
             case '-':
-                $a = rand(10, 30);
-                $b = rand(1, $a); // Ensure positive result
+                $a = random_int(10, 30);
+                $b = random_int(1, $a - 1); // Ensure positive result
                 $answer = $a - $b;
                 break;
-            case '×':
-                $a = rand(2, 9);
-                $b = rand(2, 9);
-                $answer = $a * $b;
-                break;
             default:
-                $a = rand(1, 20);
-                $b = rand(1, 20);
+                $a = random_int(1, 20);
+                $b = random_int(1, 20);
                 $answer = $a + $b;
         }
 
         return [
-            'question' => "{$a} {$operator} {$b} = ?",
+            'question' => "Berapa hasil {$a} {$operator} {$b}?",
             'answer' => $answer,
         ];
+    }
+
+    private function refreshCaptcha(Request $request): void
+    {
+        $captcha = $this->generateCaptcha();
+
+        $request->session()->put('captcha_hash', $this->hashCaptchaAnswer($captcha['answer']));
+        $request->session()->put('captcha_question', $captcha['question']);
+        $request->session()->put('captcha_generated_at', now()->timestamp);
+    }
+
+    private function captchaExpired(Request $request): bool
+    {
+        $generatedAt = $request->session()->get('captcha_generated_at');
+
+        if (! is_numeric($generatedAt)) {
+            return true;
+        }
+
+        return now()->diffInMinutes(now()->setTimestamp((int) $generatedAt)) >= self::CAPTCHA_TTL_MINUTES;
     }
 
     /**

@@ -10,7 +10,6 @@ use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Workshop;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -18,8 +17,6 @@ use Tests\TestCase;
 
 class StudentOperationalPagesTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();

@@ -1,8 +1,9 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { route } from 'ziggy-js';
 import { useCallback, useEffect, useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Pagination, StatusBadge } from '@/Components/ui';
-import type { PaginationMeta } from '@/Components/UI/Pagination';
+import type { PaginationMeta } from '@/Components/ui/Pagination';
 import type { PageProps } from '@/types';
 import {
  listPendingDailyReports,
@@ -165,8 +166,9 @@ export default function StudentDailyReportsIndex({ reports, isWorkshopPassed = t
 
  <div className="flex gap-3">
  <Link
- href={route('student.daily-reports.download-compilation')}
+ href={route('student.laporan-harian.download-compilation')}
  title="Unduh seluruh laporan harian Anda dalam satu berkas PDF"
+ aria-label="Download all daily reports as a PDF compilation"
  className="inline-flex items-center justify-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
  >
  Unduh rekap PDF
@@ -174,6 +176,7 @@ export default function StudentDailyReportsIndex({ reports, isWorkshopPassed = t
  <Link
  href={route('student.laporan-harian.create')}
  className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark"
+ aria-label="Create a new daily report"
  >
  Buat laporan
  </Link>
@@ -203,6 +206,8 @@ export default function StudentDailyReportsIndex({ reports, isWorkshopPassed = t
  type="button"
  onClick={() => void handleSyncPending()}
  disabled={!isOnline || isSyncingPending || pendingReports.length === 0}
+ aria-label={isSyncingPending ? 'Synchronization in progress' : 'Synchronize all offline reports now'}
+ aria-busy={isSyncingPending}
  className="mt-3 inline-flex items-center justify-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
  >
  {isSyncingPending ? 'Menyinkronkan...' : 'Sinkronkan sekarang'}
@@ -236,6 +241,7 @@ export default function StudentDailyReportsIndex({ reports, isWorkshopPassed = t
  <button
  type="button"
  onClick={() => void handleRemovePending(report.local_id)}
+ aria-label={`Remove queued report: ${report.payload.title}`}
  className="inline-flex items-center justify-center rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
  >
  Hapus antrean
@@ -288,6 +294,7 @@ export default function StudentDailyReportsIndex({ reports, isWorkshopPassed = t
  <Link
  href={route('student.laporan-harian.edit', report.id)}
  className="inline-flex items-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
+ aria-label={`Edit report: ${report.title}`}
  >
  Ubah
  </Link>

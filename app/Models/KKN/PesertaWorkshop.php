@@ -11,7 +11,6 @@ class PesertaWorkshop extends Model
 {
     use HasFactory;
 
-    protected $connection = 'kkn';
     protected $table = 'peserta_workshop';
 
     protected $fillable = [

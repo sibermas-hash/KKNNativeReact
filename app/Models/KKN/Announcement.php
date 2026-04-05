@@ -9,7 +9,6 @@ class Announcement extends Model
 {
     use HasFactory;
 
-    protected $connection = 'kkn';
     protected $table = 'announcements';
 
     protected $fillable = [

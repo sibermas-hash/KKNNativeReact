@@ -8,15 +8,12 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\Periode;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class AdminDplAssignmentTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -64,12 +61,13 @@ class AdminDplAssignmentTest extends TestCase
         $period = Periode::factory()->active()->create();
 
         $this->actingAs($admin)
+            ->from(route('admin.dpl.assignment'))
             ->post(route('admin.dpl.assign-period'), [
                 'dosen_id' => $dosen->id,
                 'period_id' => $period->id,
                 'max_groups' => 3,
             ])
-            ->assertRedirect();
+            ->assertRedirect(route('admin.dpl.assignment'));
 
         $this->assertDatabaseHas('dpl_periods', [
             'dosen_id' => $dosen->id,
@@ -119,12 +117,13 @@ class AdminDplAssignmentTest extends TestCase
         ]);
 
         $this->actingAs($admin)
+            ->from(route('admin.dpl.assignment'))
             ->post(route('admin.dpl.assign-period'), [
                 'dosen_id' => $dosen->id,
                 'period_id' => $period->id,
                 'max_groups' => 3,
             ])
-            ->assertRedirect();
+            ->assertRedirect(route('admin.dpl.assignment'));
 
         $dplPeriodId = DplPeriod::query()
             ->where('dosen_id', $dosen->id)
@@ -132,10 +131,11 @@ class AdminDplAssignmentTest extends TestCase
             ->value('id');
 
         $this->actingAs($admin)
+            ->from(route('admin.dpl.assignment'))
             ->post(route('admin.dpl.assign-group', $group), [
                 'dpl_period_id' => $dplPeriodId,
             ])
-            ->assertRedirect();
+            ->assertRedirect(route('admin.dpl.assignment'));
 
         $this->assertDatabaseHas('kelompok_kkn', [
             'id' => $group->id,
@@ -144,13 +144,14 @@ class AdminDplAssignmentTest extends TestCase
         ], 'kkn');
 
         $this->actingAs($admin)
+            ->from(route('admin.dpl.assignment'))
             ->post(route('admin.dpl.assign-district'), [
                 'dosen_id' => $dosen->id,
                 'period_id' => $period->id,
                 'district_id' => '3301010',
                 'max_groups' => 3,
             ])
-            ->assertRedirect();
+            ->assertRedirect(route('admin.dpl.assignment'));
 
         $this->assertDatabaseHas('dpl_kecamatan_assignments', [
             'dpl_period_id' => $dplPeriodId,

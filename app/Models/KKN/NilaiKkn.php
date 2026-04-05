@@ -5,12 +5,12 @@ namespace App\Models\KKN;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class NilaiKkn extends Model
 {
     use HasFactory;
 
-    protected $connection = 'kkn';
     protected $table = 'nilai_kkn';
 
     // FIXED: Remove confusing mahasiswa_id - only use user_id
@@ -66,12 +66,9 @@ class NilaiKkn extends Model
         return $this->belongsTo(\App\Models\User::class, 'user_id');
     }
 
-    /**
-     * Get Mahasiswa record through user
-     */
-    public function mahasiswa(): ?Mahasiswa
+    public function mahasiswa(): HasOne
     {
-        return $this->user?->mahasiswa;
+        return $this->hasOne(Mahasiswa::class, 'user_id', 'user_id');
     }
 
     /**

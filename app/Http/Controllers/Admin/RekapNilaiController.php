@@ -49,7 +49,7 @@ class RekapNilaiController extends Controller
         ];
 
         if (!$periodeId) {
-            return Inertia::render('Admin/RekapNilai/Index', [
+            return Inertia::render('Admin/GradeReports/Index', [
                 'scores' => [],
                 'stats' => null,
                 'filters' => $filters,
@@ -65,13 +65,13 @@ class RekapNilaiController extends Controller
 
         $rows = $this->repo->getRekapNilai($periodeId, $filters);
 
-        return Inertia::render('Admin/RekapNilai/Index', [
+        return Inertia::render('Admin/GradeReports/Index', [
             'scores' => $this->transformRows($rows),
             'stats' => [
-                'total' => $rows->count(),
-                'finalized' => $rows->where('is_finalized', true)->count(),
-                'pending' => $rows->where('is_finalized', false)->count(),
-                'avg_score' => round($rows->avg('nilai_akhir') ?? 0, 2),
+                'total_students' => $rows->count(),
+                'graded_count' => $rows->whereNotNull('nilai_akhir')->count(),
+                'locked_count' => $rows->where('is_finalized', true)->count(),
+                'average_value' => round((float)($rows->avg('nilai_akhir') ?? 0), 1),
             ],
             'filters' => $filters,
             'periodeId' => $periodeId,
@@ -283,26 +283,17 @@ class RekapNilaiController extends Controller
     {
         return $rows->map(function ($row) {
             return [
-                'id' => $row->score_id ? (int) $row->score_id : ((int) $row->mahasiswa_id . '-' . (int) $row->kelompok_id),
-                'score_id' => $row->score_id ? (int) $row->score_id : null,
+                'id' => $row->score_id ? (int) $row->score_id : (int) $row->mahasiswa_id,
                 'student_id' => (int) $row->mahasiswa_id,
                 'kelompok_id' => (int) $row->kelompok_id,
                 'nim' => $row->nim,
-                'nama' => $row->nama,
+                'name' => $row->nama,
+                'group_name' => $row->group_name,
+                'final_grade_value' => $row->nilai_akhir,
+                'final_grade_letter' => $row->huruf,
+                'is_locked' => (bool) $row->is_finalized,
                 'prodi' => $row->prodi,
                 'fakultas' => $row->fakultas,
-                'n_dpl' => $row->n_dpl,
-                'n_mitra' => $row->n_mitra,
-                'n_admin' => $row->n_admin,
-                'total' => $row->nilai_akhir,
-                'grade' => $row->huruf,
-                'is_finalized' => (bool) $row->is_finalized,
-                'evidence_file' => $row->evidence_file,
-                'status_submit' => [
-                    'dpl' => !is_null($row->dpl_submitted_at),
-                    'mitra' => !is_null($row->mitra_submitted_at),
-                    'admin' => !is_null($row->admin_submitted_at),
-                ],
             ];
         })->values()->all();
     }

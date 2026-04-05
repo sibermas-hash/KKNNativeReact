@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'kkn'),
+    'default' => env('DB_CONNECTION', 'pgsql'),
 
     /*
     |--------------------------------------------------------------------------
@@ -31,28 +31,16 @@ return [
 
     'connections' => [
 
-        'mysql' => [
-            'driver' => 'mysql',
+        'sqlite' => [
+            'driver' => 'sqlite',
             'url' => env('DB_URL'),
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'laravel'),
-            'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
-            'unix_socket' => env('DB_SOCKET', ''),
-            'charset' => env('DB_CHARSET', 'utf8mb4'),
-            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
-            'prefix_indexes' => true,
-            'strict' => true,
-            'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
+            'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
         ],
 
-        'mariadb' => [
-            'driver' => 'mariadb',
+        'mysql' => [
+            'driver' => 'mysql',
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
@@ -79,7 +67,7 @@ return [
             'database' => env('DB_DATABASE', 'laravel'),
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', ''),
-            'charset' => env('DB_CHARSET', 'utf8'),
+            'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
@@ -88,30 +76,32 @@ return [
 
         'master' => [
             'driver' => 'pgsql',
-            'host' => env('DB_MASTER_HOST', 'master.infiatin.cloud'),
-            'port' => env('DB_MASTER_PORT', '5432'),
-            'database' => env('DB_MASTER_DATABASE', 'master_db'),
-            'username' => env('DB_MASTER_USERNAME', 'kkn_user'),
-            'password' => env('DB_MASTER_PASSWORD', ''),
-            'charset' => env('DB_CHARSET', 'utf8'),
+            'url' => env('DB_MASTER_URL'),
+            'host' => env('DB_MASTER_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('DB_MASTER_PORT', env('DB_PORT', '5432')),
+            'database' => env('DB_MASTER_DATABASE', env('DB_DATABASE', 'laravel')),
+            'username' => env('DB_MASTER_USERNAME', env('DB_USERNAME', 'root')),
+            'password' => env('DB_MASTER_PASSWORD', env('DB_PASSWORD', '')),
+            'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
-            'search_path' => env('DB_MASTER_SCHEMA', 'public'),
-            'sslmode' => env('DB_SSLMODE', 'prefer'),
+            'search_path' => env('DB_MASTER_SCHEMA', env('DB_SEARCH_PATH', 'public')),
+            'sslmode' => env('DB_MASTER_SSLMODE', env('DB_SSLMODE', 'prefer')),
         ],
 
         'kkn' => [
             'driver' => 'pgsql',
-            'host' => env('DB_KKN_HOST', 'master.infiatin.cloud'),
-            'port' => env('DB_KKN_PORT', '5432'),
-            'database' => env('DB_KKN_DATABASE', 'kkn_db'),
-            'username' => env('DB_KKN_USERNAME', 'kkn_user'),
-            'password' => env('DB_KKN_PASSWORD', ''),
-            'charset' => env('DB_CHARSET', 'utf8'),
+            'url' => env('DB_KKN_URL'),
+            'host' => env('DB_KKN_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('DB_KKN_PORT', env('DB_PORT', '5432')),
+            'database' => env('DB_KKN_DATABASE', env('DB_DATABASE', 'laravel')),
+            'username' => env('DB_KKN_USERNAME', env('DB_USERNAME', 'root')),
+            'password' => env('DB_KKN_PASSWORD', env('DB_PASSWORD', '')),
+            'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
-            'search_path' => env('DB_KKN_SCHEMA', 'public'),
-            'sslmode' => env('DB_SSLMODE', 'prefer'),
+            'search_path' => env('DB_KKN_SCHEMA', env('DB_SEARCH_PATH', 'public')),
+            'sslmode' => env('DB_KKN_SSLMODE', env('DB_SSLMODE', 'prefer')),
         ],
 
         'sqlsrv' => [
@@ -122,7 +112,7 @@ return [
             'database' => env('DB_DATABASE', 'laravel'),
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', ''),
-            'charset' => env('DB_CHARSET', 'utf8'),
+            'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
             // 'encrypt' => env('DB_ENCRYPT', 'yes'),

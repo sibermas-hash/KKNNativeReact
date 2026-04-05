@@ -5,19 +5,19 @@ namespace Tests\Feature;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\Prodi;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\RoleSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class ProgramsCrudTest extends TestCase
 {
-    use RefreshDatabase;
-
     private User $admin;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->seed(RoleSeeder::class);
 
         $this->admin = User::create([
             'username' => 'admin',

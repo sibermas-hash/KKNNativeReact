@@ -17,23 +17,34 @@ class HomeController extends Controller
     public function index()
     {
         return Inertia::render('Home', [
-            'stats' => Inertia::defer(fn() => [
-                'students' => PesertaKkn::where('status', 'verifikasi_pusat')->count(),
-                'groups' => KelompokKkn::count(),
-                'locations' => Lokasi::count(),
-            ]),
-            'featuredAnnouncements' => Inertia::defer(function() {
+            'stats' => Inertia::defer(function() {
+                try {
+                    return [
+                        'students' => PesertaKkn::whereIn('status', ['approved', 'verifikasi_pusat', 'completed'])->count(),
+                        'groups' => KelompokKkn::count(),
+                        'locations' => Lokasi::count(),
+                    ];
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::warning("Home statistics error: " . $e->getMessage());
+                    return [
+                        'students' => 0,
+                        'groups' => 0,
+                        'locations' => 0,
+                    ];
+                }
+            }),
+            'featuredAnnouncements' => (function() {
                 $announcements = Announcement::active()->orderBy('published_at', 'desc')->take(3)->get();
                 return $announcements->isNotEmpty()
                     ? $this->transformAnnouncements($announcements, false)
                     : $this->fallbackAnnouncements();
-            }),
-            'featuredDownloads' => Inertia::defer(function() {
+            })(),
+            'featuredDownloads' => (function() {
                 $downloads = Download::active()->orderBy('created_at', 'desc')->take(3)->get();
                 return $downloads->isNotEmpty()
                     ? $this->transformDownloads($downloads, false)
                     : $this->fallbackDownloads();
-            }),
+            })(),
             'aboutContent' => [
                 'about' => SystemSetting::get('site_about', 'Lembaga Penelitian dan Pengabdian kepada Masyarakat (LPPM) UIN Profesor Kiai Haji Saifuddin Zuhri Purwokerto.'),
                 'visi' => SystemSetting::get('site_visi', 'Menjadi pusat unggulan penelitian dan pengabdian masyarakat.'),

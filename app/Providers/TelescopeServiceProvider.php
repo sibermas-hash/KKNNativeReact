@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
 // Safe guard: when Telescope package not installed (production without dev deps), provide no-op provider.
@@ -22,11 +23,19 @@ use Laravel\Telescope\TelescopeApplicationServiceProvider;
 
 class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
 {
+    private static ?bool $storageAvailable = null;
+
     /**
      * Register any application services.
      */
     public function register(): void
     {
+        if (! $this->shouldRecordTelescopeEntries()) {
+            config(['telescope.enabled' => false]);
+
+            return;
+        }
+
         // Telescope::night();
 
         $this->hideSensitiveRequestDetails();
@@ -41,6 +50,25 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
                    $entry->isScheduledTask() ||
                    $entry->hasMonitoredTag();
         });
+    }
+
+    private function shouldRecordTelescopeEntries(): bool
+    {
+        if (! config('telescope.enabled', true)) {
+            return false;
+        }
+
+        if (self::$storageAvailable !== null) {
+            return self::$storageAvailable;
+        }
+
+        try {
+            $connection = config('telescope.storage.database.connection');
+
+            return self::$storageAvailable = Schema::connection($connection)->hasTable('telescope_entries');
+        } catch (\Throwable) {
+            return self::$storageAvailable = false;
+        }
     }
 
     /**

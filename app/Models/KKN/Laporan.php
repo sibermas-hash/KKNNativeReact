@@ -12,7 +12,6 @@ class Laporan extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $connection = 'kkn';
     protected $table = 'laporan';
 
     protected $fillable = [

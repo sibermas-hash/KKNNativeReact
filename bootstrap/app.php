@@ -52,6 +52,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'kkn.throttle' => \App\Http\Middleware\KknThrottleMiddleware::class,
             'api.key' => \App\Http\Middleware\ValidateApiKey::class,
+            'disable.debugbar' => \App\Http\Middleware\DisableDebugbar::class,
             'restrict.debugbar' => \App\Http\Middleware\RestrictDebugbarAccess::class,
         ]);
 
@@ -77,6 +78,15 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Handle 500 Internal Server Error (hide details in production)
         $exceptions->render(function (\Throwable $e, $request) {
+            if (
+                $e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface
+                || $e instanceof \Illuminate\Validation\ValidationException
+                || $e instanceof \Illuminate\Auth\AuthenticationException
+                || $e instanceof \Illuminate\Auth\Access\AuthorizationException
+            ) {
+                return null;
+            }
+
             // Log the error
             \Illuminate\Support\Facades\Log::error('Unhandled Exception', [
                 'message' => $e->getMessage(),

@@ -107,7 +107,7 @@ export default function DplFinalReportsShow({ report }: Props) {
 
  <button
  type="button"
- onClick={() => approveForm.patch(`/dpl/final-reports/${report.id}/approve`)}
+ onClick={() => approveForm.patch(`/dpl/final-reports/${report.id}/setujui`)}
  disabled={!canReview || approveForm.processing}
  className="w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
  >

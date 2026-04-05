@@ -65,21 +65,23 @@ class StudentSyncService
         return DB::transaction(function () use ($data) {
             // 1. Resolve Faculty & Prodi
             $facultyId = null;
-            if (isset($data['organization_id'])) {
-                $facultyId = Fakultas::where('master_id', $data['organization_id'])->first()?->id;
+            $organizationMasterId = $this->normalizeMasterId($data['organization_id'] ?? null);
+            if ($organizationMasterId !== null) {
+                $facultyId = Fakultas::where('master_id', $organizationMasterId)->first()?->id;
             }
             
             $prodiId = null;
-            if (isset($data['prodi_id'])) {
-                $prodiId = Prodi::where('master_id', $data['prodi_id'])->first()?->id;
+            $programMasterId = $this->normalizeMasterId($data['prodi_id'] ?? null);
+            if ($programMasterId !== null) {
+                $prodiId = Prodi::where('master_id', $programMasterId)->first()?->id;
             }
 
             // Fallbacks - Log warning instead of silent wrong assignment
-            if (!$facultyId) {
-                Log::warning("Student {$data['nim']} has unmapped organization_id: {$data['organization_id']}. Skipping faculty assignment.");
+            if (!$facultyId && $organizationMasterId !== null) {
+                Log::warning("Student {$data['nim']} has unmapped organization_id: {$organizationMasterId}. Skipping faculty assignment.");
             }
-            if (!$prodiId) {
-                Log::warning("Student {$data['nim']} has unmapped prodi_id: {$data['prodi_id']}. Skipping prodi assignment.");
+            if (!$prodiId && $programMasterId !== null) {
+                Log::warning("Student {$data['nim']} has unmapped prodi_id: {$programMasterId}. Skipping prodi assignment.");
             }
 
             // 2. Determine Password (DDMMYYYY from birth_date or fallback to NIM)
@@ -99,10 +101,20 @@ class StudentSyncService
                 ]
             );
 
+            $address = $data['address'] ?? $data['alamat'] ?? null;
+            $email = $data['email'] ?? $data['nim'] . '@student.uinsaizu.ac.id';
+
+            $user->fill(array_filter([
+                'name' => $data['name'] ?? null,
+                'email' => $email,
+                'address' => $address,
+            ], static fn ($value) => $value !== null && $value !== ''));
+
+            if ($user->isDirty()) {
+                $user->save();
+            }
+
             if (!$user->hasRole('student')) {
-                if (!$user->wasRecentlyCreated) {
-                    Log::info("Existing user {$user->username} is being assigned student role during sync.");
-                }
                 $user->assignRole('student');
             }
 
@@ -112,15 +124,17 @@ class StudentSyncService
                 [
                     'user_id' => $user->id,
                     'nama' => $data['name'],
+                    'nik' => $data['nik'] ?? $data['national_id'] ?? null,
+                    'mother_name' => $data['mother_name'] ?? $data['nama_ibu'] ?? $data['mother'] ?? null,
                     'faculty_id' => $facultyId,
                     'program_id' => $prodiId,
                     'batch_year' => $data['batch_year'] ?? date('Y'),
                     'gender' => $data['gender'] ?? 'L',
                     'birth_date' => $data['birth_date'] ?? null,
                     'sks_completed' => $data['sks_completed'] ?? $data['sks'] ?? 0,
-                    'gpa' => $data['gpa'] ?? $data['ipk'] ?? null,
+                    'gpa' => $data['gpa'] ?? $data['ipk'] ?? 0.0,
                     'is_bta_ppi_passed' => $data['is_bta_ppi_passed'] ?? $data['bta_ppi_passed'] ?? false,
-                    'master_id' => $data['id'] ?? null,
+                    'master_id' => $this->normalizeMasterId($data['id'] ?? null),
                     'master_synced_at' => now(),
                 ]
             );
@@ -155,5 +169,16 @@ class StudentSyncService
             'data' => $validRows,
             'errors' => $errors
         ];
+    }
+
+    private function normalizeMasterId(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $normalized = trim((string) $value);
+
+        return $normalized === '' ? null : $normalized;
     }
 }

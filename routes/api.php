@@ -43,6 +43,9 @@ Route::prefix('webhooks')->middleware('throttle:10,1')->group(function () {
 Route::post('/admin/keys', [AdminKeyController::class , 'store'])
     ->middleware('throttle:10,1')
     ->name('api.admin.keys.store');
+Route::post('/admin/keys/{apiKey}/revoke', [AdminKeyController::class, 'revoke'])
+    ->middleware('throttle:10,1')
+    ->name('api.admin.keys.revoke');
 
 // Self-service: Client registers and receives API key
 Route::post('/register', [RegistrationController::class , 'register'])

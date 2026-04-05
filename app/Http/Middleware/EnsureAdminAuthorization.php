@@ -34,12 +34,99 @@ class EnsureAdminAuthorization
     ];
 
     /**
+     * List of controllers that require 'manage-grades' permission
+     */
+    protected array $gradeManagementControllers = [
+        \App\Http\Controllers\Admin\GradeController::class,
+        \App\Http\Controllers\Admin\GeneratorNilaiController::class,
+        \App\Http\Controllers\Admin\KonfigurasiPenilaianController::class,
+    ];
+
+    /**
+     * List of controllers that require 'manage-participants' permission
+     */
+    protected array $participantControllers = [
+        \App\Http\Controllers\Admin\PesertaKknController::class,
+        \App\Http\Controllers\Admin\StudentTransferController::class,
+    ];
+
+    /**
+     * List of controllers that require 'manage-groups' permission
+     */
+    protected array $groupControllers = [
+        \App\Http\Controllers\Admin\KelompokKknController::class,
+    ];
+
+    /**
+     * List of controllers that require 'manage-dpl' permission
+     */
+    protected array $dplControllers = [
+        \App\Http\Controllers\Admin\DplAssignmentController::class,
+    ];
+
+    /**
+     * List of controllers that require 'manage-content' permission
+     */
+    protected array $contentControllers = [
+        \App\Http\Controllers\Admin\AnnouncementController::class,
+        \App\Http\Controllers\Admin\DownloadController::class,
+        \App\Http\Controllers\Admin\PublicContentController::class,
+    ];
+
+    /**
+     * List of controllers that require 'view-audit-logs' permission
+     */
+    protected array $auditControllers = [
+        \App\Http\Controllers\Admin\LogAuditController::class,
+    ];
+
+    /**
+     * Permission map for specific controllers
+     */
+    protected function getRequiredPermissionForController(string $controllerClass): ?string
+    {
+        if (in_array($controllerClass, $this->masterDataControllers)) {
+            return 'manage-master-data';
+        }
+
+        if (in_array($controllerClass, $this->userManagementControllers)) {
+            return 'manage-users';
+        }
+
+        if (in_array($controllerClass, $this->gradeManagementControllers)) {
+            return 'manage-grades';
+        }
+
+        if (in_array($controllerClass, $this->participantControllers)) {
+            return 'manage-participants';
+        }
+
+        if (in_array($controllerClass, $this->groupControllers)) {
+            return 'manage-groups';
+        }
+
+        if (in_array($controllerClass, $this->dplControllers)) {
+            return 'manage-dpl';
+        }
+
+        if (in_array($controllerClass, $this->contentControllers)) {
+            return 'manage-content';
+        }
+
+        if (in_array($controllerClass, $this->auditControllers)) {
+            return 'view-audit-logs';
+        }
+
+        return null;
+    }
+
+    /**
      * Handle an incoming request.
      */
     public function handle(Request $request, Closure $next): Response
     {
         $route = $request->route();
-        
+
         if (!$route) {
             return $next($request);
         }
@@ -47,21 +134,30 @@ class EnsureAdminAuthorization
         $controller = $route->getController();
         $controllerClass = get_class($controller);
 
-        // Check if controller requires master data authorization
-        if (in_array($controllerClass, $this->masterDataControllers)) {
-            Gate::authorize('manage-master-data');
+        // Only apply to admin controllers
+        if (!str_starts_with($controllerClass, 'App\\Http\\Controllers\\Admin\\')) {
+            return $next($request);
         }
 
-        // Check if controller requires user management authorization
-        if (in_array($controllerClass, $this->userManagementControllers)) {
-            Gate::authorize('manage-users');
+        $user = $request->user();
+
+        // Ensure user is authenticated
+        if (!$user) {
+            abort(401, 'Authentication required.');
         }
 
-        // For other admin controllers, ensure user has at least one admin role
-        if (str_starts_with($controllerClass, 'App\\Http\\Controllers\\Admin\\')) {
-            $user = $request->user();
-            if (!$user || !$user->hasAnyRole(['superadmin', 'faculty_admin', 'dpl'])) {
-                abort(403, 'Unauthorized access to admin area.');
+        // Check if user has any admin role
+        if (!$user->hasAnyRole(['superadmin', 'faculty_admin', 'admin'])) {
+            abort(403, 'Unauthorized access to admin area.');
+        }
+
+        // Check for specific permission if required
+        $requiredPermission = $this->getRequiredPermissionForController($controllerClass);
+
+        if ($requiredPermission) {
+            // Superadmin bypasses all permission checks
+            if (!$user->hasRole('superadmin')) {
+                Gate::authorize($requiredPermission);
             }
         }
 

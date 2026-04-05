@@ -10,7 +10,6 @@ class AntrianKkn extends Model
 {
     use HasFactory;
 
-    protected $connection = 'kkn';
     protected $table = 'antrian_kkn';
 
     protected $fillable = [

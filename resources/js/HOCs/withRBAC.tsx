@@ -1,15 +1,16 @@
 import React from 'react';
 import { usePage } from '@inertiajs/react';
+import type { PageProps } from '@/types';
 
 export function withRBAC<P extends object>(
     WrappedComponent: React.ComponentType<P>,
     allowedRoles: string[]
 ) {
     return function WithRBACComponent(props: P) {
-        const { auth } = usePage<any>().props;
-        const userRole = auth.user.role;
+        const { auth } = usePage<PageProps>().props;
+        const userRole = auth.user?.role;
 
-        if (!allowedRoles.includes(userRole)) {
+        if (!userRole || !allowedRoles.includes(userRole)) {
             return (
                 <div className="p-8 bg-red-50 border border-red-100 rounded-3xl text-center">
                     <p className="text-red-600 font-bold uppercase tracking-widest text-xs">

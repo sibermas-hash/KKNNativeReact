@@ -4,15 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\KKN\SystemSetting;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class AdminPublicContentTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -26,7 +23,7 @@ class AdminPublicContentTest extends TestCase
         $admin->assignRole('superadmin');
 
         $this->actingAs($admin)
-            ->get(route('admin.content.profile.index'))
+            ->get('/admin/konten-publik/profil')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Content/Profile')
@@ -41,7 +38,7 @@ class AdminPublicContentTest extends TestCase
         $admin->assignRole('superadmin');
 
         $this->actingAs($admin)
-            ->post(route('admin.content.profile.update'), [
+            ->post('/admin/konten-publik/profil', [
                 'about' => 'Profil terbaru LPPM untuk halaman publik.',
                 'visi' => 'Visi terbaru.',
                 'misi' => 'Misi terbaru.',
@@ -60,7 +57,7 @@ class AdminPublicContentTest extends TestCase
         $admin->assignRole('superadmin');
 
         $this->actingAs($admin)
-            ->post(route('admin.content.schemes.update'), [
+            ->post('/admin/konten-publik/skema', [
                 'title' => 'Skema KKN Pilihan.',
                 'intro' => 'Pengantar baru untuk halaman skema.',
                 'schemes' => [

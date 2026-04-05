@@ -12,6 +12,16 @@ use Inertia\Response;
 
 class DashboardController extends Controller
 {
+    private function normalizeRegistrationStatus(?string $status): ?string
+    {
+        return match ($status) {
+            'approved', 'disetujui', 'verifikasi_pusat', 'completed' => 'approved',
+            'pending', 'menunggu' => 'pending',
+            'rejected', 'ditolak' => 'rejected',
+            default => $status,
+        };
+    }
+
     public function index(): Response
     {
         $user = auth()->user();
@@ -62,7 +72,12 @@ class DashboardController extends Controller
             ] : null,
             'registration' => $registrationModel ? [
                 'id' => $registrationModel->id,
-                'status' => $registrationModel->status,
+                'status' => $this->normalizeRegistrationStatus($registrationModel->status),
+                'notes' => $registrationModel->notes,
+                'rejection_reason' => $registrationModel->rejection_reason,
+                'revision_count' => (int) ($registrationModel->revision_count ?? 0),
+                'last_rejected_at' => $registrationModel->last_rejected_at?->toIso8601String(),
+                'resubmitted_at' => $registrationModel->resubmitted_at?->toIso8601String(),
                 'role' => $registrationModel->role,
                 'period' => $registrationModel->periode ? [
                     'id' => $registrationModel->periode->id,
@@ -87,7 +102,12 @@ class DashboardController extends Controller
             'workProgramCount' => $workProgramCount,
             'workshopRegistered' => !!$workshopRegistration,
             'finalReport' => $finalReport,
-            'grade' => $grade,
+            'grade' => $grade ? [
+                'id' => $grade->id,
+                'score' => (float) $grade->total_score,
+                'letter' => $grade->letter_grade,
+                'is_finalized' => (bool) $grade->is_finalized,
+            ] : null,
         ]);
     }
 }

@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\DashboardStatisticsService;
-use App\Services\MasterApiService;
+use App\Services\GroupSelectionService;
 use App\Services\PeriodContextService;
+use App\Models\KKN\Laporan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -20,55 +22,29 @@ class DashboardController extends Controller
     public function index(): Response
     {
         Gate::authorize('access-admin-panel');
-        
-        $periodId = $this->contextService->getActivePeriodId();
+
+        $periodId = $this->contextService->getActivePeriodId() ?? $this->contextService->getDefaultPeriodId();
+        $periodData = $this->contextService->getActivePeriodData();
+
+        if (! $periodData && $periodId) {
+            $period = \App\Models\KKN\Periode::query()->find($periodId);
+
+            $periodData = $period ? [
+                'id' => $period->id,
+                'name' => $period->name,
+                'periode' => $period->periode,
+                'jenis' => $period->jenis,
+                'is_active' => $period->is_active,
+            ] : null;
+        }
+
         $user = auth()->user();
         $isFacultyAdmin = $user?->hasRole('faculty_admin');
         $facultyId = $isFacultyAdmin ? $user?->faculty_id : null;
 
         return Inertia::render('Admin/Dashboard', [
-            'masterGroups' => Inertia::defer(function (MasterApiService $api) {
-                return $api->getGroups();
-            }),
-            'demoPreview' => [
-                'stats' => [
-                    'total_students' => 248,
-                    'total_groups' => 32,
-                    'total_reports' => 186,
-                    'pending_registrations' => 14,
-                ],
-                'recentRegistrations' => [
-                    [
-                        'id' => 900001,
-                        'status' => 'pending',
-                        'mahasiswa' => [
-                            'nim' => '2310401001',
-                            'user' => ['name' => 'Aisyah Nur Hidayah'],
-                        ],
-                        'periode' => ['name' => 'KKN Reguler 2026'],
-                    ],
-                    [
-                        'id' => 900002,
-                        'status' => 'approved',
-                        'mahasiswa' => [
-                            'nim' => '2310401042',
-                            'user' => ['name' => 'Muhammad Alif Pratama'],
-                        ],
-                        'periode' => ['name' => 'KKN Reguler 2026'],
-                    ],
-                    [
-                        'id' => 900003,
-                        'status' => 'approved',
-                        'mahasiswa' => [
-                            'nim' => '2310401098',
-                            'user' => ['name' => 'Nabila Khairunnisa'],
-                        ],
-                        'periode' => ['name' => 'KKN Tematik Desa 2026'],
-                    ],
-                ],
-            ],
-            'stats' => Inertia::defer(function () use ($periodId, $facultyId) {
-                if (!$periodId) {
+            'stats' => Inertia::defer(function () use ($periodId, $facultyId, $periodData) {
+                if (! $periodId) {
                     return [
                         'total_students' => 0,
                         'total_groups' => 0,
@@ -81,7 +57,6 @@ class DashboardController extends Controller
                 }
 
                 $statistics = $this->statsService->getPeriodStatistics($periodId, $facultyId);
-                $periodData = $this->contextService->getActivePeriodData();
 
                 return array_merge(
                     $statistics['summary'],
@@ -89,14 +64,14 @@ class DashboardController extends Controller
                 );
             }),
             'sdg_distribution' => Inertia::defer(function () use ($periodId, $facultyId) {
-                if (!$periodId) {
+                if (! $periodId) {
                     return [];
                 }
                 $statistics = $this->statsService->getPeriodStatistics($periodId, $facultyId);
                 return $statistics['sdg_distribution'];
             }),
             'recentRegistrations' => Inertia::defer(function () use ($periodId, $facultyId) {
-                if (!$periodId) {
+                if (! $periodId) {
                     return [];
                 }
                 $query = \App\Models\KKN\PesertaKkn::with(['mahasiswa.user', 'periode'])
@@ -106,20 +81,26 @@ class DashboardController extends Controller
                     $query->whereHas('mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
                 }
 
-                return $query->latest()
+                return $query->latest('registration_date')
                     ->take(5)
                     ->get();
             }),
             'gis_locations' => Inertia::defer(function () use ($periodId, $facultyId) {
-                if (!$periodId) return [];
+                if (! $periodId) {
+                    return [];
+                }
                 
                 $query = \App\Models\KKN\KelompokKkn::query()
                     ->where('period_id', $periodId)
                     ->with('lokasi')
+                    ->withCount([
+                        'peserta as peserta_count' => fn ($q) => $q
+                            ->whereIn('status', GroupSelectionService::activeRegistrationStatuses()),
+                    ])
                     ->whereHas('lokasi', fn($q) => $q->whereNotNull('latitude')->whereNotNull('longitude'));
 
                 if ($facultyId) {
-                    $query->whereHas('lokasi', fn($q) => $q->where('faculty_id', $facultyId));
+                    $query->whereHas('peserta.mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
                 }
 
                 return $query->get()
@@ -131,6 +112,38 @@ class DashboardController extends Controller
                         'members_count' => $group->peserta_count ?? 0,
                         'village' => $group->lokasi->village_name,
                     ]);
+            }),
+            'ui' => [
+                'is_faculty_admin' => $isFacultyAdmin,
+                'can_manage_public_content' => $user?->hasAnyRole(['superadmin', 'admin']) ?? false,
+            ],
+            'activity_trend' => Inertia::defer(function () use ($facultyId) {
+                $days = collect(range(0, 13))->map(fn ($i) => now()->subDays($i)->format('Y-m-d'))->reverse();
+                
+                $trends = Laporan::query()
+                    ->where('submitted_at', '>=', now()->subDays(14))
+                    ->when($facultyId, function ($query, $id) {
+                        $query->whereHas('kelompok.peserta.mahasiswa', fn($q) => $q->where('faculty_id', $id));
+                    })
+                    ->select(DB::raw("DATE(submitted_at) as date"), DB::raw('count(*) as count'))
+                    ->groupBy('date')
+                    ->get()
+                    ->pluck('count', 'date');
+
+                return $days->map(fn ($date) => [
+                    'date' => $date,
+                    'count' => $trends->get($date, 0),
+                ])->values();
+            }),
+            'intelligence' => Inertia::defer(function () use ($facultyId) {
+                return [
+                    'high_risk_count' => Laporan::where('status', 'submitted')
+                        ->whereRaw('LENGTH(description) < 30')
+                        ->when($facultyId, function($q, $id) {
+                            $q->whereHas('kelompok.peserta.mahasiswa', fn($sub) => $sub->where('faculty_id', $id));
+                        })
+                        ->count(),
+                ];
             }),
         ]);
     }

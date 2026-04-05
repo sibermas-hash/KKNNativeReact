@@ -47,6 +47,7 @@ class GroupController extends Controller
             'periode', 'lokasi',
             'peserta.mahasiswa.fakultas',
             'peserta.mahasiswa.prodi',
+            'peserta.mahasiswa.nilai' => fn($q) => $q->where('kelompok_id', $group->id),
             'programKerja',
             'posko',
         ]);
@@ -61,17 +62,24 @@ class GroupController extends Controller
                 'period_name' => $group->periode?->name ?? '-',
                 'village_name' => $group->lokasi?->village_name ?? '-',
                 'address' => $group->lokasi?->address,
-                'members' => $group->peserta->map(fn ($registration) => [
-                    'id' => $registration->id,
-                    'status' => $registration->status,
-                    'role' => $registration->role,
-                    'student' => [
-                        'nim' => $registration->mahasiswa?->nim ?? '-',
-                        'name' => $registration->mahasiswa?->nama ?? 'Mahasiswa tidak ditemukan',
-                        'faculty_name' => $registration->mahasiswa?->fakultas?->nama ?? '-',
-                        'program_name' => $registration->mahasiswa?->prodi?->nama ?? '-',
-                    ],
-                ])->values(),
+                'members' => $group->peserta->map(function ($registration) {
+                    $nilai = $registration->mahasiswa?->nilai?->first();
+                    return [
+                        'id' => $registration->id,
+                        'status' => $registration->status,
+                        'role' => $registration->role,
+                        'student' => [
+                            'nim' => $registration->mahasiswa?->nim ?? '-',
+                            'name' => $registration->mahasiswa?->nama ?? 'Mahasiswa tidak ditemukan',
+                            'faculty_name' => $registration->mahasiswa?->fakultas?->nama ?? '-',
+                            'program_name' => $registration->mahasiswa?->prodi?->nama ?? '-',
+                        ],
+                        'nilai' => $nilai ? [
+                            'id' => $nilai->id,
+                            'is_finalized' => (bool)$nilai->is_finalized,
+                        ] : null,
+                    ];
+                })->values(),
                 'work_programs' => $group->programKerja->map(fn ($program) => [
                     'id' => $program->id,
                     'title' => $program->title,

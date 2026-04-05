@@ -72,4 +72,41 @@ class CertificateController extends Controller
             'certificate_data' => null,
         ]);
     }
+    public function downloadMass(Request $request)
+    {
+        $user = auth()->user();
+        $isFacultyAdmin = $user->hasRole('faculty_admin');
+        
+        $query = NilaiKkn::query()
+            ->where('is_finalized', true)
+            ->with(['mahasiswa', 'kelompok.periode', 'kelompok.lokasi']);
+
+        if ($isFacultyAdmin) {
+            $query->whereHas('mahasiswa', fn($q) => $q->where('faculty_id', $user->faculty_id));
+        }
+
+        if ($request->filled('kelompok_id')) {
+            $query->where('kelompok_id', $request->kelompok_id);
+        }
+
+        if ($request->filled('period_id')) {
+            $query->whereHas('kelompok', fn($q) => $q->where('period_id', $request->period_id));
+        }
+
+        $scores = $query->get();
+
+        if ($scores->isEmpty()) {
+            return back()->withErrors(['error' => 'Tidak ada sertifikat yang ditemukan untuk diunduh.']);
+        }
+
+        return $this->certificateService->generateZip($scores);
+    }
+
+    public function preview(NilaiKkn $score)
+    {
+        $score->loadMissing(['mahasiswa', 'kelompok']);
+        abort_if(!$score->is_finalized, 403, 'Sertifikat belum difinalisasi.');
+        
+        return $this->certificateService->generateForStudent($score)->stream();
+    }
 }

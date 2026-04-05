@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { StatusBadge } from '@/Components/ui';
+import { Download, ScrollText } from 'lucide-react';
 
 interface GroupMember {
  id: number;
@@ -12,6 +13,10 @@ interface GroupMember {
  faculty_name: string;
  program_name: string;
  };
+ nilai?: {
+ id: number;
+ is_finalized: boolean;
+ } | null;
 }
 
 interface WorkProgram {
@@ -25,6 +30,7 @@ interface GroupDetail {
  code: string;
  name: string;
  status: string;
+ is_grading_finalized?: boolean;
  capacity: number;
  period_name: string;
  village_name: string;
@@ -67,6 +73,17 @@ export default function DplGroupShow({ group }: Props) {
  {group.address ? <p className="text-sm text-slate-500">{group.address}</p> : null}
  </div>
  <StatusBadge status={group.status} />
+ <div className="flex flex-col gap-2">
+    <button
+        onClick={() => {
+            window.location.href = `/admin/certificates/bulk-download?kelompok_id=${group.id}`;
+        }}
+        className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-black text-white hover:bg-emerald-700 transition-all uppercase tracking-widest italic"
+    >
+        <ScrollText size={18} />
+        MASAL_CERT_DOWNLOAD
+    </button>
+  </div>
  </div>
  </section>
 
@@ -86,6 +103,7 @@ export default function DplGroupShow({ group }: Props) {
  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500">Prodi</th>
  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500">Peran</th>
  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500">Status</th>
+ <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 pr-10">Otoritas</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-slate-100">
@@ -102,11 +120,23 @@ export default function DplGroupShow({ group }: Props) {
  <td className="px-4 py-3">
  <StatusBadge status={member.status} />
  </td>
+ <td className="px-4 py-3 text-right pr-10">
+    {member.nilai?.is_finalized && (
+        <a 
+            href={`/certificates/${member.nilai.id}/download`}
+            target="_blank"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:text-emerald-600 hover:border-emerald-600 transition-all shadow-sm"
+            title="Unduh Sertifikat"
+        >
+            <Download size={16} />
+        </a>
+    )}
+  </td>
  </tr>
  ))
  ) : (
  <tr>
- <td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-500">
+ <td colSpan={6} className="px-4 py-10 text-center text-sm text-slate-500">
  Belum ada anggota terdaftar.
  </td>
  </tr>

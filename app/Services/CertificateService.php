@@ -85,6 +85,37 @@ class CertificateService
     }
 
     /**
+     * Generate a ZIP of certificates for a collection of scores
+     */
+    public function generateZip(\Illuminate\Support\Collection $scores)
+    {
+        $zip = new \ZipArchive();
+        $zipFileName = 'Sertifikat_KKN_Massal_' . now()->format('Ymd_His') . '.zip';
+        $zipFilePath = storage_path('app/public/' . $zipFileName);
+
+        if ($zip->open($zipFilePath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            throw new RuntimeException('Gagal membuat file ZIP.');
+        }
+
+        foreach ($scores as $score) {
+            try {
+                $pdf = $this->generateForStudent($score);
+                $fileName = "Sertifikat_{$score->mahasiswa->nim}_{$score->mahasiswa->nama}.pdf";
+                // Sanitize filename
+                $fileName = preg_replace('/[^A-Za-z0-9_\-\.]/', '_', $fileName);
+                $zip->addFromString($fileName, $pdf->output());
+            } catch (\Exception $e) {
+                // Skip failed ones but log them if needed
+                continue;
+            }
+        }
+
+        $zip->close();
+
+        return response()->download($zipFilePath)->deleteFileAfterSend(true);
+    }
+
+    /**
      * Generate a cryptographically strong verification token for a score.
      * Uses HMAC-SHA256 with APP_KEY as secret, making tokens unguessable.
      */

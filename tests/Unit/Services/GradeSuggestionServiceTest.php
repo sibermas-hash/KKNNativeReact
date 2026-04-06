@@ -6,13 +6,10 @@ use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use App\Services\GradeSuggestionService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class GradeSuggestionServiceTest extends TestCase
 {
-    use RefreshDatabase;
-
     private GradeSuggestionService $service;
 
     protected function setUp(): void

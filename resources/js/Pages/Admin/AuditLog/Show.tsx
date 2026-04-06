@@ -64,12 +64,12 @@ export default function AuditLogShow({ log }: Props) {
                     {/* Primary Manifest - Main Column */}
                     <div className="xl:col-span-8 space-y-8">
                         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden group">
-                           <div className="p-10 border-b border-slate-50 relative overflow-hidden bg-slate-50/10">
-                                <div className="absolute top-0 right-0 p-12 text-slate-900 pointer-events-none group-hover:rotate-12 transition-transform duration-1000">
+                           <div className="p-10 border-b border-slate-50 relative overflow-hidden bg-emerald-50/10">
+                                <div className="absolute top-0 right-0 p-12 text-emerald-950/5 pointer-events-none group-hover:rotate-12 transition-transform duration-1000">
                                     <History className="h-48 w-48" />
                                 </div>
                                 <div className="flex items-center gap-6 relative z-10">
-                                    <div className="p-4 bg-slate-900 rounded-2xl text-emerald-400 shadow-xl italic font-black">
+                                    <div className="p-4 bg-emerald-600 rounded-2xl text-white shadow-xl italic font-black">
                                         <ShieldCheck className="h-8 w-8" />
                                     </div>
                                     <div className="flex flex-col">
@@ -86,19 +86,19 @@ export default function AuditLogShow({ log }: Props) {
                                 </div>
                             </div>
 
-                            <div className="p-10 bg-slate-50/10 space-y-10 relative">
+                            <div className="p-10 bg-emerald-50/10 space-y-10 relative">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <ManifestItem label="ENTITAS PENYEBAB" value={log.causer?.name || 'SISTEM INTERNAL'} icon={User} color="primary" />
                                     <ManifestItem label="SUMBER SUBJEK" value={log.subject_type?.split('\\').pop() || 'SUMBER TIDAK TERDEFINISI'} icon={Activity} color="emerald" />
                                 </div>
 
-                                <div className="p-8 bg-slate-900 rounded-xl border border-slate-800 shadow-xl space-y-6">
-                                    <div className="flex items-center gap-4 border-b border-slate-800 pb-4">
+                                <div className="p-8 bg-emerald-950 rounded-xl border border-emerald-900 shadow-xl space-y-6">
+                                    <div className="flex items-center gap-4 border-b border-emerald-900 pb-4">
                                         <Terminal className="h-5 w-5 text-emerald-400" />
                                         <h3 className="text-sm font-bold text-white uppercase tracking-widest ">Matriks Properti Data</h3>
                                     </div>
                                     <div className="overflow-x-auto">
-                                        <pre className="text-sm text-emerald-500 font-bold p-6 bg-slate-950/50 rounded-xl border border-slate-800 shadow-inner ">
+                                        <pre className="text-sm text-emerald-400 font-bold p-6 bg-emerald-950/30 rounded-xl border border-emerald-900 shadow-inner ">
                                             {JSON.stringify(log.properties, null, 4)}
                                         </pre>
                                     </div>
@@ -109,10 +109,10 @@ export default function AuditLogShow({ log }: Props) {
 
                     {/* Meta Sidebar */}
                     <div className="xl:col-span-4 space-y-6">
-                         <section className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm space-y-8 group/guard relative overflow-hidden">
-                            <div className="absolute -bottom-6 -right-6 text-slate-900 pointer-events-none group-hover/guard:rotate-12 transition-transform duration-1000">
-                                <ShieldCheck className="h-32 w-32" />
-                            </div>
+                          <section className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm space-y-8 group/guard relative overflow-hidden">
+                             <div className="absolute -bottom-6 -right-6 text-emerald-50/50 pointer-events-none group-hover/guard:rotate-12 transition-transform duration-1000">
+                                 <ShieldCheck className="h-32 w-32" />
+                             </div>
                             <div className="flex items-center gap-4 border-b border-slate-50 pb-6">
                                 <div className="h-10 w-10 flex items-center justify-center bg-emerald-50 rounded-xl border border-emerald-100 text-emerald-600 shadow-sm">
                                     <Database className="w-5 h-5 shadow-sm shadow-emerald-500/20" />
@@ -126,8 +126,8 @@ export default function AuditLogShow({ log }: Props) {
                             </div>
                         </section>
 
-                        <div className="p-8 bg-slate-900 rounded-xl border border-slate-800 text-white relative overflow-hidden group shadow-xl">
-                             <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
+                        <div className="p-8 bg-emerald-950 rounded-xl border border-emerald-900 text-white relative overflow-hidden group shadow-xl">
+                             <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_70%_20%,rgba(255,255,255,0.05),transparent_50%)]" />
                              <div className="relative z-10 flex flex-col items-center text-center space-y-6">
                                 <div className="p-4 bg-primary/10 rounded-3xl border border-primary/20 shadow-sm shadow-primary/20">
                                     <Zap className="h-10 w-10 text-primary shadow-sm animate-pulse" />

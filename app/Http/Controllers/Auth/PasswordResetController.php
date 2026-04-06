@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\KKN\SystemSetting;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,39 @@ use Inertia\Response;
 
 class PasswordResetController extends Controller
 {
+    private function supportWhatsappNumber(): ?string
+    {
+        $raw = (string) (SystemSetting::get('support_whatsapp_number', env('SUPPORT_WHATSAPP_NUMBER', '')) ?? '');
+        $digits = preg_replace('/\D+/', '', $raw ?? '');
+
+        if (! $digits) {
+            return null;
+        }
+
+        if (str_starts_with($digits, '0')) {
+            return '62' . substr($digits, 1);
+        }
+
+        if (str_starts_with($digits, '8')) {
+            return '62' . $digits;
+        }
+
+        return $digits;
+    }
+
+    private function supportWhatsappLink(): ?string
+    {
+        $number = $this->supportWhatsappNumber();
+
+        if (! $number) {
+            return null;
+        }
+
+        $message = rawurlencode('Halo admin, saya membutuhkan bantuan reset password akun KKN. Berikut identitas saya:');
+
+        return "https://wa.me/{$number}?text={$message}";
+    }
+
     /**
      * Show the forgot password form.
      */
@@ -22,25 +56,18 @@ class PasswordResetController extends Controller
     {
         return Inertia::render('Auth/ForgotPassword', [
             'status' => session('status'),
+            'support_contact_label' => SystemSetting::get('support_contact_label', 'Admin KKN / LPPM'),
+            'support_whatsapp_number' => $this->supportWhatsappNumber(),
+            'support_whatsapp_link' => $this->supportWhatsappLink(),
         ]);
     }
 
     /**
-     * Send the password reset link.
-     * ISSUE-LOGIN-003 Fix: Prevent email enumeration
+     * Redirect users to the admin-assisted reset channel.
      */
     public function sendResetLink(Request $request): RedirectResponse
     {
-        $request->validate([
-            'email' => ['required', 'email'],
-        ]);
-
-        Password::sendResetLink(
-            $request->only('email')
-        );
-
-        // Always return same message to prevent email enumeration
-        return back()->with('status', 'Jika email terdaftar, link reset password telah dikirim.');
+        return back()->with('status', 'Reset password dilakukan melalui admin. Hubungi admin melalui WhatsApp dengan menyertakan username, NIM, atau NIP Anda.');
     }
 
     /**

@@ -22,27 +22,38 @@ class StudentTransferController extends Controller
     /**
      * Display the student transfer page.
      */
-    public function index()
+    public function index(Request $request)
     {
         Gate::authorize('transfer-students');
         $periodId = $this->contextService->getActivePeriodId();
 
         $students = $periodId
-            ? PesertaKkn::with(['mahasiswa', 'kelompok', 'periode'])
+            ? PesertaKkn::with(['mahasiswa.user', 'kelompok.location', 'periode'])
                 ->where('period_id', $periodId)
-                ->whereNotIn('status', ['rejected'])
+                ->whereNotIn('status', ['rejected', 'pending'])
+                ->when($request->input('search'), fn($q, $search) => $q->search($search))
                 ->orderBy('created_at', 'desc')
-                ->get()
-            : collect([]);
+                ->paginate(15)
+                ->withQueryString()
+            : null;
 
-        $targetPeriods = Periode::where('id', '!=', $periodId)
-            ->orderByDesc('periode')
+        $targetPeriods = Periode::orderByDesc('periode')
             ->orderBy('jenis')
             ->get(['id', 'name', 'periode', 'jenis', 'kuota']);
 
         return Inertia::render('Admin/Registrations/Transfer', [
-            'students' => $students,
+            'students' => $students ?: [
+                'data' => [], 
+                'meta' => [
+                    'total' => 0, 
+                    'current_page' => 1, 
+                    'per_page' => 15,
+                    'last_page' => 1,
+                    'links' => []
+                ]
+            ],
             'targetPeriods' => $targetPeriods,
+            'filters' => $request->only('search'),
             'title' => 'Transfer Peserta',
         ]);
     }
@@ -78,6 +89,8 @@ class StudentTransferController extends Controller
      */
     public function getTransferTargets(Request $request)
     {
+        Gate::authorize('transfer-students');
+
         $currentPeriodId = $request->input('current_period_id');
 
         $periods = Periode::where('id', '!=', $currentPeriodId)

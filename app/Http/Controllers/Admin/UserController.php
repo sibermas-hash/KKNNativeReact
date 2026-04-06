@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -335,5 +336,22 @@ class UserController extends Controller
         $status = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
         return redirect()->back()->with('success', "Pengguna berhasil {$status}.");
+    }
+
+    public function resetTemporaryPassword(User $user): RedirectResponse
+    {
+        $temporaryPassword = Str::password(12);
+
+        $user->forceFill([
+            'password' => $temporaryPassword,
+            'must_change_password' => true,
+            'password_changed_at' => null,
+            'remember_token' => Str::random(60),
+        ])->save();
+
+        return redirect()->back()
+            ->with('success', "Password sementara untuk akun {$user->username} berhasil dibuat.")
+            ->with('temporary_username', $user->username)
+            ->with('temporary_password', $temporaryPassword);
     }
 }

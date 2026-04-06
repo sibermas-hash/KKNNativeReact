@@ -25,7 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
         
         // Log to backend in production
         if (process.env.NODE_ENV === 'production') {
-            fetch('/api/log-error', {
+            fetch(route('api.log-error'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

@@ -30,6 +30,29 @@ it('allows a local user to log in with username and captcha', function () {
     $this->assertAuthenticatedAs($user);
 });
 
+it('allows a student to log in using nim as username', function () {
+    $user = User::factory()->create([
+        'username' => '2024001234',
+        'email' => 'studentnim@example.test',
+        'is_active' => true,
+        'password' => Hash::make('password'),
+    ]);
+
+    $user->assignRole(Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']));
+
+    $response = $this
+        ->withSession(['captcha_hash' => hash_hmac('sha256', '11', config('app.key'))])
+        ->post('/login', [
+            'login' => ' 2024001234 ',
+            'password' => 'password',
+            'captcha_answer' => 11,
+            'remember' => false,
+        ]);
+
+    $response->assertRedirect('/dashboard');
+    $this->assertAuthenticatedAs($user);
+});
+
 it('rejects login when captcha is incorrect', function () {
     User::factory()->create([
         'username' => 'captchatest',

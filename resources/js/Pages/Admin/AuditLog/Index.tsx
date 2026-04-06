@@ -13,6 +13,7 @@ import {
     ShieldAlert,
 } from 'lucide-react';
 import { Pagination } from '@/Components/ui';
+import { PaginationMeta } from '@/Components/ui/Pagination';
 
 interface AuditLog {
     id: number;
@@ -26,7 +27,7 @@ interface AuditLog {
 interface Props {
     logs: {
         data: AuditLog[];
-        meta: Record<string, unknown>;
+        meta: PaginationMeta;
     };
     filters: { search?: string };
 }
@@ -58,63 +59,64 @@ export default function AuditLogIndex({ logs, filters }: Props) {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
                         <input
                             type="search"
-                            placeholder="Cari Rekaman (Deskripsi / Aktor / Tipe)..."
+                            placeholder="Cari log (deskripsi, aktor, atau tipe)..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-12 pr-6 py-3 bg-white border border-slate-200 rounded-xl text-sm transition-all focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 outline-none shadow-sm shadow-slate-100/10 italic font-bold"
+                            className="w-full pl-12 pr-6 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none shadow-sm font-medium"
                         />
                     </form>
                     <div className="flex gap-3 w-full md:w-auto">
-                         <button className="flex-1 md:flex-none px-6 py-3 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-xl hover:bg-slate-50 transition-all flex items-center justify-center gap-3 shadow-sm italic">
+                         <button className="flex-1 md:flex-none px-5 py-2.5 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-xl hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-sm">
                             <Filter className="w-4 h-4 text-emerald-600" />
-                            Filter Data
+                            Filter Lanjutan
                         </button>
                     </div>
                 </div>
 
                 {/* Main Table Content */}
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden group">
-                    <div className="divide-y divide-slate-100 relative z-10 italic">
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="divide-y divide-slate-100">
                         {logs.data.length > 0 ? logs.data.map((log) => (
-                            <div key={log.id} className="p-8 hover:bg-slate-50/50 transition-all flex flex-col md:flex-row md:items-center justify-between gap-8 group/row">
-                                <div className="flex items-start gap-6">
-                                    <div className="h-14 w-14 rounded-2xl bg-slate-900 border border-slate-800 text-primary flex items-center justify-center shadow-lg group-hover/row:scale-110 transition-transform italic text-lg font-black">
-                                        <History className="h-6 w-6" />
+                            <div key={log.id} className="p-6 hover:bg-slate-50/50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-6 group/row">
+                                <div className="flex items-start gap-5">
+                                    <div className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                                        <History className="h-5 w-5" />
                                     </div>
-                                    <div className="space-y-2">
+                                    <div className="space-y-1.5">
                                         <div className="flex items-center gap-3">
-                                            <span className="text-xs font-bold text-emerald-500 uppercase tracking-widest bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded ">KEAMANAN OKE</span>
-                                            <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">ID: #{log.id.toString().padStart(6, '0')}</span>
+                                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded">Security Log</span>
+                                            <span className="text-[10px] font-medium text-slate-400">#{log.id.toString().padStart(6, '0')}</span>
                                         </div>
-                                        <h3 className="font-bold text-slate-900 tracking-tighter text-sm  group-hover/row:text-emerald-600 transition-colors uppercase italic">{log.description}</h3>
+                                        <h3 className="font-bold text-slate-900 text-sm group-hover/row:text-emerald-600 transition-colors">{log.description}</h3>
                                         <div className="flex items-center gap-4">
                                             <div className="flex items-center gap-2">
                                                 <User className="h-3.5 w-3.5 text-slate-400" />
-                                                <span className="text-xs font-bold text-slate-500 uppercase">{log.causer?.name || 'INTERNAL SISTEM'}</span>
+                                                <span className="text-xs font-semibold text-slate-500">{log.causer?.name || 'Sistem'}</span>
                                             </div>
                                             <div className="h-1 w-1 rounded-full bg-slate-200" />
                                             <div className="flex items-center gap-2">
                                                 <Activity className="h-3.5 w-3.5 text-slate-400" />
-                                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest truncate max-w-[150px]">{log.subject_type?.split('\\').pop() || 'SUMBER TIDAK TERDEFINISI'}</span>
+                                                <span className="text-xs font-medium text-slate-400">{log.subject_type?.split('\\').pop() || 'Aktivitas'}</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex flex-col items-end gap-5">
-                                    <span className="text-xs font-bold text-slate-300 uppercase tracking-widest whitespace-nowrap">{log.created_at}</span>
+                                <div className="flex flex-col md:items-end gap-4">
+                                    <span className="text-[11px] font-medium text-slate-400">{log.created_at}</span>
                                     <Link 
                                         href={route('admin.audit-log.show', log.id)}
-                                        className="h-10 px-6 bg-slate-900 text-primary border border-slate-800 rounded-xl font-bold uppercase italic tracking-widest text-xs shadow-lg shadow-slate-900/10 flex items-center gap-3 transition-all active:scale-95 group/btn hover:bg-emerald-600 hover:text-white"
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all"
                                     >
-                                        <Eye className="w-4 h-4 shadow-sm" />
-                                        Inspect Log
+                                        <Eye className="w-3.5 h-3.5" />
+                                        Buka Detail
                                     </Link>
                                 </div>
                             </div>
-                        )) : (
+                        ))
+ : (
                             <div className="py-32 text-center italic">
-                                <ShieldAlert className="h-16 w-16 mx-auto mb-6 text-slate-900" />
-                                <span className="text-sm font-black uppercase tracking-[0.4em]">TIDAK ADA DATA TERDETEKSI</span>
+                                <ShieldAlert className="h-16 w-16 mx-auto mb-6 text-emerald-900" />
+                                <span className="text-sm font-black uppercase tracking-[0.4em] text-slate-400">TIDAK ADA DATA TERDETEKSI</span>
                             </div>
                         )}
                     </div>
@@ -124,23 +126,17 @@ export default function AuditLogIndex({ logs, filters }: Props) {
                     <Pagination meta={logs.meta} />
                 </div>
 
-                {/* Footer Governance Info */}
-                <div className="p-8 bg-slate-900 rounded-xl border border-slate-800 text-white relative overflow-hidden group shadow-xl">
-                    <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,168,83,0.05),transparent_50%)]" />
-                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-                        <div className="space-y-3">
+                {/* Footer Info */}
+                <div className="p-8 bg-slate-50 rounded-xl border border-slate-100 text-slate-600 shadow-sm">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div className="space-y-2">
                              <div className="flex items-center gap-3 justify-center md:justify-start">
-                                <ShieldCheck className="w-6 h-6 text-emerald-500" />
-                                <h4 className="text-sm font-bold text-white uppercase italic tracking-widest">Protokol Pengawasan Permanen</h4>
+                                <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                                <h4 className="text-sm font-bold text-slate-900">Integritas Data Terjamin</h4>
                             </div>
-                            <p className="text-sm text-slate-400 font-medium  max-w-4xl italic uppercase">
-                                Seluruh rekaman audit bersifat permanen dan tidak dapat dimodifikasi. Ledger ini berfungsi sebagai basis kedaulatan data dan integritas operasional universitas.
+                            <p className="text-sm text-slate-500 font-medium max-w-4xl">
+                                Seluruh rekaman audit bersifat permanen dan tidak dapat dimodifikasi untuk menjamin akuntabilitas operasional sistem KKN UIN SAIZU.
                             </p>
-                        </div>
-                        <div className="flex gap-4">
-                            <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/10 text-emerald-500 text-xs font-bold">
-                                INTEGRETAS DATA DATA TERJAMIN
-                            </div>
                         </div>
                     </div>
                 </div>

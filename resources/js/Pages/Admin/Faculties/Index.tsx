@@ -1,169 +1,165 @@
 import { useState, useEffect } from 'react';
-import { router, Head } from '@inertiajs/react';
+import { router, Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Pagination, Badge } from '@/Components/ui';
-import type { PageProps } from '@/types';
+import { 
+    Search, 
+    Plus, 
+    Edit2,
+    Trash2,
+    Database,
+    Binary
+} from 'lucide-react';
+import { Pagination } from '@/Components/ui';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
-import { School, Search, Building2, LayoutGrid, ArrowRight, RefreshCw, Layers } from 'lucide-react';
-import { clsx } from 'clsx';
 
-interface FacultyWithCount {
+interface Faculty {
     id: number;
-    code: string;
     name: string;
-    programs_count: number;
+    code: string;
+    students_count?: number;
+    programs_count?: number;
 }
 
-interface PaginationLink {
-    url: string | null;
-    label: string;
-    active: boolean;
-}
-
-interface Props extends PageProps {
+interface Props {
     faculties: {
-        data: FacultyWithCount[];
-        links: PaginationLink[];
+        data: Faculty[];
         meta: PaginationMeta;
     };
-    filters: { search?: string };
-    syncInfo: {
-        mode: 'sync-only';
-        source: string;
-        last_synced_at?: string | null;
+    filters: {
+        search?: string;
     };
 }
 
-export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) {
+export default function FacultiesIndex({ faculties, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
 
     useEffect(() => {
         const timer = setTimeout(() => {
             if (search !== (filters.search || '')) {
-                router.get('/admin/fakultas', { search }, { preserveState: true, replace: true });
+                router.get('/admin/tahun-akademik/fakultas', { search }, { preserveState: true, replace: true });
             }
         }, 300);
         return () => clearTimeout(timer);
-    }, [search, filters.search]);
+    }, [search]);
+
+    const handleDelete = (id: number) => {
+        if (confirm('Hapus fakultas ini? Seluruh data program studi di dalamnya juga akan terhapus.')) {
+            router.delete(`/admin/tahun-akademik/fakultas/${id}`);
+        }
+    };
 
     return (
         <AppLayout title="Direktori Fakultas">
-            <Head title="Manajemen Fakultas" />
-            
-            <div className="space-y-8 pb-24">
-                {/* Tactical Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-100 pb-8">
-                    <div className="space-y-1">
-                        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3 italic">
-                            <School className="w-8 h-8 text-emerald-600" />
-                            DIREKTORI <span className="text-emerald-600">FAKULTAS</span>
-                        </h1>
-                        <p className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                            Sumber Otoritas: {syncInfo.source}
+            <Head title="Fakultas | POS-KKN" />
+
+            <div className="space-y-8 font-sans antialiased">
+                {/* SYSTEM HEADER */}
+                <div className="bg-white border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">MANAJEMEN FAKULTAS</h2>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                            DATABASE MASTER UNIT KERJA AKADEMIK
                         </p>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <div className="px-5 py-3 bg-white border border-slate-200 rounded-xl shadow-sm flex items-center gap-4 group hover:border-emerald-200 transition-all cursor-default">
-                             <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                                <Layers className="w-5 h-5" />
-                             </div>
-                             <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Entitas</p>
-                                <p className="text-xl font-bold text-slate-900 tabular-nums">{faculties.meta?.total || 0}</p>
-                             </div>
-                        </div>
-                    </div>
+                    <Link
+                        href="/admin/tahun-akademik/fakultas/create"
+                        className="h-10 px-6 bg-emerald-600 text-white rounded text-[10px] font-black uppercase tracking-wider flex items-center gap-2 hover:bg-emerald-700 active:scale-95 transition-all shadow-sm"
+                    >
+                        <Plus size={14} />
+                        TAMBAH UNIT
+                    </Link>
                 </div>
 
-                {/* Operations Toolbar */}
-                <div className="flex flex-col xl:flex-row gap-4 items-center justify-between">
-                    <div className="relative w-full xl:max-w-2xl group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
+                {/* SEARCH/FILTER STRIP */}
+                <div className="bg-white border border-slate-200 p-4">
+                    <div className="relative max-w-md">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input
-                            placeholder="Cari nama fakultas atau kode otoritas..."
+                            type="search"
+                            placeholder="CARI FAKULTAS ATAU KODE..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-12 pr-6 py-3.5 bg-white border border-slate-200 rounded-xl text-sm transition-all focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 outline-none shadow-sm shadow-slate-100/10 font-medium"
+                            className="w-full h-10 bg-slate-50 border border-slate-200 rounded px-10 text-xs font-bold text-slate-700 uppercase tracking-wider focus:bg-white focus:ring-0 focus:border-emerald-500 transition-all outline-none"
                         />
-                    </div>
-
-                    <div className="flex items-center gap-3 w-full xl:w-auto">
-                         <div className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                            <RefreshCw className="w-3 h-3 text-emerald-500" />
-                            Sync: {syncInfo.last_synced_at || 'Malam Ini'}
-                        </div>
                     </div>
                 </div>
 
-                {/* Master Data Table */}
-                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                {/* DATA GRID */}
+                <div className="bg-white border border-slate-200 overflow-hidden shadow-sm">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left">
+                        <table className="w-full border-collapse">
                             <thead>
-                                <tr className="bg-slate-50/50 border-b border-slate-100">
-                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">KODE UNIT</th>
-                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">IDENTITAS FAKULTAS</th>
-                                    <th className="px-8 py-5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">KAPASITAS PRODI</th>
-                                    <th className="px-8 py-5 text-right text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">STATUS</th>
+                                <tr className="bg-slate-50 border-b border-slate-200 text-left">
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">KODE SISTEM</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">NAMA FAKULTAS / UNIT</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">PROGRAM STUDI</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">MAHASISWA</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right pr-6">INSTRUMEN</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-50">
-                                {faculties.data.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={4} className="px-8 py-24 text-center">
-                                            <Building2 className="w-12 h-12 mx-auto mb-4 text-slate-100" />
-                                            <p className="text-sm font-bold text-slate-400 italic">Basis data kosong atau tidak ditemukan hasil pencarian.</p>
+                            <tbody className="divide-y divide-slate-100">
+                                {faculties.data.length > 0 ? faculties.data.map((faculty) => (
+                                    <tr key={faculty.id} className="hover:bg-slate-50 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-8 w-8 bg-slate-100 border border-slate-200 rounded flex items-center justify-center text-slate-400">
+                                                    <Binary size={14} />
+                                                </div>
+                                                <span className="text-[10px] font-black text-slate-600 uppercase tracking-wider">
+                                                    {faculty.code || `F-${faculty.id}`}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-xs font-black text-slate-800 uppercase tracking-tight">{faculty.name}</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                                                {faculty.programs_count || 0} UNIT
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center text-[10px] font-black text-slate-400 uppercase">
+                                            {faculty.students_count || 0} Record
+                                        </td>
+                                        <td className="px-6 py-4 text-right pr-6">
+                                            <div className="flex justify-end gap-2">
+                                                <Link
+                                                    href={`/admin/tahun-akademik/fakultas/${faculty.id}/edit`}
+                                                    className="h-8 w-8 bg-white border border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-200 flex items-center justify-center rounded shadow-sm transition-all"
+                                                    title="Edit Unit"
+                                                >
+                                                    <Edit2 size={12} />
+                                                </Link>
+                                                <button
+                                                    onClick={() => handleDelete(faculty.id)}
+                                                    className="h-8 w-8 bg-rose-600 text-white flex items-center justify-center rounded hover:bg-rose-700 transition-colors"
+                                                    title="Hapus Unit"
+                                                >
+                                                    <Trash2 size={12} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
-                                ) : (
-                                    faculties.data.map((faculty, idx) => (
-                                        <tr key={faculty.id} className="group hover:bg-slate-50/50 transition-colors">
-                                            <td className="px-8 py-6 font-mono text-xs font-bold text-slate-400 tracking-wider">
-                                                <span className="px-2.5 py-1.5 bg-slate-100 rounded-lg group-hover:bg-white group-hover:text-emerald-600 border border-transparent group-hover:border-emerald-100 transition-all italic">
-                                                    #{faculty.code}
-                                                </span>
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="h-10 w-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">
-                                                        {faculty.name.charAt(0)}
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-bold text-slate-900 mb-0.5 group-hover:text-emerald-600 transition-colors tracking-tight">
-                                                            {faculty.name}
-                                                        </span>
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">UIN SAIZU Internal Entity</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6 text-center">
-                                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold ring-1 ring-emerald-100 shadow-sm shadow-emerald-100/50">
-                                                    <LayoutGrid className="w-3.5 h-3.5" />
-                                                    {faculty.programs_count} Program Studi
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6 text-right">
-                                                <Badge variant="berhasil" className="italic px-3 py-1 font-bold">Terintegrasi</Badge>
-                                            </td>
-                                        </tr>
-                                    ))
+                                )) : (
+                                    <tr>
+                                        <td colSpan={5} className="px-6 py-24 text-center text-slate-300">
+                                            <Database size={48} className="mx-auto mb-4 opacity-10" />
+                                            <p className="text-[10px] font-black uppercase tracking-[0.3em]">TIDAK ADA DATA</p>
+                                        </td>
+                                    </tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
 
                     {faculties.meta && (
-                        <div className="px-8 py-6 bg-slate-50/30 border-t border-slate-100">
-                             <Pagination meta={faculties.meta} />
+                        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                TOTAL UNIT: {faculties.meta.total}
+                            </span>
+                            <Pagination meta={faculties.meta} />
                         </div>
                     )}
-                </div>
-
-                {/* Tactical Footer Note */}
-                <div className="flex items-center justify-center gap-3 text-slate-300 font-bold text-[10px] uppercase tracking-[0.3em] italic opacity-50 pt-8">
-                     <ArrowRight className="w-3 h-3" />
-                     Sistem Manajemen Master Data • Versi Otoritas 2.4.1
                 </div>
             </div>
         </AppLayout>

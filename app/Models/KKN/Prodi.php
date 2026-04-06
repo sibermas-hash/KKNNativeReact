@@ -11,6 +11,7 @@ class Prodi extends Model
 {
     use HasFactory;
 
+    protected $connection = 'kkn';
     protected $table = 'prodi';
 
     protected $fillable = [

@@ -1,142 +1,210 @@
-import { useState } from 'react';
+import type { FormEvent } from 'react';
+import { Head, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Head, useForm, router } from '@inertiajs/react';
-import { 
-    RefreshCw, 
-    Search, 
-    UserPlus, 
-    CheckCircle2, 
-    AlertCircle,
-    Info,
-    CloudDownload,
-    Database,
-    Binary
+import {
+  RefreshCw,
+  Users,
+  Link2,
+  Clock3,
+  ShieldCheck,
+  Database,
+  ListFilter,
 } from 'lucide-react';
-import { clsx } from 'clsx';
-import { route } from 'ziggy-js';
-
-interface ExternalDosen {
-    id: number;
-    nip: string;
-    name: string;
-    email?: string;
-    organization_id?: number;
-    organization_name?: string;
-    birth_date?: string;
-    gender?: string;
-}
 
 interface Props {
-    availableDosen: ExternalDosen[];
-    filters: {
-        search?: string;
-    };
-    title: string;
+  title: string;
+  summary: {
+    local_lecturers: number;
+    with_master_link: number;
+    last_synced_at: string | null;
+  };
 }
 
-export default function DplSync({ availableDosen, filters, title }: Props) {
-    const [search, setSearch] = useState(filters.search || '');
-    const { post, processing } = useForm();
+function formatSyncTime(value: string | null): string {
+  if (!value) {
+    return 'Belum pernah sinkron';
+  }
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        router.get(route('admin.dpl.sinkronisasi-index'), { search }, { preserveState: true });
-    };
+  const date = new Date(value);
 
-    const syncDosen = (dosen: ExternalDosen) => {
-        router.post(route('admin.dpl.sinkronisasi-eksekusi'), {
-            master_id: dosen.id,
-            nip: dosen.nip,
-            name: dosen.name,
-            email: dosen.email,
-            organization_id: dosen.organization_id,
-            birth_date: dosen.birth_date,
-            gender: dosen.gender
-        }, {
-            preserveScroll: true
-        });
-    };
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
 
-    return (
-        <AppLayout title={title}>
-            <Head title={title} />
+  return new Intl.DateTimeFormat('id-ID', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date);
+}
 
-            <div className="space-y-8 pb-20">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-100 pb-8">
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-emerald-600 rounded-xl text-white shadow-lg shadow-emerald-600/20">
-                                <CloudDownload size={20} />
-                            </div>
-                            <h1 className="text-2xl font-black text-slate-900 tracking-tight italic uppercase">{title}</h1>
-                        </div>
-                        <p className="text-sm text-slate-500 font-medium">Sinkronisasi master dosen dari API Kampus (Pusat) ke database lokal KKN.</p>
-                    </div>
-                </div>
+export default function DplSync({ title, summary }: Props) {
+  const bulkForm = useForm({});
+  const targetedForm = useForm({
+    nip_list: '',
+  });
 
-                <div className="bg-sky-50 border border-sky-100 rounded-3xl p-8 flex flex-col md:flex-row items-center gap-6">
-                    <div className="h-14 w-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-sky-500 shrink-0">
-                        <Info size={28} />
-                    </div>
-                    <div className="space-y-1">
-                        <h3 className="text-sm font-black text-sky-900 uppercase italic">Catatan Penting</h3>
-                        <p className="text-xs text-sky-700 leading-relaxed">
-                            Proses ini hanya menyinkronkan <strong>Identitas Dosen</strong> ke database lokal. Akun login dan penugasan DPL akan dibuat secara terpisah saat Anda mengaktifkan dosen tersebut pada periode KKN tertentu.
-                        </p>
-                    </div>
-                </div>
+  function submitBulk() {
+    bulkForm.post('/admin/dosen/sinkron', {
+      preserveScroll: true,
+    });
+  }
 
-                <div className="space-y-6">
-                    <form onSubmit={handleSearch} className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-slate-400 group-focus-within:text-emerald-500 transition-colors">
-                            <Search size={20} />
-                        </div>
-                        <input 
-                            type="text" 
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                            placeholder="Cari berdasarkan NIP atau Nama Dosen di API Pusat..."
-                            className="w-full h-16 bg-white border border-slate-200 rounded-2xl pl-16 pr-6 text-sm font-bold shadow-sm focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none"
-                        />
-                    </form>
+  function submitTargeted(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {availableDosen.map((dosen) => (
-                            <div key={dosen.nip} className="bg-white border border-slate-100 rounded-[2rem] p-8 shadow-sm hover:shadow-xl transition-all group overflow-hidden relative">
-                                <div className="absolute -top-4 -right-4 p-8 opacity-[0.02] text-slate-900 group-hover:rotate-12 transition-transform">
-                                    <Database size={100} />
-                                </div>
+    targetedForm.post('/admin/dosen/sinkron', {
+      preserveScroll: true,
+    });
+  }
 
-                                <div className="relative z-10 space-y-6">
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">{dosen.nip}</p>
-                                        <h3 className="text-lg font-black text-slate-900 leading-tight italic uppercase">{dosen.name}</h3>
-                                        <p className="text-xs font-bold text-emerald-600">{dosen.organization_name || 'Unit Kerja Umum'}</p>
-                                    </div>
+  return (
+    <AppLayout title="Sinkron Dosen">
+      <Head title={title} />
 
-                                    <button 
-                                        onClick={() => syncDosen(dosen)}
-                                        disabled={processing}
-                                        className="w-full h-12 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all flex items-center justify-center gap-3 shadow-lg shadow-slate-900/10 active:scale-95 disabled:opacity-50"
-                                    >
-                                        <RefreshCw size={14} className={clsx(processing && "animate-spin")} />
-                                        Sinkronkan Sekarang
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+      <div className="space-y-6">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">Sinkronisasi Master Dosen</h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Halaman ini dipakai untuk menarik data dosen dari master kampus ke registry lokal KKN. Sinkron di sini hanya membuat atau
+              memperbarui data dosen lokal, bukan membuat akun login DPL.
+            </p>
+          </div>
+        </div>
 
-                        {availableDosen.length === 0 && (
-                            <div className="col-span-full py-20 bg-slate-50 rounded-[3rem] border-4 border-dashed border-slate-200 text-center">
-                                <Binary className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                                <p className="text-slate-400 font-black uppercase tracking-widest text-sm italic">
-                                    {search ? 'Tidak ditemukan dosen yang sesuai kriteria.' : 'Semua data dosen dari API Pusat sudah tersinkronisasi.'}
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                <Users size={20} />
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Dosen Lokal</p>
+                <p className="text-2xl font-black tracking-tight text-slate-900">{summary.local_lecturers}</p>
+              </div>
             </div>
-        </AppLayout>
-    );
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                <Link2 size={20} />
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Tertaut ke Master</p>
+                <p className="text-2xl font-black tracking-tight text-slate-900">{summary.with_master_link}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                <Clock3 size={20} />
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Sinkron Terakhir</p>
+                <p className="text-sm font-bold text-slate-900">{formatSyncTime(summary.last_synced_at)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-sky-700" />
+            <div className="space-y-1 text-sm text-sky-900">
+              <p className="font-bold">Cara kerja sinkron dosen sekarang:</p>
+              <p className="text-xs font-medium leading-relaxed text-sky-800">
+                `Sinkron semua dosen` dipakai untuk menyegarkan master lokal secara penuh. `Resinkron NIP tertentu` dipakai jika hanya ada
+                beberapa dosen yang perlu diperbarui. Akun login DPL tetap dikelola terpisah saat dosen diaktifkan pada periode KKN.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-2">
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                <Database size={20} />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">Sinkron Semua Dosen</h2>
+                <p className="text-sm text-slate-500">Menarik seluruh data dosen dari API master kampus.</p>
+              </div>
+            </div>
+
+            <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-medium leading-relaxed text-slate-600">
+                Gunakan mode ini saat awal setup, setelah ada perubahan besar pada master dosen, atau ketika Anda ingin memastikan registry
+                dosen lokal kembali sinkron penuh.
+              </p>
+              <ul className="space-y-2 text-xs font-medium text-slate-500">
+                <li>• Membuat atau memperbarui identitas dosen berdasarkan NIP</li>
+                <li>• Menyegarkan nama, fakultas, gender, tanggal lahir, dan metadata sinkron</li>
+                <li>• Tidak otomatis membuat akun login atau aktivasi DPL</li>
+              </ul>
+            </div>
+
+            <div className="mt-5 flex justify-end">
+              <button
+                type="button"
+                onClick={submitBulk}
+                disabled={bulkForm.processing || targetedForm.processing}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-60 shadow-sm"
+              >
+                <RefreshCw size={16} className={bulkForm.processing ? 'animate-spin' : ''} />
+                {bulkForm.processing ? 'Menyinkronkan...' : 'Sinkron Semua'}
+              </button>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                <ListFilter size={20} />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">Resinkron NIP Tertentu</h2>
+                <p className="text-sm text-slate-500">Untuk pembaruan dosen terarah tanpa menarik semua data.</p>
+              </div>
+            </div>
+
+            <form onSubmit={submitTargeted} className="space-y-4">
+              <div>
+                <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-slate-500">
+                  Daftar NIP
+                </label>
+                <textarea
+                  rows={8}
+                  value={targetedForm.data.nip_list}
+                  onChange={(event) => targetedForm.setData('nip_list', event.target.value)}
+                  placeholder={'Masukkan satu atau banyak NIP.\nPisahkan dengan enter, koma, atau titik koma.\nContoh:\n198700010010\n198700010011,198700010012'}
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/5"
+                />
+                {targetedForm.errors.nip_list && (
+                  <p className="mt-2 text-xs font-semibold text-rose-500">{targetedForm.errors.nip_list}</p>
+                )}
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs font-medium leading-relaxed text-slate-500">
+                Mode ini cocok bila hanya ada dosen tertentu yang baru diperbaiki di master kampus, atau ada data yang ingin diperbarui
+                ulang tanpa menjalankan sinkron penuh.
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={targetedForm.processing || bulkForm.processing || targetedForm.data.nip_list.trim() === ''}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700 disabled:opacity-60"
+                >
+                  <RefreshCw size={16} className={targetedForm.processing ? 'animate-spin' : ''} />
+                  {targetedForm.processing ? 'Memproses...' : 'Sinkron NIP Tertentu'}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </div>
+    </AppLayout>
+  );
 }

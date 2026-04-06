@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { route } from 'ziggy-js';
 
 const DB_NAME = 'kknuinsaizu-offline';
 const DB_VERSION = 1;

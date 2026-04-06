@@ -12,6 +12,7 @@ class Dosen extends Model
 {
     use HasFactory;
 
+    protected $connection = 'kkn';
     protected $table = 'dosen';
 
     protected $fillable = [
@@ -20,6 +21,8 @@ class Dosen extends Model
         'nama',
         'birth_date',
         'gender',
+        'is_cpns',
+        'is_tugas_belajar',
         'faculty_id',
         'phone',
         'master_id',
@@ -28,6 +31,8 @@ class Dosen extends Model
 
     protected $casts = [
         'birth_date' => 'date',
+        'is_cpns' => 'boolean',
+        'is_tugas_belajar' => 'boolean',
     ];
 
     public function user(): BelongsTo

@@ -11,6 +11,7 @@ class PoskoKelompok extends Model
 {
     use HasFactory;
 
+    protected $connection = 'kkn';
     protected $table = 'posko_kelompok';
     protected $appends = ['photo_url'];
 

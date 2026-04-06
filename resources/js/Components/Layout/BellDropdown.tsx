@@ -28,7 +28,7 @@ export default function BellDropdown() {
  useEffect(() => {
  const fetchNotifications = async () => {
  try {
- const { data } = await axios.get('/api/notifications/unread');
+ const { data } = await axios.get(route('api.notifications.unread'));
  setItems(data.notifications ?? []);
  setCount(data.unread_count ?? 0);
  } catch {
@@ -171,4 +171,6 @@ export default function BellDropdown() {
  )}
  </div>
  );
+}
+;
 }

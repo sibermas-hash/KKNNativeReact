@@ -64,6 +64,7 @@ class PesertaKknController extends Controller
     public function downloadDocument(Request $request): StreamedResponse
     {
         $path = $request->input('path');
+        $user = auth()->user();
         
         if (!$path || !Storage::disk('local')->exists($path)) {
             abort(404, 'Dokumen tidak ditemukan.');
@@ -71,7 +72,22 @@ class PesertaKknController extends Controller
 
         // Security check: Only allow specific folders
         if (!str_starts_with($path, 'health-certificates/') && !str_starts_with($path, 'parent-permissions/')) {
-            abort(403, 'Akses ditolak.');
+            abort(403, 'Akses folder ditolak.');
+        }
+
+        // Ownership check: If not admin, must be the owner of the document
+        if (!$user->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])) {
+            $mahasiswa = \App\Models\KKN\Mahasiswa::where('user_id', $user->id)->first();
+            
+            if (!$mahasiswa) {
+                abort(403, 'Akses identitas ditolak.');
+            }
+
+            $isOwner = ($mahasiswa->health_certificate_path === $path) || ($mahasiswa->parent_permission_path === $path);
+            
+            if (!$isOwner) {
+                abort(403, 'Anda tidak memiliki hak akses untuk mendownload dokumen ini.');
+            }
         }
 
         return Storage::disk('local')->download($path);
@@ -90,6 +106,28 @@ class PesertaKknController extends Controller
 
         // Map data to match React frontend expectations
         $registrations->through(function ($reg) {
+            $mahasiswa = $reg->mahasiswa;
+            $minSks = (int) \App\Models\KKN\SystemSetting::get('min_sks_registration', 100);
+            $sksOk = ($mahasiswa?->sks_completed ?? 0) >= $minSks;
+            $btaOk = (bool) $mahasiswa?->is_bta_ppi_passed;
+            $docsOk = !empty($mahasiswa?->health_certificate_path) && !empty($mahasiswa?->parent_permission_path);
+            $isEligible = $sksOk && $btaOk && $docsOk;
+
+            // Build issue list for tooltip
+            $issues = [];
+            if (!$sksOk) {
+                $issues[] = "SKS kurang (" . ($mahasiswa?->sks_completed ?? 0) . "/{$minSks})";
+            }
+            if (!$btaOk) {
+                $issues[] = 'Belum lulus BTA-PPI';
+            }
+            if (!$docsOk) {
+                $missing = [];
+                if (empty($mahasiswa?->health_certificate_path)) $missing[] = 'Surat sehat';
+                if (empty($mahasiswa?->parent_permission_path)) $missing[] = 'Surat izin ortu';
+                $issues[] = 'Dokumen belum lengkap: ' . implode(', ', $missing);
+            }
+
             return [
                 'id' => $reg->id,
                 'status' => $reg->status,
@@ -98,6 +136,8 @@ class PesertaKknController extends Controller
                 'rejection_reason' => $reg->rejection_reason,
                 'revision_count' => (int) ($reg->revision_count ?? 0),
                 'resubmitted_at' => $reg->resubmitted_at?->toIso8601String(),
+                'is_eligible' => $isEligible,
+                'eligibility_issues' => $issues,
                 'student' => [
                     'nim' => $reg->mahasiswa?->nim,
                     'name' => $reg->mahasiswa?->nama ?? $reg->mahasiswa?->user?->name ?? '-',

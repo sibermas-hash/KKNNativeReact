@@ -8,6 +8,7 @@ use App\Models\User;
 
 class LogAudit extends Model
 {
+    protected $connection = 'kkn';
     protected $table = 'log_audit';
 
     protected $fillable = [

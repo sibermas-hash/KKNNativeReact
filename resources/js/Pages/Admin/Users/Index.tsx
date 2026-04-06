@@ -1,24 +1,26 @@
 import { useState } from 'react';
-import { router, Head, Link } from '@inertiajs/react';
+import { router, Head, Link, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import {
     Users,
     Search,
     UserPlus,
-    Shield,
     Lock,
     Unlock,
     ArrowRight,
-    SearchCheck,
     CheckCircle2,
-    ShieldAlert
+    ShieldAlert,
+    KeyRound,
+    Info,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Pagination } from '@/Components/ui';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
+import type { PageProps } from '@/types';
 
 interface User {
     id: number;
+    username: string;
     name: string;
     email: string;
     roles: string[];
@@ -36,6 +38,7 @@ interface Props {
 
 export default function UsersIndex({ users, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
+    const { flash } = usePage<PageProps>().props;
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -57,11 +60,40 @@ export default function UsersIndex({ users, filters }: Props) {
         }
     };
 
+    const resetTemporaryPassword = (user: User) => {
+        if (!confirm(`Buat password sementara baru untuk akun ${user.username}? Pengguna akan dipaksa mengganti password saat login berikutnya.`)) {
+            return;
+        }
+
+        router.post(`/admin/pengguna/${user.id}/reset-password-sementara`, {}, {
+            preserveScroll: true,
+        });
+    };
+
     return (
         <AppLayout title="DATA PENGGUNA">
             <Head title="Manajemen Pengguna | KKN UIN SAIZU" />
 
             <div className="space-y-6 pb-12">
+                {flash?.temporary_password && flash?.temporary_username && (
+                    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 shadow-sm">
+                        <div className="flex items-start gap-3">
+                            <Info className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+                            <div className="space-y-1">
+                                <p className="font-bold">Password sementara berhasil dibuat.</p>
+                                <p>
+                                    Username: <span className="font-semibold">{flash.temporary_username}</span>
+                                </p>
+                                <p>
+                                    Password sementara: <span className="font-mono font-semibold">{flash.temporary_password}</span>
+                                </p>
+                                <p className="text-xs text-amber-700">
+                                    Simpan hanya seperlunya dan minta pengguna segera mengganti password setelah berhasil login.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 
                 {/* --- COMPACT ACTION BAR --- */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -154,6 +186,14 @@ export default function UsersIndex({ users, filters }: Props) {
                                             </td>
                                             <td className="px-6 py-5 text-right">
                                                 <div className="flex justify-end gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => resetTemporaryPassword(user)}
+                                                        className="h-9 w-9 flex items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-amber-700 transition-all hover:bg-amber-100 active:scale-90"
+                                                        title="Reset Password Sementara"
+                                                    >
+                                                        <KeyRound size={16} />
+                                                    </button>
                                                     <button 
                                                         onClick={() => toggleStatus(user)}
                                                         disabled={user.roles[0]?.toLowerCase() !== 'student'}

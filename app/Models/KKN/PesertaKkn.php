@@ -14,6 +14,7 @@ class PesertaKkn extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $connection = 'kkn';
     protected $table = 'peserta_kkn';
 
     protected $fillable = [

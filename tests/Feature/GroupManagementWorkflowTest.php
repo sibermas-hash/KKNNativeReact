@@ -230,7 +230,7 @@ class GroupManagementWorkflowTest extends TestCase
             ->where('status', 'approved')
             ->count();
 
-        expect($approvedCount)->toBeLessThanOrEqualTo($group->capacity);
+        expect($approvedCount <= $group->capacity)->toBeTrue();
     }
 
     public function test_group_leader_is_designated(): void
@@ -426,7 +426,35 @@ class GroupManagementWorkflowTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Groups/Index')
-                ->has('groups', 3)
+                ->has('groups.data', 3)
+            );
+    }
+
+    public function test_group_list_page_includes_main_lecturer_payload(): void
+    {
+        $admin = $this->createAdminUser();
+        ['dosen' => $dosen] = $this->createDplUser();
+
+        $period = Periode::factory()->active()->create();
+        $location = Lokasi::factory()->create();
+        $group = KelompokKkn::factory()->create([
+            'period_id' => $period->id,
+            'location_id' => $location->id,
+            'nama_kelompok' => 'Kelompok Melati',
+            'status' => 'active',
+        ]);
+
+        $group->dosen()->syncWithoutDetaching([
+            $dosen->id => ['role' => 'Ketua'],
+        ]);
+        $group->syncKetuaFlatColumns();
+
+        $this->actingAs($admin)
+            ->get(route('admin.kelompok.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Groups/Index')
+                ->where('groups.data.0.main_lecturer.name', $dosen->nama)
             );
     }
 

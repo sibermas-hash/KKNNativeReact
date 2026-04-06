@@ -15,14 +15,11 @@ use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\ProgramKerja;
 use App\Models\KKN\Prodi;
 use App\Services\DashboardStatisticsService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class DashboardStatisticsServiceTest extends TestCase
 {
-    use RefreshDatabase;
-
     private DashboardStatisticsService $service;
 
     protected function setUp(): void

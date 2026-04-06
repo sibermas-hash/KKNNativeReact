@@ -11,6 +11,7 @@ class DplKecamatanAssignment extends Model
 {
     use HasFactory;
 
+    protected $connection = 'kkn';
     protected $table = 'dpl_kecamatan_assignments';
 
     protected $fillable = [

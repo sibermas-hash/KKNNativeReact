@@ -12,6 +12,7 @@ class Evaluasi extends Model
 {
     use HasFactory;
 
+    protected $connection = 'kkn';
     protected $table = 'evaluasi';
 
     protected $fillable = [

@@ -12,14 +12,11 @@ use App\Models\KKN\PesertaKkn;
 use App\Models\User;
 use App\Services\DailyReportCompilationService;
 use Barryvdh\DomPDF\PDF;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
 use Tests\TestCase;
 
 class DailyReportCompilationServiceTest extends TestCase
 {
-    use RefreshDatabase;
-
     private DailyReportCompilationService $service;
 
     protected function setUp(): void

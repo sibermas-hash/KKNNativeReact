@@ -46,6 +46,7 @@ class LokasiController extends Controller
             'village_name' => $location->village_name,
             'district_name' => $location->district_name,
             'regency_name' => $location->regency_name,
+            'capacity' => $location->capacity,
             'full_name' => $location->full_name,
             'groups_count' => $location->kelompok_count,
             'posko_count' => $location->posko_count,
@@ -60,6 +61,10 @@ class LokasiController extends Controller
                 'total_locations' => Lokasi::count(),
                 'assigned_groups' => KelompokKkn::count(),
                 'reported_posko' => PoskoKelompok::count(),
+            ],
+            'workflow' => [
+                'primary_source' => 'groups_import',
+                'groups_import_url' => '/admin/kelompok',
             ],
         ]);
     }

@@ -10,6 +10,7 @@ class Workshop extends Model
 {
     use HasFactory;
 
+    protected $connection = 'kkn';
     protected $table = 'workshop';
 
     protected $fillable = [

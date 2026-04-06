@@ -7,44 +7,47 @@ import {
     Search,
     RefreshCw,
     ArrowRightLeft,
-    ChevronRight,
     MapPin,
     AlertTriangle,
-    ArrowRight,
     CheckCircle2,
-    ShieldAlert,
-    Cpu,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Pagination } from '@/Components/ui';
+import type { PaginationMeta } from '@/Components/ui/Pagination';
 
 interface Student {
     id: number;
-    nim: string;
-    user: { name: string; };
-    group?: {
+    mahasiswa: {
+        nim: string;
+        nama: string;
+        user: { name: string };
+    };
+    user?: { name?: string };
+    kelompok?: {
         id: number;
-        name: string;
+        nama_kelompok: string;
+        code: string;
         location?: {
-            kecamatan: string;
-            kabupaten: string;
+            district_name: string;
+            village_name: string | null;
+            regency_name: string;
         };
     };
+    status: string;
 }
 
-interface Group {
+interface TargetGroup {
     id: number;
-    name: string;
-    location?: {
-        kecamatan: string;
-        kabupaten: string;
-    };
+    nama: string;
+    capacity: number | null;
+    current_count: number;
+    available: number | null;
 }
 
 interface Props {
     students: {
         data: Student[];
-        meta: Record<string, unknown>;
+        meta: PaginationMeta;
     };
     targetPeriods: Array<{ id: number; name: string; periode: number; jenis: string; kuota: number }>;
     filters: { search?: string };
@@ -56,21 +59,41 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
     const [targetGroupId, setTargetGroupId] = useState<string>('');
     const [targetPeriodId, setTargetPeriodId] = useState<string>('');
     const [reason, setReason] = useState('');
+    const [groups, setGroups] = useState<TargetGroup[]>([]);
+    const [isLoadingGroups, setIsLoadingGroups] = useState(false);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        router.get(route('admin.peserta.pindah'), { search }, { preserveState: true });
+        router.get(route('admin.peserta.pindah.index'), { search }, { preserveState: true });
     };
 
-    const handleTransfer = () => {
-        if (!selectedStudent || !targetPeriodId) return;
-
-        if (!reason.trim()) {
-            alert('Alasan transfer wajib diisi.');
+    const fetchGroups = async (periodId: string) => {
+        if (!periodId) {
+            setGroups([]);
             return;
         }
 
-        if (confirm(`Apakah Anda yakin ingin memindahkan mahasiswa ${selectedStudent.user.name} ke periode/kelompok baru?`)) {
+        setIsLoadingGroups(true);
+        try {
+            const response = await fetch(route('admin.api.transfer-targets', { target_period_id: periodId }));
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch transfer targets');
+            }
+
+            const data = await response.json();
+            setGroups(data.groups || []);
+        } catch (error) {
+            console.error('Failed to fetch groups', error);
+        } finally {
+            setIsLoadingGroups(false);
+        }
+    };
+
+    const handleTransfer = () => {
+        if (!selectedStudent || !targetPeriodId || !reason.trim()) return;
+
+        if (confirm(`Apakah Anda yakin ingin memindahkan ${selectedStudent.mahasiswa.nama} ke periode/kelompok baru?`)) {
             router.post(route('admin.peserta.pindah'), {
                 peserta_kkn_id: selectedStudent.id,
                 target_period_id: targetPeriodId,
@@ -87,199 +110,210 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
         }
     };
 
+    const getStudentName = (student: Student) => student.mahasiswa.nama || student.mahasiswa.user.name;
+    const getStudentNim = (student: Student) => student.mahasiswa.nim;
+    const getGroupName = (student: Student) => student.kelompok?.nama_kelompok || student.kelompok?.code;
+    const getLocationLabel = (student: Student) => {
+        const loc = student.kelompok?.location;
+        if (!loc) return null;
+        return loc.village_name ? `${loc.village_name}, ${loc.district_name}` : loc.district_name;
+    };
+
     return (
         <AppLayout title="Transfer Peserta">
-            <Head title="Mobilitas Mahasiswa" />
+            <Head title="Transfer Peserta" />
 
-            <div className="space-y-8 pb-20">
-                {/* Simple Clean Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
+            <div className="space-y-6">
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-8">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Transfer Peserta</h1>
-                        <p className="text-sm text-slate-500 mt-1">Sistem pemindahan personel mahasiswa antar unit kelompok KKN.</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                         <button 
-                            onClick={() => router.reload()}
-                            className="px-6 py-3 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-all flex items-center gap-3"
-                        >
-                            <RefreshCw className="w-3.5 h-3.5" />
-                            RESCAN_LEDGER
-                        </button>
+                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Transfer Peserta KKN</h1>
+                        <p className="text-sm text-slate-500 mt-1">Pindahkan peserta antar periode atau kelompok secara resmi.</p>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-                    {/* Select Personel Section */}
-                    <div className="xl:col-span-4 space-y-6">
-                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600 shadow-sm border border-emerald-100/50">
-                                    <Search className="w-5 h-5 shadow-sm shadow-emerald-500/20" />
-                                </div>
-                                <h3 className="font-bold text-slate-900 tracking-tight">Cari Mahasiswa</h3>
-                            </div>
-                            
-                            <form onSubmit={handleSearch} className="relative group mb-6">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
+                <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+                    {/* Daftar Peserta */}
+                    <div className="xl:col-span-4 space-y-4">
+                        <div className="bg-white p-6 rounded-lg border border-slate-200">
+                            <h3 className="text-sm font-semibold text-slate-900 mb-4">Cari Peserta</h3>
+
+                            <form onSubmit={handleSearch} className="mb-4 relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                 <input
                                     type="search"
-                                    placeholder="Cari NIM atau Nama..."
+                                    placeholder="Nama atau NIM..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    className="w-full pl-12 pr-6 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none"
+                                    className="w-full h-10 pl-10 pr-4 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                                 />
                             </form>
 
-                            <div className="space-y-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                            <div className="space-y-2 max-h-[500px] overflow-y-auto">
                                 {students.data.map((student) => (
                                     <button
                                         key={student.id}
                                         onClick={() => setSelectedStudent(student)}
                                         className={clsx(
-                                            "w-full p-4 rounded-xl border text-left transition-all group flex items-center justify-between",
+                                            "w-full p-4 rounded-xl border text-left transition-all",
                                             selectedStudent?.id === student.id 
-                                                ? "bg-slate-900 border-slate-800 shadow-xl" 
-                                                : "bg-white border-slate-100 hover:border-emerald-200 hover:bg-emerald-50 transition-colors"
+                                                ? "bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500/10" 
+                                                : "bg-white border-slate-100 hover:bg-slate-50"
                                         )}
                                     >
-                                        <div className="flex items-center gap-4">
-                                            <div className={clsx(
-                                                "h-10 w-10 flex items-center justify-center rounded-lg font-bold text-xs italic",
-                                                selectedStudent?.id === student.id ? "bg-primary text-slate-900" : "bg-slate-900 text-primary"
-                                            )}>
-                                                {student.user.name.charAt(0)}
-                                            </div>
-                                            <div>
-                                                <p className={clsx(
-                                                    "text-xs font-bold  mb-1.5 truncate max-w-[150px]",
-                                                    selectedStudent?.id === student.id ? "text-white" : "text-slate-900"
-                                                )}>{student.user.name}</p>
-                                                <p className={clsx(
-                                                    "text-xs font-bold uppercase tracking-wider",
-                                                    selectedStudent?.id === student.id ? "text-primary/50" : "text-slate-400"
-                                                )}>{student.nim}</p>
-                                            </div>
-                                        </div>
-                                        <ChevronRight className={clsx(
-                                            "w-4 h-4 transition-transform",
-                                            selectedStudent?.id === student.id ? "text-primary" : "text-slate-200"
-                                        )} />
+                                        <p className={clsx(
+                                            "text-sm font-bold truncate",
+                                            selectedStudent?.id === student.id ? "text-emerald-700" : "text-slate-900"
+                                        )}>{getStudentName(student)}</p>
+                                        <p className={clsx("text-xs font-semibold mt-0.5", selectedStudent?.id === student.id ? "text-emerald-600" : "text-slate-400")}>{getStudentNim(student)}</p>
+                                        {getGroupName(student) && (
+                                            <p className={clsx("text-[11px] mt-1.5 flex items-center gap-1.5", selectedStudent?.id === student.id ? "text-emerald-600" : "text-slate-400")}>
+                                                <MapPin className="w-3 h-3" />
+                                                {getGroupName(student)}
+                                            </p>
+                                        )}
                                     </button>
                                 ))}
+
+                                {students.data.length === 0 && (
+                                    <div className="py-12 text-center">
+                                        <Users className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                                        <p className="text-sm text-slate-400">Tidak ada data peserta.</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="mt-4 pt-4 border-t border-slate-100">
+                                <Pagination meta={students.meta} />
                             </div>
                         </div>
 
-                         <div className="bg-slate-900 p-8 rounded-xl border border-slate-800 text-white relative overflow-hidden group shadow-xl">
-                            <div className="absolute top-0 right-0 p-8 text-emerald-500 opacity-5  transition-transform">
-                                <ShieldAlert className="w-32 h-32" />
-                            </div>
-                            <div className="relative z-10 flex flex-col items-center text-center space-y-4">
-                                <AlertTriangle className="w-8 h-8 text-emerald-500 mb-2 shadow-sm shadow-emerald-500/20" />
-                                <div>
-                                    <h4 className="text-xs font-bold text-white uppercase tracking-widest mb-2">Peringatan Transmisi</h4>
-                                    <p className="text-sm text-slate-500 font-medium italic">
-                                        Pemindahan ini bersifat permanen dan akan memicu audit pembaruan logistik unit kelompok tujuan secara otomatis.
-                                    </p>
-                                </div>
+                        <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 flex gap-3">
+                            <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                            <div>
+                                <h4 className="text-sm font-medium text-amber-800">Perhatian</h4>
+                                <p className="text-xs text-amber-600 mt-1">
+                                    Transfer peserta akan tercatat dalam audit trail dan tidak dapat dibatalkan secara otomatis.
+                                </p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Execution Section */}
+                    {/* Form Transfer */}
                     <div className="xl:col-span-8">
                         {selectedStudent ? (
-                            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden group">
-                                <div className="p-10 border-b border-slate-50 space-y-10">
-                                    <div className="flex items-center gap-8 justify-center">
-                                        <div className="flex flex-col items-center gap-4">
-                                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Asal Unit</span>
-                                            <div className="w-20 h-20 rounded-2xl bg-slate-900 flex items-center justify-center text-primary text-3xl font-bold shadow-2xl  transition-transform italic">
-                                                {selectedStudent.user.name.charAt(0)}
-                                            </div>
-                                            <div className="text-center">
-                                                <p className="font-bold text-slate-900 text-sm mb-1">{selectedStudent.user.name}</p>
-                                                <div className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg text-xs font-bold text-slate-400 italic">#{selectedStudent.nim}</div>
-                                            </div>
+                            <div className="bg-white rounded-lg border border-slate-200">
+                                <div className="p-6 space-y-6">
+                                    {/* Info Peserta */}
+                                    <div className="flex items-center gap-5 p-6 bg-slate-50 rounded-xl border border-slate-100">
+                                        <div className="w-16 h-16 rounded-xl bg-emerald-600 flex items-center justify-center text-white text-2xl font-bold shadow-sm">
+                                            {(selectedStudent.mahasiswa?.nama || selectedStudent.mahasiswa?.user?.name || '?').charAt(0)}
                                         </div>
-
-                                        <div className="flex flex-col items-center gap-4 px-10">
-                                            <div className="flex items-center gap-2">
-                                                <div className="h-1 w-8 bg-slate-100 rounded-full" />
-                                                <div className="h-12 w-12 bg-emerald-50 rounded-full border border-emerald-100 flex items-center justify-center animate-pulse">
-                                                    <ArrowRightLeft className="w-6 h-6 text-emerald-600" />
-                                                </div>
-                                                <div className="h-1 w-8 bg-slate-100 rounded-full" />
-                                            </div>
-                                            <div className="px-3 py-1.5 bg-emerald-100 rounded-lg border border-emerald-200 text-xs font-black text-emerald-700 uppercase tracking-widest italic animate-pulse">Transmisi_Aktif</div>
+                                        <div className="flex-1">
+                                            <p className="font-bold text-slate-900">{getStudentName(selectedStudent)}</p>
+                                            <p className="text-sm font-medium text-slate-500">NIM: {getStudentNim(selectedStudent)}</p>
                                         </div>
-
-                                        <div className="flex flex-col items-center gap-4">
-                                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Target Unit</span>
-                                            <div className="w-20 h-20 rounded-2xl bg-white border-2 border-dashed border-slate-200 flex items-center justify-center animate-pulse">
-                                                <ArrowRight className="w-10 h-10 text-slate-200" />
+                                        {getGroupName(selectedStudent) && (
+                                            <div className="text-right">
+                                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Kelompok Saat Ini</p>
+                                                <p className="text-sm font-bold text-slate-900">{getGroupName(selectedStudent)}</p>
+                                                {getLocationLabel(selectedStudent) && (
+                                                    <p className="text-xs text-slate-400">{getLocationLabel(selectedStudent)}</p>
+                                                )}
                                             </div>
-                                            <span className="text-xs font-bold text-slate-300 italic">SIAP_INJEKSI</span>
-                                        </div>
+                                        )}
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-8 pt-6">
-                                        <div className="p-6 bg-slate-50 rounded-xl border border-slate-100 space-y-4">
-                                            <div className="flex items-center gap-3">
-                                                <MapPin className="w-4 h-4 text-emerald-500" />
-                                                <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Status Saat Ini</span>
-                                            </div>
-                                            <div>
-                                                <h4 className="text-sm font-bold text-slate-900 tracking-tight  mb-2 italic uppercase">{selectedStudent.group?.name || 'BELUM_ADA_UNIT'}</h4>
-                                                <p className="text-xs font-bold text-slate-400 italic">
-                                                    {selectedStudent.group?.location ? `${selectedStudent.group.location.kecamatan}` : 'LOKASI_TIDAK_TERDETEKSI'}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="p-6 bg-emerald-50/50 rounded-xl border border-emerald-100 space-y-4">
-                                            <div className="flex items-center gap-3">
-                                                <RefreshCw className="w-4 h-4 text-emerald-600" />
-                                                <span className="text-sm font-bold text-emerald-600 uppercase tracking-widest">Tujuan Baru</span>
-                                            </div>
+                                    {/* Transfer Config */}
+                                    <div className="grid gap-6 md:grid-cols-2">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                                Periode Tujuan <span className="text-red-500">*</span>
+                                            </label>
                                             <select
-                                                value={targetGroupId}
-                                                onChange={(e) => setTargetGroupId(e.target.value)}
-                                                className="w-full bg-white border border-emerald-100 rounded-xl px-4 py-2.5 text-xs font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all shadow-sm italic"
+                                                value={targetPeriodId}
+                                                onChange={(e) => {
+                                                    const id = e.target.value;
+                                                    setTargetPeriodId(id);
+                                                    setTargetGroupId('');
+                                                    fetchGroups(id);
+                                                }}
+                                                className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                                             >
-                                                <option value="">-- Pilih Kelompok Tujuan --</option>
-                                                {groups.filter(g => g.id !== selectedStudent.group?.id).map(g => (
-                                                    <option key={g.id} value={g.id.toString()}>{g.name}</option>
+                                                <option value="">Pilih Periode</option>
+                                                {targetPeriods.map(p => (
+                                                    <option key={p.id} value={p.id}>{p.name}</option>
                                                 ))}
                                             </select>
                                         </div>
+
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                                                Kelompok Tujuan <span className="text-slate-400 font-normal normal-case">(Opsional)</span>
+                                            </label>
+                                            <select
+                                                value={targetGroupId}
+                                                onChange={(e) => setTargetGroupId(e.target.value)}
+                                                disabled={!targetPeriodId || isLoadingGroups}
+                                                className="w-full h-11 px-4 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all disabled:opacity-50"
+                                            >
+                                                <option value="">{isLoadingGroups ? 'Memuat Kelompok...' : 'Pilih Kelompok'}</option>
+                                                {groups
+                                                    .filter(g => g.id !== selectedStudent.kelompok?.id)
+                                                    .map(g => (
+                                                        <option key={g.id} value={g.id.toString()}>
+                                                            {g.nama}{g.available != null ? ` (Sisa Kuota: ${g.available})` : ''}
+                                                        </option>
+                                                    ))}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* Alasan */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                            Alasan Transfer <span className="text-red-500">*</span>
+                                        </label>
+                                        <textarea
+                                            value={reason}
+                                            onChange={(e) => setReason(e.target.value)}
+                                            placeholder="Tuliskan alasan pemindahan peserta..."
+                                            rows={4}
+                                            className="w-full p-3 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none"
+                                        />
                                     </div>
                                 </div>
 
-                                <div className="p-10 bg-slate-50 border-t border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                                    <div className="flex items-center gap-4 text-slate-400 italic">
-                                        <ShieldAlert className="w-8 h-8" />
-                                        <p className="text-sm font-medium  max-w-lg">Pastikan koordinasi internal antar unit telah terpenuhi sebelum mengeksekusi perpindahan personel.</p>
-                                    </div>
+
+                                <div className="px-8 py-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                                    <button
+                                        onClick={() => {
+                                            setSelectedStudent(null);
+                                            setTargetGroupId('');
+                                            setTargetPeriodId('');
+                                            setReason('');
+                                        }}
+                                        className="px-6 py-2.5 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors"
+                                    >
+                                        Batal
+                                    </button>
                                     <button
                                         onClick={handleTransfer}
-                                        disabled={!targetGroupId}
-                                        className="h-16 px-10 bg-emerald-600 text-white rounded-xl font-bold transition-all shadow-xl shadow-emerald-500/10 hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-30 disabled:grayscale flex items-center justify-center gap-4"
+                                        disabled={!targetPeriodId || !reason.trim()}
+                                        className="px-8 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                     >
-                                        <CheckCircle2 className="w-5 h-5" />
-                                        Laksanakan Pemindahan
+                                        <CheckCircle2 className="w-4 h-4" />
+                                        Simpan Transfer
                                     </button>
                                 </div>
                             </div>
                         ) : (
-                            <div className="h-full min-h-[500px] flex flex-col items-center justify-center bg-white rounded-xl border border-dashed border-slate-200 p-10 space-y-8 italic">
-                                <div className="p-10 bg-slate-50 rounded-3xl text-slate-900 border border-slate-100 shadow-inner">
-                                    <ArrowRightLeft className="w-24 h-24" />
-                                </div>
-                                <div className="text-center space-y-2">
-                                    <h3 className="text-lg font-bold tracking-widest italic ">AWAITING_PERSONNEL_SELECT</h3>
-                                    <p className="text-sm font-bold tracking-[0.2em] italic  uppercase">PILIH_MAHASISWA_DARI_LEDGER_UNTUK_PENUGASAN_UNIT_BARU</p>
-                                </div>
+                            <div className="h-full min-h-[400px] flex flex-col items-center justify-center bg-white rounded-lg border border-dashed border-slate-200 p-12">
+                                <ArrowRightLeft className="w-12 h-12 text-slate-300 mb-4" />
+                                <h3 className="text-base font-medium text-slate-600">Pilih peserta untuk transfer</h3>
+                                <p className="text-sm text-slate-400 mt-1">
+                                    Pilih mahasiswa dari daftar di sebelah kiri untuk memulai.
+                                </p>
                             </div>
                         )}
                     </div>

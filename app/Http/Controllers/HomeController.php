@@ -120,6 +120,27 @@ class HomeController extends Controller
         ]);
     }
 
+    public function locations(Request $request)
+    {
+        $search = $request->input('search');
+        
+        $locations = Lokasi::withCount('groups')
+            ->when($search, function($query, $search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('address', 'like', "%{$search}%")
+                      ->orWhere('district', 'like', "%{$search}%")
+                      ->orWhere('city', 'like', "%{$search}%");
+            })
+            ->orderBy('name')
+            ->paginate(12)
+            ->withQueryString();
+
+        return Inertia::render('Public/Locations', [
+            'locations' => $locations,
+            'filters' => $request->only(['search'])
+        ]);
+    }
+
     /**
      * @return array<int, array{title:string,description:string,color:string}>
      */

@@ -11,6 +11,7 @@ class TahunAkademik extends Model
 {
     use HasFactory;
 
+    protected $connection = 'kkn';
     protected $table = 'tahun_akademik';
 
     protected $fillable = [

@@ -1,0 +1,4 @@
+kode_kelompok,nama_kelompok,periode,desa,kecamatan,kabupaten,kode_desa,kapasitas,status
+KKN-A1,Kelompok Anggrek 01,Periode Demo Aktif,Desa Demo A,Kecamatan Demo A,Kabupaten Demo A,3302010001,12,active
+KKN-A2,Kelompok Anggrek 02,Periode Demo Aktif,Desa Demo B,Kecamatan Demo B,Kabupaten Demo A,3302010002,12,draft
+KKN-B1,Kelompok Melati 01,Periode Demo Aktif,Desa Demo C,Kecamatan Demo B,Kabupaten Demo A,3302010003,15,active

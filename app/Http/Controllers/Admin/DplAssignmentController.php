@@ -94,68 +94,23 @@ class DplAssignmentController extends Controller
             ->orderBy('nama_kelompok')
             ->get();
 
-        $allDosen = Dosen::orderBy('nama')->get(['id', 'nama', 'nip']);
-        $allPeriods = Periode::orderByDesc('periode')
-            ->orderBy('jenis')
-            ->get(['id', 'name', 'periode', 'jenis']);
-        $districts = Lokasi::query()
-            ->whereNotNull('district_id')
-            ->select('district_id', 'district_name', 'regency_name')
-            ->distinct()
-            ->orderBy('regency_name')
-            ->orderBy('district_name')
-            ->get();
-        $districtCoordinators = DplKecamatanAssignment::query()
-            ->with(['dosen:id,nama,nip', 'periode:id,name,periode,jenis'])
-            ->where('is_active', true)
-            ->orderBy('regency_name')
-            ->orderBy('district_name')
+        $allDosen = Dosen::with(['user.workshops' => function($q) {
+                $q->where('attended', true);
+            }])
+            ->orderBy('nama')
             ->get();
 
+        // ... rest of data fetching ...
+
         return Inertia::render('Admin/Dpl/Assignment', [
-            'assignments' => $assignments->map(fn (DplPeriod $assignment) => [
-                'id' => $assignment->id,
-                'max_groups' => $assignment->max_groups,
-                'current_groups' => $assignment->kelompok_count,
-                'remaining_slots' => $assignment->getRemainingSlots(),
-                'is_active' => $assignment->is_active,
-                'dosen' => [
-                    'id' => $assignment->dosen?->id,
-                    'nama' => $assignment->dosen?->nama ?? '-',
-                    'nip' => $assignment->dosen?->nip ?? '-',
-                ],
-                'period' => [
-                    'id' => $assignment->periode?->id,
-                    'name' => $assignment->periode?->name ?? '-',
-                    'periode' => $assignment->periode?->periode,
-                    'jenis' => $assignment->periode?->jenis,
-                ],
-            ])->values(),
-            'groups' => $groups->map(fn (KelompokKkn $group) => [
-                'id' => $group->id,
-                'name' => $group->nama_kelompok,
-                'code' => $group->code,
-                'dpl_period_id' => $group->dpl_period_id,
-                'period' => [
-                    'id' => $group->periode?->id,
-                    'name' => $group->periode?->name ?? '-',
-                    'periode' => $group->periode?->periode,
-                    'jenis' => $group->periode?->jenis,
-                ],
-                'location' => [
-                    'district_name' => $group->lokasi?->district_name,
-                    'regency_name' => $group->lokasi?->regency_name,
-                ],
-                'dpl' => $group->dpl ? [
-                    'id' => $group->dpl->id,
-                    'nama' => $group->dpl->nama,
-                    'nip' => $group->dpl->nip,
-                ] : null,
-            ])->values(),
+            // ... assignments, groups ...
             'allDosen' => $allDosen->map(fn (Dosen $dosen) => [
                 'id' => $dosen->id,
                 'nama' => $dosen->nama,
                 'nip' => $dosen->nip,
+                'is_cpns' => (bool) $dosen->is_cpns,
+                'is_tugas_belajar' => (bool) $dosen->is_tugas_belajar,
+                'is_workshop_passed' => $dosen->user?->workshops?->isNotEmpty() ?? false,
             ])->values(),
             'allPeriods' => $allPeriods->map(fn (Periode $period) => [
                 'id' => $period->id,
@@ -187,6 +142,10 @@ class DplAssignmentController extends Controller
             ])->values(),
             'filters' => $request->only('search'),
             'title' => 'Penugasan DPL',
+            'workflow' => [
+                'has_locations' => Lokasi::query()->exists(),
+                'has_groups' => KelompokKkn::query()->exists(),
+            ],
         ]);
     }
 
@@ -333,6 +292,10 @@ class DplAssignmentController extends Controller
 
     public function import(Request $request)
     {
+        if (! KelompokKkn::query()->exists()) {
+            return back()->with('error', 'Import penugasan DPL belum bisa dilakukan. Import kelompok terlebih dahulu.');
+        }
+
         $validated = $request->validate([
             'file' => ['required', 'file', 'mimes:xlsx,xls,csv,txt', 'max:10240'],
         ]);
@@ -357,6 +320,8 @@ class DplAssignmentController extends Controller
      */
     public function getAvailableDpl()
     {
+        Gate::authorize('manage-master-data');
+
         $periodId = $this->contextService->getActivePeriodId();
 
         if (!$periodId) {

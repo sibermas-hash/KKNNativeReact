@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\Workshop;
+use App\Models\KKN\PesertaWorkshop;
+use App\Models\KKN\Dosen;
 use App\Services\WorkshopService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,7 +21,9 @@ class WorkshopController extends Controller
 
     public function index(): Response
     {
-        Gate::authorize('manage-workshops');
+        if (!auth()->user()->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mengelola workshop.');
+        }
         
         return Inertia::render('Admin/Workshops/Index', [
             'workshops' => $this->workshopService->getUpcomingWorkshops(null, true, true),
@@ -28,7 +32,9 @@ class WorkshopController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        Gate::authorize('manage-workshops');
+        if (!auth()->user()->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mengelola workshop.');
+        }
         
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
@@ -70,25 +76,14 @@ class WorkshopController extends Controller
     public function markAttendance(Request $request, int $participantId): RedirectResponse
     {
         $this->workshopService->markAttendance($participantId, $request->input('attended', true));
-
         return redirect()->back()->with('success', 'Status kehadiran berhasil diperbarui.');
-    }
-
-    public function bulkAttendance(Request $request, int $workshopId): RedirectResponse
-    {
-        $validated = $request->validate([
-            'attended_user_ids' => ['required', 'array'],
-            'attended_user_ids.*' => ['exists:users,id'],
-        ]);
-
-        $this->workshopService->bulkMarkAttendance($workshopId, $validated['attended_user_ids']);
-
-        return redirect()->back()->with('success', 'Presensi massal berhasil diproses.');
     }
 
     public function previewAttendance(Request $request, int $workshopId): \Illuminate\Http\JsonResponse
     {
-        Gate::authorize('manage-workshops');
+        if (!auth()->user()->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mengelola workshop.');
+        }
 
         $request->validate([
             'file' => ['required', 'file', 'mimes:xlsx,xls,csv'],
@@ -101,61 +96,72 @@ class WorkshopController extends Controller
             return response()->json(['error' => 'File Excel kosong.'], 422);
         }
 
-        // Ambil header (baris pertama)
         $headers = array_map('strtolower', array_values($data[0]));
-        $nimIndex = array_search('nim', $headers);
+        $nipIndex = array_search('nip', $headers);
 
-        if ($nimIndex === false) {
-            return response()->json(['error' => 'Kolom "NIM" tidak ditemukan di baris pertama Excel.'], 422);
+        if ($nipIndex === false) {
+            return response()->json(['error' => 'Kolom "NIP" tidak ditemukan di baris pertama Excel.'], 422);
         }
 
         $results = [];
-        $processedNims = [];
+        $processedNips = [];
 
-        // Skip header, mulai dari baris ke-2
         for ($i = 1; $i < count($data); $i++) {
             $row = $data[$i];
-            $nim = trim((string) ($row[$nimIndex] ?? ''));
+            $nip = trim((string) ($row[$nipIndex] ?? ''));
 
-            if (empty($nim) || in_array($nim, $processedNims)) continue;
-            $processedNims[] = $nim;
+            if (empty($nip) || in_array($nip, $processedNips)) continue;
+            $processedNips[] = $nip;
 
-            $mahasiswa = \App\Models\KKN\Mahasiswa::where('nim', $nim)->first();
+            $dosen = Dosen::where('nip', $nip)->first();
             
-            if (!$mahasiswa) {
+            if (!$dosen) {
                 $results[] = [
-                    'nim' => $nim,
+                    'nip' => $nip,
                     'name' => 'TIDAK DITEMUKAN',
                     'status' => 'error',
-                    'message' => 'NIM tidak terdaftar di sistem KKN.'
+                    'message' => 'NIP tidak terdaftar di database master dosen.'
                 ];
                 continue;
             }
 
-            $peserta = \App\Models\KKN\PesertaWorkshop::where('workshop_id', $workshopId)
-                ->where('user_id', $mahasiswa->user_id)
+            if ($dosen->is_cpns) {
+                $results[] = [
+                    'nip' => $nip,
+                    'name' => $dosen->nama,
+                    'status' => 'error',
+                    'message' => 'CPNS tidak diperbolehkan menjadi DPL.'
+                ];
+                continue;
+            }
+
+            if ($dosen->is_tugas_belajar) {
+                $results[] = [
+                    'nip' => $nip,
+                    'name' => $dosen->nama,
+                    'status' => 'error',
+                    'message' => 'Sedang Tugas Belajar (Tidak Layak DPL).'
+                ];
+                continue;
+            }
+
+            $peserta = PesertaWorkshop::where('workshop_id', $workshopId)
+                ->where('user_id', $dosen->user_id)
                 ->first();
 
-            if (!$peserta) {
+            if ($peserta && $peserta->attendance_status === 'attended') {
                 $results[] = [
-                    'nim' => $nim,
-                    'name' => $mahasiswa->nama,
-                    'status' => 'warning',
-                    'message' => 'Mahasiswa tidak mendaftar di sesi workshop ini.'
-                ];
-            } elseif ($peserta->attended) {
-                $results[] = [
-                    'nim' => $nim,
-                    'name' => $mahasiswa->nama,
+                    'nip' => $nip,
+                    'name' => $dosen->nama,
                     'status' => 'info',
-                    'message' => 'Sudah melakukan absensi sebelumnya.'
+                    'message' => 'Sudah lulus kualifikasi workshop sebelumnya.'
                 ];
             } else {
                 $results[] = [
-                    'nim' => $nim,
-                    'name' => $mahasiswa->nama,
+                    'nip' => $nip,
+                    'name' => $dosen->nama,
                     'status' => 'success',
-                    'message' => 'Valid & Siap di-import.'
+                    'message' => 'Layak & Siap di-import.'
                 ];
             }
         }
@@ -164,14 +170,16 @@ class WorkshopController extends Controller
             'preview' => $results,
             'summary' => [
                 'total' => count($results),
-                'valid' => count(array_filter($results, fn($r) => $row['status'] === 'success' || $r['status'] === 'success')),
+                'valid' => count(array_filter($results, fn($r) => $r['status'] === 'success')),
             ]
         ]);
     }
 
     public function importAttendance(Request $request, int $workshopId): RedirectResponse
     {
-        Gate::authorize('manage-workshops');
+        if (!auth()->user()->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mengelola workshop.');
+        }
 
         $validated = $request->validate([
             'nims' => ['required', 'array'],
@@ -179,20 +187,22 @@ class WorkshopController extends Controller
         ]);
 
         $processedCount = 0;
-        foreach ($validated['nims'] as $nim) {
-            $mahasiswa = \App\Models\KKN\Mahasiswa::where('nim', $nim)->first();
-            if ($mahasiswa) {
-                $updated = \App\Models\KKN\PesertaWorkshop::where('workshop_id', $workshopId)
-                    ->where('user_id', $mahasiswa->user_id)
-                    ->update([
-                        'attended' => true,
-                        'attended_at' => now(),
-                    ]);
-                if ($updated) $processedCount++;
+        foreach ($validated['nims'] as $nip) {
+            $dosen = Dosen::where('nip', $nip)->first();
+            if ($dosen) {
+                PesertaWorkshop::updateOrCreate(
+                    ['workshop_id' => $workshopId, 'user_id' => $dosen->user_id],
+                    [
+                        'attendance_status' => 'attended',
+                        'checked_in_at' => now(),
+                        'registered_at' => now()
+                    ]
+                );
+                $processedCount++;
             }
         }
 
-        return redirect()->back()->with('success', "Berhasil memproses absensi. {$processedCount} mahasiswa telah dicatat kehadirannya.");
+        return redirect()->back()->with('success', "Berhasil memproses kualifikasi workshop. {$processedCount} dosen telah dicatat kehadirannya.");
     }
 
     public function destroy(Workshop $workshop): RedirectResponse

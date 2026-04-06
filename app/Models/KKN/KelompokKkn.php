@@ -13,6 +13,7 @@ class KelompokKkn extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $connection = 'kkn';
     protected $table = 'kelompok_kkn';
 
     protected $fillable = [

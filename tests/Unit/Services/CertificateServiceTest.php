@@ -12,14 +12,11 @@ use App\Models\KKN\Periode;
 use App\Models\User;
 use App\Services\CertificateService;
 use Barryvdh\DomPDF\PDF;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
 use Tests\TestCase;
 
 class CertificateServiceTest extends TestCase
 {
-    use RefreshDatabase;
-
     private CertificateService $service;
 
     protected function setUp(): void

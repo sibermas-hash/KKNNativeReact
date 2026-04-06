@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowRight,
     CheckCircle2,
@@ -12,11 +12,14 @@ import {
     UserCheck,
     Users,
     XCircle,
+    KeyRound,
+    Info,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import AppLayout from '@/Layouts/AppLayout';
 import { Pagination } from '@/Components/ui';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
+import type { PageProps } from '@/types';
 
 interface FacultyOption {
     id: number;
@@ -171,6 +174,7 @@ export default function MahasiswaIndex({
     syncInfo,
 }: Props) {
     const [formFilters, setFormFilters] = useState<Required<Filters>>(normalizeFilters(filters));
+    const { flash } = usePage<PageProps>().props;
 
     useEffect(() => {
         setFormFilters(normalizeFilters(filters));
@@ -212,86 +216,91 @@ export default function MahasiswaIndex({
         }
     };
 
-    return (
-        <AppLayout title="REGISTRY MAHASISWA MASTER">
-            <Head title="Registry Mahasiswa Master | KKN UIN SAIZU" />
+    const resetTemporaryPassword = (student: StudentRecord) => {
+        if (!student.account) {
+            return;
+        }
 
-            <div className="space-y-6">
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                    <div className="flex items-start gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-100 bg-emerald-50 text-emerald-600">
-                            <Users size={24} />
-                        </div>
-                        <div className="space-y-1">
-                            <h2 className="text-xl font-bold text-slate-900">Registry Mahasiswa Master</h2>
-                            <p className="text-sm text-slate-500">
-                                Pantau data hasil sinkron master kampus, status akun login, dan kesiapan mahasiswa untuk proses KKN.
-                            </p>
+        if (!confirm(`Buat password sementara baru untuk akun ${student.account.username}? Mahasiswa akan diminta mengganti password setelah login.`)) {
+            return;
+        }
+
+        router.post(`/admin/pengguna/${student.account.id}/reset-password-sementara`, {}, {
+            preserveScroll: true,
+        });
+    };
+
+    return (
+        <AppLayout title="Pangkalan Data Mahasiswa">
+            <Head title="Pangkalan Data Mahasiswa | KKN UIN SAIZU" />
+
+            <div className="space-y-12 pb-32">
+                {/* Temporary Access Alert */}
+                {flash?.temporary_password && flash?.temporary_username && (
+                    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900 shadow-sm relative overflow-hidden">
+                        <div className="flex items-start gap-5 relative z-10">
+                            <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center text-amber-600 border border-amber-100 shrink-0">
+                                <KeyRound size={24} />
+                            </div>
+                            <div className="space-y-3 flex-1">
+                                <h3 className="text-base font-bold text-slate-900">Akses Sementara Diterbitkan</h3>
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    <div className="p-4 bg-white/60 rounded-xl border border-amber-100">
+                                        <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600 mb-1">Username / NIM</p>
+                                        <p className="text-base font-bold text-slate-900">{flash.temporary_username}</p>
+                                    </div>
+                                    <div className="p-4 bg-white/60 rounded-xl border border-amber-100">
+                                        <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600 mb-1">Password Sementara</p>
+                                        <p className="text-base font-mono font-bold text-slate-900">{flash.temporary_password}</p>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-amber-700 font-medium">
+                                    Mahasiswa akan diminta mengganti password setelah login pertama kali.
+                                </p>
+                            </div>
                         </div>
                     </div>
+                )}
 
-                    <div className="flex w-full flex-col gap-3 sm:flex-row xl:w-auto">
-                        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-                            <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Sumber Data</div>
-                            <div className="mt-1 text-sm font-semibold text-slate-700">{syncInfo.source}</div>
-                            <div className="mt-1 text-xs text-slate-500">Sinkron terakhir: {syncInfo.last_synced_at ?? 'Belum ada riwayat'}</div>
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-100 pb-8">
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Pangkalan Data Mahasiswa</h1>
+                        <p className="text-sm text-slate-500 mt-1">Konsolidasi data induk hasil sinkronisasi dengan Sistem Akademik Pusat.</p>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <div className="hidden xl:block text-right">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Terakhir Sinkron</p>
+                            <p className="text-xs font-bold text-slate-600">{syncInfo.last_synced_at ? formatDateTime(syncInfo.last_synced_at) : 'Belum Pernah'}</p>
                         </div>
-
                         <Link
                             href="/admin/mahasiswa/sinkron"
-                            className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 text-sm font-bold text-white transition hover:bg-emerald-600"
+                            className="h-11 px-6 bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-emerald-600 transition-all shadow-md active:scale-95"
                         >
                             <RefreshCw size={16} />
-                            Sinkron Master Kampus
+                            Sinkron Data
                         </Link>
                     </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Total Master</span>
-                            <Database size={18} className="text-slate-400" />
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+                    {[
+                        { title: 'Total Data', value: stats.total, icon: Database, color: 'text-slate-600', bg: 'bg-slate-100' },
+                        { title: 'Memiliki Akun', value: stats.with_account, icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { title: 'Akun Aktif', value: stats.active_accounts, icon: Unlock, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { title: 'Lulus BTA/PPI', value: stats.bta_passed, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { title: 'Ter-sinkron', value: stats.synced, icon: RefreshCw, color: 'text-amber-600', bg: 'bg-amber-50' },
+                    ].map((s, i) => (
+                        <div key={i} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition-all">
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className={clsx("h-10 w-10 rounded-xl flex items-center justify-center", s.bg)}>
+                                    <s.icon className={clsx("w-5 h-5", s.color)} />
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{s.title}</span>
+                            </div>
+                            <h4 className="text-3xl font-bold text-slate-900 tracking-tight">{s.value.toLocaleString()}</h4>
                         </div>
-                        <div className="mt-3 text-2xl font-bold text-slate-900">{stats.total}</div>
-                        <p className="mt-1 text-xs text-slate-500">Seluruh mahasiswa hasil sinkron yang tersimpan lokal.</p>
-                    </div>
-
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Akun Terhubung</span>
-                            <UserCheck size={18} className="text-emerald-500" />
-                        </div>
-                        <div className="mt-3 text-2xl font-bold text-slate-900">{stats.with_account}</div>
-                        <p className="mt-1 text-xs text-slate-500">Record master yang sudah punya akun portal terhubung.</p>
-                    </div>
-
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Akun Aktif</span>
-                            <Unlock size={18} className="text-blue-500" />
-                        </div>
-                        <div className="mt-3 text-2xl font-bold text-slate-900">{stats.active_accounts}</div>
-                        <p className="mt-1 text-xs text-slate-500">Akun mahasiswa yang tidak sedang dikunci.</p>
-                    </div>
-
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Lulus BTA/PPI</span>
-                            <CheckCircle2 size={18} className="text-emerald-500" />
-                        </div>
-                        <div className="mt-3 text-2xl font-bold text-slate-900">{stats.bta_passed}</div>
-                        <p className="mt-1 text-xs text-slate-500">Mahasiswa yang sudah memenuhi prasyarat akademik dasar.</p>
-                    </div>
-
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Sudah Sinkron</span>
-                            <RefreshCw size={18} className="text-amber-500" />
-                        </div>
-                        <div className="mt-3 text-2xl font-bold text-slate-900">{stats.synced}</div>
-                        <p className="mt-1 text-xs text-slate-500">Record yang memiliki jejak sinkron dari master kampus.</p>
-                    </div>
+                    ))}
                 </div>
 
                 <form onSubmit={submitFilters} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -574,6 +583,21 @@ export default function MahasiswaIndex({
 
                                             <td className="px-6 py-5">
                                                 <div className="flex items-center justify-end gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => resetTemporaryPassword(student)}
+                                                        disabled={!student.account}
+                                                        className={clsx(
+                                                            'inline-flex h-9 w-9 items-center justify-center rounded-lg border shadow-sm transition active:scale-95',
+                                                            student.account
+                                                                ? 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'
+                                                                : 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-300',
+                                                        )}
+                                                        title={!student.account ? 'Akun belum tersedia' : 'Reset Password Sementara'}
+                                                    >
+                                                        <KeyRound size={16} />
+                                                    </button>
+
                                                     <button
                                                         type="button"
                                                         onClick={() => toggleStatus(student)}

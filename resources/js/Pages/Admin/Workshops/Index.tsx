@@ -53,21 +53,55 @@ export default function WorkshopIndex({ workshops }: Props) {
     const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
     const [modalMode, setModalMode] = useState<'kehadiran' | 'peserta'>('peserta');
     const [isImportMode, setIsImportMode] = useState(false);
-
-    // ... memos and handlers tetap sama ...
+    const [previewData, setPreviewData] = useState<any[]>([]);
+    const [isPreviewLoading, setIsPreviewLoading] = useState(false);
 
     const closeModal = () => {
         setSelectedWorkshop(null);
         attendanceForm.reset();
         importForm.reset();
         setIsImportMode(false);
+        setPreviewData([]);
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !selectedWorkshop) return;
+
+        importForm.setData('file', file);
+        
+        // Langsung panggil preview API
+        const formData = new FormData();
+        formData.append('file', file);
+
+        setIsPreviewLoading(true);
+        axios.post(route('admin.workshop.preview-absensi', selectedWorkshop.id), formData)
+            .then(res => {
+                setPreviewData(res.data.preview);
+            })
+            .catch(err => {
+                alert(err.response?.data?.error || 'Gagal memproses pratinjau file.');
+                importForm.reset('file');
+            })
+            .finally(() => setIsPreviewLoading(false));
     };
 
     const submitImport = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedWorkshop || !importForm.data.file) return;
+        if (!selectedWorkshop || previewData.length === 0) return;
 
-        importForm.post(route('admin.workshop.import-absensi', selectedWorkshop.id), {
+        const validNips = previewData
+            .filter(item => item.status === 'success')
+            .map(item => item.nip);
+
+        if (validNips.length === 0) {
+            alert('Tidak ada NIP valid yang bisa di-import.');
+            return;
+        }
+
+        router.post(route('admin.workshop.import-absensi', selectedWorkshop.id), {
+            nims: validNips
+        }, {
             preserveScroll: true,
             onSuccess: () => closeModal(),
         });
@@ -395,46 +429,99 @@ export default function WorkshopIndex({ workshops }: Props) {
                                 <div className="p-10 space-y-8">
                                     {isImportMode ? (
                                         /* --- IMPORT EXCEL VIEW --- */
-                                        <form onSubmit={submitImport} className="space-y-10 py-10">
+                                        <form onSubmit={submitImport} className="space-y-8">
                                             <div className="max-w-xl mx-auto">
-                                                <div className="bg-emerald-50/50 border-2 border-dashed border-emerald-200 rounded-[3rem] p-16 text-center group hover:border-emerald-500 transition-all relative overflow-hidden">
-                                                    <input 
-                                                        type="file" 
-                                                        accept=".xlsx,.xls,.csv"
-                                                        onChange={e => importForm.setData('file', e.target.files?.[0] || null)}
-                                                        className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                                                    />
-                                                    <div className="relative z-20 space-y-6">
-                                                        <div className="h-24 w-24 bg-white rounded-3xl shadow-xl shadow-emerald-500/10 flex items-center justify-center mx-auto text-emerald-600 group-hover:scale-110 transition-transform duration-500">
-                                                            <UploadCloud size={40} />
-                                                        </div>
-                                                        <div className="space-y-2">
-                                                            <h4 className="text-sm font-black text-slate-900 uppercase italic">UPLOAD_ATTENDANCE_XLSX</h4>
-                                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest italic">
-                                                                {importForm.data.file ? importForm.data.file.name : 'Click to browse or drag & drop attendance file'}
-                                                            </p>
+                                                {!previewData.length ? (
+                                                    <div className="bg-emerald-50/50 border-2 border-dashed border-emerald-200 rounded-[3rem] p-16 text-center group hover:border-emerald-500 transition-all relative overflow-hidden">
+                                                        <input 
+                                                            type="file" 
+                                                            accept=".xlsx,.xls,.csv"
+                                                            onChange={handleFileSelect}
+                                                            className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                                        />
+                                                        <div className="relative z-20 space-y-6">
+                                                            <div className="h-24 w-24 bg-white rounded-3xl shadow-xl shadow-emerald-500/10 flex items-center justify-center mx-auto text-emerald-600 group-hover:scale-110 transition-transform duration-500">
+                                                                {isPreviewLoading ? <RefreshCw className="animate-spin" size={40} /> : <UploadCloud size={40} />}
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <h4 className="text-sm font-black text-slate-900 uppercase italic">UPLOAD_ATTENDANCE_XLSX</h4>
+                                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest italic">
+                                                                    {isPreviewLoading ? 'Processing file validation...' : 'Click to browse or drag & drop attendance file'}
+                                                                </p>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                ) : (
+                                                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                                        <div className="flex items-center justify-between">
+                                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">PRATINJAU_HASIL_VALIDASI ({previewData.length} Baris)</h4>
+                                                            <button 
+                                                                type="button"
+                                                                onClick={() => setPreviewData([])}
+                                                                className="text-[9px] font-black text-rose-500 uppercase tracking-widest hover:underline"
+                                                            >
+                                                                Ganti File
+                                                            </button>
+                                                        </div>
+                                                        
+                                                        <div className="max-h-[300px] overflow-y-auto rounded-[2rem] border border-slate-100 bg-slate-50/30">
+                                                            <table className="w-full text-left">
+                                                                <thead className="bg-slate-100/50 sticky top-0 z-10">
+                                                                    <tr>
+                                                                        <th className="px-6 py-3 text-[8px] font-black text-slate-400 uppercase tracking-widest italic">Personel</th>
+                                                                        <th className="px-6 py-3 text-[8px] font-black text-slate-400 uppercase tracking-widest italic">Status_Cek</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody className="divide-y divide-slate-100">
+                                                                    {previewData.map((item, i) => (
+                                                                        <tr key={i} className="hover:bg-white transition-colors">
+                                                                            <td className="px-6 py-4">
+                                                                                <div className="flex flex-col">
+                                                                                    <span className="text-xs font-black text-slate-900 italic uppercase">{item.name}</span>
+                                                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{item.nip}</span>
+                                                                                </div>
+                                                                            </td>
+                                                                            <td className="px-6 py-4">
+                                                                                <div className={clsx(
+                                                                                    "inline-flex items-center gap-2 px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest italic",
+                                                                                    item.status === 'success' ? "bg-emerald-100 text-emerald-700" : 
+                                                                                    item.status === 'warning' ? "bg-amber-100 text-amber-700" :
+                                                                                    item.status === 'error' ? "bg-rose-100 text-rose-700" : "bg-sky-100 text-sky-700"
+                                                                                )}>
+                                                                                    {item.status === 'success' ? <CheckCircle2 size={10} /> : <AlertCircle size={10} />}
+                                                                                    {item.message}
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                )}
                                                 
-                                                <div className="mt-8 flex items-center gap-4 p-6 bg-slate-50 rounded-2xl border border-slate-100 italic">
-                                                    <Info size={20} className="text-emerald-500 shrink-0" />
-                                                    <p className="text-[10px] font-bold text-slate-500 leading-relaxed uppercase tracking-widest">
-                                                        System will identify students by <span className="text-emerald-600 underline underline-offset-2">NIM Column</span>. Ensure your Excel header has a 'NIM' field.
-                                                    </p>
-                                                </div>
+                                                {!previewData.length && (
+                                                    <div className="mt-8 flex items-center gap-4 p-6 bg-slate-50 rounded-2xl border border-slate-100 italic">
+                                                        <Info size={20} className="text-emerald-500 shrink-0" />
+                                                        <p className="text-[10px] font-bold text-slate-500 leading-relaxed uppercase tracking-widest">
+                                                            System will identify lecturers by <span className="text-emerald-600 underline underline-offset-2">NIP Column</span>. Ensure your Excel header has a 'NIP' field.
+                                                        </p>
+                                                    </div>
+                                                )}
                                             </div>
 
-                                            <div className="flex justify-center gap-4">
-                                                <button
-                                                    type="submit"
-                                                    disabled={importForm.processing || !importForm.data.file}
-                                                    className="h-16 px-12 bg-emerald-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] italic flex items-center gap-4 transition-all shadow-2xl shadow-emerald-600/20 active:scale-95 disabled:opacity-40"
-                                                >
-                                                    {importForm.processing ? <RefreshCw className="animate-spin" /> : <ShieldCheck />}
-                                                    EXECUTE_BULK_IMPORT
-                                                </button>
-                                            </div>
+                                            {previewData.length > 0 && (
+                                                <div className="flex justify-center gap-4 animate-in zoom-in-95 duration-500">
+                                                    <button
+                                                        type="submit"
+                                                        disabled={importForm.processing || !previewData.some(i => i.status === 'success')}
+                                                        className="h-16 px-12 bg-emerald-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] italic flex items-center gap-4 transition-all shadow-2xl shadow-emerald-600/20 active:scale-95 disabled:opacity-40"
+                                                    >
+                                                        {importForm.processing ? <RefreshCw className="animate-spin" /> : <ShieldCheck />}
+                                                        COMMIT_AND_FINALIZE_IMPORT
+                                                    </button>
+                                                </div>
+                                            )}
                                         </form>
                                     ) : (
                                         /* --- MANUAL CHECKLIST VIEW --- */

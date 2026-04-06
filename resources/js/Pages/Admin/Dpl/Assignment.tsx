@@ -20,6 +20,9 @@ interface DosenOption {
     id: number;
     nama: string;
     nip: string;
+    is_cpns?: boolean;
+    is_tugas_belajar?: boolean;
+    is_workshop_passed?: boolean;
 }
 
 interface PeriodOption {
@@ -77,6 +80,10 @@ interface Props {
     filters: {
         search?: string;
     };
+    workflow?: {
+        has_locations?: boolean;
+        has_groups?: boolean;
+    };
 }
 
 /**
@@ -114,6 +121,7 @@ export default function DplAssignment({
     districts,
     districtCoordinators,
     filters,
+    workflow,
 }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
 
@@ -143,6 +151,8 @@ export default function DplAssignment({
         () => groups.find((group) => String(group.id) === groupForm.data.group_id) ?? null,
         [groupForm.data.group_id, groups],
     );
+    const hasGroups = workflow?.has_groups ?? groups.length > 0;
+    const hasLocations = workflow?.has_locations ?? true;
 
     const availableAssignments = useMemo(() => {
         if (!selectedGroup) {
@@ -253,6 +263,44 @@ export default function DplAssignment({
                                             </option>
                                         ))}
                                     </select>
+
+                                    {/* Indikator Kualifikasi (Delegasi Langsung) */}
+                                    {selectedDosen && (
+                                        <div className="mt-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none italic">Status Kualifikasi:</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                <div className={clsx(
+                                                    "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm",
+                                                    selectedDosen.is_workshop_passed ? "bg-white text-emerald-600 border border-emerald-100" : "bg-white text-rose-600 border border-rose-100"
+                                                )}>
+                                                    {selectedDosen.is_workshop_passed ? <CheckCircle2 size={10} /> : <AlertCircle size={10} />}
+                                                    Workshop
+                                                </div>
+                                                <div className={clsx(
+                                                    "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm",
+                                                    !selectedDosen.is_cpns ? "bg-white text-emerald-600 border border-emerald-100" : "bg-white text-rose-600 border border-rose-100"
+                                                )}>
+                                                    {!selectedDosen.is_cpns ? <CheckCircle2 size={10} /> : <AlertCircle size={10} />}
+                                                    {selectedDosen.is_cpns ? 'CPNS' : 'PNS/PPPK'}
+                                                </div>
+                                                <div className={clsx(
+                                                    "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm",
+                                                    !selectedDosen.is_tugas_belajar ? "bg-white text-emerald-600 border border-emerald-100" : "bg-white text-rose-600 border border-rose-100"
+                                                )}>
+                                                    {!selectedDosen.is_tugas_belajar ? <CheckCircle2 size={10} /> : <AlertCircle size={10} />}
+                                                    TB: {selectedDosen.is_tugas_belajar ? 'YA' : 'TIDAK'}
+                                                </div>
+                                            </div>
+                                            {(!selectedDosen.is_workshop_passed || selectedDosen.is_cpns || selectedDosen.is_tugas_belajar) && (
+                                                <div className="pt-2 border-t border-slate-200">
+                                                    <p className="text-[10px] font-bold text-amber-600 italic leading-relaxed">
+                                                        ⚠️ DELEGASI_LANGSUNG: Anda tetap dapat mengaktifkan personel ini (Diskresi LPPM).
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
                                     {periodForm.errors.dosen_id ? (
                                         <p className="mt-2 text-xs text-red-600">{periodForm.errors.dosen_id}</p>
                                     ) : null}
@@ -519,6 +567,18 @@ export default function DplAssignment({
                                 </div>
                             </div>
 
+                            {!hasGroups ? (
+                                <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                                    Import penugasan DPL dikunci karena data kelompok belum tersedia. Import kelompok terlebih dahulu. Lokasi akan otomatis dibentuk dari file kelompok.
+                                </div>
+                            ) : null}
+
+                            {hasGroups && !hasLocations ? (
+                                <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                                    Master lokasi belum lengkap. Penugasan wilayah bisa gagal dikenali jika data kecamatan belum tersedia.
+                                </div>
+                            ) : null}
+
                             <form onSubmit={submitImport} className="space-y-5">
                                 <div>
                                     <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -528,6 +588,7 @@ export default function DplAssignment({
                                         type="file"
                                         accept=".xlsx,.xls,.csv,.txt"
                                         onChange={handleImportFileChange}
+                                        disabled={!hasGroups}
                                         className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 file:mr-4 file:rounded-lg file:border-0 file:bg-emerald-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
                                         required
                                     />
@@ -538,7 +599,7 @@ export default function DplAssignment({
 
                                 <button
                                     type="submit"
-                                    disabled={importForm.processing || !importForm.data.file}
+                                    disabled={importForm.processing || !importForm.data.file || !hasGroups}
                                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-4 text-sm font-bold text-white transition hover:bg-amber-700 disabled:opacity-60"
                                 >
                                     {importForm.processing ? (

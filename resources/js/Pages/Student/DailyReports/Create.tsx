@@ -342,7 +342,7 @@ export default function StudentDailyReportCreate({ group, geoPolicy }: Props) {
                     </div>
 
                     {syncFeedback ? (
-                        <p className={`mt-4 text-sm ${syncFeedback.includes('berhasil') ? 'text-emerald-700' : 'text-slate-600'}`}>
+                        <p className={`mt-4 text-sm ${syncFeedback.includes('berhasil') && !syncFeedback.includes('tidak') ? 'text-emerald-700' : 'text-slate-600'}`}>
                             {syncFeedback}
                         </p>
                     ) : null}

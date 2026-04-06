@@ -9,15 +9,12 @@ use App\Models\KKN\Prodi;
 use App\Models\User;
 use App\Services\MasterApiService;
 use App\Services\StudentSyncService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
 use Mockery;
 use Tests\TestCase;
 
 class StudentSyncServiceTest extends TestCase
 {
-    use RefreshDatabase;
-
     private MasterApiService $masterApiMock;
     private StudentSyncService $service;
 
@@ -55,13 +52,13 @@ class StudentSyncServiceTest extends TestCase
     {
         $mockStudents = [
             ['nim' => '1111111111', 'name' => 'Student One', 'email' => 'one@student.com', 'organization_id' => null, 'prodi_id' => null],
-            ['nim' => '2222222222', 'name' => 'Student Two', 'email' => 'two@student.com', 'organization_id' => null, 'prodi_id' => null],
             ['nim' => '3333333333', 'name' => 'Student Three', 'email' => 'three@student.com', 'organization_id' => null, 'prodi_id' => null],
         ];
 
         $this->masterApiMock
-            ->shouldReceive('getAllStudents')
+            ->shouldReceive('getStudentsByNimList')
             ->once()
+            ->with(['1111111111', '3333333333'])
             ->andReturn($mockStudents);
 
         $result = $this->service->syncFromApi(['1111111111', '3333333333']);

@@ -12,6 +12,7 @@ class ProgramKerja extends Model
 {
     use HasFactory;
 
+    protected $connection = 'kkn';
     protected $table = 'program_kerja';
 
     protected $fillable = [

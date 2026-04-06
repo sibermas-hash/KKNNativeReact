@@ -39,6 +39,7 @@ return [
         'url' => env('MASTER_API_URL'),
         'client_id' => env('MASTER_API_CLIENT_ID'),
         'client_secret' => env('MASTER_API_CLIENT_SECRET'),
+        'token' => env('MASTER_API_TOKEN'),
         'cache_minutes' => env('MASTER_API_CACHE_MINUTES', 60),
         'webhook_secret' => env('MASTER_WEBHOOK_SECRET'),
         'webhook_window_seconds' => env('MASTER_WEBHOOK_WINDOW_SECONDS', 600),

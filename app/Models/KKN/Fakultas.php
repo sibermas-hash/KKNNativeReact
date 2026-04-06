@@ -10,6 +10,7 @@ class Fakultas extends Model
 {
     use HasFactory;
 
+    protected $connection = 'kkn';
     protected $table = 'fakultas';
 
     protected $fillable = [

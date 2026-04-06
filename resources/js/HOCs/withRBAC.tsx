@@ -8,9 +8,10 @@ export function withRBAC<P extends object>(
 ) {
     return function WithRBACComponent(props: P) {
         const { auth } = usePage<PageProps>().props;
-        const userRole = auth.user?.role;
+        const userRoles = auth.user?.roles ?? [];
+        const hasAccess = userRoles.length > 0 && userRoles.some(role => allowedRoles.includes(role));
 
-        if (!userRole || !allowedRoles.includes(userRole)) {
+        if (!hasAccess) {
             return (
                 <div className="p-8 bg-red-50 border border-red-100 rounded-3xl text-center">
                     <p className="text-red-600 font-bold uppercase tracking-widest text-xs">

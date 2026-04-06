@@ -25,27 +25,24 @@ class DplMasterSyncTest extends TestCase
         $admin = User::factory()->create();
         $admin->assignRole('superadmin');
 
-        Dosen::factory()->create(['nip' => '198700010010']);
-
-        $service = Mockery::mock(MasterApiService::class);
-        $service->shouldReceive('getAllEmployees')->once()->andReturn([
-            ['id' => 1, 'nip' => '198700010010', 'name' => 'Dosen Lama', 'email' => 'lama@example.test'],
-            ['id' => 2, 'nip' => '198700010011', 'name' => 'Dosen Baru', 'email' => 'baru@example.test'],
+        Dosen::factory()->create([
+            'nip' => '198700010010',
+            'master_id' => '1',
+            'master_synced_at' => now()->subHour(),
         ]);
-        $this->app->instance(MasterApiService::class, $service);
 
         $this->actingAs($admin)
             ->get(route('admin.dpl.sync'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dpl/Sync')
-                ->has('availableDosen', 1)
-                ->where('availableDosen.0.nip', '198700010011')
+                ->where('summary.local_lecturers', 1)
+                ->where('summary.with_master_link', 1)
                 ->where('title', 'Sinkronisasi Master Dosen')
             );
     }
 
-    public function test_syncing_master_dosen_only_creates_local_dosen_record(): void
+    public function test_bulk_syncing_master_dosen_only_creates_local_dosen_record(): void
     {
         $admin = User::factory()->create();
         $admin->assignRole('superadmin');
@@ -54,15 +51,21 @@ class DplMasterSyncTest extends TestCase
             'master_id' => 'FAC-001',
         ]);
 
-        $this->actingAs($admin)
-            ->post(route('admin.dpl.sync.store'), [
-                'master_id' => '77',
+        $service = Mockery::mock(MasterApiService::class);
+        $service->shouldReceive('getAllEmployees')->once()->andReturn([
+            [
+                'id' => '77',
                 'nip' => '198700010099',
                 'name' => 'Dosen Master Baru',
                 'organization_id' => $faculty->master_id,
                 'birth_date' => '1987-01-01',
                 'gender' => 'L',
-            ])
+            ],
+        ]);
+        $this->app->instance(MasterApiService::class, $service);
+
+        $this->actingAs($admin)
+            ->post(route('admin.dpl.sync.store'))
             ->assertRedirect();
 
         $this->assertDatabaseHas('dosen', [
@@ -76,5 +79,37 @@ class DplMasterSyncTest extends TestCase
         $this->assertDatabaseMissing('users', [
             'username' => '198700010099',
         ]);
+    }
+
+    public function test_targeted_sync_only_uses_requested_nip(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('superadmin');
+        Fakultas::factory()->create();
+
+        $service = Mockery::mock(MasterApiService::class);
+        $service->shouldReceive('getEmployeesByNipList')
+            ->once()
+            ->with(['198700010055'])
+            ->andReturn([
+                [
+                    'id' => '55',
+                    'nip' => '198700010055',
+                    'name' => 'Dosen NIP Terpilih',
+                ],
+            ]);
+        $this->app->instance(MasterApiService::class, $service);
+
+        $this->actingAs($admin)
+            ->post(route('admin.dpl.sinkron.store'), [
+                'nip_list' => "198700010055\n",
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('dosen', [
+            'nip' => '198700010055',
+            'nama' => 'Dosen NIP Terpilih',
+            'master_id' => '55',
+        ], 'kkn');
     }
 }

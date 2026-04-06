@@ -26,6 +26,11 @@ class VerifyWebhookSignature
         // Validate timestamp to prevent replay attacks
         $timestamp = $request->header('X-Webhook-Timestamp');
         if ($timestamp) {
+            // Validate that timestamp is numeric before casting
+            if (!is_numeric($timestamp)) {
+                return response()->json(['error' => 'Invalid timestamp format'], 401);
+            }
+            
             $windowSeconds = (int) config('services.master_api.webhook_window_seconds', 600);
             if (abs(time() - (int) $timestamp) > $windowSeconds) {
                 return response()->json(['error' => 'Request expired'], 401);

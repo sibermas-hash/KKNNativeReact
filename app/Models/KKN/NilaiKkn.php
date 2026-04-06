@@ -11,6 +11,7 @@ class NilaiKkn extends Model
 {
     use HasFactory;
 
+    protected $connection = 'kkn';
     protected $table = 'nilai_kkn';
 
     // FIXED: Remove confusing mahasiswa_id - only use user_id

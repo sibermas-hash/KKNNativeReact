@@ -208,6 +208,9 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     error?: string;
     warning?: string;
     info?: string;
+    status?: string;
+    temporary_password?: string;
+    temporary_username?: string;
     captcha_question?: string;
   };
   errors?: Record<string, string>;

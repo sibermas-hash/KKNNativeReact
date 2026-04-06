@@ -205,6 +205,13 @@ class SyncMasterData extends Command
 
             // 2. Ensure Lecturer record exists (Local KKN)
             // Note: KKN Dosen table uses 'nama', 'phone'
+            // Qualification Logic: Map CPNS status and Duty Study (Tugas Belajar)
+            $statusPegawai = strtoupper($empData['status_pegawai'] ?? $empData['employment_status'] ?? '');
+            $isCpns = str_contains($statusPegawai, 'CPNS');
+            
+            $statusAktif = strtoupper($empData['status_aktif'] ?? $empData['active_status'] ?? 'AKTIF');
+            $isTugasBelajar = str_contains($statusAktif, 'TUGAS BELAJAR') || ($empData['is_tugas_belajar'] ?? false);
+
             Dosen::on('kkn')->updateOrCreate(
                 ['nip' => $nip],
                 [
@@ -213,6 +220,10 @@ class SyncMasterData extends Command
                     'nama' => $empData['nama'] ?? $empData['name'] ?? 'Unknown',
                     'faculty_id' => $defaultFaculty?->id, // TO DO: logic to map unit_kerja to faculty
                     'phone' => $empData['telepon'] ?? $empData['phone'] ?? null,
+                    'gender' => $empData['jenis_kelamin'] ?? $empData['gender'] ?? 'L',
+                    'birth_date' => $empData['tanggal_lahir'] ?? $empData['birth_date'] ?? null,
+                    'is_cpns' => $isCpns,
+                    'is_tugas_belajar' => $isTugasBelajar,
                     'master_synced_at' => $now,
                 ]
             );

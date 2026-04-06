@@ -17,7 +17,13 @@ class AdminOperationPolicy extends BasePolicy
 
     public function manageGroups(User $user): bool
     {
-        return $this->superAdminBypass($user, 'manageGroups') ?? false;
+        $bypass = $this->superAdminBypass($user, 'manageGroups');
+
+        if ($bypass !== null) {
+            return $bypass;
+        }
+
+        return $user->hasRole('admin');
     }
 
     public function manageSettings(User $user): bool
@@ -33,6 +39,17 @@ class AdminOperationPolicy extends BasePolicy
     public function transferStudents(User $user): bool
     {
         return $this->superAdminBypass($user, 'transferStudents') ?? false;
+    }
+
+    public function manageParticipants(User $user): bool
+    {
+        $bypass = $this->superAdminBypass($user, 'manageParticipants');
+
+        if ($bypass !== null) {
+            return $bypass;
+        }
+
+        return $user->hasAnyRole(['faculty_admin', 'admin']);
     }
 
     public function manageAnnouncements(User $user): bool

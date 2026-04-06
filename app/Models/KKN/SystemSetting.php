@@ -11,6 +11,7 @@ class SystemSetting extends Model
 {
     use HasFactory;
 
+    protected $connection = 'kkn';
     protected $table = 'system_settings';
 
     /**

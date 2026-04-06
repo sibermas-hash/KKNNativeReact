@@ -11,6 +11,11 @@ use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
 {
+    private function loginIdentifier(): string
+    {
+        return trim((string) $this->input('login'));
+    }
+
     public function authorize(): bool
     {
         return true;
@@ -44,7 +49,7 @@ class LoginRequest extends FormRequest
     protected function credentials(): array
     {
         return [
-            'username' => $this->input('login'),
+            'username' => $this->loginIdentifier(),
             'password' => $this->input('password'),
             'is_active' => true,
         ];
@@ -70,6 +75,6 @@ class LoginRequest extends FormRequest
 
     protected function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->input('login')) . '|' . $this->ip());
+        return Str::transliterate(Str::lower($this->loginIdentifier()) . '|' . $this->ip());
     }
 }

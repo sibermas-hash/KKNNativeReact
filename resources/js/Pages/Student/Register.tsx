@@ -123,7 +123,7 @@ export default function Register({ periods, student_gender, student_academic, bp
  kelompok_id: preferredPeriod.registration?.kelompok_id ? String(preferredPeriod.registration.kelompok_id) : '',
  notes: preferredPeriod.registration?.notes ?? current.notes,
  }));
- }, [form, periods]);
+ }, [periods.length, form.data.period_id]);
 
  const currentRegistration = selectedPeriod?.registration ?? null;
  const isRejectedRegistration = currentRegistration?.status === 'rejected';

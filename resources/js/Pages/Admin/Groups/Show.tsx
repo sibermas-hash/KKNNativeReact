@@ -23,8 +23,10 @@ import {
     Hash,
     Binary,
     Flag,
+    X,
     Map as MapIcon
 } from 'lucide-react';
+import { route } from 'ziggy-js';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 
@@ -122,14 +124,14 @@ export default function GroupShow({ group }: Props) {
                             </div>
                         </Link>
 
-                        <div className="px-8 py-5 bg-slate-950 border border-slate-800 rounded-[2rem] flex items-center gap-8 shadow-2xl">
+                        <div className="px-8 py-5 bg-emerald-600 border border-emerald-500 rounded-[2rem] flex items-center gap-8 shadow-2xl">
                              <div className="flex flex-col">
-                                 <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1.5">Unit Status</span>
+                                 <span className="text-[9px] font-black text-emerald-200 uppercase tracking-widest leading-none mb-1.5">Unit Status</span>
                                  <StatusBadge status={group.status} />
                              </div>
-                             <div className="h-10 w-px bg-slate-800" />
+                             <div className="h-10 w-px bg-emerald-500/50" />
                              <div className="flex flex-col">
-                                 <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1.5">Group Token</span>
+                                 <span className="text-[9px] font-black text-emerald-200 uppercase tracking-widest leading-none mb-1.5">Group Token</span>
                                  <span className="text-lg font-black text-white italic tracking-tighter leading-none">{group.token || 'N/A'}</span>
                              </div>
                         </div>
@@ -147,7 +149,7 @@ export default function GroupShow({ group }: Props) {
                         >
                             <div className="px-12 py-10 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
                                 <div className="flex items-center gap-6">
-                                    <div className="p-5 bg-slate-950 text-emerald-500 rounded-[1.8rem] shadow-xl group-hover/section:scale-110 transition-transform">
+                                    <div className="p-5 bg-emerald-50 text-emerald-600 rounded-[1.8rem] shadow-sm group-hover/section:scale-110 transition-transform border border-emerald-100">
                                         <Database className="w-6 h-6" />
                                     </div>
                                     <div>
@@ -185,7 +187,7 @@ export default function GroupShow({ group }: Props) {
                         >
                             <div className="px-12 py-10 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
                                 <div className="flex items-center gap-6">
-                                    <div className="p-5 bg-slate-950 text-emerald-500 rounded-[1.8rem] shadow-xl">
+                                    <div className="p-5 bg-emerald-50 text-emerald-600 rounded-[1.8rem] shadow-sm border border-emerald-100">
                                         <Users className="w-6 h-6" />
                                     </div>
                                     <div>
@@ -217,7 +219,7 @@ export default function GroupShow({ group }: Props) {
                                                 >
                                                     <td className="px-12 py-6">
                                                         <div className="flex items-center gap-5">
-                                                            <div className="h-10 w-10 bg-slate-900 rounded-xl flex items-center justify-center text-white font-black text-xs italic shadow-lg group-hover/row:scale-110 transition-transform">
+                                                            <div className="h-10 w-10 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-center text-emerald-700 font-black text-xs italic shadow-sm group-hover/row:scale-110 transition-transform">
                                                                 {registration.mahasiswa?.nama?.charAt(0) || 'U'}
                                                             </div>
                                                             <span className="text-sm font-black text-slate-950 uppercase italic tracking-tighter group-hover/row:text-emerald-600 transition-colors">{registration.mahasiswa?.nama || '-'}</span>
@@ -227,12 +229,38 @@ export default function GroupShow({ group }: Props) {
                                                         <span className="text-xs font-black text-slate-400 tabular-nums italic tracking-widest">{registration.mahasiswa?.nim || '-'}</span>
                                                     </td>
                                                     <td className="px-4 py-6">
-                                                        <Badge className="px-4 py-1.5 bg-slate-100 text-slate-600 border-none text-[9px] font-black uppercase italic tracking-widest">
-                                                            {registration.role || 'ANGGOTA'}
-                                                        </Badge>
+                                                        <div className="flex items-center gap-4">
+                                                            <Badge className="px-4 py-1.5 bg-slate-100 text-slate-600 border-none text-[9px] font-black uppercase italic tracking-widest">
+                                                                {registration.role || 'ANGGOTA'}
+                                                            </Badge>
+                                                            {registration.role !== 'Ketua' && (
+                                                                <Link
+                                                                    href={route('admin.pendaftaran.make-leader', registration.id)}
+                                                                    method="post"
+                                                                    as="button"
+                                                                    className="p-2 text-slate-300 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all active:scale-90"
+                                                                    title="Tetapkan sebagai Ketua"
+                                                                >
+                                                                    <ShieldCheck size={16} />
+                                                                </Link>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                     <td className="px-12 py-6 text-right">
-                                                        <StatusBadge status={registration.status} />
+                                                        <div className="flex items-center justify-end gap-6">
+                                                            <StatusBadge status={registration.status} />
+                                                            <Link
+                                                                href={route('admin.pendaftaran.assign-group', registration.id)}
+                                                                method="post"
+                                                                data={{ kelompok_id: null }}
+                                                                as="button"
+                                                                className="h-10 w-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-300 hover:text-rose-600 hover:border-rose-100 hover:bg-rose-50 transition-all shadow-sm active:scale-95"
+                                                                title="Lepas dari Kelompok"
+                                                                preserveScroll
+                                                            >
+                                                                <X size={16} />
+                                                            </Link>
+                                                        </div>
                                                     </td>
                                                 </motion.tr>
                                             ))
@@ -260,7 +288,7 @@ export default function GroupShow({ group }: Props) {
                         >
                             <div className="px-12 py-10 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
                                 <div className="flex items-center gap-6">
-                                    <div className="p-5 bg-slate-950 text-emerald-500 rounded-[1.8rem] shadow-xl">
+                                    <div className="p-5 bg-emerald-50 text-emerald-600 rounded-[1.8rem] shadow-sm border border-emerald-100">
                                         <ClipboardList className="w-6 h-6" />
                                     </div>
                                     <div>
@@ -309,9 +337,9 @@ export default function GroupShow({ group }: Props) {
                         <motion.section 
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="bg-slate-950 rounded-[3rem] border border-slate-800 p-10 shadow-3xl relative overflow-hidden"
+                            className="bg-emerald-900 rounded-[3rem] border border-emerald-800 p-10 shadow-3xl relative overflow-hidden"
                         >
-                            <div className="absolute top-0 right-0 p-8 opacity-[0.05] text-white">
+                            <div className="absolute top-0 right-0 p-8 opacity-[0.1] text-white">
                                 <ShieldCheck size={100} className="-rotate-12" />
                             </div>
                             <div className="relative z-10 space-y-8">
@@ -381,7 +409,7 @@ export default function GroupShow({ group }: Props) {
                                                 href={group.posko.gmaps_link}
                                                 target="_blank"
                                                 rel="noreferrer"
-                                                className="w-full h-18 bg-slate-950 text-white rounded-[1.5rem] flex items-center justify-center gap-4 text-xs font-black uppercase tracking-[0.3em] italic hover:bg-emerald-600 transition-all shadow-xl group/link"
+                                                className="w-full h-18 bg-emerald-600 text-white rounded-[1.5rem] flex items-center justify-center gap-4 text-xs font-black uppercase tracking-[0.3em] italic hover:bg-emerald-700 transition-all shadow-xl group/link"
                                             >
                                                 <ExternalLink className="w-4 h-4 group-hover/link:rotate-12 transition-transform" />
                                                 OPEN_MOBILE_RADAR
@@ -402,7 +430,7 @@ export default function GroupShow({ group }: Props) {
                                                         alt={group.posko.photo_name || 'Station Visual'}
                                                         className="w-full h-64 object-cover scale-100 group-hover/img:scale-110 transition-transform duration-1000"
                                                     />
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity" />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/60 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity" />
                                                 </div>
                                             </div>
                                         )}

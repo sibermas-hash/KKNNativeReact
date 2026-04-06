@@ -9,9 +9,13 @@ import {
     Eye, 
     EyeOff, 
     RefreshCw, 
-    Mail,
-    CheckCircle2
+    ShieldCheck,
+    CheckCircle2,
+    Fingerprint,
+    Info,
+    ChevronRight
 } from 'lucide-react';
+import { clsx } from 'clsx';
 
 export default function Login() {
     const { captcha_question } = usePage<PageProps & { captcha_question?: string }>().props;
@@ -32,7 +36,7 @@ export default function Login() {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('login'), {
+        post(route('login.store'), {
             replace: true,
             preserveScroll: true,
             onFinish: () => {
@@ -42,160 +46,195 @@ export default function Login() {
     };
 
     const refreshCaptcha = () => {
-        router.get(route('login'), { refresh: Date.now().toString() }, {
-            replace: true,
-            preserveScroll: true,
-            preserveState: true,
+        router.reload({
+            only: ['captcha_question', 'captcha_generated_at', 'captcha_ttl_seconds'],
+            async: true,
+        });
+
+        fetch(route('login.captcha.refresh'), {
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+        }).then(() => {
+            router.reload({
+                only: ['captcha_question', 'captcha_generated_at', 'captcha_ttl_seconds'],
+                async: true,
+            });
+            setData('captcha_answer', '');
+        }).catch(() => {
+            router.reload({
+                only: ['captcha_question', 'captcha_generated_at', 'captcha_ttl_seconds'],
+                async: true,
+            });
         });
     };
 
     return (
-        <GuestLayout title="Login">
-            <Head title="Login | KKN UIN SAIZU" />
+        <GuestLayout title="Otoritas Akses">
+            <Head title="Otoritas Akses | Pangkalan Data KKN UIN SAIZU" />
 
-            {/* --- HEADER --- */}
-            <div className="text-center mb-8 space-y-2">
-                <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Selamat Datang</h1>
-                <p className="text-slate-500 font-medium italic">Masuk ke akun KKN Anda</p>
-            </div>
-
-            <form onSubmit={submit} className="space-y-6">
-                
-                {/* --- ERROR ALERT --- */}
-                <AnimatePresence mode="wait">
-                    {Object.keys(errors).length > 0 && (
-                        <motion.div 
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="bg-rose-50 border border-rose-100 rounded-2xl p-4 mb-2 overflow-hidden"
-                        >
-                            {Object.entries(errors).map(([key, message]) => (
-                                <p key={key} className="text-xs sm:text-sm text-rose-600 font-medium flex items-center gap-2 py-0.5">
-                                    <span className="w-1 h-1 rounded-full bg-rose-400 shrink-0" />
-                                    {message as string}
-                                </p>
-                            ))}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-                {/* --- USERNAME / EMAIL --- */}
-                <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700 ml-1">Email / Username</label>
-                    <div className="relative group">
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors">
-                            <Mail size={18} />
-                        </div>
-                        <input
-                            type="text"
-                            value={data.login}
-                            onChange={(e) => setData('login', e.target.value)}
-                            className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all duration-300 shadow-sm"
-                            placeholder="nama@email.com"
-                            required
-                        />
+            <div className="space-y-12">
+                {/* --- HEADER --- */}
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                         <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Secured_Enclave_Handshake</span>
                     </div>
+                    <h1 className="text-4xl font-black text-slate-900 tracking-tighter italic uppercase leading-none">Akses <span className="font-serif italic font-normal text-emerald-600 capitalize">Personal.</span></h1>
+                    <p className="text-sm font-bold text-slate-400 italic leading-relaxed">Identifikasi Mandiri Mahasiswa & Staf Administrasi LPPM UIN Saizu.</p>
                 </div>
 
-                {/* --- PASSWORD --- */}
-                <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700 ml-1">Password</label>
-                    <div className="relative group">
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors">
-                            <Lock size={18} />
-                        </div>
-                        <input
-                            type={showPassword ? 'text' : 'password'}
-                            value={data.password}
-                            onChange={(e) => setData('password', e.target.value)}
-                            className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-12 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all duration-300 shadow-sm"
-                            placeholder="••••••••"
-                            required
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
-                            aria-label={showPassword ? 'Hide password' : 'Show password'}
-                            tabIndex={-1}
-                        >
-                            {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
-                        </button>
-                    </div>
-                </div>
+                <form onSubmit={submit} className="space-y-8">
+                    
+                    {/* --- ERROR ALERT --- */}
+                    <AnimatePresence mode="wait">
+                        {Object.keys(errors).length > 0 && (
+                            <motion.div 
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="bg-rose-50 border border-rose-100 rounded-2xl p-6 overflow-hidden space-y-4"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <Info size={16} className="text-rose-600" />
+                                    <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest italic">Authenticity_Exception</span>
+                                </div>
+                                <div className="space-y-1 font-bold italic text-sm text-rose-950">
+                                    {Object.entries(errors).map(([key, message]) => (
+                                        <p key={key} className="flex gap-3">
+                                            <span className="text-rose-300">/</span>
+                                            {message as string}
+                                        </p>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
-                {/* --- CAPTCHA MODULE --- */}
-                <div className="bg-slate-50/50 rounded-2xl p-5 flex flex-row items-center gap-4 border border-slate-100">
-                    <div className="flex items-center gap-3 flex-1">
-                        <button
-                            type="button"
-                            onClick={refreshCaptcha}
-                            className="text-slate-400 hover:text-emerald-600 transition-all hover:rotate-180 duration-500 p-2 rounded-full hover:bg-emerald-50 shrink-0"
-                            aria-label="Refresh captcha question"
-                            title="Segarkan Captcha"
-                        >
-                            <RefreshCw size={16} aria-hidden="true" />
-                        </button>
-                        <label htmlFor="captcha-answer" className="text-lg font-bold text-slate-700 italic tracking-tight break-words pointer-events-none">
-                            {activeCaptchaQuestion}
-                        </label>
-                    </div>
-                    <div className="w-28 shrink-0">
-                        <input
-                            id="captcha-answer"
-                            type="number"
-                            value={data.captcha_answer}
-                            onChange={(e) => setData('captcha_answer', e.target.value)}
-                            className="w-full h-11 bg-white border border-slate-200 rounded-xl text-center font-bold text-slate-700 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all placeholder:text-slate-300 shadow-sm"
-                            placeholder="Jawaban"
-                            required
-                        />
-                    </div>
-                </div>
-                {errors.captcha_answer && (
-                    <p className="mt-[-16px] text-xs text-rose-500 font-semibold italic px-2">{errors.captcha_answer}</p>
-                )}
-
-                {/* --- REMEMBER & FORGOT --- */}
-                <div className="flex flex-row items-center justify-between px-1 gap-2">
-                    <label className="flex items-center gap-2 cursor-pointer group shrink-0">
-                        <div className="relative">
+                    {/* --- USERNAME / NIM / NIP --- */}
+                    <div className="space-y-3">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic ml-1">Universal_Identificator</label>
+                        <div className="relative group">
+                            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors pointer-events-none">
+                                <Fingerprint size={24} />
+                            </div>
                             <input
-                                type="checkbox"
-                                checked={data.remember}
-                                onChange={(e) => setData('remember', e.target.checked)}
-                                className="sr-only peer"
+                                type="text"
+                                value={data.login}
+                                onChange={(e) => setData('login', e.target.value)}
+                                className="w-full h-20 bg-slate-50 border border-slate-100 rounded-[2rem] pl-16 pr-6 text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 focus:bg-white transition-all duration-300 font-black italic tracking-tight text-lg shadow-inner"
+                                placeholder="USERNAME / NIM / NIP"
+                                required
                             />
-                            <div className="w-5 h-5 border-2 border-slate-200 rounded-md bg-white peer-checked:bg-emerald-500 peer-checked:border-emerald-500 transition-all" />
-                            <CheckCircle2 className="absolute inset-0 h-5 w-5 scale-75 text-white opacity-0 transition-all peer-checked:opacity-100" />
                         </div>
-                        <span className="text-sm text-slate-500 font-medium group-hover:text-slate-700 transition-colors">Ingat saya</span>
-                    </label>
-                    <Link 
-                        href={route('password.request')} 
-                        className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors text-right"
-                    >
-                        Lupa password?
-                    </Link>
-                </div>
+                    </div>
 
-                {/* --- SUBMIT --- */}
-                <button
-                    type="submit"
-                    disabled={processing}
-                    className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-lg shadow-lg shadow-emerald-600/10 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                    {processing ? (
-                        <>
-                            <RefreshCw size={20} className="animate-spin" />
-                            <span>Memproses...</span>
-                        </>
-                    ) : (
-                        <span>Masuk</span>
-                    )}
-                </button>
-            </form>
+                    {/* --- PASSWORD --- */}
+                    <div className="space-y-3">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic ml-1">Security_Passphrase</label>
+                        <div className="relative group">
+                            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors pointer-events-none">
+                                <Lock size={22} />
+                            </div>
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                value={data.password}
+                                onChange={(e) => setData('password', e.target.value)}
+                                className="w-full h-20 bg-slate-50 border border-slate-100 rounded-[2rem] pl-16 pr-16 text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 focus:bg-white transition-all duration-300 font-black italic tracking-wide text-xl shadow-inner tabular-nums"
+                                placeholder="••••••••"
+                                required
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 hover:text-emerald-600 transition-colors p-2 rounded-xl active:scale-90"
+                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                tabIndex={-1}
+                            >
+                                {showPassword ? <EyeOff size={22} aria-hidden="true" /> : <Eye size={22} aria-hidden="true" />}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* --- CAPTCHA MODULE --- */}
+                    <div className="bg-slate-50/50 rounded-[2.5rem] p-8 flex flex-row items-center gap-6 border border-slate-100 shadow-inner group/captcha relative overflow-hidden">
+                        <div className="absolute inset-0 bg-white opacity-0 group-hover/captcha:opacity-30 transition-opacity pointer-events-none" />
+                        <div className="flex items-center gap-5 flex-1 relative z-10">
+                            <button
+                                type="button"
+                                onClick={refreshCaptcha}
+                                className="h-12 w-12 flex items-center justify-center bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-emerald-600 hover:border-emerald-100 transition-all hover:rotate-180 duration-700 shadow-sm shrink-0 active:scale-95"
+                                aria-label="Refresh captcha question"
+                                title="Segarkan Captcha"
+                            >
+                                <RefreshCw size={18} aria-hidden="true" />
+                            </button>
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest italic leading-none mb-2">Heuristic_Validator</span>
+                                <label htmlFor="captcha-answer" className="text-2xl font-black text-slate-900 italic tracking-tighter leading-none pointer-events-none font-serif">
+                                    {activeCaptchaQuestion} <span className="text-emerald-600">= ?</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div className="w-40 shrink-0 relative z-10">
+                            <input
+                                id="captcha-answer"
+                                type="number"
+                                value={data.captcha_answer}
+                                onChange={(e) => setData('captcha_answer', e.target.value)}
+                                className="w-full h-16 bg-white border border-slate-200 rounded-2xl text-center font-black text-2xl italic tracking-tighter text-slate-900 focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 focus:outline-none transition-all placeholder:text-slate-200 shadow-xl shadow-emerald-900/5"
+                                placeholder="..."
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    {/* --- REMEMBER & FORGOT --- */}
+                    <div className="flex flex-row items-center justify-between px-2 gap-4">
+                        <label className="flex items-center gap-4 cursor-pointer group shrink-0">
+                            <div className="relative">
+                                <input
+                                    type="checkbox"
+                                    checked={data.remember}
+                                    onChange={(e) => setData('remember', e.target.checked)}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-6 h-6 border-2 border-slate-100 rounded-lg bg-slate-50 peer-checked:bg-emerald-600 peer-checked:border-emerald-600 transition-all shadow-inner group-hover/checkbox:border-emerald-200" />
+                                <CheckCircle2 className="absolute inset-0 h-6 w-6 scale-75 text-white opacity-0 transition-all peer-checked:opacity-100" />
+                            </div>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic group-hover:text-slate-900 transition-colors selection:bg-none">Ingat_Identitas</span>
+                        </label>
+                        <Link 
+                            href={route('password.request')} 
+                            className="text-[10px] font-black text-emerald-600 hover:text-emerald-800 uppercase tracking-[0.2em] italic transition-colors underline decoration-emerald-200 underline-offset-8"
+                        >
+                            Reset_Otorisasi?
+                        </Link>
+                    </div>
+
+                    {/* --- SUBMIT --- */}
+                    <button
+                        type="submit"
+                        disabled={processing}
+                        className="group h-24 w-full bg-slate-950 hover:bg-emerald-600 text-white rounded-[2.5rem] font-black text-sm transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-6 shadow-2xl relative overflow-hidden italic uppercase tracking-[0.3em]"
+                    >
+                        <div className="absolute inset-x-[-20%] h-full bg-white/10 -translate-x-full group-hover:px-full transition-all duration-[3s]" />
+                        {processing ? (
+                            <>
+                                <RefreshCw size={24} className="animate-spin text-emerald-400" />
+                                <span>AUTHENTICATING...</span>
+                            </>
+                        ) : (
+                            <>
+                                <span>ESTABLISH_AUTH_STREAM</span>
+                                <ChevronRight size={24} className="group-hover:translate-x-3 transition-transform" />
+                            </>
+                        )}
+                    </button>
+                </form>
+            </div>
         </GuestLayout>
     );
 }

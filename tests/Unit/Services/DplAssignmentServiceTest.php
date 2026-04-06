@@ -12,15 +12,12 @@ use App\Services\DplAssignmentService;
 use App\Services\DplProvisioningService;
 use App\Models\User;
 use DomainException;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use Tests\TestCase;
 
 class DplAssignmentServiceTest extends TestCase
 {
-    use RefreshDatabase;
-
     private DplProvisioningService $provisioningMock;
     private DplAssignmentService $service;
 

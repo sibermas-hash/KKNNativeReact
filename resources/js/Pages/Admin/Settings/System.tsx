@@ -134,12 +134,12 @@ export default function SystemSettings({ settings }: Props) {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-4">
-                        <div className="px-8 py-5 bg-slate-950 border border-slate-800 rounded-[2rem] flex items-center gap-8 shadow-2xl relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent translate-x-full group-hover:translate-x-0 transition-transform duration-1000" />
+                        <div className="px-8 py-5 bg-emerald-600 border border-emerald-500 rounded-[2rem] flex items-center gap-8 shadow-2xl relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent translate-x-full group-hover:translate-x-0 transition-transform duration-1000" />
                             <div className="relative z-10 flex flex-col">
-                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1.5">Parameters Active</span>
+                                <span className="text-[9px] font-black text-emerald-100 uppercase tracking-widest leading-none mb-1.5">Parameters Active</span>
                                 <div className="flex items-center gap-3">
-                                    <Database className="w-5 h-5 text-emerald-500" />
+                                    <Database className="w-5 h-5 text-white" />
                                     <span className="text-2xl font-black text-white italic tracking-tighter leading-none">{flattened.length} UNITS</span>
                                 </div>
                             </div>
@@ -160,7 +160,7 @@ export default function SystemSettings({ settings }: Props) {
                             >
                                 <div className="px-12 py-10 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
                                     <div className="flex items-center gap-6">
-                                        <div className="p-5 bg-slate-950 text-emerald-500 rounded-[1.8rem] shadow-xl group-hover/section:scale-110 transition-transform">
+                                        <div className="p-5 bg-emerald-600 text-white rounded-[1.8rem] shadow-xl group-hover/section:scale-110 transition-transform">
                                             <GroupIcon className="w-6 h-6" />
                                         </div>
                                         <div>
@@ -261,8 +261,8 @@ export default function SystemSettings({ settings }: Props) {
                     })}
 
                     {/* Operational Guard Footer */}
-                    <div className="bg-slate-950 rounded-[4rem] border border-slate-800 p-12 shadow-3xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,185,129,0.15),transparent_60%)]" />
+                    <div className="bg-emerald-600 rounded-[4rem] border border-emerald-500 p-12 shadow-3xl relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_20%,rgba(255,255,255,0.15),transparent_60%)]" />
                         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-12">
                             <div className="space-y-6 flex-1">
                                  <div className="flex items-center gap-6">
@@ -271,7 +271,7 @@ export default function SystemSettings({ settings }: Props) {
                                     </div>
                                     <div>
                                         <h4 className="text-lg font-black text-white italic tracking-[0.3em] uppercase">Security_Protocol: Save_Changes</h4>
-                                        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-2 italic leading-relaxed max-w-2xl">
+                                        <p className="text-[11px] font-bold text-emerald-100 uppercase tracking-widest mt-2 italic leading-relaxed max-w-2xl">
                                             Perubahan pada parameter sistem memerlukan otorisasi tingkat tinggi. Pastikan seluruh input konfigurasi telah divalidasi kebenarannya sebelum melakukan sinkronisasi permanen ke database pusat.
                                         </p>
                                     </div>
@@ -281,7 +281,7 @@ export default function SystemSettings({ settings }: Props) {
                             <button
                                 type="submit"
                                 disabled={form.processing}
-                                className="h-20 px-12 bg-emerald-600 text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.3em] italic hover:bg-emerald-700 transition-all shadow-[0_10px_40px_-10px_rgba(5,150,105,0.5)] active:scale-95 flex items-center justify-center gap-4 group disabled:opacity-50"
+                                className="h-20 px-12 bg-white text-emerald-600 rounded-[2rem] text-xs font-black uppercase tracking-[0.3em] italic hover:bg-emerald-50 transition-all shadow-xl active:scale-95 flex items-center justify-center gap-4 group disabled:opacity-50"
                             >
                                 <Save className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                                 {form.processing ? 'SYNCHRONIZING...' : 'COMMIT_CHANGES_TO_CORE'}

@@ -24,8 +24,6 @@ import {
     Globe,
     Download,
     Megaphone,
-    LogOut,
-    User,
     Presentation
 } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -43,13 +41,13 @@ interface NavGroup {
 
 const adminNav: NavGroup[] = [
     {
-        title: 'Utama',
+        title: 'Dashboard',
         items: [
-            { label: 'Dasbor', href: '/admin', icon: LayoutDashboard },
+            { label: 'Ringkasan', href: '/admin', icon: LayoutDashboard },
         ],
     },
     {
-        title: 'Data Master',
+        title: 'Master Data',
         items: [
             { label: 'Tahun Akademik', href: '/admin/tahun-akademik', icon: Calendar },
             { label: 'Periode KKN', href: '/admin/periode', icon: Calendar },
@@ -62,80 +60,73 @@ const adminNav: NavGroup[] = [
     {
         title: 'Operasional',
         items: [
-            { label: 'Kelompok', href: '/admin/kelompok', icon: Users2 },
+            { label: 'Registrasi', href: '/admin/pendaftaran', icon: ClipboardList },
+            { label: 'Kelompok KKN', href: '/admin/kelompok', icon: Users2 },
             { label: 'Penugasan DPL', href: '/admin/dosen/penugasan', icon: Users },
-            { label: 'Transfer Peserta', href: '/admin/peserta/pindah', icon: Shuffle },
-            { label: 'Pengguna', href: '/admin/pengguna', icon: Users },
-            { label: 'Pendaftaran', href: '/admin/pendaftaran', icon: ClipboardList },
+            { label: 'Mutasi Peserta', href: '/admin/peserta/pindah', icon: Shuffle },
+            { label: 'Akses Pengguna', href: '/admin/pengguna', icon: Users },
         ],
     },
     {
-        title: 'Integrasi',
+        title: 'Pelaporan',
         items: [
-            { label: 'Sinkronisasi Mahasiswa', href: '/admin/mahasiswa/sinkron', icon: RefreshCw },
-            { label: 'Sinkronisasi DPL', href: '/admin/dosen/sinkron', icon: RefreshCw },
-        ],
-    },
-    {
-        title: 'Laporan & Nilai',
-        items: [
-            { label: 'Laporan Harian', href: '/admin/laporan/harian', icon: FileText },
-            { label: 'Program Kerja', href: '/admin/laporan/program-kerja', icon: FolderKanban },
-            { label: 'Intelligence', href: '/admin/auditor-aktivitas', icon: Cpu },
+            { label: 'Log Aktivitas', href: '/admin/laporan/harian', icon: FileText },
+            { label: 'Progam Kerja', href: '/admin/laporan/program-kerja', icon: FolderKanban },
+            { label: 'Audit Kualitas', href: '/admin/auditor-aktivitas', icon: Cpu },
             { label: 'Laporan Akhir', href: '/admin/laporan/akhir', icon: FileText },
-            { label: 'Evaluasi & Nilai', href: '/admin/evaluasi', icon: BarChart3 },
+            { label: 'Evaluasi Mahasiswa', href: '/admin/evaluasi', icon: BarChart3 },
             { label: 'Generator Nilai', href: '/admin/generator-nilai', icon: FileSpreadsheet },
-            { label: 'Rekap Nilai', href: '/admin/grade-reports', icon: Award },
-            { label: 'Input Nilai Manual', href: '/admin/nilai', icon: BarChart3 },
-            { label: 'Log Audit', href: '/admin/audit-log', icon: ShieldCheck },
-            { label: 'Seminar/Workshop', href: '/admin/workshop', icon: Presentation },
+            { label: 'Rekapitulasi Nilai', href: '/admin/grade-reports', icon: Award },
+            { label: 'Kualifikasi DPL', href: '/admin/workshop', icon: Presentation },
         ],
     },
     {
-        title: 'Konten Publik',
+        title: 'Publikasi',
         items: [
             { label: 'Profil LPPM', href: '/admin/konten-publik/profil', icon: Globe },
             { label: 'Skema KKN', href: '/admin/konten-publik/skema', icon: FolderKanban },
-            { label: 'Warta Utama', href: '/admin/warta-utama', icon: Megaphone },
-            { label: 'Repositori Berkas', href: '/admin/unduhan', icon: Download },
+            { label: 'Berita/Warta', href: '/admin/warta-utama', icon: Megaphone },
+            { label: 'File Manager', href: '/admin/unduhan', icon: Download },
         ],
     },
     {
-        title: 'Pengaturan',
+        title: 'Konfigurasi',
         items: [
-            { label: 'Konfigurasi Nilai', href: '/admin/konfigurasi-penilaian', icon: Hammer },
-            { label: 'Sistem', href: '/admin/pengaturan/sistem', icon: SlidersHorizontal },
+            { label: 'Persyaratan KKN', href: '/admin/kkn-requirements', icon: ShieldCheck },
+            { label: 'Aturan Nilai', href: '/admin/konfigurasi-penilaian', icon: Hammer },
+            { label: 'Parameter Sistem', href: '/admin/pengaturan/sistem', icon: SlidersHorizontal },
+            { label: 'Sinkronisasi', href: '/admin/mahasiswa/sinkron', icon: RefreshCw },
         ],
     },
 ];
 
 const dplNav: NavGroup[] = [
     {
-        title: 'Dasbor',
+        title: 'Dashboard',
         items: [
-            { label: 'Dasbor DPL', href: '/dpl', icon: LayoutDashboard },
-            { label: 'Kelompok Saya', href: '/dpl/kelompok', icon: Users2 },
+            { label: 'Monitoring DPL', href: '/dpl', icon: LayoutDashboard },
+            { label: 'Daftar Kelompok', href: '/dpl/kelompok', icon: Users2 },
         ],
     },
     {
         title: 'Bimbingan',
         items: [
-            { label: 'Laporan Harian', href: '/dpl/laporan-harian', icon: FileText },
-            { label: 'Laporan Akhir', href: '/dpl/laporan-akhir', icon: FileText },
-            { label: 'Evaluasi Mahasiswa', href: '/dpl/evaluasi', icon: Star },
+            { label: 'Log Harian', href: '/dpl/laporan-harian', icon: FileText },
+            { label: 'Dokumen Akhir', href: '/dpl/laporan-akhir', icon: FileText },
+            { label: 'Entry Nilai', href: '/dpl/evaluasi', icon: Star },
         ],
     },
 ];
 
 const facultyAdminNav: NavGroup[] = [
     {
-        title: 'Utama',
+        title: 'Dashboard',
         items: [
-            { label: 'Dasbor', href: '/admin', icon: LayoutDashboard },
+            { label: 'Ringkasan', href: '/admin', icon: LayoutDashboard },
         ],
     },
     {
-        title: 'Operasional',
+        title: 'Evaluasi',
         items: [
             { label: 'Rekap Nilai', href: '/admin/grade-reports', icon: Award },
         ],
@@ -145,20 +136,19 @@ const facultyAdminNav: NavGroup[] = [
 function buildStudentNav(isRegistrationLocked: boolean): NavGroup[] {
     return [
         {
-            title: 'Utama',
+            title: 'Dashboard',
             items: [
-                { label: 'Dasbor Saya', href: '/mahasiswa', icon: LayoutDashboard },
-                { label: 'Profil Saya', href: '/profil-saya', icon: User },
+                { label: 'Status Saya', href: '/mahasiswa', icon: LayoutDashboard },
                 ...(isRegistrationLocked ? [] : [{ label: 'Pendaftaran', href: '/mahasiswa/pendaftaran', icon: ClipboardList }]),
             ],
         },
         {
-            title: 'Kegiatan KKN',
+            title: 'Kegiatan',
             items: [
-                { label: 'Posko Kelompok', href: '/mahasiswa/posko', icon: MapPin },
-                { label: 'Laporan Harian', href: '/mahasiswa/laporan-harian', icon: FileText },
-                { label: 'Laporan Akhir', href: '/mahasiswa/laporan-akhir', icon: FileText },
-                { label: 'Hasil Nilai', href: '/mahasiswa/evaluasi', icon: Award },
+                { label: 'Info Posko', href: '/mahasiswa/posko', icon: MapPin },
+                { label: 'Jurnal Harian', href: '/mahasiswa/laporan-harian', icon: FileText },
+                { label: 'Laporan Final', href: '/mahasiswa/laporan-akhir', icon: FileText },
+                { label: 'Cek Nilai', href: '/mahasiswa/evaluasi', icon: Award },
             ],
         },
     ];
@@ -177,18 +167,14 @@ interface SidebarProps {
     onClose: () => void;
 }
 
-const SIDEBAR_SCROLL_KEY = 'kkn-sidebar-scroll-top';
-
-interface RoleObject {
-    name: string;
-}
+const SIDEBAR_SCROLL_KEY = 'kkn-white-sidebar-scroll';
 
 export default function Sidebar({ open, onClose }: SidebarProps) {
     const { auth, url } = usePage<PageProps & { url: string }>().props;
 
     const rawRoles = auth.user?.roles ?? [];
     const roles = Array.isArray(rawRoles)
-        ? rawRoles.map(r => typeof r === 'object' && r !== null ? (r as RoleObject).name : String(r))
+        ? rawRoles.map(r => typeof r === 'object' && r !== null ? (r as any).name : String(r))
         : [];
     const isStudentRegistrationLocked = !!auth.user?.student_registration_locked;
 
@@ -199,76 +185,64 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     useLayoutEffect(() => {
         const nav = navRef.current;
         if (!nav) return;
-
         const savedScrollTop = window.sessionStorage.getItem(SIDEBAR_SCROLL_KEY);
-        const targetScrollTop = savedScrollTop !== null ? Number(savedScrollTop) : 0;
-        nav.scrollTop = targetScrollTop;
+        nav.scrollTop = savedScrollTop ? Number(savedScrollTop) : 0;
 
-        const persistScrollPosition = () => {
-            window.sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(nav.scrollTop));
-        };
-
-        nav.addEventListener('scroll', persistScrollPosition);
-        return () => nav.removeEventListener('scroll', persistScrollPosition);
+        const persist = () => window.sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(nav.scrollTop));
+        nav.addEventListener('scroll', persist);
+        return () => nav.removeEventListener('scroll', persist);
     }, [currentPath]);
 
     return (
         <>
             {open && (
                 <div
-                    className="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-sm lg:hidden"
+                    className="fixed inset-0 z-40 bg-white/60 backdrop-blur-md lg:hidden"
                     onClick={onClose}
-                    aria-hidden="true"
                 />
             )}
 
             <aside
-                className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-white border-r border-slate-200 transition-transform duration-300 lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}
-                aria-label="Main navigation sidebar"
+                className={clsx(
+                    "fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-white border-r border-slate-200 transition-transform duration-200 lg:translate-x-0 shadow-sm",
+                    open ? "translate-x-0" : "-translate-x-full"
+                )}
             >
-                {/* Brand Header */}
-                <div className="p-8 border-b border-slate-100 bg-white">
-                    <div className="flex items-center gap-4 group">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 shadow-xl shadow-emerald-600/20 group-hover:scale-110 transition-transform duration-500">
-                            <GraduationCap className="h-6 w-6 text-white" aria-hidden="true" />
-                        </div>
+                {/* BRAND SECTION (WHITE CLEAN STYLE) */}
+                <div className="h-16 px-6 flex items-center border-b border-slate-100">
+                    <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 bg-emerald-600 rounded flex items-center justify-center text-white font-black text-sm">S</div>
                         <div className="flex flex-col">
-                            <h1 className="text-sm font-bold text-slate-800 leading-tight">KKN<span className="font-normal text-slate-400">UIN Saizu</span></h1>
-                            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-0.5 leading-none">Sistem Informasi KKN</p>
+                            <span className="text-sm font-black text-slate-800 uppercase tracking-tighter">POS-KKN</span>
+                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">UIN SAIZU</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Navigation Scroll Area */}
-                <nav ref={navRef} className="flex-1 overflow-y-auto p-4 space-y-8 scrollbar-hide" role="navigation" aria-label="Primary navigation">
+                {/* NAVIGATION AREA */}
+                <nav ref={navRef} className="flex-1 overflow-y-auto py-4 scrollbar-hide">
                     {navGroups.map((group) => (
-                        <div key={group.title}>
-                            <h3 className="px-4 mb-3 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                        <div key={group.title} className="mb-6 px-3">
+                            <h3 className="px-3 mb-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                 {group.title}
                             </h3>
-                            <div className="space-y-1">
+                            <div className="space-y-0.5">
                                 {group.items.map((item) => {
                                     const isActive = currentPath === item.href || (item.href !== '/admin' && currentPath.startsWith(item.href));
                                     return (
                                         <Link
                                             key={item.href}
                                             href={item.href}
-                                            onClick={() => {
-                                                if (window.innerWidth < 1024) onClose();
-                                            }}
+                                            onClick={() => window.innerWidth < 1024 && onClose()}
                                             className={clsx(
-                                                "flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200",
+                                                "flex items-center gap-3 px-3 py-2.5 rounded text-xs font-black uppercase tracking-tight transition-all",
                                                 isActive
-                                                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/25"
-                                                    : "text-slate-500 hover:bg-emerald-50 hover:text-emerald-700"
+                                                    ? "bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100/50"
+                                                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                                             )}
-                                            aria-current={isActive ? 'page' : undefined}
                                         >
-                                            <item.icon className={clsx("w-5 h-5", isActive ? "text-white" : "text-slate-400")} aria-hidden="true" />
+                                            <item.icon className={clsx("w-4 h-4", isActive ? "text-emerald-600" : "text-slate-400")} />
                                             <span>{item.label}</span>
-                                            {isActive && (
-                                                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white opacity-50" aria-hidden="true" />
-                                            )}
                                         </Link>
                                     );
                                 })}
@@ -276,31 +250,6 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                         </div>
                     ))}
                 </nav>
-
-                {/* Account Footer */}
-                <div className="p-4 border-t border-slate-100 bg-slate-50/50">
-                    <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="flex items-center gap-3 overflow-hidden">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 border border-slate-200 text-slate-600">
-                                <User className="h-5 w-5" aria-hidden="true" />
-                            </div>
-                            <div className="flex flex-col min-w-0">
-                                <span className="text-xs font-bold text-slate-900 truncate uppercase tracking-tight">{auth.user?.name}</span>
-                                <span className="text-[10px] text-slate-400 font-medium">Administrator</span>
-                            </div>
-                        </div>
-                        <Link
-                            href="/logout"
-                            method="post"
-                            as="button"
-                            className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
-                            aria-label="Log out of your account"
-                            title="Keluar"
-                        >
-                            <LogOut className="h-5 w-5" aria-hidden="true" />
-                        </Link>
-                    </div>
-                </div>
             </aside>
         </>
     );

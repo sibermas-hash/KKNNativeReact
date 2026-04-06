@@ -29,6 +29,7 @@ Route::get('/profil', [\App\Http\Controllers\HomeController::class, 'about'])->n
 Route::get('/skema-kkn', [\App\Http\Controllers\HomeController::class, 'schemes'])->name('public.schemes');
 Route::get('/warta', [\App\Http\Controllers\HomeController::class, 'announcements'])->name('public.announcements');
 Route::get('/repositori', [\App\Http\Controllers\HomeController::class, 'downloads'])->name('public.downloads');
+Route::get('/cari-lokasi', [\App\Http\Controllers\HomeController::class, 'locations'])->name('public.locations');
 
 // Authenticated routes
 Route::middleware(['auth', 'kkn.throttle'])->group(function () {
@@ -76,6 +77,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::get('pendaftaran/{pesertaKkn}', [Admin\PesertaKknController::class , 'show'])->name('pendaftaran.show');
 
         Route::get('kelompok', [Admin\KelompokKknController::class , 'index'])->name('kelompok.index');
+        Route::get('kelompok/template', [Admin\KelompokKknController::class, 'downloadTemplate'])->name('kelompok.template');
         Route::get('kelompok/{kelompokKkn}', [Admin\KelompokKknController::class , 'show'])->name('kelompok.show');
 
         Route::get('nilai', [Admin\GradeController::class , 'index'])->name('nilai.index');
@@ -156,6 +158,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::post('pengguna', [Admin\UserController::class , 'store'])->name('pengguna.store');
         Route::patch('pengguna/{user}/toggle-status', [Admin\UserController::class , 'toggleActive'])->name('pengguna.toggle-status');
         Route::patch('pengguna/{user}/ubah-status', [Admin\UserController::class , 'toggleActive'])->name('pengguna.ubah-status');
+        Route::post('pengguna/{user}/reset-password-sementara', [Admin\UserController::class , 'resetTemporaryPassword'])->name('pengguna.reset-password');
         
         // Personel: Mahasiswa
         Route::get('mahasiswa', [Admin\UserController::class , 'mahasiswaIndex'])->name('mahasiswa.index');
@@ -193,6 +196,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::post('pendaftaran/{registration}/jadikan-ketua', [Admin\PesertaKknController::class , 'makeLeader'])->name('pendaftaran.jadikan-ketua');
 
         // Groups CRUD
+        Route::post('kelompok/impor', [Admin\KelompokKknController::class, 'import'])->name('kelompok.import');
         Route::resource('kelompok', Admin\KelompokKknController::class)
             ->only(['store', 'update', 'destroy'])
             ->parameters(['kelompok' => 'kelompokKkn']);
@@ -227,8 +231,16 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
 
         Route::get('audit-log', [Admin\LogAuditController::class , 'index'])->name('audit-log.index');
         Route::get('audit-log/{auditLog}', [Admin\LogAuditController::class , 'show'])->name('audit-log.show');
-        Route::get('workshop', [App\Http\Controllers\WorkshopController::class , 'index'])->name('workshop.index');
-        Route::get('workshops', [App\Http\Controllers\WorkshopController::class , 'index'])->name('workshops.index');
+        
+        // Workshop Management (Full Admin Control)
+        Route::get('workshop', [Admin\WorkshopController::class , 'index'])->name('workshop.index');
+        Route::get('workshops', [Admin\WorkshopController::class , 'index'])->name('workshops.index');
+        Route::post('workshop', [Admin\WorkshopController::class , 'store'])->name('workshop.store');
+        Route::patch('workshop/{workshop}', [Admin\WorkshopController::class , 'update'])->name('workshop.update');
+        Route::patch('workshop/{workshop}/cancel', [Admin\WorkshopController::class , 'destroy'])->name('workshop.cancel');
+        Route::post('workshop/{workshop}/attendance', [Admin\WorkshopController::class , 'bulkAttendance'])->name('workshop.bulk-attendance');
+        Route::post('workshop/{workshop}/import-absensi', [Admin\WorkshopController::class , 'importAttendance'])->name('workshop.import-absensi');
+        Route::post('workshop/{workshop}/preview-absensi', [Admin\WorkshopController::class , 'previewAttendance'])->name('workshop.preview-absensi');
         Route::get('api/available-dpl', [Admin\DplAssignmentController::class , 'getAvailableDpl'])->name('api.available-dpl');
         Route::get('api/transfer-targets', [Admin\StudentTransferController::class , 'getTransferTargets'])->name('api.transfer-targets');
     });
@@ -260,16 +272,6 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         // Advanced Exports
         Route::get('ekspor/laporan-harian/kelompok/{groupId}', [App\Http\Controllers\ReportExportController::class , 'downloadGroupDailyReports'])->name('export.laporan-harian.kelompok');
         Route::get('ekspor/laporan-harian/mahasiswa/{studentId}', [App\Http\Controllers\ReportExportController::class , 'downloadStudentDailyReports'])->name('export.laporan-harian.mahasiswa');
-        
-        Route::post('workshop', [App\Http\Controllers\WorkshopController::class , 'store'])->name('workshop.store');
-        Route::patch('workshop/{workshop}', [App\Http\Controllers\WorkshopController::class , 'update'])->name('workshop.update');
-        Route::patch('workshop/{workshop}/batal', [App\Http\Controllers\WorkshopController::class , 'cancel'])->name('workshop.cancel');
-        Route::post('workshop/{workshop}/kehadiran', [App\Http\Controllers\WorkshopController::class , 'markAttendance'])->name('workshop.mark-attendance');
-        Route::post('workshop/{workshop}/import-absensi', [App\Http\Controllers\Admin\WorkshopController::class , 'importAttendance'])->name('workshop.import-absensi');
-        Route::post('workshops', [App\Http\Controllers\WorkshopController::class , 'store'])->name('workshops.store');
-        Route::patch('workshops/{workshop}', [App\Http\Controllers\WorkshopController::class , 'update'])->name('workshops.update');
-        Route::patch('workshops/{workshop}/cancel', [App\Http\Controllers\WorkshopController::class , 'cancel'])->name('workshops.cancel');
-        Route::post('workshops/{workshop}/attendance', [App\Http\Controllers\WorkshopController::class , 'markAttendance'])->name('workshops.mark-attendance');
     });
 
     // ==========================================

@@ -6,6 +6,10 @@ export default {
     './resources/**/*.ts',
   ],
   theme: {
+    fontFamily: {
+      sans: ['Outfit', 'sans-serif'],
+      serif: ['Fraunces', 'serif'],
+    },
     extend: {
       colors: {
         primary: {

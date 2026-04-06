@@ -208,7 +208,7 @@ export default function DplEvaluationsPage({ groups, evaluations, dplWeights }: 
           id="import_file"
           type="file"
           accept=".xlsx,.xls"
-          onChange={(event) => importForm.setData('berkas', event.target.files?.[0] ?? null)}
+          onChange={(event) => importForm.setData('file', event.target.files?.[0] ?? null)}
           className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700"
           required
         />

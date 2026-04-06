@@ -12,13 +12,14 @@ class Periode extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $connection = 'kkn';
+    protected $table = 'periode';
+
     private const CACHE_KEYS = [
         'active_period',
         'default_period_id',
         'available_periods',
     ];
-
-    protected $table = 'periode';
 
     protected $fillable = [
         'academic_year_id',

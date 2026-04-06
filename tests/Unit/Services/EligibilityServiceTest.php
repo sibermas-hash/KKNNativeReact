@@ -7,13 +7,10 @@ use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\SystemSetting;
 use App\Services\EligibilityService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class EligibilityServiceTest extends TestCase
 {
-    use RefreshDatabase;
-
     private EligibilityService $service;
 
     protected function setUp(): void

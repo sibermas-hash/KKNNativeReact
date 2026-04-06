@@ -174,15 +174,20 @@ class GeneratorNilaiController extends Controller
         $evidencePath = null;
         if ($request->hasFile('evidence_file')) {
             $file = $request->file('evidence_file');
-            
-            // VULN-010 Fix: Validate extension against allowlist (not client-provided)
+
+            // VULN-010 Fix: Validate extension against allowlist using MIME type (not client-provided name)
             $allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
-            $extension = strtolower($file->getClientOriginalExtension());
-            
+            $extension = strtolower($file->guessExtension() ?? '');
+
+            // Normalize jpeg extension
+            if ($extension === 'jpeg') {
+                $extension = 'jpg';
+            }
+
             if (!in_array($extension, $allowedExtensions)) {
                 return back()->withErrors(['evidence_file' => 'Ekstensi file tidak diizinkan. Hanya PDF, JPG, dan PNG yang diperbolehkan.']);
             }
-            
+
             // Store in private storage (local disk) for security
             $evidencePath = $file->storeAs(
                 "evidence/{$data['kelompok_id']}",
@@ -277,7 +282,11 @@ class GeneratorNilaiController extends Controller
             ->where('period_id', $periodId)
             ->whereHas('dosen', function($q) {
                 if (auth()->user()->hasRole('dpl')) {
-                    $q->where('dosen_id', auth()->user()->dosen->id)->where('role', 'Ketua');
+                    $dosenId = auth()->user()->dosen?->id;
+                    if (!$dosenId) {
+                        return;
+                    }
+                    $q->where('dosen_id', $dosenId)->where('role', 'Ketua');
                 }
             })
             ->orderBy('code')

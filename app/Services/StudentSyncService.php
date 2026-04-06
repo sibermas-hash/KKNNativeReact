@@ -23,15 +23,9 @@ class StudentSyncService
      */
     public function syncFromApi(array $nimList = []): array
     {
-        $allExternalStudents = $this->masterApi->getAllStudents();
-        
-        if (!empty($nimList)) {
-            $externalStudents = array_filter($allExternalStudents, function ($s) use ($nimList) {
-                return in_array($s['nim'], $nimList);
-            });
-        } else {
-            $externalStudents = $allExternalStudents;
-        }
+        $externalStudents = !empty($nimList)
+            ? $this->masterApi->getStudentsByNimList($nimList)
+            : $this->masterApi->getAllStudents();
 
         $results = [
             'total' => count($externalStudents),

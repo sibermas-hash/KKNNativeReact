@@ -147,7 +147,7 @@ class SystemSettingController extends Controller
             [
                 'config_key' => 'master_api_token',
                 'label' => 'Master API Static Token',
-                'value' => config('masterapi.token'),
+                'value' => config('services.master_api.token'),
                 'type' => 'password',
                 'group' => 'master_api',
             ],

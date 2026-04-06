@@ -10,6 +10,7 @@ class SlotTerkunci extends Model
 {
     use HasFactory;
 
+    protected $connection = 'kkn';
     protected $table = 'slot_terkunci';
 
     protected $fillable = [

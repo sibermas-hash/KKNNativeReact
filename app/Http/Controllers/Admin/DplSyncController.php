@@ -8,7 +8,6 @@ use App\Models\KKN\Fakultas;
 use App\Services\MasterApiService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Response;
@@ -19,28 +18,19 @@ class DplSyncController extends Controller
         private MasterApiService $masterApi
     ) {}
 
-    public function index(Request $request): Response
+    public function index(): Response
     {
         Gate::authorize('sync-data');
-        $externalDosen = $this->masterApi->getAllEmployees();
-        $localDosenNips = Dosen::pluck('nip')->toArray();
-
-        // Filter out lecturers that are already in our local database
-        $availableDosen = array_filter($externalDosen, function ($d) use ($localDosenNips) {
-            return !in_array($d['nip'], $localDosenNips);
-        });
-
-        // Filter by search if provided
-        if ($search = $request->input('search')) {
-            $availableDosen = array_filter($availableDosen, function ($d) use ($search) {
-                return stripos($d['name'], $search) !== false || stripos($d['nip'], $search) !== false;
-            });
-        }
 
         return Inertia::render('Admin/Dpl/Sync', [
-            'availableDosen' => array_values($availableDosen),
-            'filters' => $request->only('search'),
-            'title' => 'Sinkronisasi Master Dosen'
+            'title' => 'Sinkronisasi Master Dosen',
+            'summary' => [
+                'local_lecturers' => Dosen::count(),
+                'with_master_link' => Dosen::whereNotNull('master_id')->count(),
+                'last_synced_at' => Dosen::query()
+                    ->whereNotNull('master_synced_at')
+                    ->max('master_synced_at'),
+            ],
         ]);
     }
 
@@ -49,47 +39,95 @@ class DplSyncController extends Controller
         Gate::authorize('sync-data');
 
         $validated = $request->validate([
-            'master_id' => 'nullable',
-            'nip' => 'required|string',
-            'name' => 'required|string',
-            'email' => 'nullable|email',
-            'organization_id' => 'nullable',
-            'birth_date' => 'nullable|date',
-            'gender' => 'nullable|string',
+            'nip_list' => ['nullable', 'string'],
         ]);
 
+        $nipList = collect(preg_split('/[\s,;]+/', (string) ($validated['nip_list'] ?? '')))
+            ->map(static fn ($nip) => trim((string) $nip))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
         try {
-            DB::transaction(function () use ($validated) {
-                // Sinkronisasi master dosen lokal tanpa otomatis membuat akun login.
-                $facultyId = null;
-                $organizationMasterId = $this->normalizeMasterId($validated['organization_id'] ?? null);
-                if ($organizationMasterId !== null) {
-                    $facultyId = Fakultas::where('master_id', $organizationMasterId)->first()?->id;
-                }
+            $externalDosen = count($nipList) > 0
+                ? $this->masterApi->getEmployeesByNipList($nipList)
+                : $this->masterApi->getAllEmployees();
 
-                // Fallback faculty if none found
-                if (!$facultyId) {
-                    $facultyId = Fakultas::first()?->id;
-                }
+            $results = $this->syncDosenRecords($externalDosen);
 
-                Dosen::updateOrCreate(
-                    ['nip' => $validated['nip']],
-                    [
-                        'nama' => $validated['name'],
-                        'birth_date' => $validated['birth_date'],
-                        'gender' => $validated['gender'],
-                        'faculty_id' => $facultyId,
-                        'master_id' => $this->normalizeMasterId($validated['master_id'] ?? null),
-                        'master_synced_at' => now(),
-                    ]
-                );
-            });
+            $modeLabel = count($nipList) > 0
+                ? 'sinkronisasi NIP terpilih'
+                : 'sinkronisasi seluruh dosen';
 
-            return back()->with('success', "Dosen {$validated['name']} berhasil disinkronkan ke master lokal. Akun DPL akan dibuat saat dosen diaktifkan pada periode.");
+            return back()->with(
+                'success',
+                "Berhasil {$modeLabel}: {$results['synced']} dosen sinkron, {$results['errors']} gagal dari total {$results['total']} data. Akun login tidak dibuat otomatis."
+            );
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('DPL sync failed', ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal melakukan sinkronisasi. Silakan coba lagi atau hubungi administrator.');
         }
+    }
+
+    private function syncDosenRecords(array $externalDosen): array
+    {
+        $synced = 0;
+        $errors = 0;
+
+        foreach ($externalDosen as $dosen) {
+            $nip = trim((string) ($dosen['nip'] ?? ''));
+            $name = trim((string) ($dosen['name'] ?? ''));
+
+            if ($nip === '' || $name === '') {
+                $errors++;
+                continue;
+            }
+
+            try {
+                $facultyId = null;
+                $organizationMasterId = $this->normalizeMasterId($dosen['organization_id'] ?? null);
+
+                if ($organizationMasterId !== null) {
+                    $facultyId = Fakultas::where('master_id', $organizationMasterId)->value('id');
+                }
+
+                if (!$facultyId) {
+                    $facultyId = Fakultas::query()->value('id');
+                }
+
+                if (!$facultyId) {
+                    throw new \RuntimeException('Master fakultas belum tersedia untuk pemetaan dosen.');
+                }
+
+                Dosen::updateOrCreate(
+                    ['nip' => $nip],
+                    [
+                        'nama' => $name,
+                        'birth_date' => $dosen['birth_date'] ?? null,
+                        'gender' => $dosen['gender'] ?? null,
+                        'faculty_id' => $facultyId,
+                        'master_id' => $this->normalizeMasterId($dosen['id'] ?? $dosen['master_id'] ?? null),
+                        'master_synced_at' => now(),
+                    ]
+                );
+
+                $synced++;
+            } catch (\Throwable $exception) {
+                $errors++;
+
+                \Illuminate\Support\Facades\Log::warning('DPL master record sync skipped', [
+                    'nip' => $nip,
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+        }
+
+        return [
+            'total' => count($externalDosen),
+            'synced' => $synced,
+            'errors' => $errors,
+        ];
     }
 
     private function normalizeMasterId(mixed $value): ?string

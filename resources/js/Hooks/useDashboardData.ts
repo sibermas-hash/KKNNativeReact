@@ -23,7 +23,11 @@ interface NavItem {
 
 export const useDashboardData = () => {
     const { auth } = usePage<PageProps>().props;
-    const userRole = auth.user?.role as UserRole | undefined;
+    const userRoles = auth.user?.roles ?? [];
+    
+    // Ambil role utama dari user (prioritas: superadmin > faculty_admin > dpl > mahasiswa)
+    const rolePriority: UserRole[] = ['superadmin', 'faculty_admin', 'dpl', 'mahasiswa'];
+    const userRole = rolePriority.find(role => userRoles.includes(role)) as UserRole | undefined;
 
     const getWelcomeMessage = () => {
         const hour = new Date().getHours();

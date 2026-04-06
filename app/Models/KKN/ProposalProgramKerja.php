@@ -10,7 +10,9 @@ class ProposalProgramKerja extends Model
 {
     use HasFactory;
 
-    protected $table = 'proposal_program_kerja';
+    protected $connection = 'kkn';
+    protected $table = 'proposal_proker';
+
 
     public $timestamps = false;
 

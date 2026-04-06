@@ -27,9 +27,10 @@ class HandleActivePeriod
         // If a period switch is requested via query parameter
         if ($request->has('period_id')) {
             $periodId = (int) $request->input('period_id');
+            $user = auth()->user();
+            
             try {
                 // Only superadmin can freely switch periods; students/DPL stay on their enrolled period
-                $user = auth()->user();
                 if ($user->hasRole('superadmin')) {
                     $this->contextService->setActivePeriod($periodId);
                 }

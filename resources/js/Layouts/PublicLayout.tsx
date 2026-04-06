@@ -16,7 +16,16 @@ export default function PublicLayout({ children }: Props) {
     const [isScrolled, setIsScrolled] = useState(false);
 
     useEffect(() => {
-        const handleScroll = () => setIsScrolled(window.scrollY > 20);
+        let ticking = false;
+        const handleScroll = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    setIsScrolled(window.scrollY > 20);
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
@@ -30,6 +39,11 @@ export default function PublicLayout({ children }: Props) {
 
     return (
         <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-emerald-500/10 selection:text-emerald-700">
+            <Head>
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+                <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;300;400;500;600;700;800;900&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap" rel="stylesheet" />
+            </Head>
             {/* NAVBAR - EDUCATEX INSPIRED (CLEAN & FLOATING) */}
             <nav 
                 className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${
@@ -67,7 +81,7 @@ export default function PublicLayout({ children }: Props) {
                     </div>
 
                     <div className="flex items-center gap-6">
-                        <Link href="/cari-lokasi" className="hidden xl:flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-emerald-600 hover:text-emerald-700 transition-colors">
+                        <Link href={route('public.locations')} className="hidden xl:flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-emerald-600 hover:text-emerald-700 transition-colors">
                             Cari Lokasi
                         </Link>
                         <Link 

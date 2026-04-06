@@ -12,6 +12,7 @@ class ProfilUser extends Model
 {
     use HasFactory;
 
+    protected $connection = 'kkn';
     protected $table = 'profil_user';
 
     protected $fillable = [

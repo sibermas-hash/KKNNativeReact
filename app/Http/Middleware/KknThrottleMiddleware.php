@@ -45,7 +45,12 @@ class KknThrottleMiddleware extends ThrottleRequests
             'dpl.evaluations.import',
         ];
 
-        $routeName = $request->route()->getName();
+        $routeName = $request->route()?->getName();
+        
+        // If no route name (e.g., static file or 404), use path
+        if (!$routeName) {
+            $routeName = $request->path();
+        }
         
         // Halaman login harus longgar agar mahasiswa dari IP yang sama tidak
         // saling menahan hanya untuk membuka form autentikasi.

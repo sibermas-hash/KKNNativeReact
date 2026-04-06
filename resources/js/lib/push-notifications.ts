@@ -16,7 +16,7 @@ export async function registerPushNotifications(): Promise<void> {
   await PushNotifications.register();
 
   PushNotifications.addListener('registration', (token) => {
-    fetch('/api/device-tokens', {
+    fetch(route('api.device-tokens.store'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

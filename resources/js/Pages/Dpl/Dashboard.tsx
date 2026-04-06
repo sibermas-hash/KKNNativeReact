@@ -90,19 +90,21 @@ function DashboardCard({
     };
 
     return (
-        <div className="rounded-[2.5rem] border border-slate-100 bg-white p-10 group hover:shadow-2xl transition-all relative overflow-hidden shadow-sm">
-            <div className="absolute top-0 right-0 p-12 opacity-[0.03] group-hover:opacity-[0.08] transition-all rotate-12 group-hover:rotate-0 duration-1000 pointer-events-none">
-                <Icon size={120} className="text-slate-950" />
+        <div className="rounded-[3rem] border border-slate-100 bg-white p-12 group hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.06)] transition-all relative overflow-hidden shadow-[0_10px_30px_-10px_rgba(0,0,0,0.02)]">
+            <div className="absolute top-0 right-0 p-12 opacity-[0.02] group-hover:opacity-[0.06] transition-opacity rotate-12 pointer-events-none duration-1000">
+                <Icon size={120} />
             </div>
-            <div className="relative z-10 space-y-8 flex flex-col items-center text-center">
-                <div className={`p-5 rounded-[1.5rem] transition-all border shadow-sm ${colors[color]}`}>
+            <div className="relative z-10 space-y-8">
+                <div className={`h-16 w-16 rounded-2xl flex items-center justify-center shadow-sm border border-transparent transition-all group-hover:border-emerald-500/20 group-hover:bg-white ${colors[color]}`}>
                     <Icon size={28} />
                 </div>
-                <div className="space-y-3">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">{title}</p>
-                    <p className="text-5xl font-black text-slate-900 tracking-tighter italic leading-none">{value}</p>
+                <div className="space-y-2">
+                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none italic">{title}</h3>
+                    <div className="flex flex-col gap-1">
+                        <span className="text-5xl font-black text-slate-900 tracking-tighter leading-none italic uppercase group-hover:text-emerald-700 transition-colors">{value}</span>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-3 opacity-60 leading-none">{description}</p>
+                    </div>
                 </div>
-                <p className="text-[10px] font-black text-slate-300 leading-relaxed uppercase tracking-widest italic pt-2">{description}</p>
             </div>
         </div>
     );
@@ -117,71 +119,76 @@ export default function DplDashboard({
     coordinatorAreas,
 }: Props) {
     return (
-        <AppLayout title="TERMINAL KENDALI DPL">
-            <Head title="Dashboard DPL | KKN UIN" />
+        <AppLayout title="Bimbingan & Pengabdian DPL">
+            <Head title="Dashboard DPL | KKN UIN SAIZU" />
 
-            <div className="space-y-12 pb-24">
-                {/* --- HEADER TERMINAL --- */}
-                <div className="bg-slate-900 rounded-[3rem] p-12 lg:p-16 relative overflow-hidden group/header shadow-2xl shadow-slate-900/10">
-                    <div className="absolute top-0 right-0 p-24 opacity-[0.03] group-hover/header:opacity-[0.08] transition-opacity rotate-12 pointer-events-none">
-                         <Globe size={300} className="text-white" />
+            <div className="space-y-12 pb-32">
+                {/* --- PREMIUM ACADEMIC HEADER --- */}
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 border-b border-slate-100 pb-16 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-32 opacity-[0.03] rotate-12 pointer-events-none">
+                         <Globe size={400} className="text-emerald-600" />
                     </div>
                     
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12 relative z-10">
-                        <div className="space-y-6">
-                            <div className="flex items-center gap-4">
-                                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_#10a853]" />
-                                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.6em] italic leading-none">DPL_OPERATIONAL_UNIT_V3.5</span>
-                            </div>
-                            <h1 className="text-4xl font-black text-white tracking-widest italic uppercase leading-none">
-                                DASBOR PENGENDALI <span className="text-emerald-500">DPL.</span>
-                            </h1>
-                            <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] italic max-w-2xl opacity-60 group-hover/header:opacity-100 transition-opacity">Monitoring integrasi laporan harian mahasiwa, rekapitulasi data nilai personel, <br className="hidden lg:block" /> dan optimalisasi koordinasi wilayah penempatan se-kabupaten.</p>
+                    <div className="space-y-8 relative z-10">
+                        <div className="flex items-center gap-4">
+                            <span className="px-5 py-2 bg-emerald-50 text-[10px] font-black text-emerald-700 rounded-full border border-emerald-100 uppercase tracking-[0.4em] inline-block shadow-sm">
+                                PORTAL_DPL_AKADEMIK
+                            </span>
+                            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                         </div>
+                        <div className="space-y-4">
+                            <h1 className="text-5xl lg:text-7xl font-black text-slate-900 tracking-tighter leading-[0.9]">
+                                <span className="font-serif italic font-normal text-emerald-600">Bimbingan</span> <br />
+                                Pengabdian.
+                            </h1>
+                            <p className="text-lg font-bold text-slate-400 italic max-w-2xl leading-relaxed">
+                                Monitoring integrasi laporan, validasi capaian mahasiswa, dan koordinasi wilayah penugasan mitra KKN secara terintegrasi.
+                            </p>
+                        </div>
+                    </div>
 
-                        <div className="flex items-center gap-6">
-                            <div className="p-8 bg-white/5 backdrop-blur-md rounded-[2.5rem] border border-white/5 shadow-2xl flex items-center gap-8 group-hover/header:scale-105 transition-transform duration-700">
-                                <div className="p-4 bg-emerald-600 rounded-2xl shadow-xl shadow-emerald-900/20">
-                                    <UserCheck size={28} className="text-white" />
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.4em] leading-none mb-2 italic">STATUS_OTORITAS</p>
-                                    <p className="text-lg font-black text-white uppercase italic tracking-widest leading-none">DPL_TERVERIFIKASI</p>
-                                </div>
+                    <div className="flex items-center gap-6 relative z-10">
+                        <div className="p-10 bg-white border border-slate-100 rounded-[3rem] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] flex items-center gap-8 group hover:shadow-2xl transition-all">
+                            <div className="p-5 bg-emerald-600 rounded-2xl shadow-xl shadow-emerald-600/20 text-white group-hover:rotate-6 transition-transform">
+                                <UserCheck size={32} />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.4em] leading-none mb-2 italic">Akses Terverifikasi</p>
+                                <p className="text-xl font-black text-slate-900 uppercase italic tracking-tighter leading-none">Dosen Pembimbing</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* --- STAT CARDS GRID --- */}
-                <section className="grid gap-8 md:grid-cols-2 xl:grid-cols-4 px-2">
+                <section className="grid gap-10 md:grid-cols-2 xl:grid-cols-4 px-2">
                     <DashboardCard
-                        title="UNIT_BIMBINGAN"
+                        title="Unit Bimbingan"
                         value={groups.length}
                         color="emerald"
                         icon={Users}
-                        description="KELOMPOK_AKTIF_OPERASIONAL"
+                        description="KELOMPOK_BIMBINGAN_AKTIF"
                     />
                     <DashboardCard
-                        title="QUEUE_LAPORAN"
+                        title="Laporan Masuk"
                         value={pendingReports}
                         color="amber"
                         icon={FileText}
-                        description="PENDING_VERIFICATION_SYNC"
+                        description="VERIFIKASI_PENDING"
                     />
                     <DashboardCard
-                        title="PROGRES_GRADING"
+                        title="Progres Nilai"
                         value={gradingProgress}
                         color="cyan"
                         icon={CheckCircle2}
-                        description="PERSONEL_EVALUATION_RATE"
+                        description="EVALUASI_MAHASISWA_RATE"
                     />
                     <DashboardCard
-                        title="AREA_KOORDINASI"
+                        title="Wilayah Koordinasi"
                         value={coordinatorAreas.length}
                         color="rose"
                         icon={MapPin}
-                        description="DISTRICT_COORDINATOR_ZONE"
+                        description="ZONA_PENUGASAN_KABUPATEN"
                     />
                 </section>
 
@@ -207,12 +214,12 @@ export default function DplDashboard({
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead>
-                                    <tr className="bg-slate-50/10 border-b border-slate-50 font-black uppercase tracking-[0.3em] text-[10px] text-slate-400 italic">
-                                        <th className="px-12 py-8">Terminal_ID</th>
-                                        <th className="px-10 py-8">Nama / Periode</th>
-                                        <th className="px-10 py-8">Geospasial_Village</th>
-                                        <th className="px-10 py-8 text-right pr-14">Kontrol</th>
-                                    </tr>
+                                    <tr className="bg-slate-50/50 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">
+                                    <th className="px-12 py-8 text-left">Kode Unit</th>
+                                    <th className="px-10 py-8 text-left">Nama Kelompok / Periode</th>
+                                    <th className="px-10 py-8 text-left">Lokasi Penempatan</th>
+                                    <th className="px-12 py-8 text-right">Opsi</th>
+                                </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-50">
                                     {groups.length > 0 ? (
@@ -266,40 +273,37 @@ export default function DplDashboard({
 
                     <div className="space-y-12">
                         {/* --- RISK PANEL --- */}
-                        <div className="rounded-[2.5rem] border border-slate-100 bg-white p-10 shadow-2xl group/risk relative overflow-hidden">
-                             <div className="absolute top-0 right-0 h-1 w-full bg-rose-500/10">
-                                 <div className="h-full w-2/3 bg-rose-600 animate-pulse" />
-                             </div>
-                            <div className="space-y-3 mb-12">
+                        <div className="rounded-[3rem] border border-slate-100 bg-white p-12 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.03)] group/risk relative overflow-hidden flex flex-col">
+                            <div className="space-y-4 mb-12">
                                 <h2 className="text-sm font-black text-rose-600 uppercase tracking-[0.3em] italic flex items-center gap-4">
-                                    <ShieldAlert size={20} className="animate-bounce" />
-                                    Personel Berisiko
+                                    <ShieldAlert size={20} />
+                                    Atensi Mahasiswa
                                 </h2>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic opacity-60">Inaktivitas Terminal &gt; 72 jam terdeteksi</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest opacity-60">Inaktivitas laporan terdeteksi lebih dari 72 jam</p>
                             </div>
-                            <div className="space-y-4">
+                            <div className="space-y-6">
                                 {atRiskStudents.length > 0 ? (
                                     atRiskStudents.map((student) => (
-                                        <div key={student.id} className="rounded-3xl border border-rose-50 bg-rose-50/20 p-6 group/item hover:bg-rose-50 transition-all duration-500 shadow-sm">
-                                            <div className="flex items-center gap-5">
+                                        <div key={student.id} className="rounded-3xl border border-rose-50 bg-rose-50/20 p-8 group/item hover:bg-rose-50 transition-all duration-500 shadow-sm border-l-8 border-l-rose-500">
+                                            <div className="flex items-center gap-6">
                                                 <div className="h-14 w-14 rounded-2xl bg-white border border-rose-100 flex items-center justify-center text-rose-600 font-black text-xl italic shadow-inner">
                                                     {student.name.charAt(0)}
                                                 </div>
                                                 <div className="space-y-2 text-left">
-                                                    <p className="text-[13px] font-black text-slate-900 uppercase italic tracking-tighter leading-none">{student.name}</p>
+                                                    <p className="text-base font-black text-slate-900 uppercase italic tracking-tighter leading-none">{student.name}</p>
                                                     <div className="flex items-center gap-3">
-                                                         <span className="text-[9px] font-black text-rose-600 uppercase tracking-widest italic opacity-70">NIM: {student.nim}</span>
+                                                         <span className="text-[9px] font-bold text-rose-600 uppercase tracking-widest italic opacity-70">NIM: {student.nim}</span>
                                                          <div className="h-1 w-1 bg-rose-300 rounded-full" />
-                                                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest italic leading-none">UNIT {student.group_code}</span>
+                                                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest italic leading-none">{student.group_code}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="py-12 text-center bg-slate-50 rounded-[2rem] border border-slate-100 italic relative overflow-hidden group/all-ok">
+                                    <div className="py-20 text-center bg-slate-50 rounded-[2.5rem] border border-slate-100 italic relative overflow-hidden group/all-ok">
                                         <div className="absolute inset-0 bg-emerald-500/5 rotate-12 -translate-x-full group-hover/all-ok:translate-x-full transition-transform duration-[2s]" />
-                                        <p className="text-[10px] font-black text-emerald-600/50 uppercase tracking-[0.3em] relative z-10 italic">Seluruh Personel Sinkron Aktif</p>
+                                        <p className="text-[10px] font-black text-emerald-600/50 uppercase tracking-[0.4em] relative z-10 italic">Seluruh Mahasiswa Terpantau Aktif</p>
                                     </div>
                                 )}
                             </div>

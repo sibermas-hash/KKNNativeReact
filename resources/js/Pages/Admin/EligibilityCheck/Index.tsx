@@ -101,126 +101,96 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
     };
 
     return (
-        <AppLayout title="Student Compatibility Matrix">
-            <Head title="Eligibility Checker" />
+        <AppLayout title="Audit Kelayakan Mahasiswa">
+            <Head title="Audit Kelayakan - KKN UIN SAIZU" />
 
             <div className="space-y-12 pb-32">
-                {/* Modern Tactical Header */}
-                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 border-b border-slate-100 pb-10">
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-3">
-                            <div className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse shadow-[0_0_10px_rgba(5,150,105,0.5)]" />
-                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.4em] italic leading-none">STUDENT_COMPATIBILITY_MATRIX_V4</span>
-                        </div>
-                        <h1 className="text-3xl md:text-4xl font-black text-slate-950 tracking-tighter flex items-center gap-4 italic uppercase">
-                            <GraduationCap className="w-10 h-10 text-emerald-600" />
-                            CEK <span className="text-emerald-600">KELAYAKAN</span>
-                        </h1>
-                        <p className="text-sm font-bold text-slate-400 italic">Audit otomatis parameter akademik, kelaikan dokumen prasyarat, dan otorisasi kelulusan administrasi KKN.</p>
+                {/* Clean Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-100 pb-8">
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Audit Kelayakan Mahasiswa</h1>
+                        <p className="text-sm text-slate-500 mt-1">Evaluasi parameter akademik dan prasyarat administrasi secara komprehensif.</p>
                     </div>
-
-                    <div className="flex flex-wrap items-center gap-4">
-                        <button
-                            onClick={handleExport}
-                            className="h-20 px-10 bg-slate-950 text-white rounded-[2rem] flex items-center gap-6 group hover:bg-emerald-600 transition-all shadow-2xl relative overflow-hidden"
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent -translate-x-full group-hover:translate-x-0 transition-transform duration-700" />
-                            <Download className="w-6 h-6 relative z-10 group-hover:scale-110 transition-transform" />
-                            <div className="flex flex-col relative z-10 text-left">
-                                <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest leading-none mb-1.5">Export Matrix</span>
-                                <span className="text-sm font-black italic tracking-tighter leading-none">DATA_COLLECTION_PDF</span>
-                            </div>
-                        </button>
-                    </div>
+                    <button
+                        onClick={handleExport}
+                        className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-md active:scale-95"
+                    >
+                        <Download className="w-4 h-4" />
+                        Ekspor Rekap
+                    </button>
                 </div>
 
-                {/* Metrics Command Center */}
+                {/* Metrics */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
-                        { label: 'TOTAL_PERSONNEL', value: stats.total, icon: Users, color: 'text-slate-400', bg: 'bg-slate-50' },
-                        { label: 'ELIGIBLE_UNITS', value: stats.eligible_count, icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-                        { label: 'FAILED_VALIDATION', value: stats.not_eligible_count, icon: XCircle, color: 'text-rose-500', bg: 'bg-rose-50' },
-                        { label: 'SUCCESS_RATIO', value: `${stats.eligibility_rate}%`, icon: TrendingUp, color: 'text-amber-500', bg: 'bg-amber-50' }
+                        { label: 'Total Mahasiswa', value: stats.total, icon: Users, color: 'text-slate-600', bg: 'bg-slate-50' },
+                        { label: 'Layak (Eligible)', value: stats.eligible_count, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'Belum Layak', value: stats.not_eligible_count, icon: XCircle, color: 'text-rose-600', bg: 'bg-rose-50' },
+                        { label: 'Rasio Kelayakan', value: `${stats.eligibility_rate}%`, icon: TrendingUp, color: 'text-amber-600', bg: 'bg-amber-50' }
                     ].map((stat, idx) => (
-                        <motion.div 
-                            key={idx}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: idx * 0.1 }}
-                            className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all group"
-                        >
-                            <div className="flex items-center justify-between mb-6">
-                                <div className={clsx("p-4 rounded-2xl group-hover:scale-110 transition-transform shadow-inner", stat.bg)}>
-                                    <stat.icon className={clsx("w-6 h-6", stat.color)} />
-                                </div>
-                                <div className="h-1.5 w-1.5 rounded-full bg-slate-100 group-hover:bg-emerald-500 transition-colors" />
+                        <div key={idx} className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-4">
+                            <div className={clsx("h-10 w-10 rounded-xl flex items-center justify-center", stat.bg)}>
+                                <stat.icon className={clsx("w-5 h-5", stat.color)} />
                             </div>
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 italic">{stat.label}</span>
-                            <span className="text-3xl font-black text-slate-950 italic tracking-tighter tabular-nums">{stat.value}</span>
-                        </motion.div>
+                            <div>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{stat.label}</p>
+                                <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
+                            </div>
+                        </div>
                     ))}
                 </div>
 
-                {/* Tactical Search & Filter */}
-                <div className="bg-white rounded-[3.5rem] border border-slate-200 p-10 shadow-sm space-y-10">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                        <div className="space-y-4">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic flex items-center gap-2 px-2">
-                                <Target className="w-3 h-3 text-emerald-500" />
-                                OPERATIONAL_PERIOD
-                            </span>
+                {/* Filters */}
+                <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Periode</label>
                             <select
                                 value={periodId}
                                 onChange={(e) => setPeriodId(e.target.value)}
-                                className="w-full h-16 bg-slate-50 border-none rounded-2xl px-6 text-sm font-black italic text-slate-900 focus:ring-4 focus:ring-emerald-500/5 transition-all appearance-none uppercase"
+                                className="w-full h-11 bg-white border border-slate-200 rounded-xl px-4 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
                             >
-                                <option value="">ALL_PERIODS</option>
+                                <option value="">Semua Periode</option>
                                 {periods.map(p => (
                                     <option key={p.id} value={p.id}>{p.name}</option>
                                 ))}
                             </select>
                         </div>
 
-                        <div className="space-y-4">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic flex items-center gap-2 px-2">
-                                <Layers className="w-3 h-3 text-emerald-500" />
-                                SECTOR_FACULTY
-                            </span>
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Fakultas</label>
                             <select
                                 value={facultyId}
                                 onChange={(e) => setFacultyId(e.target.value)}
-                                className="w-full h-16 bg-slate-50 border-none rounded-2xl px-6 text-sm font-black italic text-slate-900 focus:ring-4 focus:ring-emerald-500/5 transition-all appearance-none uppercase"
+                                className="w-full h-11 bg-white border border-slate-200 rounded-xl px-4 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
                             >
-                                <option value="">ALL_FACULTIES</option>
+                                <option value="">Semua Fakultas</option>
                                 {faculties.map(f => (
                                     <option key={f.id} value={f.id}>{f.name}</option>
                                 ))}
                             </select>
                         </div>
 
-                        <div className="space-y-4">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic flex items-center gap-2 px-2">
-                                <Activity className="w-3 h-3 text-emerald-500" />
-                                ELIGIBILITY_STATE
-                            </span>
-                            <div className="grid grid-cols-2 gap-3 h-16 bg-slate-50 p-1.5 rounded-2xl">
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Status Kelayakan</label>
+                            <div className="grid grid-cols-2 gap-2 h-11 bg-slate-50 p-1 rounded-xl">
                                 <button
                                     onClick={() => setShowEligible(true)}
                                     className={clsx(
-                                        "rounded-xl flex items-center justify-center text-[10px] font-black uppercase tracking-widest italic transition-all shadow-sm",
-                                        showEligible ? "bg-emerald-600 text-white" : "text-slate-400 hover:text-slate-600"
+                                        "rounded-lg flex items-center justify-center text-[10px] font-bold uppercase tracking-wider transition-all",
+                                        showEligible ? "bg-white text-emerald-600 shadow-sm border border-emerald-100" : "text-slate-400 hover:text-slate-600"
                                     )}
                                 >
-                                    ELIGIBLE
+                                    Layak
                                 </button>
                                 <button
                                     onClick={() => setShowEligible(false)}
                                     className={clsx(
-                                        "rounded-xl flex items-center justify-center text-[10px] font-black uppercase tracking-widest italic transition-all shadow-sm",
-                                        !showEligible ? "bg-rose-600 text-white" : "text-slate-400 hover:text-slate-600"
+                                        "rounded-lg flex items-center justify-center text-[10px] font-bold uppercase tracking-wider transition-all",
+                                        !showEligible ? "bg-white text-rose-600 shadow-sm border border-rose-100" : "text-slate-400 hover:text-slate-600"
                                     )}
                                 >
-                                    FAILED
+                                    Tidak Layak
                                 </button>
                             </div>
                         </div>
@@ -228,31 +198,26 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
                         <div className="flex items-end">
                             <button
                                 onClick={handleFilter}
-                                className="w-full h-16 bg-slate-950 text-white rounded-2xl font-black italic uppercase tracking-[0.4em] text-xs hover:bg-emerald-600 transition-all shadow-xl shadow-slate-200 active:scale-95"
+                                className="w-full h-11 bg-slate-900 text-white rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-emerald-600 transition-all shadow-md active:scale-95"
                             >
-                                EXECUTE_FILTER
+                                Terapkan Filter
                             </button>
                         </div>
                     </div>
                 </div>
 
-                {/* Compatibility Table */}
-                <motion.section 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-[3.5rem] border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-all"
-                >
+                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                     <div className="overflow-x-auto">
-                        <table className="w-full border-collapse">
+                        <table className="w-full">
                             <thead>
-                                <tr className="bg-slate-50/50 border-b border-slate-100">
-                                    <th className="px-12 py-8 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">PERSONNEL_IDENTITY_HASH</th>
-                                    <th className="px-6 py-8 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">SKS_LOAD</th>
-                                    <th className="px-6 py-8 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">GPA_INDEX</th>
-                                    <th className="px-6 py-8 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">BTA-PPI_CORE</th>
-                                    <th className="px-6 py-8 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">DOC_ASSETS</th>
-                                    <th className="px-6 py-8 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">MATRIX_STATUS</th>
-                                    <th className="px-12 py-8 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">COMMAND</th>
+                                <tr className="bg-slate-50 border-b border-slate-200">
+                                    <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Identitas Mahasiswa</th>
+                                    <th className="px-6 py-4 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total SKS</th>
+                                    <th className="px-6 py-4 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">GPA / IPK</th>
+                                    <th className="px-6 py-4 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">BTA-PPI</th>
+                                    <th className="px-6 py-4 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">Dokumen</th>
+                                    <th className="px-6 py-4 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">Status Audit</th>
+                                    <th className="px-6 py-4 text-right text-[10px] font-bold text-slate-500 uppercase tracking-wider pr-10">Detail</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
@@ -264,14 +229,14 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
                                         transition={{ delay: idx * 0.05 }}
                                         className="group hover:bg-slate-50/50 transition-colors cursor-default"
                                     >
-                                        <td className="px-12 py-8">
-                                            <div className="flex items-center gap-6">
-                                                <div className="h-12 w-12 rounded-xl bg-slate-950 text-emerald-500 border border-slate-800 flex items-center justify-center font-black text-lg italic shadow-lg group-hover:scale-110 transition-transform">
+                                        <td className="px-6 py-5">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-slate-600 border border-slate-200">
                                                     {student.nama.charAt(0)}
                                                 </div>
                                                 <div className="flex flex-col min-w-0">
-                                                    <span className="text-sm font-black text-slate-950 uppercase italic tracking-tighter group-hover:text-emerald-700 transition-colors truncate max-w-[200px]">{student.nama}</span>
-                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1 italic">NIM: {student.nim}</span>
+                                                    <span className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 truncate max-w-[180px]">{student.nama}</span>
+                                                    <span className="text-[10px] font-semibold text-slate-400">NIM: {student.nim}</span>
                                                 </div>
                                             </div>
                                         </td>
@@ -288,9 +253,9 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
                                                 {student.gpa ? student.gpa.toFixed(2) : '--.--'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-8 text-center font-bold">
-                                            <Badge variant={student.is_bta_ppi_passed ? 'success' : 'danger'} className="px-3 py-1 font-black italic uppercase tracking-widest text-[9px] border-none shadow-sm">
-                                                {student.is_bta_ppi_passed ? 'PASSED_BTA' : 'PENDING'}
+                                        <td className="px-6 py-5 text-center font-bold">
+                                            <Badge variant={student.is_bta_ppi_passed ? 'success' : 'danger'} className="text-[10px] font-bold px-2 py-0.5 border-none shadow-none">
+                                                {student.is_bta_ppi_passed ? 'Lulus' : 'Pending'}
                                             </Badge>
                                         </td>
                                         <td className="px-6 py-8 text-center">
@@ -303,22 +268,22 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-8 text-center">
+                                        <td className="px-6 py-5 text-center">
                                             {student.is_eligible ? (
-                                                <Badge variant="success" className="px-4 py-1.5 bg-emerald-600 text-white font-black italic text-[9px] uppercase tracking-[0.2em] border-none shadow-xl shadow-emerald-500/20">ELIGIBLE</Badge>
+                                                <span className="inline-flex px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold border border-emerald-100">Layak</span>
                                             ) : (
-                                                <div className="flex items-center justify-center gap-2 opacity-50">
-                                                    <AlertTriangle className="w-4 h-4 text-amber-600" />
-                                                    <span className="text-[10px] font-black text-rose-600 uppercase italic tracking-widest">{student.issue_count} ISSUES</span>
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
+                                                    <span className="text-[10px] font-bold text-rose-600">{student.issue_count} Masalah</span>
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="px-12 py-8 text-right">
+                                        <td className="px-6 py-5 text-right pr-6">
                                             <Link
                                                 href={`/admin/registrations?search=${student.nim}`}
-                                                className="h-10 w-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-300 hover:text-emerald-600 hover:border-emerald-600 transition-all shadow-sm active:scale-90"
+                                                className="h-8 w-8 bg-white border border-slate-200 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:border-emerald-600 transition-all"
                                             >
-                                                <Eye className="w-4 h-4" />
+                                                <Eye className="w-3.5 h-3.5" />
                                             </Link>
                                         </td>
                                     </motion.tr>
@@ -335,47 +300,22 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
                             </tbody>
                         </table>
                     </div>
-                </motion.section>
-
-                {/* Tactical Registry Logic */}
-                <div className="p-12 bg-slate-900 rounded-[4rem] border border-slate-800 shadow-3xl relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,185,129,0.1),transparent_60%)]" />
-                    <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-12">
-                        <div className="space-y-6 flex-1">
-                             <div className="flex items-center gap-6">
-                                <div className="p-5 bg-emerald-500 shadow-[0_0_50px_rgba(16,185,129,0.2)] rounded-[2.5rem] animate-pulse">
-                                    <Binary className="h-10 w-10 text-white" />
-                                </div>
-                                <div className="space-y-2">
-                                    <h4 className="text-lg font-black text-white italic tracking-[0.3em] uppercase leading-none">Core_Validation_Engine_V4</h4>
-                                    <div className="flex items-center gap-4 text-[9px] font-black text-emerald-500 uppercase tracking-widest italic pt-1">
-                                        <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /> SYSTEM_LATENCY: 12ms</span>
-                                        <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /> ENCRYPTION: SHA-256</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <p className="text-sm text-slate-500 font-bold italic leading-relaxed max-w-4xl uppercase tracking-tighter">
-                                Matrix kelaikan mahasiswa dihitung secara dinamis berdasarkan parameter SKS min. 100, kelulusan BTA-PPI, dan otorisasi dokumen kesehatan. Data disinkronkan secara real-time dengan basis data akademik UIN SAIZU.
-                            </p>
-                        </div>
-                        
-                        <div className="flex items-center gap-8 text-slate-500 font-black text-[11px] uppercase tracking-[0.5em] italic opacity-30 hover:opacity-100 transition-opacity">
-                             <Fingerprint className="w-5 h-5 text-emerald-500" />
-                             ELIGIBILITY_PROTOCOL • {new Date().getFullYear()}
-                        </div>
-                    </div>
                 </div>
 
-                {/* Pagination Controls */}
-                <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-8">
-                    <div className="flex items-center gap-6">
-                        <div className="h-10 px-6 bg-slate-950 text-white rounded-xl flex items-center gap-3 text-[10px] font-black uppercase tracking-widest italic shadow-xl">
-                            <Binary className="w-4 h-4 text-emerald-500" />
-                            BUFFER: {students.length} UNITS
-                        </div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">
-                            TOTAL_RECORDS: <span className="text-slate-950">{pagination.total}</span> PERSONNEL
-                        </p>
+                {/* Info Center */}
+                <div className="p-8 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div className="flex items-center gap-3">
+                        <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                        <h4 className="text-sm font-bold text-slate-900">Parameter Kelayakan Otomatis</h4>
+                    </div>
+                    <p className="text-sm text-slate-500 font-medium leading-relaxed max-w-4xl">
+                        Ambang batas minimal SKS adalah 100 dengan status lulus BTA-PPI dan kelengkapan dokumen pendukung. Data diverifikasi secara real-time berdasarkan sinkronisasi SI-pusat UIN SAIZU.
+                    </p>
+                </div>
+
+                <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-4">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        Total Data: <span className="text-slate-900">{pagination.total}</span> Mahasiswa
                     </div>
                     {pagination.last_page > 1 && (
                         <Pagination

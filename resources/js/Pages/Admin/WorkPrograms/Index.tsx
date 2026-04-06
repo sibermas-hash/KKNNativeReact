@@ -2,27 +2,26 @@ import { Head, router, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { FormSelect, StatusBadge, Badge } from '@/Components/ui';
 import type { PageProps } from '@/types';
-import { 
-    ClipboardList, 
-    Filter, 
-    Search, 
-    Zap, 
-    Layers, 
-    MapPin, 
-    Calendar, 
-    Activity, 
-    ArrowRight, 
-    Database, 
-    Globe, 
-    Binary, 
-    Fingerprint, 
-    ShieldCheck, 
+import {
+    ClipboardList,
+    Filter,
+    Search,
+    Zap,
+    Layers,
+    MapPin,
+    Calendar,
+    Activity,
+    ArrowRight,
+    Database,
+    Globe,
+    Binary,
+    Fingerprint,
+    ShieldCheck,
     Navigation,
     LayoutDashboard,
     Clock,
     Target
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 
 interface WorkProgramData {
@@ -37,17 +36,21 @@ interface WorkProgramData {
             village_name?: string | null;
         } | null;
     } | null;
-    group?: {
-        name: string;
-        location?: {
-            name?: string;
-        } | null;
-    };
+}
+
+interface PaginationMeta {
+    current_page: number;
+    total: number;
+    per_page: number;
+    last_page: number;
+    from: number;
+    to: number;
 }
 
 interface Props extends PageProps {
     workPrograms: {
         data: WorkProgramData[];
+        meta: PaginationMeta;
     };
     sdg_distribution?: Array<{ id: number; count: number }>;
     filters: {
@@ -158,9 +161,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
 
                 {/* SDG Strategic Distribution Grid */}
                 {sdg_distribution && (
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
+                    <div
                         className="bg-white rounded-[3.5rem] border border-slate-200 p-10 shadow-sm relative overflow-hidden"
                     >
                         <div className="flex items-center gap-4 mb-10 border-b border-slate-100 pb-8">
@@ -194,13 +195,11 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
                                 </div>
                             ))}
                         </div>
-                    </motion.div>
+                    </div>
                 )}
 
                 {/* Tactical Ledger Table */}
-                <motion.section 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                <section
                     className="bg-white rounded-[3.5rem] border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-all"
                 >
                     <div className="overflow-x-auto">
@@ -217,11 +216,8 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
                             <tbody className="divide-y divide-slate-50">
                                 {rows.length > 0 ? (
                                     rows.map((program, idx) => (
-                                        <motion.tr 
+                                        <tr
                                             key={program.id}
-                                            initial={{ opacity: 0, x: -10 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: idx * 0.05 }}
                                             className="group hover:bg-slate-50/50 transition-colors cursor-default"
                                         >
                                             <td className="px-12 py-8">
@@ -235,15 +231,14 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
                                                     <div className="p-2.5 bg-slate-100 rounded-xl text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-600 transition-all shadow-inner">
                                                         <Layers className="w-4 h-4" />
                                                     </div>
-                                                    <span className="text-xs font-black text-slate-700 uppercase italic tracking-tight">{program.group?.name || program.kelompok?.nama_kelompok || '-'}</span>
+                                                    <span className="text-xs font-black text-slate-700 uppercase italic tracking-tight">{program.kelompok?.nama_kelompok || '-'}</span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-8">
                                                 <div className="flex items-center gap-3">
                                                     <MapPin className="w-3.5 h-3.5 text-emerald-500/50" />
                                                     <span className="text-[11px] font-bold text-slate-500 uppercase italic tracking-tight truncate max-w-[180px]">
-                                                        {program.group?.location?.name ||
-                                                         program.kelompok?.lokasi?.full_name ||
+                                                        {program.kelompok?.lokasi?.full_name ||
                                                          program.kelompok?.lokasi?.village_name ||
                                                          'LOC_UNMAPPED'}
                                                     </span>
@@ -258,7 +253,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
                                             <td className="px-12 py-8 text-right">
                                                 <StatusBadge status={program.status} />
                                             </td>
-                                        </motion.tr>
+                                        </tr>
                                     ))
                                 ) : (
                                     <tr>
@@ -273,7 +268,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
                             </tbody>
                         </table>
                     </div>
-                </motion.section>
+                </section>
 
                 {/* Tactical Footer Stamp */}
                 <div className="p-12 bg-slate-900 rounded-[4rem] border border-slate-800 shadow-3xl relative overflow-hidden group">

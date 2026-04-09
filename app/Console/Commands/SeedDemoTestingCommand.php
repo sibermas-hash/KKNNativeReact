@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\KknType;
 use App\Models\KKN\Announcement;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\DplPeriod;
@@ -439,7 +440,8 @@ PDF;
             [
                 'academic_year_id' => $activeYear->id,
                 'periode' => 1,
-                'jenis' => 'Reguler',
+                'jenis' => KknType::REGULER,
+                'program_type' => Periode::PROGRAM_TYPE_REGULER,
                 'angkatan' => '2026',
                 'start_date' => now()->addWeeks(2)->toDateString(),
                 'end_date' => now()->addWeeks(10)->toDateString(),
@@ -457,7 +459,8 @@ PDF;
             [
                 'academic_year_id' => $archiveYear->id,
                 'periode' => 2,
-                'jenis' => 'Reguler',
+                'jenis' => KknType::REGULER,
+                'program_type' => Periode::PROGRAM_TYPE_REGULER,
                 'angkatan' => '2025',
                 'start_date' => now()->subMonths(8)->toDateString(),
                 'end_date' => now()->subMonths(6)->toDateString(),

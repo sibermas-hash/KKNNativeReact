@@ -20,9 +20,9 @@ class LokasiController extends Controller
     {
         Gate::authorize('manage-master-data');
         $locations = Lokasi::query()
-            ->withCount('kelompok')
             ->withCount([
-                'kelompok as posko_count' => fn ($query) => $query->whereHas('posko'),
+                'kelompok',
+                'kelompok as posko_count' => fn ($query) => $query->has('posko'),
             ])
             ->when($request->search, function ($query, $search) {
                 $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);

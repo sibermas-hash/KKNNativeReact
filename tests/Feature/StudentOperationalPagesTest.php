@@ -93,6 +93,39 @@ class StudentOperationalPagesTest extends TestCase
             );
     }
 
+    public function test_student_can_register_for_workshop_from_operational_route(): void
+    {
+        [$user] = $this->createStudentWithApprovedGroup();
+
+        $workshop = Workshop::create([
+            'title' => 'Pembekalan Operasional',
+            'description' => 'Workshop persiapan lapangan.',
+            'methodology' => 'Workshop',
+            'workshop_date' => now()->addDays(3)->toDateString(),
+            'location' => 'Aula Kampus',
+            'status' => 'scheduled',
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('student.workshops.register', $workshop))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('peserta_workshop', [
+            'workshop_id' => $workshop->id,
+            'user_id' => $user->id,
+            'attendance_status' => 'registered',
+        ], 'kkn');
+    }
+
+    public function test_legacy_student_workshop_url_redirects_to_canonical_plural_route(): void
+    {
+        [$user] = $this->createStudentWithApprovedGroup();
+
+        $this->actingAs($user)
+            ->get('/mahasiswa/workshop')
+            ->assertRedirect(route('student.workshops.index'));
+    }
+
     public function test_superadmin_can_open_admin_workshops_page(): void
     {
         $superadmin = User::factory()->create([

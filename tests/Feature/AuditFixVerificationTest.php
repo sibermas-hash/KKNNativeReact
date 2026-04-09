@@ -151,17 +151,18 @@ test('[AUDIT 1.2] Admin tidak bisa update score yang sudah finalized', function 
 // 3. SIMULASI: Standarisasi Grading Logic (Issue #2.3)
 // =====================================================================
 
-test('[AUDIT 2.3] GradingService menggunakan 8-level grade scale', function () {
+test('[AUDIT 2.3] GradingService menggunakan skala konversi nilai yang aktif', function () {
     // Verifikasi semua boundary grades
     $testCases = [
-        [100, 'A'],  [85, 'A'],   // A: 85-100
-        [84.99, 'A-'], [80, 'A-'],  // A-: 80-84.99
-        [79.99, 'B+'], [75, 'B+'],  // B+: 75-79.99
-        [74.99, 'B'],  [70, 'B'],   // B: 70-74.99
-        [69.99, 'B-'], [65, 'B-'],  // B-: 65-69.99
-        [64.99, 'C+'], [60, 'C+'],  // C+: 60-64.99
-        [59.99, 'C'],  [55, 'C'],   // C: 55-59.99
-        [54.99, 'D'],  [0, 'D'],    // D: 0-54.99
+        [100, 'A'], [86, 'A'],
+        [85, 'A-'], [81, 'A-'],
+        [80, 'B+'], [76, 'B+'],
+        [75, 'B'], [71, 'B'],
+        [70, 'B-'], [66, 'B-'],
+        [65, 'C+'], [61, 'C+'],
+        [60, 'C'], [56, 'C'],
+        [55, 'D'], [42, 'D'],
+        [41.99, 'E'], [0, 'E'],
     ];
 
     foreach ($testCases as [$score, $expectedGrade]) {

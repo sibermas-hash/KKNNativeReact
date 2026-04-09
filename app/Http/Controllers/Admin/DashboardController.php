@@ -40,10 +40,9 @@ class DashboardController extends Controller
 
         $user = auth()->user();
         $isFacultyAdmin = $user?->hasRole('faculty_admin');
-        $facultyId = $isFacultyAdmin ? $user?->faculty_id : null;
 
         return Inertia::render('Admin/Dashboard', [
-            'stats' => Inertia::defer(function () use ($periodId, $facultyId, $periodData) {
+            'stats' => Inertia::defer(function () use ($periodId, $periodData, $user) {
                 if (! $periodId) {
                     return [
                         'total_students' => 0,
@@ -56,6 +55,7 @@ class DashboardController extends Controller
                     ];
                 }
 
+                $facultyId = ($user?->hasRole('faculty_admin') || $user?->hasRole('admin_fakultas')) ? $user?->faculty_id : null;
                 $statistics = $this->statsService->getPeriodStatistics($periodId, $facultyId);
 
                 return array_merge(
@@ -63,29 +63,27 @@ class DashboardController extends Controller
                     ['active_period' => $periodData['name'] ?? '-']
                 );
             }),
-            'sdg_distribution' => Inertia::defer(function () use ($periodId, $facultyId) {
+            'sdg_distribution' => Inertia::defer(function () use ($periodId, $user) {
                 if (! $periodId) {
                     return [];
                 }
+                $facultyId = ($user?->hasRole('faculty_admin') || $user?->hasRole('admin_fakultas')) ? $user?->faculty_id : null;
                 $statistics = $this->statsService->getPeriodStatistics($periodId, $facultyId);
                 return $statistics['sdg_distribution'];
             }),
-            'recentRegistrations' => Inertia::defer(function () use ($periodId, $facultyId) {
+            'recentRegistrations' => Inertia::defer(function () use ($periodId) {
                 if (! $periodId) {
                     return [];
                 }
                 $query = \App\Models\KKN\PesertaKkn::with(['mahasiswa.user', 'periode'])
                     ->where('period_id', $periodId);
 
-                if ($facultyId) {
-                    $query->whereHas('mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
-                }
-
-                return $query->latest('registration_date')
+                return \App\Services\KKN\FacultyScopeService::apply($query, 'mahasiswa.faculty_id')
+                    ->latest('registration_date')
                     ->take(5)
                     ->get();
             }),
-            'gis_locations' => Inertia::defer(function () use ($periodId, $facultyId) {
+            'gis_locations' => Inertia::defer(function () use ($periodId) {
                 if (! $periodId) {
                     return [];
                 }
@@ -99,11 +97,8 @@ class DashboardController extends Controller
                     ])
                     ->whereHas('lokasi', fn($q) => $q->whereNotNull('latitude')->whereNotNull('longitude'));
 
-                if ($facultyId) {
-                    $query->whereHas('peserta.mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
-                }
-
-                return $query->get()
+                return \App\Services\KKN\FacultyScopeService::apply($query, 'peserta.mahasiswa.faculty_id')
+                    ->get()
                     ->map(fn($group) => [
                         'id' => $group->id,
                         'name' => $group->nama_kelompok,
@@ -117,14 +112,13 @@ class DashboardController extends Controller
                 'is_faculty_admin' => $isFacultyAdmin,
                 'can_manage_public_content' => $user?->hasAnyRole(['superadmin', 'admin']) ?? false,
             ],
-            'activity_trend' => Inertia::defer(function () use ($facultyId) {
+            'activity_trend' => Inertia::defer(function () {
                 $days = collect(range(0, 13))->map(fn ($i) => now()->subDays($i)->format('Y-m-d'))->reverse();
                 
-                $trends = Laporan::query()
-                    ->where('submitted_at', '>=', now()->subDays(14))
-                    ->when($facultyId, function ($query, $id) {
-                        $query->whereHas('kelompok.peserta.mahasiswa', fn($q) => $q->where('faculty_id', $id));
-                    })
+                $query = Laporan::query()
+                    ->where('submitted_at', '>=', now()->subDays(14));
+
+                $trends = \App\Services\KKN\FacultyScopeService::apply($query, 'kelompok.peserta.mahasiswa.faculty_id')
                     ->select(DB::raw("DATE(submitted_at) as date"), DB::raw('count(*) as count'))
                     ->groupBy('date')
                     ->get()
@@ -135,13 +129,12 @@ class DashboardController extends Controller
                     'count' => $trends->get($date, 0),
                 ])->values();
             }),
-            'intelligence' => Inertia::defer(function () use ($facultyId) {
+            'intelligence' => Inertia::defer(function () {
+                $query = Laporan::where('status', 'submitted')
+                    ->whereRaw('LENGTH(description) < 30');
+
                 return [
-                    'high_risk_count' => Laporan::where('status', 'submitted')
-                        ->whereRaw('LENGTH(description) < 30')
-                        ->when($facultyId, function($q, $id) {
-                            $q->whereHas('kelompok.peserta.mahasiswa', fn($sub) => $sub->where('faculty_id', $id));
-                        })
+                    'high_risk_count' => \App\Services\KKN\FacultyScopeService::apply($query, 'kelompok.peserta.mahasiswa.faculty_id')
                         ->count(),
                 ];
             }),

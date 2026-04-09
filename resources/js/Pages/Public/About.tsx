@@ -102,7 +102,7 @@ export default function About({ aboutContent }: Props) {
                                 <div className="absolute inset-x-0 bottom-0 p-12 bg-gradient-to-t from-emerald-950/60 to-transparent text-white">
                                     <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em]">
                                         <Sparkles size={14} className="text-emerald-400 fill-emerald-400" />
-                                        <span>Excellence in Service</span>
+                                        <span>Layanan Terbaik</span>
                                     </div>
                                 </div>
                             </motion.div>

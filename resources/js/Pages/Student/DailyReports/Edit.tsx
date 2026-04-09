@@ -1,5 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useCallback, useMemo, useState } from 'react';
+import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 import { FormInput, FormTextarea } from '@/Components/ui';
 import { getCurrentCoordinates } from '@/lib/geolocation';

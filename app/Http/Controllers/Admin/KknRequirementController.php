@@ -8,11 +8,14 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 
 class KknRequirementController extends Controller
 {
     public function index(): Response
     {
+        Gate::authorize('manage-master-data');
+
         return Inertia::render('Admin/KknRequirements/Index', [
             'requirements' => KknRequirement::orderBy('id')->get(),
             // Provide a list of available columns in 'mahasiswa' table to pick from
@@ -37,6 +40,8 @@ class KknRequirementController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        Gate::authorize('manage-master-data');
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'column_name' => 'required|string',
@@ -53,6 +58,8 @@ class KknRequirementController extends Controller
 
     public function update(Request $request, KknRequirement $requirement): RedirectResponse
     {
+        Gate::authorize('manage-master-data');
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'column_name' => 'required|string',
@@ -69,6 +76,8 @@ class KknRequirementController extends Controller
 
     public function toggle(KknRequirement $requirement): RedirectResponse
     {
+        Gate::authorize('manage-master-data');
+
         $requirement->is_active = !$requirement->is_active;
         $requirement->save();
 
@@ -78,6 +87,8 @@ class KknRequirementController extends Controller
 
     public function destroy(KknRequirement $requirement): RedirectResponse
     {
+        Gate::authorize('manage-master-data');
+
         $name = $requirement->name;
         $requirement->delete();
 

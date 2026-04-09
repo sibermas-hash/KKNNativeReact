@@ -31,6 +31,10 @@ class StudentBpjsProfileTest extends TestCase
             'username' => 'profilbpjs',
             'phone' => '081234567890',
             'address' => 'Jl. Prof. Dr. Soeharso No. 7',
+            'domicile_village_name' => 'Desa Sumbang',
+            'domicile_district_name' => 'Kecamatan Sumbang',
+            'domicile_regency_name' => 'Kabupaten Banyumas',
+            'address_verified_at' => now(),
         ]);
         $user->assignRole('student');
 
@@ -57,10 +61,12 @@ class StudentBpjsProfileTest extends TestCase
                 ->where('student.faculty', 'Fakultas Dakwah')
                 ->where('student.program', 'Komunikasi Penyiaran Islam')
                 ->where('student.bpjs_complete', true)
+                ->where('student.domicile_complete', true)
+                ->where('student.domicile_verified', true)
             );
     }
 
-    public function test_student_can_update_bpjs_biodata_and_contact_information(): void
+    public function test_student_can_update_bpjs_biodata_and_verified_domicile_information(): void
     {
         $user = User::factory()->create([
             'username' => 'updatebpjs',
@@ -83,6 +89,10 @@ class StudentBpjsProfileTest extends TestCase
                 'name' => 'Mahasiswa Update BPJS',
                 'phone' => '081355577799',
                 'address' => 'Jl. Jenderal Soedirman No. 88',
+                'domicile_village_name' => 'Desa Karangnanas',
+                'domicile_district_name' => 'Kecamatan Sokaraja',
+                'domicile_regency_name' => 'Kabupaten Banyumas',
+                'address_verified' => true,
                 'nik' => '3304010101010099',
                 'mother_name' => 'Ibu Update',
                 'gender' => 'P',
@@ -96,7 +106,12 @@ class StudentBpjsProfileTest extends TestCase
             'name' => 'Mahasiswa Update BPJS',
             'phone' => '081355577799',
             'address' => 'Jl. Jenderal Soedirman No. 88',
+            'domicile_village_name' => 'Desa Karangnanas',
+            'domicile_district_name' => 'Kecamatan Sokaraja',
+            'domicile_regency_name' => 'Kabupaten Banyumas',
         ], 'kkn');
+
+        $this->assertNotNull($user->fresh()->address_verified_at);
 
         $this->assertDatabaseHas('mahasiswa', [
             'id' => $mahasiswa->id,

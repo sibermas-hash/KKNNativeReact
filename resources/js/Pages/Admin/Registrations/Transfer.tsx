@@ -10,10 +10,27 @@ import {
     MapPin,
     AlertTriangle,
     CheckCircle2,
+    Fingerprint,
+    Zap,
+    ShieldAlert,
+    Database,
+    Binary,
+    ShieldCheck,
+    ChevronRight,
+    SearchCheck,
+    Target,
+    Activity,
+    Info,
+    ArrowLeft,
+    UserCircle,
+    Layers,
+    LayoutDashboard,
+    Clock
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Pagination } from '@/Components/ui';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Student {
     id: number;
@@ -84,7 +101,7 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
             const data = await response.json();
             setGroups(data.groups || []);
         } catch (error) {
-            console.error('Failed to fetch groups', error);
+            // Handle error silently
         } finally {
             setIsLoadingGroups(false);
         }
@@ -93,7 +110,7 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
     const handleTransfer = () => {
         if (!selectedStudent || !targetPeriodId || !reason.trim()) return;
 
-        if (confirm(`Apakah Anda yakin ingin memindahkan ${selectedStudent.mahasiswa.nama} ke periode/kelompok baru?`)) {
+        if (confirm(`OPERASI KRITIKAL: PINDAHKAN ${selectedStudent.mahasiswa.nama.toUpperCase()} KE UNIT/PERIODE BARU?`)) {
             router.post(route('admin.peserta.pindah'), {
                 peserta_kkn_id: selectedStudent.id,
                 target_period_id: targetPeriodId,
@@ -120,203 +137,317 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
     };
 
     return (
-        <AppLayout title="Transfer Peserta">
-            <Head title="Transfer Peserta" />
+        <AppLayout title="Protokol Transfer Peserta">
+            <Head title="Transfer Peserta | POS-KKN" />
 
-            <div className="space-y-6">
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-8">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Transfer Peserta KKN</h1>
-                        <p className="text-sm text-slate-500 mt-1">Pindahkan peserta antar periode atau kelompok secara resmi.</p>
+            <div className="min-h-screen bg-white italic font-black text-emerald-950 uppercase tracking-tight">
+                {/* HEADER TACTICAL: REDEPLOYMENT COMMAND */}
+                <div className="bg-white border-b border-emerald-50 px-12 py-16 flex flex-col xl:flex-row xl:items-center justify-between gap-12 sticky top-0 z-20 shadow-sm overflow-hidden relative">
+                    <div className="absolute right-0 top-0 h-full w-1/3 bg-emerald-50/5 -skew-x-12 translate-x-20 pointer-events-none" />
+                    
+                    <div className="space-y-2 relative z-10">
+                        <div className="flex items-center gap-3">
+                            <div className="h-2.5 w-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-300 italic">Peserta Redeployment Protocol Terminal</span>
+                        </div>
+                        <h1 className="text-4xl font-black text-emerald-950 uppercase tracking-tighter leading-none italic">
+                            TRANSFER <span className="text-emerald-500">UNIT PESERTA</span>
+                        </h1>
+                        <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest mt-3 flex items-center gap-2 italic">
+                             <ArrowRightLeft size={12} className="text-emerald-500" />
+                             Otoritas mutasi peserta antar periode, penugasan ulang unit kelompok, dan audit log perpindahan.
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-6 relative z-10">
+                        <div className="h-16 px-10 bg-emerald-950 text-white flex items-center gap-8 shadow-2xl relative overflow-hidden group">
+                           <div className="absolute inset-0 bg-emerald-500/10 -skew-x-12 translate-x-full group-hover:translate-x-0 transition-transform duration-1000" />
+                           <div className="flex flex-col relative z-20">
+                               <span className="text-[8px] font-black text-emerald-400 uppercase tracking-[0.3em] italic mb-1 text-center">SYSTEM_STATUS</span>
+                               <div className="flex items-center gap-3">
+                                   <ShieldCheck size={16} className="text-emerald-400" />
+                                   <span className="text-xl font-black italic tracking-tighter tabular-nums text-nowrap">OPERATIONAL</span>
+                               </div>
+                           </div>
+                        </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-                    {/* Daftar Peserta */}
-                    <div className="xl:col-span-4 space-y-4">
-                        <div className="bg-white p-6 rounded-lg border border-slate-200">
-                            <h3 className="text-sm font-semibold text-slate-900 mb-4">Cari Peserta</h3>
-
-                            <form onSubmit={handleSearch} className="mb-4 relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                <input
-                                    type="search"
-                                    placeholder="Nama atau NIM..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    className="w-full h-10 pl-10 pr-4 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                                />
-                            </form>
-
-                            <div className="space-y-2 max-h-[500px] overflow-y-auto">
-                                {students.data.map((student) => (
-                                    <button
-                                        key={student.id}
-                                        onClick={() => setSelectedStudent(student)}
-                                        className={clsx(
-                                            "w-full p-4 rounded-xl border text-left transition-all",
-                                            selectedStudent?.id === student.id 
-                                                ? "bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500/10" 
-                                                : "bg-white border-slate-100 hover:bg-slate-50"
-                                        )}
-                                    >
-                                        <p className={clsx(
-                                            "text-sm font-bold truncate",
-                                            selectedStudent?.id === student.id ? "text-emerald-700" : "text-slate-900"
-                                        )}>{getStudentName(student)}</p>
-                                        <p className={clsx("text-xs font-semibold mt-0.5", selectedStudent?.id === student.id ? "text-emerald-600" : "text-slate-400")}>{getStudentNim(student)}</p>
-                                        {getGroupName(student) && (
-                                            <p className={clsx("text-[11px] mt-1.5 flex items-center gap-1.5", selectedStudent?.id === student.id ? "text-emerald-600" : "text-slate-400")}>
-                                                <MapPin className="w-3 h-3" />
-                                                {getGroupName(student)}
-                                            </p>
-                                        )}
-                                    </button>
-                                ))}
-
-                                {students.data.length === 0 && (
-                                    <div className="py-12 text-center">
-                                        <Users className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                                        <p className="text-sm text-slate-400">Tidak ada data peserta.</p>
+                <div className="px-12 py-12 space-y-12">
+                    <div className="grid grid-cols-1 xl:grid-cols-12 gap-12 items-start">
+                        {/* LEFT: PESERTA REGISTRY SOURCE */}
+                        <div className="xl:col-span-4 space-y-8">
+                            <section className="bg-white border border-emerald-100 shadow-sm overflow-hidden group hover:border-emerald-500 transition-all flex flex-col h-[700px]">
+                                <div className="px-8 py-6 border-b border-emerald-50 bg-emerald-50/10 flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-emerald-950 text-emerald-400">
+                                            <Users size={16} />
+                                        </div>
+                                        <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-950 italic">Source Registry</h2>
                                     </div>
-                                )}
-                            </div>
+                                </div>
 
-                            <div className="mt-4 pt-4 border-t border-slate-100">
-                                <Pagination meta={students.meta} />
-                            </div>
-                        </div>
+                                <div className="p-8 border-b border-emerald-50 bg-white relative group">
+                                    <Search className="absolute left-14 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-100 group-focus-within:text-emerald-500 transition-colors" />
+                                    <form onSubmit={handleSearch}>
+                                        <input
+                                            type="search"
+                                            placeholder="CARI NAMA / NIM..."
+                                            value={search}
+                                            onChange={(e) => setSearch(e.target.value.toUpperCase())}
+                                            className="w-full h-16 pl-16 pr-8 bg-emerald-50/20 border border-emerald-50 text-[11px] font-black uppercase tracking-[0.2em] italic text-emerald-900 focus:bg-white focus:border-emerald-500 transition-all outline-none"
+                                        />
+                                    </form>
+                                </div>
 
-                        <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 flex gap-3">
-                            <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                            <div>
-                                <h4 className="text-sm font-medium text-amber-800">Perhatian</h4>
-                                <p className="text-xs text-amber-600 mt-1">
-                                    Transfer peserta akan tercatat dalam audit trail dan tidak dapat dibatalkan secara otomatis.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Form Transfer */}
-                    <div className="xl:col-span-8">
-                        {selectedStudent ? (
-                            <div className="bg-white rounded-lg border border-slate-200">
-                                <div className="p-6 space-y-6">
-                                    {/* Info Peserta */}
-                                    <div className="flex items-center gap-5 p-6 bg-slate-50 rounded-xl border border-slate-100">
-                                        <div className="w-16 h-16 rounded-xl bg-emerald-600 flex items-center justify-center text-white text-2xl font-bold shadow-sm">
-                                            {(selectedStudent.mahasiswa?.nama || selectedStudent.mahasiswa?.user?.name || '?').charAt(0)}
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="font-bold text-slate-900">{getStudentName(selectedStudent)}</p>
-                                            <p className="text-sm font-medium text-slate-500">NIM: {getStudentNim(selectedStudent)}</p>
-                                        </div>
-                                        {getGroupName(selectedStudent) && (
-                                            <div className="text-right">
-                                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Kelompok Saat Ini</p>
-                                                <p className="text-sm font-bold text-slate-900">{getGroupName(selectedStudent)}</p>
-                                                {getLocationLabel(selectedStudent) && (
-                                                    <p className="text-xs text-slate-400">{getLocationLabel(selectedStudent)}</p>
+                                <div className="flex-1 overflow-y-auto p-8 space-y-3 bg-white scrollbar-thin scrollbar-thumb-emerald-50">
+                                    {students.data.map((student) => (
+                                        <button
+                                            key={student.id}
+                                            onClick={() => setSelectedStudent(student)}
+                                            className={clsx(
+                                                "w-full p-6 text-left transition-all border group relative overflow-hidden",
+                                                selectedStudent?.id === student.id 
+                                                    ? "bg-emerald-950 border-emerald-900 text-white shadow-xl" 
+                                                    : "bg-white border-emerald-50 hover:border-emerald-500 hover:bg-emerald-50/30"
+                                            )}
+                                        >
+                                            <div className="absolute right-0 top-0 h-full w-1 bg-emerald-500 transform translate-x-1 group-hover:translate-x-0 transition-transform" />
+                                            <div className="space-y-1 relative z-10">
+                                                <p className={clsx(
+                                                    "text-[12px] font-black uppercase tracking-tight italic leading-none truncate",
+                                                    selectedStudent?.id === student.id ? "text-white" : "text-emerald-950"
+                                                )}>{getStudentName(student)}</p>
+                                                <div className="flex items-center gap-3">
+                                                    <Fingerprint size={10} className={selectedStudent?.id === student.id ? "text-emerald-400" : "text-emerald-100"} />
+                                                    <p className={clsx("text-[9px] font-bold uppercase tracking-widest tabular-nums", selectedStudent?.id === student.id ? "text-emerald-400" : "text-emerald-200")}>{getStudentNim(student)}</p>
+                                                </div>
+                                                {getGroupName(student) && (
+                                                    <p className={clsx("text-[8px] mt-3 flex items-center gap-2 uppercase tracking-[0.2em] font-black", selectedStudent?.id === student.id ? "text-emerald-500/60" : "text-emerald-100")}>
+                                                        <MapPin className="w-2.5 h-2.5" />
+                                                        {getGroupName(student)}
+                                                    </p>
                                                 )}
                                             </div>
-                                        )}
-                                    </div>
+                                        </button>
+                                    ))}
 
-                                    {/* Transfer Config */}
-                                    <div className="grid gap-6 md:grid-cols-2">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                                                Periode Tujuan <span className="text-red-500">*</span>
-                                            </label>
-                                            <select
-                                                value={targetPeriodId}
-                                                onChange={(e) => {
-                                                    const id = e.target.value;
-                                                    setTargetPeriodId(id);
-                                                    setTargetGroupId('');
-                                                    fetchGroups(id);
-                                                }}
-                                                className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                                            >
-                                                <option value="">Pilih Periode</option>
-                                                {targetPeriods.map(p => (
-                                                    <option key={p.id} value={p.id}>{p.name}</option>
-                                                ))}
-                                            </select>
+                                    {students.data.length === 0 && (
+                                        <div className="py-24 text-center opacity-20 flex flex-col items-center gap-6">
+                                            <SearchCheck size={48} strokeWidth={1} />
+                                            <p className="text-[10px] font-black uppercase tracking-[0.5em] italic">REGISTRY_EMPTY</p>
                                         </div>
-
-                                        <div>
-                                            <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                                                Kelompok Tujuan <span className="text-slate-400 font-normal normal-case">(Opsional)</span>
-                                            </label>
-                                            <select
-                                                value={targetGroupId}
-                                                onChange={(e) => setTargetGroupId(e.target.value)}
-                                                disabled={!targetPeriodId || isLoadingGroups}
-                                                className="w-full h-11 px-4 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all disabled:opacity-50"
-                                            >
-                                                <option value="">{isLoadingGroups ? 'Memuat Kelompok...' : 'Pilih Kelompok'}</option>
-                                                {groups
-                                                    .filter(g => g.id !== selectedStudent.kelompok?.id)
-                                                    .map(g => (
-                                                        <option key={g.id} value={g.id.toString()}>
-                                                            {g.nama}{g.available != null ? ` (Sisa Kuota: ${g.available})` : ''}
-                                                        </option>
-                                                    ))}
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    {/* Alasan */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                                            Alasan Transfer <span className="text-red-500">*</span>
-                                        </label>
-                                        <textarea
-                                            value={reason}
-                                            onChange={(e) => setReason(e.target.value)}
-                                            placeholder="Tuliskan alasan pemindahan peserta..."
-                                            rows={4}
-                                            className="w-full p-3 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none"
-                                        />
-                                    </div>
+                                    )}
                                 </div>
 
+                                <div className="p-8 border-t border-emerald-50 bg-emerald-50/10 flex justify-center">
+                                    <Pagination meta={students.meta} />
+                                </div>
+                            </section>
 
-                                <div className="px-8 py-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-                                    <button
-                                        onClick={() => {
-                                            setSelectedStudent(null);
-                                            setTargetGroupId('');
-                                            setTargetPeriodId('');
-                                            setReason('');
-                                        }}
-                                        className="px-6 py-2.5 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors"
-                                    >
-                                        Batal
-                                    </button>
-                                    <button
-                                        onClick={handleTransfer}
-                                        disabled={!targetPeriodId || !reason.trim()}
-                                        className="px-8 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                    >
-                                        <CheckCircle2 className="w-4 h-4" />
-                                        Simpan Transfer
-                                    </button>
+                            <div className="bg-amber-950 p-8 border border-amber-900 shadow-2xl relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-8 opacity-[0.05] text-white -rotate-12 group-hover:rotate-0 transition-transform duration-1000">
+                                    <ShieldAlert size={80} />
+                                </div>
+                                <div className="flex items-start gap-5 relative z-10">
+                                    <div className="p-2 bg-amber-500 shadow-lg">
+                                        <AlertTriangle size={16} className="text-amber-950" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-amber-500 italic">Operational Warning</h4>
+                                        <p className="text-[9px] font-bold text-amber-100/40 uppercase tracking-widest leading-relaxed italic border-l border-amber-500/20 pl-4 mt-3">
+                                            Proses transfer unit akan menyebabkan pergeseran logistik dan administrasi kelompok secara permanen. Seluruh mutasi akan dicatat dalam audit trail KKN.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        ) : (
-                            <div className="h-full min-h-[400px] flex flex-col items-center justify-center bg-white rounded-lg border border-dashed border-slate-200 p-12">
-                                <ArrowRightLeft className="w-12 h-12 text-slate-300 mb-4" />
-                                <h3 className="text-base font-medium text-slate-600">Pilih peserta untuk transfer</h3>
-                                <p className="text-sm text-slate-400 mt-1">
-                                    Pilih mahasiswa dari daftar di sebelah kiri untuk memulai.
-                                </p>
-                            </div>
-                        )}
+                        </div>
+
+                        {/* RIGHT: REDEPLOYMENT TARGET COMMAND */}
+                        <div className="xl:col-span-8">
+                            <AnimatePresence mode="wait">
+                                {selectedStudent ? (
+                                    <motion.section 
+                                        key={selectedStudent.id}
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        className="bg-white border border-emerald-100 shadow-sm overflow-hidden group hover:border-emerald-500 transition-all flex flex-col"
+                                    >
+                                        <div className="px-10 py-8 border-b border-emerald-50 bg-emerald-50/10 flex items-center justify-between">
+                                            <div className="flex items-center gap-6">
+                                                <div className="p-4 bg-emerald-950 text-emerald-400 shadow-lg">
+                                                    <Target size={20} />
+                                                </div>
+                                                <div>
+                                                    <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-emerald-950 italic">Target Redeployment Payload</h2>
+                                                    <p className="text-[8px] font-bold text-emerald-300 uppercase tracking-widest mt-1">Konfigurasi Destinasi Unit Baru</p>
+                                                </div>
+                                            </div>
+                                            <button 
+                                                onClick={() => setSelectedStudent(null)}
+                                                className="h-12 w-12 bg-white border border-emerald-50 text-emerald-100 hover:text-rose-500 hover:border-rose-100 transition-all flex items-center justify-center active:scale-90 shadow-sm"
+                                            >
+                                                <ArrowLeft size={20} />
+                                            </button>
+                                        </div>
+
+                                        <div className="p-10 space-y-12">
+                                            {/* SOURCE MANIFEST */}
+                                            <div className="flex flex-col md:flex-row items-stretch gap-8">
+                                                <div className="flex items-center gap-8 p-10 bg-emerald-950 text-white shadow-2xl relative overflow-hidden group/source flex-1">
+                                                    <div className="absolute right-0 top-0 h-full w-1/4 bg-emerald-500/5 -skew-x-12 translate-x-10 pointer-events-none" />
+                                                    <div className="h-20 w-20 bg-emerald-600 text-white flex items-center justify-center text-3xl font-black shadow-3xl rotate-3 group-hover/source:rotate-0 transition-transform">
+                                                        {getStudentName(selectedStudent).charAt(0)}
+                                                    </div>
+                                                    <div className="space-y-2 relative z-10">
+                                                        <p className="text-[8px] font-black text-emerald-400/60 uppercase tracking-[0.4em] italic mb-1">Dismantling Identity</p>
+                                                        <p className="text-2xl font-black italic tracking-tighter uppercase leading-none">{getStudentName(selectedStudent)}</p>
+                                                        <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest tabular-nums mt-3">REG_ID: #{selectedStudent.id} • NIM.{getStudentNim(selectedStudent)}</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="p-10 bg-emerald-50/20 border border-emerald-50 flex-1 flex flex-col justify-center gap-6">
+                                                    <div className="space-y-1">
+                                                        <p className="text-[8px] font-black text-emerald-200 uppercase tracking-widest italic">Current Deployment</p>
+                                                        <h4 className="text-xl font-black text-emerald-950 uppercase italic tracking-tighter">{getGroupName(selectedStudent) || 'NO_UNIT_ASSIGNED'}</h4>
+                                                    </div>
+                                                    {getLocationLabel(selectedStudent) && (
+                                                        <div className="flex items-center gap-3 text-emerald-400 group-hover:text-emerald-600 transition-colors">
+                                                            <MapPin size={12} strokeWidth={2.5} />
+                                                            <span className="text-[9px] font-black uppercase tracking-widest italic">{getLocationLabel(selectedStudent)}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* TARGET CONFIGURATION */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                                <div className="space-y-4">
+                                                    <label className="text-[10px] font-black text-emerald-950 italic tracking-[0.4em] ml-1 flex items-center gap-3">
+                                                        <Clock size={12} className="text-emerald-500" />
+                                                        Periode Target
+                                                    </label>
+                                                    <div className="relative group/sel">
+                                                        <select
+                                                            value={targetPeriodId}
+                                                            onChange={(e) => {
+                                                                const id = e.target.value;
+                                                                setTargetPeriodId(id);
+                                                                setTargetGroupId('');
+                                                                fetchGroups(id);
+                                                            }}
+                                                            className="w-full h-20 px-8 bg-emerald-50/10 border border-emerald-50 text-[11px] font-black uppercase italic tracking-[0.2em] text-emerald-950 focus:bg-white focus:border-emerald-500 outline-none transition-all shadow-inner appearance-none relative z-10"
+                                                        >
+                                                            <option value="">PILIH PERIODE_DESTINASI...</option>
+                                                            {targetPeriods.map(p => (
+                                                                <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>
+                                                            ))}
+                                                        </select>
+                                                        <ChevronRight size={18} className="absolute right-8 top-1/2 -translate-y-1/2 text-emerald-100 rotate-90 z-20" />
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-4">
+                                                    <label className="text-[10px] font-black text-emerald-950 italic tracking-[0.4em] ml-1 flex items-center gap-3">
+                                                        <Layers size={12} className="text-emerald-500" />
+                                                        Kelompok Target
+                                                    </label>
+                                                    <div className="relative group/sel">
+                                                        <select
+                                                            value={targetGroupId}
+                                                            onChange={(e) => setTargetGroupId(e.target.value)}
+                                                            disabled={!targetPeriodId || isLoadingGroups}
+                                                            className="w-full h-20 px-8 bg-emerald-50/10 border border-emerald-50 text-[11px] font-black uppercase italic tracking-[0.2em] text-emerald-950 focus:bg-white focus:border-emerald-500 outline-none transition-all shadow-inner appearance-none relative z-10 disabled:opacity-30"
+                                                        >
+                                                            <option value="">{isLoadingGroups ? 'INITIALIZING_GROUPS...' : 'OPSIONAL: SEMUA UNIT...'}</option>
+                                                            {groups
+                                                                .filter(g => g.id !== selectedStudent.kelompok?.id)
+                                                                .map(g => (
+                                                                    <option key={g.id} value={g.id.toString()}>
+                                                                        {g.nama.toUpperCase()} {g.available != null ? ` (CAPACITY: ${g.available})` : ''}
+                                                                    </option>
+                                                                ))}
+                                                        </select>
+                                                        <ChevronRight size={18} className="absolute right-8 top-1/2 -translate-y-1/2 text-emerald-100 rotate-90 z-20" />
+                                                    </div>
+                                                </div>
+
+                                                <div className="md:col-span-2 space-y-4">
+                                                    <label className="text-[10px] font-black text-emerald-950 italic tracking-[0.4em] ml-1 flex items-center gap-3">
+                                                        <Binary size={12} className="text-emerald-500" />
+                                                        Log Otoritas / Alasan Transfer
+                                                    </label>
+                                                    <textarea
+                                                        value={reason}
+                                                        onChange={(e) => setReason(e.target.value.toUpperCase())}
+                                                        placeholder="MASUKKAN NARASI PEMINDAHAN UNTUK AUDIT LOG..."
+                                                        rows={5}
+                                                        className="w-full p-8 bg-emerald-50/10 border border-emerald-50 text-[12px] font-black italic tracking-[0.1em] text-emerald-950 focus:bg-white focus:border-emerald-500 outline-none transition-all shadow-inner uppercase"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col sm:flex-row items-center justify-end gap-6 pt-12 border-t border-emerald-50">
+                                                <div className="flex-1 flex items-center gap-6 opacity-30 italic hidden sm:flex">
+                                                    <Info size={20} className="text-emerald-100" />
+                                                    <p className="text-[8px] font-black text-emerald-300 uppercase tracking-[0.4em] leading-relaxed">Seluruh data redeploy tervalidasi oleh sistem audit terpusat.</p>
+                                                </div>
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedStudent(null);
+                                                        setTargetGroupId('');
+                                                        setTargetPeriodId('');
+                                                        setReason('');
+                                                    }}
+                                                    className="w-full sm:w-auto h-18 px-12 bg-white text-rose-300 font-black text-[11px] uppercase tracking-[0.3em] italic border border-rose-50 hover:bg-rose-600 hover:text-white hover:border-transparent transition-all active:scale-95"
+                                                >
+                                                    BATALKAN_MUTASI
+                                                </button>
+                                                <button
+                                                    onClick={handleTransfer}
+                                                    disabled={!targetPeriodId || !reason.trim()}
+                                                    className="w-full sm:w-auto h-18 px-12 bg-emerald-950 text-white font-black text-[11px] uppercase tracking-[0.4em] italic hover:bg-emerald-600 transition-all shadow-3xl active:scale-95 flex items-center justify-center gap-6 group/btn disabled:opacity-20"
+                                                >
+                                                    EKSEKUSI REDEPLOYMENT
+                                                    <CheckCircle2 size={18} className="group-hover/btn:rotate-12 transition-transform" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </motion.section>
+                                ) : (
+                                    <motion.div 
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        className="h-full min-h-[500px] flex flex-col items-center justify-center bg-emerald-50/5 border-4 border-dashed border-emerald-50 p-12 transition-all relative overflow-hidden group"
+                                    >
+                                         <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                                         <div className="relative z-10 flex flex-col items-center">
+                                            <ArrowRightLeft className="w-24 h-24 text-emerald-50 mb-8 group-hover:scale-110 group-hover:rotate-12 transition-all duration-700" strokeWidth={1} />
+                                            <h3 className="text-xl font-black text-emerald-200 uppercase tracking-[0.5em] italic">READY_FOR_COMMMAND</h3>
+                                            <p className="text-[10px] font-black text-emerald-100 uppercase tracking-widest mt-6 italic border-b border-emerald-50 pb-2">
+                                                SILAHKAN PILIH ENTITAS PESERTA DARI REGISTRY SUMBER
+                                            </p>
+                                         </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
                     </div>
+                </div>
+
+                {/* STATUS FOOTER TACTICAL */}
+                <div className="flex flex-col items-center justify-center py-12 gap-8 relative group mb-12 italic">
+                     <div className="flex items-center gap-8 opacity-20">
+                        <Binary size={20} className="text-emerald-200" />
+                        <div className="h-px w-32 bg-emerald-50" />
+                        <div className="p-3 bg-emerald-950 text-emerald-400 font-black text-[9px] tracking-[0.5em] uppercase">TRANSFER_PROTOCOL_READY</div>
+                        <div className="h-px w-32 bg-emerald-50" />
+                        <ShieldCheck size={20} className="text-emerald-200" />
+                     </div>
+                     <p className="text-[10px] font-black text-emerald-950 uppercase tracking-[0.6em] italic opacity-40 hover:opacity-100 transition-opacity duration-700">
+                         OTORITAS MUTASI PUSAT • UIN SAIZU COMMAND CENTER
+                     </p>
                 </div>
             </div>
         </AppLayout>

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\PesertaKkn;
+use App\Services\KKN\GradeConversionService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -57,28 +58,16 @@ class GradeSuggestionService
         // 3. Final Calculation
         $finalScore = ($completionScore * 0.7) + ($sentimentScore * 0.3);
         
-        $grade = $this->calculateGradeLabel($finalScore);
+        $gradeData = GradeConversionService::convert($finalScore);
 
         return [
             'score' => round($finalScore, 2),
-            'label' => $grade,
+            'label' => $gradeData['grade'],
             'reason' => "Analisis berbasis {$actualDays} laporan harian dengan tingkat keberhasilan program yang tinggi.",
             'metrics' => [
                 'completion' => round($completionScore, 1),
                 'sentiment' => round($sentimentScore, 1)
             ]
         ];
-    }
-
-    private function calculateGradeLabel(float $score): string
-    {
-        if ($score >= 85) return 'A';
-        if ($score >= 80) return 'A-';
-        if ($score >= 75) return 'B+';
-        if ($score >= 70) return 'B';
-        if ($score >= 65) return 'B-';
-        if ($score >= 60) return 'C+';
-        if ($score >= 55) return 'C';
-        return 'D/E';
     }
 }

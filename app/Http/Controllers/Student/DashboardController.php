@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\KKN\KegiatanKkn;
+use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\ProgramKerja;
 use App\Models\KKN\NilaiKkn;
+use App\Services\PeriodContextService;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -17,49 +20,78 @@ class DashboardController extends Controller
         return match ($status) {
             'approved', 'disetujui', 'verifikasi_pusat', 'completed' => 'approved',
             'pending', 'menunggu' => 'pending',
-            'rejected', 'ditolak' => 'rejected',
+            'rejected', 'ditolak', 'gugur' => 'rejected',
             default => $status,
         };
     }
 
-    public function index(): Response
+    public function index(PeriodContextService $periodContextService): Response
     {
         $user = auth()->user();
         $mahasiswa = $user->mahasiswa;
+        $activePeriodId = $periodContextService->getActivePeriodId() ?? $periodContextService->getDefaultPeriodId();
 
-        // Fetch registration with related period, location, and the PRIMARY DPL (Ketua) from pivot
-        $registrationModel = $mahasiswa
-            ? PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
-                ->with(['periode', 'kelompok.lokasi', 'kelompok.dosen' => function($q) {
+        $registrationModel = null;
+        if ($mahasiswa) {
+            $registrationQuery = PesertaKkn::query()
+                ->where('mahasiswa_id', $mahasiswa->id)
+                ->with(['periode', 'kelompok.lokasi', 'kelompok.dosen' => function ($q) {
                     $q->wherePivot('role', 'Ketua');
-                }])
-                ->latest()
+                }]);
+
+            if ($activePeriodId) {
+                $registrationModel = (clone $registrationQuery)
+                    ->where('period_id', $activePeriodId)
+                    ->latest('created_at')
+                    ->first();
+            }
+
+            $registrationModel ??= $registrationQuery
+                ->latest('created_at')
+                ->first();
+        }
+
+        $activeGroupId = $registrationModel?->kelompok_id;
+
+        $dailyReportCount = ($mahasiswa && $activeGroupId)
+            ? KegiatanKkn::query()
+                ->where('mahasiswa_id', $mahasiswa->id)
+                ->where('kelompok_id', $activeGroupId)
+                ->count()
+            : 0;
+
+        // Track work programs and current stage (ABCD)
+        $workProgram = $registrationModel?->kelompok_id
+            ? ProgramKerja::where('kelompok_id', $registrationModel->kelompok_id)->first()
+            : null;
+            
+        $workProgramCount = $workProgram ? 1 : 0;
+        $abcdStage = $workProgram?->abcd_stage?->value;
+
+        $finalReport = ($mahasiswa && $activeGroupId)
+            ? LaporanAkhir::query()
+                ->where('mahasiswa_id', $mahasiswa->id)
+                ->where('kelompok_id', $activeGroupId)
+                ->latest('submitted_at')
+                ->latest('id')
                 ->first()
             : null;
 
-        $dailyReportCount = $mahasiswa
-            ? $mahasiswa->kegiatan()->count()
-            : 0;
-
-        // Track work programs for better progress visual
-        $workProgramCount = $registrationModel?->kelompok_id
-            ? ProgramKerja::where('kelompok_id', $registrationModel->kelompok_id)->count()
-            : 0;
-
-        $finalReport = $mahasiswa
-            ? $mahasiswa->laporanAkhir()->latest()->first()
-            : null;
-
-        // Fetch grade using student's user ID (consistent with scoring module)
-        $grade = $mahasiswa
+        $grade = ($mahasiswa && $activeGroupId)
             ? NilaiKkn::where('user_id', $user->id)
+                ->where('kelompok_id', $activeGroupId)
                 ->where('is_finalized', true)
+                ->latest('admin_graded_at')
+                ->latest('id')
                 ->first()
             : null;
 
         // New: Workshop enrollment status (Mandatory phase in UIN SAIZU)
         $workshopRegistration = $mahasiswa
-            ? PesertaWorkshop::where('user_id', $user->id)
+            ? PesertaWorkshop::query()
+                ->forPeriod($activePeriodId)
+                ->where('user_id', $user->id)
+                ->latest('registered_at')
                 ->first()
             : null;
 
@@ -100,12 +132,13 @@ class DashboardController extends Controller
             ] : null,
             'dailyReportCount' => $dailyReportCount,
             'workProgramCount' => $workProgramCount,
+            'abcdStage' => $abcdStage,
             'workshopRegistered' => !!$workshopRegistration,
             'finalReport' => $finalReport,
             'grade' => $grade ? [
                 'id' => $grade->id,
                 'score' => (float) $grade->total_score,
-                'letter' => $grade->letter_grade,
+                'letter' => trim((string) $grade->letter_grade),
                 'is_finalized' => (bool) $grade->is_finalized,
             ] : null,
         ]);

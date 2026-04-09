@@ -16,6 +16,7 @@ class AuthServiceProvider extends ServiceProvider
         \App\Models\KKN\NilaiKkn::class => \App\Policies\KknScorePolicy::class ,
         \App\Models\KKN\LogAudit::class => \App\Policies\AuditLogPolicy::class ,
         \App\Models\KKN\Periode::class => \App\Policies\PeriodPolicy::class ,
+        \App\Models\KKN\IzinMeninggalkan::class => \App\Policies\IzinPolicy::class ,
     ];
 
     /**
@@ -28,7 +29,7 @@ class AuthServiceProvider extends ServiceProvider
         // Gate::before is defined in AppServiceProvider to avoid duplicate callbacks.
 
         // Define dashboard access gates
-        Gate::define('access-admin-panel', fn($user) => $user->hasAnyRole(['superadmin', 'faculty_admin']));
+        Gate::define('access-admin-panel', fn($user) => $user->hasAnyRole(['superadmin', 'admin', 'faculty_admin']));
         Gate::define('access-dpl-panel', fn($user) => $user->hasRole('dpl'));
         Gate::define('access-student-panel', fn($user) => $user->hasRole('student'));
 
@@ -41,5 +42,10 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manageDplAssignment', fn($user) => $adminPolicy->manageDplAssignment($user));
         Gate::define('manage-participants', fn($user) => $adminPolicy->manageParticipants($user));
         Gate::define('transfer-students', fn($user) => $adminPolicy->transferStudents($user));
+        Gate::define('manage-users', fn($user) => $adminPolicy->manageUsers($user));
+        Gate::define('manage-grades', fn($user) => $adminPolicy->manageGrades($user));
+        Gate::define('manage-content', fn($user) => $adminPolicy->manageContent($user));
+        Gate::define('view-audit-logs', fn($user) => $adminPolicy->viewAuditLogs($user));
+        Gate::define('manage-dpl', fn($user) => $adminPolicy->manageDplAssignment($user));
     }
 }

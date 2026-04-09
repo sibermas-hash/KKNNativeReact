@@ -11,9 +11,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpng-dev \
     libpq-dev \
     libzip-dev \
+    libicu-dev \
     unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_pgsql pgsql mbstring zip exif pcntl gd bcmath \
+    && docker-php-ext-install pdo_pgsql pgsql mbstring zip exif pcntl gd bcmath intl \
     && pecl install redis \
     && docker-php-ext-enable redis \
     && rm -rf /tmp/pear /var/lib/apt/lists/*

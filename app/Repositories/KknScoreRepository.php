@@ -29,6 +29,18 @@ class KknScoreRepository
                      ->on('ks.kelompok_id', '=', 'g.id');
             })
             ->where('g.period_id', $periodeId)
+            ->when($filters['search'] ?? null, function ($query, $search) {
+                $value = str_replace(['%', '_'], ['\\%', '\\_'], trim((string) $search));
+
+                $query->where(function ($inner) use ($value) {
+                    $inner->where('u.name', 'like', "%{$value}%")
+                        ->orWhere('s.nim', 'like', "%{$value}%")
+                        ->orWhere('g.code', 'like', "%{$value}%")
+                        ->orWhere('g.nama_kelompok', 'like', "%{$value}%")
+                        ->orWhere('fak.nama', 'like', "%{$value}%")
+                        ->orWhere('prodi.nama', 'like', "%{$value}%");
+                });
+            })
             ->when($filters['faculty_id'] ?? null, fn($q, $v) => $q->where('s.faculty_id', $v))
             ->when($filters['kelompok_id'] ?? null, fn($q, $v) => $q->where('g.id', $v))
             ->when($filters['huruf'] ?? null, fn($q, $v) => $q->where('ks.letter_grade', $v))

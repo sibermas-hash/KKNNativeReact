@@ -30,11 +30,8 @@ class DownloadController extends Controller
             'external_url' => 'nullable|url|required_without:file',
         ]);
 
-        $data = [
-            'title' => $request->title,
-            'external_url' => $request->external_url,
-            'is_active' => true,
-        ];
+        $data = $request->only('title', 'external_url');
+        $data['is_active'] = true;
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');

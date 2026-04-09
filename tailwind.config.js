@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class', // Enable dark mode with class strategy
   content: [
     './resources/**/*.blade.php',
     './resources/**/*.tsx',
@@ -41,6 +42,11 @@ export default {
           card: '#ffffff',
           border: '#e2e8f0',
           hover: '#f1f5f9',
+          'dark-base': '#0f172a',
+          'dark-panel': '#1e293b',
+          'dark-card': '#1e293b',
+          'dark-border': '#334155',
+          'dark-hover': '#475569',
         }
       },
       boxShadow: {

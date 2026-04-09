@@ -60,12 +60,12 @@ class KelompokKknController extends Controller
     {
         Gate::authorize('manage-groups');
         
-        $user = auth()->user();
-        $isFacultyAdmin = $user?->hasRole('faculty_admin');
-        $facultyId = $isFacultyAdmin ? $user?->faculty_id : null;
-
-        $groups = KelompokKkn::with('periode', 'lokasi', 'dosen')
-            ->withCount('peserta')
+        $query = KelompokKkn::with('periode', 'lokasi', 'dosen')
+            ->withCount([
+                'peserta',
+                'peserta as approved_participants_count' => fn ($query) => $query->where('status', 'approved'),
+                'peserta as pending_participants_count' => fn ($query) => $query->where('status', 'pending'),
+            ])
             ->when($request->input('search'), function ($query, $search) {
                 $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
                 $query->where(function ($q) use ($s) {
@@ -85,10 +85,10 @@ class KelompokKknController extends Controller
             })
             ->when($request->input('status'), function ($query, $status) {
                 $query->where('status', $status);
-            })
-            ->when($facultyId, function ($query, $id) {
-                $query->whereHas('peserta.mahasiswa', fn($q) => $q->where('faculty_id', $id));
-            })
+            });
+
+        // Centralized faculty scoping
+        $groups = \App\Services\KKN\FacultyScopeService::apply($query, 'peserta.mahasiswa.faculty_id')
             ->orderByDesc('created_at')
             ->paginate(15)
             ->withQueryString();
@@ -101,6 +101,14 @@ class KelompokKknController extends Controller
                 'name' => $d->nama,
                 'role' => $d->pivot->role
             ])->values();
+            $governance = $g->periode?->governance();
+            $availableSlots = max((int) $g->capacity - (int) ($g->peserta_count ?? 0), 0);
+            $readyForPlacement = (bool) (
+                $g->status === 'active'
+                && $g->periode?->usesAutomaticPlacementAfterApproval()
+                && filled($g->lokasi?->regency_name)
+                && $availableSlots > 0
+            );
 
             return [
                 'id' => $g->id,
@@ -109,10 +117,31 @@ class KelompokKknController extends Controller
                 'capacity' => $g->capacity,
                 'status' => $g->status,
                 'registrations_count' => $g->peserta_count,
+                'approved_participants_count' => (int) ($g->approved_participants_count ?? 0),
+                'pending_participants_count' => (int) ($g->pending_participants_count ?? 0),
+                'available_slots' => $availableSlots,
+                'ready_for_placement' => $readyForPlacement,
+                'placement_note' => $readyForPlacement
+                    ? 'Siap menerima penempatan otomatis setelah admin menyetujui pendaftaran mahasiswa.'
+                    : match (true) {
+                        $g->status !== 'active' => 'Kelompok belum aktif sehingga belum dipakai untuk penempatan sistem.',
+                        ! $g->periode?->usesAutomaticPlacementAfterApproval() => 'Periode ini tidak memakai auto-placement reguler.',
+                        blank($g->lokasi?->regency_name) => 'Lokasi kelompok belum lengkap sampai tingkat kabupaten/kota.',
+                        $availableSlots <= 0 => 'Kapasitas kelompok sudah penuh.',
+                        default => 'Kelompok belum siap dipakai untuk auto-placement.',
+                    },
                 'period' => $g->periode ? ['id' => $g->periode->id, 'name' => $g->periode->name] : null,
+                'governance' => $governance ? [
+                    'program_type' => $governance['program_type'],
+                    'program_type_label' => $governance['program_type_label'],
+                    'registration_mode_label' => $governance['registration_mode_label'],
+                    'placement_mode_label' => $governance['placement_mode_label'],
+                ] : null,
                 'location' => $g->lokasi ? [
                     'id' => $g->lokasi->id,
                     'village_name' => $g->lokasi->village_name,
+                    'district_name' => $g->lokasi->district_name,
+                    'regency_name' => $g->lokasi->regency_name,
                     'full_name' => $g->lokasi->full_name,
                 ] : null,
                 'main_lecturer' => $mainDpl ? ['id' => $mainDpl->id, 'name' => $mainDpl->nama] : null,
@@ -131,6 +160,8 @@ class KelompokKknController extends Controller
         $lecturers = Dosen::orderBy('nama')->get()
             ->map(fn($d) => ['id' => $d->id, 'name' => $d->nama]);
 
+        $groupCollection = collect($groups->items());
+
         return Inertia::render('Admin/Groups/Index', [
             'groups' => $this->formatPaginator($groups),
             'periods' => $periods,
@@ -145,6 +176,14 @@ class KelompokKknController extends Controller
                 'has_periods' => Periode::query()->exists(),
                 'locations_managed_automatically' => true,
             ],
+            'summary' => [
+                'total_groups' => $groups->total(),
+                'active_groups' => $groupCollection->where('status', 'active')->count(),
+                'draft_groups' => $groupCollection->where('status', 'draft')->count(),
+                'groups_without_main_lecturer' => $groupCollection->filter(fn (array $group) => blank($group['main_lecturer']))->count(),
+                'groups_ready_for_placement' => $groupCollection->where('ready_for_placement', true)->count(),
+                'total_available_slots' => $groupCollection->sum('available_slots'),
+            ],
         ]);
     }
 
@@ -156,7 +195,8 @@ class KelompokKknController extends Controller
             'periode',
             'lokasi',
             'dosen',
-            'peserta.mahasiswa',
+            'peserta.mahasiswa.fakultas',
+            'peserta.mahasiswa.prodi',
             'programKerja',
             'posko',
         ]);

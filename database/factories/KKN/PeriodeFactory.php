@@ -2,6 +2,7 @@
 
 namespace Database\Factories\KKN;
 
+use App\Enums\KknType;
 use App\Models\KKN\Periode;
 use App\Models\KKN\TahunAkademik;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -20,6 +21,12 @@ class PeriodeFactory extends Factory
 
         return [
             'academic_year_id' => TahunAkademik::factory(),
+            'periode' => $this->faker->numberBetween(1, 99),
+            'jenis' => KknType::REGULER,
+            'program_type' => Periode::PROGRAM_TYPE_REGULER,
+            'registration_mode' => Periode::REGISTRATION_MODE_OPEN,
+            'placement_mode' => Periode::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL,
+            'kuota' => 2000,
             'name' => 'Periode ' . $this->faker->unique()->word(),
             'start_date' => $start->toDateString(),
             'end_date' => $end->toDateString(),

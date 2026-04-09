@@ -4,20 +4,20 @@ type StatusMap = Record<string, { label: string; variant: 'success' | 'warning' 
 
 const STATUS_MAP: StatusMap = {
     // Registration
-    pending: { label: 'MENUNGGU_VERIFIKASI', variant: 'warning' },
-    document_submitted: { label: 'DOKUMEN_DIAJUKAN', variant: 'info' },
-    approved: { label: 'DISETUJUI_OPERASIONAL', variant: 'success' },
-    rejected: { label: 'DITOLAK_ADMINISTRASI', variant: 'danger' },
-    completed: { label: 'MISI_SELESAI', variant: 'success' },
+    pending: { label: 'Menunggu verifikasi', variant: 'warning' },
+    document_submitted: { label: 'Dokumen diajukan', variant: 'info' },
+    approved: { label: 'Disetujui', variant: 'success' },
+    rejected: { label: 'Ditolak', variant: 'danger' },
+    completed: { label: 'Selesai', variant: 'success' },
     // Daily Report & Work Program
-    draft: { label: 'DRAFT_ARSIP', variant: 'default' },
+    draft: { label: 'Draf', variant: 'default' },
     submitted: { label: 'DIAJUKAN', variant: 'info' },
-    revision: { label: 'REVISI_DPL', variant: 'warning' },
+    revision: { label: 'Perlu revisi', variant: 'warning' },
     // Final Report
-    reviewed: { label: 'SUDAH_DIBACA', variant: 'primary' },
+    reviewed: { label: 'Sudah ditinjau', variant: 'primary' },
     // Group
-    active: { label: 'AKUN_AKTIF', variant: 'success' },
-    closed: { label: 'AKUN_NONAKTIF', variant: 'default' },
+    active: { label: 'Aktif', variant: 'success' },
+    closed: { label: 'Ditutup', variant: 'default' },
 };
 
 interface StatusBadgeProps {

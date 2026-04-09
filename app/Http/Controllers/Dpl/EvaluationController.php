@@ -96,7 +96,7 @@ class EvaluationController extends Controller
     {
         $dosen = auth()->user()->dosen;
         abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
-        $groupIds = $dosen->kelompokKkn()->pluck('id');
+        $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
 
         $evaluations = Evaluasi::whereIn('kelompok_id', $groupIds)
             ->with(['mahasiswa', 'kelompok', 'item'])
@@ -240,12 +240,16 @@ class EvaluationController extends Controller
         $students = Mahasiswa::whereIn('id', $studentIds)->get()->keyBy('id');
 
         DB::transaction(function () use ($request, $lecturerId, $groupId, $weights, $students) {
+            $evaluasiIds = [];
+            $itemEvaluasiData = [];
+
+            // First pass: Create/update Evaluasi and collect IDs
             foreach ($request->data as $item) {
                 if ($item['status'] !== 'READY') continue;
 
                 // VULN-005 Fix: Verify student is actually a member of this group
                 $isMember = $this->studentBelongsToGroup((int) $item['id'], (int) $groupId);
-                
+
                 if (!$isMember) {
                     \Illuminate\Support\Facades\Log::warning("DPL attempted to grade non-member student", [
                         'student_id' => $item['id'],
@@ -264,27 +268,35 @@ class EvaluationController extends Controller
                     'evaluated_at' => now(),
                 ]);
 
-                $eval->item()->delete();
+                $evaluasiIds[$item['id']] = $eval->id;
 
-                ItemEvaluasi::create([
+                // OPTIMIZATION: Collect ItemEvaluasi data for bulk insert
+                $itemEvaluasiData[] = [
                     'evaluasi_id' => $eval->id,
                     'criterion' => 'Laporan Akhir',
                     'score' => $item['final_report_score'],
                     'weight' => $weights['final_report'],
-                ]);
-                ItemEvaluasi::create([
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+                $itemEvaluasiData[] = [
                     'evaluasi_id' => $eval->id,
                     'criterion' => 'Pelaksanaan Program',
                     'score' => $item['execution_score'],
                     'weight' => $weights['execution'],
-                ]);
-                ItemEvaluasi::create([
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+                $itemEvaluasiData[] = [
                     'evaluasi_id' => $eval->id,
                     'criterion' => 'Artikel Ilmiah',
                     'score' => $item['article_score'],
                     'weight' => $weights['article'],
-                ]);
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
 
+                // Calculate and update total score
                 $total = $this->calculateWeightedDplScore(
                     (float) $item['final_report_score'],
                     (float) $item['execution_score'],
@@ -303,6 +315,17 @@ class EvaluationController extends Controller
                         (float) $item['article_score'],
                         $lecturerId
                     );
+                }
+            }
+
+            // OPTIMIZATION: Bulk delete old items and bulk insert new ones
+            if (!empty($evaluasiIds)) {
+                // Delete all old items for these evaluasi
+                ItemEvaluasi::whereIn('evaluasi_id', array_values($evaluasiIds))->delete();
+
+                // Bulk insert all new items (3x fewer queries)
+                if (!empty($itemEvaluasiData)) {
+                    ItemEvaluasi::insert($itemEvaluasiData);
                 }
             }
         });
@@ -344,11 +367,13 @@ class EvaluationController extends Controller
 
         $this->ensureStudentBelongsToGroup((int) $validated['student_id'], (int) $validated['group_id']);
 
+        // SECURITY: Hardcode evaluator_type to 'dpl' to prevent privilege escalation
+        // The evaluator_type should NEVER be user-controlled
         $evaluation = Evaluasi::create([
             'mahasiswa_id' => $validated['student_id'],
             'kelompok_id' => $validated['group_id'],
             'evaluator_id' => auth()->id(),
-            'evaluator_type' => $validated['evaluator_type'],
+            'evaluator_type' => 'dpl', // Fixed value - not from user input
             'notes' => $validated['notes'] ?? null,
             'evaluated_at' => now(),
         ]);
@@ -385,7 +410,7 @@ class EvaluationController extends Controller
 
         // Sync to NilaiKkn (Centralized)
         $mahasiswa = Mahasiswa::find($validated['student_id']);
-        if ($mahasiswa && $validated['evaluator_type'] === 'dpl') {
+        if ($mahasiswa) {
             $this->gradingService->submitDPLScores(
                 $mahasiswa->user_id,
                 $validated['group_id'],

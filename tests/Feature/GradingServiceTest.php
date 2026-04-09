@@ -15,40 +15,41 @@ beforeEach(function () {
 
 test('determineLetterGrade returns correct grades', function () {
     expect(GradingService::determineLetterGrade(90))->toBe('A');
-    expect(GradingService::determineLetterGrade(85))->toBe('A');
+    expect(GradingService::determineLetterGrade(85))->toBe('A-');
     expect(GradingService::determineLetterGrade(84))->toBe('A-');
-    expect(GradingService::determineLetterGrade(80))->toBe('A-');
+    expect(GradingService::determineLetterGrade(80))->toBe('B+');
     expect(GradingService::determineLetterGrade(79))->toBe('B+');
-    expect(GradingService::determineLetterGrade(75))->toBe('B+');
+    expect(GradingService::determineLetterGrade(75))->toBe('B');
     expect(GradingService::determineLetterGrade(74))->toBe('B');
-    expect(GradingService::determineLetterGrade(70))->toBe('B');
+    expect(GradingService::determineLetterGrade(70))->toBe('B-');
     expect(GradingService::determineLetterGrade(69))->toBe('B-');
-    expect(GradingService::determineLetterGrade(65))->toBe('B-');
+    expect(GradingService::determineLetterGrade(65))->toBe('C+');
     expect(GradingService::determineLetterGrade(64))->toBe('C+');
-    expect(GradingService::determineLetterGrade(60))->toBe('C+');
+    expect(GradingService::determineLetterGrade(60))->toBe('C');
     expect(GradingService::determineLetterGrade(59))->toBe('C');
-    expect(GradingService::determineLetterGrade(55))->toBe('C');
+    expect(GradingService::determineLetterGrade(55))->toBe('D');
     expect(GradingService::determineLetterGrade(54))->toBe('D');
-    expect(GradingService::determineLetterGrade(30))->toBe('D');
-    expect(GradingService::determineLetterGrade(0))->toBe('D');
+    expect(GradingService::determineLetterGrade(30))->toBe('E');
+    expect(GradingService::determineLetterGrade(0))->toBe('E');
 });
 
-test('determineLetterGrade handles negative scores as D', function () {
-    expect(GradingService::determineLetterGrade(-10))->toBe('D');
-    expect(GradingService::determineLetterGrade(-100))->toBe('D');
-    expect(GradingService::determineLetterGrade(-0.01))->toBe('D');
+test('determineLetterGrade handles negative scores as E', function () {
+    expect(GradingService::determineLetterGrade(-10))->toBe('E');
+    expect(GradingService::determineLetterGrade(-100))->toBe('E');
+    expect(GradingService::determineLetterGrade(-0.01))->toBe('E');
 });
 
-test('determineLetterGrade handles scores above 100', function () {
-    expect(GradingService::determineLetterGrade(101))->toBe('D');
-    expect(GradingService::determineLetterGrade(150))->toBe('D');
-    expect(GradingService::determineLetterGrade(999))->toBe('D');
+test('determineLetterGrade handles scores above 100 as A', function () {
+    expect(GradingService::determineLetterGrade(101))->toBe('A');
+    expect(GradingService::determineLetterGrade(150))->toBe('A');
+    expect(GradingService::determineLetterGrade(999))->toBe('A');
 });
 
 test('determineLetterGrade handles boundary values', function () {
     expect(GradingService::determineLetterGrade(100))->toBe('A');
-    expect(GradingService::determineLetterGrade(85.5))->toBe('A');
+    expect(GradingService::determineLetterGrade(85.5))->toBe('A-');
     expect(GradingService::determineLetterGrade(54.0))->toBe('D');
+    expect(GradingService::determineLetterGrade(41.99))->toBe('E');
 });
 
 test('calculateFinalGrade saves lppm_weighted_score', function () {

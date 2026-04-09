@@ -163,11 +163,24 @@ class EligibilityController extends Controller
 
         $filename = 'Eligibility_Report_KKN_' . date('Y-m-d_His') . '.xlsx';
         $writer = new Xlsx($spreadsheet);
-        $tempFile = tempnam(sys_get_temp_dir(), 'kkn_eligibility_');
-        $writer->save($tempFile . '.xlsx');
-        $finalFile = $tempFile . '.xlsx';
 
-        return response()->download($finalFile, $filename)->deleteFileAfterSend(true);
+        // SECURITY: Use Laravel's storage path instead of system temp directory
+        $exportDir = storage_path('framework/cache/exports');
+        if (!is_dir($exportDir)) {
+            mkdir($exportDir, 0750, true);
+        }
+
+        $tempFile = $exportDir . '/' . \Illuminate\Support\Str::uuid() . '.xlsx';
+        try {
+            $writer->save($tempFile);
+            return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
+        } catch (\Throwable $e) {
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
+            \Illuminate\Support\Facades\Log::error('Eligibility export failed', ['exception' => $e]);
+            abort(500, 'Gagal mengekspor data kelayakan.');
+        }
     }
 
     public function bulkUpdateSks(Request $request): RedirectResponse

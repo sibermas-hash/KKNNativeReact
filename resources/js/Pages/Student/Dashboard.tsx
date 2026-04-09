@@ -22,7 +22,8 @@ import {
     UserCircle,
     Target,
     ScrollText,
-    Download
+    Download,
+    Layers
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -35,7 +36,7 @@ interface Student {
 }
 
 interface Registration {
-    status: 'menunggu' | 'disetujui' | 'ditolak' | 'pending' | 'approved' | 'rejected' | 'verifikasi_pusat' | 'completed';
+    status: 'menunggu' | 'disetujui' | 'ditolak' | 'pending' | 'approved' | 'rejected' | 'verifikasi_pusat' | 'completed' | 'gugur' | 'dismissed';
     notes?: string | null;
     rejection_reason?: string | null;
     revision_count?: number;
@@ -87,7 +88,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
 
     // Alur Pelaksanaan KKN (Modernized SOP View)
     const phases = [
-        { id: 1, label: 'Plotting', desc: 'Registrasi Unit', icon: Rocket, isCompleted: isApproved, isActive: !registration || isPending },
+        { id: 1, label: 'Penempatan', desc: 'Registrasi Unit', icon: Rocket, isCompleted: isApproved, isActive: !registration || isPending },
         { id: 2, label: 'Pembekalan', desc: 'Metode & Teknis', icon: Presentation, isCompleted: isApproved && workshopRegistered, isActive: isApproved && !workshopRegistered },
         { id: 3, label: 'Persiapan', desc: 'Progker Lapangan', icon: Beaker, isCompleted: workshopRegistered && workProgramCount > 0, isActive: workshopRegistered && workProgramCount === 0 },
         { id: 4, label: 'Pelaksanaan', desc: 'Laporan Harian', icon: ClipboardList, isCompleted: dailyReportCount >= (registration?.period?.min_logbook ?? 30), isActive: workProgramCount > 0 && dailyReportCount < (registration?.period?.min_logbook ?? 30) },
@@ -135,7 +136,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                     <div className="flex items-center gap-6 relative z-10">
                         <div className="bg-slate-50 px-8 py-5 rounded-[2rem] border border-slate-100 flex items-center gap-8 group/status cursor-default hover:bg-white hover:border-emerald-500/20 transition-all">
                             <div className="text-right">
-                                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-none">Otoritas Plotting</span>
+                                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-none">Otoritas Penempatan</span>
                                 <span className={clsx(
                                     "text-sm font-black uppercase tracking-tight italic",
                                     isApproved ? "text-emerald-600" : isRejected ? "text-rose-500" : "text-amber-500"
@@ -205,6 +206,62 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                     </div>
                 </div>
 
+                {/* --- ABCD METHODOLOGY VIZ (PREMIUM UPGRADE) --- */}
+                {isApproved && (
+                    <div className="bg-emerald-950 rounded-[3rem] p-12 lg:p-16 text-white border-x-8 border-emerald-500 shadow-2xl relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-emerald-500/5 -skew-x-12 translate-x-1/2 group-hover:translate-x-1/3 transition-transform duration-1000" />
+                        
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-16 relative z-10">
+                            <div className="space-y-8 flex-1">
+                                <div className="flex items-center gap-6">
+                                    <div className="p-4 bg-emerald-600 rounded-3xl shadow-2xl shadow-emerald-600/30">
+                                        <Layers size={28} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-black uppercase tracking-[0.4em] text-emerald-400 italic">ABCD Methodology</h3>
+                                        <p className="text-xl font-black italic tracking-tighter uppercase mt-1">Asset Based Community Development</p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-wrap gap-4">
+                                    {[
+                                        { l: 'DISCOVERY', status: dailyReportCount >= 7 ? 'COMPLETED' : 'ONGOING' },
+                                        { l: 'DREAM', status: dailyReportCount >= 14 ? 'COMPLETED' : (dailyReportCount >= 7 ? 'ONGOING' : 'PENDING') }, // Week 2
+                                        { l: 'DESIGN', status: dailyReportCount >= 14 ? 'COMPLETED' : 'LOCKED' }, // Week 2
+                                        { l: 'DEFINE', status: dailyReportCount >= 21 ? 'COMPLETED' : 'LOCKED' }, // Week 3
+                                        { l: 'DESTINY', status: dailyReportCount >= 28 ? 'COMPLETED' : 'LOCKED' }, // Week 4
+                                    ].map((stage, i) => (
+                                        <div 
+                                            key={i}
+                                            className={clsx(
+                                                "px-6 py-3 border rounded-2xl flex flex-col gap-1 transition-all",
+                                                stage.status === 'COMPLETED' ? "bg-emerald-600/20 border-emerald-500/50" :
+                                                stage.status === 'ONGOING' ? "bg-white/10 border-white/20 animate-pulse" :
+                                                "bg-slate-900/50 border-slate-800 opacity-40 grayscale"
+                                            )}
+                                        >
+                                            <span className="text-[10px] font-black tracking-widest italic">{stage.l}</span>
+                                            <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-widest">{stage.status}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className="text-xs font-bold text-emerald-200/40 uppercase tracking-widest leading-relaxed max-w-2xl italic">
+                                    Metodologi ABCD berfokus pada penemuan dan pemanfaatan aset lokal desa untuk pemberdayaan masyarakat yang berkelanjutan. KKN Angkatan ke-56 wajib mengimplementasikan seluruh tahapan ini.
+                                </p>
+                            </div>
+                            
+                            <div className="lg:w-48 h-48 bg-white/5 border border-white/10 rounded-[3rem] flex flex-col items-center justify-center gap-4 text-center group-hover:scale-105 transition-transform duration-700">
+                                <span className="text-[10px] font-black text-emerald-400 tracking-[0.3em] italic uppercase">Method Progress</span>
+                                <span className="text-6xl font-black italic tracking-tighter text-white tabular-nums">
+                                    {Math.min(100, Math.floor((dailyReportCount / 28) * 100))}%
+                                </span>
+                                <div className="h-1 w-20 bg-emerald-500/30 rounded-full overflow-hidden">
+                                    <div className="h-full bg-emerald-500" style={{ width: `${Math.min(100, (dailyReportCount / 28) * 100)}%` }} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* --- MAIN OPERATIONAL AREA --- */}
                 {!isGroupPinned ? (
                     /* PHASE 1: BOOTSTRAPPING (Registration Focus) */
@@ -264,7 +321,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                                         
                                         <div className="space-y-4">
                                             <h2 className="text-4xl lg:text-6xl font-black italic tracking-tighter leading-none shadow-sm uppercase">
-                                                {registration?.group?.location?.name ?? 'DESA_PENDING'}
+                                                {registration?.group?.location?.name ?? 'Lokasi Belum Ditentukan'}
                                             </h2>
                                             <div className="flex flex-wrap items-center gap-4 pt-2">
                                                 <span className="px-5 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-black tracking-widest italic uppercase">
@@ -288,7 +345,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                                                  </div>
                                                  <div>
                                                      <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Dosen Pembimbing</p>
-                                                     <p className="text-sm font-black italic uppercase tracking-tight">{registration?.group?.lecturer?.name ?? 'PENDING_LECTURER'}</p>
+                                                     <p className="text-sm font-black italic uppercase tracking-tight">{registration?.group?.lecturer?.name ?? 'Belum Ditugaskan'}</p>
                                                  </div>
                                              </div>
                                              <div className="flex gap-5 items-center">
@@ -316,14 +373,14 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                                 />
                                 <StatCard
                                     title="Produk Final"
-                                    value={finalReport ? 'TERKIRIM' : 'NIHIL'}
+                                    value={finalReport ? 'Terkirim' : 'Belum Ada'}
                                     unit="BERKAS"
                                     icon={UploadCloud}
                                     color={finalReport ? 'emerald' : 'slate'}
                                 />
                                 <StatCard
                                     title="Indeks Kelayakan"
-                                    value={isApproved ? 'ALPHA' : 'PENDING'}
+                                    value={isApproved ? 'Layak' : 'Menunggu'}
                                     unit="TIER"
                                     icon={Activity}
                                     color="emerald"
@@ -348,7 +405,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                                                 target="_blank"
                                                 className="relative z-10 px-10 py-5 bg-white text-emerald-600 rounded-2xl font-black text-xs uppercase tracking-[0.3em] hover:bg-slate-900 hover:text-white transition-all shadow-xl active:scale-95 flex items-center gap-4"
                                             >
-                                                UNDUH_E-CERTIFICATE
+                                                Unduh Sertifikat
                                                 <Download size={18} />
                                             </a>
                                         </div>
@@ -373,10 +430,10 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                                 
                                 <div className="space-y-5">
                                     {[
-                                        { href: '/mahasiswa/workshop', icon: Presentation, label: 'Pembekalan', desc: 'Materi & Absensi Teknis', status: workshopRegistered ? 'VALID' : 'BELUM' },
-                                        { href: '/mahasiswa/laporan-harian', icon: ClipboardList, label: 'Log Aktivitas', desc: 'Input laporan harian unit', status: 'OPEN' },
+                                        { href: route('student.workshops.index'), icon: Presentation, label: 'Pembekalan', desc: 'Materi & Absensi Teknis', status: workshopRegistered ? 'Terdaftar' : 'Belum' },
+                                        { href: '/mahasiswa/laporan-harian', icon: ClipboardList, label: 'Log Aktivitas', desc: 'Input laporan harian unit', status: 'BUKA' },
                                         { href: '/mahasiswa/posko', icon: MapPin, label: 'Lokasi Posko', desc: 'Pemetaan koordinat relasi', status: 'MANUAL' },
-                                        { href: '/mahasiswa/laporan-akhir', icon: UploadCloud, label: 'Upload Produk', desc: 'Unggah file laporan kolektif', status: finalReport ? 'VERIFIED' : 'READY' }
+                                        { href: '/mahasiswa/laporan-akhir', icon: UploadCloud, label: 'Upload Produk', desc: 'Unggah file laporan kolektif', status: finalReport ? 'Terverifikasi' : 'Siap' }
                                     ].map((action, i) => (
                                         <Link
                                             key={i}
@@ -407,7 +464,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                                 </div>
                                 <h3 className="text-xs font-black text-slate-500 uppercase tracking-[0.4em] flex items-center gap-3">
                                     <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                                    Security & Rules
+                                    Keamanan & Aturan
                                 </h3>
                                 
                                 <div className="space-y-8 relative z-10">
@@ -449,7 +506,7 @@ function normalizeRegistrationStatus(status?: Registration['status'] | null): 'a
     const s = status.toLowerCase();
     if (['approved', 'disetujui', 'verifikasi_pusat', 'completed'].includes(s)) return 'approved';
     if (['pending', 'menunggu'].includes(s)) return 'pending';
-    if (['rejected', 'ditolak'].includes(s)) return 'rejected';
+    if (['rejected', 'ditolak', 'gugur'].includes(s)) return 'rejected';
     return 'unknown';
 }
 

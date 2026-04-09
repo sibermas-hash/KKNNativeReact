@@ -2,6 +2,7 @@
 
 namespace App\Models\KKN;
 
+use App\Enums\AbcdStage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,6 +29,7 @@ class ProgramKerja extends Model
         'approved_at',
         'approved_by',
         'approval_notes',
+        'abcd_stage',
     ];
 
     protected $casts = [
@@ -36,6 +38,7 @@ class ProgramKerja extends Model
         'budget' => 'decimal:2',
         'submitted_at' => 'datetime',
         'approved_at' => 'datetime',
+        'abcd_stage' => AbcdStage::class,
     ];
 
     public function kelompok(): BelongsTo

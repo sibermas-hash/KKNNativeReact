@@ -1,5 +1,5 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
-import { useRef, useState, type FormEventHandler } from 'react';
+import { useRef, useState, type ChangeEvent, type FormEventHandler } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { FormInput, FormTextarea } from '@/Components/ui';
 import type { PageProps } from '@/types';
@@ -13,6 +13,10 @@ interface UserData {
     avatar: string | null;
     phone: string | null;
     address: string | null;
+    domicile_village_name: string | null;
+    domicile_district_name: string | null;
+    domicile_regency_name: string | null;
+    address_verified_at: string | null;
     must_change_password: boolean;
 }
 
@@ -29,6 +33,10 @@ interface StudentData {
     birth_date: string | null;
     bpjs_complete: boolean;
     missing_bpjs_fields: string[];
+    domicile_complete: boolean;
+    domicile_verified: boolean;
+    domicile_verified_at: string | null;
+    missing_domicile_fields: string[];
 }
 
 interface Props extends PageProps {
@@ -45,6 +53,10 @@ export default function ProfileShow() {
         name: user.name ?? '',
         phone: user.phone ?? '',
         address: user.address ?? '',
+        domicile_village_name: user.domicile_village_name ?? '',
+        domicile_district_name: user.domicile_district_name ?? '',
+        domicile_regency_name: user.domicile_regency_name ?? '',
+        address_verified: !!user.address_verified_at,
         nik: student?.nik ?? '',
         mother_name: student?.mother_name ?? '',
         gender: student?.gender ?? '',
@@ -75,7 +87,7 @@ export default function ProfileShow() {
         });
     };
 
-    const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) {
             return;
@@ -175,11 +187,22 @@ export default function ProfileShow() {
                                                 {student.bpjs_complete ? 'Lengkap' : 'Masih perlu dilengkapi'}
                                             </p>
                                         </div>
+                                        <div>
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Status domisili penempatan</p>
+                                            <p className={`mt-1 font-medium ${student.domicile_complete ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                                {student.domicile_complete ? 'Siap dipakai untuk auto-plotting' : 'Belum siap dipakai'}
+                                            </p>
+                                        </div>
                                     </div>
 
                                     {!student.bpjs_complete && student.missing_bpjs_fields.length > 0 ? (
                                         <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                                             Lengkapi data berikut sebelum mendaftar KKN: {student.missing_bpjs_fields.join(', ')}.
+                                        </div>
+                                    ) : null}
+                                    {!student.domicile_complete && student.missing_domicile_fields.length > 0 ? (
+                                        <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                                            Lengkapi domisili berikut dan lakukan verifikasi alamat sebelum mendaftar KKN: {student.missing_domicile_fields.join(', ')}.
                                         </div>
                                     ) : null}
                                 </div>
@@ -258,6 +281,51 @@ export default function ProfileShow() {
                                     onChange={(event) => profileForm.setData('address', event.target.value)}
                                     error={profileForm.errors.address}
                                 />
+                                {student ? (
+                                    <div className="grid gap-4 md:grid-cols-3">
+                                        <FormInput
+                                            label="Desa/Kelurahan domisili"
+                                            value={profileForm.data.domicile_village_name}
+                                            onChange={(event) => profileForm.setData('domicile_village_name', event.target.value)}
+                                            error={profileForm.errors.domicile_village_name}
+                                        />
+                                        <FormInput
+                                            label="Kecamatan domisili"
+                                            value={profileForm.data.domicile_district_name}
+                                            onChange={(event) => profileForm.setData('domicile_district_name', event.target.value)}
+                                            error={profileForm.errors.domicile_district_name}
+                                        />
+                                        <FormInput
+                                            label="Kabupaten/Kota domisili"
+                                            value={profileForm.data.domicile_regency_name}
+                                            onChange={(event) => profileForm.setData('domicile_regency_name', event.target.value)}
+                                            error={profileForm.errors.domicile_regency_name}
+                                        />
+                                    </div>
+                                ) : null}
+                                {student ? (
+                                    <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-4">
+                                        <label className="flex items-start gap-3">
+                                            <input
+                                                type="checkbox"
+                                                checked={profileForm.data.address_verified}
+                                                onChange={(event) => profileForm.setData('address_verified', event.target.checked)}
+                                                className="mt-1 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
+                                            />
+                                            <span className="text-sm text-slate-700">
+                                                Saya menyatakan alamat domisili di atas benar dan siap dipakai sebagai dasar penempatan otomatis KKN. Sistem tidak akan menempatkan saya di kabupaten/kota yang sama dengan domisili ini.
+                                                {student.domicile_verified_at ? (
+                                                    <span className="mt-1 block text-xs text-emerald-700">
+                                                        Terverifikasi pada {new Date(student.domicile_verified_at).toLocaleString('id-ID')}.
+                                                    </span>
+                                                ) : null}
+                                            </span>
+                                        </label>
+                                        {profileForm.errors.address_verified ? (
+                                            <p className="mt-2 text-sm text-red-600">{profileForm.errors.address_verified}</p>
+                                        ) : null}
+                                    </div>
+                                ) : null}
                                 <div className="flex justify-end">
                                     <button
                                         type="submit"

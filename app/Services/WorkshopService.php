@@ -21,7 +21,7 @@ class WorkshopService
      */
     public function createWorkshop(array $data): Workshop
     {
-        return Workshop::create([
+        $payload = [
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
             'methodology' => $data['methodology'] ?? null,
@@ -31,7 +31,13 @@ class WorkshopService
             'location' => $data['location'] ?? null,
             'max_participants' => $data['max_participants'] ?? null,
             'status' => 'scheduled',
-        ]);
+        ];
+
+        if (Workshop::supportsPeriodAssignment()) {
+            $payload['period_id'] = $data['period_id'] ?? null;
+        }
+
+        return Workshop::create($payload);
     }
 
     public function updateWorkshop(Workshop $workshop, array $data): Workshop
@@ -49,6 +55,7 @@ class WorkshopService
             }
 
             $workshop->update([
+                ...(Workshop::supportsPeriodAssignment() ? ['period_id' => $data['period_id'] ?? $workshop->period_id] : []),
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
                 'methodology' => $data['methodology'] ?? null,
@@ -312,13 +319,26 @@ class WorkshopService
     /**
      * Get upcoming workshops
      */
-    public function getUpcomingWorkshops(?int $userId = null, bool $includeParticipants = false, bool $includeAllStatuses = false): array
+    public function getUpcomingWorkshops(
+        ?int $userId = null,
+        bool $includeParticipants = false,
+        bool $includeAllStatuses = false,
+        ?int $periodId = null
+    ): array
     {
         $query = Workshop::where('workshop_date', '>=', now()->toDateString())
             ->withCount('participants');
 
+        if (Workshop::supportsPeriodAssignment() && $periodId) {
+            $query->where('period_id', $periodId);
+        }
+
         if (! $includeAllStatuses) {
             $query->where('status', 'scheduled');
+        }
+
+        if (Workshop::supportsPeriodAssignment()) {
+            $query->with('periode:id,name');
         }
 
         if ($includeParticipants) {
@@ -362,6 +382,12 @@ class WorkshopService
                 'registered' => $workshop->participants_count,
                 'max_participants' => $workshop->max_participants,
                 'status' => $workshop->status,
+                'period' => Workshop::supportsPeriodAssignment() && $workshop->periode
+                    ? [
+                        'id' => $workshop->periode->id,
+                        'name' => $workshop->periode->name,
+                    ]
+                    : null,
                 'is_full' => $workshop->max_participants 
                     ? $workshop->participants_count >= $workshop->max_participants
                     : false,

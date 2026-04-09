@@ -68,10 +68,13 @@ class SystemSetting extends Model
      */
     public static function set(string $key, $value): void
     {
+        // SECURITY: Explicitly cast to string to prevent type confusion
+        $stringValue = $value !== null ? (string) $value : '';
+
         // Encrypt secret values before storing
-        $storedValue = $value;
-        if (in_array($key, self::SECRET_KEYS) && $value) {
-            $storedValue = Crypt::encryptString($value);
+        $storedValue = $stringValue;
+        if (in_array($key, self::SECRET_KEYS) && $stringValue !== '') {
+            $storedValue = Crypt::encryptString($stringValue);
         }
 
         $setting = self::where('config_key', $key)->first();

@@ -5,9 +5,8 @@ import type { PageProps } from '@/types';
 
 interface Props extends PageProps {
  group: {
- id?: number;
- nama_kelompok?: string | null;
- name?: string | null;
+ id: number;
+ name: string;
  } | null;
  existingReport: {
  id: number;
@@ -57,7 +56,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
  </Link>
  <h1 className="mt-4 text-2xl font-semibold text-slate-900">Unggah Laporan Akhir</h1>
  <p className="mt-2 text-sm text-slate-500">
- Kelompok aktif: {group.name || group.nama_kelompok}. Hanya ketua kelompok yang dapat mengunggah laporan akhir.
+ Kelompok aktif: {group.name}. Hanya ketua kelompok yang dapat mengunggah laporan akhir.
  </p>
  </section>
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\KknType;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\DplPeriod;
 use App\Models\KKN\KelompokKkn;
@@ -30,8 +31,9 @@ test('superadmin can duplicate a period with groups without reusing unique ident
     $period = Periode::factory()->create([
         'academic_year_id' => $academicYear->id,
         'periode' => 57,
-        'jenis' => 'REGULER',
-        'name' => 'Periode 57 - REGULER',
+        'jenis' => KknType::REGULER,
+        'program_type' => Periode::PROGRAM_TYPE_REGULER,
+        'name' => 'Periode 57 - KKN Reguler',
         'kuota' => 2000,
     ]);
 
@@ -59,7 +61,7 @@ test('superadmin can duplicate a period with groups without reusing unique ident
     $copy = Periode::whereKeyNot($period->id)->firstOrFail();
     $copiedGroup = KelompokKkn::where('period_id', $copy->id)->firstOrFail();
 
-    expect($copy->name)->toBe('Periode 57 - REGULER (Copy)')
+    expect($copy->name)->toBe('Periode 57 - KKN Reguler (Copy)')
         ->and($copy->is_active)->toBeFalse()
         ->and($copiedGroup->location_id)->toBe($group->location_id)
         ->and($copiedGroup->nama_kelompok)->toBe($group->nama_kelompok)
@@ -80,8 +82,10 @@ test('superadmin can create and update period grading window data', function () 
         ->post(route('admin.periods.store'), [
             'academic_year_id' => $academicYear->id,
             'periode' => 57,
-            'jenis' => 'REGULER',
-            'name' => 'Periode 57 - REGULER',
+            'program_type' => Periode::PROGRAM_TYPE_REGULER,
+            'program_subtype' => null,
+            'jenis' => 'KKN Reguler',
+            'name' => 'Periode 57 - KKN Reguler',
             'start_date' => '2026-05-01',
             'end_date' => '2026-07-01',
             'registration_start' => '2026-03-18',
@@ -94,15 +98,19 @@ test('superadmin can create and update period grading window data', function () 
 
     $period = Periode::firstOrFail();
 
-    expect($period->grading_start?->format('Y-m-d'))->toBe('2026-06-15')
+    expect($period->jenis)->toBe(KknType::REGULER)
+        ->and($period->program_type)->toBe(Periode::PROGRAM_TYPE_REGULER)
+        ->and($period->grading_start?->format('Y-m-d'))->toBe('2026-06-15')
         ->and($period->grading_end?->format('Y-m-d'))->toBe('2026-06-30');
 
     $this->from(route('admin.periods.index'))
         ->put(route('admin.periods.update', ['periode' => $period->id]), [
             'academic_year_id' => $academicYear->id,
             'periode' => 58,
-            'jenis' => 'MANDIRI',
-            'name' => 'Periode 58 - MANDIRI',
+            'program_type' => Periode::PROGRAM_TYPE_NUSANTARA,
+            'program_subtype' => null,
+            'jenis' => 'KKN Nusantara',
+            'name' => 'Periode 58 - KKN Nusantara',
             'start_date' => '2026-08-01',
             'end_date' => '2026-09-30',
             'registration_start' => '2026-06-01',
@@ -116,7 +124,8 @@ test('superadmin can create and update period grading window data', function () 
     $period->refresh();
 
     expect($period->periode)->toBe(58)
-        ->and($period->jenis)->toBe('MANDIRI')
+        ->and($period->jenis)->toBe(KknType::NUSANTARA)
+        ->and($period->program_type)->toBe(Periode::PROGRAM_TYPE_NUSANTARA)
         ->and($period->grading_start?->format('Y-m-d'))->toBe('2026-09-15')
         ->and($period->grading_end?->format('Y-m-d'))->toBe('2026-09-29')
         ->and($period->is_active)->toBeFalse();
@@ -127,7 +136,7 @@ test('superadmin cannot delete active or dependent periods', function () {
 
     $activePeriod = Periode::factory()->active()->create([
         'periode' => 57,
-        'jenis' => 'REGULER',
+        'jenis' => KknType::REGULER,
         'kuota' => 2000,
     ]);
 
@@ -140,7 +149,8 @@ test('superadmin cannot delete active or dependent periods', function () {
 
     $inactivePeriod = Periode::factory()->create([
         'periode' => 58,
-        'jenis' => 'MANDIRI',
+        'jenis' => KknType::NUSANTARA,
+        'program_type' => Periode::PROGRAM_TYPE_NUSANTARA,
         'kuota' => 1200,
     ]);
 
@@ -161,7 +171,8 @@ test('period actions flush cached context keys', function () {
     $period = Periode::factory()->create([
         'academic_year_id' => $academicYear->id,
         'periode' => 57,
-        'jenis' => 'REGULER',
+        'jenis' => KknType::REGULER,
+        'program_type' => Periode::PROGRAM_TYPE_REGULER,
         'kuota' => 2000,
     ]);
 
@@ -173,7 +184,9 @@ test('period actions flush cached context keys', function () {
         ->put(route('admin.periods.update', ['periode' => $period->id]), [
             'academic_year_id' => $academicYear->id,
             'periode' => 57,
-            'jenis' => 'REGULER',
+            'program_type' => Periode::PROGRAM_TYPE_REGULER,
+            'program_subtype' => null,
+            'jenis' => 'KKN Reguler',
             'name' => $period->name,
             'start_date' => $period->start_date->format('Y-m-d'),
             'end_date' => $period->end_date->format('Y-m-d'),

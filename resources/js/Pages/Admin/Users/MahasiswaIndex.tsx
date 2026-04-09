@@ -1,23 +1,21 @@
 import { useEffect, useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
-    ArrowRight,
     CheckCircle2,
     Database,
-    GraduationCap,
+    FileSpreadsheet,
+    KeyRound,
     Lock,
     RefreshCw,
     Search,
     Unlock,
     UserCheck,
     Users,
-    XCircle,
-    KeyRound,
-    Info,
+    type LucideIcon,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import AppLayout from '@/Layouts/AppLayout';
-import { Pagination } from '@/Components/ui';
+import { Button, Pagination } from '@/Components/ui';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
 import type { PageProps } from '@/types';
 
@@ -123,9 +121,19 @@ function normalizeFilters(filters: Filters): Required<Filters> {
     };
 }
 
+function buildQuery(filters: Required<Filters>): Record<string, string | number> {
+    return Object.entries(filters).reduce<Record<string, string | number>>((carry, [key, value]) => {
+        if (value !== '' && value !== null) {
+            carry[key] = value;
+        }
+
+        return carry;
+    }, {});
+}
+
 function formatDateTime(value: string | null): string {
     if (!value) {
-        return 'Belum pernah sinkron';
+        return '-';
     }
 
     return new Intl.DateTimeFormat('id-ID', {
@@ -135,44 +143,49 @@ function formatDateTime(value: string | null): string {
 }
 
 function formatGender(value: StudentRecord['gender']): string {
-    if (value === 'L') {
-        return 'Laki-laki';
-    }
-
-    if (value === 'P') {
-        return 'Perempuan';
-    }
-
+    if (value === 'L') return 'Laki-laki';
+    if (value === 'P') return 'Perempuan';
     return '-';
 }
 
-function formatGpa(value: number | null): string {
-    if (value === null) {
-        return '-';
+function SummaryCard({
+    label,
+    value,
+    icon: Icon,
+}: {
+    label: string;
+    value: number;
+    icon: LucideIcon;
+}) {
+    return (
+        <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="flex items-center justify-between gap-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+                <Icon className="h-4 w-4 text-slate-400" />
+            </div>
+            <p className="mt-3 text-2xl font-bold text-slate-900">{value.toLocaleString('id-ID')}</p>
+        </div>
+    );
+}
+
+function AccountBadge({ student }: { student: StudentRecord }) {
+    if (!student.account) {
+        return <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600">Belum ada akun</span>;
     }
 
-    return value.toFixed(2);
+    return (
+        <span
+            className={clsx(
+                'inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold',
+                student.account.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700',
+            )}
+        >
+            {student.account.is_active ? 'Akun aktif' : 'Akun dikunci'}
+        </span>
+    );
 }
 
-function buildQuery(filters: Required<Filters>): Record<string, string | number> {
-    return Object.entries(filters).reduce<Record<string, string | number>>((carry, [key, value]) => {
-        if (value !== '' && value !== null && value !== undefined) {
-            carry[key] = value;
-        }
-
-        return carry;
-    }, {});
-}
-
-export default function MahasiswaIndex({
-    students,
-    filters,
-    faculties,
-    programs,
-    batchYears,
-    stats,
-    syncInfo,
-}: Props) {
+export default function MahasiswaIndex({ students, filters, faculties, programs, batchYears, stats, syncInfo }: Props) {
     const [formFilters, setFormFilters] = useState<Required<Filters>>(normalizeFilters(filters));
     const { flash } = usePage<PageProps>().props;
 
@@ -184,24 +197,17 @@ export default function MahasiswaIndex({
         ? programs.filter((program) => String(program.faculty_id) === String(formFilters.faculty_id))
         : programs;
 
-    const submitFilters = (event?: React.FormEvent) => {
-        event?.preventDefault();
-
+    const submitFilters = () => {
         router.get('/admin/mahasiswa', buildQuery(formFilters), {
             preserveState: true,
-            preserveScroll: true,
             replace: true,
+            preserveScroll: true,
         });
     };
 
     const resetFilters = () => {
         setFormFilters(emptyFilters);
-
-        router.get('/admin/mahasiswa', {}, {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-        });
+        router.get('/admin/mahasiswa', {}, { preserveState: true, replace: true, preserveScroll: true });
     };
 
     const toggleStatus = (student: StudentRecord) => {
@@ -209,10 +215,9 @@ export default function MahasiswaIndex({
             return;
         }
 
-        const actionLabel = student.account.is_active ? 'menonaktifkan' : 'mengaktifkan';
-
-        if (confirm(`Apakah Anda yakin ingin ${actionLabel} akun ${student.nama}?`)) {
-            router.patch(`/admin/pengguna/${student.account.id}/toggle-status`);
+        const action = student.account.is_active ? 'menonaktifkan' : 'mengaktifkan';
+        if (confirm(`Yakin ingin ${action} akun ${student.nama}?`)) {
+            router.patch(`/admin/pengguna/${student.account.id}/toggle-status`, {}, { preserveScroll: true });
         }
     };
 
@@ -221,438 +226,313 @@ export default function MahasiswaIndex({
             return;
         }
 
-        if (!confirm(`Buat password sementara baru untuk akun ${student.account.username}? Mahasiswa akan diminta mengganti password setelah login.`)) {
+        if (!confirm(`Buat kata sandi sementara untuk ${student.account.username}?`)) {
             return;
         }
 
-        router.post(`/admin/pengguna/${student.account.id}/reset-password-sementara`, {}, {
-            preserveScroll: true,
-        });
+        router.post(`/admin/pengguna/${student.account.id}/reset-password-sementara`, {}, { preserveScroll: true });
     };
 
     return (
-        <AppLayout title="Pangkalan Data Mahasiswa">
-            <Head title="Pangkalan Data Mahasiswa | KKN UIN SAIZU" />
+        <AppLayout title="Data Mahasiswa">
+            <Head title="Data Mahasiswa | POS-KKN" />
 
-            <div className="space-y-12 pb-32">
-                {/* Temporary Access Alert */}
-                {flash?.temporary_password && flash?.temporary_username && (
-                    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900 shadow-sm relative overflow-hidden">
-                        <div className="flex items-start gap-5 relative z-10">
-                            <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center text-amber-600 border border-amber-100 shrink-0">
-                                <KeyRound size={24} />
-                            </div>
-                            <div className="space-y-3 flex-1">
-                                <h3 className="text-base font-bold text-slate-900">Akses Sementara Diterbitkan</h3>
-                                <div className="grid gap-3 sm:grid-cols-2">
-                                    <div className="p-4 bg-white/60 rounded-xl border border-amber-100">
-                                        <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600 mb-1">Username / NIM</p>
-                                        <p className="text-base font-bold text-slate-900">{flash.temporary_username}</p>
-                                    </div>
-                                    <div className="p-4 bg-white/60 rounded-xl border border-amber-100">
-                                        <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600 mb-1">Password Sementara</p>
-                                        <p className="text-base font-mono font-bold text-slate-900">{flash.temporary_password}</p>
-                                    </div>
-                                </div>
-                                <p className="text-xs text-amber-700 font-medium">
-                                    Mahasiswa akan diminta mengganti password setelah login pertama kali.
-                                </p>
-                            </div>
-                        </div>
+            <div className="mx-auto max-w-[1600px] space-y-6 px-4 py-6">
+                <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                    <div className="space-y-2">
+                        <p className="text-sm font-semibold text-emerald-600">Master data mahasiswa</p>
+                        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Registry Mahasiswa</h1>
+                        <p className="max-w-3xl text-sm text-slate-600">
+                            Halaman ini dipakai untuk meninjau mahasiswa hasil sinkron master, status akun, dan data dasar yang dibutuhkan untuk kelayakan KKN maupun kebutuhan ekspor operasional.
+                        </p>
                     </div>
-                )}
-
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-100 pb-8">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Pangkalan Data Mahasiswa</h1>
-                        <p className="text-sm text-slate-500 mt-1">Konsolidasi data induk hasil sinkronisasi dengan Sistem Akademik Pusat.</p>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <div className="hidden xl:block text-right">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Terakhir Sinkron</p>
-                            <p className="text-xs font-bold text-slate-600">{syncInfo.last_synced_at ? formatDateTime(syncInfo.last_synced_at) : 'Belum Pernah'}</p>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <div className="rounded-lg border border-slate-200 bg-white px-4 py-2">
+                            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Sinkron terakhir</p>
+                            <p className="mt-1 text-sm font-semibold text-slate-900">{formatDateTime(syncInfo.last_synced_at)}</p>
                         </div>
                         <Link
                             href="/admin/mahasiswa/sinkron"
-                            className="h-11 px-6 bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-emerald-600 transition-all shadow-md active:scale-95"
+                            className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
                         >
-                            <RefreshCw size={16} />
-                            Sinkron Data
+                            <RefreshCw className="h-4 w-4" />
+                            Sinkron mahasiswa
                         </Link>
                     </div>
-                </div>
+                </header>
 
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
-                    {[
-                        { title: 'Total Data', value: stats.total, icon: Database, color: 'text-slate-600', bg: 'bg-slate-100' },
-                        { title: 'Memiliki Akun', value: stats.with_account, icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { title: 'Akun Aktif', value: stats.active_accounts, icon: Unlock, color: 'text-blue-600', bg: 'bg-blue-50' },
-                        { title: 'Lulus BTA/PPI', value: stats.bta_passed, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { title: 'Ter-sinkron', value: stats.synced, icon: RefreshCw, color: 'text-amber-600', bg: 'bg-amber-50' },
-                    ].map((s, i) => (
-                        <div key={i} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition-all">
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className={clsx("h-10 w-10 rounded-xl flex items-center justify-center", s.bg)}>
-                                    <s.icon className={clsx("w-5 h-5", s.color)} />
-                                </div>
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{s.title}</span>
-                            </div>
-                            <h4 className="text-3xl font-bold text-slate-900 tracking-tight">{s.value.toLocaleString()}</h4>
-                        </div>
-                    ))}
-                </div>
-
-                <form onSubmit={submitFilters} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <div className="flex flex-col gap-5">
-                        <div className="flex items-center justify-between gap-3">
+                {flash?.temporary_password && flash?.temporary_username ? (
+                    <section className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-4">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                             <div>
-                                <h3 className="text-sm font-bold text-slate-800">Filter Registry Mahasiswa</h3>
-                                <p className="text-xs text-slate-500">Gunakan filter untuk menyaring data master berdasarkan identitas, akademik, sinkronisasi, dan akun login.</p>
+                                <p className="text-sm font-semibold text-emerald-800">Kata sandi sementara berhasil dibuat</p>
+                                <p className="text-xs text-emerald-700">
+                                    Bagikan ke pengguna lalu minta mereka mengganti kata sandi saat login berikutnya.
+                                </p>
                             </div>
+                            <div className="flex flex-wrap gap-3">
+                                <div className="rounded-lg border border-emerald-200 bg-white px-4 py-2">
+                                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Username / NIM</p>
+                                    <p className="mt-1 text-sm font-semibold text-slate-900">{flash.temporary_username}</p>
+                                </div>
+                                <div className="rounded-lg border border-emerald-200 bg-white px-4 py-2">
+                                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Kata sandi sementara</p>
+                                    <p className="mt-1 text-sm font-semibold text-slate-900">{flash.temporary_password}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                ) : null}
+
+                <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+                    <SummaryCard label="Total mahasiswa" value={stats.total} icon={Database} />
+                    <SummaryCard label="Sudah punya akun" value={stats.with_account} icon={Users} />
+                    <SummaryCard label="Akun aktif" value={stats.active_accounts} icon={UserCheck} />
+                    <SummaryCard label="Lulus BTA-PPI" value={stats.bta_passed} icon={CheckCircle2} />
+                    <SummaryCard label="Sudah sinkron" value={stats.synced} icon={RefreshCw} />
+                </section>
+
+                <section className="rounded-xl border border-slate-200 bg-white">
+                    <div className="border-b border-slate-200 px-4 py-3">
+                        <h2 className="text-sm font-semibold text-slate-900">Filter data mahasiswa</h2>
+                        <p className="text-xs text-slate-500">Gunakan filter ini untuk audit identitas, akademik, akun, dan status sinkron.</p>
+                    </div>
+                    <div className="grid gap-3 px-4 py-4 md:grid-cols-2 xl:grid-cols-4">
+                        <label className="relative xl:col-span-2">
+                            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                            <input
+                                type="text"
+                                value={formFilters.search}
+                                onChange={(event) => setFormFilters({ ...formFilters, search: event.target.value })}
+                                className="h-11 w-full rounded-lg border border-slate-300 bg-white pl-10 pr-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
+                                placeholder="Cari NIM, nama, NIK, nama ibu, alamat, atau username"
+                            />
+                        </label>
+
+                        <select
+                            value={String(formFilters.faculty_id)}
+                            onChange={(event) => setFormFilters({ ...formFilters, faculty_id: event.target.value, program_id: '' })}
+                            className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
+                        >
+                            <option value="">Semua fakultas</option>
+                            {faculties.map((faculty) => (
+                                <option key={faculty.id} value={faculty.id}>
+                                    {faculty.name}
+                                </option>
+                            ))}
+                        </select>
+
+                        <select
+                            value={String(formFilters.program_id)}
+                            onChange={(event) => setFormFilters({ ...formFilters, program_id: event.target.value })}
+                            className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
+                        >
+                            <option value="">Semua prodi</option>
+                            {visiblePrograms.map((program) => (
+                                <option key={program.id} value={program.id}>
+                                    {program.name}
+                                </option>
+                            ))}
+                        </select>
+
+                        <select
+                            value={String(formFilters.batch_year)}
+                            onChange={(event) => setFormFilters({ ...formFilters, batch_year: event.target.value })}
+                            className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
+                        >
+                            <option value="">Semua angkatan</option>
+                            {batchYears.map((year) => (
+                                <option key={year} value={year}>
+                                    {year}
+                                </option>
+                            ))}
+                        </select>
+
+                        <select
+                            value={formFilters.gender}
+                            onChange={(event) => setFormFilters({ ...formFilters, gender: event.target.value })}
+                            className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
+                        >
+                            <option value="">Semua jenis kelamin</option>
+                            <option value="L">Laki-laki</option>
+                            <option value="P">Perempuan</option>
+                        </select>
+
+                        <select
+                            value={formFilters.bta_ppi}
+                            onChange={(event) => setFormFilters({ ...formFilters, bta_ppi: event.target.value })}
+                            className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
+                        >
+                            <option value="">Semua status BTA-PPI</option>
+                            <option value="passed">Lulus</option>
+                            <option value="failed">Belum lulus</option>
+                        </select>
+
+                        <select
+                            value={formFilters.account_status}
+                            onChange={(event) => setFormFilters({ ...formFilters, account_status: event.target.value })}
+                            className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
+                        >
+                            <option value="">Semua status akun</option>
+                            <option value="active">Akun aktif</option>
+                            <option value="locked">Akun dikunci</option>
+                            <option value="no_account">Belum ada akun</option>
+                        </select>
+
+                        <select
+                            value={formFilters.sync_status}
+                            onChange={(event) => setFormFilters({ ...formFilters, sync_status: event.target.value })}
+                            className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
+                        >
+                            <option value="">Semua status sinkron</option>
+                            <option value="synced">Sudah sinkron</option>
+                            <option value="unsynced">Belum sinkron</option>
+                        </select>
+
+                        <div className="flex flex-wrap gap-3 xl:col-span-4">
+                            <Button type="button" onClick={submitFilters} className="inline-flex h-11 items-center gap-2 rounded-lg px-4">
+                                <Search className="h-4 w-4" />
+                                Terapkan filter
+                            </Button>
                             <button
                                 type="button"
                                 onClick={resetFilters}
-                                className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+                                className="inline-flex h-11 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-400"
                             >
-                                Reset Filter
-                            </button>
-                        </div>
-
-                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                            <label className="block">
-                                <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Cari Master</span>
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                                    <input
-                                        type="search"
-                                        value={formFilters.search}
-                                        onChange={(event) => setFormFilters((current) => ({ ...current, search: event.target.value }))}
-                                        placeholder="NIM, NIK, nama, email, alamat"
-                                        className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm text-slate-700 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/5"
-                                    />
-                                </div>
-                            </label>
-
-                            <label className="block">
-                                <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Fakultas</span>
-                                <select
-                                    value={String(formFilters.faculty_id)}
-                                    onChange={(event) =>
-                                        setFormFilters((current) => ({
-                                            ...current,
-                                            faculty_id: event.target.value,
-                                            program_id:
-                                                current.program_id &&
-                                                !programs.some(
-                                                    (program) =>
-                                                        String(program.id) === String(current.program_id) &&
-                                                        String(program.faculty_id) === event.target.value,
-                                                )
-                                                    ? ''
-                                                    : current.program_id,
-                                        }))
-                                    }
-                                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/5"
-                                >
-                                    <option value="">Semua fakultas</option>
-                                    {faculties.map((faculty) => (
-                                        <option key={faculty.id} value={faculty.id}>
-                                            {faculty.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
-
-                            <label className="block">
-                                <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Program Studi</span>
-                                <select
-                                    value={String(formFilters.program_id)}
-                                    onChange={(event) => setFormFilters((current) => ({ ...current, program_id: event.target.value }))}
-                                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/5"
-                                >
-                                    <option value="">Semua prodi</option>
-                                    {visiblePrograms.map((program) => (
-                                        <option key={program.id} value={program.id}>
-                                            {program.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
-
-                            <label className="block">
-                                <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Angkatan</span>
-                                <select
-                                    value={String(formFilters.batch_year)}
-                                    onChange={(event) => setFormFilters((current) => ({ ...current, batch_year: event.target.value }))}
-                                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/5"
-                                >
-                                    <option value="">Semua angkatan</option>
-                                    {batchYears.map((year) => (
-                                        <option key={year} value={year}>
-                                            {year}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
-
-                            <label className="block">
-                                <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Gender</span>
-                                <select
-                                    value={formFilters.gender}
-                                    onChange={(event) => setFormFilters((current) => ({ ...current, gender: event.target.value }))}
-                                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/5"
-                                >
-                                    <option value="">Semua gender</option>
-                                    <option value="L">Laki-laki</option>
-                                    <option value="P">Perempuan</option>
-                                </select>
-                            </label>
-
-                            <label className="block">
-                                <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Status BTA/PPI</span>
-                                <select
-                                    value={formFilters.bta_ppi}
-                                    onChange={(event) => setFormFilters((current) => ({ ...current, bta_ppi: event.target.value }))}
-                                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/5"
-                                >
-                                    <option value="">Semua status</option>
-                                    <option value="passed">Lulus</option>
-                                    <option value="failed">Belum lulus</option>
-                                </select>
-                            </label>
-
-                            <label className="block">
-                                <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Status Akun</span>
-                                <select
-                                    value={formFilters.account_status}
-                                    onChange={(event) => setFormFilters((current) => ({ ...current, account_status: event.target.value }))}
-                                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/5"
-                                >
-                                    <option value="">Semua akun</option>
-                                    <option value="active">Akun aktif</option>
-                                    <option value="locked">Akun terkunci</option>
-                                </select>
-                            </label>
-
-                            <label className="block">
-                                <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Status Sinkron</span>
-                                <select
-                                    value={formFilters.sync_status}
-                                    onChange={(event) => setFormFilters((current) => ({ ...current, sync_status: event.target.value }))}
-                                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/5"
-                                >
-                                    <option value="">Semua status</option>
-                                    <option value="synced">Sudah sinkron</option>
-                                    <option value="unsynced">Belum sinkron</option>
-                                </select>
-                            </label>
-                        </div>
-
-                        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-                            <button
-                                type="submit"
-                                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 text-sm font-bold text-white transition hover:bg-emerald-700"
-                            >
-                                <Search size={16} />
-                                Terapkan Filter
+                                Reset
                             </button>
                         </div>
                     </div>
-                </form>
+                </section>
 
-                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <section className="rounded-xl border border-slate-200 bg-white">
+                    <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+                        <div>
+                            <h2 className="text-sm font-semibold text-slate-900">Daftar mahasiswa</h2>
+                            <p className="text-xs text-slate-500">Termasuk identitas, akademik, akun, dan jejak sinkron master.</p>
+                        </div>
+                    </div>
+
                     <div className="overflow-x-auto">
-                        <table className="w-full min-w-[1180px] border-collapse text-left">
+                        <table>
                             <thead>
-                                <tr className="border-b border-slate-200 bg-slate-50/80">
-                                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500">Identitas Master</th>
-                                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500">Data Pribadi</th>
-                                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500">Akademik</th>
-                                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500">Metrik</th>
-                                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500">Sinkron Master</th>
-                                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500">BTA/PPI</th>
-                                    <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500">Akun Login</th>
-                                    <th className="px-6 py-4 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500">Opsi</th>
+                                <tr>
+                                    <th>Mahasiswa</th>
+                                    <th>Identitas</th>
+                                    <th>Akademik</th>
+                                    <th>Kelayakan KKN</th>
+                                    <th>Sinkron & akun</th>
+                                    <th className="text-right">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {students.data.length > 0 ? (
+                            <tbody>
+                                {students.data.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="px-4 py-16 text-center">
+                                            <div className="mx-auto max-w-md space-y-2">
+                                                <FileSpreadsheet className="mx-auto h-10 w-10 text-slate-300" />
+                                                <p className="text-sm font-semibold text-slate-700">Belum ada data mahasiswa</p>
+                                                <p className="text-xs text-slate-500">Coba ubah filter atau lakukan sinkronisasi master data.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : (
                                     students.data.map((student) => (
-                                        <tr key={student.id} className="align-top transition hover:bg-slate-50/50">
-                                            <td className="px-6 py-5">
-                                                <div className="flex items-start gap-4">
-                                                    <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-sm font-bold text-emerald-600">
-                                                        {student.nama.charAt(0)}
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <div className="text-sm font-bold text-slate-900">{student.nama}</div>
-                                                        <div className="text-xs font-medium text-slate-500">NIM {student.nim}</div>
-                                                        <div className="text-xs text-slate-500">NIK {student.nik ?? '-'}</div>
-                                                        {student.account ? (
-                                                            <div className="text-xs text-slate-500">
-                                                                Username <span className="font-semibold text-slate-700">{student.account.username}</span>
-                                                            </div>
-                                                        ) : (
-                                                            <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-700">
-                                                                Relasi akun tidak ditemukan
-                                                            </span>
-                                                        )}
-                                                    </div>
+                                        <tr key={student.id}>
+                                            <td>
+                                                <div className="space-y-1">
+                                                    <p className="font-semibold text-slate-900">{student.nama}</p>
+                                                    <p className="text-xs text-slate-500">
+                                                        NIM {student.nim}
+                                                        {student.account ? ` • @${student.account.username}` : ''}
+                                                    </p>
+                                                    <p className="text-xs text-slate-500">{student.account?.email || '-'}</p>
                                                 </div>
                                             </td>
-
-                                            <td className="px-6 py-5">
-                                                <div className="space-y-1.5 text-xs text-slate-600">
-                                                    <div>
-                                                        Nama ibu: <span className="font-semibold text-slate-800">{student.mother_name ?? '-'}</span>
-                                                    </div>
-                                                    <div className="max-w-xs leading-5 text-slate-500">
-                                                        Alamat: <span className="font-semibold text-slate-700">{student.address ?? '-'}</span>
-                                                    </div>
+                                            <td>
+                                                <div className="space-y-1">
+                                                    <p className="text-sm text-slate-800">NIK: {student.nik || '-'}</p>
+                                                    <p className="text-xs text-slate-500">Nama ibu: {student.mother_name || '-'}</p>
+                                                    <p className="line-clamp-2 text-xs text-slate-500">{student.address || 'Alamat belum diisi'}</p>
                                                 </div>
                                             </td>
-
-                                            <td className="px-6 py-5">
-                                                <div className="space-y-1.5 text-xs">
-                                                    <div className="font-semibold text-slate-800">{student.prodi?.nama ?? '-'}</div>
-                                                    <div className="text-slate-500">{student.fakultas?.nama ?? '-'}</div>
-                                                    <div className="text-slate-500">
-                                                        Angkatan {student.batch_year ?? '-'} · {formatGender(student.gender)}
-                                                    </div>
+                                            <td>
+                                                <div className="space-y-1">
+                                                    <p className="text-sm text-slate-800">{student.prodi?.nama || 'Prodi belum dipetakan'}</p>
+                                                    <p className="text-xs text-slate-500">{student.fakultas?.nama || 'Fakultas belum dipetakan'}</p>
+                                                    <p className="text-xs text-slate-500">
+                                                        Angkatan {student.batch_year || '-'} • {formatGender(student.gender)}
+                                                    </p>
                                                 </div>
                                             </td>
-
-                                            <td className="px-6 py-5">
-                                                <div className="space-y-1.5 text-xs text-slate-600">
-                                                    <div>SKS: <span className="font-semibold text-slate-800">{student.sks_completed ?? '-'}</span></div>
-                                                    <div>IPK: <span className="font-semibold text-slate-800">{formatGpa(student.gpa)}</span></div>
-                                                    <div>ID Master: <span className="font-semibold text-slate-800">{student.master_id ?? '-'}</span></div>
-                                                </div>
-                                            </td>
-
-                                            <td className="px-6 py-5">
-                                                <div className="space-y-2">
+                                            <td>
+                                                <div className="space-y-1">
+                                                    <p className="text-sm text-slate-800">SKS: {student.sks_completed ?? 0}</p>
+                                                    <p className="text-xs text-slate-500">IPK: {student.gpa?.toFixed(2) ?? '0.00'}</p>
                                                     <span
                                                         className={clsx(
-                                                            'inline-flex rounded-full border px-2.5 py-1 text-[10px] font-bold',
-                                                            student.master_synced_at
-                                                                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                                                                : 'border-slate-200 bg-slate-50 text-slate-600',
+                                                            'inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold',
+                                                            student.is_bta_ppi_passed ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700',
                                                         )}
                                                     >
-                                                        {student.master_synced_at ? 'Sudah sinkron' : 'Belum sinkron'}
+                                                        {student.is_bta_ppi_passed ? 'BTA-PPI lulus' : 'BTA-PPI belum lulus'}
                                                     </span>
-                                                    <div className="text-xs text-slate-500">{formatDateTime(student.master_synced_at)}</div>
                                                 </div>
                                             </td>
-
-                                            <td className="px-6 py-5">
-                                                {student.is_bta_ppi_passed ? (
-                                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-bold text-emerald-700">
-                                                        <CheckCircle2 size={12} />
-                                                        Lulus
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[10px] font-bold text-rose-700">
-                                                        <XCircle size={12} />
-                                                        Belum lulus
-                                                    </span>
-                                                )}
+                                            <td>
+                                                <div className="space-y-1">
+                                                    <p className="text-sm text-slate-800">Master ID: {student.master_id || '-'}</p>
+                                                    <p className="text-xs text-slate-500">Sinkron: {formatDateTime(student.master_synced_at)}</p>
+                                                    <AccountBadge student={student} />
+                                                </div>
                                             </td>
-
-                                            <td className="px-6 py-5">
-                                                {student.account ? (
-                                                    <div className="space-y-2 text-xs">
-                                                        <div className="font-semibold text-slate-800">{student.account.email}</div>
-                                                        <span
-                                                            className={clsx(
-                                                                'inline-flex rounded-full border px-2.5 py-1 text-[10px] font-bold',
-                                                                student.account.is_active
-                                                                    ? 'border-blue-200 bg-blue-50 text-blue-700'
-                                                                    : 'border-amber-200 bg-amber-50 text-amber-700',
-                                                            )}
-                                                        >
-                                                            {student.account.is_active ? 'Akun aktif' : 'Akun terkunci'}
-                                                        </span>
-                                                    </div>
-                                                ) : (
-                                                    <div className="text-xs text-slate-500">Record master ini belum menemukan relasi akun portal yang valid.</div>
-                                                )}
-                                            </td>
-
-                                            <td className="px-6 py-5">
-                                                <div className="flex items-center justify-end gap-2">
+                                            <td>
+                                                <div className="flex justify-end gap-2">
                                                     <button
                                                         type="button"
                                                         onClick={() => resetTemporaryPassword(student)}
                                                         disabled={!student.account}
-                                                        className={clsx(
-                                                            'inline-flex h-9 w-9 items-center justify-center rounded-lg border shadow-sm transition active:scale-95',
-                                                            student.account
-                                                                ? 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'
-                                                                : 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-300',
-                                                        )}
-                                                        title={!student.account ? 'Akun belum tersedia' : 'Reset Password Sementara'}
+                                                        className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-400 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-40"
+                                                        title="Buat kata sandi sementara"
                                                     >
-                                                        <KeyRound size={16} />
+                                                        <KeyRound className="h-4 w-4" />
                                                     </button>
-
                                                     <button
                                                         type="button"
                                                         onClick={() => toggleStatus(student)}
                                                         disabled={!student.account}
                                                         className={clsx(
-                                                            'inline-flex h-9 w-9 items-center justify-center rounded-lg border shadow-sm transition active:scale-95',
-                                                            student.account
-                                                                ? student.account.is_active
-                                                                    ? 'border-slate-200 bg-white text-slate-500 hover:border-rose-200 hover:text-rose-600'
-                                                                    : 'border-emerald-500 bg-emerald-600 text-white hover:bg-emerald-700'
-                                                                : 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-300',
+                                                            'inline-flex h-10 items-center justify-center rounded-lg border px-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40',
+                                                            student.account?.is_active
+                                                                ? 'border-slate-300 bg-white text-slate-700 hover:border-rose-300 hover:text-rose-700'
+                                                                : 'border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700',
                                                         )}
-                                                        title={
-                                                            !student.account
-                                                                ? 'Akun belum tersedia'
-                                                                : student.account.is_active
-                                                                  ? 'Kunci akun'
-                                                                  : 'Buka kunci akun'
-                                                        }
+                                                        title={student.account?.is_active ? 'Nonaktifkan akun' : 'Aktifkan akun'}
                                                     >
-                                                        {student.account?.is_active ? <Lock size={16} /> : <Unlock size={16} />}
+                                                        {student.account?.is_active ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
                                                     </button>
-
                                                     <Link
-                                                        href={`/admin/pendaftaran?search=${student.nim}`}
-                                                        className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-[11px] font-bold text-slate-600 shadow-sm transition hover:bg-slate-50 active:scale-95"
+                                                        href={`/admin/mahasiswa/${student.id}`}
+                                                        className="inline-flex h-10 items-center rounded-lg bg-slate-900 px-3 text-sm font-semibold text-white transition hover:bg-slate-700"
                                                     >
                                                         Detail
-                                                        <ArrowRight size={14} />
                                                     </Link>
                                                 </div>
                                             </td>
                                         </tr>
                                     ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={8} className="px-6 py-20 text-center">
-                                            <div className="flex flex-col items-center gap-4 text-slate-400">
-                                                <GraduationCap className="h-12 w-12 opacity-20" />
-                                                <div className="space-y-1">
-                                                    <p className="text-sm font-semibold italic text-slate-500">Belum ada data mahasiswa yang cocok dengan filter saat ini.</p>
-                                                    <p className="text-xs text-slate-400">Coba ubah filter atau lakukan sinkron data master kampus.</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
 
-                    <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4">
+                    <div className="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+                        <p className="text-xs text-slate-500">
+                            Menampilkan {students.meta.from ?? 0} - {students.meta.to ?? 0} dari {students.meta.total.toLocaleString('id-ID')} mahasiswa.
+                        </p>
                         <Pagination meta={students.meta} />
                     </div>
-                </div>
+                </section>
             </div>
         </AppLayout>
     );

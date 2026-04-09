@@ -27,6 +27,6 @@ class Announcement extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('is_active', true)->orderByDesc('published_at');
+        return $query->where('is_active', true);
     }
 }

@@ -9,7 +9,8 @@ export function withRBAC<P extends object>(
     return function WithRBACComponent(props: P) {
         const { auth } = usePage<PageProps>().props;
         const userRoles = auth.user?.roles ?? [];
-        const hasAccess = userRoles.length > 0 && userRoles.some(role => allowedRoles.includes(role));
+        const roleNames = userRoles.map(r => typeof r === 'object' && r !== null ? (r as { name: string }).name : String(r));
+        const hasAccess = roleNames.length > 0 && roleNames.some(role => allowedRoles.includes(role));
 
         if (!hasAccess) {
             return (

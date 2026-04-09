@@ -6,7 +6,9 @@ use App\Models\KKN\Dosen;
 use App\Models\KKN\DplPeriod;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
+use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\Periode;
+use App\Models\KKN\Workshop;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\Models\Role;
@@ -19,6 +21,7 @@ class AdminDplAssignmentTest extends TestCase
         parent::setUp();
 
         Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
     }
 
     public function test_superadmin_can_open_dpl_assignment_page_with_expected_data(): void
@@ -161,5 +164,63 @@ class AdminDplAssignmentTest extends TestCase
             'district_name' => 'Kecamatan Demo',
             'is_active' => true,
         ], 'kkn');
+    }
+
+    public function test_admin_role_can_open_dpl_assignment_page(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $period = Periode::factory()->active()->create();
+        KelompokKkn::factory()->create([
+            'period_id' => $period->id,
+            'location_id' => Lokasi::factory(),
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.dpl.assignment'))
+            ->assertOk();
+    }
+
+    public function test_workshop_pass_flag_is_scoped_to_selected_period(): void
+    {
+        if (! Workshop::supportsPeriodAssignment()) {
+            $this->markTestSkipped('Schema workshop saat ini belum mendukung period_id.');
+        }
+
+        $admin = User::factory()->create();
+        $admin->assignRole('superadmin');
+
+        $periodActive = Periode::factory()->active()->create(['name' => 'Periode Aktif']);
+        $periodOld = Periode::factory()->create(['name' => 'Periode Lama']);
+
+        $dosenUser = User::factory()->create();
+        $dosen = Dosen::factory()->create([
+            'user_id' => $dosenUser->id,
+            'nip' => '198700010099',
+        ]);
+
+        $oldWorkshop = Workshop::query()->create([
+            'period_id' => $periodOld->id,
+            'title' => 'Workshop Lama',
+            'workshop_date' => now()->addDay()->toDateString(),
+            'status' => 'scheduled',
+        ]);
+
+        PesertaWorkshop::query()->create([
+            'workshop_id' => $oldWorkshop->id,
+            'user_id' => $dosenUser->id,
+            'registered_at' => now(),
+            'attendance_status' => 'attended',
+            'checked_in_at' => now(),
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.dpl.assignment', ['period_id' => $periodActive->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dpl/Assignment')
+                ->where('allDosen.0.is_workshop_passed', false)
+            );
     }
 }

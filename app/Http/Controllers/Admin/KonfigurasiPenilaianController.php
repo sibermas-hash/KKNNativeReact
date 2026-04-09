@@ -4,17 +4,21 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\KonfigurasiPenilaian;
+use App\Enums\KknType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class KonfigurasiPenilaianController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         KonfigurasiPenilaian::ensureDefaults();
 
+        $selectedType = KknType::tryFrom($request->query('kkn_type')) ?? KknType::REGULER;
+
         $configs = KonfigurasiPenilaian::query()
+            ->where('kkn_type', $selectedType)
             ->orderByRaw("CASE \"group\" WHEN 'main' THEN 1 WHEN 'dpl' THEN 2 WHEN 'village' THEN 3 WHEN 'lppm' THEN 4 ELSE 5 END")
             ->orderBy('id')
             ->get();
@@ -37,15 +41,23 @@ class KonfigurasiPenilaianController extends Controller
             ])
             ->values();
 
+        $programOptions = collect(KknType::cases())
+            ->map(fn (KknType $type) => [
+                'value' => $type->value,
+                'label' => $type->label()
+            ])->values();
+
         return Inertia::render('Admin/Grading/Settings', [
             'sections' => $sections,
+            'programOptions' => $programOptions,
+            'filters' => [
+                'kkn_type' => $selectedType->value
+            ]
         ]);
     }
 
     public function update(Request $request)
     {
-        KonfigurasiPenilaian::ensureDefaults();
-
         $validated = $request->validate([
             'configs' => 'required|array',
             'configs.*.id' => 'required|exists:kkn.konfigurasi_penilaian,id',
@@ -71,7 +83,7 @@ class KonfigurasiPenilaianController extends Controller
             ->map(fn ($entries) => round((float) collect($entries)->sum('percentage'), 2));
 
         foreach (['main', 'dpl', 'village', 'lppm'] as $group) {
-            if (($groupedTotals[$group] ?? 0.0) !== 100.0) {
+            if ($groupedTotals->has($group) && ($groupedTotals[$group] ?? 0.0) !== 100.0) {
                 return back()->withErrors([
                     'configs' => "Total bobot untuk kelompok {$this->groupTitle($group)} harus tepat 100%.",
                 ]);
@@ -83,8 +95,6 @@ class KonfigurasiPenilaianController extends Controller
                 'percentage' => $configData['percentage'],
             ]);
         }
-
-        Cache::forget('grading_configs');
 
         return back()->with('success', 'Konfigurasi penilaian berhasil diperbarui.');
     }

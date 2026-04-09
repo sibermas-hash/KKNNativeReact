@@ -10,6 +10,7 @@ use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\SystemSetting;
 use App\Services\RegistrationPortalService;
 use App\Services\RegistrationService;
+use App\Services\KKN\KknRequirementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -70,6 +71,49 @@ class RegistrationController extends Controller
         ];
     }
 
+    private function domicileProfileSummary(?\App\Models\User $user): array
+    {
+        $required = [
+            'address' => $user?->address,
+            'domicile_village_name' => $user?->domicile_village_name,
+            'domicile_district_name' => $user?->domicile_district_name,
+            'domicile_regency_name' => $user?->domicile_regency_name,
+        ];
+
+        $labels = [
+            'address' => 'Alamat lengkap domisili',
+            'domicile_village_name' => 'Desa/Kelurahan domisili',
+            'domicile_district_name' => 'Kecamatan domisili',
+            'domicile_regency_name' => 'Kabupaten/Kota domisili',
+        ];
+
+        $missingKeys = collect($required)
+            ->filter(fn ($value) => blank($value))
+            ->keys()
+            ->values();
+
+        $isVerified = filled($user?->address_verified_at);
+
+        return [
+            'is_complete' => $missingKeys->isEmpty() && $isVerified,
+            'is_verified' => $isVerified,
+            'verified_at' => $user?->address_verified_at?->toIso8601String(),
+            'regency_name' => $user?->domicile_regency_name,
+            'missing_fields' => $missingKeys
+                ->map(fn (string $key) => [
+                    'key' => $key,
+                    'label' => $labels[$key] ?? $key,
+                ])
+                ->when(! $isVerified, fn ($collection) => $collection->push([
+                    'key' => 'address_verified',
+                    'label' => 'Verifikasi alamat domisili',
+                ]))
+                ->values()
+                ->all(),
+            'profile_url' => route('profile.show'),
+        ];
+    }
+
     private function hasLockedRegistration(?\App\Models\KKN\Mahasiswa $mahasiswa): bool
     {
         if (! $mahasiswa) {
@@ -86,7 +130,8 @@ class RegistrationController extends Controller
 
     public function create(
         RegistrationService $registrationService,
-        RegistrationPortalService $registrationPortalService
+        RegistrationPortalService $registrationPortalService,
+        KknRequirementService $requirementService
     ): Response|RedirectResponse {
         $today = now()->toDateString();
         $mahasiswa = auth()->user()?->mahasiswa;
@@ -118,21 +163,35 @@ class RegistrationController extends Controller
             : collect();
 
         $periods = $periods
-            ->map(function (array $period) use ($registrations, $queues, $registrationService) {
-                $period['registration'] = $registrationService->registrationSummaryForPeriod(
-                    $registrations->get($period['id']),
-                    $queues->get($period['id']),
+            ->map(function (array $periodData) use ($registrations, $queues, $registrationService, $requirementService) {
+                $period = Periode::find($periodData['id']);
+                $periodData['registration'] = $registrationService->registrationSummaryForPeriod(
+                    $registrations->get($periodData['id']),
+                    $queues->get($periodData['id']),
                 );
+                
+                // Add dynamic requirement descriptions
+                $periodData['requirement_info'] = $requirementService->describe($period);
 
-                return $period;
+                return $periodData;
             })
             ->values();
 
+        $selfServicePeriods = $periods
+            ->filter(fn (array $period) => (bool) ($period['self_service_enabled'] ?? false))
+            ->values();
+
+        $managedPrograms = $periods
+            ->reject(fn (array $period) => (bool) ($period['self_service_enabled'] ?? false))
+            ->values();
+
         return Inertia::render('Student/Register', [
-            'periods' => $periods,
+            'periods' => $selfServicePeriods,
+            'managed_programs' => $managedPrograms,
             'student_gender' => $mahasiswa?->gender,
             'student_academic' => $mahasiswa ? [
                 'sks_completed' => $mahasiswa->sks_completed,
+                'gpa' => $mahasiswa->gpa,
                 'is_bta_ppi_passed' => $this->hasPassedBtaPpi($mahasiswa),
                 'bta_ppi_status' => $mahasiswa->status_bta_ppi,
                 'has_health_certificate' => (bool) $mahasiswa->health_certificate_path,
@@ -141,17 +200,29 @@ class RegistrationController extends Controller
                 'min_sks' => (int) SystemSetting::get('min_sks_registration', 100),
             ] : null,
             'bpjs_profile' => $this->bpjsProfileSummary($mahasiswa, auth()->user()),
+            'domicile_profile' => $this->domicileProfileSummary(auth()->user()),
         ]);
     }
 
     public function store(
         StoreRegistrationRequest $request,
-        RegistrationService $registrationService
+        RegistrationService $registrationService,
+        KknRequirementService $requirementService
     ): RedirectResponse {
         $mahasiswa = $request->user()?->mahasiswa;
+        $periodId = (int) $request->input('period_id');
+        $period = Periode::query()->findOrFail($periodId);
 
         if (! $mahasiswa) {
             return redirect()->back()->with('error', 'Profil mahasiswa belum ditemukan.');
+        }
+
+        // Validate KKN Scheme Requirements
+        $requirementErrors = $requirementService->validate($mahasiswa, $period);
+        if (!empty($requirementErrors)) {
+            return redirect()->back()->withErrors([
+                'period_id' => $requirementErrors
+            ]);
         }
 
         $bpjsProfile = $this->bpjsProfileSummary($mahasiswa, $request->user());
@@ -161,9 +232,21 @@ class RegistrationController extends Controller
                 ->with('error', 'Lengkapi biodata peserta dan data BPJS terlebih dahulu sebelum mendaftar KKN.');
         }
 
+        $domicileProfile = $this->domicileProfileSummary($request->user());
+        if (! $domicileProfile['is_complete']) {
+            return redirect()->route('profile.show')
+                ->with('error', 'Lengkapi dan verifikasi alamat domisili terlebih dahulu sebelum sistem dapat menempatkan Anda ke kelompok KKN.');
+        }
+
         if ($this->hasLockedRegistration($mahasiswa)) {
             return redirect()->route('student.dashboard')
                 ->with('error', 'Pendaftaran Anda sudah dikunci dan tidak dapat diubah lagi.');
+        }
+
+        if (! $period->usesSelfServiceRegistration()) {
+            return redirect()->back()->withErrors([
+                'period_id' => "Periode {$period->name} tidak menggunakan pendaftaran mandiri mahasiswa. Program ini dikelola melalui seleksi khusus atau penugasan oleh LPPM.",
+            ]);
         }
 
         if ($request->hasFile('health_certificate')) {
@@ -186,14 +269,27 @@ class RegistrationController extends Controller
             $mahasiswa->update(['parent_permission_path' => $path]);
         }
 
+        // FIX C10: Pass authenticated user ID for ownership verification
         $registrationService->register(
             $mahasiswa,
-            (int) $request->input('period_id'),
-            $request->input('kelompok_id') ? (int) $request->input('kelompok_id') : null,
-            $request->input('notes')
+            $periodId,
+            null,
+            $request->input('notes'),
+            auth()->id()
         );
 
-        return redirect()->back()->with('success', 'Pendaftaran atau pilihan kelompok berhasil diperbarui.');
+        $kknType = $period->jenis instanceof \App\Enums\KknType
+            ? $period->jenis
+            : \App\Enums\KknType::tryFrom($period->jenis) ?? \App\Enums\KknType::REGULER;
+        $message = "Pendaftaran {$period->name} berhasil diajukan.";
+
+        if ($kknType === \App\Enums\KknType::REGULER) {
+            $message .= " Setelah admin menyetujui pendaftaran Anda, sistem akan menempatkan Anda otomatis ke kelompok yang sesuai di luar kabupaten/kota domisili.";
+        } else {
+            $message .= " Skema " . $kknType->label() . " memerlukan tahap seleksi khusus. Mohon pantau status pendaftaran Anda secara berkala.";
+        }
+
+        return redirect()->back()->with('success', $message);
     }
 
     public function leave(

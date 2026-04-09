@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
+import { route } from 'ziggy-js';
 import { BellIcon, CheckBadgeIcon, ClockIcon } from '@heroicons/react/24/outline';
 
 interface NotificationItem {
@@ -171,6 +172,4 @@ export default function BellDropdown() {
  )}
  </div>
  );
-}
-;
 }

@@ -15,8 +15,23 @@ class AdminKeyController extends Controller
     {
         $adminSecret = config('api_keys.admin_secret');
 
-        return (bool) $adminSecret
-            && hash_equals($adminSecret, $request->header('x-admin-secret') ?? '');
+        // SECURITY: If admin_secret is not configured, reject all requests
+        if (!$adminSecret || trim($adminSecret) === '') {
+            \Illuminate\Support\Facades\Log::warning('Admin secret not configured', [
+                'ip' => $request->ip(),
+            ]);
+            return false;
+        }
+
+        // Get the provided secret, default to empty string
+        $providedSecret = $request->header('x-admin-secret') ?? '';
+
+        // SECURITY: Reject empty provided secrets
+        if ($providedSecret === '') {
+            return false;
+        }
+
+        return hash_equals($adminSecret, $providedSecret);
     }
 
     /**

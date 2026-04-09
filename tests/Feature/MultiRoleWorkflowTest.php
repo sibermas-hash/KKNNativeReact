@@ -106,7 +106,9 @@ class MultiRoleWorkflowTest extends TestCase
             ->post(route('admin.periods.store'), [
                 'academic_year_id' => $academicYear->id,
                 'periode' => 57,
-                'jenis' => 'REGULER',
+                'program_type' => Periode::PROGRAM_TYPE_REGULER,
+                'program_subtype' => null,
+                'jenis' => 'KKN Reguler',
                 'name' => 'KKN Reguler 2026',
                 'start_date' => now()->addWeeks(2)->toDateString(),
                 'end_date' => now()->addWeeks(10)->toDateString(),

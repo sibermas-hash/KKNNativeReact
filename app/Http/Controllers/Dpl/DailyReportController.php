@@ -239,6 +239,9 @@ class DailyReportController extends Controller
     }
     public function batchApprove(Request $request): RedirectResponse
     {
+        // SECURITY: Limit batch approve to prevent abuse
+        $maxBatchLimit = 50;
+
         // ADDED: Proper validation
         $validated = $request->validate([
             'group_ids' => ['nullable', 'array'],
@@ -263,6 +266,14 @@ class DailyReportController extends Controller
         }
         if (!empty($validated['date_to'])) {
             $query->where('date', '<=', $validated['date_to']);
+        }
+
+        // SECURITY: Count first and enforce limit
+        $totalCount = $query->count();
+        if ($totalCount > $maxBatchLimit) {
+            return redirect()->back()->with('error',
+                "Persetujuan massal dibatasi maksimal {$maxBatchLimit} laporan per tindakan. Silakan persempit rentang tanggal atau pilih kelompok tertentu."
+            );
         }
 
         $count = $query->update([

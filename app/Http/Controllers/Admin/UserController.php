@@ -343,15 +343,48 @@ class UserController extends Controller
         $temporaryPassword = Str::password(12);
 
         $user->forceFill([
-            'password' => $temporaryPassword,
+            'password' => Hash::make($temporaryPassword), // Explicit hashing for defense-in-depth
             'must_change_password' => true,
             'password_changed_at' => null,
             'remember_token' => Str::random(60),
         ])->save();
 
+        session()->flash('temporary_password_display', [
+            'username' => $user->username,
+            'password' => $temporaryPassword,
+            'expires_at' => now()->addMinutes(5), // Auto-expire after 5 minutes
+        ]);
+
         return redirect()->back()
-            ->with('success', "Password sementara untuk akun {$user->username} berhasil dibuat.")
             ->with('temporary_username', $user->username)
-            ->with('temporary_password', $temporaryPassword);
+            ->with('temporary_password', $temporaryPassword)
+            ->with('success', "Password sementara untuk akun {$user->username} berhasil dibuat. Silakan lihat di halaman ini untuk menyalin password.");
+    }
+
+    /**
+     * Get and clear the temporary password display data.
+     * This ensures the password is only shown once and then removed.
+     */
+    public function getTemporaryPasswordDisplay(): ?array
+    {
+        $data = session()->pull('temporary_password_display');
+
+        if (! $data && session()->has('temporary_username') && session()->has('temporary_password')) {
+            $data = [
+                'username' => session('temporary_username'),
+                'password' => session('temporary_password'),
+            ];
+        }
+
+        if ($data && isset($data['expires_at']) && now()->lt($data['expires_at'])) {
+            return $data;
+        }
+
+        if ($data && ! isset($data['expires_at'])) {
+            return $data;
+        }
+
+        // Expired or not found
+        return null;
     }
 }

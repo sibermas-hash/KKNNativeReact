@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { useLayoutEffect, useRef } from 'react';
 import type { PageProps } from '@/types';
+import { route } from 'ziggy-js';
 import {
     LayoutDashboard,
     Calendar,
@@ -41,78 +42,78 @@ interface NavGroup {
 
 const adminNav: NavGroup[] = [
     {
-        title: 'Dashboard',
+        title: 'Dasbor',
         items: [
-            { label: 'Ringkasan', href: '/admin', icon: LayoutDashboard },
+            { label: 'Ringkasan', href: route('admin.dashboard'), icon: LayoutDashboard },
         ],
     },
     {
-        title: 'Master Data',
+        title: 'Data Master',
         items: [
-            { label: 'Tahun Akademik', href: '/admin/tahun-akademik', icon: Calendar },
-            { label: 'Periode KKN', href: '/admin/periode', icon: Calendar },
-            { label: 'Lokasi KKN', href: '/admin/lokasi', icon: MapPin },
-            { label: 'Dosen (DPL)', href: '/admin/dosen', icon: Users },
-            { label: 'Mahasiswa', href: '/admin/mahasiswa', icon: GraduationCap },
-            { label: 'Cek Eligibility', href: '/admin/cek-kelayakan', icon: ShieldCheck },
+            { label: 'Tahun Akademik', href: route('admin.academic-years.index'), icon: Calendar },
+            { label: 'Periode KKN', href: route('admin.periode.index'), icon: Calendar },
+            { label: 'Lokasi KKN', href: route('admin.lokasi.index'), icon: MapPin },
+            { label: 'Dosen (DPL)', href: route('admin.dpl.sync'), icon: Users },
+            { label: 'Mahasiswa', href: route('admin.mahasiswa.index'), icon: GraduationCap },
+            { label: 'Cek Kelayakan', href: route('admin.cek-kelayakan.index'), icon: ShieldCheck },
         ],
     },
     {
         title: 'Operasional',
         items: [
-            { label: 'Registrasi', href: '/admin/pendaftaran', icon: ClipboardList },
-            { label: 'Kelompok KKN', href: '/admin/kelompok', icon: Users2 },
-            { label: 'Penugasan DPL', href: '/admin/dosen/penugasan', icon: Users },
-            { label: 'Mutasi Peserta', href: '/admin/peserta/pindah', icon: Shuffle },
-            { label: 'Akses Pengguna', href: '/admin/pengguna', icon: Users },
+            { label: 'Registrasi', href: route('admin.pendaftaran.index'), icon: ClipboardList },
+            { label: 'Kelompok KKN', href: route('admin.kelompok.index'), icon: Users2 },
+            { label: 'Penugasan DPL', href: route('admin.dpl.penugasan'), icon: Users },
+            { label: 'Mutasi Peserta', href: route('admin.peserta.pindah.index'), icon: Shuffle },
+            { label: 'Akses Pengguna', href: route('admin.pengguna.index'), icon: Users },
         ],
     },
     {
         title: 'Pelaporan',
         items: [
-            { label: 'Log Aktivitas', href: '/admin/laporan/harian', icon: FileText },
-            { label: 'Progam Kerja', href: '/admin/laporan/program-kerja', icon: FolderKanban },
-            { label: 'Audit Kualitas', href: '/admin/auditor-aktivitas', icon: Cpu },
-            { label: 'Laporan Akhir', href: '/admin/laporan/akhir', icon: FileText },
-            { label: 'Evaluasi Mahasiswa', href: '/admin/evaluasi', icon: BarChart3 },
-            { label: 'Generator Nilai', href: '/admin/generator-nilai', icon: FileSpreadsheet },
-            { label: 'Rekapitulasi Nilai', href: '/admin/grade-reports', icon: Award },
-            { label: 'Kualifikasi DPL', href: '/admin/workshop', icon: Presentation },
+            { label: 'Log Aktivitas', href: route('admin.laporan.harian.index'), icon: FileText },
+            { label: 'Progam Kerja', href: route('admin.laporan.program-kerja.index'), icon: FolderKanban },
+            { label: 'Audit Kualitas', href: route('admin.activity-audit.index'), icon: Cpu },
+            { label: 'Laporan Akhir', href: route('admin.laporan.akhir.index'), icon: FileText },
+            { label: 'Evaluasi Mahasiswa', href: route('admin.evaluasi.index'), icon: BarChart3 },
+            { label: 'Generator Nilai', href: route('admin.generator-nilai.index'), icon: FileSpreadsheet },
+            { label: 'Rekapitulasi Nilai', href: route('admin.grade-reports.index'), icon: Award },
+            { label: 'Kualifikasi DPL', href: route('admin.workshop.index'), icon: Presentation },
         ],
     },
     {
         title: 'Publikasi',
         items: [
-            { label: 'Profil LPPM', href: '/admin/konten-publik/profil', icon: Globe },
-            { label: 'Skema KKN', href: '/admin/konten-publik/skema', icon: FolderKanban },
-            { label: 'Berita/Warta', href: '/admin/warta-utama', icon: Megaphone },
-            { label: 'File Manager', href: '/admin/unduhan', icon: Download },
+            { label: 'Profil LPPM', href: route('admin.konten.profil.index'), icon: Globe },
+            { label: 'Skema KKN', href: route('admin.konten.skema.index'), icon: FolderKanban },
+            { label: 'Berita/Warta', href: route('admin.warta-utama.index'), icon: Megaphone },
+            { label: 'Repositori Dokumen', href: route('admin.unduhan.index'), icon: Download },
         ],
     },
     {
         title: 'Konfigurasi',
         items: [
-            { label: 'Persyaratan KKN', href: '/admin/kkn-requirements', icon: ShieldCheck },
-            { label: 'Aturan Nilai', href: '/admin/konfigurasi-penilaian', icon: Hammer },
-            { label: 'Parameter Sistem', href: '/admin/pengaturan/sistem', icon: SlidersHorizontal },
-            { label: 'Sinkronisasi', href: '/admin/mahasiswa/sinkron', icon: RefreshCw },
+            { label: 'Persyaratan KKN', href: route('admin.kkn-requirements.index'), icon: ShieldCheck },
+            { label: 'Aturan Nilai', href: route('admin.konfigurasi-penilaian.index'), icon: Hammer },
+            { label: 'Parameter Sistem', href: route('admin.pengaturan.sistem'), icon: SlidersHorizontal },
+            { label: 'Sinkronisasi', href: route('admin.mahasiswa.sinkron'), icon: RefreshCw },
         ],
     },
 ];
 
 const dplNav: NavGroup[] = [
     {
-        title: 'Dashboard',
+        title: 'Dasbor',
         items: [
-            { label: 'Monitoring DPL', href: '/dpl', icon: LayoutDashboard },
+            { label: 'Dasbor DPL', href: '/dpl', icon: LayoutDashboard },
             { label: 'Daftar Kelompok', href: '/dpl/kelompok', icon: Users2 },
         ],
     },
     {
         title: 'Bimbingan',
         items: [
-            { label: 'Log Harian', href: '/dpl/laporan-harian', icon: FileText },
-            { label: 'Dokumen Akhir', href: '/dpl/laporan-akhir', icon: FileText },
+            { label: 'Laporan Harian', href: '/dpl/laporan-harian', icon: FileText },
+            { label: 'Laporan Akhir', href: '/dpl/laporan-akhir', icon: FileText },
             { label: 'Entry Nilai', href: '/dpl/evaluasi', icon: Star },
         ],
     },
@@ -120,7 +121,7 @@ const dplNav: NavGroup[] = [
 
 const facultyAdminNav: NavGroup[] = [
     {
-        title: 'Dashboard',
+        title: 'Dasbor',
         items: [
             { label: 'Ringkasan', href: '/admin', icon: LayoutDashboard },
         ],
@@ -136,18 +137,18 @@ const facultyAdminNav: NavGroup[] = [
 function buildStudentNav(isRegistrationLocked: boolean): NavGroup[] {
     return [
         {
-            title: 'Dashboard',
+            title: 'Dasbor',
             items: [
-                { label: 'Status Saya', href: '/mahasiswa', icon: LayoutDashboard },
+                { label: 'Dasbor Saya', href: '/mahasiswa', icon: LayoutDashboard },
                 ...(isRegistrationLocked ? [] : [{ label: 'Pendaftaran', href: '/mahasiswa/pendaftaran', icon: ClipboardList }]),
             ],
         },
         {
-            title: 'Kegiatan',
+            title: 'Kegiatan KKN',
             items: [
-                { label: 'Info Posko', href: '/mahasiswa/posko', icon: MapPin },
-                { label: 'Jurnal Harian', href: '/mahasiswa/laporan-harian', icon: FileText },
-                { label: 'Laporan Final', href: '/mahasiswa/laporan-akhir', icon: FileText },
+                { label: 'Posko Kelompok', href: '/mahasiswa/posko', icon: MapPin },
+                { label: 'Laporan Harian', href: '/mahasiswa/laporan-harian', icon: FileText },
+                { label: 'Laporan Akhir', href: '/mahasiswa/laporan-akhir', icon: FileText },
                 { label: 'Cek Nilai', href: '/mahasiswa/evaluasi', icon: Award },
             ],
         },
@@ -174,7 +175,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
     const rawRoles = auth.user?.roles ?? [];
     const roles = Array.isArray(rawRoles)
-        ? rawRoles.map(r => typeof r === 'object' && r !== null ? (r as any).name : String(r))
+        ? rawRoles.map(r => typeof r === 'object' && r !== null ? (r as { name: string }).name : String(r))
         : [];
     const isStudentRegistrationLocked = !!auth.user?.student_registration_locked;
 
@@ -204,17 +205,17 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
             <aside
                 className={clsx(
-                    "fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-white border-r border-slate-200 transition-transform duration-200 lg:translate-x-0 shadow-sm",
+                    "fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-white dark:bg-slate-900 border-r border-emerald-50 dark:border-slate-800 transition-transform duration-200 lg:translate-x-0 shadow-sm",
                     open ? "translate-x-0" : "-translate-x-full"
                 )}
             >
                 {/* BRAND SECTION (WHITE CLEAN STYLE) */}
-                <div className="h-16 px-6 flex items-center border-b border-slate-100">
+                <div className="h-16 px-6 flex items-center border-b border-emerald-50/50 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 bg-emerald-600 rounded flex items-center justify-center text-white font-black text-sm">S</div>
+                        <div className="h-8 w-8 bg-emerald-600 dark:bg-emerald-500 rounded flex items-center justify-center text-white font-black text-sm shadow-sm shadow-emerald-600/20 dark:shadow-emerald-500/20">S</div>
                         <div className="flex flex-col">
-                            <span className="text-sm font-black text-slate-800 uppercase tracking-tighter">POS-KKN</span>
-                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">UIN SAIZU</span>
+                            <span className="text-sm font-black text-emerald-900 dark:text-slate-100 uppercase tracking-tighter">POS-KKN</span>
+                            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">UIN SAIZU</span>
                         </div>
                     </div>
                 </div>
@@ -223,7 +224,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 <nav ref={navRef} className="flex-1 overflow-y-auto py-4 scrollbar-hide">
                     {navGroups.map((group) => (
                         <div key={group.title} className="mb-6 px-3">
-                            <h3 className="px-3 mb-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <h3 className="px-3 mb-2 text-[10px] font-black text-emerald-600/40 dark:text-slate-600 uppercase tracking-widest">
                                 {group.title}
                             </h3>
                             <div className="space-y-0.5">
@@ -237,11 +238,11 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                                             className={clsx(
                                                 "flex items-center gap-3 px-3 py-2.5 rounded text-xs font-black uppercase tracking-tight transition-all",
                                                 isActive
-                                                    ? "bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100/50"
-                                                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                                                    ? "bg-emerald-600 dark:bg-emerald-600 text-white shadow-lg shadow-emerald-600/20 dark:shadow-emerald-600/50 border border-transparent"
+                                                    : "text-emerald-700/70 dark:text-slate-400 hover:text-emerald-900 dark:hover:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-800"
                                             )}
                                         >
-                                            <item.icon className={clsx("w-4 h-4", isActive ? "text-emerald-600" : "text-slate-400")} />
+                                            <item.icon className={clsx("w-4 h-4", isActive ? "text-white" : "text-emerald-600/40 dark:text-slate-500")} />
                                             <span>{item.label}</span>
                                         </Link>
                                     );

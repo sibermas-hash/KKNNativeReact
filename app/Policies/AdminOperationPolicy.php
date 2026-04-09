@@ -12,7 +12,13 @@ class AdminOperationPolicy extends BasePolicy
 {
     public function manageMasterData(User $user): bool
     {
-        return $this->superAdminBypass($user, 'manageMasterData') ?? false;
+        $bypass = $this->superAdminBypass($user, 'manageMasterData');
+
+        if ($bypass !== null) {
+            return $bypass;
+        }
+
+        return $user->hasRole('admin');
     }
 
     public function manageGroups(User $user): bool
@@ -28,17 +34,35 @@ class AdminOperationPolicy extends BasePolicy
 
     public function manageSettings(User $user): bool
     {
-        return $this->superAdminBypass($user, 'manageSettings') ?? false;
+        $bypass = $this->superAdminBypass($user, 'manageSettings');
+
+        if ($bypass !== null) {
+            return $bypass;
+        }
+
+        return $user->hasRole('admin');
     }
 
     public function syncData(User $user): bool
     {
-        return $this->superAdminBypass($user, 'syncData') ?? false;
+        $bypass = $this->superAdminBypass($user, 'syncData');
+
+        if ($bypass !== null) {
+            return $bypass;
+        }
+
+        return $user->hasRole('admin');
     }
 
     public function transferStudents(User $user): bool
     {
-        return $this->superAdminBypass($user, 'transferStudents') ?? false;
+        $bypass = $this->superAdminBypass($user, 'transferStudents');
+
+        if ($bypass !== null) {
+            return $bypass;
+        }
+
+        return $user->hasRole('admin');
     }
 
     public function manageParticipants(User $user): bool
@@ -52,6 +76,50 @@ class AdminOperationPolicy extends BasePolicy
         return $user->hasAnyRole(['faculty_admin', 'admin']);
     }
 
+    public function manageUsers(User $user): bool
+    {
+        $bypass = $this->superAdminBypass($user, 'manageUsers');
+
+        if ($bypass !== null) {
+            return $bypass;
+        }
+
+        return $user->hasRole('admin');
+    }
+
+    public function manageGrades(User $user): bool
+    {
+        $bypass = $this->superAdminBypass($user, 'manageGrades');
+
+        if ($bypass !== null) {
+            return $bypass;
+        }
+
+        return $user->hasAnyRole(['faculty_admin', 'admin']);
+    }
+
+    public function manageContent(User $user): bool
+    {
+        $bypass = $this->superAdminBypass($user, 'manageContent');
+
+        if ($bypass !== null) {
+            return $bypass;
+        }
+
+        return $user->hasRole('admin');
+    }
+
+    public function viewAuditLogs(User $user): bool
+    {
+        $bypass = $this->superAdminBypass($user, 'viewAuditLogs');
+
+        if ($bypass !== null) {
+            return $bypass;
+        }
+
+        return $user->hasRole('admin');
+    }
+
     public function manageAnnouncements(User $user): bool
     {
         return $this->superAdminBypass($user, 'manageAnnouncements') ?? false;
@@ -59,6 +127,12 @@ class AdminOperationPolicy extends BasePolicy
 
     public function manageDplAssignment(User $user): bool
     {
-        return $this->superAdminBypass($user, 'manageDplAssignment') ?? false;
+        $bypass = $this->superAdminBypass($user, 'manageDplAssignment');
+
+        if ($bypass !== null) {
+            return $bypass;
+        }
+
+        return $user->hasRole('admin');
     }
 }

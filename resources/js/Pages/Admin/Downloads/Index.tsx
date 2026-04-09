@@ -5,7 +5,7 @@ import { Pagination, Button } from '@/Components/ui';
 import type { PageProps, Download } from '@/types';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
 import { route } from 'ziggy-js';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     Download as DownloadIcon,
     Plus,
@@ -16,9 +16,22 @@ import {
     X,
     ExternalLink,
     FileText,
-    Link as LinkIcon
+    Link as LinkIcon,
+    Fingerprint,
+    Database,
+    ShieldCheck,
+    Zap,
+    Search,
+    CloudUpload,
+    Terminal,
+    ChevronRight,
+    SearchCheck,
+    MonitorIcon,
+    ShieldAlert,
+    Save
 } from 'lucide-react';
 import dayjs from 'dayjs';
+import { clsx } from 'clsx';
 
 interface Props extends PageProps {
     downloads: {
@@ -59,7 +72,6 @@ export default function DownloadIndex({ downloads }: Props) {
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         if (editingDownload) {
-            // Using post with _method=PATCH for multipart/form-data
             router.post(route('admin.unduhan.update', editingDownload.id), {
                 _method: 'patch',
                 title: data.title,
@@ -80,228 +92,314 @@ export default function DownloadIndex({ downloads }: Props) {
     };
 
     const deleteDownload = (id: number) => {
-        if (confirm('Apakah Anda yakin ingin menghapus file ini?')) {
+        if (confirm('Apakah Anda yakin ingin menghapus file ini dari repositori publik?')) {
             router.delete(route('admin.unduhan.destroy', id));
         }
     };
 
     return (
         <AppLayout title="Repositori Pusat Unduhan">
-            <Head title="Manajemen Repositori" />
+            <Head title="Manajemen Repositori | POS-KKN" />
 
-            <div className="space-y-8 pb-24 text-slate-900">
-                {/* Header */}
-                <div className="relative overflow-hidden rounded-[2.5rem] bg-emerald-600 p-10 lg:p-14 flex flex-col lg:flex-row lg:items-center justify-between gap-10 group shadow-2xl">
-                    <div className="relative z-10 space-y-6 flex-1">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-white/10 rounded-xl border-2 border-white/20">
-                                <DownloadIcon className="h-6 w-6 text-amber-400" />
-                            </div>
-                            <span className="text-[11px] font-black text-emerald-100 uppercase tracking-[0.4em]">
-                                UNIT_PUSAT_DOKUMEN
-                            </span>
+            <div className="min-h-screen bg-white italic font-black text-emerald-950 uppercase tracking-tight">
+                {/* HEADER TACTICAL: REPOSITORI DOKUMEN PUBLIK */}
+                <div className="bg-white border-b border-emerald-50 px-12 py-16 flex flex-col xl:flex-row xl:items-center justify-between gap-12 sticky top-0 z-20 shadow-sm overflow-hidden relative">
+                    <div className="absolute right-0 top-0 h-full w-1/3 bg-emerald-50/5 -skew-x-12 translate-x-20 pointer-events-none" />
+                    
+                    <div className="space-y-2 relative z-10">
+                        <div className="flex items-center gap-3">
+                            <div className="h-2.5 w-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-300 italic">Public Document Repository Terminal</span>
                         </div>
-                        <h1 className="text-4xl lg:text-6xl font-black text-white leading-tight uppercase tracking-tighter">
-                            Pusat <span className="text-amber-400 italic">Unduhan</span>
+                        <h1 className="text-4xl font-black text-emerald-950 uppercase tracking-tighter leading-none italic">
+                            CENTRAL <span className="text-emerald-500">DOWNLOAD REGISTRY</span>
                         </h1>
-                        <p className="text-emerald-50/80 text-lg font-bold leading-relaxed max-w-2xl italic">
-                            Kelola pedoman operasional, formulir pendaftaran, dan templat pelaporan untuk akses publik mahasiswa.
+                        <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest mt-3 flex items-center gap-2 italic">
+                             <Fingerprint size={12} className="text-emerald-500" />
+                             Otoritas pengelolaan berkas operasional, pedoman, dan templat KKN untuk akses publik.
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-6 shrink-0 relative z-10">
+                    <div className="flex items-center gap-8 relative z-10">
+                        <div className="flex flex-col items-end border-r border-emerald-50 pr-8 italic">
+                            <span className="text-[8px] font-black text-emerald-200 uppercase tracking-widest leading-none">TOTAL_ASSET</span>
+                            <span className="text-xl font-black text-emerald-950 mt-1 uppercase tracking-tighter tabular-nums">{downloads.meta?.total || 0} BERKAS</span>
+                        </div>
                         <button 
                             onClick={openCreateModal}
-                            className="bg-amber-400 text-slate-950 px-10 py-5 rounded-2xl font-black text-sm hover:bg-white transition-all flex items-center gap-4 shadow-2xl shadow-amber-500/20 active:scale-95 uppercase tracking-widest"
+                            className="h-16 px-10 bg-emerald-950 text-white text-[11px] font-black uppercase tracking-[0.3em] italic flex items-center gap-6 hover:bg-emerald-600 active:scale-95 transition-all shadow-2xl group"
                         >
-                            <Plus className="w-6 h-6" />
-                            UNGGAH_BARU
+                            <Plus size={18} className="group-hover:rotate-90 transition-transform" />
+                            UNGGAH ASET BARU
                         </button>
                     </div>
                 </div>
 
-                {/* Main Table Content */}
-                <div className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-xl">
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y-2 divide-slate-100">
-                            <thead className="bg-slate-50">
-                                <tr>
-                                    <th className="px-8 py-6 text-left text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Dokumen_Garda</th>
-                                    <th className="px-8 py-6 text-left text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Sumber_Data</th>
-                                    <th className="px-8 py-6 text-left text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Status_Akses</th>
-                                    <th className="px-8 py-6 text-right text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] pr-12">Kontrol_Operasional</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y-2 divide-slate-100">
-                                {downloads.data.map((d) => (
-                                    <tr key={d.id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="px-8 py-8">
-                                            <div className="flex items-start gap-4">
-                                                <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl border-2 border-emerald-100">
-                                                    <FileText className="w-6 h-6" />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <h4 className="text-xl font-black text-slate-950 leading-tight uppercase tracking-tight">{d.title}</h4>
-                                                    <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                                        <span>ID: {d.id}</span>
-                                                        <span className="w-1 h-1 rounded-full bg-slate-300" />
-                                                        <span>TGL: {dayjs(d.created_at).format('DD/MM/YYYY')}</span>
+                <div className="px-12 py-12 space-y-12">
+                    {/* DATA GRID: LEDGER REPOSITORI */}
+                    <section className="bg-white border border-emerald-100 shadow-sm overflow-hidden group hover:border-emerald-500 transition-all relative">
+                        <div className="px-10 py-8 border-b border-emerald-50 bg-emerald-50/10 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                            <div className="flex items-center gap-6">
+                                <div className="p-4 bg-emerald-950 text-emerald-400 shadow-lg">
+                                    <Database size={20} />
+                                </div>
+                                <div className="space-y-1">
+                                    <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-emerald-950 italic">Operational Ledger Documents</h2>
+                                    <p className="text-[8px] font-bold text-emerald-300 uppercase tracking-widest mt-1 italic">Manifest Berkas Publik Terverifikasi</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="overflow-x-auto relative z-10 bg-white">
+                            <table className="w-full text-left border-collapse italic">
+                                <thead>
+                                    <tr className="bg-emerald-50/30 border-b border-emerald-100">
+                                        <th className="px-10 py-6 text-[10px] font-black text-emerald-300 uppercase tracking-[0.3em]">Dokumen / Identitas</th>
+                                        <th className="px-10 py-6 text-[10px] font-black text-emerald-300 uppercase tracking-[0.3em]">Sumber Data</th>
+                                        <th className="px-10 py-6 text-[10px] font-black text-emerald-300 uppercase tracking-[0.3em]">Status Publikasi</th>
+                                        <th className="px-10 py-6 text-[10px] font-black text-emerald-300 uppercase tracking-[0.3em] text-right">Otoritas</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-emerald-50 font-black">
+                                    {downloads.data.map((d) => (
+                                        <tr key={d.id} className="hover:bg-emerald-50/20 transition-colors group/row">
+                                            <td className="px-10 py-8">
+                                                <div className="flex items-start gap-6">
+                                                    <div className="p-4 bg-white border border-emerald-50 text-emerald-600 shadow-sm group-hover/row:bg-emerald-950 group-hover/row:text-emerald-400 transition-all duration-500">
+                                                        <FileText className="w-6 h-6" />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <h4 className="text-xl font-black text-emerald-950 uppercase tracking-tighter leading-none group-hover/row:text-emerald-600 transition-colors">{d.title}</h4>
+                                                        <div className="flex items-center gap-4 text-[9px] font-bold text-emerald-200 uppercase tracking-widest italic tabular-nums">
+                                                            <span className="flex items-center gap-2"><Fingerprint size={10} className="text-emerald-400" /> REG: {String(d.id).padStart(4, '0')}</span>
+                                                            <span className="w-2 h-0.5 bg-emerald-50" />
+                                                            <span>TS: {dayjs(d.created_at).format('DD.MM.YY HH:MM')}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-8">
-                                            {d.file_path ? (
-                                                <div className="flex items-center gap-2 text-cyan-600 font-black text-xs uppercase tracking-widest">
-                                                    <DownloadIcon className="w-4 h-4" />
-                                                    PENYIMPANAN_LOKAL
+                                            </td>
+                                            <td className="px-10 py-8">
+                                                {d.file_path ? (
+                                                    <div className="flex items-center gap-3 text-emerald-500 text-[10px] uppercase tracking-widest">
+                                                        <div className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                                                        LOCAL_BIN_STORAGE
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-3 text-amber-500 text-[10px] uppercase tracking-widest">
+                                                        <ExternalLink className="w-4 h-4" />
+                                                        EXT_CLOUD_LINK
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td className="px-10 py-8">
+                                                <div className={clsx(
+                                                    "inline-flex items-center gap-3 px-4 py-2 border text-[10px] uppercase tracking-widest",
+                                                    d.is_active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-emerald-950 text-emerald-400 border-emerald-900"
+                                                )}>
+                                                    {d.is_active ? (
+                                                        <><CheckCircle2 className="w-4 h-4" /> LIVE_ON_PORTAL</>
+                                                    ) : (
+                                                        <><XCircle className="w-4 h-4" /> DRAFT_ENCRYPTED</>
+                                                    )}
                                                 </div>
-                                            ) : (
-                                                <div className="flex items-center gap-2 text-amber-600 font-black text-xs uppercase tracking-widest">
-                                                    <LinkIcon className="w-4 h-4" />
-                                                    TAUTAN_EKSTERNAL
+                                            </td>
+                                            <td className="px-10 py-8 text-right">
+                                                <div className="flex items-center justify-end gap-2 opacity-20 group-hover/row:opacity-100 transition-opacity">
+                                                    <button 
+                                                        onClick={() => openEditModal(d)}
+                                                        className="h-12 w-12 flex items-center justify-center bg-white border border-emerald-50 text-emerald-950 hover:bg-emerald-950 hover:text-emerald-400 hover:border-transparent transition-all active:scale-90"
+                                                    >
+                                                        <Edit2 size={16} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => deleteDownload(d.id)}
+                                                        className="h-12 w-12 flex items-center justify-center bg-white border border-rose-50 text-rose-300 hover:bg-rose-600 hover:text-white hover:border-transparent transition-all active:scale-90"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
                                                 </div>
-                                            )}
-                                        </td>
-                                        <td className="px-8 py-8">
-                                            {d.is_active ? (
-                                                <div className="flex items-center gap-2 text-emerald-500 font-black text-[11px] uppercase tracking-[0.2em]">
-                                                    <CheckCircle2 className="w-4 h-4" />
-                                                    PUBLIKASI_LANGSUNG
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {downloads.data.length === 0 && (
+                                        <tr>
+                                            <td colSpan={4} className="px-10 py-32 text-center">
+                                                <div className="flex flex-col items-center gap-6 opacity-30">
+                                                    <SearchCheck size={64} strokeWidth={1} />
+                                                    <p className="text-[12px] font-black uppercase tracking-[0.5em] italic">NO_DATA_IN_REPOSITORI</p>
                                                 </div>
-                                            ) : (
-                                                <div className="flex items-center gap-2 text-slate-400 font-black text-[11px] uppercase tracking-[0.2em]">
-                                                    <XCircle className="w-4 h-4" />
-                                                    DRAF_TERSEMBUNYI
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td className="px-8 py-8 text-right pr-8">
-                                            <div className="flex items-center justify-end gap-3">
-                                                <button 
-                                                    onClick={() => openEditModal(d)}
-                                                    className="p-3 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all border border-transparent hover:border-emerald-200"
-                                                >
-                                                    <Edit2 className="w-5 h-5" />
-                                                </button>
-                                                <button 
-                                                    onClick={() => deleteDownload(d.id)}
-                                                    className="p-3 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-200"
-                                                >
-                                                    <Trash2 className="w-5 h-5" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {downloads.data.length === 0 && (
-                                    <tr>
-                                        <td colSpan={4} className="px-8 py-20 text-center">
-                                            <p className="text-slate-400 font-black uppercase tracking-[0.3em]">Belum_ada_dokumen_dalam_repositori</p>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                    {downloads.meta && (
-                        <div className="px-8 py-6 bg-slate-50/50 border-t border-slate-200">
-                            <Pagination meta={downloads.meta} />
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
-                    )}
+                        {downloads.meta && (
+                            <div className="px-10 py-8 bg-emerald-50/10 border-t border-emerald-50 flex justify-center">
+                                <Pagination meta={downloads.meta} />
+                            </div>
+                        )}
+                    </section>
+                </div>
+
+                {/* STATUS FOOTER TACTICAL */}
+                <div className="flex flex-col items-center justify-center py-12 gap-8 relative group mb-12 italic">
+                     <div className="flex items-center gap-8 opacity-20">
+                        <Terminal size={20} className="text-emerald-200" />
+                        <div className="h-px w-32 bg-emerald-50" />
+                        <div className="p-3 bg-emerald-950 text-emerald-400 font-black text-[9px] tracking-[0.5em] uppercase">REPOSITORY_SYNC_OK</div>
+                        <div className="h-px w-32 bg-emerald-50" />
+                        <ShieldCheck size={20} className="text-emerald-200" />
+                     </div>
+                     <p className="text-[10px] font-black text-emerald-950 uppercase tracking-[0.6em] italic opacity-40 hover:opacity-100 transition-opacity duration-700">
+                         MANAJEMEN REPOSITORI PUSAT • UIN SAIZU COMMAND
+                     </p>
                 </div>
             </div>
 
             {/* Modal for Create/Edit */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
-                    <div className="absolute inset-0 bg-emerald-950/40 backdrop-blur-md" onClick={() => setIsModalOpen(false)} />
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.9, y: 30 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        className="relative w-full max-w-3xl bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-slate-200"
-                    >
-                        <div className="px-10 py-8 bg-emerald-50 border-b border-slate-200 flex items-center justify-between">
-                            <h3 className="text-2xl font-black text-slate-950 uppercase tracking-tighter">
-                                {editingDownload ? 'MODIFIKASI_DATA_REPOSITORI' : 'PUBLIKASI_REPOSITORI_BARU'}
-                            </h3>
-                            <button onClick={() => setIsModalOpen(false)} className="p-3 hover:bg-white rounded-2xl transition-colors border border-transparent hover:border-slate-200">
-                                <X className="w-7 h-7 text-slate-950" />
-                            </button>
-                        </div>
-                        <form onSubmit={submit} className="p-12 space-y-10">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                <div className="md:col-span-2 space-y-4">
-                                    <label className="text-[11px] font-black text-slate-400 tracking-[0.4em] uppercase ml-1">Judul_Dokumen</label>
-                                    <input 
-                                        value={data.title}
-                                        onChange={e => setData('title', e.target.value)}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-8 py-5 text-sm font-black text-slate-900 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none uppercase italic"
-                                        placeholder="PEDOMAN KKN 2026..."
-                                    />
-                                    {errors.title && <p className="text-xs text-red-500 font-bold ml-1 italic">{errors.title}</p>}
+            <AnimatePresence>
+                {isModalOpen && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-12">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-emerald-950/80 backdrop-blur-sm" 
+                            onClick={() => setIsModalOpen(false)} 
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95, y: 10, rotateX: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="relative w-full max-w-4xl bg-white shadow-[0_50px_100px_rgba(0,0,0,0.5)] overflow-hidden border border-emerald-100 italic"
+                        >
+                            <div className="px-12 py-10 bg-emerald-950 border-b border-emerald-900 flex items-center justify-between relative overflow-hidden group/header">
+                                <div className="absolute inset-0 bg-emerald-500/5 -skew-x-12 translate-x-3/4 pointer-events-none" />
+                                <div className="flex items-center gap-6 relative z-10 italic">
+                                    <div className="h-14 w-14 bg-emerald-600 text-white flex items-center justify-center shadow-2xl font-black">
+                                        <CloudUpload size={28} className="animate-pulse" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h3 className="text-2xl font-black text-white uppercase tracking-tighter leading-none italic">
+                                            {editingDownload ? 'MODIFIKASI <ASET_UNIT>' : 'REGISTRASI <ASET_BARU>'}
+                                        </h3>
+                                        <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest italic">Otorisasi Konfigurasi Sumber Daya Digital</p>
+                                    </div>
                                 </div>
+                                <button 
+                                    onClick={() => setIsModalOpen(false)} 
+                                    className="relative z-10 h-14 w-14 flex items-center justify-center text-emerald-200 hover:bg-white hover:text-emerald-950 transition-all border border-emerald-800 hover:border-transparent active:scale-90"
+                                >
+                                    <X size={28} />
+                                </button>
+                            </div>
 
-                                <div className="space-y-4">
-                                    <label className="text-[11px] font-black text-slate-400 tracking-[0.4em] uppercase ml-1">Unggah_File (Opsional)</label>
-                                    <div className="relative">
+                            <form onSubmit={submit} className="p-12 space-y-12">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 font-black uppercase">
+                                    <div className="md:col-span-2 space-y-4">
+                                        <label className="text-[10px] font-black text-emerald-950 italic tracking-[0.4em] ml-1 flex items-center gap-3">
+                                            <Zap size={12} className="text-emerald-500" />
+                                            Nomenklatur Aset ( Title )
+                                        </label>
                                         <input 
-                                            type="file"
-                                            onChange={e => setData('file', e.target.files?.[0] || null)}
-                                            className="w-full bg-white border border-dashed border-slate-300 rounded-2xl px-6 py-4 text-[10px] font-black text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:bg-emerald-500 file:text-white hover:border-emerald-500 transition-colors"
+                                            value={data.title}
+                                            onChange={e => setData('title', e.target.value.toUpperCase())}
+                                            className="h-18 w-full bg-emerald-50/10 border border-emerald-50 px-8 text-[13px] font-black text-emerald-950 uppercase italic tracking-[0.2em] focus:bg-white focus:border-emerald-500 outline-none transition-all shadow-inner"
+                                            placeholder="CONTOH: PEDOMAN KKN 2026..."
                                         />
-                                        <p className="mt-2 text-[9px] font-bold text-slate-400 ml-1">PDF, DOC, XLS (MAX 10MB)</p>
+                                        {errors.title && <p className="text-[10px] font-black text-rose-600 uppercase italic tracking-widest ml-1">{errors.title}</p>}
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black text-emerald-950 italic tracking-[0.4em] ml-1 flex items-center gap-3">
+                                            <MonitorIcon size={12} className="text-emerald-500" />
+                                            Transmisi Biner ( File )
+                                        </label>
+                                        <div className="relative group/upload">
+                                            <input 
+                                                type="file"
+                                                onChange={e => setData('file', e.target.files?.[0] || null)}
+                                                className="absolute inset-0 w-full opacity-0 cursor-pointer z-10"
+                                            />
+                                            <div className="h-20 w-full bg-emerald-50/10 border-2 border-dashed border-emerald-100 flex items-center justify-between px-8 group-hover/upload:border-emerald-500 transition-all">
+                                                <span className="text-[10px] font-black text-emerald-300 italic tracking-widest truncate max-w-[240px]">
+                                                    {data.file ? data.file.name : 'PILIH BERKAS LOKAL...'}
+                                                </span>
+                                                <CloudUpload size={20} className="text-emerald-100 group-hover/upload:text-emerald-500 transition-all" />
+                                            </div>
+                                            <p className="mt-4 text-[9px] font-bold text-emerald-100 italic uppercase tracking-[0.2em] ml-1">MAX_CAPACITY: 10MB (PDF/DOC/XLS)</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black text-emerald-950 italic tracking-[0.4em] ml-1 flex items-center gap-3">
+                                            <ExternalLink size={12} className="text-amber-500" />
+                                            Tautan Jaringan ( External )
+                                        </label>
+                                        <div className="relative group/link">
+                                            <input 
+                                                value={data.external_url}
+                                                onChange={e => setData('external_url', e.target.value)}
+                                                className="h-20 w-full bg-emerald-50/10 border border-emerald-50 px-8 text-[11px] font-bold text-emerald-600 focus:bg-white focus:border-emerald-500 outline-none transition-all shadow-inner"
+                                                placeholder="HTTPS://DRIVE.GOOGLE.COM/..."
+                                            />
+                                            <LinkIcon className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-100 group-focus-within/link:text-emerald-500 transition-colors" />
+                                        </div>
+                                    </div>
+
+                                    <div className="md:col-span-2 bg-emerald-950 p-8 border border-emerald-900 shadow-2xl relative overflow-hidden group/status mt-4">
+                                         <div className="absolute inset-0 bg-emerald-500/5 -skew-x-12 translate-x-full group-hover/status:translate-x-1/2 transition-transform duration-1000" />
+                                         <div className="relative z-10 flex items-center justify-between gap-12">
+                                             <div className="flex items-center gap-6 italic">
+                                                <div className="h-14 w-14 bg-emerald-600 text-white flex items-center justify-center shadow-xl font-black">
+                                                    <ShieldCheck size={24} className="animate-pulse" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <h4 className="text-[11px] font-black text-white italic tracking-[0.3em] uppercase leading-none">Otoritas Penayangan Publik</h4>
+                                                    <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest italic leading-none">Konfirmasi Status Sinkronisasi Portal</p>
+                                                </div>
+                                             </div>
+                                             <label className="relative inline-flex items-center cursor-pointer active:scale-95 transition-transform">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={data.is_active}
+                                                    onChange={e => setData('is_active', e.target.checked)}
+                                                    className="sr-only peer" 
+                                                />
+                                                <div className="w-16 h-8 bg-emerald-900 border border-emerald-800 rounded-none peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-none after:h-6 after:w-7 after:transition-all peer-checked:bg-emerald-500 shadow-sm transition-colors duration-500"></div>
+                                                <span className="ml-6 text-[10px] font-black text-white uppercase italic tracking-[0.2em] min-w-[80px]">{data.is_active ? 'LIVE_DATA' : 'DRAFT_MODE'}</span>
+                                            </label>
+                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="space-y-4">
-                                    <label className="text-[11px] font-black text-slate-400 tracking-[0.4em] uppercase ml-1">Tautan_Eksternal (Alt)</label>
-                                    <div className="relative">
-                                        <input 
-                                            value={data.external_url}
-                                            onChange={e => setData('external_url', e.target.value)}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-12 py-5 text-sm font-bold text-slate-600 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none"
-                                            placeholder="https://drive.google.com/..."
-                                        />
-                                        <ExternalLink className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <div className="pt-12 flex flex-col sm:flex-row items-center justify-end gap-6 relative z-10">
+                                    <div className="flex-1 flex items-center gap-6 opacity-30 italic hidden sm:flex">
+                                        <ShieldAlert size={20} className="text-emerald-100" />
+                                        <p className="text-[8px] font-black text-emerald-300 uppercase tracking-[0.4em] leading-relaxed">Pastikan seluruh data terverifikasi sebelum eksekusi penyimpanan sistem.</p>
                                     </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsModalOpen(false)}
+                                        className="w-full sm:w-auto h-18 px-12 bg-white text-rose-300 font-black text-[11px] uppercase tracking-[0.3em] italic border border-rose-50 hover:bg-rose-600 hover:text-white hover:border-transparent transition-all active:scale-95"
+                                    >
+                                        TERMINASI
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={processing}
+                                        className="w-full sm:w-auto h-18 px-12 bg-emerald-950 text-white font-black text-[11px] uppercase tracking-[0.4em] italic hover:bg-emerald-600 transition-all shadow-3xl active:scale-95 flex items-center justify-center gap-6 group/btn disabled:opacity-50"
+                                    >
+                                        {processing ? 'SYNCING_DATA...' : 'SIMPAN REGISTRY'}
+                                        <Save size={18} className="group-hover/btn:rotate-12 transition-transform" />
+                                    </button>
                                 </div>
-
-                                <div className="md:col-span-2 flex items-center gap-6 p-6 bg-slate-50 rounded-3xl border border-slate-100">
-                                    <label className="relative inline-flex items-center cursor-pointer">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={data.is_active}
-                                            onChange={e => setData('is_active', e.target.checked)}
-                                            className="sr-only peer" 
-                                        />
-                                        <div className="w-14 h-7 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-sm"></div>
-                                        <span className="ml-5 text-[11px] font-black text-slate-900 uppercase tracking-[0.3em]">PROSES_PUBLIKASI_LIVE</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div className="pt-10 flex items-center justify-end gap-6">
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    onClick={() => setIsModalOpen(false)}
-                                    className="px-12 h-16 rounded-2xl text-[11px] font-black tracking-[0.4em] uppercase border border-slate-200"
-                                >
-                                    BATALKAN
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="px-12 h-16 rounded-2xl text-[11px] font-black tracking-[0.4em] uppercase bg-emerald-600 hover:bg-emerald-700 shadow-2xl shadow-emerald-600/20 text-white"
-                                >
-                                    {processing ? 'MEMPROSES...' : 'SIMPAN_PERUBAAN'}
-                                </Button>
-                            </div>
-                        </form>
-                    </motion.div>
-                </div>
-            )}
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </AppLayout>
     );
 }

@@ -158,15 +158,14 @@ class GeneratorNilaiController extends Controller
 
         $this->authorizeDplGroup($data['kelompok_id']);
 
-        if (auth()->user()->hasRole('dpl')) {
-            $group = KelompokKkn::with('periode')->find($data['kelompok_id']);
-            $period = $group?->periode;
-            
-            if ($period && $period->grading_start && $period->grading_end) {
-                $now = now()->startOfDay();
-                if ($now->lt($period->grading_start) || $now->gt($period->grading_end)) {
-                    return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
-                }
+        // FIX C17: Apply grading period window check to ALL roles, not just DPL
+        $group = KelompokKkn::with('periode')->find($data['kelompok_id']);
+        $period = $group?->periode;
+
+        if ($period && $period->grading_start && $period->grading_end) {
+            $now = now()->startOfDay();
+            if ($now->lt($period->grading_start) || $now->gt($period->grading_end)) {
+                return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
             }
         }
 

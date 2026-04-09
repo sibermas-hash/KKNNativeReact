@@ -9,6 +9,7 @@ use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\FileKegiatanKkn;
 use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\SystemSetting;
+use App\Services\PeriodContextService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -26,6 +27,10 @@ class DailyReportController extends Controller
      */
     private function validateFileMagicBytes($file): void
     {
+        if ($file->getSize() < 4) {
+            abort(422, 'File terlalu kecil untuk divalidasi.');
+        }
+
         $allowedSignatures = [
             'pdf' => [0x25, 0x50, 0x44], // %PD
             'png' => [0x89, 0x50, 0x4E, 0x47], // PNG
@@ -34,6 +39,9 @@ class DailyReportController extends Controller
 
         try {
             $stream = fopen($file->getRealPath(), 'rb');
+            if (!$stream) {
+                abort(422, 'Gagal membuka file.');
+            }
             $bytes = array_values(unpack('C4', fread($stream, 4)));
             fclose($stream);
 
@@ -54,6 +62,8 @@ class DailyReportController extends Controller
     }
     public function index(): Response
     {
+        $periodContextService = app(PeriodContextService::class);
+        $activePeriodId = $periodContextService->getActivePeriodId() ?? $periodContextService->getDefaultPeriodId();
         $mahasiswa = auth()->user()?->mahasiswa;
 
         $kegiatan = $mahasiswa
@@ -64,7 +74,9 @@ class DailyReportController extends Controller
             : collect();
 
         // Check workshop status for UI warning
-        $isWorkshopPassed = PesertaWorkshop::where('user_id', auth()->id())
+        $isWorkshopPassed = PesertaWorkshop::query()
+            ->forPeriod($activePeriodId)
+            ->where('user_id', auth()->id())
             ->where('attendance_status', 'attended')
             ->exists();
 
@@ -76,13 +88,17 @@ class DailyReportController extends Controller
 
     public function create(): Response
     {
+        $periodContextService = app(PeriodContextService::class);
+        $activePeriodId = $periodContextService->getActivePeriodId() ?? $periodContextService->getDefaultPeriodId();
         $mahasiswa = auth()->user()?->mahasiswa;
         $pendaftaran = $mahasiswa?->peserta()->where('status', 'approved')->with(['kelompok.lokasi', 'kelompok.posko'])->first();
         
         abort_if(!$pendaftaran, 403, 'Anda belum terdaftar dalam kelompok aktif.');
 
         // SOP ENFORCEMENT: Harus lulus Pembekalan/Workshop
-        $isWorkshopPassed = PesertaWorkshop::where('user_id', auth()->id())
+        $isWorkshopPassed = PesertaWorkshop::query()
+            ->forPeriod($activePeriodId)
+            ->where('user_id', auth()->id())
             ->where('attendance_status', 'attended')
             ->exists();
 
@@ -106,6 +122,8 @@ class DailyReportController extends Controller
 
     public function store(StoreDailyReportRequest $request): RedirectResponse|JsonResponse
     {
+        $periodContextService = app(PeriodContextService::class);
+        $activePeriodId = $periodContextService->getActivePeriodId() ?? $periodContextService->getDefaultPeriodId();
         $mahasiswa = auth()->user()?->mahasiswa;
         abort_if(!$mahasiswa, 403, 'Profil mahasiswa tidak ditemukan.');
         
@@ -113,7 +131,9 @@ class DailyReportController extends Controller
         abort_if(!$pendaftaran || !$pendaftaran->kelompok_id, 403, 'Anda belum ditempatkan di kelompok.');
 
         // SOP ENFORCEMENT: Safety check for API/Direct POST
-        $isWorkshopPassed = PesertaWorkshop::where('user_id', auth()->id())
+        $isWorkshopPassed = PesertaWorkshop::query()
+            ->forPeriod($activePeriodId)
+            ->where('user_id', auth()->id())
             ->where('attendance_status', 'attended')
             ->exists();
         

@@ -1,86 +1,91 @@
 import { Link } from '@inertiajs/react';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { clsx } from 'clsx';
 
 export interface PaginationMeta {
- current_page: number;
- last_page: number;
- per_page: number;
- total: number;
- from: number | null;
- to: number | null;
- links: { url: string | null; label: string; active: boolean }[];
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    links: {
+        url: string | null;
+        label: string;
+        active: boolean;
+    }[];
+    path: string;
+    per_page: number;
+    to: number | null;
+    total: number;
+    prev_page_url?: string | null;
+    next_page_url?: string | null;
 }
 
 interface PaginationProps {
- meta: PaginationMeta;
-}
-
-function sanitizePaginationLabel(label: string): string {
- return label
-  .replace(/&lt;/g, '<')
-  .replace(/&gt;/g, '>')
-  .replace(/&amp;/g, '&')
-  .replace(/&quot;/g, '"')
-  .replace(/&#039;/g, "'");
+    meta: PaginationMeta;
 }
 
 export default function Pagination({ meta }: PaginationProps) {
- if (meta.last_page <= 1) return null;
+    if (meta.last_page <= 1) return null;
 
- return (
- <div className="flex items-center justify-between border-t border-slate-200 px-1 py-3">
- <p className="text-sm text-slate-600">
- Menampilkan <span className="font-medium">{meta.from}</span>&ndash;
- <span className="font-medium">{meta.to}</span> dari{' '}
- <span className="font-medium">{meta.total}</span> data
- </p>
+    const getButtonClass = (active: boolean, disabled: boolean) => {
+        return clsx(
+            'inline-flex items-center justify-center h-10 px-4 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 border',
+            active 
+                ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm' 
+                : 'bg-white border-emerald-50 text-emerald-600 hover:bg-emerald-50',
+            disabled && 'opacity-30 cursor-not-allowed pointer-events-none'
+        );
+    };
 
- <nav className="flex gap-1" role="navigation" aria-label="Pagination navigation">
- {meta.links.map((link, i) => {
- const isFirst = i === 0;
- const isLast = i === meta.links.length - 1;
+    return (
+        <nav className="flex items-center gap-1">
+            <Link
+                href={meta.prev_page_url || '#'}
+                className={getButtonClass(false, !meta.prev_page_url)}
+                preserveScroll
+            >
+                <ChevronLeft size={14} strokeWidth={3} />
+            </Link>
 
- if (!link.url) {
- return (
- <span
- key={i}
- className="inline-flex h-8 min-w-[2rem] items-center justify-center rounded-md px-2 text-sm text-slate-400"
- aria-hidden="true"
- >
- {isFirst ? '\u2039' : isLast ? '\u203A' : sanitizePaginationLabel(link.label)}
- </span>
- );
- }
+            <div className="flex items-center gap-1">
+                {meta.links.filter(link => !link.label.includes('Previous') && !link.label.includes('Next')).map((link: { url: string | null; label: string; active: boolean }, idx: number) => {
+                    // SECURITY: Parse HTML entities safely instead of using dangerouslySetInnerHTML
+                    const parseHtmlEntity = (str: string): string => {
+                        const textarea = document.createElement('textarea');
+                        textarea.innerHTML = str;
+                        return textarea.value;
+                    };
 
- return (
- <Link
- key={i}
- href={link.url}
- preserveScroll
- className={`inline-flex h-8 min-w-[2rem] items-center justify-center rounded-md px-2 text-sm transition ${link.active
- ? 'bg-primary text-white'
- : 'text-slate-700 hover:bg-slate-100'
- }`}
- aria-label={
- isFirst
- ? 'Previous page'
- : isLast
- ? 'Next page'
- : `Page ${sanitizePaginationLabel(link.label)}`
- }
- aria-current={link.active ? 'page' : undefined}
- >
- {isFirst ? (
- <ChevronLeftIcon className="h-4 w-4" aria-hidden="true" />
- ) : isLast ? (
- <ChevronRightIcon className="h-4 w-4" aria-hidden="true" />
- ) : (
- sanitizePaginationLabel(link.label)
- )}
- </Link>
- );
- })}
- </nav>
- </div>
- );
+                    const safeLabel = parseHtmlEntity(link.label);
+
+                    return (
+                        <Link
+                            key={idx}
+                            href={link.url || '#'}
+                            className={getButtonClass(link.active, !link.url)}
+                            preserveScroll
+                            aria-label={`Halaman ${safeLabel}`}
+                        >
+                            {safeLabel}
+                        </Link>
+                    );
+                })}
+            </div>
+
+            <Link
+                href={meta.next_page_url || '#'}
+                className={getButtonClass(false, !meta.next_page_url)}
+                preserveScroll
+            >
+                <ChevronRight size={14} strokeWidth={3} />
+            </Link>
+        </nav>
+    );
+}
+
+export function PageInfo({ meta }: { meta: PaginationMeta }) {
+    return (
+        <div className="text-[10px] font-black text-emerald-600/40 uppercase tracking-widest">
+            {meta.from || 0} - {meta.to || 0} DARI {meta.total} DATA
+        </div>
+    );
 }

@@ -22,7 +22,7 @@ export default function ForgotPassword({
  <div className="flex items-start gap-3">
  <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" />
  <div>
- <p className="font-semibold">Reset password dilakukan melalui admin.</p>
+ <p className="font-semibold">Penggantian kata sandi dilakukan melalui admin.</p>
  <p className="mt-1 text-emerald-700">
  Untuk keamanan, silakan hubungi {support_contact_label} melalui WhatsApp dan sertakan identitas akun Anda.
  </p>
@@ -42,7 +42,7 @@ export default function ForgotPassword({
  <li>Username, NIM, atau NIP yang digunakan untuk login</li>
  <li>Nama lengkap</li>
  <li>Fakultas / Program Studi atau unit kerja</li>
- <li>Alasan permintaan reset password</li>
+ <li>Alasan permintaan penggantian kata sandi</li>
  </ul>
  {support_whatsapp_number && (
  <p className="mt-4 text-xs font-medium text-slate-500">

@@ -1,106 +1,91 @@
-import { Fragment, type PropsWithChildren, useRef, useEffect } from 'react';
-import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { Fragment } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { clsx } from 'clsx';
 
 interface ModalProps {
- open: boolean;
- onClose: () => void;
- title?: string;
- maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+    children: React.ReactNode;
+    show: boolean;
+    maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | '7xl';
+    closeable?: boolean;
+    onClose: () => void;
+    title?: string;
 }
 
-const widths = {
- sm: 'max-w-sm',
- md: 'max-w-md',
- lg: 'max-w-lg',
- xl: 'max-w-xl',
- '2xl': 'max-w-2xl',
- '3xl': 'max-w-3xl',
-};
-
 export default function Modal({
- open,
- onClose,
- title,
- maxWidth = 'lg',
- children,
-}: PropsWithChildren<ModalProps>) {
- const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+    children,
+    show,
+    maxWidth = '2xl',
+    closeable = true,
+    onClose,
+    title,
+}: ModalProps) {
+    const close = () => {
+        if (closeable) {
+            onClose();
+        }
+    };
 
- // Focus the close button when modal opens for proper focus management
- useEffect(() => {
-  if (open && closeButtonRef.current) {
-   closeButtonRef.current.focus();
-  }
- }, [open]);
+    const maxWidthClass = {
+        sm: 'sm:max-w-sm',
+        md: 'sm:max-w-md',
+        lg: 'sm:max-w-lg',
+        xl: 'sm:max-w-xl',
+        '2xl': 'sm:max-w-2xl',
+        '4xl': 'sm:max-w-4xl',
+        '7xl': 'sm:max-w-7xl',
+    };
 
- return (
- <Transition show={open} as={Fragment}>
- <Dialog
-  as="div"
-  className="relative z-50"
-  onClose={onClose}
-  role="dialog"
-  aria-modal="true"
-  aria-labelledby={title ? 'modal-title' : undefined}
- >
- <TransitionChild
-  as={Fragment}
-  enter="ease-out"
-  enterFrom="opacity-0"
-  enterTo="opacity-100"
-  leave="ease-in"
-  leaveFrom="opacity-100"
-  leaveTo="opacity-0"
- >
- <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
- </TransitionChild>
+    return (
+        <Transition show={show} as={Fragment} leave="duration-200">
+            <Dialog
+                as="div"
+                id="modal"
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+                onClose={close}
+            >
+                <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                >
+                    <div className="fixed inset-0 bg-emerald-950/20 dark:bg-slate-950/50 backdrop-blur-sm dark:backdrop-blur-md" />
+                </Transition.Child>
 
- <div className="fixed inset-0 overflow-y-auto">
- <div className="flex min-h-full items-center justify-center p-4">
- <TransitionChild
-  as={Fragment}
-  enter="ease-out"
-  enterFrom="opacity-0"
-  enterTo="opacity-100"
-  leave="ease-in"
-  leaveFrom="opacity-100"
-  leaveTo="opacity-0"
- >
- <DialogPanel
-  className={`w-full ${widths[maxWidth]} rounded-lg bg-white p-6 ring-1 ring-slate-900/5`}
- >
- {title && (
- <div className="mb-4 flex items-center justify-between">
-  <DialogTitle id="modal-title" className="text-lg font-semibold text-slate-900">
-  {title}
-  </DialogTitle>
-  <button
-  ref={closeButtonRef}
-  onClick={onClose}
-  className="rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-  aria-label="Close modal"
- >
-  <XMarkIcon className="h-5 w-5" aria-hidden="true" />
- </button>
- </div>
- )}
- {!title && (
- <button
-  ref={closeButtonRef}
-  onClick={onClose}
-  className="sr-only"
-  aria-label="Close modal"
- >
-  Close
- </button>
- )}
- {children}
- </DialogPanel>
- </TransitionChild>
- </div>
- </div>
- </Dialog>
- </Transition>
- );
+                <div className="fixed inset-0 overflow-y-auto">
+                    <div className="flex min-h-full items-center justify-center p-4">
+                        <Transition.Child
+                            as={Fragment}
+                            enter="ease-out duration-300"
+                            enterFrom="opacity-0 scale-95"
+                            enterTo="opacity-100 scale-100"
+                            leave="ease-in duration-200"
+                            leaveFrom="opacity-100 scale-100"
+                            leaveTo="opacity-0 scale-95"
+                        >
+                            <Dialog.Panel
+                                className={clsx(
+                                    'w-full transform overflow-hidden bg-white dark:bg-slate-900 border border-emerald-50 dark:border-slate-700 p-6 text-left align-middle shadow-2xl transition-all font-sans antialiased',
+                                    maxWidthClass[maxWidth]
+                                )}
+                            >
+                                {title && (
+                                    <Dialog.Title
+                                        as="h3"
+                                        className="text-[11px] font-black uppercase tracking-widest text-emerald-900 dark:text-slate-100 mb-6 border-b border-emerald-50 dark:border-slate-700 pb-4"
+                                    >
+                                        {title}
+                                    </Dialog.Title>
+                                )}
+                                {children}
+                            </Dialog.Panel>
+                        </Transition.Child>
+                    </div>
+                </div>
+            </Dialog>
+        </Transition>
+    );
 }

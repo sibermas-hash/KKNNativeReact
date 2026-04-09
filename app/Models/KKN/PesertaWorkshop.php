@@ -3,6 +3,7 @@
 namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\User;
@@ -40,5 +41,16 @@ class PesertaWorkshop extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function scopeForPeriod(Builder $query, ?int $periodId): Builder
+    {
+        if (! $periodId || ! Workshop::supportsPeriodAssignment()) {
+            return $query;
+        }
+
+        return $query->whereHas('workshop', function (Builder $workshopQuery) use ($periodId) {
+            $workshopQuery->where('period_id', $periodId);
+        });
     }
 }

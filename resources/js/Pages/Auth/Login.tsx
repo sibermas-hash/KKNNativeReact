@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import GuestLayout from '@/Layouts/GuestLayout';
 import type { PageProps } from '@/types';
-import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { route } from 'ziggy-js';
 import { 
@@ -9,16 +9,23 @@ import {
     Eye, 
     EyeOff, 
     RefreshCw, 
-    ShieldCheck,
-    CheckCircle2,
     Fingerprint,
     Info,
-    ChevronRight
+    ChevronRight,
+    Binary
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
 export default function Login() {
-    const { captcha_question } = usePage<PageProps & { captcha_question?: string }>().props;
+    const {
+        captcha_question: initialCaptchaQuestion,
+        captcha_generated_at: initialCaptchaGeneratedAt,
+        captcha_ttl_seconds: captchaTtlSeconds = 600,
+    } = usePage<PageProps & {
+        captcha_question?: string;
+        captcha_generated_at?: number;
+        captcha_ttl_seconds?: number;
+    }>().props;
     const { data, setData, post, processing, errors, reset } = useForm({
         login: '',
         password: '',
@@ -27,9 +34,19 @@ export default function Login() {
     });
 
     const [showPassword, setShowPassword] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [captchaQuestion, setCaptchaQuestion] = useState(initialCaptchaQuestion || '');
+    const [captchaGeneratedAt, setCaptchaGeneratedAt] = useState<number | null>(initialCaptchaGeneratedAt ?? null);
     
-    // Clean up the captcha question (e.g., "10 + 5" instead of "Berapa hasil 10 + 5?")
-    const activeCaptchaQuestion = (captcha_question || '0 + 0')
+    useEffect(() => {
+        setCaptchaQuestion(initialCaptchaQuestion || '');
+    }, [initialCaptchaQuestion]);
+
+    useEffect(() => {
+        setCaptchaGeneratedAt(initialCaptchaGeneratedAt ?? null);
+    }, [initialCaptchaGeneratedAt]);
+
+    const activeCaptchaQuestion = (captchaQuestion || '0 + 0')
         .replace(/Berapa\s+hasil\s+/i, '')
         .replace(/\?$/, '')
         .trim();
@@ -45,66 +62,90 @@ export default function Login() {
         });
     };
 
-    const refreshCaptcha = () => {
-        router.reload({
-            only: ['captcha_question', 'captcha_generated_at', 'captcha_ttl_seconds'],
-            async: true,
-        });
+    const refreshCaptcha = useCallback(async () => {
+        setIsRefreshing(true);
 
-        fetch(route('login.captcha.refresh'), {
-            headers: {
-                Accept: 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            credentials: 'same-origin',
-        }).then(() => {
-            router.reload({
-                only: ['captcha_question', 'captcha_generated_at', 'captcha_ttl_seconds'],
-                async: true,
+        try {
+            const response = await window.fetch(route('login.captcha.refresh'), {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
             });
+
+            if (!response.ok) {
+                throw new Error('refresh_failed');
+            }
+
+            const payload = await response.json() as {
+                question?: string;
+                generated_at?: number;
+            };
+
+            setCaptchaQuestion(payload.question || '');
+            setCaptchaGeneratedAt(payload.generated_at ?? null);
             setData('captcha_answer', '');
-        }).catch(() => {
+            return;
+        } catch {
             router.reload({
+                data: { refresh: 1 },
                 only: ['captcha_question', 'captcha_generated_at', 'captcha_ttl_seconds'],
-                async: true,
+                onSuccess: () => {
+                    setData('captcha_answer', '');
+                },
             });
-        });
-    };
+        } finally {
+            setIsRefreshing(false);
+        }
+    }, [setData]);
+
+    useEffect(() => {
+        if (!captchaGeneratedAt) {
+            return undefined;
+        }
+
+        const expiresAt = (captchaGeneratedAt + captchaTtlSeconds) * 1000;
+        const timeout = Math.max(0, expiresAt - Date.now());
+        const timer = window.setTimeout(() => {
+            void refreshCaptcha();
+        }, timeout);
+
+        return () => window.clearTimeout(timer);
+    }, [captchaGeneratedAt, captchaTtlSeconds, refreshCaptcha]);
 
     return (
-        <GuestLayout title="Otoritas Akses">
-            <Head title="Otoritas Akses | Pangkalan Data KKN UIN SAIZU" />
-
-            <div className="space-y-12">
-                {/* --- HEADER --- */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                         <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Secured_Enclave_Handshake</span>
-                    </div>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tighter italic uppercase leading-none">Akses <span className="font-serif italic font-normal text-emerald-600 capitalize">Personal.</span></h1>
-                    <p className="text-sm font-bold text-slate-400 italic leading-relaxed">Identifikasi Mandiri Mahasiswa & Staf Administrasi LPPM UIN Saizu.</p>
+        <GuestLayout title="Login">
+            <div className="space-y-10">
+                {/* Header Sederhana */}
+                <div className="space-y-3">
+                    <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-none italic">
+                        Masuk <span className="text-emerald-600">Portal.</span>
+                    </h2>
+                    <p className="text-xs font-bold text-slate-400 leading-none italic">
+                        Silakan lengkapi identitas Anda untuk melanjutkan.
+                    </p>
                 </div>
 
                 <form onSubmit={submit} className="space-y-8">
-                    
-                    {/* --- ERROR ALERT --- */}
+                    {/* Aler Error Sederhana */}
                     <AnimatePresence mode="wait">
                         {Object.keys(errors).length > 0 && (
-                            <motion.div 
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="bg-rose-50 border border-rose-100 rounded-2xl p-6 overflow-hidden space-y-4"
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="bg-rose-50 border-emerald-400 border border-slate-50 border-l-4 border-l-rose-500 p-5 space-y-3 shadow-xl shadow-rose-950/5"
                             >
                                 <div className="flex items-center gap-3">
-                                    <Info size={16} className="text-rose-600" />
-                                    <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest italic">Authenticity_Exception</span>
+                                    <Info size={16} className="text-rose-500" />
+                                    <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest italic leading-none">Login Bermasalah</span>
                                 </div>
-                                <div className="space-y-1 font-bold italic text-sm text-rose-950">
+                                <div className="space-y-2 text-[10px] font-bold text-slate-600 uppercase leading-relaxed italic">
                                     {Object.entries(errors).map(([key, message]) => (
-                                        <p key={key} className="flex gap-3">
-                                            <span className="text-rose-300">/</span>
+                                        <p key={key} className="flex gap-2">
+                                            <span>&#8226;</span>
                                             {message as string}
                                         </p>
                                     ))}
@@ -113,126 +154,147 @@ export default function Login() {
                         )}
                     </AnimatePresence>
 
-                    {/* --- USERNAME / NIM / NIP --- */}
-                    <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic ml-1">Universal_Identificator</label>
-                        <div className="relative group">
-                            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors pointer-events-none">
-                                <Fingerprint size={24} />
-                            </div>
-                            <input
-                                type="text"
-                                value={data.login}
-                                onChange={(e) => setData('login', e.target.value)}
-                                className="w-full h-20 bg-slate-50 border border-slate-100 rounded-[2rem] pl-16 pr-6 text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 focus:bg-white transition-all duration-300 font-black italic tracking-tight text-lg shadow-inner"
-                                placeholder="USERNAME / NIM / NIP"
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    {/* --- PASSWORD --- */}
-                    <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic ml-1">Security_Passphrase</label>
-                        <div className="relative group">
-                            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors pointer-events-none">
-                                <Lock size={22} />
-                            </div>
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                value={data.password}
-                                onChange={(e) => setData('password', e.target.value)}
-                                className="w-full h-20 bg-slate-50 border border-slate-100 rounded-[2rem] pl-16 pr-16 text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 focus:bg-white transition-all duration-300 font-black italic tracking-wide text-xl shadow-inner tabular-nums"
-                                placeholder="••••••••"
-                                required
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 hover:text-emerald-600 transition-colors p-2 rounded-xl active:scale-90"
-                                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                                tabIndex={-1}
-                            >
-                                {showPassword ? <EyeOff size={22} aria-hidden="true" /> : <Eye size={22} aria-hidden="true" />}
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* --- CAPTCHA MODULE --- */}
-                    <div className="bg-slate-50/50 rounded-[2.5rem] p-8 flex flex-row items-center gap-6 border border-slate-100 shadow-inner group/captcha relative overflow-hidden">
-                        <div className="absolute inset-0 bg-white opacity-0 group-hover/captcha:opacity-30 transition-opacity pointer-events-none" />
-                        <div className="flex items-center gap-5 flex-1 relative z-10">
-                            <button
-                                type="button"
-                                onClick={refreshCaptcha}
-                                className="h-12 w-12 flex items-center justify-center bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-emerald-600 hover:border-emerald-100 transition-all hover:rotate-180 duration-700 shadow-sm shrink-0 active:scale-95"
-                                aria-label="Refresh captcha question"
-                                title="Segarkan Captcha"
-                            >
-                                <RefreshCw size={18} aria-hidden="true" />
-                            </button>
-                            <div className="flex flex-col">
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest italic leading-none mb-2">Heuristic_Validator</span>
-                                <label htmlFor="captcha-answer" className="text-2xl font-black text-slate-900 italic tracking-tighter leading-none pointer-events-none font-serif">
-                                    {activeCaptchaQuestion} <span className="text-emerald-600">= ?</span>
-                                </label>
-                            </div>
-                        </div>
-                        <div className="w-40 shrink-0 relative z-10">
-                            <input
-                                id="captcha-answer"
-                                type="number"
-                                value={data.captcha_answer}
-                                onChange={(e) => setData('captcha_answer', e.target.value)}
-                                className="w-full h-16 bg-white border border-slate-200 rounded-2xl text-center font-black text-2xl italic tracking-tighter text-slate-900 focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 focus:outline-none transition-all placeholder:text-slate-200 shadow-xl shadow-emerald-900/5"
-                                placeholder="..."
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    {/* --- REMEMBER & FORGOT --- */}
-                    <div className="flex flex-row items-center justify-between px-2 gap-4">
-                        <label className="flex items-center gap-4 cursor-pointer group shrink-0">
-                            <div className="relative">
+                    {/* Input Fields */}
+                    <div className="space-y-6">
+                        {/* IDENTITAS */}
+                        <div className="space-y-3 group">
+                            <label htmlFor="login" className="text-[11px] font-bold text-slate-500 italic group-focus-within:text-emerald-600 transition-colors">
+                                Username / NIM / NIP
+                            </label>
+                            <div className="relative group">
+                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors">
+                                    <Fingerprint size={18} />
+                                </div>
                                 <input
-                                    type="checkbox"
-                                    checked={data.remember}
-                                    onChange={(e) => setData('remember', e.target.checked)}
-                                    className="sr-only peer"
+                                    id="login"
+                                    name="login"
+                                    type="text"
+                                    value={data.login}
+                                    onChange={(e) => setData('login', e.target.value)}
+                                    className="w-full h-16 bg-slate-50 border border-slate-100 px-16 text-slate-900 border-emerald-50 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all font-bold tracking-normal text-sm shadow-inner rounded-3xl"
+                                    placeholder="Masukkan username, NIM, atau NIP"
+                                    required
                                 />
-                                <div className="w-6 h-6 border-2 border-slate-100 rounded-lg bg-slate-50 peer-checked:bg-emerald-600 peer-checked:border-emerald-600 transition-all shadow-inner group-hover/checkbox:border-emerald-200" />
-                                <CheckCircle2 className="absolute inset-0 h-6 w-6 scale-75 text-white opacity-0 transition-all peer-checked:opacity-100" />
                             </div>
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic group-hover:text-slate-900 transition-colors selection:bg-none">Ingat_Identitas</span>
+                        </div>
+
+                        {/* PASSWORD */}
+                        <div className="space-y-3 group">
+                            <label htmlFor="password" className="text-[11px] font-bold text-slate-500 italic group-focus-within:text-emerald-600 transition-colors">
+                                Kata Sandi
+                            </label>
+                            <div className="relative group">
+                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors">
+                                    <Lock size={18} />
+                                </div>
+                                <input
+                                    id="password"
+                                    name="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={data.password}
+                                    onChange={(e) => setData('password', e.target.value)}
+                                    className="w-full h-16 bg-slate-50 border border-slate-100 px-16 text-slate-900 border-emerald-50 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all font-bold tracking-[0.4em] text-sm shadow-inner rounded-3xl"
+                                    placeholder="••••••••"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 hover:text-emerald-600 transition-colors p-2"
+                                    tabIndex={-1}
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* CAPTCHA */}
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="flex-1 h-16 bg-emerald-50 border border-emerald-100 px-8 flex items-center justify-between shadow-inner rounded-3xl relative overflow-hidden group/captcha">
+                                <div className="flex flex-col leading-none">
+                                    <span className="text-[9px] font-bold text-emerald-600 mb-1 italic opacity-70">Lengkapi hasil hitung</span>
+                                    <span className="text-3xl font-black text-emerald-950 tracking-tighter tabular-nums italic">
+                                        {activeCaptchaQuestion} <span className="text-emerald-500">=</span>
+                                    </span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={refreshCaptcha}
+                                    disabled={isRefreshing}
+                                    className="h-10 w-10 flex items-center justify-center bg-white border border-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all active:scale-90 disabled:opacity-50 shadow-sm rounded-full"
+                                >
+                                    <RefreshCw size={16} className={clsx((processing || isRefreshing) && "animate-spin")} />
+                                </button>
+                            </div>
+                            <div className="w-full sm:w-32 h-16 border border-emerald-50 bg-slate-50 rounded-3xl focus-within:border-emerald-500 focus-within:bg-white transition-all shadow-inner flex items-center px-4 overflow-hidden">
+                                <input
+                                    id="captcha_answer"
+                                    name="captcha_answer"
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
+                                    value={data.captcha_answer}
+                                    onChange={(e) => setData('captcha_answer', e.target.value.replace(/[^0-9]/g, ''))}
+                                    className="w-full bg-transparent border-none p-0 text-center font-black text-3xl text-emerald-950 focus:ring-0 placeholder:text-emerald-100 tabular-nums"
+                                    placeholder="?"
+                                    required
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Operational Controls Sederhana */}
+                    <div className="flex flex-row items-center justify-between px-1">
+                        <label className="flex items-center gap-3 cursor-pointer group select-none">
+                             <div className="relative h-5 w-5 bg-slate-100 border border-slate-200 rounded-lg flex items-center justify-center transition-all group-hover:border-emerald-500">
+                                 <input
+                                     id="remember"
+                                     name="remember"
+                                     type="checkbox"
+                                     checked={data.remember}
+                                     onChange={(e) => setData('remember', e.target.checked)}
+                                     className="sr-only peer"
+                                 />
+                                 <div className="h-2 w-2 rounded-full bg-emerald-500 opacity-0 peer-checked:opacity-100 transition-opacity animate-pulse" />
+                             </div>
+                             <span className="text-[11px] font-bold text-slate-500 group-hover:text-slate-900 transition-colors italic">Ingat Saya</span>
                         </label>
-                        <Link 
-                            href={route('password.request')} 
-                            className="text-[10px] font-black text-emerald-600 hover:text-emerald-800 uppercase tracking-[0.2em] italic transition-colors underline decoration-emerald-200 underline-offset-8"
+                        <Link
+                            href={route('password.request')}
+                            className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:text-slate-900 underline underline-offset-4 decoration-emerald-100 italic"
                         >
-                            Reset_Otorisasi?
+                            Reset Password?
                         </Link>
                     </div>
 
-                    {/* --- SUBMIT --- */}
+                    {/* Button MASUK Sederhana */}
                     <button
                         type="submit"
                         disabled={processing}
-                        className="group h-24 w-full bg-slate-950 hover:bg-emerald-600 text-white rounded-[2.5rem] font-black text-sm transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-6 shadow-2xl relative overflow-hidden italic uppercase tracking-[0.3em]"
+                        className="group relative h-20 w-full bg-emerald-600 text-white font-black text-[12px] uppercase tracking-[0.4em] italic rounded-[2rem] transition-all active:scale-[0.98] disabled:opacity-50 overflow-hidden shadow-2xl shadow-emerald-500/30"
                     >
-                        <div className="absolute inset-x-[-20%] h-full bg-white/10 -translate-x-full group-hover:px-full transition-all duration-[3s]" />
-                        {processing ? (
-                            <>
-                                <RefreshCw size={24} className="animate-spin text-emerald-400" />
-                                <span>AUTHENTICATING...</span>
-                            </>
-                        ) : (
-                            <>
-                                <span>ESTABLISH_AUTH_STREAM</span>
-                                <ChevronRight size={24} className="group-hover:translate-x-3 transition-transform" />
-                            </>
-                        )}
+                        <div className="absolute inset-0 bg-white/10 -translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
+                        <div className="relative z-10 flex items-center justify-center gap-6">
+                            {processing ? (
+                                <>
+                                    <RefreshCw size={24} className="animate-spin text-white" />
+                                    <span>Memproses...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span>Masuk Sekarang</span>
+                                    <div className="h-10 w-10 bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform backdrop-blur-md rounded-full shadow-lg">
+                                        <ChevronRight size={20} />
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </button>
+                    
+                    <div className="flex items-center justify-center gap-4 text-[9px] font-black text-emerald-200 uppercase tracking-widest italic opacity-60 hover:opacity-100 transition-opacity group">
+                        <Binary size={14} className="group-hover:rotate-180 transition-transform" />
+                        <span>Sistem Keamanan Terintegrasi V4</span>
+                    </div>
                 </form>
             </div>
         </GuestLayout>

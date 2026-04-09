@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\KknType;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\KelompokKkn;
@@ -89,7 +90,8 @@ class DplTestSeeder extends Seeder
             [
                 'academic_year_id' => $tahunAkademik->id,
                 'periode' => 58,
-                'jenis' => 'Reguler',
+                'jenis' => KknType::REGULER,
+                'program_type' => Periode::PROGRAM_TYPE_REGULER,
                 'start_date' => now()->addDays(7),
                 'end_date' => now()->addDays(67),
                 'registration_start' => now()->subDays(14),

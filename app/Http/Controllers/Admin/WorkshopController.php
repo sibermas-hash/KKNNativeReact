@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\KKN\Workshop;
 use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\Dosen;
+use App\Models\KKN\Periode;
+use App\Services\PeriodContextService;
 use App\Services\WorkshopService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,27 +18,62 @@ use Inertia\Response;
 class WorkshopController extends Controller
 {
     public function __construct(
-        protected WorkshopService $workshopService
+        protected WorkshopService $workshopService,
+        protected PeriodContextService $periodContextService,
     ) {}
 
-    public function index(): Response
+    private function authorizeWorkshopManagement(): void
     {
-        if (!auth()->user()->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])) {
+        if (! auth()->user()->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])) {
             abort(403, 'Anda tidak memiliki hak akses untuk mengelola workshop.');
         }
-        
+    }
+
+    public function index(Request $request): Response
+    {
+        $this->authorizeWorkshopManagement();
+
+        $supportsPeriods = Workshop::supportsPeriodAssignment();
+        $selectedPeriodId = $supportsPeriods
+            ? (int) ($request->integer('period_id') ?: ($this->periodContextService->getActivePeriodId() ?? $this->periodContextService->getDefaultPeriodId()))
+            : null;
+        $workshops = $this->workshopService->getUpcomingWorkshops(null, true, true, $selectedPeriodId);
+
         return Inertia::render('Admin/Workshops/Index', [
-            'workshops' => $this->workshopService->getUpcomingWorkshops(null, true, true),
+            'workshops' => $workshops,
+            'periods' => $supportsPeriods
+                ? Periode::query()
+                    ->orderByDesc('is_active')
+                    ->orderByDesc('start_date')
+                    ->get(['id', 'name'])
+                    ->map(fn (Periode $period) => [
+                        'id' => $period->id,
+                        'name' => $period->name,
+                    ])->values()
+                : [],
+            'filters' => [
+                'period_id' => $selectedPeriodId,
+            ],
+            'workflow' => [
+                'period_scoped' => $supportsPeriods,
+            ],
+            'summary' => [
+                'total_workshops' => count($workshops),
+                'scheduled_workshops' => collect($workshops)->where('status', 'scheduled')->count(),
+                'cancelled_workshops' => collect($workshops)->where('status', 'cancelled')->count(),
+                'total_registered' => collect($workshops)->sum('registered'),
+                'total_attended' => collect($workshops)
+                    ->sum(fn (array $workshop) => collect($workshop['participants'] ?? [])->where('attendance_status', 'attended')->count()),
+            ],
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        if (!auth()->user()->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])) {
-            abort(403, 'Anda tidak memiliki hak akses untuk mengelola workshop.');
-        }
-        
+        $this->authorizeWorkshopManagement();
+
         $validated = $request->validate([
+            'period_id' => Workshop::supportsPeriodAssignment() ? ['nullable', 'exists:periode,id'] : ['nullable'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'methodology' => ['nullable', 'string', 'max:100'],
@@ -46,6 +83,12 @@ class WorkshopController extends Controller
             'location' => ['nullable', 'string', 'max:255'],
             'max_participants' => ['nullable', 'integer', 'min:1'],
         ]);
+
+        if (Workshop::supportsPeriodAssignment()) {
+            $validated['period_id'] = $validated['period_id']
+                ?? $this->periodContextService->getActivePeriodId()
+                ?? $this->periodContextService->getDefaultPeriodId();
+        }
 
         $this->workshopService->createWorkshop($validated);
 
@@ -54,7 +97,10 @@ class WorkshopController extends Controller
 
     public function update(Request $request, Workshop $workshop): RedirectResponse
     {
+        $this->authorizeWorkshopManagement();
+
         $validated = $request->validate([
+            'period_id' => Workshop::supportsPeriodAssignment() ? ['nullable', 'exists:periode,id'] : ['nullable'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'methodology' => ['nullable', 'string', 'max:100'],
@@ -65,25 +111,35 @@ class WorkshopController extends Controller
             'max_participants' => ['nullable', 'integer', 'min:1'],
         ]);
 
+        if (Workshop::supportsPeriodAssignment()) {
+            $validated['period_id'] = $validated['period_id'] ?? $workshop->period_id;
+        }
+
         try {
             $this->workshopService->updateWorkshop($workshop, $validated);
             return redirect()->back()->with('success', 'Jadwal pembekalan berhasil diperbarui.');
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 
-    public function markAttendance(Request $request, int $participantId): RedirectResponse
+    public function bulkAttendance(Request $request, Workshop $workshop): RedirectResponse
     {
-        $this->workshopService->markAttendance($participantId, $request->input('attended', true));
-        return redirect()->back()->with('success', 'Status kehadiran berhasil diperbarui.');
+        $this->authorizeWorkshopManagement();
+
+        $validated = $request->validate([
+            'user_ids' => ['required', 'array'],
+            'user_ids.*' => ['integer', 'exists:users,id'],
+        ]);
+
+        $this->workshopService->bulkMarkAttendance($workshop->id, $validated['user_ids']);
+
+        return redirect()->back()->with('success', 'Status kehadiran workshop berhasil diperbarui secara massal.');
     }
 
     public function previewAttendance(Request $request, int $workshopId): \Illuminate\Http\JsonResponse
     {
-        if (!auth()->user()->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])) {
-            abort(403, 'Anda tidak memiliki hak akses untuk mengelola workshop.');
-        }
+        $this->authorizeWorkshopManagement();
 
         $request->validate([
             'file' => ['required', 'file', 'mimes:xlsx,xls,csv'],
@@ -177,9 +233,7 @@ class WorkshopController extends Controller
 
     public function importAttendance(Request $request, int $workshopId): RedirectResponse
     {
-        if (!auth()->user()->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])) {
-            abort(403, 'Anda tidak memiliki hak akses untuk mengelola workshop.');
-        }
+        $this->authorizeWorkshopManagement();
 
         $validated = $request->validate([
             'nims' => ['required', 'array'],
@@ -207,11 +261,13 @@ class WorkshopController extends Controller
 
     public function destroy(Workshop $workshop): RedirectResponse
     {
+        $this->authorizeWorkshopManagement();
+
         try {
             $this->workshopService->cancelWorkshop($workshop);
             return redirect()->back()->with('success', 'Pembekalan berhasil dibatalkan.');
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 }

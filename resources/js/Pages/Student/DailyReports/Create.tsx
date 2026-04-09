@@ -1,5 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 import { FormInput, FormTextarea } from '@/Components/ui';
 import { getCurrentCoordinates } from '@/lib/geolocation';
@@ -7,8 +8,7 @@ import { listPendingDailyReports, queueDailyReport, syncPendingDailyReports } fr
 
 interface GroupData {
     id: number;
-    nama_kelompok?: string | null;
-    name?: string | null;
+    name: string;
 }
 
 interface GeoPolicy {
@@ -296,7 +296,7 @@ export default function StudentDailyReportCreate({ group, geoPolicy }: Props) {
                             </Link>
                             <h1 className="mt-4 text-2xl font-semibold text-slate-900">Buat Laporan Harian</h1>
                             <p className="mt-2 text-sm text-slate-500">
-                                {group ? `Kelompok aktif: ${group.name || group.nama_kelompok}` : 'Isi aktivitas harian kelompok Anda.'}
+                                {group ? `Kelompok aktif: ${group.name}` : 'Isi aktivitas harian kelompok Anda.'}
                             </p>
                         </div>
                     </div>

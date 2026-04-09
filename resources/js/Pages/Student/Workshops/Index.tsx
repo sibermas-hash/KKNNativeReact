@@ -1,5 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 
 interface Workshop {
@@ -19,15 +20,18 @@ interface Workshop {
 
 interface Props {
  workshops: Workshop[];
+ workflow?: {
+ period_scoped?: boolean;
+ };
 }
 
-export default function StudentWorkshopsIndex({ workshops }: Props) {
+export default function StudentWorkshopsIndex({ workshops, workflow }: Props) {
  const [submittingId, setSubmittingId] = useState<number | null>(null);
 
  const register = (workshopId: number) => {
  setSubmittingId(workshopId);
  router.post(
- `/mahasiswa/workshops/${workshopId}/register`,
+ route('student.workshops.register', workshopId),
  {},
  {
  preserveScroll: true,
@@ -44,8 +48,13 @@ export default function StudentWorkshopsIndex({ workshops }: Props) {
  <section className="rounded-lg border border-slate-200 bg-white p-8">
  <h1 className="text-2xl font-semibold text-slate-900">Workshop Mahasiswa</h1>
  <p className="mt-2 text-sm text-slate-500">
- Pilih workshop pembekalan yang tersedia dan pantau status kehadiran Anda.
+ Pantau jadwal pembekalan yang tersedia dan status kehadiran Anda pada workshop yang relevan dengan operasional KKN.
  </p>
+ {workflow?.period_scoped ? (
+ <p className="mt-2 text-xs font-medium uppercase tracking-wide text-emerald-600">
+ Jadwal workshop diprioritaskan untuk periode KKN yang sedang aktif.
+ </p>
+ ) : null}
  </section>
 
  {workshops.length > 0 ? (

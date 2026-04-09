@@ -28,18 +28,19 @@ class PublicDataController extends Controller
 
     /**
      * Strict allowlist of writable columns per table via public API.
-     * Prevents mass assignment of sensitive fields.
+     * SECURITY: Reference/master data tables (fakultas, prodi, mahasiswa) are NOT writable
+     * via public API to prevent mass assignment attacks.
      */
     private const WRITABLE_COLUMNS = [
         '_projects' => ['email', 'project_name', 'use_case'],
-        'mahasiswa' => ['batch_year'], // Only safe fields, NO is_bta_ppi_passed/sks_completed/gpa
+        'mahasiswa' => [], // REMOVED: Reference data - admin control only
         'dosen' => [], // Not writable via API
-        'fakultas' => ['code', 'name'],
-        'prodi' => ['code', 'name', 'faculty_id'],
+        'fakultas' => [], // REMOVED: Reference data - admin control only
+        'prodi' => [], // REMOVED: Reference data - admin control only
         'kelompok_kkn' => [], // Not writable via API
-        'lokasi' => ['village_name', 'address', 'latitude', 'longitude'],
+        'lokasi' => [], // REMOVED: Location data should be admin-controlled
         'periode' => [], // Not writable via API
-        'tahun_akademik' => ['year'],
+        'tahun_akademik' => [], // REMOVED: Academic year data should be admin-controlled
     ];
 
     /**

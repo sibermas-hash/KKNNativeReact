@@ -24,6 +24,10 @@ class RegistrationTest extends TestCase
         $user = User::factory()->create([
             'phone' => '081111111111',
             'address' => 'Jl. Pahlawan No. 1',
+            'domicile_village_name' => 'Desa Asal',
+            'domicile_district_name' => 'Kecamatan Asal',
+            'domicile_regency_name' => 'Kabupaten Asal',
+            'address_verified_at' => now(),
         ]);
         $user->assignRole('student');
 
@@ -44,6 +48,7 @@ class RegistrationTest extends TestCase
             ->assertInertia(fn ($page) => $page
                 ->component('Student/Register')
                 ->has('periods')
+                ->where('domicile_profile.is_complete', true)
             );
     }
 
@@ -52,6 +57,10 @@ class RegistrationTest extends TestCase
         $user = User::factory()->create([
             'phone' => '081222222222',
             'address' => 'Jl. Pahlawan No. 2',
+            'domicile_village_name' => 'Desa Asal',
+            'domicile_district_name' => 'Kecamatan Asal',
+            'domicile_regency_name' => 'Kabupaten Asal',
+            'address_verified_at' => now(),
         ]);
         $user->assignRole('student');
 
@@ -67,6 +76,11 @@ class RegistrationTest extends TestCase
         $group = KelompokKkn::factory()->create([
             'period_id' => $period->id,
             'status' => 'active',
+            'location_id' => \App\Models\KKN\Lokasi::factory()->create([
+                'village_name' => 'Desa Penempatan',
+                'district_name' => 'Kecamatan Penempatan',
+                'regency_name' => 'Kabupaten Penempatan',
+            ])->id,
         ]);
 
         // First visit the registration page to establish session
@@ -77,7 +91,6 @@ class RegistrationTest extends TestCase
             ->from(route('student.registration.create'))
             ->post(route('student.registration.store'), [
                 'period_id' => $period->id,
-                'kelompok_id' => $group->id,
             ]);
 
         $response->assertRedirect();
@@ -94,6 +107,10 @@ class RegistrationTest extends TestCase
         $user = User::factory()->create([
             'phone' => '081333333333',
             'address' => 'Jl. Pahlawan No. 3',
+            'domicile_village_name' => 'Desa Asal',
+            'domicile_district_name' => 'Kecamatan Asal',
+            'domicile_regency_name' => 'Kabupaten Asal',
+            'address_verified_at' => now(),
         ]);
         $user->assignRole('student');
 
@@ -109,6 +126,11 @@ class RegistrationTest extends TestCase
         $group = KelompokKkn::factory()->create([
             'period_id' => $period->id,
             'status' => 'active',
+            'location_id' => \App\Models\KKN\Lokasi::factory()->create([
+                'village_name' => 'Desa Penempatan',
+                'district_name' => 'Kecamatan Penempatan',
+                'regency_name' => 'Kabupaten Penempatan',
+            ])->id,
         ]);
 
         // First registration
@@ -118,7 +140,6 @@ class RegistrationTest extends TestCase
         $this->actingAs($user)
             ->post(route('student.registration.store'), [
                 'period_id' => $period->id,
-                'kelompok_id' => $group->id,
             ]);
 
         // Attempt duplicate registration
@@ -126,7 +147,6 @@ class RegistrationTest extends TestCase
             ->from(route('student.registration.create'))
             ->post(route('student.registration.store'), [
                 'period_id' => $period->id,
-                'kelompok_id' => $group->id,
             ]);
 
         // Should only have one registration record
@@ -176,5 +196,46 @@ class RegistrationTest extends TestCase
         $response = $this->get(route('student.registration.create'));
 
         $response->assertRedirect(route('login'));
+    }
+
+    public function test_student_is_redirected_to_profile_when_domicile_is_not_verified(): void
+    {
+        $user = User::factory()->create([
+            'phone' => '081444444444',
+            'address' => 'Jl. Pahlawan No. 4',
+            'domicile_village_name' => 'Desa Asal',
+            'domicile_district_name' => 'Kecamatan Asal',
+            'domicile_regency_name' => 'Kabupaten Asal',
+            'address_verified_at' => null,
+        ]);
+        $user->assignRole('student');
+
+        Mahasiswa::factory()->create([
+            'user_id' => $user->id,
+            'nik' => '3301010101010014',
+            'mother_name' => 'Maryam',
+            'birth_place' => 'Banjarnegara',
+            'birth_date' => '2003-04-14',
+        ]);
+
+        $period = Periode::factory()->active()->create();
+        KelompokKkn::factory()->create([
+            'period_id' => $period->id,
+            'status' => 'active',
+            'location_id' => \App\Models\KKN\Lokasi::factory()->create([
+                'village_name' => 'Desa Penempatan',
+                'district_name' => 'Kecamatan Penempatan',
+                'regency_name' => 'Kabupaten Penempatan',
+            ])->id,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->post(route('student.registration.store'), [
+                'period_id' => $period->id,
+            ]);
+
+        $response
+            ->assertRedirect(route('profile.show'))
+            ->assertSessionHas('error');
     }
 }

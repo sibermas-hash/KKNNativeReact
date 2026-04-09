@@ -162,7 +162,7 @@ class GradeSuggestionServiceTest extends TestCase
         // sentimentScore = 70
         // finalScore = (12.5 * 0.7) + (70 * 0.3) = 8.75 + 21 = 29.75
         $this->assertSame(29.75, $result['score']);
-        $this->assertSame('D/E', $result['label']);
+        $this->assertSame('E', $result['label']);
     }
 
     public function test_reason_includes_report_count(): void

@@ -1,12 +1,11 @@
 import { Head, Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
+import { route } from 'ziggy-js';
 import {
     ArrowRight,
     Award,
     BookOpen,
     Download,
-    Globe2,
-    Heart,
     MapPin,
     Newspaper,
     Users,
@@ -18,7 +17,6 @@ import {
     MousePointer2,
 } from 'lucide-react';
 import PublicLayout from '@/Layouts/PublicLayout';
-import { clsx } from 'clsx';
 
 type AnnouncementItem = {
     id: number;
@@ -80,23 +78,28 @@ const valueCards = [
 const schemeCards = [
     {
         title: 'KKN Reguler',
-        tag: 'MAIN_TRACK',
+        tag: 'Skema utama',
         description: 'Skema utama penempatan mahasiswa pada desa mitra dengan program kerja kolektif yang terukur.',
     },
     {
         title: 'KKN Tematik',
-        tag: 'ISSUE_BASED',
+        tag: 'Berbasis isu',
         description: 'Intervensi strategis berbasis isu prioritas seperti kesehatan, ekonomi kreatif, dan lingkungan hidup.',
     },
     {
-        title: 'Kolaborasi Nusantara',
-        tag: 'CROSS_BORDER',
-        description: 'Pengabdian lintas wilayah untuk pertukaran nilai budaya dan akselerasi pembangunan nasional.',
+        title: 'KKN Nusantara',
+        tag: 'Lintas wilayah',
+        description: 'Program khusus lintas wilayah yang mengikuti seleksi dan tata kelola nasional/mitra.',
     },
     {
-        title: 'KKN Maslahat',
-        tag: 'SPECIALIZED',
-        description: 'Skema pengabdian spesifik dengan orientasi kemaslahatan umat sesuai mandat institusi.',
+        title: 'KKN Kolaborasi PTKIN',
+        tag: 'Kemitraan PTKIN',
+        description: 'Program kolaborasi antar-PTKIN dengan penempatan dan tata kelola yang mengikuti host program.',
+    },
+    {
+        title: 'KKN Internasional',
+        tag: 'Kemitraan global',
+        description: 'Program luar negeri berbasis mitra yang dikelola melalui seleksi khusus dan penempatan host.',
     },
 ];
 
@@ -137,7 +140,7 @@ export default function Home({
                             >
                                 <span className="h-px w-10 bg-emerald-500/30 hidden sm:block" />
                                 <span className="px-6 py-2 bg-emerald-50 text-[10px] font-black text-emerald-700 rounded-full border border-emerald-100 uppercase tracking-[0.5em] inline-block shadow-sm">
-                                    THE_ACADEMIC_PORTAL_v4.0
+                                    Portal Akademik KKN
                                 </span>
                                 <span className="h-px w-10 bg-emerald-500/30 hidden sm:block" />
                             </motion.div>
@@ -148,8 +151,8 @@ export default function Home({
                                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                                 className="space-y-10"
                             >
-                                <h1 className="text-[12vw] sm:text-7xl lg:text-9xl font-black text-slate-950 tracking-[-0.04em] leading-[0.85] uppercase italic font-sans italic selection:bg-emerald-500">
-                                    <span className="font-serif italic font-normal text-emerald-600 capitalize lowercase block lg:inline">Aksi_</span> <br className="lg:hidden" />
+                                <h1 className="text-[12vw] sm:text-7xl lg:text-9xl font-black text-emerald-950 tracking-[-0.04em] leading-[0.85] uppercase italic font-sans italic selection:bg-emerald-500">
+                                    <span className="font-serif italic font-normal text-emerald-600 capitalize lowercase block lg:inline">Aksi</span> <br className="lg:hidden" />
                                     Nyata <span className="text-slate-200">/</span> <br className="lg:hidden" />
                                     Terukur.
                                 </h1>
@@ -165,16 +168,16 @@ export default function Home({
                                 transition={{ delay: 0.3 }}
                                 className="flex flex-col sm:flex-row gap-6 lg:justify-center w-full"
                             >
-                                <Link
-                                     href="/login"
+                                 <Link
+                                  href={route('login')}
                                      className="group h-20 px-10 bg-emerald-600 text-white rounded-[2rem] text-sm font-black flex items-center justify-center gap-5 hover:bg-emerald-700 hover:-translate-y-1 transition-all shadow-2xl active:scale-95 uppercase italic tracking-[0.2em]"
                                  >
-                                     <span>LOGIN_PORTAL</span>
+                                     <span>Masuk ke portal</span>
                                      <ArrowRight className="h-5 w-5 group-hover:translate-x-2 transition-transform" />
                                  </Link>
-                                <Link
-                                    href="/skema-kkn"
-                                    className="h-20 px-10 bg-white border border-slate-100 text-slate-900 rounded-[2rem] text-sm font-black flex items-center justify-center gap-4 hover:bg-slate-50 transition-all shadow-sm active:scale-95 uppercase italic tracking-[0.2em]"
+                                 <Link
+                                     href={route('public.schemes')}
+                                    className="h-20 px-10 bg-white border border-slate-100 text-emerald-900 rounded-[2rem] text-sm font-black flex items-center justify-center gap-4 hover:bg-slate-50 transition-all shadow-sm active:scale-95 uppercase italic tracking-[0.2em]"
                                 >
                                     Eksplorasi Skema
                                 </Link>
@@ -184,10 +187,10 @@ export default function Home({
                         {/* --- BENTO PERFORMANCE STATS --- */}
                         <div className="mt-40 grid grid-cols-2 lg:grid-cols-4 gap-10">
                             {[
-                                { label: 'Personnel_Active', value: stats.students || '12K+', icon: Users, color: 'emerald' },
-                                { label: 'Operational_Group', value: stats.groups || '850+', icon: Sparkles, color: 'blue' },
-                                { label: 'Sector_Location', value: stats.locations || '45+', icon: MapPin, color: 'rose' },
-                                { label: 'Governance_Year', value: stats.academic_years || '2026', icon: Calendar, color: 'amber' },
+                                { label: 'Mahasiswa aktif', value: stats.students || '12K+', icon: Users, color: 'emerald' },
+                                { label: 'Kelompok aktif', value: stats.groups || '850+', icon: Sparkles, color: 'blue' },
+                                { label: 'Lokasi penempatan', value: stats.locations || '45+', icon: MapPin, color: 'rose' },
+                                { label: 'Tahun akademik', value: stats.academic_years || '2026', icon: Calendar, color: 'amber' },
                             ].map((stat, i) => (
                                 <motion.div
                                     key={i}
@@ -199,7 +202,7 @@ export default function Home({
                                 >
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-8 italic leading-none">{stat.label}</p>
                                     <div className="space-y-2">
-                                        <h4 className="text-5xl font-black text-slate-950 italic tracking-tighter leading-none group-hover:text-emerald-600 transition-colors">{stat.value}</h4>
+                                        <h4 className="text-5xl font-black text-emerald-950 italic tracking-tighter leading-none group-hover:text-emerald-600 transition-colors">{stat.value}</h4>
                                         <div className="h-1 w-8 bg-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </div>
                                 </motion.div>
@@ -214,7 +217,7 @@ export default function Home({
                         <div className="grid lg:grid-cols-2 gap-20 lg:items-center">
                             <div className="space-y-12">
                                 <div className="space-y-6">
-                                    <h2 className="text-4xl lg:text-6xl font-black text-slate-900 tracking-tighter leading-none italic uppercase">
+                                    <h2 className="text-4xl lg:text-6xl font-black text-emerald-900 tracking-tighter leading-none italic uppercase">
                                         Pilar Utama <span className="font-serif italic font-normal text-emerald-600 capitalize">Pengabdian.</span>
                                     </h2>
                                     <p className="text-xl font-bold text-slate-400 italic leading-relaxed">
@@ -229,7 +232,7 @@ export default function Home({
                                                 <item.icon size={24} />
                                             </div>
                                             <div className="space-y-2 pt-2">
-                                                <h3 className="text-xl font-black text-slate-900 italic tracking-tight">{item.title}</h3>
+                                                <h3 className="text-xl font-black text-emerald-900 italic tracking-tight">{item.title}</h3>
                                                 <p className="text-sm font-medium text-slate-500 leading-relaxed max-w-md">{item.description}</p>
                                             </div>
                                         </div>
@@ -241,7 +244,7 @@ export default function Home({
                                 <div className="aspect-[4/5] rounded-[3.5rem] bg-slate-100 overflow-hidden relative shadow-2xl border border-slate-200">
                                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent z-10" />
                                     <div className="absolute inset-0 flex items-center justify-center z-0 opacity-10 group-hover:scale-110 transition-transform duration-[4s]">
-                                         <ShieldCheck size={400} className="text-slate-950" />
+                                         <ShieldCheck size={400} className="text-emerald-950" />
                                     </div>
                                     <div className="absolute bottom-0 left-0 right-0 p-16 z-20 space-y-4">
                                         <div className="px-5 py-2 bg-emerald-600 text-[10px] font-black text-white rounded-full inline-block shadow-lg uppercase tracking-widest italic">Integritas Terjamin</div>
@@ -262,23 +265,23 @@ export default function Home({
                     <div className="mx-auto max-w-7xl px-6 lg:px-12 relative z-10">
                         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 mb-24">
                             <div className="space-y-6">
-                                <span className="px-5 py-2 bg-emerald-100 border border-emerald-200 rounded-full text-[9px] font-black text-emerald-700 tracking-[0.4em] uppercase italic inline-block">SKEMA_MODULAR_KKN</span>
-                                <h2 className="text-5xl lg:text-8xl font-black text-slate-950 italic tracking-tighter leading-[0.85] uppercase font-serif">Inovasi <br /> Tanpa Batas.</h2>
+                                <span className="px-5 py-2 bg-emerald-100 border border-emerald-200 rounded-full text-[9px] font-black text-emerald-700 tracking-[0.4em] uppercase italic inline-block">Ragam skema KKN</span>
+                                <h2 className="text-5xl lg:text-8xl font-black text-emerald-950 italic tracking-tighter leading-[0.85] uppercase font-serif">Inovasi <br /> Tanpa Batas.</h2>
                             </div>
                             <p className="max-w-md text-lg font-bold text-slate-500 italic leading-relaxed">Penyediaan kanal pengabdian masyarakat yang terspesialisasi sesuai disiplin ilmu dan kompetensi strategis.</p>
                         </div>
 
-                        <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-4">
-                            {schemeCards.map((scheme, i) => (
+                        <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-5">
+                            {schemeCards.map((scheme) => (
                                 <div key={scheme.title} className="group/scheme h-[400px] p-12 bg-white border border-slate-100 rounded-[3rem] hover:bg-emerald-600 transition-all duration-500 flex flex-col justify-between hover:shadow-2xl hover:shadow-emerald-900/20">
                                     <div className="space-y-6">
                                         <span className="text-[9px] font-black text-emerald-600 group-hover/scheme:text-white uppercase tracking-widest italic leading-none">{scheme.tag}</span>
                                         <div className="space-y-4">
-                                            <h3 className="text-3xl font-black text-slate-950 group-hover/scheme:text-white italic tracking-tighter leading-none uppercase">{scheme.title}</h3>
+                                            <h3 className="text-3xl font-black text-emerald-950 group-hover/scheme:text-white italic tracking-tighter leading-none uppercase">{scheme.title}</h3>
                                             <p className="text-sm font-medium text-slate-500 group-hover/scheme:text-emerald-50 leading-relaxed font-sans">{scheme.description}</p>
                                         </div>
                                     </div>
-                                    <Link href="/skema-kkn" className="h-12 w-12 rounded-full border border-slate-200 group-hover/scheme:border-white/50 flex items-center justify-center text-slate-400 group-hover/scheme:text-white group-hover/scheme:bg-white/10 transition-all">
+                                    <Link href={route('public.schemes')} className="h-12 w-12 rounded-full border border-slate-200 group-hover/scheme:border-white/50 flex items-center justify-center text-slate-400 group-hover/scheme:text-white group-hover/scheme:bg-white/10 transition-all">
                                         <ArrowUpRight size={20} />
                                     </Link>
                                 </div>
@@ -294,10 +297,10 @@ export default function Home({
                         <div className="space-y-12">
                             <div className="flex items-end justify-between border-b border-slate-100 pb-10">
                                 <div className="space-y-4">
-                                    <h2 className="text-4xl font-black text-slate-950 italic tracking-tighter leading-none uppercase font-serif">Warta <span className="font-sans italic text-emerald-600">Utama.</span></h2>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">Bulletin_Feed_v4</p>
+                                    <h2 className="text-4xl font-black text-emerald-950 italic tracking-tighter leading-none uppercase font-serif">Warta <span className="font-sans italic text-emerald-600">Utama.</span></h2>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">Informasi terbaru</p>
                                 </div>
-                                <Link href="/warta" className="text-[10px] font-black text-emerald-600 uppercase tracking-widest italic hover:text-slate-900 transition-colors">Semua Berita</Link>
+                                <Link href={route('public.announcements')} className="text-[10px] font-black text-emerald-600 uppercase tracking-widest italic hover:text-emerald-900 transition-colors">Semua Berita</Link>
                             </div>
 
                             <div className="space-y-6">
@@ -305,10 +308,10 @@ export default function Home({
                                     <article key={item.id} className="group cursor-pointer">
                                         <div className="p-8 rounded-[2rem] border border-slate-100 hover:border-emerald-200 hover:shadow-2xl hover:shadow-emerald-900/5 transition-all space-y-4 relative overflow-hidden">
                                             <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest italic text-slate-400 group-hover:text-emerald-600 transition-colors">
-                                                <span>{item.category || 'ACADEMIC_NEWS'}</span>
+                                                <span>{item.category || 'Warta akademik'}</span>
                                                 <span>{formatDate(item.published_at)}</span>
                                             </div>
-                                            <h3 className="text-xl font-black text-slate-900 italic tracking-tight group-hover:translate-x-2 transition-transform">{item.title}</h3>
+                                            <h3 className="text-xl font-black text-emerald-900 italic tracking-tight group-hover:translate-x-2 transition-transform">{item.title}</h3>
                                             <div className="absolute right-8 bottom-8 text-slate-100 group-hover:text-emerald-50 transition-colors">
                                                 <Newspaper size={40} />
                                             </div>
@@ -317,7 +320,7 @@ export default function Home({
                                 )) : (
                                     <div className="py-20 text-center opacity-20 italic space-y-4">
                                         <Newspaper size={60} className="mx-auto" />
-                                        <p className="text-[11px] font-black uppercase tracking-[0.5em]">BUFFER_EMPTY</p>
+                                        <p className="text-[11px] font-black uppercase tracking-[0.5em]">Belum ada warta</p>
                                     </div>
                                 )}
                             </div>
@@ -327,10 +330,10 @@ export default function Home({
                         <div className="space-y-12">
                             <div className="flex items-end justify-between border-b border-slate-100 pb-10">
                                 <div className="space-y-4">
-                                    <h2 className="text-4xl font-black text-slate-950 italic tracking-tighter leading-none uppercase font-serif">Repositori <span className="font-sans italic text-emerald-600">Pusat.</span></h2>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">Document_Distribution</p>
+                                    <h2 className="text-4xl font-black text-emerald-950 italic tracking-tighter leading-none uppercase font-serif">Repositori <span className="font-sans italic text-emerald-600">Pusat.</span></h2>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">Dokumen pilihan</p>
                                 </div>
-                                <Link href="/repositori" className="text-[10px] font-black text-emerald-600 uppercase tracking-widest italic hover:text-slate-900 transition-colors">Semua Berkas</Link>
+                                <Link href={route('public.downloads')} className="text-[10px] font-black text-emerald-600 uppercase tracking-widest italic hover:text-emerald-900 transition-colors">Semua Berkas</Link>
                             </div>
 
                             <div className="space-y-6">
@@ -340,9 +343,9 @@ export default function Home({
                                             <div className="space-y-2">
                                                 <div className="flex items-center gap-3">
                                                     <span className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-[8px] font-black text-slate-400 uppercase tracking-widest italic">{item.file_type || 'DOC'}</span>
-                                                    <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest italic opacity-0 group-hover:opacity-100 transition-opacity">Ready For Download</span>
+                                                    <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest italic opacity-0 group-hover:opacity-100 transition-opacity">Siap Diunduh</span>
                                                 </div>
-                                                <h3 className="text-xl font-black text-slate-900 italic tracking-tight uppercase leading-none">{item.title}</h3>
+                                                <h3 className="text-xl font-black text-emerald-900 italic tracking-tight uppercase leading-none">{item.title}</h3>
                                             </div>
                                             <div className="h-14 w-14 bg-white rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-emerald-700 transition-all shadow-sm">
                                                 <Download size={24} />
@@ -352,7 +355,7 @@ export default function Home({
                                 )) : (
                                     <div className="py-20 text-center opacity-20 italic space-y-4">
                                         <Download size={60} className="mx-auto" />
-                                        <p className="text-[11px] font-black uppercase tracking-[0.5em]">NULL_RESOURCES</p>
+                                        <p className="text-[11px] font-black uppercase tracking-[0.5em]">Belum ada dokumen</p>
                                     </div>
                                 )}
                             </div>
@@ -370,16 +373,16 @@ export default function Home({
                                 <p className="max-w-2xl text-xl font-bold text-emerald-50 italic leading-relaxed">Bergabunglah dalam jajaran agen perubahan Universitas Islam Negeri Prof. K.H. Saifuddin Zuhri melalui platform manajemen pengabdian terbaik.</p>
                                 <div className="flex flex-col sm:flex-row gap-6 w-full lg:w-auto">
                                     <Link
-                                        href="/login"
+                                        href={route('login')}
                                         className="h-20 px-12 bg-white text-emerald-600 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-4 hover:bg-emerald-50 transition-all shadow-2xl italic"
                                     >
-                                        MASUK_KE_PORTAL <ChevronRight size={16} />
+                                        Masuk ke portal <ChevronRight size={16} />
                                     </Link>
                                     <Link
-                                        href="/profil"
+                                        href={route('public.about')}
                                         className="h-20 px-12 border border-white/30 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center hover:bg-white/10 transition-all italic"
                                     >
-                                        PROFIL_LPPM
+                                        Profil LPPM
                                     </Link>
                                 </div>
                             </div>

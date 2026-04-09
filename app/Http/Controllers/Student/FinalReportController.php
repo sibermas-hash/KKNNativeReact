@@ -15,7 +15,7 @@ class FinalReportController extends Controller
     /**
      * Validate file magic bytes to prevent MIME spoofing.
      */
-    private function validateFileMagicBytes($file, array $allowedSignatures = null): void
+    private function validateFileMagicBytes($file, ?array $allowedSignatures = null): void
     {
         if ($allowedSignatures === null) {
             $allowedSignatures = [

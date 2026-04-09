@@ -42,6 +42,7 @@ class RekapNilaiController extends Controller
             : $request->integer('faculty_id');
 
         $filters = [
+            'search' => $request->string('search')->toString() ?: null,
             'period_id' => $periodeId,
             'faculty_id' => $facultyScopeId,
             'kelompok_id' => $request->integer('kelompok_id'),
@@ -90,9 +91,23 @@ class RekapNilaiController extends Controller
     {
         $this->authorize('export', NilaiKkn::class);
 
-        $periodeId = $request->integer('period_id');
-        $rows = $this->repo->getRekapNilai($periodeId, $request->only(['faculty_id', 'kelompok_id']));
-        $periode = Periode::findOrFail($periodeId);
+        $periodeId = $this->resolveRequestedPeriodId($request);
+
+        if (!$periodeId) {
+            return back()->with('error', 'Pilih periode terlebih dahulu sebelum mengekspor rekap nilai.');
+        }
+
+        $rows = $this->repo->getRekapNilai($periodeId, [
+            'faculty_id' => $request->input('faculty_id'),
+            'kelompok_id' => $request->input('kelompok_id'),
+            'search' => $request->input('search'),
+            'huruf' => $request->input('huruf'),
+        ]);
+        $periode = Periode::find($periodeId);
+
+        if (!$periode) {
+            return back()->with('error', 'Periode rekap nilai tidak ditemukan.');
+        }
 
         return Excel::download(
             new RekapNilaiExport($rows, $periode),
@@ -284,6 +299,7 @@ class RekapNilaiController extends Controller
         return $rows->map(function ($row) {
             return [
                 'id' => $row->score_id ? (int) $row->score_id : (int) $row->mahasiswa_id,
+                'score_id' => $row->score_id ? (int) $row->score_id : null,
                 'student_id' => (int) $row->mahasiswa_id,
                 'kelompok_id' => (int) $row->kelompok_id,
                 'nim' => $row->nim,
@@ -294,6 +310,7 @@ class RekapNilaiController extends Controller
                 'is_locked' => (bool) $row->is_finalized,
                 'prodi' => $row->prodi,
                 'fakultas' => $row->fakultas,
+                'can_finalize' => $row->score_id !== null && $row->nilai_akhir !== null,
             ];
         })->values()->all();
     }
@@ -372,15 +389,26 @@ class RekapNilaiController extends Controller
         $this->authorize('export', NilaiKkn::class);
 
         $validated = $request->validate([
-            'period_id' => 'required|exists:periode,id',
             'faculty_id' => 'nullable|exists:fakultas,id',
         ]);
 
-        $rows = $this->repo->getRekapNilai($validated['period_id'], [
+        $periodeId = $this->resolveRequestedPeriodId($request);
+
+        if (!$periodeId) {
+            return back()->with('error', 'Pilih periode terlebih dahulu sebelum mengekspor ledger nilai.');
+        }
+
+        $rows = $this->repo->getRekapNilai($periodeId, [
             'faculty_id' => $validated['faculty_id'] ?? null,
+            'search' => $request->input('search'),
+            'huruf' => $request->input('huruf'),
         ]);
 
-        $periode = Periode::find($validated['period_id']);
+        $periode = Periode::find($periodeId);
+
+        if (!$periode) {
+            return back()->with('error', 'Periode rekap nilai tidak ditemukan.');
+        }
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
@@ -438,13 +466,39 @@ class RekapNilaiController extends Controller
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        $facultyName = $validated['faculty_id'] ? Fakultas::find($validated['faculty_id'])?->nama : 'Semua';
+        $facultyId = $validated['faculty_id'] ?? null;
+        $facultyName = $facultyId ? Fakultas::find($facultyId)?->nama : 'Semua';
         $filename = "Ledger_Nilai_KKN_{$periode->name}_{$facultyName}_" . date('Y-m-d_His') . '.xlsx';
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        $tempFile = tempnam(sys_get_temp_dir(), 'kkn_ledger_');
-        $writer->save($tempFile . '.xlsx');
-        $finalFile = $tempFile . '.xlsx';
 
-        return response()->download($finalFile, $filename)->deleteFileAfterSend(true);
+        // SECURITY: Use Laravel's storage path instead of system temp directory
+        $exportDir = storage_path('framework/cache/exports');
+        if (!is_dir($exportDir)) {
+            mkdir($exportDir, 0750, true);
+        }
+
+        $tempFile = $exportDir . '/' . \Illuminate\Support\Str::uuid() . '.xlsx';
+        try {
+            $writer->save($tempFile);
+            return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
+        } catch (\Throwable $e) {
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
+            \Illuminate\Support\Facades\Log::error('Ledger export failed', ['exception' => $e]);
+            abort(500, 'Gagal mengekspor ledger nilai.');
+        }
+    }
+
+    private function resolveRequestedPeriodId(Request $request): ?int
+    {
+        $requestedPeriodId = $request->integer('period_id');
+
+        if ($requestedPeriodId > 0) {
+            return $requestedPeriodId;
+        }
+
+        return Periode::getActivePeriod()?->id
+            ?? Periode::query()->orderByDesc('start_date')->orderByDesc('id')->value('id');
     }
 }

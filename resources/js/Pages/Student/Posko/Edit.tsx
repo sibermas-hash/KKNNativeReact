@@ -131,7 +131,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  <div className="mt-6 grid gap-6 md:grid-cols-2">
  <FormInput
  type="number"
- step="any"
+ step="0.0001"
  label="Latitude"
  required
  value={form.data.latitude}
@@ -140,7 +140,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  />
  <FormInput
  type="number"
- step="any"
+ step="0.0001"
  label="Longitude"
  required
  value={form.data.longitude}

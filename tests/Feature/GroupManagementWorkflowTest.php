@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\KknType;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\DplPeriod;
 use App\Models\KKN\Fakultas;
@@ -114,7 +115,12 @@ class GroupManagementWorkflowTest extends TestCase
     {
         $admin = $this->createAdminUser();
 
-        $period = Periode::factory()->active()->create();
+        $period = Periode::factory()->active()->create([
+            'jenis' => KknType::NUSANTARA,
+            'program_type' => Periode::PROGRAM_TYPE_NUSANTARA,
+            'registration_mode' => Periode::REGISTRATION_MODE_SELECTIVE,
+            'placement_mode' => Periode::PLACEMENT_MODE_MANUAL_ADMIN,
+        ]);
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
             'period_id' => $period->id,
@@ -208,10 +214,9 @@ class GroupManagementWorkflowTest extends TestCase
         // Try to add one more student — should fail due to capacity
         ['mahasiswa' => $extraStudent] = $this->createStudentUser();
 
-        $extraRegistration = PesertaKkn::factory()->create([
+        $extraRegistration = PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $extraStudent->id,
             'period_id' => $period->id,
-            'status' => 'pending',
         ]);
 
         $this->actingAs($admin)
@@ -219,7 +224,8 @@ class GroupManagementWorkflowTest extends TestCase
             ->patch(route('admin.pendaftaran.tugaskan-kelompok', $extraRegistration), [
                 'kelompok_id' => $group->id,
             ])
-            ->assertRedirect();
+            ->assertRedirect()
+            ->assertSessionHasErrors('kelompok_id');
 
         // The registration should NOT have been assigned to the full group
         // (capacity enforcement happens at the controller/service level)

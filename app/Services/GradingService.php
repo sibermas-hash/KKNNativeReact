@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\Mahasiswa;
 use App\Models\User;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\KonfigurasiPenilaian;
@@ -13,19 +14,8 @@ use Illuminate\Support\Facades\Notification;
 
 class GradingService
 {
-    /**
-     * Letter grade mapping
-     */
-    private const GRADE_SCALE = [
-        ['min' => 85, 'max' => 100, 'letter' => 'A'],
-        ['min' => 80, 'max' => 84.99, 'letter' => 'A-'],
-        ['min' => 75, 'max' => 79.99, 'letter' => 'B+'],
-        ['min' => 70, 'max' => 74.99, 'letter' => 'B'],
-        ['min' => 65, 'max' => 69.99, 'letter' => 'B-'],
-        ['min' => 60, 'max' => 64.99, 'letter' => 'C+'],
-        ['min' => 55, 'max' => 59.99, 'letter' => 'C'],
-        ['min' => 0, 'max' => 54.99, 'letter' => 'D'],
-    ];
+    // Grade conversion is handled by GradeConversionService::convert()
+    // See: app/Services/KKN/GradeConversionService.php
 
     /**
      * Submit DPL scores for a student
@@ -124,8 +114,16 @@ class GradingService
      */
     public function calculateFinalGrade(NilaiKkn $score): void
     {
-        $configs = Cache::remember('grading_configs', 3600, function () {
-            return KonfigurasiPenilaian::all()->pluck('percentage', 'config_key');
+        $score->loadMissing('kelompok.periode');
+        
+        $kknType = $score->kelompok?->periode?->jenis;
+        if (!$kknType instanceof \App\Enums\KknType) {
+            $kknType = \App\Enums\KknType::tryFrom($kknType) ?? \App\Enums\KknType::REGULER;
+        }
+
+        $cacheKey = 'grading_configs_' . $kknType->value;
+        $configs = Cache::remember($cacheKey, 3600, function () use ($kknType) {
+            return KonfigurasiPenilaian::getForType($kknType)->pluck('percentage', 'config_key');
         });
 
         // 1. Calculate Komponen A (DPL)
@@ -147,11 +145,12 @@ class GradingService
             (floatval($score->administration_score ?? 0) * (floatval($configs['weight_admin_administration'] ?? 50) / 100))
         );
 
-        // Final Score with Main Group Weights
+        // Final Score with Main Group Weights (Section 4.6 of PDF 2025)
+        // DPL: 40%, Village: 20%, LPPM: 40%
         $totalScore = (
-            ($aWeighted * (floatval($configs['weight_main_dpl'] ?? 50) / 100)) +
-            ($bWeighted * (floatval($configs['weight_main_village'] ?? 30) / 100)) +
-            ($cWeighted * (floatval($configs['weight_main_lppm'] ?? 20) / 100))
+            ($aWeighted * (floatval($configs['weight_main_dpl'] ?? 40) / 100)) +
+            ($bWeighted * (floatval($configs['weight_main_village'] ?? 20) / 100)) +
+            ($cWeighted * (floatval($configs['weight_main_lppm'] ?? 40) / 100))
         );
 
         // Determine letter grade
@@ -172,13 +171,7 @@ class GradingService
      */
     public static function determineLetterGrade(float $totalScore): string
     {
-        foreach (self::GRADE_SCALE as $scale) {
-            if ($totalScore >= $scale['min'] && $totalScore <= $scale['max']) {
-                return $scale['letter'];
-            }
-        }
-
-        return 'D';
+        return \App\Services\KKN\GradeConversionService::convert($totalScore)['grade'];
     }
 
     /**
@@ -212,6 +205,14 @@ class GradingService
     }
 
     /**
+     * Check eligibility method - pass periodeId to exclude current period
+     */
+    public function checkEligibilityForPeriod(Mahasiswa $mahasiswa, int $periodeId): array
+    {
+        return app(EligibilityService::class)->checkEligibility($mahasiswa, $periodeId);
+    }
+
+    /**
      * Finalize all scores for a specific period (Synchronous)
      */
     public function finalizeAll(int $periodId): int
@@ -220,7 +221,8 @@ class GradingService
         $failed = 0;
 
         NilaiKkn::whereHas('kelompok', function ($query) use ($periodId) {
-            $query->where('periode_id', $periodId);
+            // FIX C13: Use correct column name 'period_id' (not 'periode_id')
+            $query->where('period_id', $periodId);
         })
         ->with(['mahasiswa.user']) // Eager load student user for notifications
         ->where('is_finalized', false)
@@ -249,12 +251,8 @@ class GradingService
                     continue;
                 }
 
-                // CHECK: Anti-Delusion Logic
-                // Ensure all components have values if weighting is > 0
-                // This is optional but recommended
-                
-                $score->is_finalized = true;
-                $score->save();
+                // Finalize the record
+                NilaiKkn::where('id', $score->id)->update(['is_finalized' => true]);
                 $count++;
 
                 // Notify student

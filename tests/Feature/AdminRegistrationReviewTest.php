@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Enums\KknType;
 use App\Models\KKN\Fakultas;
+use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
@@ -113,5 +115,219 @@ class AdminRegistrationReviewTest extends TestCase
                 ->where('stats.by_faculty.0.faculty_name', 'Fakultas Dakwah')
                 ->where('stats.by_faculty.0.count', 1)
             );
+    }
+
+    public function test_admin_registration_detail_includes_uploaded_student_documents(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('superadmin');
+
+        $studentUser = User::factory()->create();
+        $studentUser->assignRole('student');
+
+        $mahasiswa = Mahasiswa::factory()->create([
+            'user_id' => $studentUser->id,
+            'health_certificate_path' => 'health-certificates/surat-sehat.pdf',
+            'parent_permission_path' => 'parent-permissions/izin-ortu.pdf',
+        ]);
+
+        $period = Periode::factory()->active()->create();
+
+        $registration = PesertaKkn::factory()->create([
+            'mahasiswa_id' => $mahasiswa->id,
+            'period_id' => $period->id,
+            'status' => 'approved',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.pendaftaran.show', $registration))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Registrations/Show')
+                ->has('registration.dokumen', 2)
+                ->where('registration.periode.governance.program_type_label', 'KKN Reguler')
+                ->where('registration.dokumen.0.document_type', 'Surat sehat')
+                ->where('registration.dokumen.1.document_type', 'Surat izin orang tua')
+            );
+    }
+
+    public function test_admin_approval_for_regular_program_assigns_group_automatically_after_review(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('superadmin');
+
+        $studentUser = User::factory()->create([
+            'phone' => '081333333333',
+            'address' => 'Jl. Mawar No. 1',
+            'domicile_village_name' => 'Desa Asal',
+            'domicile_district_name' => 'Kecamatan Asal',
+            'domicile_regency_name' => 'Kabupaten Asal',
+            'address_verified_at' => now(),
+        ]);
+        $studentUser->assignRole('student');
+
+        $mahasiswa = Mahasiswa::factory()->create([
+            'user_id' => $studentUser->id,
+            'health_certificate_path' => 'health-certificates/surat-sehat.pdf',
+            'parent_permission_path' => 'parent-permissions/izin-ortu.pdf',
+        ]);
+
+        $period = Periode::factory()->active()->create([
+            'jenis' => KknType::REGULER,
+            'program_type' => Periode::PROGRAM_TYPE_REGULER,
+            'registration_mode' => Periode::REGISTRATION_MODE_OPEN,
+            'placement_mode' => Periode::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL,
+        ]);
+
+        KelompokKkn::factory()->create([
+            'period_id' => $period->id,
+            'status' => 'active',
+            'location_id' => \App\Models\KKN\Lokasi::factory()->create([
+                'village_name' => 'Desa Asal',
+                'district_name' => 'Kecamatan Asal',
+                'regency_name' => 'Kabupaten Asal',
+            ])->id,
+        ]);
+
+        $eligibleGroup = KelompokKkn::factory()->create([
+            'period_id' => $period->id,
+            'status' => 'active',
+            'location_id' => \App\Models\KKN\Lokasi::factory()->create([
+                'village_name' => 'Desa Penempatan',
+                'district_name' => 'Kecamatan Penempatan',
+                'regency_name' => 'Kabupaten Lain',
+            ])->id,
+        ]);
+
+        $registration = PesertaKkn::factory()->create([
+            'mahasiswa_id' => $mahasiswa->id,
+            'period_id' => $period->id,
+            'kelompok_id' => null,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($admin)
+            ->patch(route('admin.pendaftaran.setujui', $registration))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('peserta_kkn', [
+            'id' => $registration->id,
+            'status' => 'approved',
+            'kelompok_id' => $eligibleGroup->id,
+            'approved_by' => $admin->id,
+        ], 'kkn');
+    }
+
+    public function test_admin_cannot_assign_student_to_group_from_different_period(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('superadmin');
+
+        $studentUser = User::factory()->create();
+        $studentUser->assignRole('student');
+
+        $mahasiswa = Mahasiswa::factory()->create([
+            'user_id' => $studentUser->id,
+        ]);
+
+        $period = Periode::factory()->active()->create();
+        $otherPeriod = Periode::factory()->create();
+
+        $registration = PesertaKkn::factory()->create([
+            'mahasiswa_id' => $mahasiswa->id,
+            'period_id' => $period->id,
+            'status' => 'pending',
+        ]);
+
+        $foreignGroup = KelompokKkn::factory()->create([
+            'period_id' => $otherPeriod->id,
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($admin)
+            ->patch(route('admin.pendaftaran.tugaskan-kelompok', $registration), [
+                'kelompok_id' => $foreignGroup->id,
+            ])
+            ->assertSessionHasErrors('kelompok_id');
+
+        $this->assertDatabaseHas('peserta_kkn', [
+            'id' => $registration->id,
+            'kelompok_id' => null,
+        ], 'kkn');
+    }
+
+    public function test_admin_cannot_manually_assign_pending_registration_to_group(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('superadmin');
+
+        $studentUser = User::factory()->create();
+        $studentUser->assignRole('student');
+
+        $mahasiswa = Mahasiswa::factory()->create([
+            'user_id' => $studentUser->id,
+        ]);
+
+        $period = Periode::factory()->active()->create();
+        $group = KelompokKkn::factory()->create([
+            'period_id' => $period->id,
+            'status' => 'active',
+        ]);
+
+        $registration = PesertaKkn::factory()->create([
+            'mahasiswa_id' => $mahasiswa->id,
+            'period_id' => $period->id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($admin)
+            ->patch(route('admin.pendaftaran.tugaskan-kelompok', $registration), [
+                'kelompok_id' => $group->id,
+            ])
+            ->assertSessionHasErrors('kelompok_id');
+
+        $this->assertDatabaseHas('peserta_kkn', [
+            'id' => $registration->id,
+            'kelompok_id' => null,
+            'status' => 'pending',
+        ], 'kkn');
+    }
+
+    public function test_bulk_approve_rejects_registration_when_assigned_group_is_invalid(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('superadmin');
+
+        $studentUser = User::factory()->create();
+        $studentUser->assignRole('student');
+
+        $mahasiswa = Mahasiswa::factory()->create([
+            'user_id' => $studentUser->id,
+        ]);
+
+        $period = Periode::factory()->active()->create();
+        $otherPeriod = Periode::factory()->create();
+        $foreignGroup = KelompokKkn::factory()->create([
+            'period_id' => $otherPeriod->id,
+            'status' => 'active',
+        ]);
+
+        $registration = PesertaKkn::factory()->create([
+            'mahasiswa_id' => $mahasiswa->id,
+            'period_id' => $period->id,
+            'kelompok_id' => $foreignGroup->id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.pendaftaran.setuju-massal'), [
+                'ids' => [$registration->id],
+            ])
+            ->assertSessionHasErrors('ids');
+
+        $this->assertDatabaseHas('peserta_kkn', [
+            'id' => $registration->id,
+            'status' => 'pending',
+        ], 'kkn');
     }
 }

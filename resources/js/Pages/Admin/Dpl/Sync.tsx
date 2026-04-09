@@ -9,7 +9,10 @@ import {
   ShieldCheck,
   Database,
   ListFilter,
+  Binary,
+  Zap
 } from 'lucide-react';
+import { clsx } from 'clsx';
 
 interface Props {
   title: string;
@@ -22,7 +25,7 @@ interface Props {
 
 function formatSyncTime(value: string | null): string {
   if (!value) {
-    return 'Belum pernah sinkron';
+    return 'Belum Pernah';
   }
 
   const date = new Date(value);
@@ -58,151 +61,181 @@ export default function DplSync({ title, summary }: Props) {
   }
 
   return (
-    <AppLayout title="Sinkron Dosen">
-      <Head title={title} />
+    <AppLayout title="Sinkronisasi Dosen">
+      <Head title="Sinkronisasi Data Master DPL" />
 
-      <div className="space-y-6">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">Sinkronisasi Master Dosen</h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Halaman ini dipakai untuk menarik data dosen dari master kampus ke registry lokal KKN. Sinkron di sini hanya membuat atau
-              memperbarui data dosen lokal, bukan membuat akun login DPL.
-            </p>
-          </div>
-        </div>
+      <div className="min-h-screen bg-white pb-32">
+        {/* EMERALD SYSTEM HEADER */}
+        <div className="bg-white border-b border-emerald-50 px-8 py-10">
+          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+            <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-600/60">
+                        Pusat Sinkronisasi Basis Data
+                    </span>
+                </div>
+                <h1 className="text-3xl font-black tracking-tighter text-emerald-950 uppercase italic">
+                    SINKRON <span className="text-emerald-500">DOSEN</span>
+                </h1>
+                <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest mt-1">
+                    Integrasi registry lokal dengan Master Data Kampus.
+                </p>
+            </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-                <Users size={20} />
-              </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Dosen Lokal</p>
-                <p className="text-2xl font-black tracking-tight text-slate-900">{summary.local_lecturers}</p>
-              </div>
-            </div>
-          </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                <Link2 size={20} />
-              </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Tertaut ke Master</p>
-                <p className="text-2xl font-black tracking-tight text-slate-900">{summary.with_master_link}</p>
-              </div>
-            </div>
-          </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                <Clock3 size={20} />
-              </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Sinkron Terakhir</p>
-                <p className="text-sm font-bold text-slate-900">{formatSyncTime(summary.last_synced_at)}</p>
-              </div>
+            <div className="flex items-center gap-8 shadow-xl bg-emerald-950 border border-emerald-900 px-8 py-4">
+                <div className="flex flex-col border-r border-white/5 pr-8">
+                    <span className="text-[8px] font-black text-emerald-500/50 uppercase tracking-widest mb-1">Status sinkron</span>
+                    <span className="text-xs font-black text-white italic tracking-widest uppercase">OPERASIONAL</span>
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-[8px] font-black text-emerald-500/50 uppercase tracking-widest mb-1">Terakhir</span>
+                    <span className="text-xs font-black text-white italic tracking-widest uppercase">{formatSyncTime(summary.last_synced_at)}</span>
+                </div>
             </div>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4">
-          <div className="flex items-start gap-3">
-            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-sky-700" />
-            <div className="space-y-1 text-sm text-sky-900">
-              <p className="font-bold">Cara kerja sinkron dosen sekarang:</p>
-              <p className="text-xs font-medium leading-relaxed text-sky-800">
-                `Sinkron semua dosen` dipakai untuk menyegarkan master lokal secara penuh. `Resinkron NIP tertentu` dipakai jika hanya ada
-                beberapa dosen yang perlu diperbarui. Akun login DPL tetap dikelola terpisah saat dosen diaktifkan pada periode KKN.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-6 xl:grid-cols-2">
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-                <Database size={20} />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-slate-900">Sinkron Semua Dosen</h2>
-                <p className="text-sm text-slate-500">Menarik seluruh data dosen dari API master kampus.</p>
-              </div>
-            </div>
-
-            <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-sm font-medium leading-relaxed text-slate-600">
-                Gunakan mode ini saat awal setup, setelah ada perubahan besar pada master dosen, atau ketika Anda ingin memastikan registry
-                dosen lokal kembali sinkron penuh.
-              </p>
-              <ul className="space-y-2 text-xs font-medium text-slate-500">
-                <li>• Membuat atau memperbarui identitas dosen berdasarkan NIP</li>
-                <li>• Menyegarkan nama, fakultas, gender, tanggal lahir, dan metadata sinkron</li>
-                <li>• Tidak otomatis membuat akun login atau aktivasi DPL</li>
-              </ul>
-            </div>
-
-            <div className="mt-5 flex justify-end">
-              <button
-                type="button"
-                onClick={submitBulk}
-                disabled={bulkForm.processing || targetedForm.processing}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-60 shadow-sm"
-              >
-                <RefreshCw size={16} className={bulkForm.processing ? 'animate-spin' : ''} />
-                {bulkForm.processing ? 'Menyinkronkan...' : 'Sinkron Semua'}
-              </button>
-            </div>
-          </section>
-
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                <ListFilter size={20} />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-slate-900">Resinkron NIP Tertentu</h2>
-                <p className="text-sm text-slate-500">Untuk pembaruan dosen terarah tanpa menarik semua data.</p>
-              </div>
+        <div className="p-8 space-y-12">
+            {/* TELEMETRY CARDS */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="bg-white border border-emerald-100 p-8 shadow-sm group hover:border-emerald-500 transition-all">
+                    <div className="flex items-center gap-5">
+                        <div className="h-14 w-14 flex items-center justify-center bg-emerald-50 text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white">
+                            <Users size={24} />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-300">Dosen Lokal</p>
+                            <p className="text-2xl font-black italic tracking-tighter text-emerald-950">{summary.local_lecturers} <span className="text-xs text-emerald-100 not-italic uppercase font-bold tracking-widest">UNIT</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-white border border-emerald-100 p-8 shadow-sm group hover:border-emerald-500 transition-all">
+                    <div className="flex items-center gap-5">
+                        <div className="h-14 w-14 flex items-center justify-center bg-emerald-50 text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white">
+                            <Link2 size={24} />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-300">Tautan Master</p>
+                            <p className="text-2xl font-black italic tracking-tighter text-emerald-950">{summary.with_master_link} <span className="text-xs text-emerald-100 not-italic uppercase font-bold tracking-widest">UNIT</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-white border border-emerald-100 p-8 shadow-sm group hover:border-emerald-500 transition-all">
+                    <div className="flex items-center gap-5">
+                        <div className="h-14 w-14 flex items-center justify-center bg-emerald-50 text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white">
+                            <Clock3 size={24} />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-300">Data Segar</p>
+                            <p className="text-sm font-black italic tracking-tighter text-emerald-950 uppercase">{formatSyncTime(summary.last_synced_at)}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <form onSubmit={submitTargeted} className="space-y-4">
-              <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-slate-500">
-                  Daftar NIP
-                </label>
-                <textarea
-                  rows={8}
-                  value={targetedForm.data.nip_list}
-                  onChange={(event) => targetedForm.setData('nip_list', event.target.value)}
-                  placeholder={'Masukkan satu atau banyak NIP.\nPisahkan dengan enter, koma, atau titik koma.\nContoh:\n198700010010\n198700010011,198700010012'}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/5"
-                />
-                {targetedForm.errors.nip_list && (
-                  <p className="mt-2 text-xs font-semibold text-rose-500">{targetedForm.errors.nip_list}</p>
-                )}
-              </div>
+            {/* PROTOCOL ALERT */}
+            <div className="bg-emerald-950 border border-emerald-900 p-8 shadow-2xl relative overflow-hidden group text-white">
+                <div className="absolute top-0 right-0 p-8 opacity-[0.05] text-white -rotate-12 transition-transform group-hover:rotate-0 duration-1000">
+                    <ShieldCheck size={120} />
+                </div>
+                <div className="flex items-start gap-6 relative z-10">
+                    <div className="p-3 bg-emerald-500 text-emerald-950">
+                        <Binary size={20} />
+                    </div>
+                    <div className="space-y-2">
+                        <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-400 italic">Protokol Antarmuka Sinkronisasi</h4>
+                        <p className="text-[10px] font-bold text-emerald-100/60 leading-relaxed uppercase tracking-widest italic leading-loose">
+                            Sistem ini menghubungkan pangkalan data KKN dengan Master Data Universitas untuk validasi identitas tenaga pendidik. Pastikan data master telah diperbarui sebelum melakukan sinkronisasi lokal untuk akurasi penugasan.
+                        </p>
+                    </div>
+                </div>
+            </div>
 
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs font-medium leading-relaxed text-slate-500">
-                Mode ini cocok bila hanya ada dosen tertentu yang baru diperbaiki di master kampus, atau ada data yang ingin diperbarui
-                ulang tanpa menjalankan sinkron penuh.
-              </div>
+            <div className="grid gap-12 xl:grid-cols-2 lg:items-stretch">
+                {/* BULK SYNC */}
+                <section className="bg-white border border-emerald-100 shadow-sm flex flex-col group hover:border-emerald-500 transition-all overflow-hidden text-emerald-950">
+                    <div className="p-10 flex flex-col gap-8 flex-1">
+                        <div className="flex items-center gap-5">
+                            <div className="p-4 bg-emerald-950 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                                <Database size={24} />
+                            </div>
+                            <div>
+                                <h2 className="text-[12px] font-black text-emerald-950 uppercase tracking-[0.2em] italic">Sinkronisasi Massal</h2>
+                                <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest mt-1">Sinkronisasi seluruh data</p>
+                            </div>
+                        </div>
 
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  disabled={targetedForm.processing || bulkForm.processing || targetedForm.data.nip_list.trim() === ''}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700 disabled:opacity-60"
-                >
-                  <RefreshCw size={16} className={targetedForm.processing ? 'animate-spin' : ''} />
-                  {targetedForm.processing ? 'Memproses...' : 'Sinkron NIP Tertentu'}
-                </button>
-              </div>
-            </form>
-          </section>
+                        <div className="p-8 bg-emerald-50/20 border border-emerald-50 space-y-6">
+                            <p className="text-[10px] font-black text-emerald-900/60 uppercase tracking-widest leading-relaxed italic border-l-2 border-emerald-500 pl-4">
+                                Gunakan prosedur ini untuk kalibrasi total registry lokal. Sistem akan menarik seluruh data dosen aktif dari Master Kampus.
+                            </p>
+                            <ul className="space-y-3">
+                                {['Verifikasi Identitas NIP', 'Pembaruan Fakultas & Metadata', 'Normalisasi Gender & Usia'].map((item, idx) => (
+                                    <li key={idx} className="flex items-center gap-3 text-[9px] font-black text-emerald-300 uppercase tracking-widest italic">
+                                        <div className="h-1 w-1 bg-emerald-500 rounded-full" />
+                                        {item}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="px-10 py-8 bg-emerald-50/10 border-t border-emerald-50 flex justify-end">
+                        <button
+                            type="button"
+                            onClick={submitBulk}
+                            disabled={bulkForm.processing || targetedForm.processing}
+                            className="h-14 px-10 bg-emerald-950 text-white font-black text-[11px] uppercase tracking-[0.3em] italic hover:bg-emerald-600 transition-all flex items-center gap-4 active:scale-95 shadow-xl disabled:opacity-30"
+                        >
+                            <RefreshCw size={16} className={clsx(bulkForm.processing && 'animate-spin')} />
+                            {bulkForm.processing ? 'PROSES SINKRON...' : 'JALANKAN SINKRON MASSAL'}
+                        </button>
+                    </div>
+                </section>
+
+                {/* TARGETED SYNC */}
+                <section className="bg-white border border-emerald-100 shadow-sm flex flex-col group hover:border-emerald-500 transition-all overflow-hidden text-emerald-950">
+                    <div className="p-10 flex flex-col gap-8 flex-1">
+                        <div className="flex items-center gap-5">
+                            <div className="p-4 bg-emerald-950 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                                <ListFilter size={24} />
+                            </div>
+                            <div>
+                                <h2 className="text-[12px] font-black text-emerald-950 uppercase tracking-[0.2em] italic">Resinkron Terarah</h2>
+                                <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest mt-1">Pembaruan dosen tertentu</p>
+                            </div>
+                        </div>
+
+                        <form onSubmit={submitTargeted} className="space-y-6 flex-1 flex flex-col">
+                            <div className="space-y-3 flex-1 flex flex-col">
+                                <label className="text-[9px] font-black uppercase tracking-[0.3em] text-emerald-300 italic border-l-2 border-emerald-500 pl-4">Daftar NIP</label>
+                                <textarea
+                                    rows={8}
+                                    value={targetedForm.data.nip_list}
+                                    onChange={(event) => targetedForm.setData('nip_list', event.target.value)}
+                                    placeholder={'MASUKKAN NIP DI SINI...\nPISAHKAN DENGAN BARIS, KOMA, ATAU TITIK KOMA.'}
+                                    className="w-full flex-1 bg-white border border-emerald-100 p-6 text-[11px] font-black uppercase tracking-widest italic text-emerald-950 focus:border-emerald-500 outline-none transition-all placeholder:text-emerald-50"
+                                />
+                                {targetedForm.errors.nip_list && (
+                                    <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">{targetedForm.errors.nip_list}</p>
+                                )}
+                            </div>
+
+                            <div className="flex justify-end pt-4">
+                                <button
+                                    type="submit"
+                                    disabled={targetedForm.processing || bulkForm.processing || targetedForm.data.nip_list.trim() === ''}
+                                    className="h-14 px-10 bg-emerald-600 text-white font-black text-[11px] uppercase tracking-[0.3em] italic hover:bg-emerald-950 transition-all flex items-center gap-4 active:scale-95 shadow-xl disabled:opacity-30"
+                                >
+                                    <Zap size={16} className={clsx(targetedForm.processing && 'animate-spin')} />
+                                    {targetedForm.processing ? 'MEMPROSES...' : 'SINKRONKAN NIP TERPILIH'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
         </div>
       </div>
     </AppLayout>

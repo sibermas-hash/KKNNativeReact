@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { route } from 'ziggy-js';
 
 interface Props {
     children: ReactNode;
@@ -8,6 +9,25 @@ interface Props {
 interface State {
     hasError: boolean;
     error: Error | null;
+}
+
+// Safe environment check that works in browser contexts
+function isProduction(): boolean {
+    try {
+        // @ts-expect-error process is defined in Node but not in browser
+        return typeof process !== 'undefined' && process.env?.NODE_ENV === 'production';
+    } catch {
+        return false;
+    }
+}
+
+function isDevelopment(): boolean {
+    try {
+        // @ts-expect-error process is defined in Node but not in browser
+        return typeof process !== 'undefined' && process.env?.NODE_ENV === 'development';
+    } catch {
+        return false;
+    }
 }
 
 export class ErrorBoundary extends Component<Props, State> {
@@ -22,9 +42,9 @@ export class ErrorBoundary extends Component<Props, State> {
 
     public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
         console.error('Uncaught error:', error, errorInfo);
-        
+
         // Log to backend in production
-        if (process.env.NODE_ENV === 'production') {
+        if (isProduction()) {
             fetch(route('api.log-error'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -60,7 +80,7 @@ export class ErrorBoundary extends Component<Props, State> {
                                 Maaf, terjadi kesalahan yang tidak terduga. Silakan refresh halaman atau hubungi administrator.
                             </p>
 
-                            {process.env.NODE_ENV === 'development' && this.state.error && (
+                            {isDevelopment() && this.state.error && (
                                 <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
                                     <p className="text-xs font-mono text-slate-700 break-all">
                                         {this.state.error.message}

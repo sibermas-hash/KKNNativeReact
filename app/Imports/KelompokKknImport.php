@@ -47,7 +47,7 @@ class KelompokKknImport implements ToCollection, WithHeadingRow
 
             $location = $this->resolveLocation($row);
             if (! $location) {
-                $this->errors[] = "Baris {$rowNumber}: lokasi tidak ditemukan. Import lokasi dulu sebelum import kelompok.";
+                $this->errors[] = "Baris {$rowNumber}: data lokasi belum lengkap. Pastikan desa, kecamatan, dan kabupaten terisi.";
 
                 continue;
             }
@@ -104,10 +104,13 @@ class KelompokKknImport implements ToCollection, WithHeadingRow
 
         $periodName = $this->value($row, ['periode', 'period_name', 'nama_periode']);
         if (filled($periodName)) {
-            return Periode::query()
-                ->where('name', $periodName)
-                ->orWhere('periode', $periodName)
-                ->first();
+            $query = Periode::query()->where('name', $periodName);
+
+            if (is_numeric($periodName)) {
+                $query->orWhere('periode', (int) $periodName);
+            }
+
+            return $query->first();
         }
 
         return null;

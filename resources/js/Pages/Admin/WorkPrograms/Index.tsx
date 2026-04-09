@@ -1,6 +1,6 @@
 import { Head, router, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { FormSelect, StatusBadge, Badge } from '@/Components/ui';
+import { FormSelect, StatusBadge, Badge, Pagination } from '@/Components/ui';
 import type { PageProps } from '@/types';
 import {
     ClipboardList,
@@ -20,9 +20,14 @@ import {
     Navigation,
     LayoutDashboard,
     Clock,
-    Target
+    Target,
+    ChevronRight,
+    SearchCheck,
+    Archive,
+    Lock
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { motion } from 'framer-motion';
 
 interface WorkProgramData {
     id: number;
@@ -45,6 +50,8 @@ interface PaginationMeta {
     last_page: number;
     from: number;
     to: number;
+    links: { url: string | null; label: string; active: boolean }[];
+    path: string;
 }
 
 interface Props extends PageProps {
@@ -59,10 +66,10 @@ interface Props extends PageProps {
 }
 
 const SDG_COLORS = [
-    '#E5243B', '#DDA63A', '#4C9F38', '#C42130', '#FF3A21',
-    '#28BCE1', '#FCC30B', '#A21942', '#FD6925', '#DD1367',
-    '#FD9D24', '#BF8B2E', '#497D00', '#0A97D9', '#56C02B',
-    '#00689D', '#1F907D'
+    '#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0',
+    '#064e3b', '#065f46', '#047857', '#059669', '#10b981',
+    '#34d399', '#6ee7b7', '#a7f3d0', '#ecfdf5', '#d1fae5',
+    '#111827', '#374151'
 ];
 
 const SDG_NAMES: Record<number, string> = {
@@ -97,197 +104,243 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
     const rows = workPrograms.data ?? [];
 
     return (
-        <AppLayout title="Mission Control Ledger">
-            <Head title="Arsip Program Kerja" />
+        <AppLayout title="Otoritas Pemantauan Program Kerja">
+            <Head title="Program Kerja | POS-KKN" />
 
-            <div className="space-y-12 pb-32">
-                {/* Modern Tactical Header */}
-                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 border-b border-slate-100 pb-10">
-                    <div className="space-y-2">
+            <div className="min-h-screen bg-white italic font-black text-emerald-950">
+                {/* HEADER TACTICAL: OTORITAS PEMANTAUAN PROGRAM */}
+                <div className="bg-white border-b border-emerald-50 px-12 py-16 flex flex-col xl:flex-row xl:items-center justify-between gap-12 sticky top-0 z-20 shadow-sm overflow-hidden relative">
+                    <div className="absolute right-0 top-0 h-full w-1/3 bg-emerald-50/5 -skew-x-12 translate-x-20 pointer-events-none" />
+                    
+                    <div className="space-y-2 relative z-10">
                         <div className="flex items-center gap-3">
-                            <div className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse shadow-[0_0_10px_rgba(5,150,105,0.5)]" />
-                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.4em] italic leading-none">MISSION_CONTROL_LEDGER_V4</span>
+                            <div className="h-2.5 w-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-300 italic">Central Work Program Audit System</span>
                         </div>
-                        <h1 className="text-3xl md:text-4xl font-black text-slate-950 tracking-tighter flex items-center gap-4 italic uppercase">
-                            <ClipboardList className="w-10 h-10 text-emerald-600" />
-                            PROGRAM <span className="text-emerald-600">KERJA</span>
+                        <h1 className="text-4xl font-black text-emerald-950 uppercase tracking-tighter leading-none italic">
+                            PROGRAM <span className="text-emerald-500">KERJA KELOMPOK</span>
                         </h1>
-                        <p className="text-sm font-bold text-slate-400 italic">Audit strategis rencana kerja, evaluasi dampak misi, dan sinkronisasi laporan unit operasional.</p>
+                        <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest mt-3 flex items-center gap-2">
+                             <ClipboardList size={12} className="text-emerald-500" />
+                             Audit strategis rencana kerja, evaluasi dampak misi, dan sinkronisasi laporan unit operasional.
+                        </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-4">
-                        <div className="px-8 py-5 bg-slate-950 border border-slate-800 rounded-[2rem] flex items-center gap-8 shadow-2xl relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent translate-x-full group-hover:translate-x-0 transition-transform duration-1000" />
-                            <div className="relative z-10 flex flex-col">
-                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1.5">Missions Logged</span>
-                                <div className="flex items-center gap-3">
-                                    <Target className="w-5 h-5 text-emerald-500" />
-                                    <span className="text-2xl font-black text-white italic tracking-tighter leading-none">{rows.length} STRATEGIES</span>
+                    <div className="flex items-center gap-6 relative z-10">
+                        <div className="h-16 px-10 bg-emerald-950 text-white flex items-center gap-8 shadow-2xl relative overflow-hidden group">
+                           <div className="absolute inset-0 bg-emerald-500/10 -skew-x-12 translate-x-full group-hover:translate-x-0 transition-transform duration-1000" />
+                           <div className="flex flex-col relative z-20">
+                               <span className="text-[8px] font-black text-emerald-400 uppercase tracking-[0.3em] italic mb-1">DATA KOLEKTIF</span>
+                               <div className="flex items-center gap-3">
+                                   <Database size={16} className="text-emerald-400" />
+                                   <span className="text-xl font-black italic tracking-tighter tabular-nums text-nowrap">{rows.length} PROGRAM DATA</span>
+                               </div>
+                           </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="px-12 py-12 space-y-12">
+                     {/* TOOLBAR TACTICAL */}
+                     <div className="bg-white border border-emerald-100 p-8 shadow-sm relative overflow-hidden group hover:border-emerald-500 transition-all flex flex-col md:flex-row items-center gap-12">
+                        <div className="absolute inset-0 bg-emerald-50/10 -skew-x-12 translate-x-full group-hover:translate-x-3/4 transition-transform duration-1000" />
+                        <div className="relative group flex-1 w-full relative z-10 flex items-center bg-emerald-50/30 border border-emerald-50 hover:border-emerald-500 transition-all shadow-inner px-8 py-5">
+                            <Filter className="w-5 h-5 text-emerald-200 mr-6" />
+                            <div className="flex-1 flex flex-col mt-1">
+                                <span className="text-[9px] font-black text-emerald-950 uppercase tracking-widest mb-1 italic leading-none">Filter Status Audit Program</span>
+                                <select 
+                                    value={filters.status ?? ''}
+                                    onChange={(e) => handleFilterChange(e.target.value)}
+                                    className="w-full bg-transparent border-none p-0 text-sm font-black italic text-emerald-950 focus:ring-0 cursor-pointer appearance-none uppercase"
+                                >
+                                    <option value="">SEMUA STATUS PROGRAM</option>
+                                    <option value="draf">STATUS: DRAF REKAMAN</option>
+                                    <option value="submitted">STATUS: DIAJUKAN / REVIEW</option>
+                                    <option value="disetujui">STATUS: DISETUJUI / VALID</option>
+                                    <option value="revisi">STATUS: PERLU REVISI</option>
+                                    <option value="ditolak">STATUS: DITOLAK / INVALID</option>
+                                    <option value="completed">STATUS: SELESAI / DATA ARSIP</option>
+                                </select>
+                            </div>
+                            <Zap className="w-4 h-4 text-emerald-100 group-hover:scale-110 transition-transform" />
+                        </div>
+                        <div className="hidden md:flex items-center gap-6 text-emerald-950 font-black text-[11px] uppercase tracking-[0.4em] italic opacity-30 hover:opacity-100 transition-opacity relative z-10">
+                            <Activity size={18} className="text-emerald-500 animate-pulse" />
+                            REAL-TIME DATA SYNCHRONIZED
+                        </div>
+                    </div>
+
+                    {/* SDG IMPACT ANALYTICS TACTICAL */}
+                    {sdg_distribution && (
+                        <section className="bg-white border border-emerald-100 shadow-sm overflow-hidden group hover:border-emerald-500 transition-all relative">
+                            <div className="absolute right-0 top-0 h-full w-1/4 bg-emerald-50/5 skew-x-12 translate-x-20 pointer-events-none" />
+                            <div className="px-10 py-6 border-b border-emerald-50 bg-emerald-50/10 flex items-center justify-between relative z-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-emerald-950 text-emerald-400">
+                                        <Globe size={18} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-950 italic">Dampak Strategis (SDGs)</h2>
+                                        <p className="text-[8px] font-bold text-emerald-300 uppercase tracking-widest mt-1">Metrik Dampak Operasional Pembangunan Berkelanjutan</p>
+                                    </div>
+                                </div>
+                                <div className="px-5 py-2 bg-emerald-950 text-emerald-400 text-[10px] font-black uppercase italic tracking-widest shadow-xl">
+                                    IMPACT ANALYTICS ENGINE
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
 
-                {/* Operations Toolbar */}
-                <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-                    <div className="relative group w-full lg:max-w-2xl px-6 py-4 bg-white border border-slate-200 rounded-3xl flex items-center gap-6 shadow-sm focus-within:border-emerald-500 focus-within:ring-8 focus-within:ring-emerald-500/5 transition-all">
-                        <Filter className="w-5 h-5 text-emerald-600" />
-                        <div className="flex-1 flex flex-col">
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Filter_Operational_State</span>
-                            <select 
-                                value={filters.status ?? ''}
-                                onChange={(e) => handleFilterChange(e.target.value)}
-                                className="w-full bg-transparent border-none p-0 text-sm font-black italic text-slate-950 focus:ring-0 cursor-pointer appearance-none uppercase"
-                            >
-                                <option value="">ALL_MISSIONS_SEQUENTIAL</option>
-                                <option value="draf">DRAFT_MODE</option>
-                                <option value="submitted">SUBMITTED_OPS</option>
-                                <option value="disetujui">AUTHORIZED_STATE</option>
-                                <option value="revisi">REVISION_REQUIRED</option>
-                                <option value="ditolak">DENIED_STATE</option>
-                                <option value="completed">MISSION_COMPLETE</option>
-                            </select>
-                        </div>
-                        <div className="h-10 w-px bg-slate-100" />
-                        <Zap className="w-5 h-5 text-slate-200" />
-                    </div>
-
-                    <div className="flex items-center gap-4 text-slate-400 font-bold text-[10px] uppercase tracking-[0.3em] italic opacity-50">
-                        <Activity className="w-4 h-4 text-emerald-500" />
-                        REAL-TIME_LEDGER_SYNC_ACTIVE
-                    </div>
-                </div>
-
-                {/* SDG Strategic Distribution Grid */}
-                {sdg_distribution && (
-                    <div
-                        className="bg-white rounded-[3.5rem] border border-slate-200 p-10 shadow-sm relative overflow-hidden"
-                    >
-                        <div className="flex items-center gap-4 mb-10 border-b border-slate-100 pb-8">
-                             <div className="p-4 bg-emerald-50 rounded-2xl text-emerald-600">
-                                 <Globe className="w-7 h-7" />
-                             </div>
-                             <div>
-                                 <h2 className="text-xl font-black text-slate-900 italic tracking-tighter uppercase leading-none">STRATEGIC_SDG_IMPACT_METRICS</h2>
-                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Dampak misi operasional terhadap pembangunan berkelanjutan global.</p>
-                             </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-9 gap-4">
-                            {sdg_distribution.map((sdg) => (
-                                <div 
-                                    key={sdg.id}
-                                    className="flex flex-col items-center gap-3 p-5 bg-slate-50/50 rounded-3xl border border-slate-100 hover:border-emerald-200 hover:bg-white transition-all group cursor-default"
-                                >
+                            <div className="p-10 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-9 gap-6 relative z-10">
+                                {sdg_distribution.map((sdg) => (
                                     <div 
-                                        className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-xl italic shadow-lg shadow-inner"
-                                        style={{ backgroundColor: SDG_COLORS[sdg.id - 1] || '#666' }}
+                                        key={sdg.id}
+                                        className="flex flex-col items-center gap-4 p-8 bg-emerald-50/20 border border-emerald-50 hover:border-emerald-500 hover:bg-white transition-all group/item cursor-default relative overflow-hidden"
                                     >
-                                        {sdg.id}
-                                    </div>
-                                    <div className="flex flex-col items-center">
-                                        <span className="text-lg font-black text-slate-950 italic group-hover:text-emerald-600 transition-colors">{sdg.count}</span>
-                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-tight text-center leading-tight">
-                                            {SDG_NAMES[sdg.id] || `SDG_${sdg.id}`}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Tactical Ledger Table */}
-                <section
-                    className="bg-white rounded-[3.5rem] border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-all"
-                >
-                    <div className="overflow-x-auto">
-                        <table className="w-full border-collapse">
-                            <thead>
-                                <tr className="bg-slate-50/50 border-b border-slate-100">
-                                    <th className="px-12 py-8 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">STRATEGY_TITLE_HASH</th>
-                                    <th className="px-6 py-8 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">OPERATIONAL_UNIT</th>
-                                    <th className="px-6 py-8 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">GEO_LOC_TARGET</th>
-                                    <th className="px-6 py-8 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">SUBMISSION_STAMP</th>
-                                    <th className="px-12 py-8 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">EXECUTION_STATE</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-50">
-                                {rows.length > 0 ? (
-                                    rows.map((program, idx) => (
-                                        <tr
-                                            key={program.id}
-                                            className="group hover:bg-slate-50/50 transition-colors cursor-default"
+                                        <div 
+                                            className="w-12 h-12 flex items-center justify-center text-white font-black text-sm italic shadow-xl z-10 group-hover/item:scale-110 transition-transform"
+                                            style={{ backgroundColor: SDG_COLORS[(sdg.id - 1) % SDG_COLORS.length] }}
                                         >
-                                            <td className="px-12 py-8">
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-black text-slate-950 uppercase italic tracking-tighter group-hover:text-emerald-600 transition-colors">{program.title}</span>
-                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1 italic">MISSION_ID: #{program.id}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-8">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="p-2.5 bg-slate-100 rounded-xl text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-600 transition-all shadow-inner">
-                                                        <Layers className="w-4 h-4" />
+                                            {sdg.id}
+                                        </div>
+                                        <div className="flex flex-col items-center z-10">
+                                            <span className="text-2xl font-black text-emerald-950 italic group-hover/item:text-emerald-600 transition-colors tabular-nums leading-none">{sdg.count}</span>
+                                            <span className="text-[7.5px] font-black text-emerald-300 uppercase tracking-tight text-center leading-tight mt-2 max-w-[90px] group-hover/item:text-emerald-950 transition-colors">
+                                                {SDG_NAMES[sdg.id] || `SDGs ${sdg.id}`}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
+                    {/* DATA GRID TACTICAL */}
+                    <div className="bg-white border border-emerald-100 shadow-sm overflow-hidden group hover:border-emerald-500 transition-all relative">
+                        <div className="absolute right-0 top-0 h-full w-1/4 bg-emerald-50/5 skew-x-12 translate-x-20 pointer-events-none" />
+                        <div className="px-10 py-6 border-b border-emerald-50 bg-emerald-50/10 flex items-center justify-between relative z-10">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-emerald-950 text-emerald-400">
+                                    <Archive size={18} />
+                                </div>
+                                <div className="space-y-1">
+                                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-950 italic">Ledger Program Kerja Kelompok</h2>
+                                    <p className="text-[8px] font-bold text-emerald-300 uppercase tracking-widest mt-1">Audit Rekaman Rencana Kerja Kolektif</p>
+                                </div>
+                            </div>
+                            <div className="px-5 py-2 bg-emerald-950 text-emerald-400 text-[10px] font-black uppercase italic tracking-widest shadow-xl">
+                                LIVE REGISTRY FEED
+                            </div>
+                        </div>
+
+                        <div className="overflow-x-auto relative z-10">
+                            <table className="w-full text-left border-collapse italic">
+                                <thead>
+                                    <tr className="bg-emerald-50/20 border-b border-emerald-100 italic">
+                                        <th className="px-12 py-8 text-[9px] font-black text-emerald-300 uppercase tracking-[0.3em] italic">JUDUL PROGRAM / IDENTIFIER</th>
+                                        <th className="px-10 py-8 text-[9px] font-black text-emerald-300 uppercase tracking-[0.3em] italic text-center">KELOMPOK OP.</th>
+                                        <th className="px-8 py-8 text-[9px] font-black text-emerald-300 uppercase tracking-[0.3em] italic">LOKASI PENUGASAN</th>
+                                        <th className="px-8 py-8 text-[9px] font-black text-emerald-300 uppercase tracking-[0.3em] italic text-center">TIMESTAMP AJUAN</th>
+                                        <th className="px-12 py-8 text-right text-[9px] font-black text-emerald-300 uppercase tracking-[0.3em] italic pr-12">STATUS AUDIT</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-emerald-50/50">
+                                    {rows.length > 0 ? (
+                                        rows.map((program, idx) => (
+                                            <tr key={program.id} className="group/row hover:bg-emerald-50/30 transition-all duration-300">
+                                                <td className="px-12 py-8">
+                                                     <div className="flex flex-col gap-1.5 group-hover/row:translate-x-2 transition-transform">
+                                                        <span className="text-[13px] font-black text-emerald-950 uppercase italic tracking-widest leading-none group-hover/row:text-emerald-600 transition-colors uppercase">{program.title}</span>
+                                                        <div className="flex items-center gap-3">
+                                                            <Fingerprint size={10} className="text-emerald-100" />
+                                                            <span className="text-[9px] text-emerald-100 font-bold uppercase tracking-widest italic leading-none">PROG_ID: #{program.id}</span>
+                                                        </div>
                                                     </div>
-                                                    <span className="text-xs font-black text-slate-700 uppercase italic tracking-tight">{program.kelompok?.nama_kelompok || '-'}</span>
+                                                </td>
+                                                <td className="px-10 py-8 text-center uppercase">
+                                                    <div className="inline-flex h-12 flex-col items-center justify-center px-6 bg-white border border-emerald-50 text-[10px] font-black text-emerald-950 uppercase tracking-widest tabular-nums group-hover/row:border-emerald-500 transition-all shadow-sm">
+                                                        <Layers size={12} className="text-emerald-300 mb-1" />
+                                                        {program.kelompok?.nama_kelompok || 'INVALID'}
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-8">
+                                                    <div className="flex items-center gap-5">
+                                                        <div className="p-2.5 bg-emerald-50 border border-emerald-100 text-emerald-300 group-hover/row:bg-emerald-950 group-hover/row:text-emerald-400 group-hover/row:border-emerald-900 transition-all shadow-sm">
+                                                            <Navigation size={16} />
+                                                        </div>
+                                                        <div className="flex flex-col gap-1">
+                                                            <span className="text-[11px] font-black text-emerald-900 uppercase italic tracking-tight uppercase leading-none truncate max-w-[200px]">
+                                                                {program.kelompok?.lokasi?.full_name || program.kelompok?.lokasi?.village_name || 'UNDEFINED'}
+                                                            </span>
+                                                            <span className="text-[8px] font-bold text-emerald-100 uppercase tracking-widest mt-1 uppercase leading-none italic">ASSIGNED_GEOCODE</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-8 text-center text-[10px] font-black text-emerald-950 tabular-nums uppercase">
+                                                     <div className="flex flex-col items-center gap-1 group-hover/row:scale-110 transition-transform">
+                                                        <Clock size={12} className="text-emerald-200" />
+                                                        {program.submitted_at || 'NOT_SUBMITTED'}
+                                                     </div>
+                                                </td>
+                                                <td className="px-12 py-8 text-right pr-12">
+                                                    <div className="flex items-center justify-end group-hover/row:translate-x-2 transition-transform">
+                                                        <StatusBadge status={program.status} />
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={5} className="px-12 py-56 text-center opacity-20">
+                                                <div className="flex flex-col items-center gap-8">
+                                                    <Binary className="h-24 w-24 text-emerald-950" strokeWidth={1} />
+                                                    <p className="text-[12px] font-black uppercase tracking-[0.6em] italic text-emerald-950">ARSIP PROGRAM KERJA NIHIL</p>
                                                 </div>
-                                            </td>
-                                            <td className="px-6 py-8">
-                                                <div className="flex items-center gap-3">
-                                                    <MapPin className="w-3.5 h-3.5 text-emerald-500/50" />
-                                                    <span className="text-[11px] font-bold text-slate-500 uppercase italic tracking-tight truncate max-w-[180px]">
-                                                        {program.kelompok?.lokasi?.full_name ||
-                                                         program.kelompok?.lokasi?.village_name ||
-                                                         'LOC_UNMAPPED'}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-8">
-                                                <div className="flex items-center gap-3">
-                                                    <Clock className="w-3.5 h-3.5 text-slate-300" />
-                                                    <span className="text-[11px] font-black text-slate-400 tabular-nums italic">{program.submitted_at || 'NOT_SUBMITTED'}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-12 py-8 text-right">
-                                                <StatusBadge status={program.status} />
                                             </td>
                                         </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={5} className="px-12 py-32 text-center">
-                                            <div className="flex flex-col items-center gap-6 opacity-30">
-                                                <Binary className="w-16 h-16 text-slate-300" />
-                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] italic">NO_MISSION_PROGRAMS_FOUND_IN_BUFFER</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
 
-                {/* Tactical Footer Stamp */}
-                <div className="p-12 bg-slate-900 rounded-[4rem] border border-slate-800 shadow-3xl relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,185,129,0.1),transparent_60%)]" />
-                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-10">
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-5">
-                                <div className="p-4 bg-emerald-500 rounded-2xl shadow-[0_0_40px_rgba(16,185,129,0.3)] animate-pulse">
-                                    <ShieldCheck className="h-8 w-8 text-white" />
+                        <div className="px-12 py-10 border-t border-emerald-50 flex flex-col md:flex-row items-center justify-between bg-emerald-50/10 gap-8 italic mt-1 relative z-10">
+                            <div className="flex items-center gap-6">
+                                <div className="p-3 bg-emerald-950 shadow-lg">
+                                    <SearchCheck size={16} className="text-emerald-400" />
                                 </div>
-                                <div>
-                                    <h4 className="text-sm font-black text-white uppercase tracking-[0.4em] italic">MISSION_LEDGER_SECURITY_PASS</h4>
-                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 italic leading-relaxed">Seluruh data program kerja telah terenkripsi dan diverifikasi oleh sistem pusat. <br/>Akses modifikasi terbatas pada otorisasi administrator level tinggi.</p>
+                                <div className="space-y-1">
+                                    <span className="text-[10px] font-black text-emerald-950 uppercase tracking-[0.3em]">Operational Program Registry Feed</span>
+                                    <p className="text-[8px] font-bold text-emerald-300 uppercase tracking-widest font-black italic">Total Entitas Terdeteksi: {workPrograms.meta.total} Program</p>
                                 </div>
                             </div>
+                            <Pagination meta={workPrograms.meta} />
                         </div>
-                        <div className="flex items-center gap-8 text-slate-500 font-black text-[11px] uppercase tracking-[0.5em] italic opacity-30 hover:opacity-100 transition-opacity">
-                             <Fingerprint className="w-5 h-5 text-emerald-500" />
-                             CORE_MISSION_PROTOCOL_V4 • {new Date().getFullYear()}
+                    </div>
+
+                    {/* SECURITY FOOTER MONITOR TACTICAL */}
+                    <div className="bg-emerald-950 p-16 text-white shadow-3xl relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-emerald-500/5 -skew-x-12 translate-x-1/2 group-hover:translate-x-1/3 transition-transform duration-1000" />
+                        <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-16">
+                             <div className="space-y-8 flex-1">
+                                 <div className="flex items-center gap-8">
+                                    <div className="p-6 bg-emerald-500 shadow-[0_0_50px_rgba(16,185,129,0.3)] rotate-3 group-hover:rotate-0 transition-all duration-700">
+                                        <ShieldCheck className="h-10 w-10 text-white animate-pulse" />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <h4 className="text-2xl font-black text-white italic tracking-[0.4em] uppercase leading-none">Integritas Audit Program</h4>
+                                        <p className="text-[11px] font-bold text-emerald-400/60 uppercase tracking-widest italic leading-relaxed max-w-3xl">
+                                            Pemantauan program kerja memastikan keselarasan antara misi akademik universitas dengan implementasi di lapangan. 
+                                            Dataset ini disinkronkan langsung dengan pangkalan data SDGs universitas untuk pelaporan dampak sosial nasional.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                             
+                            <div className="flex flex-col items-center xl:items-end gap-6 text-emerald-500 font-black text-[11px] uppercase tracking-[0.5em] italic opacity-30 hover:opacity-100 transition-opacity">
+                                 <div className="flex items-center gap-4">
+                                     <Fingerprint className="w-6 h-6" />
+                                     <span className="text-xl tracking-tighter italic">PROGRAM_AUDIT_STAMP_{new Date().getFullYear()}</span>
+                                 </div>
+                                 <span className="text-[8px] tracking-[0.8em] opacity-40">POS-KKN CENTRAL MISSION CONTROL</span>
+                            </div>
                         </div>
                     </div>
                 </div>

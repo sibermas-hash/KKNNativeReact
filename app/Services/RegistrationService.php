@@ -22,20 +22,40 @@ class RegistrationService
     ) {
     }
 
-    public function register(Mahasiswa $mahasiswa, int $periodeId, ?int $kelompokId, ?string $notes): PesertaKkn
+    /**
+     * Execute registration with distributed locking and transaction safety.
+     * 
+     * FIX C12: The locking strategy is now:
+     * 1. Acquire cache-based distributed lock (per student + period)
+     * 2. Start DB transaction
+     * 3. Lock Periode row with lockForUpdate
+     * 4. Run all validations inside the lock
+     * 5. Create/update records
+     * 6. Commit transaction
+     * 7. Release cache lock
+     * 
+     * The unique constraint on (mahasiswa_id, period_id) added in C14 provides
+     * a final safety net against race conditions.
+     */
+    public function register(Mahasiswa $mahasiswa, int $periodeId, ?int $kelompokId, ?string $notes, ?int $userId = null): PesertaKkn
     {
+        // FIX C10: Verify ownership - the authenticated user must own this mahasiswa record
+        if ($userId && $mahasiswa->user_id !== $userId) {
+            throw new \Illuminate\Auth\Access\AuthorizationException('Anda tidak memiliki hak untuk mendaftarkan mahasiswa ini.');
+        }
+
         $registration = $this->withRegistrationLocks($mahasiswa, $periodeId, $kelompokId, function () use ($mahasiswa, $periodeId, $kelompokId, $notes) {
             return $this->runAtomically(function () use ($mahasiswa, $periodeId, $kelompokId, $notes) {
             $periode = Periode::query()->lockForUpdate()->findOrFail($periodeId);
 
-            // 0. REGISTRATION WINDOW: Cek apakah masih dalam periode pendaftaran
-            $today = now()->toDateString();
-            if ($periode->registration_start && $today < $periode->registration_start) {
+            // FIX C9: Use Carbon between() for proper datetime comparison instead of string comparison
+            $now = now();
+            if ($periode->registration_start && $now->lt($periode->registration_start)) {
                 throw ValidationException::withMessages([
                     'period_id' => 'Pendaftaran untuk periode ini belum dibuka.',
                 ]);
             }
-            if ($periode->registration_end && $today > $periode->registration_end) {
+            if ($periode->registration_end && $now->gt($periode->registration_end)) {
                 throw ValidationException::withMessages([
                     'period_id' => 'Pendaftaran untuk periode ini sudah ditutup.',
                 ]);
@@ -103,14 +123,50 @@ class RegistrationService
             $queue = $this->groupSelectionService->ensureQueue($mahasiswa, $periodeId, true);
 
             if (! $existing) {
-                $existing = $this->registrations->create([
-                    'mahasiswa_id' => $mahasiswa->id,
-                    'period_id' => $periodeId,
-                    'kelompok_id' => null,
-                    'notes' => $notes,
-                    'status' => 'pending',
-                    'registration_date' => now(),
-                ]);
+                try {
+                    // FIX C12 & C14: Wrap in try-catch to handle unique constraint violation gracefully
+                    // The unique constraint on (mahasiswa_id, period_id) prevents race condition duplicates
+                    $existing = $this->registrations->create([
+                        'mahasiswa_id' => $mahasiswa->id,
+                        'period_id' => $periodeId,
+                        'kelompok_id' => null,
+                        'notes' => $notes,
+                        'status' => 'pending',
+                        'registration_date' => now(),
+                    ]);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    // Handle unique constraint violation (race condition edge case)
+                    if ($this->isUniqueConstraintViolation($e)) {
+                        // Re-query to get the existing registration
+                        $existing = PesertaKkn::query()
+                            ->where('mahasiswa_id', $mahasiswa->id)
+                            ->where('period_id', $periodeId)
+                            ->lockForUpdate()
+                            ->firstOrFail();
+                        
+                        // If it's in a rejected state, allow resubmission
+                        if ($existing->status === 'rejected') {
+                            $existing->fill([
+                                'status' => 'pending',
+                                'notes' => $notes,
+                                'kelompok_id' => null,
+                                'approved_at' => null,
+                                'approved_by' => null,
+                                'joined_group_at' => null,
+                                'group_locked_until' => null,
+                                'resubmitted_at' => now(),
+                                'revision_count' => (int) ($existing->revision_count ?? 0) + 1,
+                            ]);
+                            $existing->save();
+                        } else {
+                            throw ValidationException::withMessages([
+                                'period_id' => 'Anda sudah memiliki pendaftaran aktif untuk periode ini.',
+                            ]);
+                        }
+                    } else {
+                        throw $e;
+                    }
+                }
             } elseif ($existing->status === 'completed') {
                 throw ValidationException::withMessages([
                     'period_id' => 'Status pendaftaran Anda pada periode ini tidak mengizinkan perubahan kelompok.',
@@ -133,6 +189,9 @@ class RegistrationService
                 $existing->save();
             }
 
+            // FIX C18: When kelompokId is null, preserve existing group assignment
+            // This is intentional for re-registration scenarios where student updates notes/documents
+            // without changing their group selection
             if (! $kelompokId) {
                 $queue->status = $existing->kelompok_id ? 'dalam_kelompok' : 'menunggu';
                 $queue->save();
@@ -292,5 +351,21 @@ class RegistrationService
         throw ValidationException::withMessages([
             'kelompok_id' => 'Sistem sedang memproses lonjakan pendaftaran. Silakan tunggu beberapa detik lalu coba lagi.',
         ]);
+    }
+
+    /**
+     * Check if a QueryException is a unique constraint violation.
+     * FIX C12 & C14: Used to handle race condition edge cases gracefully.
+     */
+    private function isUniqueConstraintViolation(\Illuminate\Database\QueryException $e): bool
+    {
+        $errorCode = $e->errorInfo[1] ?? null;
+        
+        // MySQL/MariaDB error code 1062 = Duplicate entry
+        // PostgreSQL error code 23505 = unique_violation
+        return in_array($errorCode, [1062, 23505], true)
+            || str_contains($e->getMessage(), 'UNIQUE constraint failed')
+            || str_contains($e->getMessage(), 'Duplicate entry')
+            || str_contains($e->getMessage(), 'peserta_kkn_mahasiswa_period_unique');
     }
 }

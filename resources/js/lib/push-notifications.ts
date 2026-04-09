@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core';
+import { route } from 'ziggy-js';
 
 /**
  * Register for push notifications on native platforms.

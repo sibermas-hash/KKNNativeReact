@@ -15,6 +15,7 @@ class AdminDashboardPreviewTest extends TestCase
         parent::setUp();
 
         Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
     }
 
     public function test_admin_dashboard_no_longer_exposes_legacy_demo_preview_payload(): void
@@ -48,6 +49,20 @@ class AdminDashboardPreviewTest extends TestCase
                 ->component('Admin/Dashboard')
                 ->where('ui.is_faculty_admin', true)
                 ->where('ui.can_manage_public_content', false)
+            );
+    }
+
+    public function test_admin_role_can_open_dashboard(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $this->actingAs($admin)
+            ->get('/admin')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard')
+                ->where('ui.is_faculty_admin', false)
             );
     }
 }

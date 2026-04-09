@@ -40,7 +40,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  event.preventDefault();
  form.post('/mahasiswa/reports/upload', {
  forceFormData: true,
- onSuccess: () => form.reset('judul', 'berkas'),
+ onSuccess: () => form.reset('title', 'file'),
  });
  };
 
@@ -133,7 +133,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
      }
      className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary"
    />
-   {form.errors.berkas && <p className="text-xs text-red-600">{form.errors.berkas}</p>}
+   {form.errors.file && <p className="text-xs text-red-600">{form.errors.file}</p>}
  </div>
  {selectedType && (
  <p className="text-xs text-slate-500">

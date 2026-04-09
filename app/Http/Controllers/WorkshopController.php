@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\KKN\Workshop;
+use App\Services\PeriodContextService;
 use App\Services\WorkshopService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,12 +20,14 @@ class WorkshopController extends Controller
     /**
      * Display upcoming workshops
      */
-    public function index(Request $request)
+    public function index(Request $request, PeriodContextService $periodContextService)
     {
+        $activePeriodId = $periodContextService->getActivePeriodId() ?? $periodContextService->getDefaultPeriodId();
         $workshops = $this->workshopService->getUpcomingWorkshops(
             $request->user()->hasRole('student') ? $request->user()->id : null,
             $request->user()->hasRole('superadmin'),
-            $request->user()->hasRole('superadmin')
+            $request->user()->hasRole('superadmin'),
+            $activePeriodId
         );
 
         if ($request->user()->hasRole('superadmin')) {
@@ -35,6 +38,9 @@ class WorkshopController extends Controller
 
         return Inertia::render('Student/Workshops/Index', [
             'workshops' => $workshops,
+            'workflow' => [
+                'period_scoped' => Workshop::supportsPeriodAssignment(),
+            ],
         ]);
     }
 

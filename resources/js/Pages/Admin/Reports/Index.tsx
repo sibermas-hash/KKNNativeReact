@@ -98,7 +98,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
                          <div className="space-y-4 relative z-10">
                              <div className="flex items-center gap-4">
                                  <div className="h-4 w-4 bg-emerald-600 rounded-full animate-pulse shadow-xl shadow-emerald-500/20" />
-                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em] italic leading-none">TOTAL_DATA_ENTRIES</p>
+                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em] italic leading-none">Total berkas</p>
                              </div>
                              <p className="text-6xl font-black text-slate-900 tracking-tighter italic leading-none">{summary.total_reports}</p>
                          </div>
@@ -114,7 +114,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
                          <div className="space-y-4 relative z-10">
                               <div className="flex items-center gap-4">
                                  <div className="h-4 w-4 bg-amber-500 rounded-full animate-[bounce_2s_infinite] shadow-xl shadow-amber-500/20" />
-                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em] italic leading-none">PENDING_REVIEW_QUEUE</p>
+                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em] italic leading-none">Menunggu tinjauan</p>
                               </div>
                              <p className="text-6xl font-black text-amber-600 tracking-tighter italic leading-none">{summary.pending_review}</p>
                          </div>
@@ -132,7 +132,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
                             type="search"
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="SEARCH TERMINAL: JUDUL / NIM / LOKASI..."
+                            placeholder="Cari judul, NIM, atau lokasi"
                             className="w-full h-20 pl-20 pr-10 bg-white border border-slate-100 rounded-[1.8rem] text-sm font-black text-slate-900 placeholder:text-slate-200 placeholder:italic focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 uppercase tracking-widest transition-all shadow-xl"
                         />
                     </div>
@@ -140,7 +140,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
                     <div className="flex items-center gap-4 w-full xl:w-auto">
                         <button className="flex-1 xl:w-auto h-20 px-12 bg-slate-900 text-white rounded-[1.8rem] font-black text-[11px] tracking-[0.2em] uppercase italic flex items-center justify-center gap-4 hover:bg-emerald-600 transition-all shadow-2xl shadow-slate-900/10 active:scale-95 group">
                             <Filter className="w-5 h-5 opacity-40 group-hover:rotate-90 transition-transform" />
-                            Advance Filters
+                            Filter lanjutan
                         </button>
                     </div>
                 </div>
@@ -205,7 +205,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
                                                         className="inline-flex h-14 px-10 items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-900 font-black text-[10px] uppercase tracking-widest italic hover:bg-emerald-600 hover:text-white hover:border-emerald-500 transition-all active:scale-95 gap-3 shadow-sm hover:shadow-xl hover:shadow-emerald-600/20 shadow-slate-100"
                                                     >
                                                         <Download className="w-4 h-4" />
-                                                        FETCH_FILE
+                                                        Unduh berkas
                                                     </Link>
                                                     <button className="h-14 w-14 bg-white border border-slate-100 text-slate-300 hover:text-slate-900 rounded-2xl flex items-center justify-center transition-all hover:shadow-xl">
                                                          <MoreVertical size={20} />
@@ -219,7 +219,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
                                         <td colSpan={5} className="px-12 py-32 text-center">
                                             <div className="flex flex-col items-center gap-8 opacity-10">
                                                 <FileSearch className="w-24 h-24 text-slate-400" />
-                                                <p className="text-xl font-black text-slate-400 uppercase tracking-[0.5em] italic">NULL_RECORDS_FOUND</p>
+                                                <p className="text-xl font-black text-slate-400 uppercase tracking-[0.5em] italic">Belum ada arsip laporan</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -246,9 +246,9 @@ export default function ReportsIndex({ reports, summary }: Props) {
                     </div>
                     <div className="flex flex-col items-end gap-3 relative z-10">
                          <div className="px-8 py-4 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] italic shadow-xl shadow-emerald-900/50 group-hover/footer:scale-105 transition-transform">
-                             Audit_Records_Active
+                             Arsip aktif
                          </div>
-                         <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic opacity-40">TRK_ID: {Math.random().toString(36).substring(7).toUpperCase()}</p>
+                         <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic opacity-40">ID sesi: {Math.random().toString(36).substring(7).toUpperCase()}</p>
                     </div>
                 </div>
             </div>

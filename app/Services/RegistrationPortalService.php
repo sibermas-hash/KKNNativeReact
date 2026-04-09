@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\KKN\Periode;
 use App\Models\KKN\SystemSetting;
+use App\Services\KKN\KknRequirementService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -14,6 +15,7 @@ class RegistrationPortalService
 
     public function __construct(
         private readonly GroupSelectionService $groupSelectionService,
+        private readonly KknRequirementService $kknRequirementService,
     ) {
     }
 
@@ -28,7 +30,17 @@ class RegistrationPortalService
 
         $snapshot = $store->remember($cacheKey, now()->addSeconds($ttl), function () use ($today) {
             return Periode::query()
-                ->select(['id', 'name', 'registration_start', 'registration_end'])
+                ->select([
+                    'id',
+                    'name',
+                    'jenis',
+                    'program_type',
+                    'program_subtype',
+                    'registration_mode',
+                    'placement_mode',
+                    'registration_start',
+                    'registration_end',
+                ])
                 ->where('is_active', true)
                 ->whereDate('registration_start', '<=', $today)
                 ->whereDate('registration_end', '>=', $today)
@@ -37,11 +49,7 @@ class RegistrationPortalService
                         $query->select(['id', 'period_id', 'location_id', 'nama_kelompok', 'capacity', 'status'])
                             ->where('status', 'active')
                             ->with([
-                                'lokasi:id,village_name,district_name,regency_name,faculty_id',
-                                'lokasi.fakultas:id,nama',
-                                'slotTerkunci:id,kelompok_id,tipe_slot,fakultas_id,prodi_id,kuota_slot',
-                                'slotTerkunci.fakultas:id,nama',
-                                'slotTerkunci.prodi:id,nama',
+                                'lokasi:id,village_name,district_name,regency_name',
                             ])
                             ->withCount([
                                 'peserta' => function ($participantQuery) {
@@ -66,9 +74,23 @@ class RegistrationPortalService
                 ->orderByDesc('registration_start')
                 ->get()
                 ->map(function (Periode $period) {
+                    $governance = $period->governance();
+                    $guide = $this->kknRequirementService->describe($period);
+
                     return [
                         'id' => $period->id,
                         'nama' => $period->name,
+                        'jenis' => $period->jenis,
+                        'program_type' => $period->program_type,
+                        'program_subtype' => $period->program_subtype,
+                        'registration_mode' => $period->registration_mode,
+                        'placement_mode' => $period->placement_mode,
+                        'program_type_label' => $governance['program_type_label'],
+                        'program_subtype_label' => $governance['program_subtype_label'],
+                        'registration_mode_label' => $governance['registration_mode_label'],
+                        'placement_mode_label' => $governance['placement_mode_label'],
+                        'self_service_enabled' => $governance['self_service_enabled'],
+                        'guide' => $guide,
                         'registration_start' => optional($period->registration_start)->format('Y-m-d'),
                         'registration_end' => optional($period->registration_end)->format('Y-m-d'),
                         'kelompok' => $period->kelompok->map(function ($group) {
@@ -91,26 +113,12 @@ class RegistrationPortalService
                                 'male_min_percentage' => $this->groupSelectionService->maleMinimumPercent(),
                                 'male_target_percentage' => $this->groupSelectionService->maleTargetPercent(),
                                 'reserved_male_slots' => max($maleQuota['minimum'] - $maleMemberCount, 0),
-                                'slot_terkunci' => $group->slotTerkunci->map(function ($slot) {
-                                    return [
-                                        'id' => $slot->id,
-                                        'tipe_slot' => $slot->tipe_slot,
-                                        'label' => match ($slot->tipe_slot) {
-                                            'fakultas' => 'Fakultas ' . ($slot->fakultas?->nama ?? 'tidak diketahui'),
-                                            'prodi' => 'Program Studi ' . ($slot->prodi?->nama ?? 'tidak diketahui'),
-                                            default => 'Slot terkunci',
-                                        },
-                                        'kuota_slot' => (int) $slot->kuota_slot,
-                                    ];
-                                })->values()->all(),
                                 'lokasi' => $group->lokasi ? [
                                     'id' => $group->lokasi->id,
                                     'village_name' => $group->lokasi->village_name,
                                     'district_name' => $group->lokasi->district_name,
                                     'regency_name' => $group->lokasi->regency_name,
                                     'full_name' => $group->lokasi->full_name,
-                                    'faculty_id' => $group->lokasi->faculty_id,
-                                    'fakultas_name' => $group->lokasi->fakultas?->nama,
                                 ] : null,
                             ];
                         })->values()->all(),

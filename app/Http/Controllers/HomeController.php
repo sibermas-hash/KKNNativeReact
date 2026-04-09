@@ -153,19 +153,24 @@ class HomeController extends Controller
                 'color' => 'emerald',
             ],
             [
-                'title' => 'KKN Internasional',
-                'description' => 'Kolaborasi global melalui kemitraan universitas luar negeri untuk peningkatan kapasitas lintas budaya.',
+                'title' => 'KKN Tematik',
+                'description' => 'Pengabdian berbasis tema atau proposal dosen, termasuk varian Kampung Zakat dan Desa Katana.',
                 'color' => 'blue',
             ],
             [
                 'title' => 'KKN Nusantara',
-                'description' => 'Pengabdian di wilayah 3T untuk mendukung pemerataan pembangunan nasional.',
+                'description' => 'Program khusus lintas wilayah yang mengikuti seleksi dan tata kelola nasional/mitra.',
                 'color' => 'amber',
             ],
             [
-                'title' => 'KKN Mandiri',
-                'description' => 'Inisiatif kelompok dengan program kerja spesifik dan kemitraan strategis dengan lembaga eksternal.',
+                'title' => 'KKN Kolaborasi PTKIN',
+                'description' => 'Program kemitraan antar-PTKIN dengan penempatan dan tata kelola yang mengikuti host program.',
                 'color' => 'slate',
+            ],
+            [
+                'title' => 'KKN Internasional',
+                'description' => 'Program luar negeri berbasis mitra yang dikelola melalui seleksi khusus dan penempatan host.',
+                'color' => 'rose',
             ],
         ];
 

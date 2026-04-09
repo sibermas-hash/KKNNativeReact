@@ -85,7 +85,7 @@ export default function PublicLayout({ children }: Props) {
                             Cari Lokasi
                         </Link>
                         <Link 
-                            href="/login" 
+                            href={route('login')} 
                             className="px-8 py-3.5 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-3"
                         >
                             Login Portal <ArrowRight size={14} />
@@ -165,9 +165,9 @@ export default function PublicLayout({ children }: Props) {
                                 <div className="absolute -bottom-2 left-0 w-8 h-1 bg-emerald-500 rounded-full" />
                             </h4>
                             <div className="flex flex-col gap-4 text-[13px] text-slate-500 font-bold uppercase tracking-widest">
-                                <Link href="/login" className="hover:text-emerald-500">Cek Kelayakan</Link>
-                                <Link href="/login" className="hover:text-emerald-500">Pendaftaran</Link>
-                                <Link href="/login" className="hover:text-emerald-500">Syarat & Ketentuan</Link>
+                                <Link href={route('login')} className="hover:text-emerald-500">Cek Kelayakan</Link>
+                                <Link href={route('login')} className="hover:text-emerald-500">Pendaftaran</Link>
+                                <Link href={route('login')} className="hover:text-emerald-500">Syarat & Ketentuan</Link>
                             </div>
                         </div>
 

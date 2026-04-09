@@ -173,17 +173,23 @@ class EligibilityService
     /**
      * Check no active registration in other periods
      */
-    private function checkNoActiveRegistration(Mahasiswa $mahasiswa): array
+    private function checkNoActiveRegistration(Mahasiswa $mahasiswa, ?int $currentPeriodeId = null): array
     {
-        $hasActive = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
-            ->whereIn('status', ['pending', 'approved'])
-            ->exists();
+        $query = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
+            ->whereIn('status', ['pending', 'approved']);
+        
+        // FIX C3: Exclude current period to avoid false positives
+        if ($currentPeriodeId) {
+            $query->where('period_id', '!=', $currentPeriodeId);
+        }
+        
+        $hasActive = $query->exists();
 
         return [
             'passed' => !$hasActive,
             'key' => 'no_active_registration',
-            'message' => $hasActive 
-                ? 'Masih memiliki pendaftaran aktif' 
+            'message' => $hasActive
+                ? 'Masih memiliki pendaftaran aktif di periode lain'
                 : 'Tidak ada pendaftaran aktif',
         ];
     }

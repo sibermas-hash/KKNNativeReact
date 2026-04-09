@@ -148,6 +148,21 @@ class DplModuleTest extends TestCase
             );
     }
 
+    public function test_dpl_can_open_evaluations_index_for_owned_group(): void
+    {
+        $context = $this->createDplScenario();
+
+        $this->actingAs($context['dplUser'])
+            ->get(route('dpl.evaluations.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Dpl/Evaluations/Index')
+                ->has('groups', 1)
+                ->where('groups.0.id', $context['group']->id)
+                ->where('groups.0.students.0.name', $context['student']->nama)
+            );
+    }
+
     public function test_dpl_can_review_daily_reports_and_download_attachments(): void
     {
         $context = $this->createDplScenario();

@@ -23,7 +23,9 @@ import {
     Target,
     FileText,
     Key,
-    IdCard
+    IdCard,
+    ChevronRight,
+    SearchCheck
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
@@ -54,11 +56,11 @@ interface Props extends PageProps {
 }
 
 const statusOptions = [
-    { value: '', label: 'ALL_DOSSIER_STATES' },
-    { value: 'submitted', label: 'SUBMITTED' },
-    { value: 'reviewed', label: 'UNDER_REVIEW' },
-    { value: 'disetujui', label: 'AUTHORIZED' },
-    { value: 'revisi', label: 'REVISION_NEEDED' },
+    { value: '', label: 'SEMUA STATUS_ARSIP' },
+    { value: 'submitted', label: 'STATUS: SUBMITTED / DIAJUKAN' },
+    { value: 'reviewed', label: 'STATUS: REVIEW / PROSES' },
+    { value: 'disetujui', label: 'STATUS: APPROVED / SETUJU' },
+    { value: 'revisi', label: 'STATUS: REVISION / REVISI' },
 ];
 
 export default function AdminFinalReportsIndex({ reports, filters }: Props) {
@@ -73,160 +75,196 @@ export default function AdminFinalReportsIndex({ reports, filters }: Props) {
     };
 
     return (
-        <AppLayout title="Final Dossier Archive">
-            <Head title="Laporan Akhir Mahasiswa" />
+        <AppLayout title="Otoritas Arsip Laporan Akhir">
+            <Head title="Laporan Akhir | POS-KKN" />
 
-            <div className="space-y-12 pb-32">
-                {/* Modern Tactical Header */}
-                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 border-b border-slate-100 pb-10">
-                    <div className="space-y-2">
+            <div className="min-h-screen bg-white italic font-black text-emerald-950">
+                {/* HEADER TACTICAL: SIERRA ARCHIVE SYSTEM */}
+                <div className="bg-white border-b border-emerald-50 px-12 py-16 flex flex-col xl:flex-row xl:items-center justify-between gap-12 sticky top-0 z-20 shadow-sm overflow-hidden relative">
+                    <div className="absolute right-0 top-0 h-full w-1/3 bg-emerald-50/5 -skew-x-12 translate-x-20 pointer-events-none" />
+                    
+                    <div className="space-y-2 relative z-10">
                         <div className="flex items-center gap-3">
-                            <div className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse shadow-[0_0_10px_rgba(5,150,105,0.5)]" />
-                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.4em] italic leading-none">FINAL_DOSSIER_ARCHIVE_V4</span>
+                            <div className="h-2.5 w-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-300 italic">Final Report Registry Terminal</span>
                         </div>
-                        <h1 className="text-3xl md:text-4xl font-black text-slate-950 tracking-tighter flex items-center gap-4 italic uppercase">
-                            <FileCheck className="w-10 h-10 text-emerald-600" />
-                            LAPORAN <span className="text-emerald-600">AKHIR</span>
+                        <h1 className="text-4xl font-black text-emerald-950 uppercase tracking-tighter leading-none italic">
+                            ARSIP <span className="text-emerald-500">LAPORAN AKHIR</span>
                         </h1>
-                        <p className="text-sm font-bold text-slate-400 italic">Verifikasi dokumen akhir, audit pencapaian misi, dan otorisasi kelulusan administratif unit.</p>
+                        <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest mt-3 flex items-center gap-2">
+                             <FileCheck size={12} className="text-emerald-500" />
+                             Otoritas verifikasi dokumen akhir, audit pencapaian misi, dan validasi kelulusan administratif unit.
+                        </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-4">
-                        <div className="px-8 py-5 bg-slate-950 border border-slate-800 rounded-[2rem] flex items-center gap-8 shadow-2xl relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent translate-x-full group-hover:translate-x-0 transition-transform duration-1000" />
-                            <div className="relative z-10 flex flex-col">
-                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1.5">Total Dossiers</span>
-                                <div className="flex items-center gap-3">
-                                    <FileText className="w-5 h-5 text-emerald-500" />
-                                    <span className="text-2xl font-black text-white italic tracking-tighter leading-none">{rows.length} ARCHIVES</span>
+                    <div className="flex items-center gap-6 relative z-10">
+                        <div className="h-16 px-10 bg-emerald-950 text-white flex items-center gap-8 shadow-2xl relative overflow-hidden group">
+                           <div className="absolute inset-0 bg-emerald-500/10 -skew-x-12 translate-x-full group-hover:translate-x-0 transition-transform duration-1000" />
+                           <div className="flex flex-col relative z-20">
+                               <span className="text-[8px] font-black text-emerald-400 uppercase tracking-[0.3em] italic mb-1">TOTAL ARCHIVE DATA</span>
+                               <div className="flex items-center gap-3">
+                                   <FileText size={16} className="text-emerald-400" />
+                                   <span className="text-xl font-black italic tracking-tighter tabular-nums text-nowrap">{rows.length} REPORTS REGISTERED</span>
+                               </div>
+                           </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="px-12 py-12 space-y-12">
+                     {/* TOOLBAR TACTICAL */}
+                     <div className="bg-white border border-emerald-100 p-8 shadow-sm relative overflow-hidden group hover:border-emerald-500 transition-all flex flex-col md:flex-row items-center gap-12">
+                        <div className="absolute inset-0 bg-emerald-50/10 -skew-x-12 translate-x-full group-hover:translate-x-3/4 transition-transform duration-1000" />
+                        <div className="relative group flex-1 w-full relative z-10 flex items-center bg-emerald-50/30 border border-emerald-50 hover:border-emerald-500 transition-all shadow-inner px-8 py-5">
+                            <Filter className="w-5 h-5 text-emerald-200 mr-6" />
+                            <div className="flex-1 flex flex-col mt-1">
+                                <span className="text-[9px] font-black text-emerald-950 uppercase tracking-widest mb-1 italic leading-none">Filter Status Audit</span>
+                                <select 
+                                    value={filters.status ?? ''}
+                                    onChange={(e) => handleFilterChange(e.target.value)}
+                                    className="w-full bg-transparent border-none p-0 text-sm font-black italic text-emerald-950 focus:ring-0 cursor-pointer appearance-none uppercase"
+                                >
+                                    {statusOptions.map(opt => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <Zap className="w-4 h-4 text-emerald-100 group-hover:scale-110 transition-transform" />
+                        </div>
+                        <div className="hidden md:flex items-center gap-6 text-emerald-950 font-black text-[11px] uppercase tracking-[0.4em] italic opacity-30 hover:opacity-100 transition-opacity relative z-10">
+                            <Activity size={18} className="text-emerald-500 animate-pulse" />
+                            ARCHIVE_SYSTEM_READY
+                        </div>
+                    </div>
+
+                    {/* DATA GRID TACTICAL */}
+                    <div className="bg-white border border-emerald-100 shadow-sm overflow-hidden group hover:border-emerald-500 transition-all relative">
+                        <div className="absolute right-0 top-0 h-full w-1/4 bg-emerald-50/5 skew-x-12 translate-x-20 pointer-events-none" />
+                        <div className="px-10 py-6 border-b border-emerald-50 bg-emerald-50/10 flex items-center justify-between relative z-10">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-emerald-950 text-emerald-400">
+                                    <Database size={18} />
+                                </div>
+                                <div className="space-y-1">
+                                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-950 italic">Indeks Laporan Akhir</h2>
+                                    <p className="text-[8px] font-bold text-emerald-300 uppercase tracking-widest mt-1">Rekaman Dokumen Penyelesaian KKN</p>
                                 </div>
                             </div>
+                            <div className="px-5 py-2 bg-emerald-950 text-emerald-400 text-[10px] font-black uppercase italic tracking-widest shadow-xl">
+                                REPOSITORY FEED
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                {/* Operations Toolbar */}
-                <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-                    <div className="relative group w-full lg:max-w-2xl px-6 py-4 bg-white border border-slate-200 rounded-3xl flex items-center gap-6 shadow-sm focus-within:border-emerald-500 focus-within:ring-8 focus-within:ring-emerald-500/5 transition-all">
-                        <Filter className="w-5 h-5 text-emerald-600" />
-                        <div className="flex-1 flex flex-col">
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Filter_Operational_State</span>
-                            <select 
-                                value={filters.status ?? ''}
-                                onChange={(e) => handleFilterChange(e.target.value)}
-                                className="w-full bg-transparent border-none p-0 text-sm font-black italic text-slate-950 focus:ring-0 cursor-pointer appearance-none uppercase"
-                            >
-                                {statusOptions.map(opt => (
-                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="h-10 w-px bg-slate-100" />
-                        <Zap className="w-5 h-5 text-slate-200" />
-                    </div>
-
-                    <div className="hidden lg:flex items-center gap-4 text-slate-400 font-bold text-[10px] uppercase tracking-[0.3em] italic opacity-50">
-                        <Activity className="w-4 h-4 text-emerald-500" />
-                        SECURE_ARCHIVE_ACCESS_ACTIVE
-                    </div>
-                </div>
-
-                {/* Tactical Ledger Table */}
-                <motion.section 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-[3.5rem] border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-all"
-                >
-                    <div className="overflow-x-auto">
-                        <table className="w-full border-collapse">
-                            <thead>
-                                <tr className="bg-slate-50/50 border-b border-slate-100">
-                                    <th className="px-12 py-8 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">DOSSIER_IDENTITY_HASH</th>
-                                    <th className="px-6 py-8 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">PERSONNEL_METADATA</th>
-                                    <th className="px-6 py-8 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">ASSIGNED_UNIT</th>
-                                    <th className="px-6 py-8 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">ARCHIVE_STAMP</th>
-                                    <th className="px-12 py-8 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">SYSTEM_STATE</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-50">
-                                {rows.length > 0 ? (
-                                    rows.map((report, idx) => (
-                                        <motion.tr 
-                                            key={report.id}
-                                            initial={{ opacity: 0, x: -10 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: idx * 0.05 }}
-                                            className="group hover:bg-slate-50/50 transition-colors cursor-default"
-                                        >
-                                            <td className="px-12 py-8">
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-black text-slate-950 uppercase italic tracking-tighter group-hover:text-emerald-600 transition-colors">{report.title}</span>
-                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1 italic">ARCHIVE_ID: #{report.id}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-8">
-                                                <div className="flex items-center gap-5">
-                                                    <div className="h-12 w-12 rounded-xl bg-slate-950 text-emerald-500 border border-slate-800 flex items-center justify-center font-black text-lg italic shadow-lg group-hover:scale-110 transition-transform">
-                                                        {report.mahasiswa?.nama?.charAt(0) || 'U'}
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-black text-slate-950 uppercase italic tracking-tighter group-hover:text-emerald-700 transition-colors">{report.mahasiswa?.nama || '-'}</span>
-                                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100 italic mt-1 self-start">ID: {report.mahasiswa?.nim || '-'}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-8">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="p-2.5 bg-slate-100 rounded-xl text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-600 transition-all shadow-inner">
-                                                        <Layers className="w-4 h-4" />
-                                                    </div>
-                                                    <span className="text-xs font-black text-slate-700 uppercase italic tracking-tight">{report.kelompok?.nama_kelompok || '-'}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-8">
-                                                <div className="flex items-center gap-3">
-                                                    <Clock className="w-3.5 h-3.5 text-slate-300" />
-                                                    <span className="text-[11px] font-black text-slate-400 tabular-nums italic">{report.submitted_at || 'NOT_SUBMITTED'}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-12 py-8 text-right">
-                                                <StatusBadge status={report.status} />
-                                            </td>
-                                        </motion.tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={5} className="px-12 py-32 text-center">
-                                            <div className="flex flex-col items-center gap-6 opacity-30">
-                                                <Binary className="w-16 h-16 text-slate-300" />
-                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] italic">NO_DOSSIER_RECORDS_DETECTED_IN_SECTOR</p>
-                                            </div>
-                                        </td>
+                        <div className="overflow-x-auto relative z-10">
+                            <table className="w-full text-left border-collapse italic">
+                                <thead>
+                                    <tr className="bg-emerald-50/20 border-b border-emerald-100 italic">
+                                        <th className="px-12 py-8 text-[9px] font-black text-emerald-300 uppercase tracking-[0.3em] italic">DOKUMEN & IDENTITAS LAPORAN</th>
+                                        <th className="px-10 py-8 text-[9px] font-black text-emerald-300 uppercase tracking-[0.3em] italic">ENTITAS MAHASISWA</th>
+                                        <th className="px-8 py-8 text-[9px] font-black text-emerald-300 uppercase tracking-[0.3em] italic text-center">UNIT KELOMPOK</th>
+                                        <th className="px-8 py-8 text-[9px] font-black text-emerald-300 uppercase tracking-[0.3em] italic text-center">TIMESTAMP UNGGAH</th>
+                                        <th className="px-12 py-8 text-right text-[9px] font-black text-emerald-300 uppercase tracking-[0.3em] italic pr-12">STATUS AUDIT</th>
                                     </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </motion.section>
+                                </thead>
+                                <tbody className="divide-y divide-emerald-50/50">
+                                    {rows.length > 0 ? (
+                                        rows.map((report, idx) => (
+                                            <tr key={report.id} className="group/row hover:bg-emerald-50/30 transition-all duration-300">
+                                                <td className="px-12 py-8">
+                                                     <div className="flex flex-col gap-1.5 group-hover/row:translate-x-2 transition-transform">
+                                                        <span className="text-[13px] font-black text-emerald-950 uppercase italic tracking-widest leading-none group-hover/row:text-emerald-600 transition-colors uppercase">{report.title}</span>
+                                                        <div className="flex items-center gap-3">
+                                                            <Fingerprint size={10} className="text-emerald-100" />
+                                                            <span className="text-[9px] text-emerald-100 font-bold uppercase tracking-widest italic leading-none">ARCHIVE_ID: #{report.id}</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-10 py-8">
+                                                    <div className="flex items-center gap-5">
+                                                        <div className="h-12 w-12 bg-emerald-950 text-emerald-400 flex items-center justify-center font-black text-sm italic shadow-xl group-hover/row:scale-110 group-hover/row:bg-emerald-600 group-hover/row:text-white transition-all duration-500 uppercase">
+                                                            {report.mahasiswa?.nama?.charAt(0) || 'U'}
+                                                        </div>
+                                                        <div className="flex flex-col gap-1">
+                                                            <span className="text-[11px] font-black text-emerald-950 uppercase italic tracking-widest uppercase leading-none">{report.mahasiswa?.nama || '-'}</span>
+                                                            <span className="text-[8px] font-bold text-emerald-100 uppercase tracking-widest italic uppercase leading-none tabular-nums">DATA_NIM: {report.mahasiswa?.nim || '-'}</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-8 text-center uppercase">
+                                                    <div className="inline-flex h-12 flex-col items-center justify-center px-6 bg-white border border-emerald-50 text-[10px] font-black text-emerald-950 uppercase tracking-widest tabular-nums group-hover/row:border-emerald-500 transition-all shadow-sm">
+                                                        <Layers size={12} className="text-emerald-300 mb-1" />
+                                                        {report.kelompok?.nama_kelompok || '-'}
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-8 text-center text-[10px] font-black text-emerald-950 tabular-nums uppercase">
+                                                     <div className="flex flex-col items-center gap-1 group-hover/row:scale-110 transition-transform">
+                                                        <Clock size={12} className="text-emerald-200" />
+                                                        {report.submitted_at || '-'}
+                                                     </div>
+                                                </td>
+                                                <td className="px-12 py-8 text-right pr-12">
+                                                    <div className="flex items-center justify-end group-hover/row:translate-x-2 transition-transform">
+                                                        <StatusBadge status={report.status} />
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={5} className="px-12 py-56 text-center opacity-20">
+                                                <div className="flex flex-col items-center gap-8">
+                                                    <Binary className="h-24 w-24 text-emerald-950" strokeWidth={1} />
+                                                    <p className="text-[12px] font-black uppercase tracking-[0.6em] italic text-emerald-950">ARSIP LAPORAN AKHIR NIHIL</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
 
-                {/* Tactical Footer Stamp */}
-                <div className="p-12 bg-slate-900 rounded-[4rem] border border-slate-800 shadow-3xl relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_70%_20%,rgba(16,185,129,0.1),transparent_60%)]" />
-                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-10">
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-5">
-                                <div className="p-4 bg-emerald-500 rounded-2xl shadow-[0_0_40px_rgba(16,185,129,0.3)] animate-pulse">
-                                    <ShieldCheck className="h-8 w-8 text-white" />
+                        <div className="px-12 py-10 border-t border-emerald-50 flex flex-col md:flex-row items-center justify-between bg-emerald-50/10 gap-8 italic mt-1 relative z-10">
+                            <div className="flex items-center gap-6">
+                                <div className="p-3 bg-emerald-950 shadow-lg">
+                                    <SearchCheck size={16} className="text-emerald-400" />
                                 </div>
-                                <div>
-                                    <h4 className="text-sm font-black text-white uppercase tracking-[0.4em] italic">ARCHIVE_INTEGRITY_SHIELD</h4>
-                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 italic leading-relaxed">Seluruh laporan akhir yang tersimpan dalam arsip ini telah melewati protokol validasi akademik. <br/>Otorisasi final diperlukan untuk penerbitan sertifikat kompetensi unit.</p>
+                                <div className="space-y-1">
+                                    <span className="text-[10px] font-black text-emerald-950 uppercase tracking-[0.3em]">Operational Repository Feed</span>
+                                    <p className="text-[8px] font-bold text-emerald-300 uppercase tracking-widest font-black italic">Total Berkas Terdeteksi: {rows.length} Dokumen</p>
                                 </div>
                             </div>
+                            <div className="text-[10px] font-black text-emerald-100 uppercase tracking-[0.5em] italic opacity-50">
+                                VERIFIED ARCHIVE SYSTEM
+                            </div>
                         </div>
-                        <div className="flex items-center gap-8 text-slate-500 font-black text-[11px] uppercase tracking-[0.5em] italic opacity-30 hover:opacity-100 transition-opacity">
-                             <Fingerprint className="w-5 h-5 text-emerald-500" />
-                             CORE_ARCHIVE_PROTOCOL_V4 • {new Date().getFullYear()}
+                    </div>
+
+                    {/* SECURITY FOOTER MONITOR TACTICAL */}
+                    <div className="bg-emerald-950 p-16 text-white shadow-3xl relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-emerald-500/5 -skew-x-12 translate-x-1/2 group-hover:translate-x-1/3 transition-transform duration-1000" />
+                        <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-16">
+                             <div className="space-y-8 flex-1">
+                                 <div className="flex items-center gap-8">
+                                    <div className="p-6 bg-emerald-500 shadow-[0_0_50px_rgba(16,185,129,0.3)] rotate-3 group-hover:rotate-0 transition-all duration-700">
+                                        <ShieldCheck className="h-10 w-10 text-white animate-pulse" />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <h4 className="text-2xl font-black text-white italic tracking-[0.4em] uppercase leading-none">Integritas Dokumen Akhir</h4>
+                                        <p className="text-[11px] font-bold text-emerald-400/60 uppercase tracking-widest italic leading-relaxed max-w-3xl">
+                                            Seluruh laporan akhir yang tersimpan dalam arsip ini telah melewati protokol validasi akademik. 
+                                            Otorisasi final pada laporan ini bersifat kritikal untuk penerbitan sertifikat kompetensi unit dan penyelesaian administrasi kelulusan KKN.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                             
+                            <div className="flex flex-col items-center xl:items-end gap-6 text-emerald-500 font-black text-[11px] uppercase tracking-[0.5em] italic opacity-30 hover:opacity-100 transition-opacity">
+                                 <div className="flex items-center gap-4">
+                                     <Fingerprint className="w-6 h-6" />
+                                     <span className="text-xl tracking-tighter italic">REPORT_ARCHIVE_STAMP_{new Date().getFullYear()}</span>
+                                 </div>
+                                 <span className="text-[8px] tracking-[0.8em] opacity-40">POS-KKN CENTRAL ARCHIVE COMMAND</span>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -69,15 +69,15 @@ class AuthenticatedSessionController extends Controller
         $userAnswer = $request->input('captcha_answer');
         $captchaHash = $request->session()->get('captcha_hash');
 
-        // If captcha is missing or invalid, refresh and return with error
-        if (!$captchaHash || !$this->verifyCaptchaAnswer($userAnswer, $captchaHash)) {
+        // Verify captcha hash existence and strict TTL enforcement
+        if (!$captchaHash || $this->captchaExpired($request) || !$this->verifyCaptchaAnswer($userAnswer, $captchaHash)) {
             $this->refreshCaptcha($request);
 
             // Regenerate CSRF token to prevent "page expired" loop
             $request->session()->regenerateToken();
 
             return back()->withErrors([
-                'captcha_answer' => 'Jawaban verifikasi keamanan salah.',
+                'captcha_answer' => 'Verifikasi keamanan kedaluwarsa atau salah.',
             ])->withInput($request->except('password', 'captcha_answer'));
         }
 
@@ -164,7 +164,7 @@ class AuthenticatedSessionController extends Controller
         $generatedAt = $request->session()->get('captcha_generated_at');
 
         if (! is_numeric($generatedAt)) {
-            return true;
+            return ! $request->session()->has('captcha_hash');
         }
 
         return now()->diffInMinutes(now()->setTimestamp((int) $generatedAt)) >= self::CAPTCHA_TTL_MINUTES;

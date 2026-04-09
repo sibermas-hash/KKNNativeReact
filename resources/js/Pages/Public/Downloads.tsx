@@ -84,7 +84,7 @@ export default function Downloads({ downloads }: Props) {
                                         <h4 className="text-3xl lg:text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none italic group-hover:text-emerald-600 transition-colors">
                                             {d.title}
                                         </h4>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">PUBLIKASI_RESMI_LPPM</p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dokumen resmi LPPM</p>
                                     </div>
 
                                     <div className="pt-10 border-t border-slate-50 flex items-center justify-between">

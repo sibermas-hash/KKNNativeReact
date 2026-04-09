@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { 
     Search, 
@@ -13,6 +13,8 @@ import {
 import PublicLayout from '@/Layouts/PublicLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import Pagination, { PageInfo, PaginationMeta } from '@/Components/ui/Pagination';
+
 interface Location {
     id: number;
     name: string;
@@ -25,8 +27,8 @@ interface Location {
 interface Props {
     locations: {
         data: Location[];
-        links: any[];
-        meta: any;
+        links: PaginationMeta['links'];
+        meta: PaginationMeta;
     };
     filters: {
         search?: string;
@@ -57,7 +59,7 @@ export default function Locations({ locations, filters }: Props) {
                         className="space-y-6 max-w-4xl mx-auto"
                     >
                          <span className="inline-flex rounded-full border border-emerald-500/20 bg-emerald-50 px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.5em] text-emerald-700 shadow-sm">
-                            EKSPLORASI_GEOSPASIAL
+                            Peta lokasi penempatan
                         </span>
                         <h1 className="text-5xl lg:text-7xl font-black tracking-tighter text-slate-900 leading-[1.1]">
                             <span className="font-serif italic font-normal text-emerald-600 block mb-2">Cari Lokasi</span>
@@ -145,7 +147,7 @@ export default function Locations({ locations, filters }: Props) {
                                             </div>
 
                                             <button className="w-full h-14 border border-slate-100 group-hover:border-emerald-500/20 group-hover:bg-slate-50 rounded-2xl p-4 flex items-center justify-between transition-all">
-                                                <span className="text-[10px] font-black text-slate-400 group-hover:text-emerald-700 uppercase tracking-[0.2em] italic">Eksplorasi Detail</span>
+                                                <span className="text-[10px] font-black text-slate-400 group-hover:text-emerald-700 uppercase tracking-[0.2em] italic">Lihat ringkasan</span>
                                                 <ChevronRight size={16} className="text-slate-300 group-hover:text-emerald-600 transition-transform group-hover:translate-x-1" />
                                             </button>
                                         </div>
@@ -170,7 +172,7 @@ export default function Locations({ locations, filters }: Props) {
                                     onClick={() => { setSearch(''); router.get('/cari-lokasi'); }}
                                     className="text-xs font-black text-emerald-600 uppercase tracking-widest border-b-2 border-emerald-500/20 hover:border-emerald-600 transition-all pb-1"
                                 >
-                                    RESET PENCARIAN
+                                    Atur ulang pencarian
                                 </button>
                             </motion.div>
                         )}
@@ -178,8 +180,9 @@ export default function Locations({ locations, filters }: Props) {
 
                     {/* --- PAGINATION (ELEGANT) --- */}
                     {locations.meta && locations.meta.last_page > 1 && (
-                        <div className="mt-24 border-t border-slate-50 pt-16 flex items-center justify-center gap-3">
-                             {/* Standard Pagination logic here if needed */}
+                        <div className="mt-24 border-t border-slate-50 pt-16 flex flex-col items-center gap-8">
+                             <Pagination meta={locations.meta} />
+                             <PageInfo meta={locations.meta} />
                              <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em]">Sistem Verifikasi Geospasial v4.0.1</p>
                         </div>
                     )}
@@ -204,5 +207,3 @@ export default function Locations({ locations, filters }: Props) {
         </PublicLayout>
     );
 }
-
-import { Link } from '@inertiajs/react';

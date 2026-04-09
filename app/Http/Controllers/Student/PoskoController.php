@@ -164,7 +164,6 @@ class PoskoController extends Controller
 
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
-            // Issue 8 Fix: Store in private storage instead of public
             $newPhotoPath = $file->store('posko-photos', 'local');
             $newPhotoName = $file->getClientOriginalName();
             $newPhotoSize = $file->getSize();

@@ -9,3 +9,12 @@ Artisan::command('inspire', function () {
 
 use Illuminate\Support\Facades\Schedule;
 Schedule::command('audit:prune')->daily();
+
+// Automatic Dismissal Check (at 23:59 WIB)
+Schedule::command('kkn:cek-gugur')->dailyAt('23:59');
+
+// Daily Attendance Check (at 23:59 WIB - check previous day)
+Schedule::command('kkn:cek-absensi')->dailyAt('23:59');
+
+// Periodic ABCD Stage Evaluation
+Schedule::command('kkn:advance-abcd')->everySixHours();

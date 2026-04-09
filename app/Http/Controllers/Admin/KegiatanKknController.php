@@ -19,16 +19,14 @@ class KegiatanKknController extends Controller
 
         $status = $request->input('status');
 
-        $user = auth()->user();
-        $isFacultyAdmin = $user?->hasRole('faculty_admin');
-        $facultyId = $isFacultyAdmin ? $user?->faculty_id : null;
-
-        $reports = KegiatanKkn::with([
+        $query = KegiatanKkn::with([
                 'mahasiswa' => fn($q) => $q->select('id', 'user_id', 'nama as name', 'nim'),
                 'kelompok' => fn($q) => $q->select('id', 'nama_kelompok as name')
             ])
-            ->when($status, fn ($q) => $q->where('status', $status))
-            ->when($facultyId, fn ($q) => $q->whereHas('mahasiswa', fn ($m) => $m->where('faculty_id', $facultyId)))
+            ->when($status, fn ($q) => $q->where('status', $status));
+
+        // Centralized faculty scoping
+        $reports = \App\Services\KKN\FacultyScopeService::apply($query, 'mahasiswa.faculty_id')
             ->orderByDesc('date')
             ->paginate(15)
             ->withQueryString();

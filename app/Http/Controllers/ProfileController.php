@@ -13,6 +13,37 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
+    private function domicileSummary(\App\Models\User $user): array
+    {
+        $required = [
+            'address' => $user->address,
+            'domicile_village_name' => $user->domicile_village_name,
+            'domicile_district_name' => $user->domicile_district_name,
+            'domicile_regency_name' => $user->domicile_regency_name,
+        ];
+
+        $labels = [
+            'address' => 'Alamat lengkap domisili',
+            'domicile_village_name' => 'Desa/Kelurahan domisili',
+            'domicile_district_name' => 'Kecamatan domisili',
+            'domicile_regency_name' => 'Kabupaten/Kota domisili',
+        ];
+
+        $missing = collect($required)
+            ->filter(fn ($value) => blank($value))
+            ->keys()
+            ->map(fn (string $key) => $labels[$key] ?? $key)
+            ->values()
+            ->all();
+
+        return [
+            'is_complete' => $missing === [] && filled($user->address_verified_at),
+            'is_verified' => filled($user->address_verified_at),
+            'verified_at' => $user->address_verified_at?->toIso8601String(),
+            'missing_fields' => $missing,
+        ];
+    }
+
     /**
      * Display the user's profile.
      */
@@ -47,6 +78,8 @@ class ProfileController extends Controller
             ->values()
             ->all();
 
+        $domicileSummary = $this->domicileSummary($user);
+
         return Inertia::render('Profile/Show', [
             'user' => $user->only([
                 'id',
@@ -56,6 +89,10 @@ class ProfileController extends Controller
                 'avatar',
                 'phone',
                 'address',
+                'domicile_village_name',
+                'domicile_district_name',
+                'domicile_regency_name',
+                'address_verified_at',
                 'must_change_password',
             ]),
             'student' => $student ? [
@@ -71,6 +108,10 @@ class ProfileController extends Controller
                 'birth_date' => optional($student->birth_date)?->toDateString(),
                 'bpjs_complete' => $missingBpjsFields === [],
                 'missing_bpjs_fields' => $missingBpjsFields,
+                'domicile_complete' => $domicileSummary['is_complete'],
+                'domicile_verified' => $domicileSummary['is_verified'],
+                'domicile_verified_at' => $domicileSummary['verified_at'],
+                'missing_domicile_fields' => $domicileSummary['missing_fields'],
             ] : null,
         ]);
     }
@@ -84,6 +125,10 @@ class ProfileController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string', 'max:500'],
+            'domicile_village_name' => ['nullable', 'string', 'max:150'],
+            'domicile_district_name' => ['nullable', 'string', 'max:150'],
+            'domicile_regency_name' => ['nullable', 'string', 'max:150'],
+            'address_verified' => ['nullable', 'boolean'],
             'nik' => ['nullable', 'regex:/^\d{16}$/'],
             'mother_name' => ['nullable', 'string', 'max:150'],
             'gender' => ['nullable', 'in:L,P'],
@@ -92,12 +137,42 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+        $requestedAddressVerified = (bool) ($validated['address_verified'] ?? false);
+        $addressFields = [
+            'address' => $validated['address'] ?? null,
+            'domicile_village_name' => $validated['domicile_village_name'] ?? null,
+            'domicile_district_name' => $validated['domicile_district_name'] ?? null,
+            'domicile_regency_name' => $validated['domicile_regency_name'] ?? null,
+        ];
+
+        if ($requestedAddressVerified && collect($addressFields)->contains(fn ($value) => blank($value))) {
+            return redirect()->back()->withErrors([
+                'address_verified' => 'Lengkapi alamat domisili, desa/kelurahan, kecamatan, dan kabupaten/kota sebelum melakukan verifikasi alamat.',
+            ]);
+        }
+
         DB::transaction(function () use ($user, $validated) {
+            $addressChanged = $user->address !== ($validated['address'] ?? null)
+                || $user->domicile_village_name !== ($validated['domicile_village_name'] ?? null)
+                || $user->domicile_district_name !== ($validated['domicile_district_name'] ?? null)
+                || $user->domicile_regency_name !== ($validated['domicile_regency_name'] ?? null);
+            $requestedAddressVerified = (bool) ($validated['address_verified'] ?? false);
+
             $user->fill([
                 'name' => $validated['name'],
                 'phone' => $validated['phone'] ?? null,
                 'address' => $validated['address'] ?? null,
+                'domicile_village_name' => $validated['domicile_village_name'] ?? null,
+                'domicile_district_name' => $validated['domicile_district_name'] ?? null,
+                'domicile_regency_name' => $validated['domicile_regency_name'] ?? null,
             ]);
+
+            if (! $requestedAddressVerified) {
+                $user->address_verified_at = null;
+            } elseif ($addressChanged || ! $user->address_verified_at) {
+                $user->address_verified_at = now();
+            }
+
             $user->save();
 
             if ($user->mahasiswa) {
@@ -113,7 +188,7 @@ class ProfileController extends Controller
             }
         });
 
-        return redirect()->back()->with('success', 'Profil berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Profil dan domisili berhasil diperbarui.');
     }
 
     /**

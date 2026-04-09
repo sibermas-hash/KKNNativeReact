@@ -132,7 +132,7 @@ export default function DplDashboard({
                     <div className="space-y-8 relative z-10">
                         <div className="flex items-center gap-4">
                             <span className="px-5 py-2 bg-emerald-50 text-[10px] font-black text-emerald-700 rounded-full border border-emerald-100 uppercase tracking-[0.4em] inline-block shadow-sm">
-                                PORTAL_DPL_AKADEMIK
+                                Portal DPL
                             </span>
                             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                         </div>
@@ -167,28 +167,28 @@ export default function DplDashboard({
                         value={groups.length}
                         color="emerald"
                         icon={Users}
-                        description="KELOMPOK_BIMBINGAN_AKTIF"
+                        description="Kelompok bimbingan aktif"
                     />
                     <DashboardCard
                         title="Laporan Masuk"
                         value={pendingReports}
                         color="amber"
                         icon={FileText}
-                        description="VERIFIKASI_PENDING"
+                        description="Menunggu verifikasi"
                     />
                     <DashboardCard
                         title="Progres Nilai"
                         value={gradingProgress}
                         color="cyan"
                         icon={CheckCircle2}
-                        description="EVALUASI_MAHASISWA_RATE"
+                        description="Kemajuan penilaian mahasiswa"
                     />
                     <DashboardCard
                         title="Wilayah Koordinasi"
                         value={coordinatorAreas.length}
                         color="rose"
                         icon={MapPin}
-                        description="ZONA_PENUGASAN_KABUPATEN"
+                        description="Wilayah penugasan aktif"
                     />
                 </section>
 
@@ -250,7 +250,7 @@ export default function DplDashboard({
                                                         href={`/dpl/kelompok/${group.id}`}
                                                         className="h-12 px-8 inline-flex items-center justify-center rounded-2xl bg-white border border-slate-100 text-[10px] font-black uppercase tracking-widest italic text-slate-900 group-hover/row:bg-emerald-600 group-hover/row:text-white group-hover/row:border-emerald-500 transition-all shadow-sm active:scale-95 gap-3"
                                                     >
-                                                        OPEN_INTERFACE
+                                                        Buka detail
                                                         <ArrowRight size={14} />
                                                     </Link>
                                                 </td>
@@ -261,7 +261,7 @@ export default function DplDashboard({
                                             <td colSpan={4} className="px-12 py-32 text-center">
                                                 <div className="flex flex-col items-center gap-10 opacity-10">
                                                     <Target className="w-24 h-24 text-slate-400" />
-                                                    <p className="text-xl font-black text-slate-400 uppercase tracking-[0.5em] italic">NULL_UNITS_ASSIGNED</p>
+                                                    <p className="text-xl font-black text-slate-400 uppercase tracking-[0.5em] italic">Belum ada kelompok bimbingan</p>
                                                 </div>
                                             </td>
                                         </tr>
@@ -322,17 +322,17 @@ export default function DplDashboard({
                                             key={item.date}
                                             className="flex items-center justify-between rounded-2xl bg-slate-50 px-6 py-4 border border-transparent hover:border-emerald-100 hover:bg-white transition-all duration-300 font-bold group/feed shadow-sm"
                                         >
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic leading-none">{item.date}</span>
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic leading-none">{item.date}</span>
                                             <div className="flex items-center gap-4">
                                                 <span className="text-[12px] font-black text-slate-900 italic tracking-tighter uppercase leading-none">
-                                                    {item.count} Entries
+                                                    {item.count} entri
                                                 </span>
                                                 <ArrowUpRight size={14} className="text-emerald-500 opacity-0 group-hover/feed:opacity-100 transition-opacity" />
                                             </div>
                                         </div>
                                     ))
                                 ) : (
-                                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em] italic py-8 text-center bg-slate-50 rounded-2xl border border-slate-100">DATA_FLOW_NULL</p>
+                                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em] italic py-8 text-center bg-slate-50 rounded-2xl border border-slate-100">Belum ada data aktivitas</p>
                                 )}
                             </div>
                         </div>
@@ -346,7 +346,7 @@ export default function DplDashboard({
                         <div className="space-y-4 relative z-10">
                              <div className="flex items-center gap-4">
                                 <div className="h-2 w-2 bg-white rounded-full animate-pulse shadow-[0_0_10px_white]" />
-                                <span className="text-[11px] font-black uppercase tracking-[0.5em] text-emerald-200 leading-none italic">GEOSPATIAL_COORDINATOR_NETWORK</span>
+                                <span className="text-[11px] font-black uppercase tracking-[0.5em] text-emerald-200 leading-none italic">Jaringan koordinator wilayah</span>
                              </div>
                             <h2 className="text-3xl font-black uppercase italic tracking-widest leading-none">Otoritas Wilayah Penugasan</h2>
                         </div>
@@ -381,7 +381,7 @@ export default function DplDashboard({
                                             { label: 'LOK', value: area.villages_count },
                                             { label: 'PERS', value: area.students_count }
                                         ].map((stat, i) => (
-                                            <div key={i} className="bg-slate-50/50 rounded-2xl p-4 border border-slate-50 text-center group-hover/area:bg-emerald-50 transition-colors">
+                                <div key={i} className="bg-slate-50/50 rounded-2xl p-4 border border-slate-50 text-center group-hover/area:bg-emerald-50 transition-colors">
                                                 <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-2 italic leading-none">{stat.label}</p>
                                                 <p className="text-xl font-black text-slate-900 leading-none italic">{stat.value}</p>
                                             </div>
@@ -393,7 +393,7 @@ export default function DplDashboard({
                             <div className="col-span-full rounded-[3rem] border border-dashed border-slate-200 bg-white py-24 text-center">
                                 <div className="flex flex-col items-center gap-8 opacity-10">
                                     <Cpu size={100} className="text-slate-200" />
-                                    <p className="text-xl font-black text-slate-400 uppercase tracking-[0.5em] italic leading-none">NULL_GEOSPATIAL_MAP_RECORDED</p>
+                                    <p className="text-xl font-black text-slate-400 uppercase tracking-[0.5em] italic leading-none">Belum ada wilayah koordinasi</p>
                                 </div>
                             </div>
                         )}
@@ -417,9 +417,9 @@ export default function DplDashboard({
                     </div>
                     <div className="flex flex-col items-end gap-2 relative z-10">
                          <div className="px-10 py-5 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.5em] italic shadow-2xl">
-                              System_Heartbeat_OK
+                              Sistem aktif
                          </div>
-                         <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest italic opacity-40">TRK_SYNC_ACTIVE_2026</p>
+                         <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest italic opacity-40">Pemantauan sinkronisasi berjalan</p>
                     </div>
                 </div>
             </div>
@@ -433,5 +433,4 @@ export default function DplDashboard({
         </AppLayout>
     );
 }
-
 

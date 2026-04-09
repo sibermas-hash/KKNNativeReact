@@ -40,14 +40,14 @@
 
   .app-workspace thead th {
     @apply sticky top-0 z-10 border-b border-slate-200 bg-slate-50 font-bold uppercase tracking-[0.14em] text-slate-500;
-    padding: 0.7rem 0.9rem !important;
-    font-size: 0.64rem;
-    line-height: 1.1rem;
+    padding: 0.58rem 0.78rem !important;
+    font-size: 0.61rem;
+    line-height: 1rem;
   }
 
   .app-workspace tbody td {
     @apply border-b border-slate-100 align-top text-slate-700;
-    padding: 0.78rem 0.9rem !important;
+    padding: 0.66rem 0.78rem !important;
   }
 
   .app-workspace tbody tr:hover td {

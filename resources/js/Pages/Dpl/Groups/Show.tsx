@@ -81,7 +81,7 @@ export default function DplGroupShow({ group }: Props) {
         className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-black text-white hover:bg-emerald-700 transition-all uppercase tracking-widest italic"
     >
         <ScrollText size={18} />
-        MASAL_CERT_DOWNLOAD
+        Unduh sertifikat kelompok
     </button>
   </div>
  </div>

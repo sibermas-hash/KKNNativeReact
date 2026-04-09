@@ -60,6 +60,10 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         $user = User::factory()->create(array_merge([
             'phone' => '081234567890',
             'address' => 'Jl. Raya Karangsari No. 10',
+            'domicile_village_name' => 'Desa Asal Mahasiswa',
+            'domicile_district_name' => 'Kecamatan Asal Mahasiswa',
+            'domicile_regency_name' => 'Kabupaten Asal Mahasiswa',
+            'address_verified_at' => now(),
         ], $overrides));
         $user->assignRole('student');
 
@@ -111,7 +115,9 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
             ->post(route('admin.periods.store'), [
                 'academic_year_id' => \App\Models\KKN\TahunAkademik::factory()->create(['year' => '2026/2027'])->id,
                 'periode' => 57,
-                'jenis' => 'REGULER',
+                'program_type' => Periode::PROGRAM_TYPE_REGULER,
+                'program_subtype' => null,
+                'jenis' => 'KKN Reguler',
                 'name' => 'KKN Reguler 2026',
                 'start_date' => now()->addWeeks(2)->toDateString(),
                 'end_date' => now()->addWeeks(10)->toDateString(),
@@ -147,7 +153,6 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         $this->actingAs($studentUser)
             ->post(route('student.registration.store'), [
                 'period_id' => $period->id,
-                'kelompok_id' => $group->id,
                 'notes' => 'Siap mengikuti KKN.',
             ])
             ->assertRedirect()
@@ -156,7 +161,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         $this->assertDatabaseHas('peserta_kkn', [
             'mahasiswa_id' => $mahasiswa->id,
             'period_id' => $period->id,
-            'kelompok_id' => $group->id,
+            'kelompok_id' => null,
             'status' => 'pending',
         ], 'kkn');
 
@@ -172,20 +177,14 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         $this->assertDatabaseHas('peserta_kkn', [
             'id' => $registration->id,
             'status' => 'approved',
+            'kelompok_id' => $group->id,
             'approved_by' => $admin->id,
         ], 'kkn');
-
-        // ── Step 4: Admin assigns student to group ────────────────────
-        $this->actingAs($admin)
-            ->patch(route('admin.pendaftaran.tugaskan-kelompok', $registration), [
-                'kelompok_id' => $group->id,
-            ])
-            ->assertRedirect();
 
         $registration->refresh();
         expect($registration->kelompok_id)->toBe($group->id);
 
-        // ── Step 5: DPL is assigned to group ──────────────────────────
+        // ── Step 4: DPL is assigned to group ──────────────────────────
         ['user' => $dplUser, 'dosen' => $dosen] = $this->createDplUser();
 
         $dplPeriod = DplPeriod::create([
@@ -205,7 +204,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         $group->refresh();
         expect($group->dpl_id)->toBe($dosen->id);
 
-        // ── Step 6: Student submits daily report ──────────────────────
+        // ── Step 5: Student submits daily report ──────────────────────
         $this->ensureWorkshopCompleted($studentUser);
 
         PoskoKelompok::create([
@@ -241,7 +240,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
 
         expect($dailyReport->status)->toBe('submitted');
 
-        // ── Step 7: DPL approves daily report ─────────────────────────
+        // ── Step 6: DPL approves daily report ─────────────────────────
         $this->actingAs($dplUser)
             ->from(route('dpl.daily-reports.index'))
             ->patch(route('dpl.daily-reports.approve', $dailyReport))
@@ -250,7 +249,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         $dailyReport->refresh();
         expect($dailyReport->status)->toBe('approved');
 
-        // ── Step 8: Student submits work program ──────────────────────
+        // ── Step 7: Student submits work program ──────────────────────
         $this->actingAs($studentUser)
             ->post(route('student.work-programs.store'), [
                 'title' => 'Program Kerja Pendidikan Masyarakat',
@@ -266,7 +265,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
             'title' => 'Program Kerja Pendidikan Masyarakat',
         ], 'kkn');
 
-        // ── Step 9: DPL evaluates student ─────────────────────────────
+        // ── Step 8: DPL evaluates student ─────────────────────────────
         SystemSetting::set('group_male_min_ratio', '20');
         SystemSetting::set('group_male_target_ratio', '30');
 
@@ -324,7 +323,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
             ->and($nilaiKkn->article_score)->toBe('86.00')
             ->and($nilaiKkn->dpl_graded_at)->not->toBeNull();
 
-        // ── Step 10: Admin finalizes grades ───────────────────────────
+        // ── Step 9: Admin finalizes grades ───────────────────────────
         $this->actingAs($admin)
             ->patch(route('admin.rekap-nilai.finalisasi', $nilaiKkn))
             ->assertRedirect()
@@ -333,7 +332,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         $nilaiKkn->refresh();
         expect($nilaiKkn->is_finalized)->toBeTrue();
 
-        // ── Step 11: Student can view their grade ─────────────────────
+        // ── Step 10: Student can view their grade ─────────────────────
         $this->actingAs($studentUser)
             ->get(route('student.dashboard'))
             ->assertOk();

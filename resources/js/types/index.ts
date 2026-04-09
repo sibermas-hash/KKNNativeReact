@@ -5,7 +5,7 @@ export interface User {
   email: string;
   student_registration_locked?: boolean;
   faculty?: Faculty | null;
-  roles?: string[];
+  roles?: (string | { name: string })[];
   permissions?: string[];
   profile?: UserProfile;
 }
@@ -59,6 +59,10 @@ export interface Period {
   academic_year: AcademicYear;
   angkatan: number;
   jenis: string;
+  program_type?: string | null;
+  program_subtype?: string | null;
+  registration_mode?: string | null;
+  placement_mode?: string | null;
   name: string;
   start_date: string;
   end_date: string;

@@ -121,6 +121,6 @@ class GradingSettingsPageTest extends TestCase
             ->assertRedirect('/admin/grading-settings')
             ->assertSessionHasErrors('configs');
 
-        $this->assertSame('50.00', KonfigurasiPenilaian::where('config_key', 'weight_main_dpl')->value('percentage'));
+        $this->assertSame('40.00', KonfigurasiPenilaian::where('config_key', 'weight_main_dpl')->value('percentage'));
     }
 }

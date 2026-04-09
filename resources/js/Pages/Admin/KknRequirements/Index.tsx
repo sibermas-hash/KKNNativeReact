@@ -1,22 +1,32 @@
 import { useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Head, useForm, router } from '@inertiajs/react';
-import { 
-    Plus, 
-    Settings, 
-    Trash2, 
-    CheckCircle2, 
-    XCircle, 
+import {
+    Plus,
+    Settings,
+    Trash2,
+    CheckCircle2,
+    XCircle,
     AlertCircle,
     Info,
     Search,
     RefreshCw,
     ShieldCheck,
     Database,
-    Binary
+    Binary,
+    Fingerprint,
+    Zap,
+    Cpu,
+    Target,
+    Layers,
+    Command,
+    AlertTriangle,
+    ShieldAlert,
+    Activity
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { route } from 'ziggy-js';
+import { motion } from 'framer-motion';
 
 interface Requirement {
     id: number;
@@ -96,7 +106,7 @@ export default function KknRequirementsIndex({ requirements, availableColumns, o
     };
 
     const deleteItem = (id: number) => {
-        if (confirm('Apakah Anda yakin ingin menghapus syarat ini?')) {
+        if (confirm('KONFIRMASI TERMINASI: Apakah Anda yakin ingin menghapus aturan syarat ini? Evaluasi pendaftaran mahasiswa akan terdampak.')) {
             router.delete(route('admin.kkn-requirements.destroy', id), {
                 preserveScroll: true
             });
@@ -104,219 +114,279 @@ export default function KknRequirementsIndex({ requirements, availableColumns, o
     };
 
     return (
-        <AppLayout title="Persyaratan KKN">
-            <Head title="Persyaratan KKN Dinamis" />
+        <AppLayout title="Otoritas Persyaratan Dinamis">
+            <Head title="Persyaratan KKN | POS-KKN" />
 
-            <div className="space-y-8 pb-20">
-                {/* --- HEADER --- */}
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-100 pb-8">
-                    <div className="space-y-2">
+            <div className="min-h-screen bg-white italic font-black text-emerald-950">
+                {/* HEADER TACTICAL: SIERRA VALIDATION ENGINE */}
+                <div className="bg-white border-b border-emerald-50 px-12 py-16 flex flex-col xl:flex-row xl:items-center justify-between gap-12 sticky top-0 z-20 shadow-sm overflow-hidden relative">
+                    <div className="absolute right-0 top-0 h-full w-1/3 bg-emerald-50/5 -skew-x-12 translate-x-20 pointer-events-none" />
+                    
+                    <div className="space-y-2 relative z-10">
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-emerald-600 rounded-xl text-white shadow-lg shadow-emerald-600/20">
-                                <Settings size={20} />
-                            </div>
-                            <h1 className="text-2xl font-black text-slate-900 tracking-tight italic uppercase">Mesin Syarat Dinamis</h1>
+                            <div className="h-2.5 w-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-300 italic">Dynamic Requirement Engine</span>
                         </div>
-                        <p className="text-sm text-slate-500 font-medium">Kelola aturan pendaftaran KKN secara real-time tanpa menyentuh kode program.</p>
-                    </div>
-
-                    <button
-                        onClick={openCreateModal}
-                        className="flex items-center justify-center gap-3 px-8 py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-700 shadow-xl shadow-emerald-600/10 active:scale-95 transition-all"
-                    >
-                        <Plus size={18} /> Tambah Aturan Baru
-                    </button>
-                </div>
-
-                {/* --- ALERT INFO --- */}
-                <div className="bg-sky-50 border border-sky-100 rounded-3xl p-8 flex flex-col md:flex-row items-center gap-6">
-                    <div className="h-14 w-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-sky-500 shrink-0">
-                        <Info size={28} />
-                    </div>
-                    <div className="space-y-1">
-                        <h3 className="text-sm font-black text-sky-900 uppercase italic">Panduan Cepat</h3>
-                        <p className="text-xs text-sky-700 leading-relaxed">
-                            Sistem akan mengevaluasi profil mahasiswa terhadap semua aturan <strong>AKTIF</strong> di bawah ini saat proses pendaftaran (plotting). 
-                            Gunakan operator <code className="bg-white px-1.5 py-0.5 rounded border border-sky-200 font-bold">in</code> untuk mengecek daftar status (misal: LULUS, PASSED).
+                        <h1 className="text-4xl font-black text-emerald-950 uppercase tracking-tighter leading-none italic">
+                            MESIN <span className="text-emerald-500">SYARAT DINAMIS</span>
+                        </h1>
+                        <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest mt-3 flex items-center gap-2">
+                             <Settings size={12} className="text-emerald-500" />
+                             Konfigurasi parameter pendaftaran KKN secara real-time melalui pangkalan data prasyarat terpusat.
                         </p>
                     </div>
-                </div>
 
-                {/* --- GRID PERSYARATAN --- */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                    {requirements.map((req) => (
-                        <div key={req.id} className={clsx(
-                            "group relative bg-white border rounded-[2.5rem] p-8 shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden",
-                            req.is_active ? "border-slate-100" : "border-slate-200 opacity-70 grayscale-[0.5]"
-                        )}>
-                            {/* Decorative Icon */}
-                            <div className="absolute -top-4 -right-4 p-10 opacity-[0.03] text-slate-900 group-hover:rotate-12 transition-transform">
-                                <Binary size={120} />
-                            </div>
-
-                            <div className="relative z-10 space-y-6">
-                                <div className="flex items-start justify-between">
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Aturan ID: #{req.id}</p>
-                                        <h2 className="text-lg font-black text-slate-900 leading-tight italic uppercase">{req.name}</h2>
-                                    </div>
-                                    <button 
-                                        onClick={() => toggleStatus(req.id)}
-                                        className={clsx(
-                                            "px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all",
-                                            req.is_active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-400 border-slate-200"
-                                        )}
-                                    >
-                                        {req.is_active ? 'AKTIF' : 'NON-AKTIF'}
-                                    </button>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                        <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-slate-400 shadow-sm">
-                                            <Database size={16} />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Logika Cek</p>
-                                            <p className="text-xs font-bold text-slate-700 truncate">
-                                                <span className="text-emerald-600">[{req.column_name}]</span> {req.operator} <span className="text-emerald-600">"{req.expected_value}"</span>
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="p-4 bg-rose-50/50 rounded-2xl border border-rose-100/50">
-                                        <p className="text-[8px] font-black text-rose-400 uppercase tracking-widest mb-1 leading-none">Pesan Kesalahan</p>
-                                        <p className="text-[11px] font-medium text-slate-600 italic leading-relaxed">"{req.error_message}"</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-3 pt-4 border-t border-slate-50">
-                                    <button 
-                                        onClick={() => openEditModal(req)}
-                                        className="flex-1 h-12 bg-white border border-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
-                                    >
-                                        Ubah Aturan
-                                    </button>
-                                    <button 
-                                        onClick={() => deleteItem(req.id)}
-                                        className="h-12 w-12 bg-rose-50 text-rose-500 rounded-xl border border-rose-100 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-
-                    {requirements.length === 0 && (
-                        <div className="col-span-full py-20 bg-slate-50 rounded-[3rem] border-4 border-dashed border-slate-200 text-center">
-                            <RefreshCw className="h-12 w-12 text-slate-300 mx-auto mb-4 animate-spin-slow" />
-                            <p className="text-slate-400 font-black uppercase tracking-widest text-sm italic">Belum ada persyaratan dinamis yang dikonfigurasi.</p>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* --- MODAL CREATE/EDIT --- */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-500">
-                        <div className="px-10 py-8 bg-slate-900 text-white flex items-center justify-between">
-                            <div className="space-y-1">
-                                <h3 className="text-xl font-black italic uppercase tracking-tight">
-                                    {editingItem ? 'Edit Aturan' : 'Buat Aturan Baru'}
-                                </h3>
-                                <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest italic">Konfigurasi Mesin Validasi</p>
-                            </div>
-                            <button onClick={() => setIsModalOpen(false)} className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center hover:bg-white/20 transition-all">
-                                <Plus size={20} className="rotate-45" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={submit} className="p-10 space-y-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Syarat</label>
-                                    <input 
-                                        type="text" 
-                                        value={data.name}
-                                        onChange={e => setData('name', e.target.value)}
-                                        className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-sm font-bold focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none"
-                                        placeholder="Misal: Minimal 100 SKS"
-                                        required
-                                    />
-                                    {errors.name && <p className="text-[10px] text-rose-500 font-bold italic px-2">{errors.name}</p>}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kolom Data (Database)</label>
-                                    <select 
-                                        value={data.column_name}
-                                        onChange={e => setData('column_name', e.target.value)}
-                                        className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-sm font-bold focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none"
-                                        required
-                                    >
-                                        <option value="">Pilih kolom...</option>
-                                        {availableColumns.map(col => (
-                                            <option key={col.value} value={col.value}>{col.label}</option>
-                                        ))}
-                                    </select>
-                                    {errors.column_name && <p className="text-[10px] text-rose-500 font-bold italic px-2">{errors.column_name}</p>}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Operator</label>
-                                    <select 
-                                        value={data.operator}
-                                        onChange={e => setData('operator', e.target.value)}
-                                        className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-sm font-bold focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none"
-                                        required
-                                    >
-                                        {operators.map(op => (
-                                            <option key={op.value} value={op.value}>{op.label}</option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nilai Harapan</label>
-                                    <input 
-                                        type="text" 
-                                        value={data.expected_value}
-                                        onChange={e => setData('expected_value', e.target.value)}
-                                        className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-sm font-bold focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none"
-                                        placeholder="Misal: 100 atau LULUS"
-                                        required
-                                    />
-                                    {errors.expected_value && <p className="text-[10px] text-rose-500 font-bold italic px-2">{errors.expected_value}</p>}
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pesan Penolakan (Error Message)</label>
-                                <textarea 
-                                    rows={3}
-                                    value={data.error_message}
-                                    onChange={e => setData('error_message', e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-100 rounded-[2rem] p-6 text-sm font-bold focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none italic leading-relaxed"
-                                    placeholder="Jelaskan kenapa pendaftaran ditolak jika syarat ini tidak terpenuhi..."
-                                    required
-                                />
-                                {errors.error_message && <p className="text-[10px] text-rose-500 font-bold italic px-2">{errors.error_message}</p>}
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className="w-full h-16 bg-emerald-600 text-white rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl shadow-emerald-600/20 hover:bg-emerald-700 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-4"
-                            >
-                                {processing ? <RefreshCw className="animate-spin" /> : <ShieldCheck />}
-                                {editingItem ? 'Simpan Perubahan' : 'Terbitkan Aturan Baru'}
-                            </button>
-                        </form>
+                    <div className="flex items-center gap-6 relative z-10">
+                        <button
+                            onClick={openCreateModal}
+                            className="h-16 px-10 bg-emerald-950 text-white text-[11px] font-black uppercase tracking-[0.3em] italic flex items-center gap-4 hover:bg-emerald-600 active:scale-95 transition-all shadow-2xl group rounded-none"
+                        >
+                            <Plus size={18} className="group-hover:rotate-90 transition-transform" />
+                            REGISTRASI ATURAN BARU
+                        </button>
                     </div>
                 </div>
-            )}
+
+                <div className="px-12 py-12 space-y-12">
+                    {/* TACTICAL ALERT BANNER */}
+                    <div className="bg-emerald-50/30 border border-emerald-100 p-10 shadow-sm relative overflow-hidden group hover:border-emerald-500 transition-all flex flex-col md:flex-row items-center gap-10">
+                        <div className="absolute right-0 top-0 h-full w-1/3 bg-emerald-500/5 skew-x-12 translate-x-20 pointer-events-none" />
+                        <div className="h-16 w-16 bg-emerald-950 text-emerald-400 flex items-center justify-center shadow-xl rotate-3 group-hover:rotate-0 transition-transform">
+                            <ShieldAlert size={32} />
+                        </div>
+                        <div className="space-y-2 flex-1 relative z-10">
+                            <h3 className="text-[12px] font-black text-emerald-950 uppercase tracking-[0.3em] italic">Protokol Evaluasi Pendaftaran</h3>
+                            <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest leading-relaxed italic">
+                                Sistem secara otomatis mengevaluasi profil mahasiswa terhadap setiap parameter <span className="text-emerald-950 underline underline-offset-4 decoration-emerald-500 decoration-2">AKTIF</span> saat plotting lokasi. <br/>
+                                Gunakan operator <code className="bg-white px-2 py-0.5 border border-emerald-100 font-black text-emerald-600 tabular-nums lowercase">in</code> untuk validasi terhadap himpunan status spesifik.
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-6 text-emerald-950 font-black text-[11px] uppercase tracking-[0.4em] italic opacity-30 hover:opacity-100 transition-opacity">
+                             <Activity size={18} className="text-emerald-500 animate-pulse" />
+                             VALIDATION ENGINE ONLINE
+                        </div>
+                    </div>
+
+                    {/* DYNAMIC REQUIREMENTS GRID */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                        {requirements.map((req, idx) => (
+                            <motion.div 
+                                key={req.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.05 }}
+                                className={clsx(
+                                    "bg-white border p-10 shadow-sm hover:shadow-2xl transition-all group relative overflow-hidden flex flex-col",
+                                    req.is_active ? "border-emerald-100" : "border-emerald-50 border-dashed opacity-60 grayscale-[0.5]"
+                                )}
+                            >
+                                <div className="absolute -right-8 -top-8 p-16 opacity-[0.03] text-emerald-950 group-hover:rotate-12 transition-transform pointer-events-none">
+                                    <Binary size={160} strokeWidth={1} />
+                                </div>
+
+                                <div className="relative z-10 flex-1 space-y-8">
+                                    <div className="flex items-start justify-between border-b border-emerald-50 pb-6">
+                                        <div className="space-y-2">
+                                            <span className="text-[9px] font-black text-emerald-200 uppercase tracking-widest italic flex items-center gap-3">
+                                                <Target size={12} className="text-emerald-300" />
+                                                RULE_ID: #{req.id}
+                                            </span>
+                                            <h2 className="text-[14px] font-black text-emerald-950 uppercase italic tracking-widest leading-tight group-hover:text-emerald-600 transition-colors uppercase">{req.name}</h2>
+                                        </div>
+                                        <button 
+                                            onClick={() => toggleStatus(req.id)}
+                                            className={clsx(
+                                                "h-10 px-4 text-[9px] font-black uppercase tracking-[0.2em] italic border transition-all active:scale-95 shadow-sm",
+                                                req.is_active ? "bg-emerald-950 text-white border-emerald-900" : "bg-white text-emerald-100 border-emerald-50"
+                                            )}
+                                        >
+                                            {req.is_active ? 'OPERATIONAL' : 'OFFLINE'}
+                                        </button>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div className="bg-emerald-50/30 p-6 border border-emerald-50 group-hover:border-emerald-500 transition-all">
+                                            <div className="flex items-center gap-4 mb-3">
+                                                <Database size={12} className="text-emerald-300" />
+                                                <span className="text-[8px] font-black text-emerald-950 uppercase tracking-widest italic opacity-40">LOGIC COMMAND</span>
+                                            </div>
+                                            <div className="text-[11px] font-black text-emerald-950 uppercase tracking-widest italic tabular-nums leading-none">
+                                                DB:<span className="text-emerald-500">[{req.column_name}]</span> {req.operator} <span className="text-emerald-500">"{req.expected_value}"</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-rose-50/30 p-6 border border-rose-50 border-dashed">
+                                            <div className="flex items-center gap-4 mb-3">
+                                                <AlertTriangle size={12} className="text-rose-300" />
+                                                <span className="text-[8px] font-black text-rose-300 uppercase tracking-widest italic leading-none">THROWN_ERROR_OUTPUT</span>
+                                            </div>
+                                            <p className="text-[10.5px] font-black text-emerald-950/60 uppercase tracking-widest italic leading-relaxed italic">"{req.error_message}"</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3 pt-8 mt-auto border-t border-emerald-50">
+                                        <button 
+                                            onClick={() => openEditModal(req)}
+                                            className="h-14 bg-white border border-emerald-100 text-emerald-100 hover:text-emerald-950 hover:border-emerald-500 flex items-center justify-center gap-4 text-[10px] font-black uppercase tracking-widest italic shadow-sm transition-all active:scale-95 flex-1"
+                                        >
+                                            <RefreshCw size={14} className="group-hover:rotate-180 transition-transform duration-700" />
+                                            MODIFY RULE
+                                        </button>
+                                        <button 
+                                            onClick={() => deleteItem(req.id)}
+                                            className="h-14 w-14 bg-rose-50 text-rose-300 border border-rose-50 flex items-center justify-center hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all active:scale-95 shadow-sm"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+
+                        {requirements.length === 0 && (
+                            <div className="col-span-full py-56 bg-emerald-50/10 border-4 border-dashed border-emerald-50 text-center opacity-20">
+                                <Cpu size={80} className="mx-auto mb-8 text-emerald-950 animate-pulse" strokeWidth={0.5} />
+                                <p className="text-[12px] font-black uppercase tracking-[0.6em] italic text-emerald-950">REQUIREMENT ENGINE NIHIL</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* MODAL COMMANDER TACTICAL */}
+                {isModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-emerald-950/80 backdrop-blur-md italic font-black">
+                        <motion.div 
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="bg-white w-full max-w-2xl shadow-[0_50px_100px_rgba(0,0,0,0.5)] overflow-hidden border border-white"
+                        >
+                            <div className="px-10 py-12 bg-emerald-950 text-white flex items-center justify-between relative overflow-hidden">
+                                <div className="absolute right-0 top-0 h-full w-1/3 bg-white/5 -skew-x-12 translate-x-16 pointer-events-none" />
+                                <div className="space-y-1 relative z-10">
+                                    <h3 className="text-2xl font-black italic uppercase tracking-tighter leading-none">
+                                        {editingItem ? 'MODIFIKASI ATURAN' : 'REGISTRASI ATURAN'}
+                                    </h3>
+                                    <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest italic mt-2">CONFIGURE VALIDATION ENGINE PARAMETER</p>
+                                </div>
+                                <button onClick={() => setIsModalOpen(false)} className="h-12 w-12 bg-white/10 text-white flex items-center justify-center hover:bg-rose-600 transition-all z-10">
+                                    <Plus size={24} className="rotate-45" />
+                                </button>
+                            </div>
+
+                            <form onSubmit={submit} className="p-12 space-y-10">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                    <div className="space-y-3">
+                                        <label className="text-[9px] font-black text-emerald-900 uppercase tracking-widest italic ml-1">Nama Syarat / Identifier</label>
+                                        <input 
+                                            type="text" 
+                                            value={data.name}
+                                            onChange={e => setData('name', e.target.value)}
+                                            className="w-full h-16 bg-emerald-50/20 border border-emerald-50 px-6 text-[12px] font-black italic tracking-widest text-emerald-950 placeholder:text-emerald-100 focus:bg-white focus:border-emerald-500 outline-none transition-all uppercase"
+                                            placeholder="MISAL: STATUS_MINIMAL_SKS"
+                                            required
+                                        />
+                                        {errors.name && <p className="text-[8px] text-rose-500 font-black italic uppercase tracking-widest mt-1 ml-1">{errors.name}</p>}
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <label className="text-[9px] font-black text-emerald-900 uppercase tracking-widest italic ml-1">Kolom Target (DB Registry)</label>
+                                        <select 
+                                            value={data.column_name}
+                                            onChange={e => setData('column_name', e.target.value)}
+                                            className="w-full h-16 bg-emerald-50/20 border border-emerald-50 px-6 text-[11px] font-black italic tracking-widest text-emerald-950 focus:bg-white focus:border-emerald-500 transition-all outline-none appearance-none uppercase"
+                                            required
+                                        >
+                                            <option value="">PILIH ATRIBUT DATABASE...</option>
+                                            {availableColumns.map(col => (
+                                                <option key={col.value} value={col.value}>{col.label.toUpperCase()}</option>
+                                            ))}
+                                        </select>
+                                        {errors.column_name && <p className="text-[8px] text-rose-500 font-black italic uppercase tracking-widest mt-1 ml-1">{errors.column_name}</p>}
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <label className="text-[9px] font-black text-emerald-900 uppercase tracking-widest italic ml-1">Operator Logika</label>
+                                        <select 
+                                            value={data.operator}
+                                            onChange={e => setData('operator', e.target.value)}
+                                            className="w-full h-16 bg-emerald-50/20 border border-emerald-50 px-6 text-[11px] font-black italic tracking-widest text-emerald-950 focus:bg-white focus:border-emerald-500 transition-all outline-none appearance-none uppercase tabular-nums"
+                                            required
+                                        >
+                                            {operators.map(op => (
+                                                <option key={op.value} value={op.value}>{op.label.toUpperCase()}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <label className="text-[9px] font-black text-emerald-900 uppercase tracking-widest italic ml-1">Nilai Ekspektasi</label>
+                                        <input 
+                                            type="text" 
+                                            value={data.expected_value}
+                                            onChange={e => setData('expected_value', e.target.value)}
+                                            className="w-full h-16 bg-emerald-50/20 border border-emerald-50 px-6 text-[12px] font-black italic tracking-widest text-emerald-950 placeholder:text-emerald-100 focus:bg-white focus:border-emerald-500 outline-none transition-all uppercase tabular-nums"
+                                            placeholder="MISAL: 100 / LULUS"
+                                            required
+                                        />
+                                        {errors.expected_value && <p className="text-[8px] text-rose-500 font-black italic uppercase tracking-widest mt-1 ml-1">{errors.expected_value}</p>}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="text-[9px] font-black text-emerald-900 uppercase tracking-widest italic ml-1">Pesan Penolakan (Audit Failed Message)</label>
+                                    <textarea 
+                                        rows={3}
+                                        value={data.error_message}
+                                        onChange={e => setData('error_message', e.target.value)}
+                                        className="w-full bg-emerald-50/20 border border-emerald-50 p-6 text-[11px] font-black italic tracking-widest text-emerald-950 placeholder:text-emerald-100 focus:bg-white focus:border-emerald-500 outline-none transition-all uppercase leading-loose"
+                                        placeholder="MENJELASKAN PENYEBAB KEGAGALAN AUDIT KEPADA MAHASISWA..."
+                                        required
+                                    />
+                                    {errors.error_message && <p className="text-[8px] text-rose-500 font-black italic uppercase tracking-widest mt-1 ml-1">{errors.error_message}</p>}
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="w-full h-20 bg-emerald-950 text-white text-[12px] font-black uppercase tracking-[0.4em] italic shadow-[0_30px_60px_rgba(0,0,0,0.3)] hover:bg-emerald-600 transition-all disabled:opacity-50 flex items-center justify-center gap-6"
+                                >
+                                    {processing ? <RefreshCw className="animate-spin" /> : <ShieldCheck size={20} />}
+                                    {editingItem ? 'EXECUTE: SAVE_MODIFICATION' : 'EXECUTE: PUBLISH_NEW_RULE'}
+                                </button>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+
+                {/* SECURITY FOOTER MONITOR TACTICAL */}
+                <div className="bg-emerald-950 p-16 text-white shadow-3xl relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-emerald-500/5 -skew-x-12 translate-x-1/2 group-hover:translate-x-1/3 transition-transform duration-1000" />
+                    <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-16">
+                            <div className="space-y-8 flex-1">
+                                <div className="flex items-center gap-8">
+                                <div className="p-6 bg-emerald-500 shadow-[0_0_50px_rgba(16,185,129,0.3)] rotate-3 group-hover:rotate-0 transition-all duration-700">
+                                    <ShieldCheck className="h-10 w-10 text-white animate-pulse" />
+                                </div>
+                                <div className="space-y-3">
+                                    <h4 className="text-2xl font-black text-white italic tracking-[0.4em] uppercase leading-none">Integritas Audit Dinamis</h4>
+                                    <p className="text-[11px] font-bold text-emerald-400/60 uppercase tracking-widest italic leading-relaxed max-w-3xl">
+                                        Mesin syarat dinamis menjamin fleksibilitas operasional pendaftaran tanpa membutuhkan intervensi kode program. 
+                                        Setiap perubahan pada aturan ini akan segera berlaku secara universal bagi seluruh antrian pendaftaran aktif.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                            
+                        <div className="flex flex-col items-center xl:items-end gap-6 text-emerald-500 font-black text-[11px] uppercase tracking-[0.5em] italic opacity-30 hover:opacity-100 transition-opacity">
+                                <div className="flex items-center gap-4">
+                                    <Fingerprint className="w-6 h-6" />
+                                    <span className="text-xl tracking-tighter italic">RULE_ENGINE_STAMP_{new Date().getFullYear()}</span>
+                                </div>
+                                <span className="text-[8px] tracking-[0.8em] opacity-40">POS-KKN CENTRAL MISSION CONTROL</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </AppLayout>
     );
 }

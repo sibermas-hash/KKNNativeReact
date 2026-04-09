@@ -1,22 +1,25 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
-import { FormTextarea, StatusBadge } from '@/Components/ui';
+import { FormTextarea, StatusBadge, Button } from '@/Components/ui';
 import type { PageProps } from '@/types';
 import { 
-    ChevronLeft, 
     User, 
     FileText, 
     Info, 
     ShieldCheck, 
     ShieldAlert, 
-    Calendar,
     ArrowRight,
     ClipboardCheck,
     CheckCircle2,
-    XCircle
+    XCircle,
+    Fingerprint,
+    Database,
+    Binary,
+    ArrowLeft
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { motion } from 'framer-motion';
 
 interface RegistrationDocument {
     id: number;
@@ -44,7 +47,19 @@ interface RegistrationData {
         fakultas?: { nama?: string | null } | null;
         prodi?: { nama?: string | null } | null;
     } | null;
-    periode?: { name?: string | null } | null;
+    periode?: {
+        name?: string | null;
+        governance?: {
+            program_type_label?: string | null;
+            program_subtype_label?: string | null;
+            registration_mode_label?: string | null;
+            placement_mode_label?: string | null;
+        } | null;
+        guide?: {
+            requirements?: string[];
+            governance_notes?: string[];
+        } | null;
+    } | null;
     kelompok?: { nama_kelompok?: string | null; code?: string | null } | null;
     dokumen?: RegistrationDocument[];
 }
@@ -64,55 +79,65 @@ export default function RegistrationShow({ registration }: Props) {
     const isPending = ['menunggu', 'pending', 'document_submitted'].includes(registration.status);
 
     return (
-        <AppLayout title="Detail Verifikasi Pendaftaran">
-            <Head title="Verifikasi Pendaftaran KKN" />
+        <AppLayout title="Verifikasi Pendaftaran">
+            <Head title={`Verifikasi: ${registration.mahasiswa?.nama || '-'}`} />
 
-            <div className="space-y-8 pb-20">
-                {/* Clean Header Section */}
-                <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
-                    <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                        <div className="space-y-4">
-                            <Link
-                                href="/admin/pendaftaran"
-                                className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-emerald-600 transition-colors uppercase tracking-widest"
-                            >
-                                <ChevronLeft className="w-4 h-4" />
-                                Kembali ke Daftar
-                            </Link>
-                            <div className="space-y-1">
-                                <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-                                    Verifikasi <span className="text-emerald-600">Pendaftaran</span>
-                                </h1>
-                                <p className="text-xs text-slate-500 font-medium whitespace-nowrap">ID_REG: #{registration.id} • Periode: {registration.periode?.name || '-'}</p>
+            <div className="min-h-screen bg-white pb-32">
+                {/* EMERALD SYSTEM HEADER */}
+                <div className="bg-white border-b border-emerald-50 px-8 py-10">
+                    <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-600/60">
+                                    Otoritas Verifikasi Registrasi
+                                </span>
                             </div>
+                            <h1 className="text-3xl font-black tracking-tighter text-emerald-950 uppercase italic flex items-center gap-4">
+                                DETAIL <span className="text-emerald-500">PENDAFTARAN</span>
+                            </h1>
+                            <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest mt-1">
+                                NO. REGISTRASI: #{registration.id} • PERIODE: {registration.periode?.name || '-'}
+                            </p>
                         </div>
 
-                        <div className="flex items-center gap-4">
-                            <div className="px-5 py-2.5 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-3">
-                                <span className={clsx(
-                                    "px-3 py-1 rounded-full text-[10px] font-bold tracking-tight border uppercase shadow-sm",
-                                    registration.status === 'disetujui' || registration.status === 'approved' ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
-                                    registration.status === 'ditolak' || registration.status === 'rejected' ? "bg-rose-50 text-rose-700 border-rose-100" :
-                                    "bg-amber-50 text-amber-700 border-amber-100"
-                                )}>
-                                    Status: {registration.status}
-                                </span>
+                        <div className="flex flex-wrap items-center gap-4">
+                            <Link 
+                                href="/admin/pendaftaran" 
+                                className="h-14 px-8 bg-white border border-emerald-100 flex items-center gap-4 group hover:border-emerald-500 transition-all text-[11px] font-black text-emerald-900 uppercase tracking-widest"
+                            >
+                                <ArrowLeft className="w-4 h-4 text-emerald-300 group-hover:text-emerald-600 transition-colors" />
+                                Kembali ke Daftar
+                            </Link>
+
+                            <div className="h-14 px-8 bg-emerald-950 flex items-center gap-8 shadow-xl border border-emerald-900">
+                                <div className="flex flex-col">
+                                    <span className="text-[8px] font-black text-emerald-500/50 uppercase tracking-widest leading-none mb-1.5 text-center">Status Verifikasi</span>
+                                    <StatusBadge status={registration.status} />
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="grid gap-8 xl:grid-cols-3">
-                    <div className="xl:col-span-2 space-y-8">
-                        {/* Student Identity Card */}
-                        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-                            <div className="px-8 py-6 border-b border-slate-100 flex items-center gap-4 bg-slate-50/20">
-                                <div className="p-2.5 bg-white rounded-xl border border-slate-100 text-emerald-600 shadow-sm">
-                                    <User className="w-5 h-5" />
+                <div className="p-8 grid gap-8 xl:grid-cols-12 items-start">
+                    <div className="xl:col-span-8 space-y-8">
+                        {/* STUDENT IDENTITY */}
+                        <motion.section 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-white border border-emerald-50 overflow-hidden shadow-sm"
+                        >
+                            <div className="px-8 py-6 border-b border-emerald-50 flex items-center gap-6 bg-emerald-50/10">
+                                <div className="p-3 bg-emerald-600 text-white shadow-lg">
+                                    <User size={20} />
                                 </div>
-                                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Identitas Mahasiswa</h2>
+                                <div>
+                                    <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-emerald-950 italic leading-none">Identitas Mahasiswa</h2>
+                                    <p className="text-[9px] font-bold text-emerald-300 mt-1 uppercase tracking-widest italic">Data terverifikasi sistem pangkalan data perguruan tinggi</p>
+                                </div>
                             </div>
-                            <div className="p-8">
+                            <div className="p-10">
                                 <dl className="grid gap-x-12 gap-y-8 md:grid-cols-2">
                                     <DetailItem label="Nama Lengkap" value={registration.mahasiswa?.nama} />
                                     <DetailItem label="Nomor Induk Mahasiswa (NIM)" value={registration.mahasiswa?.nim} />
@@ -122,100 +147,165 @@ export default function RegistrationShow({ registration }: Props) {
                                     <DetailItem label="Jenis Kelamin" value={registration.mahasiswa?.gender === 'L' ? 'Laki-laki' : 'Perempuan'} />
                                 </dl>
                             </div>
-                        </div>
+                        </motion.section>
 
-                        {/* Document Verification Section */}
-                        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-                            <div className="px-8 py-6 border-b border-slate-100 flex items-center gap-4 bg-slate-50/20">
-                                <div className="p-2.5 bg-white rounded-xl border border-slate-100 text-emerald-600 shadow-sm">
-                                    <FileText className="w-5 h-5" />
+                        {/* DOCUMENT VERIFICATION */}
+                        <motion.section 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="bg-white border border-emerald-50 overflow-hidden shadow-sm"
+                        >
+                            <div className="px-8 py-6 border-b border-emerald-50 flex items-center gap-6 bg-emerald-50/10">
+                                <div className="p-3 bg-emerald-600 text-white shadow-lg">
+                                    <FileText size={20} />
                                 </div>
-                                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Berkas Persyaratan</h2>
+                                <div>
+                                    <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-emerald-950 italic leading-none">Dokumen Persyaratan</h2>
+                                    <p className="text-[9px] font-bold text-emerald-300 mt-1 uppercase tracking-widest italic">Berkas administrasi yang diunggah oleh pendaftar</p>
+                                </div>
                             </div>
                             <div className="p-8 space-y-4">
                                 {documents.length > 0 ? (
                                     documents.map((doc) => (
-                                        <div key={doc.id} className="group flex items-center justify-between p-5 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-emerald-50/30 hover:border-emerald-100 transition-all">
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 group-hover:text-emerald-600 group-hover:border-emerald-200 transition-all font-bold text-xs uppercase shadow-sm">
+                                        <div key={doc.id} className="group flex items-center justify-between p-6 bg-white border border-emerald-50 hover:border-emerald-500 transition-all">
+                                            <div className="flex items-center gap-5">
+                                                <div className="h-12 w-12 flex items-center justify-center bg-emerald-50 text-emerald-600 border border-emerald-100 font-black text-[10px] italic shadow-sm group-hover:scale-105 transition-transform uppercase">
                                                     PDF
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-slate-900 leading-tight uppercase tracking-tight">{doc.document_type || 'Dokumen'}</span>
-                                                    <span className="text-[10px] font-semibold text-slate-400 truncate max-w-[200px] md:max-w-md">{doc.file_name || '-'}</span>
+                                                    <span className="text-[11px] font-black text-emerald-950 uppercase italic tracking-tight">{doc.document_type || 'Dokumen'}</span>
+                                                    <span className="text-[9px] font-bold text-emerald-300 truncate max-w-[200px] md:max-w-md uppercase tracking-tight">{doc.file_name || '-'}</span>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-4">
+                                            <div className="flex items-center gap-6">
                                                 <StatusBadge status={doc.status || 'menunggu'} />
-                                                <button className="p-2 text-slate-300 hover:text-emerald-600 transition-colors">
-                                                    <ArrowRight className="w-4 h-4" />
-                                                </button>
+                                                <Link 
+                                                    href={doc.file_path || '#'} 
+                                                    target="_blank"
+                                                    className="h-10 w-10 bg-white border border-emerald-50 text-emerald-100 hover:text-emerald-600 hover:border-emerald-500 transition-all flex items-center justify-center active:scale-90 shadow-sm"
+                                                >
+                                                    <ArrowRight size={16} />
+                                                </Link>
                                             </div>
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="flex flex-col items-center py-10 opacity-30 gap-3">
-                                        <ShieldAlert className="w-10 h-10 text-slate-200" />
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Belum ada dokumen yang diunggah</p>
+                                    <div className="py-20 text-center text-[10px] font-black uppercase tracking-[0.4em] italic opacity-20 border-2 border-dashed border-emerald-50">
+                                        <ShieldAlert size={32} className="mx-auto mb-4" />
+                                        Berkas pendaftaran nihil
                                     </div>
                                 )}
                             </div>
-                        </div>
+                        </motion.section>
                     </div>
 
-                    <div className="space-y-8">
-                        {/* Registration Stats */}
-                        <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-8 opacity-10">
-                                <Calendar className="w-24 h-24" />
+                    <div className="xl:col-span-4 space-y-8">
+                        {/* REGISTRATION STATS */}
+                        <motion.section 
+                            initial={{ opacity: 0, x: 10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="bg-emerald-950 p-8 shadow-2xl relative overflow-hidden group"
+                        >
+                            <div className="absolute top-0 right-0 p-8 opacity-[0.05] text-white">
+                                <Database size={120} className="-rotate-12" />
                             </div>
-                            <div className="relative z-10 space-y-6">
-                                <h2 className="text-sm font-bold uppercase tracking-widest flex items-center gap-3 border-b border-white/10 pb-4">
-                                    <Info className="w-4 h-4 text-emerald-400" />
-                                    Info Layanan
-                                </h2>
-                                <div className="space-y-4">
+                            <div className="relative z-10 space-y-8 text-white">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-emerald-500 shadow-xl">
+                                        <Info size={18} className="text-emerald-950" />
+                                    </div>
+                                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] italic text-emerald-400 leading-none">Informasi Layanan</h2>
+                                </div>
+                                <div className="space-y-6">
                                     <SummaryItem label="Tgl Pendaftaran" value={registration.registration_date} />
+                                    <SummaryItem
+                                        label="Jenis Program"
+                                        value={registration.periode?.governance?.program_subtype_label || registration.periode?.governance?.program_type_label || registration.periode?.name}
+                                    />
+                                    <SummaryItem
+                                        label="Mode Pendaftaran"
+                                        value={registration.periode?.governance?.registration_mode_label || '-'}
+                                    />
+                                    <SummaryItem
+                                        label="Mode Penempatan"
+                                        value={registration.periode?.governance?.placement_mode_label || '-'}
+                                    />
                                     <SummaryItem label="Unit Kelompok" value={registration.kelompok?.nama_kelompok || 'Belum Ditempatkan'} />
                                     <SummaryItem label="Peran Unit" value={registration.role || 'Anggota'} />
                                 </div>
                             </div>
-                        </div>
+                        </motion.section>
 
-                        {/* Admin Decision Card */}
-                        <div className={clsx(
-                            "rounded-[2.5rem] border p-8 shadow-sm transition-all",
-                            isPending ? "bg-white border-emerald-200" : "bg-slate-50 border-slate-200"
-                        )}>
-                            <div className="flex items-center gap-3 mb-8">
-                                <div className={clsx(
-                                    "p-2.5 rounded-xl border shadow-sm",
-                                    isPending ? "bg-emerald-50 border-emerald-100 text-emerald-600" : "bg-white border-slate-100 text-slate-400"
-                                )}>
-                                    <ClipboardCheck className="w-5 h-5" />
+                        {registration.periode?.guide ? (
+                            <motion.section
+                                initial={{ opacity: 0, x: 10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.05 }}
+                                className="bg-white border border-emerald-50 overflow-hidden shadow-sm"
+                            >
+                                <div className="px-8 py-6 border-b border-emerald-50 flex items-center gap-6 bg-emerald-50/10">
+                                    <div className="p-3 bg-emerald-600 text-white shadow-lg">
+                                        <Fingerprint size={20} />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-emerald-950 italic leading-none">Panduan Skema Program</h2>
+                                        <p className="text-[9px] font-bold text-emerald-300 mt-1 uppercase tracking-widest italic">Ringkasan tata kelola dan syarat dasar sesuai skema KKN</p>
+                                    </div>
                                 </div>
-                                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Keputusan Admin</h2>
+                                <div className="grid gap-6 p-8 md:grid-cols-2">
+                                    <GuideList
+                                        title="Syarat Dasar"
+                                        items={registration.periode.guide.requirements || []}
+                                    />
+                                    <GuideList
+                                        title="Tata Kelola"
+                                        items={registration.periode.guide.governance_notes || []}
+                                    />
+                                </div>
+                            </motion.section>
+                        ) : null}
+
+                        {/* ADMIN DECISION CARD */}
+                        <motion.section 
+                            initial={{ opacity: 0, x: 10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className={clsx(
+                                "border p-8 shadow-sm transition-all",
+                                isPending ? "bg-white border-emerald-200" : "bg-emerald-50/10 border-emerald-50"
+                            )}
+                        >
+                            <div className="flex items-center gap-4 mb-10">
+                                <div className={clsx(
+                                    "p-3 shadow-lg",
+                                    isPending ? "bg-emerald-600 text-white" : "bg-white border border-emerald-50 text-emerald-200"
+                                )}>
+                                    <ClipboardCheck size={18} />
+                                </div>
+                                <h2 className="text-[10px] font-black text-emerald-950 uppercase tracking-[0.3em] italic leading-none">Protokol Verifikasi</h2>
                             </div>
 
                             {isPending ? (
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     {!showRejectForm ? (
                                         <>
-                                            <button
+                                            <Button
                                                 onClick={() => approveForm.patch(`/admin/pendaftaran/${registration.id}/setujui`)}
                                                 disabled={approveForm.processing}
-                                                className="w-full h-12 bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 active:scale-95 disabled:opacity-50"
+                                                className="w-full h-14 bg-emerald-600 text-white font-black text-[10px] uppercase tracking-[0.2em] italic flex items-center justify-center gap-4 hover:bg-emerald-700 transition-all shadow-xl active:scale-95 disabled:opacity-50 border-none"
                                             >
-                                                <CheckCircle2 className="w-4 h-4" />
+                                                <CheckCircle2 size={16} />
                                                 Setujui Pendaftaran
-                                            </button>
-                                            <button
+                                            </Button>
+                                            <Button
                                                 onClick={() => setShowRejectForm(true)}
-                                                className="w-full h-12 bg-white border border-rose-200 text-rose-600 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-rose-50 transition-all active:scale-95"
+                                                variant="outline"
+                                                className="w-full h-14 bg-white border border-rose-100 text-rose-500 font-black text-[10px] uppercase tracking-[0.2em] italic flex items-center justify-center gap-4 hover:bg-rose-50 transition-all active:scale-95"
                                             >
-                                                <XCircle className="w-4 h-4" />
+                                                <XCircle size={16} />
                                                 Tolak Berkas
-                                            </button>
+                                            </Button>
                                         </>
                                     ) : (
                                         <form
@@ -225,75 +315,86 @@ export default function RegistrationShow({ registration }: Props) {
                                                     onSuccess: () => setShowRejectForm(false),
                                                 });
                                             }}
-                                            className="space-y-4"
+                                            className="space-y-6"
                                         >
                                             <FormTextarea
                                                 label="Alasan Penolakan"
                                                 required
-                                                placeholder="Berikan alasan mengapa berkas ditolak..."
+                                                placeholder="Sebutkan alasan diskualifikasi berkas..."
                                                 value={rejectForm.data.notes}
                                                 onChange={(e) => rejectForm.setData('notes', e.target.value)}
                                                 error={rejectForm.errors.notes}
-                                                className="text-sm font-semibold border-rose-200 focus:ring-rose-500/10 focus:border-rose-500 rounded-2xl"
+                                                className="text-[11px] font-black border-rose-50 focus:ring-rose-50 focus:border-rose-300 uppercase italic placeholder:lowercase placeholder:font-bold"
                                             />
-                                            <div className="flex gap-2">
-                                                <button
+                                            <div className="flex gap-3">
+                                                <Button
                                                     type="button"
                                                     onClick={() => setShowRejectForm(false)}
-                                                    className="flex-1 h-10 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
+                                                    variant="secondary"
+                                                    className="flex-1 h-12 bg-emerald-50 text-emerald-600 font-black text-[9px] uppercase tracking-[0.2em] italic transition-all border-none"
                                                 >
                                                     Batal
-                                                </button>
-                                                <button
+                                                </Button>
+                                                <Button
                                                     type="submit"
                                                     disabled={rejectForm.processing}
-                                                    className="flex-1 h-10 bg-rose-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-rose-600/20 active:scale-95 disabled:opacity-50"
+                                                    className="flex-1 h-12 bg-rose-600 text-white font-black text-[9px] uppercase tracking-[0.2em] italic transition-all shadow-xl active:scale-95 disabled:opacity-50 border-none"
                                                 >
                                                     Konfirmasi
-                                                </button>
+                                                </Button>
                                             </div>
                                         </form>
                                     )}
                                 </div>
                             ) : (
-                                <div className="space-y-2">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Pendaftaran telah diproses.</p>
-                                    <div className="p-4 bg-white border border-slate-200 rounded-2xl text-xs font-semibold text-slate-700 italic">
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-1 w-1 bg-emerald-300 rounded-full" />
+                                        <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest italic">Riwayat Keputusan Akhir:</p>
+                                    </div>
+                                    <div className="p-6 bg-white border border-emerald-50 text-[11px] font-black text-emerald-950 italic uppercase tracking-tight leading-relaxed">
                                         "{registration.status === 'rejected'
                                             ? (registration.rejection_reason || 'Tidak ada alasan penolakan yang tercatat.')
-                                            : (registration.notes || 'Tidak ada catatan khusus.')}"
+                                            : (registration.notes || 'Pendaftaran disetujui tanpa catatan khusus.')}"
                                     </div>
-                                    {registration.status === 'rejected' ? (
-                                        <div className="space-y-1 pt-2">
-                                            <p className="text-[10px] font-bold uppercase tracking-widest text-rose-500">
-                                                Riwayat pengajuan ulang: {registration.revision_count ?? 0} kali
+                                    {registration.status === 'rejected' && (
+                                        <div className="space-y-2 pt-2 border-t border-emerald-50">
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-rose-500 italic">
+                                                Total Revisi: {registration.revision_count ?? 0} Kali
                                             </p>
-                                            {registration.resubmitted_at ? (
-                                                <p className="text-[10px] font-semibold text-slate-500">
-                                                    Terakhir diajukan ulang: {registration.resubmitted_at}
+                                            {registration.resubmitted_at && (
+                                                <p className="text-[9px] font-bold text-emerald-200 uppercase tracking-widest italic">
+                                                    Resubmisi Terakhir: {registration.resubmitted_at}
                                                 </p>
-                                            ) : null}
+                                            )}
                                         </div>
-                                    ) : null}
+                                    )}
                                 </div>
                             )}
+                        </motion.section>
+
+                        <div className="pt-4 text-center">
+                             <div className="inline-flex items-center justify-center gap-4 font-black text-[9px] uppercase tracking-[0.5em] italic text-emerald-100 opacity-30 hover:opacity-100 transition-opacity duration-1000">
+                                 <Binary size={12} className="text-emerald-500" />
+                                 Audit Verifikasi KKN • {new Date().getFullYear()}
+                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Footer Section */}
-                <div className="bg-slate-50 border border-slate-200 rounded-3xl p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="flex items-center gap-5">
-                        <div className="p-4 bg-white rounded-2xl border border-slate-100 text-emerald-600 shadow-sm">
-                            <ShieldCheck className="w-6 h-6" />
+                {/* FOOTER AUDIT */}
+                <div className="mx-8 mt-8 bg-emerald-50/20 border border-emerald-50 p-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                    <div className="flex items-center gap-6">
+                        <div className="p-4 bg-emerald-600 text-white shadow-xl">
+                            <ShieldCheck size={24} />
                         </div>
                         <div>
-                            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-tight leading-none mb-1">Integritas Pendaftaran</h4>
-                            <p className="text-xs text-slate-500 font-medium">Keputusan verifikasi pendaftaran tercatat secara permanen untuk keperluan audit penjaminan mutu KKN.</p>
+                            <h4 className="text-[11px] font-black text-emerald-950 uppercase italic tracking-widest leading-none mb-2">Integritas Pendaftaran Lapangan</h4>
+                            <p className="text-[9px] text-emerald-400 font-bold uppercase tracking-tight italic">Keputusan verifikasi pendaftaran bersifat final dan tercatat secara permanen dalam log audit mutu.</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3 bg-white px-5 py-2 rounded-xl border border-slate-100 text-[10px] font-bold text-emerald-600 uppercase tracking-widest shadow-sm">
-                        Verification_Audit_OK
+                    <div className="px-6 py-3 bg-white border border-emerald-100 text-[10px] font-black text-emerald-400 uppercase tracking-[0.3em] italic shadow-sm italic tabular-nums">
+                        Log audit #{registration.id} tervalidasi
                     </div>
                 </div>
             </div>
@@ -301,13 +402,29 @@ export default function RegistrationShow({ registration }: Props) {
     );
 }
 
+function GuideList({ title, items }: { title: string; items: string[] }) {
+    return (
+        <div className="rounded-lg border border-emerald-50 bg-emerald-50/10 p-5">
+            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-900 italic">{title}</p>
+            <ul className="mt-4 space-y-2 text-[11px] font-semibold text-emerald-900">
+                {items.map((item) => (
+                    <li key={item} className="flex gap-3">
+                        <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        <span>{item}</span>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+}
+
 function DetailItem({ label, value }: { label: string; value?: string | null }) {
     return (
-        <div className="space-y-2">
-            <dt className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
+        <div className="space-y-3">
+            <dt className="text-[9px] font-black text-emerald-600/40 uppercase tracking-widest italic leading-none border-l-2 border-emerald-50 pl-3">
                 {label}
             </dt>
-            <dd className="text-sm font-bold text-slate-900 uppercase tracking-tight leading-tight">
+            <dd className="text-[11px] font-black text-emerald-950 uppercase italic tracking-tight leading-tight">
                 {value || '-'}
             </dd>
         </div>
@@ -316,9 +433,9 @@ function DetailItem({ label, value }: { label: string; value?: string | null }) 
 
 function SummaryItem({ label, value }: { label: string; value?: string | null }) {
     return (
-        <div className="flex flex-col gap-1">
-            <span className="text-[9px] font-bold text-white/50 uppercase tracking-[0.2em]">{label}</span>
-            <span className="text-sm font-bold uppercase tracking-tight text-white">{value || '-'}</span>
+        <div className="flex flex-col gap-2">
+            <span className="text-[8px] font-black text-emerald-500/40 uppercase tracking-[0.3em] italic">{label}</span>
+            <span className="text-[11px] font-black uppercase italic tracking-tight text-white">{value || '-'}</span>
         </div>
     );
 }

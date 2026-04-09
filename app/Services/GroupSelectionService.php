@@ -74,6 +74,8 @@ class GroupSelectionService
             }
         }
 
+        // FIX C2: Validate capacity with row-level locking on peserta_kkn
+        // The kelompok row is already locked above, so this check is safe from race conditions
         $this->assertGroupCanAcceptStudent($targetGroup, $mahasiswa);
 
         $now = now();
@@ -93,6 +95,11 @@ class GroupSelectionService
         $queue->save();
 
         return $registration->fresh(['kelompok.lokasi', 'kelompok.dpl', 'periode']);
+    }
+
+    public function validateGroupAcceptance(KelompokKkn $group, Mahasiswa $mahasiswa, ?int $excludingRegistrationId = null): void
+    {
+        $this->assertGroupCanAcceptStudent($group, $mahasiswa, $excludingRegistrationId);
     }
 
     public function leaveGroup(PesertaKkn $registration, Mahasiswa $mahasiswa): PesertaKkn
@@ -247,16 +254,28 @@ class GroupSelectionService
         }
     }
 
-    private function assertGroupCanAcceptStudent(KelompokKkn $group, Mahasiswa $mahasiswa): void
+    /**
+     * Assert that a group can accept a student.
+     * 
+     * IMPORTANT: The KelompokKkn row MUST be locked with lockForUpdate() BEFORE calling this method.
+     * This ensures no race conditions occur when checking and updating capacity.
+     * 
+     * FIX C2: This method uses lockForUpdate() on peserta_kkn rows to prevent concurrent modifications.
+     * Since the KelompokKkn row is already locked by the caller, this creates a proper critical section.
+     */
+    private function assertGroupCanAcceptStudent(KelompokKkn $group, Mahasiswa $mahasiswa, ?int $excludingRegistrationId = null): void
     {
         $group->loadMissing([
             'slotTerkunci.fakultas',
             'slotTerkunci.prodi',
         ]);
 
+        // FIX C2: Use lockForUpdate() to prevent race conditions on capacity check
+        // This is safe because the KelompokKkn row is already locked by the caller
         $activeParticipants = PesertaKkn::query()
             ->where('kelompok_id', $group->id)
             ->whereIn('status', self::ACTIVE_REGISTRATION_STATUSES)
+            ->when($excludingRegistrationId, fn ($query, $id) => $query->where('id', '!=', $id))
             ->with([
                 'mahasiswa:id,faculty_id,program_id,gender',
             ])

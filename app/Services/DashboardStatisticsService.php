@@ -123,10 +123,13 @@ class DashboardStatisticsService
             ->whereNull('kelompok_kkn.deleted_at');
 
         if ($facultyId) {
-            $query->join('peserta_kkn', 'nilai_kkn.kelompok_id', '=', 'peserta_kkn.kelompok_id')
-                  ->join('mahasiswa', 'peserta_kkn.mahasiswa_id', '=', 'mahasiswa.id')
-                  ->where('mahasiswa.faculty_id', $facultyId)
-                  ->distinct(); // Avoid double counting if multiple students in same group
+            // Use whereExists instead of join to avoid row multiplication
+            $query->whereExists(function ($sub) use ($facultyId) {
+                $sub->select(DB::raw(1))
+                    ->from('mahasiswa')
+                    ->whereColumn('mahasiswa.user_id', 'nilai_kkn.user_id')
+                    ->where('mahasiswa.faculty_id', $facultyId);
+            });
         }
 
         return $query->groupBy('letter_grade')
@@ -149,7 +152,8 @@ class DashboardStatisticsService
             )
             ->join('dosen', 'kelompok_kkn.dpl_id', '=', 'dosen.id')
             ->leftJoin('peserta_kkn', 'kelompok_kkn.id', '=', 'peserta_kkn.kelompok_id')
-            ->where('kelompok_kkn.period_id', $periodId);
+            ->where('kelompok_kkn.period_id', $periodId)
+            ->whereNotNull('kelompok_kkn.dpl_id');
 
         if ($facultyId) {
             $query->join('mahasiswa', 'peserta_kkn.mahasiswa_id', '=', 'mahasiswa.id')

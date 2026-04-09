@@ -27,7 +27,10 @@ import {
     LayoutDashboard,
     Navigation,
     Flag,
-    History
+    History,
+    Shield,
+    ChevronRight,
+    SearchCheck
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
@@ -101,237 +104,364 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
     };
 
     return (
-        <AppLayout title="Audit Kelayakan Mahasiswa">
-            <Head title="Audit Kelayakan - KKN UIN SAIZU" />
+        <AppLayout title="Komando Audit Kelayakan">
+            <Head title="Audit Kelayakan Mahasiswa | POS-KKN" />
 
-            <div className="space-y-12 pb-32">
-                {/* Clean Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-100 pb-8">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Audit Kelayakan Mahasiswa</h1>
-                        <p className="text-sm text-slate-500 mt-1">Evaluasi parameter akademik dan prasyarat administrasi secara komprehensif.</p>
+            <div className="min-h-screen bg-white italic font-black text-emerald-950">
+                {/* HEADER TACTICAL: OTORITAS AUDIT AKADEMIK */}
+                <div className="bg-white border-b border-emerald-50 px-12 py-16 flex flex-col xl:flex-row xl:items-center justify-between gap-12 sticky top-0 z-20 shadow-sm overflow-hidden relative">
+                    <div className="absolute right-0 top-0 h-full w-1/3 bg-emerald-50/5 -skew-x-12 translate-x-20 pointer-events-none" />
+                    
+                    <div className="space-y-2 relative z-10">
+                        <div className="flex items-center gap-3">
+                            <div className="h-2.5 w-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-300 italic">Academic Eligibility Audit System</span>
+                        </div>
+                        <h1 className="text-4xl font-black text-emerald-950 uppercase tracking-tighter leading-none italic">
+                            AUDIT <span className="text-emerald-500">KELAYAKAN PESERTA</span>
+                        </h1>
+                        <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest mt-3 flex items-center gap-2">
+                             <Fingerprint size={12} className="text-emerald-500" />
+                             Evaluasi komprehensif parameter akademik, kuota SKS, dan validitas prasyarat administratif mahasiswa.
+                        </p>
                     </div>
-                    <button
-                        onClick={handleExport}
-                        className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-md active:scale-95"
-                    >
-                        <Download className="w-4 h-4" />
-                        Ekspor Rekap
-                    </button>
-                </div>
 
-                {/* Metrics */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {[
-                        { label: 'Total Mahasiswa', value: stats.total, icon: Users, color: 'text-slate-600', bg: 'bg-slate-50' },
-                        { label: 'Layak (Eligible)', value: stats.eligible_count, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Belum Layak', value: stats.not_eligible_count, icon: XCircle, color: 'text-rose-600', bg: 'bg-rose-50' },
-                        { label: 'Rasio Kelayakan', value: `${stats.eligibility_rate}%`, icon: TrendingUp, color: 'text-amber-600', bg: 'bg-amber-50' }
-                    ].map((stat, idx) => (
-                        <div key={idx} className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-4">
-                            <div className={clsx("h-10 w-10 rounded-xl flex items-center justify-center", stat.bg)}>
-                                <stat.icon className={clsx("w-5 h-5", stat.color)} />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{stat.label}</p>
-                                <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Filters */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div className="space-y-2">
-                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Periode</label>
-                            <select
-                                value={periodId}
-                                onChange={(e) => setPeriodId(e.target.value)}
-                                className="w-full h-11 bg-white border border-slate-200 rounded-xl px-4 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
-                            >
-                                <option value="">Semua Periode</option>
-                                {periods.map(p => (
-                                    <option key={p.id} value={p.id}>{p.name}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Fakultas</label>
-                            <select
-                                value={facultyId}
-                                onChange={(e) => setFacultyId(e.target.value)}
-                                className="w-full h-11 bg-white border border-slate-200 rounded-xl px-4 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
-                            >
-                                <option value="">Semua Fakultas</option>
-                                {faculties.map(f => (
-                                    <option key={f.id} value={f.id}>{f.name}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Status Kelayakan</label>
-                            <div className="grid grid-cols-2 gap-2 h-11 bg-slate-50 p-1 rounded-xl">
-                                <button
-                                    onClick={() => setShowEligible(true)}
-                                    className={clsx(
-                                        "rounded-lg flex items-center justify-center text-[10px] font-bold uppercase tracking-wider transition-all",
-                                        showEligible ? "bg-white text-emerald-600 shadow-sm border border-emerald-100" : "text-slate-400 hover:text-slate-600"
-                                    )}
-                                >
-                                    Layak
-                                </button>
-                                <button
-                                    onClick={() => setShowEligible(false)}
-                                    className={clsx(
-                                        "rounded-lg flex items-center justify-center text-[10px] font-bold uppercase tracking-wider transition-all",
-                                        !showEligible ? "bg-white text-rose-600 shadow-sm border border-rose-100" : "text-slate-400 hover:text-slate-600"
-                                    )}
-                                >
-                                    Tidak Layak
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="flex items-end">
-                            <button
-                                onClick={handleFilter}
-                                className="w-full h-11 bg-slate-900 text-white rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-emerald-600 transition-all shadow-md active:scale-95"
-                            >
-                                Terapkan Filter
-                            </button>
-                        </div>
+                    <div className="flex items-center gap-6 relative z-10">
+                        <button
+                            onClick={handleExport}
+                            className="h-16 px-10 bg-emerald-950 text-white text-[11px] font-black uppercase tracking-[0.3em] italic flex items-center gap-4 hover:bg-emerald-600 active:scale-95 transition-all shadow-2xl group rounded-none"
+                        >
+                            <Download size={18} className="group-hover:translate-y-0.5 transition-transform" />
+                            EKSPOR REKAPITULASI AUDIT
+                        </button>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="bg-slate-50 border-b border-slate-200">
-                                    <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Identitas Mahasiswa</th>
-                                    <th className="px-6 py-4 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total SKS</th>
-                                    <th className="px-6 py-4 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">GPA / IPK</th>
-                                    <th className="px-6 py-4 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">BTA-PPI</th>
-                                    <th className="px-6 py-4 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">Dokumen</th>
-                                    <th className="px-6 py-4 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">Status Audit</th>
-                                    <th className="px-6 py-4 text-right text-[10px] font-bold text-slate-500 uppercase tracking-wider pr-10">Detail</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-50">
-                                {students.length > 0 ? students.map((student, idx) => (
-                                    <motion.tr 
-                                        key={student.mahasiswa_id}
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: idx * 0.05 }}
-                                        className="group hover:bg-slate-50/50 transition-colors cursor-default"
+                <div className="px-12 py-12 space-y-12">
+                    {/* METRIKS TACTICAL */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                        <StatBox icon={Users} label="Total Registry" value={stats.total} />
+                        <StatBox icon={CheckCircle2} label="Audit Passed" value={stats.eligible_count} color="emerald" />
+                        <StatBox icon={XCircle} label="Audit Failed" value={stats.not_eligible_count} color="rose" />
+                        <StatBox icon={Target} label="Success Rate" value={`${stats.eligibility_rate}%`} color="amber" />
+                    </div>
+
+                    {/* FILTERS TACTICAL STRIP */}
+                    <section className="bg-white border border-emerald-100 shadow-sm overflow-hidden group hover:border-emerald-500 transition-all relative">
+                        <div className="absolute inset-0 bg-emerald-50/10 -skew-x-12 translate-x-full group-hover:translate-x-3/4 transition-transform duration-1000" />
+                        
+                        <div className="px-10 py-6 border-b border-emerald-50 bg-emerald-50/10 flex items-center justify-between relative z-10">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-emerald-950 text-emerald-400">
+                                    <Filter size={18} />
+                                </div>
+                                <div className="space-y-1">
+                                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-950 italic">Instrument Segmentasi Audit</h2>
+                                    <p className="text-[8px] font-bold text-emerald-300 uppercase tracking-widest mt-1">Otoritas Validasi & Kategorisasi Segmental</p>
+                                </div>
+                            </div>
+                            <div className="px-5 py-2 bg-emerald-950 text-emerald-400 text-[10px] font-black uppercase italic tracking-widest shadow-xl">
+                                ANALYTICAL CONTROL FEED
+                            </div>
+                        </div>
+
+                        <div className="p-10 grid grid-cols-1 xl:grid-cols-4 gap-10 relative z-10">
+                            <div className="space-y-3">
+                                <label className="text-[9px] font-black text-emerald-900 uppercase tracking-[0.2em] italic ml-1">Domain Periode Operasional</label>
+                                <select
+                                    value={periodId}
+                                    onChange={(e) => setPeriodId(e.target.value)}
+                                    className="w-full h-16 bg-emerald-50/20 border border-emerald-50 px-6 text-[11px] font-black uppercase tracking-[0.2em] italic text-emerald-950 focus:bg-white focus:border-emerald-500 transition-all outline-none appearance-none"
+                                >
+                                    <option value="">SEMUA PERIODE OPERASIONAL</option>
+                                    {periods.map(p => (
+                                        <option key={p.id} value={p.id}>UNIT: {p.name.toUpperCase()}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="text-[9px] font-black text-emerald-900 uppercase tracking-[0.2em] italic ml-1">Struktur Unit Fakultas</label>
+                                <select
+                                    value={facultyId}
+                                    onChange={(e) => setFacultyId(e.target.value)}
+                                    className="w-full h-16 bg-emerald-50/20 border border-emerald-50 px-6 text-[11px] font-black uppercase tracking-[0.2em] italic text-emerald-950 focus:bg-white focus:border-emerald-500 transition-all outline-none appearance-none"
+                                >
+                                    <option value="">SEMUA UNIT FAKULTAS</option>
+                                    {faculties.map(f => (
+                                        <option key={f.id} value={f.id}>{f.name.toUpperCase()}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="text-[9px] font-black text-emerald-900 uppercase tracking-[0.2em] italic ml-1">Status Kelayakan Audit</label>
+                                <div className="grid grid-cols-2 gap-2 h-16 bg-emerald-50/20 p-2 border border-emerald-50 shadow-inner">
+                                    <button
+                                        onClick={() => setShowEligible(true)}
+                                        className={clsx(
+                                            "flex items-center justify-center text-[10px] font-black uppercase tracking-widest italic transition-all",
+                                            showEligible ? "bg-emerald-950 text-white shadow-xl" : "bg-white text-emerald-100 hover:text-emerald-400"
+                                        )}
                                     >
-                                        <td className="px-6 py-5">
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-slate-600 border border-slate-200">
-                                                    {student.nama.charAt(0)}
-                                                </div>
-                                                <div className="flex flex-col min-w-0">
-                                                    <span className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 truncate max-w-[180px]">{student.nama}</span>
-                                                    <span className="text-[10px] font-semibold text-slate-400">NIM: {student.nim}</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-8 text-center">
-                                            <span className={clsx(
-                                                "text-sm font-black italic tabular-nums",
-                                                student.sks_completed >= 100 ? "text-emerald-600" : "text-rose-600"
-                                            )}>
-                                                {student.sks_completed}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-8 text-center">
-                                            <span className="text-sm font-black text-slate-600 italic tabular-nums">
-                                                {student.gpa ? student.gpa.toFixed(2) : '--.--'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-5 text-center font-bold">
-                                            <Badge variant={student.is_bta_ppi_passed ? 'success' : 'danger'} className="text-[10px] font-bold px-2 py-0.5 border-none shadow-none">
-                                                {student.is_bta_ppi_passed ? 'Lulus' : 'Pending'}
-                                            </Badge>
-                                        </td>
-                                        <td className="px-6 py-8 text-center">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <div className={clsx("p-1.5 rounded-lg shadow-inner", student.has_health_certificate ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600')}>
-                                                    <ShieldCheck className="w-3.5 h-3.5" />
-                                                </div>
-                                                <div className={clsx("p-1.5 rounded-lg shadow-inner", student.has_parent_permission ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600')}>
-                                                    <Binary className="w-3.5 h-3.5" />
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-5 text-center">
-                                            {student.is_eligible ? (
-                                                <span className="inline-flex px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold border border-emerald-100">Layak</span>
-                                            ) : (
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
-                                                    <span className="text-[10px] font-bold text-rose-600">{student.issue_count} Masalah</span>
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-5 text-right pr-6">
-                                            <Link
-                                                href={`/admin/registrations?search=${student.nim}`}
-                                                className="h-8 w-8 bg-white border border-slate-200 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:border-emerald-600 transition-all"
-                                            >
-                                                <Eye className="w-3.5 h-3.5" />
-                                            </Link>
-                                        </td>
-                                    </motion.tr>
-                                )) : (
-                                    <tr>
-                                        <td colSpan={7} className="px-12 py-40 text-center">
-                                            <div className="flex flex-col items-center gap-8 opacity-20">
-                                                <Cpu className="h-20 w-20 text-slate-300" />
-                                                <p className="text-[11px] font-black uppercase tracking-[0.6em] italic text-slate-500 leading-relaxed">SYSTEM_INFO: NO_PERSONNEL_DATA_BUFFERED</p>
-                                            </div>
-                                        </td>
+                                        STATUS_PASSED
+                                    </button>
+                                    <button
+                                        onClick={() => setShowEligible(false)}
+                                        className={clsx(
+                                            "flex items-center justify-center text-[10px] font-black uppercase tracking-widest italic transition-all",
+                                            !showEligible ? "bg-rose-600 text-white shadow-xl" : "bg-white text-emerald-100 hover:text-emerald-400"
+                                        )}
+                                    >
+                                        STATUS_FAILURE
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex items-end">
+                                <button
+                                    onClick={handleFilter}
+                                    className="w-full h-16 bg-emerald-950 hover:bg-emerald-600 text-white font-black text-[11px] uppercase tracking-[0.4em] italic transition-all active:scale-95 flex items-center justify-center gap-4 group/btn shadow-[0_20px_40px_rgba(0,0,0,0.2)]"
+                                >
+                                    EKSEKUSI AUDIT FILTER
+                                    <Zap size={16} className="group-hover/btn:animate-pulse" />
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* DATA GRID TACTICAL */}
+                    <div className="bg-white border border-emerald-100 shadow-sm overflow-hidden group hover:border-emerald-500 transition-all relative">
+                        <div className="absolute right-0 top-0 h-full w-1/4 bg-emerald-50/5 skew-x-12 translate-x-20 pointer-events-none" />
+                        <div className="px-10 py-6 border-b border-emerald-50 bg-emerald-50/10 flex items-center justify-between relative z-10">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-emerald-950 text-emerald-400">
+                                    <ShieldCheck size={18} />
+                                </div>
+                                <div className="space-y-1">
+                                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-950 italic">Output Ledger Kelayakan Pasien</h2>
+                                    <p className="text-[8px] font-bold text-emerald-300 uppercase tracking-widest mt-1">Data Terverifikasi SI-KOMANDO Registry</p>
+                                </div>
+                            </div>
+                            <div className="px-5 py-2 bg-emerald-950 text-emerald-400 text-[10px] font-black uppercase italic tracking-widest shadow-xl tabular-nums">
+                                {pagination.total} ENTITAS TERKUNCI
+                            </div>
+                        </div>
+
+                        <div className="overflow-x-auto relative z-10">
+                            <table className="w-full text-left border-collapse italic">
+                                <thead>
+                                    <tr className="bg-emerald-50/20 border-b border-emerald-100 italic">
+                                        <th className="px-12 py-8 text-[9px] font-black text-emerald-300 uppercase tracking-[0.3em] italic">PERSONEL & IDENTITAS</th>
+                                        <th className="px-8 py-8 text-[9px] font-black text-emerald-300 uppercase tracking-[0.3em] italic text-center">KUOTA SKS</th>
+                                        <th className="px-8 py-8 text-[9px] font-black text-emerald-300 uppercase tracking-[0.3em] italic text-center">METRIK GPA</th>
+                                        <th className="px-8 py-8 text-[9px] font-black text-emerald-300 uppercase tracking-[0.3em] italic text-center">SERTIFIKASI BTA</th>
+                                        <th className="px-8 py-8 text-[9px] font-black text-emerald-300 uppercase tracking-[0.3em] italic text-center">KESAHAN DOKUMEN</th>
+                                        <th className="px-10 py-8 text-[9px] font-black text-emerald-300 uppercase tracking-[0.3em] italic text-center">AUDIT STATUS</th>
+                                        <th className="px-12 py-8 text-right text-[9px] font-black text-emerald-300 uppercase tracking-[0.3em] italic pr-12">OPERATIONAL COMMANDS</th>
                                     </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                </thead>
+                                <tbody className="divide-y divide-emerald-50/50 text-[12px]">
+                                    {students.length > 0 ? students.map((student, idx) => (
+                                        <tr key={student.mahasiswa_id} className="group/row hover:bg-emerald-50/30 transition-all duration-300">
+                                            <td className="px-12 py-8 whitespace-nowrap">
+                                                <div className="flex items-center gap-6 group-hover/row:translate-x-2 transition-transform duration-300">
+                                                    <div className="h-14 w-14 bg-emerald-950 text-emerald-400 flex items-center justify-center font-black text-lg italic shadow-xl group-hover/row:bg-emerald-600 group-hover/row:text-white transition-all duration-500 uppercase">
+                                                        {student.nama.charAt(0)}
+                                                    </div>
+                                                    <div className="flex flex-col gap-1.5">
+                                                        <span className="text-[13px] font-black text-emerald-950 uppercase italic tracking-widest leading-none group-hover/row:text-emerald-600 transition-colors uppercase">
+                                                            {student.nama}
+                                                        </span>
+                                                        <div className="flex items-center gap-3">
+                                                            <Fingerprint size={10} className="text-emerald-100" />
+                                                            <span className="text-[9px] text-emerald-100 font-bold uppercase tracking-widest italic leading-none">NIM. {student.nim}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-8 text-center">
+                                                <div className="flex flex-col items-center gap-1.5">
+                                                    <span className={clsx(
+                                                        "px-5 py-2 text-[11px] font-black italic tabular-nums border group-hover/row:shadow-md transition-all",
+                                                        student.sks_completed >= 100 ? "text-emerald-950 bg-emerald-50 border-emerald-100" : "text-rose-600 bg-rose-50 border-rose-100"
+                                                    )}>
+                                                        {student.sks_completed} SKS
+                                                    </span>
+                                                    <span className="text-[7.5px] font-black text-emerald-200 uppercase tracking-widest italic">CAPACITY_SCORE</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-8 text-center text-[13px] font-black text-emerald-950 tabular-nums">
+                                                <div className="flex flex-col items-center gap-1">
+                                                    {student.gpa ? student.gpa.toFixed(2) : '--.--'}
+                                                    <div className="h-0.5 w-6 bg-emerald-50" />
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-8 text-center">
+                                                <div className="flex justify-center">
+                                                    <div className={clsx(
+                                                        "px-5 py-2 text-[9px] font-black uppercase tracking-[0.2em] italic border shadow-sm transition-all",
+                                                        student.is_bta_ppi_passed 
+                                                            ? "bg-emerald-950 text-white border-emerald-900" 
+                                                            : "bg-white text-emerald-100 border-emerald-50 opacity-40 shadow-none border-dashed"
+                                                    )}>
+                                                        {student.is_bta_ppi_passed ? 'CERTIFIED' : 'PENDING'}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-8 text-center">
+                                                <div className="flex items-center justify-center gap-3">
+                                                    <DocStatus active={student.has_health_certificate} icon={Shield} />
+                                                    <DocStatus active={student.has_parent_permission} icon={Binary} />
+                                                </div>
+                                            </td>
+                                            <td className="px-10 py-8 text-center">
+                                                <div className="flex justify-center">
+                                                    {student.is_eligible ? (
+                                                        <div className="px-6 py-2.5 bg-emerald-50 border border-emerald-100 text-emerald-600 text-[10px] font-black uppercase tracking-[0.3em] italic flex items-center gap-3 shadow-sm group-hover/row:shadow-emerald-500/10 transition-all">
+                                                            <CheckCircle2 size={16} className="animate-pulse" />
+                                                            ELIGIBLE
+                                                        </div>
+                                                    ) : (
+                                                        <div className="px-6 py-2.5 bg-rose-50 border border-rose-100 text-rose-600 text-[10px] font-black uppercase tracking-[0.3em] italic flex items-center gap-3 shadow-sm group-hover/row:bg-rose-100 transition-all">
+                                                            <AlertTriangle size={16} />
+                                                            {student.issue_count} ISSUES
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-12 py-8 text-right pr-12">
+                                                <div className="flex justify-end gap-3 translate-x-4 opacity-0 group-hover/row:translate-x-0 group-hover/row:opacity-100 transition-all duration-300">
+                                                    <Link
+                                                        href={`/admin/mahasiswa/${student.mahasiswa_id}`}
+                                                        className="h-12 w-12 bg-white border border-emerald-50 text-emerald-100 hover:text-emerald-950 hover:border-emerald-500 flex items-center justify-center transition-all shadow-sm active:scale-95 group/btn"
+                                                        title="VIEW PROFILE"
+                                                    >
+                                                        <Eye size={18} className="group-hover/btn:scale-110 transition-transform" />
+                                                    </Link>
+                                                    <Link
+                                                        href={`/admin/registrations?search=${student.nim}`}
+                                                        className="h-12 px-8 bg-white border border-emerald-50 text-emerald-950 hover:bg-emerald-50 text-[10px] font-black uppercase tracking-widest flex items-center gap-4 italic transition-all active:scale-95 shadow-sm"
+                                                    >
+                                                        HISTORY
+                                                        <History size={16} className="text-emerald-300" />
+                                                    </Link>
+                                                    <button className="h-12 w-12 bg-emerald-950 text-white border border-emerald-900 flex items-center justify-center shadow-lg active:scale-95 hover:bg-emerald-600 transition-all">
+                                                        <ChevronRight size={20} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )) : (
+                                        <tr>
+                                            <td colSpan={7} className="px-12 py-56 text-center opacity-20">
+                                                <div className="flex flex-col items-center gap-8">
+                                                    <Cpu size={80} className="text-emerald-950" strokeWidth={0.5} />
+                                                    <p className="text-[12px] font-black uppercase tracking-[0.6em] italic text-emerald-950">DATABASE REGISTRY NIHIL</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
 
-                {/* Info Center */}
-                <div className="p-8 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <div className="flex items-center gap-3">
-                        <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                        <h4 className="text-sm font-bold text-slate-900">Parameter Kelayakan Otomatis</h4>
+                        <div className="px-12 py-10 border-t border-emerald-50 flex flex-col md:flex-row items-center justify-between bg-emerald-50/10 gap-8 italic mt-1 relative z-10">
+                            <div className="flex items-center gap-6">
+                                <div className="p-3 bg-emerald-950 shadow-lg">
+                                    <Database size={16} className="text-emerald-400" />
+                                </div>
+                                <div className="space-y-1">
+                                    <span className="text-[10px] font-black text-emerald-950 uppercase tracking-[0.3em]">Operational Auditor Feed</span>
+                                    <p className="text-[8px] font-bold text-emerald-300 uppercase tracking-widest font-black italic">Total Entitas Audit: {pagination.total} Personel</p>
+                                </div>
+                            </div>
+                             <Pagination
+                                meta={{
+                                    current_page: pagination.current_page,
+                                    last_page: pagination.last_page,
+                                    per_page: pagination.per_page,
+                                    total: pagination.total,
+                                    from: (pagination.current_page - 1) * pagination.per_page + 1,
+                                    to: Math.min(pagination.current_page * pagination.per_page, pagination.total),
+                                    links: [],
+                                    path: '/admin/cek-kelayakan',
+                                }}
+                            />
+                        </div>
                     </div>
-                    <p className="text-sm text-slate-500 font-medium leading-relaxed max-w-4xl">
-                        Ambang batas minimal SKS adalah 100 dengan status lulus BTA-PPI dan kelengkapan dokumen pendukung. Data diverifikasi secara real-time berdasarkan sinkronisasi SI-pusat UIN SAIZU.
-                    </p>
-                </div>
 
-                <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-4">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                        Total Data: <span className="text-slate-900">{pagination.total}</span> Mahasiswa
+                    {/* SECURITY FOOTER MONITOR TACTICAL */}
+                    <div className="bg-emerald-950 p-16 text-white shadow-3xl relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-emerald-500/5 -skew-x-12 translate-x-1/2 group-hover:translate-x-1/3 transition-transform duration-1000" />
+                        <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-16">
+                             <div className="space-y-8 flex-1">
+                                 <div className="flex items-center gap-8">
+                                    <div className="p-6 bg-emerald-500 shadow-[0_0_50px_rgba(16,185,129,0.3)] rotate-3 group-hover:rotate-0 transition-all duration-700">
+                                        <ShieldCheck className="h-10 w-10 text-white animate-pulse" />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <h4 className="text-2xl font-black text-white italic tracking-[0.4em] uppercase leading-none">Otoritas Validasi Kelayakan</h4>
+                                        <p className="text-[11px] font-bold text-emerald-400/60 uppercase tracking-widest italic leading-relaxed max-w-3xl">
+                                            Audit kelayakan menjamin integritas peserta pendaftaran KKN berdasarkan filter parameter akademik universitas. 
+                                            Dataset ini disinkronkan secara real-time dengan sistem akademik pusat untuk mencegah anomali data administratif mahasiswa.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                             
+                            <div className="flex flex-col items-center xl:items-end gap-6 text-emerald-500 font-black text-[11px] uppercase tracking-[0.5em] italic opacity-30 hover:opacity-100 transition-opacity">
+                                 <div className="flex items-center gap-4">
+                                     <Fingerprint className="w-6 h-6" />
+                                     <span className="text-xl tracking-tighter italic">AUDIT_VERIFIED_STAMP_{new Date().getFullYear()}</span>
+                                 </div>
+                                 <span className="text-[8px] tracking-[0.8em] opacity-40">POS-KKN CENTRAL COMMAND CENTER</span>
+                            </div>
+                        </div>
                     </div>
-                    {pagination.last_page > 1 && (
-                        <Pagination
-                            meta={{
-                                current_page: pagination.current_page,
-                                last_page: pagination.last_page,
-                                per_page: pagination.per_page,
-                                total: pagination.total,
-                                from: (pagination.current_page - 1) * pagination.per_page + 1,
-                                to: Math.min(pagination.current_page * pagination.per_page, pagination.total),
-                                links: [],
-                            }}
-                        />
-                    )}
                 </div>
             </div>
         </AppLayout>
+    );
+}
+
+function StatBox({ icon: Icon, label, value, color = "emerald" }: { icon: React.ElementType; label: string; value: string | number; color?: "emerald" | "rose" | "amber" }) {
+    const colors = {
+        emerald: "text-emerald-500 bg-emerald-500",
+        rose: "text-rose-500 bg-rose-500",
+        amber: "text-amber-500 bg-amber-500"
+    };
+
+    return (
+        <div className="bg-white border border-emerald-100 p-8 shadow-sm hover:border-emerald-500 transition-all group relative overflow-hidden">
+            <div className={clsx("absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity", colors[color].split(' ')[0])}>
+                <Icon size={48} />
+            </div>
+            <div className="flex items-center justify-between gap-4 mb-6">
+                <div className={clsx("p-2.5 text-white shadow-lg", colors[color].split(' ')[1])}>
+                    <Icon size={18} strokeWidth={2.5} />
+                </div>
+                <div className={clsx("px-2 py-1 text-[8px] font-black uppercase tracking-widest italic border italic", color === 'rose' ? 'bg-rose-50 text-rose-600 border-rose-100' : (color === 'amber' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'))}>
+                    {label.toUpperCase()}
+                </div>
+            </div>
+            <div className="space-y-1">
+                <p className="text-4xl font-black tracking-tighter text-emerald-950 uppercase italic leading-none tabular-nums">
+                    {value}
+                </p>
+                <div className={clsx("h-0.5 w-12 mt-3", colors[color].split(' ')[1])} />
+            </div>
+        </div>
+    );
+}
+
+function DocStatus({ active, icon: Icon }: { active: boolean; icon: React.ElementType }) {
+    return (
+        <div className={clsx(
+            "p-3 border transition-all", 
+            active ? 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm' : 'bg-white text-emerald-100 border-emerald-50 opacity-40 shadow-none border-dashed'
+        )}>
+            <Icon size={14} strokeWidth={3} />
+        </div>
     );
 }

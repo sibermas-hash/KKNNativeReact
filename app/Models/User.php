@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\KKN\Fakultas;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -40,6 +39,10 @@ class User extends Authenticatable
         'avatar',
         'phone',
         'address',
+        'domicile_village_name',
+        'domicile_district_name',
+        'domicile_regency_name',
+        'address_verified_at',
         'faculty_id',
     ];
 
@@ -65,6 +68,7 @@ class User extends Authenticatable
             'is_active' => 'boolean',
             'must_change_password' => 'boolean',
             'password_changed_at' => 'datetime',
+            'address_verified_at' => 'datetime',
             'faculty_id' => 'integer',
             'password' => 'hashed',
         ];

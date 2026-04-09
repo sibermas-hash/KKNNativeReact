@@ -128,6 +128,34 @@ class FacultyAdminRekapNilaiTest extends TestCase
             ->assertRedirect('/admin/rekap-nilai');
     }
 
+    public function test_superadmin_can_export_rekap_using_active_period_when_filter_is_omitted(): void
+    {
+        $faculty = Fakultas::factory()->create(['nama' => 'Fakultas Ekspor']);
+        $program = Prodi::factory()->create(['faculty_id' => $faculty->id, 'nama' => 'Ekspor Data']);
+        $period = Periode::factory()->active()->create(['name' => 'Periode Ekspor Aktif']);
+
+        $this->createScoreRecord($faculty, $program, $period, 'Mahasiswa Ekspor', '240099');
+
+        $this->actingAs($this->superadmin)
+            ->get('/admin/rekap-nilai/ekspor')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    }
+
+    public function test_superadmin_can_export_ledger_using_active_period_when_filter_is_omitted(): void
+    {
+        $faculty = Fakultas::factory()->create(['nama' => 'Fakultas Ledger']);
+        $program = Prodi::factory()->create(['faculty_id' => $faculty->id, 'nama' => 'Ledger Data']);
+        $period = Periode::factory()->active()->create(['name' => 'Periode Ledger Aktif']);
+
+        $this->createScoreRecord($faculty, $program, $period, 'Mahasiswa Ledger', '240199');
+
+        $this->actingAs($this->superadmin)
+            ->get('/admin/rekap-nilai/ekspor-ledger')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    }
+
     private function createScoreRecord(
         Fakultas $faculty,
         Prodi $program,

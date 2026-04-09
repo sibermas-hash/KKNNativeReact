@@ -1,4 +1,5 @@
 import { Link, Head, usePage } from '@inertiajs/react';
+import { ErrorBoundary } from '@/Components/ErrorBoundary';
 import AppLayout from '@/Layouts/AppLayout';
 import {
     Calendar,
@@ -100,8 +101,9 @@ export default function StudentDashboard({ student, registration, dailyReportCou
     const currentPhase = activePhaseIndex !== -1 ? phases[activePhaseIndex] : (phases.every(p => p.isCompleted) ? phases[5] : phases[0]);
 
     return (
-        <AppLayout>
-            <Head title="Portal Mahasiswa | KKN UIN Saizu" />
+        <ErrorBoundary>
+            <AppLayout>
+                <Head title="Portal Mahasiswa | KKN UIN Saizu" />
             
             <div className="space-y-10 pb-20">
                 {/* --- OPERATIONAL HEADER (PREMIUM WHITE) --- */}
@@ -402,7 +404,7 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                                             </div>
                                             <a 
                                                 href={`/certificates/${grade.id}/download`}
-                                                target="_blank"
+                                                target="_blank" rel="noopener noreferrer"
                                                 className="relative z-10 px-10 py-5 bg-white text-emerald-600 rounded-2xl font-black text-xs uppercase tracking-[0.3em] hover:bg-slate-900 hover:text-white transition-all shadow-xl active:scale-95 flex items-center gap-4"
                                             >
                                                 Unduh Sertifikat
@@ -497,7 +499,8 @@ export default function StudentDashboard({ student, registration, dailyReportCou
                     </p>
                 </div>
             </div>
-        </AppLayout>
+            </AppLayout>
+        </ErrorBoundary>
     );
 }
 

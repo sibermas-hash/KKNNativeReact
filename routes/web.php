@@ -60,7 +60,12 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::get('grade-reports/ekspor-ledger', [Admin\RekapNilaiController::class , 'exportLedger'])->name('grade-reports.ekspor-ledger');
         Route::patch('grade-reports/{score}/finalisasi', [Admin\RekapNilaiController::class , 'finalize'])->name('grade-reports.finalisasi');
         Route::post('grade-reports/finalisasi-massal', [Admin\RekapNilaiController::class , 'finalizeMass'])->name('grade-reports.finalisasi-massal');
-        
+        Route::get('rekap-nilai', [Admin\RekapNilaiController::class , 'index'])->name('rekap-nilai.index');
+        Route::get('rekap-nilai/ekspor', [Admin\RekapNilaiController::class , 'export'])->name('rekap-nilai.ekspor');
+        Route::get('rekap-nilai/ekspor-ledger', [Admin\RekapNilaiController::class , 'exportLedger'])->name('rekap-nilai.ekspor-ledger');
+        Route::patch('rekap-nilai/{score}/finalisasi', [Admin\RekapNilaiController::class , 'finalize'])->name('rekap-nilai.finalisasi');
+        Route::post('rekap-nilai/finalisasi-massal', [Admin\RekapNilaiController::class , 'finalizeMass'])->name('rekap-nilai.finalisasi-massal');
+
         // Yudisium
         Route::get('yudisium', [Admin\YudisiumController::class, 'index'])->name('yudisium.index');
         Route::post('yudisium/proses', [Admin\YudisiumController::class, 'proses'])->name('yudisium.proses');
@@ -99,18 +104,39 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::resource('periode', Admin\PeriodeController::class)
             ->only(['index', 'store', 'update', 'destroy'])
             ->parameters(['periode' => 'periode']);
+        Route::get('periods', [Admin\PeriodeController::class , 'index'])->name('periods.index');
+        Route::post('periods', [Admin\PeriodeController::class , 'store'])->name('periods.store');
+        Route::put('periods/{periode}', [Admin\PeriodeController::class , 'update'])->name('periods.update');
+        Route::patch('periods/{periode}', [Admin\PeriodeController::class , 'update']);
+        Route::delete('periods/{periode}', [Admin\PeriodeController::class , 'destroy'])->name('periods.destroy');
+        Route::post('periods/{periode}/duplicate', [Admin\PeriodeController::class , 'duplicate'])->name('periods.duplicate');
         
         Route::resource('tahun-akademik', Admin\TahunAkademikController::class)
             ->only(['index', 'store', 'update', 'destroy'])
             ->parameters(['tahun-akademik' => 'tahunAkademik']);
+        Route::get('academic-years', [Admin\TahunAkademikController::class , 'index'])->name('academic-years.index');
+        Route::post('academic-years', [Admin\TahunAkademikController::class , 'store'])->name('academic-years.store');
+        Route::put('academic-years/{tahunAkademik}', [Admin\TahunAkademikController::class , 'update'])->name('academic-years.update');
+        Route::patch('academic-years/{tahunAkademik}', [Admin\TahunAkademikController::class , 'update']);
+        Route::delete('academic-years/{tahunAkademik}', [Admin\TahunAkademikController::class , 'destroy'])->name('academic-years.destroy');
 
         // Faculties & Programs
         Route::resource('fakultas', Admin\FakultasController::class)
             ->only(['index', 'store', 'update', 'destroy'])
             ->parameters(['fakultas' => 'fakultas']);
+        Route::get('faculties', [Admin\FakultasController::class , 'index'])->name('faculties.index');
+        Route::post('faculties', [Admin\FakultasController::class , 'store'])->name('faculties.store');
+        Route::put('faculties/{fakultas}', [Admin\FakultasController::class , 'update'])->name('faculties.update');
+        Route::patch('faculties/{fakultas}', [Admin\FakultasController::class , 'update']);
+        Route::delete('faculties/{fakultas}', [Admin\FakultasController::class , 'destroy'])->name('faculties.destroy');
         Route::resource('prodi', Admin\ProdiController::class)
             ->only(['index', 'store', 'update', 'destroy'])
             ->parameters(['prodi' => 'prodi']);
+        Route::get('programs', [Admin\ProdiController::class , 'index'])->name('programs.index');
+        Route::post('programs', [Admin\ProdiController::class , 'store'])->name('programs.store');
+        Route::put('programs/{prodi}', [Admin\ProdiController::class , 'update'])->name('programs.update');
+        Route::patch('programs/{prodi}', [Admin\ProdiController::class , 'update']);
+        Route::delete('programs/{prodi}', [Admin\ProdiController::class , 'destroy'])->name('programs.destroy');
 
         // Requirements
         Route::patch('kkn-requirements/{requirement}/toggle', [Admin\KknRequirementController::class, 'toggle'])->name('kkn-requirements.toggle');
@@ -123,6 +149,12 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::resource('lokasi', Admin\LokasiController::class)
             ->only(['index', 'store', 'update', 'destroy'])
             ->parameters(['lokasi' => 'lokasi']);
+        Route::get('locations', [Admin\LokasiController::class , 'index'])->name('locations.index');
+        Route::post('locations', [Admin\LokasiController::class , 'store'])->name('locations.store');
+        Route::post('locations/import', [Admin\LokasiController::class , 'import'])->name('locations.import');
+        Route::put('locations/{lokasi}', [Admin\LokasiController::class , 'update'])->name('locations.update');
+        Route::patch('locations/{lokasi}', [Admin\LokasiController::class , 'update']);
+        Route::delete('locations/{lokasi}', [Admin\LokasiController::class , 'destroy'])->name('locations.destroy');
 
         // User & Staff Management
         Route::get('pengguna', [Admin\UserController::class , 'index'])->name('pengguna.index');
@@ -140,6 +172,12 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::get('dosen/sinkron', [Admin\DplSyncController::class, 'index'])->name('dpl.sinkron');
         Route::post('dosen/sinkron', [Admin\DplSyncController::class, 'sync'])->name('dpl.sinkron.store');
         Route::get('dosen/penugasan', [Admin\DplAssignmentController::class , 'index'])->name('dpl.penugasan');
+        Route::get('dpl/sync', [Admin\DplSyncController::class, 'index'])->name('dpl.sync');
+        Route::post('dpl/sync', [Admin\DplSyncController::class, 'sync'])->name('dpl.sync.store');
+        Route::get('dpl/assignment', [Admin\DplAssignmentController::class , 'index'])->name('dpl.assignment');
+        Route::post('dpl/assign-period', [Admin\DplAssignmentController::class , 'assignToPeriod'])->name('dpl.assign-period');
+        Route::post('dpl/assign-group/{group}', [Admin\DplAssignmentController::class , 'assignToGroup'])->name('dpl.assign-group');
+        Route::post('dpl/assign-district', [Admin\DplAssignmentController::class , 'assignDistrictCoordinator'])->name('dpl.assign-district');
         Route::post('dosen/tugaskan-periode', [Admin\DplAssignmentController::class , 'assignToPeriod'])->name('dpl.tugaskan-periode');
         Route::post('dosen/tugaskan-kelompok/{group}', [Admin\DplAssignmentController::class , 'assignToGroup'])->name('dpl.tugaskan-kelompok');
         Route::post('dosen/tugaskan-wilayah', [Admin\DplAssignmentController::class , 'assignDistrictCoordinator'])->name('dpl.tugaskan-wilayah');
@@ -179,6 +217,8 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::post('nilai', [Admin\GradeController::class , 'store'])->name('nilai.store');
         Route::get('konfigurasi-penilaian', [Admin\KonfigurasiPenilaianController::class , 'index'])->name('konfigurasi-penilaian.index');
         Route::post('konfigurasi-penilaian', [Admin\KonfigurasiPenilaianController::class , 'update'])->name('konfigurasi-penilaian.update');
+        Route::get('grading-settings', [Admin\KonfigurasiPenilaianController::class , 'index']);
+        Route::post('grading-settings', [Admin\KonfigurasiPenilaianController::class , 'update']);
 
         // Settings
         Route::prefix('pengaturan')->name('pengaturan.')->group(function () {
@@ -199,6 +239,13 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::post('workshop/{workshop}/attendance', [Admin\WorkshopController::class , 'bulkAttendance'])->name('workshop.bulk-attendance');
         Route::post('workshop/{workshop}/import-absensi', [Admin\WorkshopController::class , 'importAttendance'])->name('workshop.import-absensi');
         Route::post('workshop/{workshop}/preview-absensi', [Admin\WorkshopController::class , 'previewAttendance'])->name('workshop.preview-absensi');
+        Route::get('workshops', [Admin\WorkshopController::class , 'index'])->name('workshops.index');
+        Route::post('workshops', [Admin\WorkshopController::class , 'store'])->name('workshops.store');
+        Route::patch('workshops/{workshop}', [Admin\WorkshopController::class , 'update'])->name('workshops.update');
+        Route::patch('workshops/{workshop}/cancel', [Admin\WorkshopController::class , 'destroy'])->name('workshops.cancel');
+        Route::post('workshops/{workshop}/attendance', [Admin\WorkshopController::class , 'bulkAttendance'])->name('workshops.mark-attendance');
+        Route::post('workshops/{workshop}/import-absensi', [Admin\WorkshopController::class , 'importAttendance'])->name('workshops.import-absensi');
+        Route::post('workshops/{workshop}/preview-absensi', [Admin\WorkshopController::class , 'previewAttendance'])->name('workshops.preview-absensi');
         Route::get('api/available-dpl', [Admin\DplAssignmentController::class , 'getAvailableDpl'])->name('api.available-dpl');
         Route::get('api/transfer-targets', [Admin\StudentTransferController::class , 'getTransferTargets'])->name('api.transfer-targets');
     });
@@ -209,9 +256,11 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
     Route::middleware(['role:superadmin|dpl|admin'])->prefix('admin')->name('admin.')->group(function () {
         // Laporan Aktivitas
         Route::get('laporan', [App\Http\Controllers\ReportController::class , 'index'])->name('laporan.index');
+        Route::get('reports', [App\Http\Controllers\ReportController::class , 'index'])->name('reports.index');
         Route::get('laporan/harian/ekspor-pdf/{studentId}', [App\Http\Controllers\ReportExportController::class , 'downloadStudentDailyReports'])->name('laporan.harian.export-pdf');
         Route::get('auditor-aktivitas', [Admin\ActivityAuditController::class , 'index'])->name('activity-audit.index');
         Route::get('laporan/{report}/unduh', [App\Http\Controllers\ReportController::class , 'download'])->name('laporan.unduh');
+        Route::get('reports/{report}/download', [App\Http\Controllers\ReportController::class , 'download'])->name('reports.download');
 
         // Grade Generator & Exports
         Route::get('generator-nilai', [Admin\GeneratorNilaiController::class , 'index'])->name('generator-nilai.index');
@@ -296,6 +345,8 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         Route::post('laporan-umum/unggah', [App\Http\Controllers\ReportController::class , 'upload'])->name('reports.upload');
         Route::get('workshops', [App\Http\Controllers\WorkshopController::class , 'index'])->name('workshops.index');
         Route::post('workshops/{workshop}/daftar', [App\Http\Controllers\WorkshopController::class , 'register'])->name('workshops.register');
+        Route::get('workshop', fn () => redirect()->route('student.workshops.index'));
+        Route::post('workshop/{workshop}/daftar', [App\Http\Controllers\WorkshopController::class , 'register']);
     });
 
     // protected global routes (with role-based access)

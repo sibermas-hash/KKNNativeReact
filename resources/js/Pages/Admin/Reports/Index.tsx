@@ -248,7 +248,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
                          <div className="px-8 py-4 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] italic shadow-xl shadow-emerald-900/50 group-hover/footer:scale-105 transition-transform">
                              Arsip aktif
                          </div>
-                         <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic opacity-40">ID sesi: {Math.random().toString(36).substring(7).toUpperCase()}</p>
+                         <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic opacity-40">Arsip Dokumentasi Kegiatan KKN</p>
                     </div>
                 </div>
             </div>

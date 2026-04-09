@@ -124,7 +124,7 @@ export default function DplGroupShow({ group }: Props) {
     {member.nilai?.is_finalized && (
         <a 
             href={`/certificates/${member.nilai.id}/download`}
-            target="_blank"
+            target="_blank" rel="noopener noreferrer"
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:text-emerald-600 hover:border-emerald-600 transition-all shadow-sm"
             title="Unduh Sertifikat"
         >
@@ -181,12 +181,10 @@ export default function DplGroupShow({ group }: Props) {
  {group.posko.updated_at ? <p>Diperbarui: {group.posko.updated_at}</p> : null}
  </div>
  <a
- href={`https://www.google.com/maps?q=${group.posko.latitude},${group.posko.longitude}`}
- target="_blank"
- rel="noreferrer"
- className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-primary/90"
- >
- Buka lokasi di Google Maps
+     href={`https://www.google.com/maps?q=${group.posko.latitude},${group.posko.longitude}`}
+     target="_blank" rel="noopener noreferrer"
+     className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-primary/90"
+ > Buka lokasi di Google Maps
  </a>
  </div>
  ) : (

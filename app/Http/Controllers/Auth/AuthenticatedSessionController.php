@@ -90,7 +90,14 @@ class AuthenticatedSessionController extends Controller
             $request->session()->regenerateToken();
 
             throw $e;
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            \Log::error('Authentication error during login attempt', [
+                'email' => $request->email,
+                'ip' => $request->ip(),
+                'error' => $e->getMessage(),
+                'trace' => config('app.debug') ? $e->getTraceAsString() : null,
+            ]);
+            
             $this->refreshCaptcha($request);
 
             // Regenerate CSRF token on unexpected error

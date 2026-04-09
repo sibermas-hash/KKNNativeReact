@@ -1,4 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
+import { ErrorBoundary } from '@/Components/ErrorBoundary';
 import { useEffect, useMemo, type FormEvent } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { FormInput } from '@/Components/ui';
@@ -180,11 +181,12 @@ export default function Register({
         : 0;
 
     return (
-        <AppLayout title="Pendaftaran KKN">
-            <Head title="Pendaftaran KKN" />
+        <ErrorBoundary>
+            <AppLayout title="Pendaftaran KKN">
+                <Head title="Pendaftaran KKN" />
 
-            <div className="mx-auto max-w-5xl space-y-6">
-                <section className="rounded-lg border border-slate-200 bg-white p-8">
+                <div className="mx-auto max-w-5xl space-y-6">
+                    <section className="rounded-lg border border-slate-200 bg-white p-8">
                     <h1 className="text-2xl font-semibold text-slate-900">Pendaftaran KKN</h1>
                     <p className="mt-2 text-sm text-slate-600">
                         Portal ini digunakan untuk pengajuan mandiri KKN Reguler. Program khusus
@@ -517,7 +519,8 @@ export default function Register({
                     </form>
                 )}
             </div>
-        </AppLayout>
+            </AppLayout>
+        </ErrorBoundary>
     );
 }
 

@@ -13,7 +13,8 @@ import {
 import PublicLayout from '@/Layouts/PublicLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import Pagination, { PageInfo, PaginationMeta } from '@/Components/ui/Pagination';
+import type { PaginationMeta } from '@/Components/ui/Pagination';
+import Pagination, { PageInfo } from '@/Components/ui/Pagination';
 
 interface Location {
     id: number;

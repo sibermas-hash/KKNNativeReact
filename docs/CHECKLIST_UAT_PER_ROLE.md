@@ -4,6 +4,7 @@ Dokumen ini dipakai untuk uji terima sistem dari sudut pandang pengguna nyata. J
 
 Rujukan tambahan untuk file ekspor dan template:
 - lihat [Panduan Output Operasional](/Users/macm4/Documents/Projek/KKN/kknuinsaizu/docs/PANDUAN_OUTPUT_OPERASIONAL.md)
+- lihat [Checklist Readiness Produksi](/Users/macm4/Documents/Projek/KKN/kknuinsaizu/docs/CHECKLIST_READINESS_PRODUKSI.md)
 
 ## Prasyarat Umum
 

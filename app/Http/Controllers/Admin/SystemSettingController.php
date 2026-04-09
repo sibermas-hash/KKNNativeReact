@@ -151,6 +151,20 @@ class SystemSettingController extends Controller
                 'type' => 'password',
                 'group' => 'master_api',
             ],
+            [
+                'config_key' => 'support_contact_label',
+                'label' => 'Label Kontak Bantuan Login',
+                'value' => 'Admin KKN / LPPM',
+                'type' => 'text',
+                'group' => 'general',
+            ],
+            [
+                'config_key' => 'support_whatsapp_number',
+                'label' => 'Nomor WhatsApp Bantuan Login',
+                'value' => env('SUPPORT_WHATSAPP_NUMBER'),
+                'type' => 'text',
+                'group' => 'general',
+            ],
             // AI Settings Group
             [
                 'config_key' => 'gemini_api_key',
@@ -332,6 +346,8 @@ class SystemSettingController extends Controller
             'group_male_target_ratio' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'daily_report_geo_radius_meters' => ['nullable', 'integer', 'min:100', 'max:50000'],
             'daily_report_geo_max_accuracy_meters' => ['nullable', 'integer', 'min:10', 'max:5000'],
+            'support_contact_label' => ['nullable', 'string', 'max:100'],
+            'support_whatsapp_number' => ['nullable', 'string', 'max:30'],
         ];
 
         if (! isset($rules[$setting->config_key])) {

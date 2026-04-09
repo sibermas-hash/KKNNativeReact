@@ -73,6 +73,10 @@ const GROUP_DESCRIPTIONS: Record<string, string> = {
 };
 
 const SETTING_HELPERS: Record<string, string> = {
+    support_contact_label:
+        'Label ini tampil pada halaman lupa kata sandi sebagai nama pihak yang harus dihubungi pengguna.',
+    support_whatsapp_number:
+        'Isi dengan nomor WhatsApp admin atau LPPM. Sistem akan otomatis membentuk tautan WhatsApp untuk bantuan reset password.',
     daily_report_geo_radius_meters:
         'Radius operasional (meter) dari titik koordinat posko untuk pengiriman laporan.',
     daily_report_geo_max_accuracy_meters:

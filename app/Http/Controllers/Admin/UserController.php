@@ -269,7 +269,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'username' => ['required', 'string', 'max:50', 'unique:users,username'],
             'name' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'email', 'unique:users,email'],
+            'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()->symbols()],
             'role' => ['required', 'in:superadmin,faculty_admin,dpl,student'],
             // Student fields

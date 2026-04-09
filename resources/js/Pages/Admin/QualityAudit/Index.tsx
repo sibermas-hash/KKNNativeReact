@@ -13,7 +13,7 @@ import {
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 
-import { PaginationMeta } from '@/Components/ui/Pagination';
+import type { PaginationMeta } from '@/Components/ui/Pagination';
 
 interface AuditedReport {
     id: number;

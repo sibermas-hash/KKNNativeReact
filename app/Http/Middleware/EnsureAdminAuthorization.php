@@ -132,6 +132,9 @@ class EnsureAdminAuthorization
         }
 
         $controller = $route->getController();
+        if (!$controller) {
+            return $next($request);
+        }
         $controllerClass = get_class($controller);
 
         // Only apply to admin controllers

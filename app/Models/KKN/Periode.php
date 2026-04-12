@@ -3,6 +3,7 @@
 namespace App\Models\KKN;
 
 use App\Enums\KknType;
+use App\Services\KKN\PeriodeGovernanceService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,17 +33,18 @@ class Periode extends Model
     public const PLACEMENT_MODE_HOST_DEFINED = 'host_defined';
     public const PLACEMENT_MODE_PROPOSAL_DEFINED = 'proposal_defined';
 
-    protected $connection = 'kkn';
-    protected $table = 'periode';
-
     private const CACHE_KEYS = [
         'active_period',
         'default_period_id',
         'available_periods',
     ];
 
+    protected $connection = 'kkn';
+    protected $table = 'periode';
+
     protected $fillable = [
         'academic_year_id',
+        'jenis_kkn_id',
         'periode',
         'jenis',
         'program_type',
@@ -58,6 +60,7 @@ class Periode extends Model
         'is_active',
         'grading_start',
         'grading_end',
+        'current_phase',
     ];
 
     protected $casts = [
@@ -127,108 +130,17 @@ class Periode extends Model
         ];
     }
 
-    public static function governanceBlueprint(
-        ?string $programType = null,
-        ?string $programSubtype = null,
-        KknType|string|null $legacyJenis = null
-    ): array {
-        $resolvedProgramType = self::normalizeProgramType($programType, $legacyJenis);
-        $resolvedProgramSubtype = self::normalizeProgramSubtype($resolvedProgramType, $programSubtype, $legacyJenis);
-        $jenisEnum = self::resolveJenisEnum($resolvedProgramType, $resolvedProgramSubtype, $legacyJenis);
-        $registrationMode = $jenisEnum->registrationMode();
-        $placementMode = $jenisEnum->placementMode();
-
-        return [
-            'program_type' => $resolvedProgramType,
-            'program_subtype' => $resolvedProgramSubtype,
-            'registration_mode' => $registrationMode,
-            'placement_mode' => $placementMode,
-            'jenis_enum' => $jenisEnum,
-            'jenis_value' => $jenisEnum->value,
-            'jenis_label' => $jenisEnum->label(),
-            'program_type_label' => self::programTypeOptions()[$resolvedProgramType] ?? $jenisEnum->label(),
-            'program_subtype_label' => $resolvedProgramSubtype
-                ? (self::programSubtypeOptions()[$resolvedProgramSubtype] ?? $resolvedProgramSubtype)
-                : null,
-            'registration_mode_label' => self::registrationModeLabels()[$registrationMode] ?? $registrationMode,
-            'placement_mode_label' => self::placementModeLabels()[$placementMode] ?? $placementMode,
-            'self_service_enabled' => $registrationMode === self::REGISTRATION_MODE_OPEN
-                && $placementMode === self::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL,
-        ];
-    }
-
-    public static function normalizeProgramType(?string $programType, KknType|string|null $legacyJenis = null): string
+    public function getJenisAttribute(mixed $value): mixed
     {
-        $programType = trim((string) $programType);
-
-        if (array_key_exists($programType, self::programTypeOptions())) {
-            return $programType;
+        if ($this->jenisKkn) {
+            return $this->jenisKkn->code;
         }
 
-        return match (self::inferLegacyJenisEnum($legacyJenis)) {
-            KknType::NUSANTARA => self::PROGRAM_TYPE_NUSANTARA,
-            KknType::INTERNASIONAL => self::PROGRAM_TYPE_INTERNASIONAL_MANDIRI,
-            KknType::KOLABORASI_PTKIN => self::PROGRAM_TYPE_KOLABORASI_PTKIN,
-            KknType::TEMATIK,
-            KknType::RESPONSIF,
-            KknType::KAMPUNG_ZAKAT,
-            KknType::DESA_KATANA => self::PROGRAM_TYPE_TEMATIK,
-            default => self::PROGRAM_TYPE_REGULER,
-        };
-    }
-
-    public static function normalizeProgramSubtype(
-        ?string $programType,
-        ?string $programSubtype,
-        KknType|string|null $legacyJenis = null
-    ): ?string {
-        if ($programType !== self::PROGRAM_TYPE_TEMATIK) {
-            return null;
-        }
-
-        $programSubtype = trim((string) $programSubtype);
-        if ($programSubtype !== '' && array_key_exists($programSubtype, self::programSubtypeOptions())) {
-            return $programSubtype;
-        }
-
-        return match (self::inferLegacyJenisEnum($legacyJenis)) {
-            KknType::KAMPUNG_ZAKAT => self::PROGRAM_SUBTYPE_KAMPUNG_ZAKAT,
-            KknType::DESA_KATANA => self::PROGRAM_SUBTYPE_DESA_KATANA,
-            default => null,
-        };
-    }
-
-    public static function resolveJenisEnum(
-        ?string $programType,
-        ?string $programSubtype,
-        KknType|string|null $legacyJenis = null
-    ): KknType {
-        $legacyEnum = self::inferLegacyJenisEnum($legacyJenis);
-
-        if ($legacyEnum === KknType::RESPONSIF) {
-            return KknType::RESPONSIF;
-        }
-
-        return match ($programType) {
-            self::PROGRAM_TYPE_NUSANTARA => KknType::NUSANTARA,
-            self::PROGRAM_TYPE_INTERNASIONAL_MANDIRI => KknType::INTERNASIONAL,
-            self::PROGRAM_TYPE_KOLABORASI_PTKIN => KknType::KOLABORASI_PTKIN,
-            self::PROGRAM_TYPE_TEMATIK => match ($programSubtype) {
-                self::PROGRAM_SUBTYPE_KAMPUNG_ZAKAT => KknType::KAMPUNG_ZAKAT,
-                self::PROGRAM_SUBTYPE_DESA_KATANA => KknType::DESA_KATANA,
-                default => KknType::TEMATIK,
-            },
-            default => KknType::REGULER,
-        };
-    }
-
-    public function getJenisAttribute(mixed $value): ?KknType
-    {
         if ($value === null || $value === '') {
             return null;
         }
 
-        return self::inferLegacyJenisEnum($value);
+        return PeriodeGovernanceService::resolveJenisEnum($this->program_type, $this->program_subtype, $value);
     }
 
     public function setJenisAttribute(KknType|string|null $value): void
@@ -239,12 +151,17 @@ class Periode extends Model
             return;
         }
 
-        $this->attributes['jenis'] = self::inferLegacyJenisEnum($value)->value;
+        $this->attributes['jenis'] = PeriodeGovernanceService::resolveJenisEnum($this->program_type, $this->program_subtype, $value)->value;
     }
 
     public function governance(): array
     {
-        return self::governanceBlueprint($this->program_type, $this->program_subtype, $this->jenis);
+        return PeriodeGovernanceService::blueprint(
+            $this->program_type,
+            $this->program_subtype,
+            $this->attributes['jenis'] ?? 'REGULER',
+            $this->jenisKkn,
+        );
     }
 
     public function usesSelfServiceRegistration(): bool
@@ -274,17 +191,7 @@ class Periode extends Model
     protected static function booted(): void
     {
         static::saving(function (self $period) {
-            $governance = self::governanceBlueprint(
-                $period->program_type,
-                $period->program_subtype,
-                $period->jenis,
-            );
-
-            $period->program_type = $governance['program_type'];
-            $period->program_subtype = $governance['program_subtype'];
-            $period->registration_mode = $governance['registration_mode'];
-            $period->placement_mode = $governance['placement_mode'];
-            $period->jenis = $governance['jenis_enum'];
+            PeriodeGovernanceService::applyGovernanceToModel($period);
         });
 
         static::saved(fn () => self::flushContextCache());
@@ -294,6 +201,11 @@ class Periode extends Model
     public function tahunAkademik(): BelongsTo
     {
         return $this->belongsTo(TahunAkademik::class, 'academic_year_id');
+    }
+
+    public function jenisKkn(): BelongsTo
+    {
+        return $this->belongsTo(JenisKkn::class, 'jenis_kkn_id');
     }
 
     public function kelompok(): HasMany

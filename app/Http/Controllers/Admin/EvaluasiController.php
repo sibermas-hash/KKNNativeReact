@@ -42,7 +42,7 @@ class EvaluasiController extends Controller
             ];
         });
 
-        return Inertia::render('Admin/Evaluations/Index', [
+        return Inertia::render('Admin/Academic/Evaluations/Index', [
             'evaluations' => $evaluations,
         ]);
     }

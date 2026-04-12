@@ -37,19 +37,14 @@ class IzinService
                 'tanggal_kembali' => $tanggalKembali,
                 'durasi_hari' => $durasi,
                 'alasan' => $data['alasan'],
+                'file_bukti' => $data['file_bukti'] ?? null,
                 'status' => 'menunggu',
             ]);
 
             // Notifikasi ke DPL
             $kelompok = $peserta->kelompok()->with('dpl.user')->first();
             if ($kelompok?->dpl?->user) {
-                $kelompok->dpl->user->notify(new KknActivityNotification([
-                    'type' => 'warning',
-                    'title' => 'Permohonan Izin Mahasiswa',
-                    'message' => "{$mahasiswaModel->nama} mengajukan izin meninggalkan KKN selama {$durasi} hari ({$tanggalMulai->format('d/m')} - {$tanggalKembali->format('d/m')}).",
-                    'icon' => 'document-text',
-                    'url' => route('dpl.izin.index'),
-                ]));
+                $kelompok->dpl->user->notify(new \App\Notifications\KKN\StudentLeaveRequestedNotification($izin));
             }
 
             return $izin;

@@ -54,4 +54,21 @@ class NotificationController extends Controller
         $request->user()->unreadNotifications->markAsRead();
         return response()->json(['ok' => true]);
     }
+
+    /**
+     * Store a device token for push notifications
+     */
+    public function storeDeviceToken(Request $request): JsonResponse
+    {
+        $request->validate([
+            'token' => 'required|string',
+            'device_type' => 'nullable|string'
+        ]);
+
+        $request->user()->update([
+            'device_token' => $request->token
+        ]);
+
+        return response()->json(['ok' => true, 'message' => 'Device token updated successfully']);
+    }
 }

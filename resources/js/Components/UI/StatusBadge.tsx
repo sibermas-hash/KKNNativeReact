@@ -21,11 +21,12 @@ const STATUS_MAP: StatusMap = {
 };
 
 interface StatusBadgeProps {
- status: string;
- className?: string;
+    status: string;
+    className?: string;
+    children?: React.ReactNode;
 }
 
-export default function StatusBadge({ status, className }: StatusBadgeProps) {
- const config = STATUS_MAP[status] ?? { label: status, variant: 'default' as const };
- return <Badge variant={config.variant} className={className}>{config.label}</Badge>;
+export default function StatusBadge({ status, className, children }: StatusBadgeProps) {
+    const config = STATUS_MAP[status] ?? { label: status, variant: 'default' as const };
+    return <Badge variant={config.variant} className={className}>{children ?? config.label}</Badge>;
 }

@@ -19,12 +19,28 @@ class EligibilityService
         $checks = [
             'registration_window' => $this->checkRegistrationWindow($periode),
             'no_prior_completion' => $this->checkNoPriorCompletion($mahasiswa),
-            'min_sks' => $this->checkMinimumSKS($mahasiswa),
-            'min_gpa' => $this->checkMinimumGPA($mahasiswa),
+            'min_sks' => $this->checkMinimumSKS($mahasiswa, $periode),
+            'min_gpa' => $this->checkMinimumGPA($mahasiswa, $periode),
             'bta_ppi' => $this->checkBtaPpi($mahasiswa),
+            'program_prodi' => $this->checkProgramProdiRestriction($mahasiswa, $periode),
+            'personal_status' => $this->checkPersonalStatusMandate($mahasiswa, $periode),
             'documents' => $this->checkDocuments($mahasiswa),
-            'no_active_registration' => $this->checkNoActiveRegistration($mahasiswa),
+            'no_active_registration' => $this->checkNoActiveRegistration($mahasiswa, $periodeId),
         ];
+
+        // Apply dispensasi bypass — override failed checks if student has active dispensasi
+        $bypassed = \App\Models\KKN\DispensasiKkn::getBypassedRequirements($mahasiswa->nim, $periodeId);
+        $hasDispensasi = !empty($bypassed);
+        
+        if ($hasDispensasi) {
+            foreach ($bypassed as $key) {
+                if (isset($checks[$key]) && !$checks[$key]['passed']) {
+                    $checks[$key]['passed'] = true;
+                    $checks[$key]['message'] = ($checks[$key]['message'] ?? '') . ' (DISPENSASI)';
+                    $checks[$key]['dispensasi'] = true;
+                }
+            }
+        }
 
         $issues = array_filter($checks, fn($check) => !$check['passed']);
         
@@ -41,6 +57,7 @@ class EligibilityService
             'is_eligible' => empty($issues),
             'issues' => array_values($issues),
             'issue_count' => count($issues),
+            'has_dispensasi' => $hasDispensasi,
         ];
     }
 
@@ -88,9 +105,12 @@ class EligibilityService
     /**
      * Check minimum SKS requirement
      */
-    private function checkMinimumSKS(Mahasiswa $mahasiswa): array
+    private function checkMinimumSKS(Mahasiswa $mahasiswa, ?Periode $periode = null): array
     {
-        $minSks = SystemSetting::get('min_sks_registration', 100);
+        // Prioritaskan dari Master Data Jenis KKN (jika ada)
+        $minSks = $periode?->jenisKkn?->min_sks 
+                ?? SystemSetting::get('min_sks_registration', 100);
+                
         $hasEnoughSks = ($mahasiswa->sks_completed ?? 0) >= $minSks;
 
         return [
@@ -107,20 +127,27 @@ class EligibilityService
     /**
      * Check minimum GPA requirement (optional)
      */
-    private function checkMinimumGPA(Mahasiswa $mahasiswa): array
+    private function checkMinimumGPA(Mahasiswa $mahasiswa, ?Periode $periode = null): array
     {
-        $minGpaEnabled = SystemSetting::get('enable_gpa_requirement', false);
-        
-        if (!$minGpaEnabled) {
-            return [
-                'passed' => true,
-                'key' => 'min_gpa',
-                'message' => 'Validasi IPK tidak diaktifkan',
-                'enabled' => false,
-            ];
+        // Prioritaskan dari Master Data Jenis KKN (jika ada)
+        $minGpa = $periode?->jenisKkn ? (float)$periode->jenisKkn->min_gpa : null;
+        $isDynamic = $minGpa !== null && $minGpa > 0;
+
+        if (!$isDynamic) {
+            $minGpaEnabled = SystemSetting::get('enable_gpa_requirement', false);
+            
+            if (!$minGpaEnabled) {
+                return [
+                    'passed' => true,
+                    'key' => 'min_gpa',
+                    'message' => 'Validasi IPK tidak diaktifkan',
+                    'enabled' => false,
+                ];
+            }
+
+            $minGpa = SystemSetting::get('min_gpa_registration', 2.00);
         }
 
-        $minGpa = SystemSetting::get('min_gpa_registration', 2.00);
         $studentGpa = $mahasiswa->gpa ?? 0;
         $hasEnoughGpa = $studentGpa >= $minGpa;
 
@@ -148,6 +175,60 @@ class EligibilityService
             'key' => 'bta_ppi',
             'message' => $passed ? 'Lulus BTA-PPI' : 'Belum lulus BTA-PPI',
         ];
+    }
+
+    /**
+     * Restriction check for specific programs like Kampung Zakat (Mazawa only)
+     */
+    private function checkProgramProdiRestriction(Mahasiswa $mahasiswa, ?Periode $periode): array
+    {
+        if (!$periode || !$periode->jenisKkn) return ['passed' => true, 'key' => 'program_prodi', 'message' => 'N/A'];
+
+        $kknTypeLabel = strtolower($periode->jenisKkn->name);
+        
+        if (str_contains($kknTypeLabel, 'zakat')) {
+            $mahasiswa->loadMissing('prodi');
+            $prodiName = strtolower($mahasiswa->prodi?->nama ?? '');
+            $isMazawa = str_contains($prodiName, 'zakat') || str_contains($prodiName, 'mazawa');
+
+            return [
+                'passed' => $isMazawa,
+                'key' => 'program_prodi',
+                'message' => $isMazawa ? 'Prodi sesuai (Mazawa)' : 'Skema ini khusus untuk mahasiswa Prodi Mazawa',
+                'reason' => 'Khusus Program Studi Manajemen Zakat dan Wakaf (Mazawa).',
+            ];
+        }
+
+        return ['passed' => true, 'key' => 'program_prodi', 'message' => 'Lolos sensor fakultas/prodi'];
+    }
+
+    /**
+     * Mandatory status notices for special KKN (Panduan KKN 56)
+     */
+    private function checkPersonalStatusMandate(Mahasiswa $mahasiswa, ?Periode $periode): array
+    {
+        if (!$periode || !$periode->jenisKkn) return ['passed' => true, 'key' => 'personal_status', 'message' => 'N/A'];
+
+        $specialPrograms = ['nusantara', 'internasional', 'kolaborasi', 'tematik', 'katana', 'zakat'];
+        $kknTypeLabel = strtolower($periode->jenisKkn->name);
+        
+        $isSpecial = false;
+        foreach ($specialPrograms as $program) {
+            if (str_contains($kknTypeLabel, $program)) {
+                $isSpecial = true;
+                break;
+            }
+        }
+
+        if ($isSpecial) {
+             return [
+                'passed' => true, // Notice only, manual verification by Admin later
+                'key' => 'personal_status',
+                'message' => 'WAJIB: Belum Menikah & Tidak Sedang Hamil/Menyusui (Khusus Perempuan)',
+            ];
+        }
+
+        return ['passed' => true, 'key' => 'personal_status', 'message' => 'Lolos kriteria umum'];
     }
 
     /**

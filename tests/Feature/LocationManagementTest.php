@@ -29,7 +29,7 @@ test('superadmin can import administrative locations from csv', function () {
         'Desa Sumbang,Kecamatan Sumbang,Kabupaten Banyumas,3302020002',
     ]));
 
-    $this->post(route('admin.locations.import'), [
+    $this->post(route('admin.lokasi.import'), [
         'file' => $file,
     ])->assertRedirect();
 
@@ -58,7 +58,7 @@ test('import updates an existing administrative location instead of duplicating 
         'Desa Karangsari,Kecamatan Kembaran,Kabupaten Banyumas,3302010001',
     ]));
 
-    $this->post(route('admin.locations.import'), [
+    $this->post(route('admin.lokasi.import'), [
         'file' => $file,
     ])->assertRedirect();
 
@@ -76,7 +76,7 @@ test('superadmin cannot delete a location that is already assigned to a group', 
         'location_id' => $location->id,
     ]);
 
-    $this->delete(route('admin.locations.destroy', ['lokasi' => $location->id]))
+    $this->delete(route('admin.lokasi.destroy', ['lokasi' => $location->id]))
         ->assertRedirect()
         ->assertSessionHas('error');
 
@@ -88,7 +88,7 @@ test('superadmin can delete an unused administrative location', function () {
 
     $location = Lokasi::factory()->create();
 
-    $this->delete(route('admin.locations.destroy', ['lokasi' => $location->id]))
+    $this->delete(route('admin.lokasi.destroy', ['lokasi' => $location->id]))
         ->assertRedirect()
         ->assertSessionHas('success');
 

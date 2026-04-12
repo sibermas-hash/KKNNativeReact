@@ -1,325 +1,326 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { route } from 'ziggy-js';
-import { useCallback, useEffect, useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Pagination, StatusBadge } from '@/Components/ui';
-import type { PaginationMeta } from '@/Components/ui/Pagination';
-import type { PageProps } from '@/types';
-import {
- listPendingDailyReports,
- removePendingDailyReport,
- syncPendingDailyReports,
- type PendingDailyReportRecord,
-} from '@/lib/offline-daily-reports';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+    Plus, 
+    Calendar, 
+    CheckCircle2, 
+    Clock, 
+    XCircle, 
+    ChevronRight,
+    Camera,
+    MapPin,
+    AlertCircle,
+    Info,
+    FileText,
+    History,
+    Activity,
+    Layers,
+    LayoutGrid,
+    CornerDownRight
+} from 'lucide-react';
+import { clsx } from 'clsx';
 
-interface ReportData {
- id: number;
- date: string;
- title: string;
- status: string;
- review_notes?: string | null;
+interface Report {
+    id: number;
+    date: string;
+    title: string;
+    status: string;
+    activity: string;
+    reflection: string | null;
+    file_kegiatan: any[];
 }
 
-interface PaginationPayload<T> {
- data: T[];
- meta?: PaginationMeta;
- current_page?: number;
- last_page?: number;
- per_page?: number;
- total?: number;
- from?: number | null;
- to?: number | null;
- links?: PaginationMeta['links'];
+interface Props {
+    reports: {
+        data: Report[];
+        total: number;
+        links: any[];
+        current_page: number;
+        last_page: number;
+    };
+    flash: {
+        success?: string;
+        error?: string;
+    };
 }
 
-interface Props extends PageProps {
- reports: PaginationPayload<ReportData>;
- isWorkshopPassed?: boolean;
-}
+export default function DailyReportIndex({ reports, flash }: Props) {
+    const statusColors: Record<string, { bg: string, text: string, ring: string, dot: string }> = {
+        submitted: { bg: 'bg-amber-50', text: 'text-amber-700', ring: 'ring-amber-200/50', dot: 'bg-amber-500' },
+        approved: { bg: 'bg-emerald-50', text: 'text-emerald-700', ring: 'ring-emerald-200/50', dot: 'bg-emerald-500' },
+        revision: { bg: 'bg-rose-50', text: 'text-rose-700', ring: 'ring-rose-200/50', dot: 'bg-rose-500' },
+    };
 
-function formatReportDate(value: string): string {
- try {
- const date = new Date(value);
+    const statusLabels: Record<string, string> = {
+        submitted: 'Prajurit Menunggu Review',
+        approved: 'Lulus Verifikasi DPL',
+        revision: 'Instruksi Revisi',
+    };
 
- if (Number.isNaN(date.getTime())) {
- return value;
- }
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1 }
+        }
+    };
 
- return date.toLocaleDateString('id-ID', {
- day: '2-digit',
- month: 'long',
- year: 'numeric',
- });
- } catch {
- return value;
- }
-}
+    const cardVariants = {
+        hidden: { opacity: 0, y: 20, scale: 0.98 },
+        visible: { 
+            opacity: 1, 
+            y: 0, 
+            scale: 1,
+            transition: { type: 'spring', stiffness: 100, damping: 20 }
+        }
+    };
 
-function resolvePaginationMeta(payload: PaginationPayload<unknown>): PaginationMeta | null {
- if (payload.meta) {
- return payload.meta;
- }
+    return (
+        <AppLayout title="Tactical Logbook">
+            <Head title="Logbook Harian | SIM-KKN Mahasiswa" />
 
- if (typeof payload.last_page === 'number' && Array.isArray(payload.links)) {
- return {
- current_page: payload.current_page ?? 1,
- last_page: payload.last_page,
- per_page: payload.per_page ?? payload.data.length,
- total: payload.total ?? payload.data.length,
- from: payload.from ?? null,
- to: payload.to ?? null,
- links: payload.links,
- path: '',
- };
- }
+            <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16 font-sans">
+                {/* --- OPERATIONAL HEADER --- */}
+                <div className="relative group">
+                    <div className="absolute -inset-8 bg-gradient-to-r from-emerald-50/50 to-slate-50/50 rounded-[4rem] -z-10 group-hover:scale-[1.02] transition-transform duration-700" />
+                    <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
+                        <div className="space-y-8 max-w-2xl">
+                            <div className="flex items-center gap-4">
+                                <div className="h-16 w-16 bg-slate-900 rounded-[1.5rem] flex items-center justify-center text-white shadow-2xl shadow-slate-200">
+                                    <Activity size={32} strokeWidth={2.5} />
+                                </div>
+                                <div className="space-y-1">
+                                    <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.4em]">Section 01 / Operational Log</h4>
+                                    <h1 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter uppercase leading-[0.85]">
+                                        Jurnal <br /> <span className="text-emerald-600">Pengabdian.</span>
+                                    </h1>
+                                </div>
+                            </div>
+                            <p className="text-lg font-bold text-slate-400 tracking-tight leading-relaxed">
+                                Rekam jejak digital kontribusi Anda di masyarakat. <br /> 
+                                <span className="text-slate-900 italic">"Setiap tindakan adalah data, setiap data adalah dedikasi."</span>
+                            </p>
+                        </div>
 
- return null;
-}
+                        <Link
+                            href={route('student.laporan-harian.create')}
+                            className="h-24 px-12 rounded-[2rem] bg-slate-900 text-white hover:bg-emerald-600 font-black text-xs transition-all flex items-center justify-center gap-6 shadow-2xl shadow-slate-200 active:scale-95 uppercase tracking-[0.3em] group"
+                        >
+                            <span>Tambah Aktivitas</span>
+                            <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white group-hover:text-emerald-600 transition-all">
+                                <Plus size={20} strokeWidth={3} />
+                            </div>
+                        </Link>
+                    </div>
+                </div>
 
-export default function StudentDailyReportsIndex({ reports, isWorkshopPassed = true }: Props) {
- const rows = reports.data ?? [];
- const paginationMeta = resolvePaginationMeta(reports);
- const [pendingReports, setPendingReports] = useState<PendingDailyReportRecord[]>([]);
- const [isSyncingPending, setIsSyncingPending] = useState(false);
- const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
- const [isOnline, setIsOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine);
+                {/* --- PROTOCOL STATUS BAR --- */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {[
+                        { label: 'SOP Waktu', desc: 'Maks. 24 Jam Paska-Kegiatan', icon: Clock, color: 'emerald' },
+                        { label: 'SOP Lokasi', desc: 'Wajib Radius Area KKN', icon: MapPin, color: 'blue' },
+                        { label: 'SOP File', desc: 'Dokumentasi Asli (No Fake)', icon: Camera, color: 'amber' },
+                    ].map((sop, i) => (
+                        <div key={i} className="bg-white p-10 rounded-[2.5rem] border border-slate-100 flex flex-col gap-6 shadow-sm hover:shadow-xl transition-all group overflow-hidden relative">
+                            <div className={`absolute top-0 right-0 h-40 w-40 bg-${sop.color}-50 rounded-full -mr-20 -mt-20 opacity-0 group-hover:opacity-100 transition-all duration-700 blur-2xl`} />
+                            <div className={`p-4 bg-${sop.color}-50 text-${sop.color}-600 rounded-2xl w-fit group-hover:scale-110 transition-transform`}>
+                                <sop.icon size={28} strokeWidth={2.5} />
+                            </div>
+                            <div className="space-y-2 relative">
+                                <p className={`text-[11px] font-black text-${sop.color}-700 uppercase tracking-[0.3em]`}>{sop.label}</p>
+                                <p className="text-sm font-black text-slate-900 leading-tight uppercase tracking-tight">{sop.desc}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
 
- const refreshPendingReports = useCallback(async () => {
- try {
- setPendingReports(await listPendingDailyReports());
- } catch {
- setPendingReports([]);
- }
- }, []);
+                {/* --- TIMELINE MATRIX --- */}
+                <div className="space-y-10">
+                    <div className="flex items-center justify-between px-4">
+                        <div className="flex items-center gap-4">
+                            <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.4em]">Audit Timeline</h3>
+                            <div className="h-px w-24 bg-slate-100" />
+                        </div>
+                        <div className="bg-slate-900 px-6 py-2 rounded-full text-[10px] font-black text-white uppercase tracking-widest flex items-center gap-3">
+                            <Layers size={12} /> Total Records: {reports.total}
+                        </div>
+                    </div>
 
- const handleSyncPending = useCallback(async () => {
- if (!navigator.onLine) {
- setSyncFeedback('Perangkat masih offline. Sinkronisasi akan dijalankan otomatis saat koneksi kembali.');
- return;
- }
+                    <motion.div 
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="grid grid-cols-1 gap-12 relative"
+                    >
+                        {/* Center line (Desktop) */}
+                        <div className="absolute left-[88px] top-4 bottom-4 w-px bg-slate-100 hidden lg:block" />
 
- setIsSyncingPending(true);
- setSyncFeedback(null);
+                        <AnimatePresence>
+                            {reports.data.length > 0 ? reports.data.map((report) => (
+                                <motion.div 
+                                    key={report.id}
+                                    variants={cardVariants}
+                                    className="relative flex flex-col lg:flex-row gap-8 lg:gap-16 group"
+                                >
+                                    {/* Date Column */}
+                                    <div className="lg:w-44 shrink-0 relative">
+                                        <div className="bg-white border-2 border-slate-50 rounded-[2rem] p-6 lg:p-8 flex flex-col items-center justify-center shadow-sm group-hover:border-emerald-200 transition-all group-hover:shadow-xl group-hover:shadow-emerald-500/5 relative z-10">
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">{new Date(report.date).toLocaleDateString('id-ID', { month: 'long' })}</span>
+                                            <span className="text-4xl font-black text-slate-900 tracking-tighter leading-none">{new Date(report.date).getDate()}</span>
+                                            <div className="mt-4 h-1.5 w-1.5 rounded-full bg-emerald-500 group-hover:scale-[3] transition-transform" />
+                                        </div>
+                                    </div>
 
- try {
- const summary = await syncPendingDailyReports();
- await refreshPendingReports();
+                                    {/* Content Card */}
+                                    <div className="flex-1 bg-white rounded-[2.5rem] border border-slate-50 p-8 lg:p-12 shadow-sm hover:shadow-2xl transition-all duration-500 relative flex flex-col xl:flex-row gap-10">
+                                        <div className="flex-1 space-y-6">
+                                            <div className="flex flex-wrap items-center gap-4">
+                                                <span className={clsx(
+                                                    "inline-flex items-center gap-2.5 px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest ring-4 ring-opacity-10 transition-all",
+                                                    statusColors[report.status].bg,
+                                                    statusColors[report.status].text,
+                                                    statusColors[report.status].ring
+                                                )}>
+                                                    <div className={clsx("w-2 h-2 rounded-full", statusColors[report.status].dot)} />
+                                                    {statusLabels[report.status]}
+                                                </span>
+                                                {report.reflection && (
+                                                    <span className="bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-6 py-2.5 rounded-full flex items-center gap-2">
+                                                        <Activity size={12} /> Refleksi Aktif
+                                                    </span>
+                                                )}
+                                            </div>
 
- if (summary.synced > 0) {
- setSyncFeedback(`${summary.synced} laporan offline berhasil disinkronkan.`);
- router.reload({ only: ['reports'] });
- return;
- }
+                                            <div className="space-y-4">
+                                                <h4 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-none group-hover:text-emerald-600 transition-colors uppercase">
+                                                    {report.title}
+                                                </h4>
+                                                <div className="flex items-start gap-4">
+                                                    <CornerDownRight size={20} className="text-slate-200 shrink-0 mt-1" />
+                                                    <p className="text-sm font-bold text-slate-500 leading-relaxed italic uppercase tracking-tight">
+                                                        "{report.activity}"
+                                                    </p>
+                                                </div>
+                                            </div>
 
- if (summary.lastError) {
- setSyncFeedback(summary.lastError);
- return;
- }
+                                            <div className="pt-6 flex gap-3">
+                                                {report.status !== 'approved' && (
+                                                    <Link 
+                                                        href={route('student.laporan-harian.edit', report.id)}
+                                                        className="h-14 px-8 rounded-2xl bg-slate-50 border border-slate-100 text-slate-900 hover:bg-emerald-600 hover:text-white font-black text-[10px] transition-all flex items-center gap-3 uppercase tracking-[0.2em]"
+                                                    >
+                                                        Review Detail <ChevronRight size={14} strokeWidth={3} />
+                                                    </Link>
+                                                )}
+                                            </div>
+                                        </div>
 
- setSyncFeedback('Tidak ada laporan offline yang menunggu sinkronisasi.');
- } catch {
- setSyncFeedback('Antrean offline belum bisa dibaca pada perangkat ini.');
- } finally {
- setIsSyncingPending(false);
- }
- }, [refreshPendingReports]);
+                                        {/* Activity Media Preview */}
+                                        <div className="xl:w-64 shrink-0">
+                                            <div className="grid grid-cols-2 gap-3 h-full min-h-[160px]">
+                                                {report.file_kegiatan.length > 0 ? (
+                                                    <>
+                                                        {report.file_kegiatan.slice(0, 3).map((file, i) => (
+                                                            <div key={i} className={clsx(
+                                                                "rounded-2xl bg-slate-100 overflow-hidden relative group/img overflow-hidden border-4 border-slate-50",
+                                                                i === 0 ? "col-span-2 row-span-2 aspect-video" : "aspect-square"
+                                                            )}>
+                                                                <img 
+                                                                    src={`/storage/${file.file_path}`} 
+                                                                    className="w-full h-full object-cover grayscale group-hover/img:grayscale-0 transition-all duration-700 scale-110 group-hover/img:scale-100" 
+                                                                    alt="Bukti" 
+                                                                />
+                                                                <div className="absolute inset-0 bg-emerald-600/10 opacity-0 group-hover/img:opacity-100 transition-opacity" />
+                                                            </div>
+                                                        ))}
+                                                        {report.file_kegiatan.length > 3 && (
+                                                            <div className="rounded-2xl bg-slate-900 flex flex-col items-center justify-center text-white gap-1 aspect-square">
+                                                                <span className="text-lg font-black">{report.file_kegiatan.length - 3}+</span>
+                                                                <span className="text-[8px] font-black uppercase tracking-tighter">Images</span>
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <div className="col-span-2 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-200 gap-3">
+                                                        <Camera size={32} strokeWidth={1} />
+                                                        <span className="text-[10px] font-black uppercase tracking-widest">No Media Asset</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )) : (
+                                <div className="py-32 flex flex-col items-center gap-8 text-center">
+                                    <div className="h-40 w-40 bg-slate-50 rounded-[3rem] flex items-center justify-center text-slate-100 animate-pulse">
+                                        <LayoutGrid size={80} strokeWidth={1} />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <h4 className="text-3xl font-black text-slate-200 uppercase tracking-tighter">Zero Logs Detected</h4>
+                                        <p className="text-sm font-bold text-slate-300 uppercase tracking-widest">Anda belum mengunggah rekam jejak aktivitas KKN.</p>
+                                    </div>
+                                </div>
+                            )}
+                        </AnimatePresence>
+                    </motion.div>
+                </div>
 
- const handleRemovePending = async (localId: string) => {
- await removePendingDailyReport(localId);
- await refreshPendingReports();
- };
+                {/* --- INTELLIGENCE FOOTER --- */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <div className="bg-slate-900 rounded-[3rem] p-12 text-white relative overflow-hidden group shadow-2xl">
+                        <div className="absolute top-0 right-0 h-full w-64 bg-emerald-500 skew-x-12 translate-x-44 group-hover:translate-x-32 transition-transform duration-1000 opacity-20" />
+                        <div className="relative space-y-8">
+                            <div className="h-16 w-16 bg-white/10 rounded-2xl flex items-center justify-center text-emerald-400">
+                                <Info size={32} strokeWidth={2.5} />
+                            </div>
+                            <div className="space-y-4">
+                                <h4 className="text-2xl font-black tracking-tight uppercase">Protocol: Location Discovery</h4>
+                                <p className="text-slate-400 font-bold leading-relaxed uppercase tracking-tight text-xs">
+                                    Jika portal gagal mendeteksi koordinat, pastikan Browser mengizinkan akses lokasi secara eksplisit (*Location Access: Explicitly Granted*).
+                                </p>
+                            </div>
+                        </div>
+                    </div>
 
- useEffect(() => {
- void refreshPendingReports();
+                    <div className="bg-emerald-600 rounded-[3rem] p-12 text-white relative overflow-hidden group shadow-2xl">
+                        <div className="absolute top-0 right-0 h-full w-64 bg-slate-900 -skew-x-12 translate-x-44 group-hover:translate-x-32 transition-transform duration-1000 opacity-20" />
+                        <div className="relative space-y-8 text-right flex flex-col items-end">
+                            <div className="h-16 w-16 bg-white/10 rounded-2xl flex items-center justify-center text-white">
+                                <History size={32} strokeWidth={2.5} />
+                            </div>
+                            <div className="space-y-4">
+                                <h4 className="text-2xl font-black tracking-tight uppercase">Integrity Status</h4>
+                                <p className="text-emerald-100 font-bold leading-relaxed uppercase tracking-tight text-xs max-w-sm">
+                                    Setiap laporan yang disetujui (Approved) akan dikunci secara otomatis oleh sistem untuk menjaga integritas data audit akademik.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
- const handleOnline = () => {
- setIsOnline(true);
- void handleSyncPending();
- };
-
- const handleOffline = () => {
- setIsOnline(false);
- setSyncFeedback('Koneksi internet terputus. Laporan baru akan masuk antrean offline.');
- };
-
- window.addEventListener('online', handleOnline);
- window.addEventListener('offline', handleOffline);
-
- return () => {
- window.removeEventListener('online', handleOnline);
- window.removeEventListener('offline', handleOffline);
- };
- }, [handleSyncPending, refreshPendingReports]);
-
- return (
- <AppLayout title="Laporan Harian">
- <Head title="Laporan Harian" />
-
- <div className="space-y-6">
- <section className="rounded-lg border border-slate-200 bg-white p-8">
- <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
- <div>
- <h1 className="text-2xl font-semibold text-slate-900">Laporan Harian</h1>
- <p className="mt-2 text-sm text-slate-500">
- Kelola laporan kegiatan harian Anda dan pantau status verifikasi dari DPL.
- </p>
- </div>
-
- <div className="flex gap-3">
- <Link
- href={route('student.laporan-harian.download-compilation')}
- title="Unduh seluruh laporan harian Anda dalam satu berkas PDF"
- aria-label="Unduh seluruh laporan harian dalam satu berkas PDF"
- className="inline-flex items-center justify-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
- >
- Unduh rekap PDF
- </Link>
- <Link
- href={route('student.laporan-harian.create')}
- className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark"
- aria-label="Buat laporan harian baru"
- >
- Buat laporan
- </Link>
- </div>
- </div>
- </section>
-
- {!isWorkshopPassed && (
- <section className="rounded-lg border border-amber-200 bg-amber-50 px-6 py-4 text-sm text-amber-800">
- Anda wajib lulus pembekalan sebelum dapat mengirim laporan harian.
- </section>
- )}
-
- {(pendingReports.length > 0 || !isOnline || syncFeedback) && (
- <section className="rounded-lg border border-slate-200 bg-white p-6">
- <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
- <div>
- <h2 className="text-lg font-semibold text-slate-900">Antrean Sinkronisasi Offline</h2>
- <p className="mt-2 text-sm text-slate-500">
- Laporan yang dibuat tanpa koneksi internet akan ditampung dulu di perangkat lalu dikirim otomatis saat online.
- </p>
- </div>
- <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
- <p>Status koneksi: <span className="font-semibold text-slate-900">{isOnline ? 'Daring' : 'Luring'}</span></p>
- <p className="mt-1">Jumlah antrean: <span className="font-semibold text-slate-900">{pendingReports.length}</span> laporan</p>
- <button
- type="button"
- onClick={() => void handleSyncPending()}
- disabled={!isOnline || isSyncingPending || pendingReports.length === 0}
- aria-label={isSyncingPending ? 'Sinkronisasi sedang berlangsung' : 'Sinkronkan semua laporan offline sekarang'}
- aria-busy={isSyncingPending}
- className="mt-3 inline-flex items-center justify-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
- >
- {isSyncingPending ? 'Menyinkronkan...' : 'Sinkronkan sekarang'}
- </button>
- </div>
- </div>
-
- {syncFeedback ? (
- <p className={`mt-4 text-sm ${syncFeedback.includes('berhasil') ? 'text-emerald-700' : 'text-slate-600'}`}>
- {syncFeedback}
- </p>
- ) : null}
-
- {pendingReports.length > 0 ? (
- <div className="mt-4 space-y-3">
- {pendingReports.map((report) => (
- <div key={report.local_id} className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-4">
- <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
- <div>
- <p className="text-sm font-semibold text-slate-900">{report.payload.title}</p>
- <p className="mt-1 text-sm text-slate-600">
- {report.payload.date} · {report.payload.location_name}
- </p>
- <p className="mt-1 text-xs text-slate-500">
- Disimpan lokal pada {new Date(report.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
- </p>
- {report.last_error ? (
- <p className="mt-2 text-xs text-red-600">{report.last_error}</p>
- ) : null}
- </div>
- <button
- type="button"
- onClick={() => void handleRemovePending(report.local_id)}
- aria-label={`Remove queued report: ${report.payload.title}`}
- className="inline-flex items-center justify-center rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
- >
- Hapus antrean
- </button>
- </div>
- </div>
- ))}
- </div>
- ) : null}
- </section>
- )}
-
- <section className="overflow-hidden rounded-lg border border-slate-200 bg-white">
- <div className="border-b border-slate-200 px-6 py-4">
- <h2 className="text-lg font-semibold text-slate-900">Riwayat Laporan</h2>
- </div>
-
- <div className="overflow-x-auto">
- <table className="min-w-full divide-y divide-slate-200">
- <thead className="bg-slate-50">
- <tr>
- <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
- Tanggal
- </th>
- <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
- Judul
- </th>
- <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
- <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
- Catatan
- </th>
- <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
- Aksi
- </th>
- </tr>
- </thead>
- <tbody className="divide-y divide-slate-100 bg-white">
- {rows.length > 0 ? (
- rows.map((report) => (
- <tr key={report.id}>
- <td className="px-6 py-4 text-sm text-slate-700">{formatReportDate(report.date)}</td>
- <td className="px-6 py-4 text-sm font-medium text-slate-900">{report.title}</td>
- <td className="px-6 py-4">
- <StatusBadge status={report.status} />
- </td>
- <td className="px-6 py-4 text-sm text-slate-600">
- {report.review_notes || '-'}
- </td>
- <td className="px-6 py-4 text-right">
- <Link
- href={route('student.laporan-harian.edit', report.id)}
- className="inline-flex items-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
- aria-label={`Edit report: ${report.title}`}
- >
- Ubah
- </Link>
- </td>
- </tr>
- ))
- ) : (
- <tr>
- <td colSpan={5} className="px-6 py-12 text-center text-sm text-slate-500">
- Belum ada laporan harian.
- </td>
- </tr>
- )}
- </tbody>
- </table>
- </div>
-
- {paginationMeta && (
- <div className="px-6 py-4">
- <Pagination meta={paginationMeta} />
- </div>
- )}
- </section>
- </div>
- </AppLayout>
- );
+                {/* Pagination Matrix */}
+                {reports.links.length > 3 && (
+                    <div className="flex flex-col items-center gap-6">
+                        <div className="h-px w-32 bg-slate-100" />
+                        <div className="flex items-center gap-4">
+                            {reports.links.map((link, i) => (
+                                <Link
+                                    key={i}
+                                    href={link.url}
+                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                    className={clsx(
+                                        "h-14 min-w-[56px] px-5 flex items-center justify-center rounded-2xl text-[10px] font-black tracking-widest uppercase transition-all",
+                                        link.active 
+                                            ? "bg-slate-900 text-white shadow-2xl shadow-slate-200" 
+                                            : "bg-white border border-slate-100 text-slate-400 hover:text-emerald-600 hover:border-emerald-200 shadow-sm"
+                                    )}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </AppLayout>
+    );
 }

@@ -188,13 +188,6 @@ class SeedDemoTestingCommand extends Command
 
         $this->seedGeneralReports($leaderA['user'], $groupA);
 
-        $this->seedWorkshop([
-            $leaderA['user'],
-            $memberA['user'],
-            $leaderB['user'],
-            $registrationStudent['user'],
-            $archiveLeader['user'],
-        ]);
         $this->seedAuditLogs($superadmin, $facultyAdmin, $dplA['user']);
 
         $this->outputSummary([
@@ -935,23 +928,32 @@ PDF;
         $this->gradingService->submitDPLScores(
             $student['user']->id,
             $group->id,
-            $reportScore,
-            $executionScore,
-            $articleScore,
+            [
+                'relevansi' => $reportScore,
+                'ketercapaian' => $executionScore,
+                'inovasi' => $articleScore,
+                'administrasi' => $reportScore, // mapped from report for demo
+                'artikel' => $articleScore,
+            ],
             $evaluator->id,
         );
         $this->gradingService->submitVillageHeadScores(
             $student['user']->id,
             $group->id,
-            $disciplineScore,
-            $attitudeScore,
+            [
+                'interaksi' => $attitudeScore,
+                'disiplin' => $disciplineScore,
+                'kinerja' => $attitudeScore, // mapped for demo
+            ],
             $evaluator->id,
         );
-        $this->gradingService->submitAdminScores(
+        $this->gradingService->updateUnifiedScore(
             $student['user']->id,
             $group->id,
-            $workshopScore,
-            $administrationScore,
+            [
+                'workshop_score' => $workshopScore,
+                'administration_score' => $administrationScore,
+            ],
             $evaluator->id,
         );
 
@@ -966,31 +968,6 @@ PDF;
         return $score->fresh();
     }
 
-    private function seedWorkshop(array $users): Workshop
-    {
-        $workshop = Workshop::updateOrCreate(
-            ['title' => 'Workshop Pembekalan Demo'],
-            [
-                'description' => 'Pembekalan contoh untuk pengujian workshop mahasiswa dan admin.',
-                'methodology' => 'Luring Interaktif',
-                'workshop_date' => today()->toDateString(),
-                'start_time' => '08:00',
-                'end_time' => '11:00',
-                'location' => 'Aula LPPM Demo',
-                'max_participants' => 100,
-                'status' => 'scheduled',
-            ]
-        );
-
-        foreach ($users as $user) {
-            PesertaWorkshop::updateOrCreate(
-                ['workshop_id' => $workshop->id, 'user_id' => $user->id],
-                ['registered_at' => now()->subHours(6), 'attendance_status' => 'attended']
-            );
-        }
-
-        return $workshop;
-    }
 
     private function seedAuditLogs(User $admin, User $facultyAdmin, User $dpl): void
     {

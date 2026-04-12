@@ -41,12 +41,12 @@ class AuditObserver
         LogAudit::create([
             'user_id' => auth()->id(),
             'action' => $action,
-            'model_type' => get_class($model),
+            'model_type' => $model::class,
             'model_id' => $model->getKey(),
             'old_values' => $oldValues,
             'new_values' => $newValues,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
+            'ip_address' => request()?->ip(),
+            'user_agent' => request()?->userAgent(),
         ]);
     }
 }

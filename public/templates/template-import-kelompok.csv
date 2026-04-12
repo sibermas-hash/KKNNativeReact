@@ -1,4 +1,3 @@
 kode_kelompok,nama_kelompok,periode,desa,kecamatan,kabupaten,kapasitas,status
-KKN-A1,Kelompok Anggrek 01,Periode Demo Aktif,Desa Demo A,Kecamatan Demo A,Kabupaten Demo A,12,active
-KKN-A2,Kelompok Anggrek 02,Periode Demo Aktif,Desa Demo B,Kecamatan Demo B,Kabupaten Demo A,12,draft
-KKN-B1,Kelompok Melati 01,Periode Demo Aktif,Desa Demo C,Kecamatan Demo B,Kabupaten Demo A,15,active
+KLP-001,Kelompok Demo 01,2026/2027 Reguler,Sokanegara,Purwokerto Timur,Banyumas,10,active
+KLP-002,Kelompok Demo 02,2026/2027 Reguler,Bancarkembar,Purwokerto Utara,Banyumas,15,draft

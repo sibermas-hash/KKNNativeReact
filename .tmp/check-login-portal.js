@@ -1,0 +1,1 @@
+const { chromium } = require('/Users/macm4/Library/Caches/ms-playwright/chromium-1169/chrome-mac/Chromium.app/Contents/Frameworks/Chromium Framework.framework/Versions/136.0.7103.25/Helpers/chrome_crashpad_handler')

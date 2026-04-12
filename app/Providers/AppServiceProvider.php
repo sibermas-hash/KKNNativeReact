@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
-            if ($user->hasRole('Admin') || $user->hasRole('superadmin')) {
+            if ($user->hasRole('admin') || $user->hasRole('superadmin')) {
                 // Auto-bypass for read/view abilities only
                 $readOnlyAbilities = ['viewAny', 'view', 'export', 'viewInertia'];
                 if (in_array($ability, $readOnlyAbilities)) {

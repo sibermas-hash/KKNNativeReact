@@ -52,7 +52,7 @@ export default function Modal({
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-emerald-950/20 dark:bg-slate-950/50 backdrop-blur-sm dark:backdrop-blur-md" />
+                    <div className="fixed inset-0 bg-emerald-950/20 backdrop-blur-sm" />
                 </Transition.Child>
 
                 <div className="fixed inset-0 overflow-y-auto">
@@ -60,22 +60,22 @@ export default function Modal({
                         <Transition.Child
                             as={Fragment}
                             enter="ease-out duration-300"
-                            enterFrom="opacity-0 scale-95"
-                            enterTo="opacity-100 scale-100"
+                            enterFrom="opacity-0 translate-y-4 scale-95"
+                            enterTo="opacity-100 translate-y-0 scale-100"
                             leave="ease-in duration-200"
-                            leaveFrom="opacity-100 scale-100"
-                            leaveTo="opacity-0 scale-95"
+                            leaveFrom="opacity-100 translate-y-0 scale-100"
+                            leaveTo="opacity-0 translate-y-4 scale-95"
                         >
                             <Dialog.Panel
                                 className={clsx(
-                                    'w-full transform overflow-hidden bg-white dark:bg-slate-900 border border-emerald-50 dark:border-slate-700 p-6 text-left align-middle shadow-2xl transition-all font-sans antialiased',
+                                    'w-full transform overflow-hidden bg-white border border-emerald-50 p-6 text-left align-middle shadow-2xl shadow-emerald-900/10 transition-all font-sans antialiased rounded-3xl',
                                     maxWidthClass[maxWidth]
                                 )}
                             >
                                 {title && (
                                     <Dialog.Title
                                         as="h3"
-                                        className="text-[11px] font-black uppercase tracking-widest text-emerald-900 dark:text-slate-100 mb-6 border-b border-emerald-50 dark:border-slate-700 pb-4"
+                                        className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-950 mb-6 border-b border-emerald-50 pb-4"
                                     >
                                         {title}
                                     </Dialog.Title>

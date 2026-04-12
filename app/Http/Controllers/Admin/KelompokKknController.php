@@ -83,6 +83,11 @@ class KelompokKknController extends Controller
             ->when($request->input('period_id'), function ($query, $periodId) {
                 $query->where('period_id', $periodId);
             })
+            ->when($request->input('jenis_kkn_id'), function ($query, $jenisId) {
+                $query->whereHas('periode', function ($q) use ($jenisId) {
+                    $q->where('jenis_kkn_id', $jenisId);
+                });
+            })
             ->when($request->input('status'), function ($query, $status) {
                 $query->where('status', $status);
             });
@@ -159,15 +164,17 @@ class KelompokKknController extends Controller
             ]);
         $lecturers = Dosen::orderBy('nama')->get()
             ->map(fn($d) => ['id' => $d->id, 'name' => $d->nama]);
+        $jenisKknOptions = \App\Models\KKN\JenisKkn::dropdownOptions();
 
         $groupCollection = collect($groups->items());
 
-        return Inertia::render('Admin/Groups/Index', [
+        return Inertia::render('Admin/Operational/Groups/Index', [
             'groups' => $this->formatPaginator($groups),
             'periods' => $periods,
+            'jenisKknOptions' => $jenisKknOptions,
             'locations' => $locations,
             'lecturers' => $lecturers,
-            'filters' => $request->only('search', 'period_id', 'status'),
+            'filters' => $request->only('search', 'period_id', 'jenis_kkn_id', 'status'),
             'ui' => [
                 'can_manage' => Gate::allows('manage-groups'),
             ],
@@ -201,7 +208,7 @@ class KelompokKknController extends Controller
             'posko',
         ]);
 
-        return Inertia::render('Admin/Groups/Show', [
+        return Inertia::render('Admin/Operational/Groups/Show', [
             'group' => $kelompokKkn,
             'members' => $kelompokKkn->peserta->values(),
         ]);

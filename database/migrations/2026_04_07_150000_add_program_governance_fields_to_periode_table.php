@@ -28,24 +28,16 @@ return new class extends Migration
             }
         });
 
+        // Backfill existing periods with defaults based on jenis
         DB::table('periode')
-            ->select(['id', 'jenis'])
-            ->orderBy('id')
-            ->get()
-            ->each(function (object $period): void {
-                $governance = Periode::governanceBlueprint(
-                    legacyJenis: $period->jenis,
-                );
-
-                DB::table('periode')
-                    ->where('id', $period->id)
-                    ->update([
-                        'program_type' => $governance['program_type'],
-                        'program_subtype' => $governance['program_subtype'],
-                        'registration_mode' => $governance['registration_mode'],
-                        'placement_mode' => $governance['placement_mode'],
-                    ]);
-            });
+            ->whereNull('program_type')
+            ->orWhere('program_type', '')
+            ->update([
+                'program_type' => Periode::PROGRAM_TYPE_REGULER,
+                'program_subtype' => null,
+                'registration_mode' => Periode::REGISTRATION_MODE_OPEN,
+                'placement_mode' => Periode::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL,
+            ]);
     }
 
     public function down(): void

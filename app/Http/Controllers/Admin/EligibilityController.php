@@ -24,7 +24,7 @@ class EligibilityController extends Controller
 
     public function index(Request $request): Response
     {
-        Gate::authorize('manage-master-data');
+        Gate::authorize('manage-participants');
 
         $user = auth()->user();
         $isFacultyAdmin = $user?->hasRole('faculty_admin');
@@ -44,7 +44,7 @@ class EligibilityController extends Controller
 
         $periods = Periode::orderByDesc('start_date')->get(['id', 'name']);
 
-        return Inertia::render('Admin/EligibilityCheck/Index', [
+        return Inertia::render('Admin/Operational/EligibilityCheck/Index', [
             'students' => $paginatedStudents,
             'pagination' => [
                 'current_page' => $currentPage,
@@ -70,7 +70,7 @@ class EligibilityController extends Controller
 
     public function checkStudent(Mahasiswa $mahasiswa, Request $request)
     {
-        Gate::authorize('manage-master-data');
+        Gate::authorize('manage-participants');
 
         $periodeId = $request->integer('period_id');
         $result = $this->eligibilityService->checkEligibility($mahasiswa, $periodeId);
@@ -80,7 +80,7 @@ class EligibilityController extends Controller
 
     public function export(Request $request): BinaryFileResponse
     {
-        Gate::authorize('manage-master-data');
+        Gate::authorize('manage-participants');
 
         $user = auth()->user();
         $isFacultyAdmin = $user?->hasRole('faculty_admin');

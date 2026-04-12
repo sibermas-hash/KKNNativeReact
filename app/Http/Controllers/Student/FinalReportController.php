@@ -76,20 +76,46 @@ class FinalReportController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:300'],
             'abstract' => ['nullable', 'string'],
+            'video_link' => ['nullable', 'url', 'max:255'],
+            'news_link' => ['nullable', 'url', 'max:255'],
             'file' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:20480'],
+            'article_1' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'article_2' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'poster_1' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'poster_2' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'poster_3' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
         ]);
 
         $file = $request->file('file');
-
-        // Security: Validate magic bytes to prevent MIME spoofing
         $this->validateFileMagicBytes($file);
+        $path = $file->storeAs('final-reports', Str::uuid() . '.' . $file->getClientOriginalExtension(), 'local');
 
-        // Security: Store with UUID filename - prevents path traversal and filename injection
-        $originalName = $file->getClientOriginalName();
-        $extension = strtolower($file->getClientOriginalExtension());
-        $safeFilename = Str::uuid() . '.' . $extension;
+        $article1Path = null;
+        if ($request->hasFile('article_1')) {
+            $this->validateFileMagicBytes($request->file('article_1'));
+            $article1Path = $request->file('article_1')->storeAs('final-reports', Str::uuid() . '.' . $request->file('article_1')->getClientOriginalExtension(), 'local');
+        }
 
-        $path = $file->storeAs('final-reports', $safeFilename, 'local');
+        $article2Path = null;
+        if ($request->hasFile('article_2')) {
+            $this->validateFileMagicBytes($request->file('article_2'));
+            $article2Path = $request->file('article_2')->storeAs('final-reports', Str::uuid() . '.' . $request->file('article_2')->getClientOriginalExtension(), 'local');
+        }
+
+        $poster1Path = null;
+        if ($request->hasFile('poster_1')) {
+            $poster1Path = $request->file('poster_1')->storeAs('final-reports/posters', Str::uuid() . '.' . $request->file('poster_1')->getClientOriginalExtension(), 'local');
+        }
+
+        $poster2Path = null;
+        if ($request->hasFile('poster_2')) {
+            $poster2Path = $request->file('poster_2')->storeAs('final-reports/posters', Str::uuid() . '.' . $request->file('poster_2')->getClientOriginalExtension(), 'local');
+        }
+
+        $poster3Path = null;
+        if ($request->hasFile('poster_3')) {
+            $poster3Path = $request->file('poster_3')->storeAs('final-reports/posters', Str::uuid() . '.' . $request->file('poster_3')->getClientOriginalExtension(), 'local');
+        }
 
         LaporanAkhir::updateOrCreate(
             ['kelompok_id' => $pendaftaran->kelompok_id],
@@ -97,8 +123,15 @@ class FinalReportController extends Controller
                 'mahasiswa_id' => $mahasiswa->id,
                 'title' => $validated['title'],
                 'abstract' => $validated['abstract'] ?? null,
+                'video_link' => $validated['video_link'] ?? null,
+                'news_link' => $validated['news_link'] ?? null,
                 'file_path' => $path,
-                'file_name' => Str::limit($originalName, 255),
+                'file_name' => Str::limit($file->getClientOriginalName(), 255),
+                'article_1_path' => $article1Path,
+                'article_2_path' => $article2Path,
+                'poster_1_path' => $poster1Path,
+                'poster_2_path' => $poster2Path,
+                'poster_3_path' => $poster3Path,
                 'status' => 'submitted',
                 'submitted_at' => now(),
             ],

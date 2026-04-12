@@ -16,7 +16,7 @@ class PublicContentController extends Controller
     {
         Gate::authorize('manage-settings');
 
-        return Inertia::render('Admin/Content/Profile', [
+        return Inertia::render('Admin/Website/Content/Profile', [
             'content' => [
                 'about' => SystemSetting::get('site_about', $this->defaultProfileContent()['about']),
                 'visi' => SystemSetting::get('site_visi', $this->defaultProfileContent()['visi']),
@@ -46,7 +46,7 @@ class PublicContentController extends Controller
     {
         Gate::authorize('manage-settings');
 
-        return Inertia::render('Admin/Content/Schemes', [
+        return Inertia::render('Admin/Website/Content/Schemes', [
             'content' => [
                 'title' => SystemSetting::get('site_schemes_title', $this->defaultSchemeContent()['title']),
                 'intro' => SystemSetting::get('site_schemes_intro', $this->defaultSchemeContent()['intro']),

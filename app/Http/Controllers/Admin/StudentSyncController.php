@@ -20,7 +20,7 @@ class StudentSyncController extends Controller
 
     public function index(): Response
     {
-        return Inertia::render('Admin/Students/Sync', [
+        return Inertia::render('Admin/Academic/Students/Sync', [
             'title' => 'Sinkronisasi Mahasiswa dari API Kampus',
             'summary' => [
                 'local_students' => Mahasiswa::count(),

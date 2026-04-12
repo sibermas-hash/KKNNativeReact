@@ -78,7 +78,7 @@ export default function DplGroupShow({ group }: Props) {
         onClick={() => {
             window.location.href = `/admin/certificates/bulk-download?kelompok_id=${group.id}`;
         }}
-        className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-black text-white hover:bg-emerald-700 transition-all uppercase tracking-widest italic"
+        className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 transition-all uppercase tracking-widest "
     >
         <ScrollText size={18} />
         Unduh sertifikat kelompok

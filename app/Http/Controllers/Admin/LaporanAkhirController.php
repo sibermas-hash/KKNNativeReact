@@ -27,9 +27,39 @@ class LaporanAkhirController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return Inertia::render('Admin/FinalReports/Index', [
+        return Inertia::render('Admin/Monitoring/FinalReports/Index', [
             'reports' => $reports,
             'filters' => $request->only('status'),
         ]);
+    }
+
+    public function show(LaporanAkhir $report): Response
+    {
+        Gate::authorize('view-reports');
+        $report->load(['mahasiswa.user', 'kelompok.dpl.user', 'reviewer']);
+
+        return Inertia::render('Admin/Monitoring/FinalReports/Show', [
+            'report' => $report,
+        ]);
+    }
+
+    public function updateStatus(Request $request, LaporanAkhir $report)
+    {
+        Gate::authorize('manage-grades'); // Reuse permission for grading/approval
+        
+        $validated = $request->validate([
+            'status' => ['required', 'in:disetujui,revisi'],
+            'review_notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $report->update([
+            'status' => $validated['status'],
+            'review_notes' => $validated['review_notes'],
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+        ]);
+
+        return redirect()->route('admin.laporan.akhir.index')
+            ->with('success', "Status laporan berhasil diperbarui menjadi: " . strtoupper($validated['status']));
     }
 }

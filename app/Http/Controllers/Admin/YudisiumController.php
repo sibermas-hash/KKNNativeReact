@@ -26,7 +26,7 @@ class YudisiumController extends Controller
             $rekap = $this->yudisiumService->generateRekapYudisium((int) $periodeId);
         }
 
-        return Inertia::render('Admin/Yudisium/Index', [
+        return Inertia::render('Admin/Academic/Yudisium/Index', [
             'periodes' => $periodes,
             'rekap' => $rekap,
             'selectedPeriodeId' => $periodeId,

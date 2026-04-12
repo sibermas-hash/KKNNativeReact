@@ -14,10 +14,13 @@ class StoreDailyReportRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'date' => ['required', 'date'],
+            'date' => ['required', 'date', 'before_or_equal:today'],
+            'category' => ['required', new \Illuminate\Validation\Rules\Enum(\App\Enums\LogbookCategory::class)],
             'title' => ['required', 'string', 'max:200'],
+            'abcd_stage' => ['required', new \Illuminate\Validation\Rules\Enum(\App\Enums\AbcdStage::class)],
             'activity' => ['required', 'string'],
             'reflection' => ['nullable', 'string'],
+            'social_media_link' => ['nullable', 'url', 'max:255'],
             'output' => ['nullable', 'string'],
             'latitude' => ['required', 'numeric', 'between:-90,90'],
             'longitude' => ['required', 'numeric', 'between:-180,180'],
@@ -28,9 +31,26 @@ class StoreDailyReportRequest extends FormRequest
         ];
 
         if ($this->isMethod('POST')) {
+            // SOP LPPM: Setiap logbook WAJIB menyertakan minimal 1 foto bukti kegiatan
+            $rules['files'] = ['required', 'array', 'min:1', 'max:5'];
+            $rules['files.*'] = ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'];
+        } else {
             $rules['files.*'] = ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'];
         }
 
         return $rules;
+    }
+
+    public function messages(): array
+    {
+        return [
+            'files.required' => 'Wajib mengunggah minimal 1 foto bukti kegiatan yang diambil di lokasi KKN.',
+            'files.min' => 'Wajib mengunggah minimal 1 foto bukti kegiatan.',
+            'files.max' => 'Maksimal 5 file per logbook.',
+            'files.*.mimes' => 'Format file harus JPG, PNG, atau PDF.',
+            'files.*.max' => 'Ukuran file maksimal 5MB per file.',
+            'latitude.required' => 'Lokasi GPS wajib diaktifkan saat mengisi logbook.',
+            'longitude.required' => 'Lokasi GPS wajib diaktifkan saat mengisi logbook.',
+        ];
     }
 }

@@ -18,143 +18,106 @@ class GradingService
     // See: app/Services/KKN/GradeConversionService.php
 
     /**
-     * Submit DPL scores for a student
+     * Submit DPL scores for a student (Refined for KKN 56)
      */
     public function submitDPLScores(
         int $userId,
         int $groupId,
-        float $reportScore,
-        float $executionScore,
-        float $articleScore,
+        array $scores, // Array containing relevansi, ketercapaian, inovasi, administrasi, artikel
         int $dplId
     ): NilaiKkn {
-        return DB::transaction(function () use ($userId, $groupId, $reportScore, $executionScore, $articleScore, $dplId) {
+        return DB::transaction(function () use ($userId, $groupId, $scores, $dplId) {
             $score = NilaiKkn::updateOrCreate(
+                ['user_id' => $userId, 'kelompok_id' => $groupId],
                 [
-                    'user_id' => $userId,
-                    'kelompok_id' => $groupId,
-                ],
-                [
-                    'final_report_score' => $reportScore,
-                    'execution_score' => $executionScore,
-                    'article_score' => $articleScore,
+                    'dpl_relevansi_score' => $scores['relevansi'] ?? 0,
+                    'dpl_ketercapaian_score' => $scores['ketercapaian'] ?? 0,
+                    'dpl_inovasi_score' => $scores['inovasi'] ?? 0,
+                    'dpl_administrasi_score' => $scores['administrasi'] ?? 0,
+                    'dpl_artikel_score' => $scores['artikel'] ?? 0,
                     'dpl_graded_by' => $dplId,
                     'dpl_graded_at' => now(),
                 ]
             );
 
             $this->calculateFinalGrade($score);
-
             return $score->fresh();
         });
     }
 
     /**
-     * Submit Village Head scores for a student
+     * Submit Village Head scores for a student (Refined for KKN 56)
      */
     public function submitVillageHeadScores(
         int $userId,
         int $groupId,
-        float $disciplineScore,
-        float $attitudeScore,
+        array $scores, // Array containing interaksi, disiplin, kinerja
         int $villageHeadId
     ): NilaiKkn {
-        return DB::transaction(function () use ($userId, $groupId, $disciplineScore, $attitudeScore, $villageHeadId) {
+        return DB::transaction(function () use ($userId, $groupId, $scores, $villageHeadId) {
             $score = NilaiKkn::updateOrCreate(
+                ['user_id' => $userId, 'kelompok_id' => $groupId],
                 [
-                    'user_id' => $userId,
-                    'kelompok_id' => $groupId,
-                ],
-                [
-                    'discipline_score' => $disciplineScore,
-                    'attitude_score' => $attitudeScore,
+                    'desa_interaksi_score' => $scores['interaksi'] ?? 0,
+                    'desa_disiplin_score' => $scores['disiplin'] ?? 0,
+                    'desa_kinerja_score' => $scores['kinerja'] ?? 0,
                     'village_graded_by' => $villageHeadId,
                     'village_graded_at' => now(),
                 ]
             );
 
             $this->calculateFinalGrade($score);
-
             return $score->fresh();
         });
     }
 
     /**
-     * Submit Admin scores for a student
-     */
-    public function submitAdminScores(
-        int $userId,
-        int $groupId,
-        float $workshopScore,
-        float $adminScore,
-        ?int $adminId
-    ): NilaiKkn {
-        return DB::transaction(function () use ($userId, $groupId, $workshopScore, $adminScore, $adminId) {
-            $score = NilaiKkn::updateOrCreate(
-                [
-                    'user_id' => $userId,
-                    'kelompok_id' => $groupId,
-                ],
-                [
-                    'workshop_score' => $workshopScore,
-                    'administration_score' => $adminScore,
-                    'admin_graded_by' => $adminId,
-                    'admin_graded_at' => now(),
-                ]
-            );
-
-            $this->calculateFinalGrade($score);
-
-            return $score->fresh();
-        });
-    }
-
-    /**
-     * Calculate weighted scores and final grade
+     * Calculate weighted scores and final grade (Dynamic KKN Logic)
      */
     public function calculateFinalGrade(NilaiKkn $score): void
     {
         $score->loadMissing('kelompok.periode');
+        $period = $score->kelompok?->periode;
         
-        $kknType = $score->kelompok?->periode?->jenis;
-        if (!$kknType instanceof \App\Enums\KknType) {
-            $kknType = \App\Enums\KknType::tryFrom($kknType) ?? \App\Enums\KknType::REGULER;
-        }
+        // Resolve KKN Type for config lookup
+        $kknType = $period?->jenis instanceof \App\Enums\KknType 
+            ? $period->jenis 
+            : \App\Enums\KknType::tryFrom($period?->jenis) ?? \App\Enums\KknType::REGULER;
 
+        // Load configs from DB (cached)
         $cacheKey = 'grading_configs_' . $kknType->value;
         $configs = Cache::remember($cacheKey, 3600, function () use ($kknType) {
             return KonfigurasiPenilaian::getForType($kknType)->pluck('percentage', 'config_key');
         });
 
-        // 1. Calculate Komponen A (DPL)
-        $aWeighted = (
-            (floatval($score->final_report_score ?? 0) * (floatval($configs['weight_dpl_report'] ?? 30) / 100)) +
-            (floatval($score->execution_score ?? 0) * (floatval($configs['weight_dpl_execution'] ?? 40) / 100)) +
-            (floatval($score->article_score ?? 0) * (floatval($configs['weight_dpl_article'] ?? 30) / 100))
+        // 1. Calculate Component A (DPL)
+        $aRaw = (
+            (floatval($score->dpl_relevansi_score ?? 0) * (floatval($configs['weight_dpl_report'] ?? 20) / 100)) +
+            (floatval($score->dpl_ketercapaian_score ?? 0) * (floatval($configs['weight_dpl_execution'] ?? 20) / 100)) +
+            (floatval($score->dpl_inovasi_score ?? 0) * (floatval($configs['weight_dpl_article'] ?? 20) / 100)) +
+            (floatval($score->dpl_administrasi_score ?? 0) * (floatval($configs['weight_dpl_report'] ?? 20) / 100)) +
+            (floatval($score->dpl_artikel_score ?? 0) * (floatval($configs['weight_dpl_article'] ?? 20) / 100))
         );
 
-        // 2. Calculate Komponen B (Mitra)
-        $bWeighted = (
-            (floatval($score->attitude_score ?? 0) * (floatval($configs['weight_village_attitude'] ?? 50) / 100)) +
-            (floatval($score->discipline_score ?? 0) * (floatval($configs['weight_village_discipline'] ?? 50) / 100))
+        // 2. Calculate Component B (Village/Mitra)
+        $bRaw = (
+            (floatval($score->desa_interaksi_score ?? 0) * (floatval($configs['weight_village_attitude'] ?? 50) / 100)) +
+            (floatval($score->desa_disiplin_score ?? 0) * (floatval($configs['weight_village_discipline'] ?? 50) / 100))
         );
 
-        // 3. Calculate Komponen C (LPPM)
-        $cWeighted = (
-            (floatval($score->workshop_score ?? 0) * (floatval($configs['weight_admin_workshop'] ?? 50) / 100)) +
-            (floatval($score->administration_score ?? 0) * (floatval($configs['weight_admin_administration'] ?? 50) / 100))
-        );
+        // 3. Calculate Component C (LPPM)
+        // SURGICAL CLEANUP: LPPM component is now 100% based on Administration Score
+        $cRaw = floatval($score->administration_score ?? 0);
 
-        // Final Score with Main Group Weights (Section 4.6 of PDF 2025)
-        // DPL: 40%, Village: 20%, LPPM: 40%
-        $totalScore = (
-            ($aWeighted * (floatval($configs['weight_main_dpl'] ?? 40) / 100)) +
-            ($bWeighted * (floatval($configs['weight_main_village'] ?? 20) / 100)) +
-            ($cWeighted * (floatval($configs['weight_main_lppm'] ?? 40) / 100))
-        );
+        // 4. Apply Main Weights
+        $aWeighted = $aRaw * (floatval($configs['weight_main_dpl'] ?? 40) / 100);
+        $bWeighted = $bRaw * (floatval($configs['weight_main_village'] ?? 20) / 100);
+        $cWeighted = $cRaw * (floatval($configs['weight_main_lppm'] ?? 40) / 100);
 
-        // Determine letter grade
-        $letterGrade = $this->determineLetterGrade($totalScore);
+        $totalScore = $aWeighted + $bWeighted + $cWeighted;
+
+        // Determine letter grade from centralized service
+        $gradeData = \App\Services\KKN\GradeConversionService::convert($totalScore);
 
         // Update score record
         NilaiKkn::where('id', $score->id)->update([
@@ -162,7 +125,13 @@ class GradingService
             'village_weighted_score' => round($bWeighted, 2),
             'lppm_weighted_score' => round($cWeighted, 2),
             'total_score' => round($totalScore, 2),
-            'letter_grade' => $letterGrade,
+            'letter_grade' => $gradeData['grade'],
+            // Sync legacy fields
+            'final_report_score' => $score->dpl_administrasi_score,
+            'execution_score' => $score->dpl_ketercapaian_score,
+            'article_score' => $score->dpl_artikel_score,
+            'discipline_score' => $score->desa_disiplin_score,
+            'attitude_score' => $score->desa_interaksi_score,
         ]);
     }
 
@@ -196,7 +165,6 @@ class GradingService
                     'article_score' => $score->article_score,
                     'discipline_score' => $score->discipline_score,
                     'attitude_score' => $score->attitude_score,
-                    'workshop_score' => $score->workshop_score,
                     'administration_score' => $score->administration_score,
                     'total_score' => $score->total_score,
                 ];
@@ -212,76 +180,9 @@ class GradingService
         return app(EligibilityService::class)->checkEligibility($mahasiswa, $periodeId);
     }
 
-    /**
-     * Finalize all scores for a specific period (Synchronous)
-     */
-    public function finalizeAll(int $periodId): int
-    {
-        $count = 0;
-        $failed = 0;
-
-        NilaiKkn::whereHas('kelompok', function ($query) use ($periodId) {
-            // FIX C13: Use correct column name 'period_id' (not 'periode_id')
-            $query->where('period_id', $periodId);
-        })
-        ->with(['mahasiswa.user']) // Eager load student user for notifications
-        ->where('is_finalized', false)
-        ->whereNotNull('total_score')
-        ->chunkById(50, function ($scores) use (&$count, &$failed) {
-            // Bulk check Laporan Akhir to avoid N+1 queries
-            $studentIds = $scores->map(fn ($score) => $score->mahasiswa?->id)->filter()->unique();
-            $groupIds = $scores->pluck('kelompok_id')->unique();
-            
-            $reports = \App\Models\KKN\LaporanAkhir::whereIn('mahasiswa_id', $studentIds)
-                ->whereIn('kelompok_id', $groupIds)
-                ->get()
-                ->groupBy(fn($r) => $r->mahasiswa_id . '|' . $r->kelompok_id);
-
-            foreach ($scores as $score) {
-                if (!$score->mahasiswa) {
-                    $failed++;
-                    continue;
-                }
-
-                $lookupKey = $score->mahasiswa->id . '|' . $score->kelompok_id;
-                $report = $reports->get($lookupKey)?->first();
-
-                if (!$report || $report->status !== 'approved') {
-                    $failed++;
-                    continue;
-                }
-
-                // Finalize the record
-                NilaiKkn::where('id', $score->id)->update(['is_finalized' => true]);
-                $count++;
-
-                // Notify student
-                if ($score->mahasiswa?->user) {
-                    $score->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
-                        'type' => 'success',
-                        'title' => 'Nilai KKN Difinalisasi',
-                        'message' => 'Nilai KKN Anda telah difinalisasi oleh Admin LPPM. Silakan unduh sertifikat.',
-                        'icon' => 'academic-cap',
-                        'url' => route('student.dashboard'),
-                    ]));
-                }
-            }
-        });
-
-        \App\Services\AuditService::log(
-            'MASS_FINALIZE',
-            "Melakukan finalisasi massal untuk Periode ID: {$periodId}. Berhasil: {$count}, Gagal (Anti-Halu): {$failed}",
-            null,
-            ['period_id' => $periodId],
-            ['finalized_count' => $count, 'failed_count' => $failed]
-        );
-
-        return $count;
-    }
-
     private const SAFE_SCORE_COMPONENTS = [
         'final_report_score', 'execution_score', 'article_score',
-        'discipline_score', 'attitude_score', 'workshop_score',
+        'discipline_score', 'attitude_score',
         'administration_score', 'dpl_score_1',
     ];
 

@@ -30,6 +30,7 @@ class ProgramKerja extends Model
         'approved_by',
         'approval_notes',
         'abcd_stage',
+        'kategori',
     ];
 
     protected $casts = [
@@ -49,5 +50,10 @@ class ProgramKerja extends Model
     public function approvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function rekapitulasi(): HasMany
+    {
+        return $this->hasMany(RekapitulasiKegiatan::class, 'program_kerja_id');
     }
 }

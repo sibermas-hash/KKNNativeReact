@@ -41,7 +41,7 @@ class FakultasController extends Controller
             ->latest('master_synced_at')
             ->first()?->master_synced_at;
 
-        return Inertia::render('Admin/Faculties/Index', [
+        return Inertia::render('Admin/MasterData/Faculties/Index', [
             'faculties' => $faculties,
             'filters' => $request->only('search'),
             'syncInfo' => [

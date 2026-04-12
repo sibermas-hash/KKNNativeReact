@@ -101,11 +101,11 @@ class GroupManagementWorkflowTest extends TestCase
 
         // Verify DPL is assigned to group
         $this->actingAs($admin)
-            ->from(route('admin.dpl.assignment'))
-            ->post(route('admin.dpl.assign-group', $group), [
+            ->from(route('admin.dpl.penugasan'))
+            ->post(route('admin.dpl.tugaskan-kelompok', $group), [
                 'dpl_period_id' => $dplPeriod->id,
             ])
-            ->assertRedirect(route('admin.dpl.assignment'));
+            ->assertRedirect(route('admin.dpl.penugasan'));
 
         $group->refresh();
         expect($group->dpl_id)->toBe($dosen->id);
@@ -492,11 +492,11 @@ class GroupManagementWorkflowTest extends TestCase
 
         // DPL can view their assigned groups
         $this->actingAs($dplUser)
-            ->get(route('dpl.groups.index'))
+            ->get(route('dpl.kelompok.index'))
             ->assertOk();
 
         $this->actingAs($dplUser)
-            ->get(route('dpl.groups.show', $group))
+            ->get(route('dpl.kelompok.show', $group))
             ->assertOk();
     }
 }

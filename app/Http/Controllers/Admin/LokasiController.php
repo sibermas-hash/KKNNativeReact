@@ -16,6 +16,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class LokasiController extends Controller
 {
+    use \App\Traits\HandlesPagination;
+
     public function index(Request $request): Response
     {
         Gate::authorize('manage-master-data');
@@ -40,7 +42,7 @@ class LokasiController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        $locations->getCollection()->transform(fn ($location) => [
+        $locations->through(fn ($location) => [
             'id' => $location->id,
             'village_code' => $location->village_code,
             'village_name' => $location->village_name,
@@ -54,8 +56,8 @@ class LokasiController extends Controller
             'delete_blocker' => $this->getDeleteBlockerReason($location),
         ]);
 
-        return Inertia::render('Admin/Locations/Index', [
-            'locations' => $locations,
+        return Inertia::render('Admin/Operational/Locations/Index', [
+            'locations' => $this->formatPaginator($locations),
             'filters' => $request->only('search'),
             'summary' => [
                 'total_locations' => Lokasi::count(),

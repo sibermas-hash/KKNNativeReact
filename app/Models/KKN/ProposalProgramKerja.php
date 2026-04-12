@@ -11,7 +11,7 @@ class ProposalProgramKerja extends Model
     use HasFactory;
 
     protected $connection = 'kkn';
-    protected $table = 'proposal_proker';
+    protected $table = 'proposal_program_kerja';
 
 
     public $timestamps = false;

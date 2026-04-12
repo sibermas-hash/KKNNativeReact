@@ -3,6 +3,7 @@
 namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class IzinMeninggalkan extends Model
 {
@@ -28,17 +29,17 @@ class IzinMeninggalkan extends Model
         'diproses_pada' => 'datetime',
     ];
 
-    public function mahasiswa()
+    public function mahasiswa(): BelongsTo
     {
         return $this->belongsTo(Mahasiswa::class, 'mahasiswa_id');
     }
 
-    public function kelompok()
+    public function kelompok(): BelongsTo
     {
         return $this->belongsTo(KelompokKkn::class, 'kelompok_id');
     }
 
-    public function diprosesOleh()
+    public function diprosesOleh(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'diproses_oleh');
     }

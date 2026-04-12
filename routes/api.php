@@ -23,17 +23,28 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Notifications
-Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('notifications')->name('api.notifications.')->group(function () {
-    Route::get('/unread', [NotificationController::class , 'unread'])->name('unread');
-    Route::post('/{id}/read', [NotificationController::class , 'markRead'])->name('mark-read');
-    Route::post('/read-all', [NotificationController::class , 'markAllRead'])->name('mark-all-read');
+// Notifications & Devices
+Route::middleware(['auth:sanctum', 'throttle:60,1'])->name('api.')->group(function () {
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/unread', [NotificationController::class , 'unread'])->name('unread');
+        Route::post('/{id}/read', [NotificationController::class , 'markRead'])->name('mark-read');
+        Route::post('/read-all', [NotificationController::class , 'markAllRead'])->name('mark-all-read');
+    });
+    
+    // Fix Poin 4: Device Tokens for Push Notifications
+    Route::post('/device-tokens', [NotificationController::class, 'storeDeviceToken'])->name('device-tokens.store');
 });
 
-// Webhooks from Master Data - stricter rate limit to prevent abuse
-Route::prefix('webhooks')->middleware('throttle:10,1')->group(function () {
+// Frontend Error Logging (no auth required - errors can happen before login)
+Route::post('log-error', function (Request $request) {
+    \Illuminate\Support\Facades\Log::channel('frontend')->error('Frontend Error: ' . $request->input('message'), $request->all());
+    return response()->json(['status' => 'logged']);
+})->middleware('throttle:10,1')->name('api.log-error');
+
+// Webhooks from Master Data - signature verification FIRST, then rate limit
+Route::prefix('webhooks')->group(function () {
     Route::post('/master-data', [WebhookController::class , 'handle'])
-        ->middleware(\App\Http\Middleware\VerifyWebhookSignature::class)
+        ->middleware([\App\Http\Middleware\VerifyWebhookSignature::class, 'throttle:10,1'])
         ->name('webhooks.master-data');
 });
 

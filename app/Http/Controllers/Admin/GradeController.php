@@ -27,15 +27,22 @@ class GradeController extends Controller
         $isFacultyAdmin = $user?->hasRole('faculty_admin');
         $facultyId = $isFacultyAdmin ? $user?->faculty_id : null;
 
-        $groups = KelompokKkn::with(['dpl.user:id,name'])
+        $groups = KelompokKkn::with(['dpl.user:id,name', 'periode'])
             ->when($facultyId, function ($query, $id) {
                 $query->whereHas('peserta.mahasiswa', fn($q) => $q->where('faculty_id', $id));
             })
+            ->when(request('jenis_kkn_id'), function ($query, $jenisId) {
+                $query->whereHas('periode', fn($q) => $q->where('jenis_kkn_id', $jenisId));
+            })
             ->orderBy('code')
-            ->get(['id','code','nama_kelompok','dpl_id']);
+            ->get(['id','code','nama_kelompok','dpl_id', 'period_id']);
 
-        return Inertia::render('Admin/Grades/Index', [
+        $jenisKknOptions = \App\Models\KKN\JenisKkn::dropdownOptions();
+
+        return Inertia::render('Admin/Academic/Grades/Index', [
             'groups' => $groups,
+            'jenisKknOptions' => $jenisKknOptions,
+            'filters' => request()->only('jenis_kkn_id'),
         ]);
     }
 
@@ -75,10 +82,18 @@ class GradeController extends Controller
             'kelompok_id' => ['required', 'exists:kelompok_kkn,id'],
             'scores' => ['required', 'array'],
             'scores.*.student_id' => ['required', 'exists:users,id'],
-            'scores.*.execution_score' => ['nullable', 'numeric', 'between:0,100'],
-            'scores.*.article_score' => ['nullable', 'numeric', 'between:0,100'],
-            'scores.*.discipline_score' => ['nullable', 'numeric', 'between:0,100'],
-            'scores.*.attitude_score' => ['nullable', 'numeric', 'between:0,100'],
+            // Desa
+            'scores.*.desa_interaksi_score' => ['nullable', 'numeric', 'between:0,100'],
+            'scores.*.desa_disiplin_score' => ['nullable', 'numeric', 'between:0,100'],
+            'scores.*.desa_kinerja_score' => ['nullable', 'numeric', 'between:0,100'],
+            // DPL
+            'scores.*.dpl_relevansi_score' => ['nullable', 'numeric', 'between:0,100'],
+            'scores.*.dpl_ketercapaian_score' => ['nullable', 'numeric', 'between:0,100'],
+            'scores.*.dpl_inovasi_score' => ['nullable', 'numeric', 'between:0,100'],
+            'scores.*.dpl_administrasi_score' => ['nullable', 'numeric', 'between:0,100'],
+            'scores.*.dpl_artikel_score' => ['nullable', 'numeric', 'between:0,100'],
+            // LPPM
+            'scores.*.administration_score' => ['nullable', 'numeric', 'between:0,100'],
         ]);
 
         DB::transaction(function () use ($data) {
@@ -89,10 +104,15 @@ class GradeController extends Controller
                         'kelompok_id' => $data['kelompok_id'],
                     ],
                     [
-                        'execution_score' => $row['execution_score'] ?? null,
-                        'article_score' => $row['article_score'] ?? null,
-                        'discipline_score' => $row['discipline_score'] ?? null,
-                        'attitude_score' => $row['attitude_score'] ?? null,
+                        'desa_interaksi_score' => $row['desa_interaksi_score'] ?? null,
+                        'desa_disiplin_score' => $row['desa_disiplin_score'] ?? null,
+                        'desa_kinerja_score' => $row['desa_kinerja_score'] ?? null,
+                        'dpl_relevansi_score' => $row['dpl_relevansi_score'] ?? null,
+                        'dpl_ketercapaian_score' => $row['dpl_ketercapaian_score'] ?? null,
+                        'dpl_inovasi_score' => $row['dpl_inovasi_score'] ?? null,
+                        'dpl_administrasi_score' => $row['dpl_administrasi_score'] ?? null,
+                        'dpl_artikel_score' => $row['dpl_artikel_score'] ?? null,
+                        'administration_score' => $row['administration_score'] ?? null,
                         'admin_graded_by' => auth()->id(),
                         'admin_graded_at' => now(),
                     ]
@@ -102,6 +122,6 @@ class GradeController extends Controller
             }
         });
 
-        return back()->with('success', 'Seluruh nilai berhasil disimpan');
+        return back()->with('success', 'Seluruh parameter nilai berhasil disimpan dan disinkronisasi.');
     }
 }

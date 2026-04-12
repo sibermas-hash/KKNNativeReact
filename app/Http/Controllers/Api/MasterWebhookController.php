@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
 use App\Jobs\SyncMasterDataJob;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+
+use const DIRECTORY_SEPARATOR;
 
 class MasterWebhookController
 {
@@ -37,7 +41,7 @@ class MasterWebhookController
         }
 
         $rawBody = (string) $request->getContent();
-        $expected = hash_hmac('sha256', $timestamp . '.' . $rawBody, $secret);
+        $expected = hash_hmac('sha256', $timestamp.'.'.$rawBody, $secret);
 
         $sig = $signatureHeader;
         if (str_starts_with($sig, 'sha256=')) {
@@ -49,14 +53,14 @@ class MasterWebhookController
         }
 
         $payload = json_decode($rawBody, true);
-        if (!is_array($payload)) {
+        if (!\is_array($payload)) {
             return response()->json(['ok' => false, 'error' => 'Invalid JSON'], 400);
         }
 
         $resources = [];
-        if (isset($payload['resources']) && is_array($payload['resources'])) {
-            $resources = array_values(array_filter($payload['resources'], fn ($v) => is_string($v) && $v !== ''));
-        } elseif (isset($payload['resource']) && is_string($payload['resource']) && $payload['resource'] !== '') {
+        if (isset($payload['resources']) && \is_array($payload['resources'])) {
+            $resources = array_values(array_filter($payload['resources'], static fn ($v): bool => \is_string($v) && $v !== ''));
+        } elseif (isset($payload['resource']) && \is_string($payload['resource']) && $payload['resource'] !== '') {
             $resources = [$payload['resource']];
         }
 
@@ -78,6 +82,26 @@ class MasterWebhookController
         ], 202);
     }
 
+    private function ensureLogWritable(): void
+    {
+        $dir = storage_path('logs');
+        $today = now()->format('Y-m-d');
+
+        $daily = $dir.DIRECTORY_SEPARATOR."laravel-{$today}.log";
+        if (is_file($daily)) {
+            if (!chmod($daily, 0664)) {
+                Log::warning('Failed to change log file permissions', ['file' => $daily]);
+            }
+        }
+
+        $single = $dir.DIRECTORY_SEPARATOR.'laravel.log';
+        if (is_file($single)) {
+            if (!chmod($single, 0664)) {
+                Log::warning('Failed to change log file permissions', ['file' => $single]);
+            }
+        }
+    }
+
     private function resolveSyncType(array $resources): string
     {
         $map = [
@@ -96,27 +120,10 @@ class MasterWebhookController
         }
 
         $types = array_unique($types);
-        if (count($types) === 1) {
+        if (\count($types) === 1) {
             return $types[0];
         }
 
         return 'all';
     }
-
-    private function ensureLogWritable(): void
-    {
-        $dir = storage_path('logs');
-        $today = now()->format('Y-m-d');
-
-        $daily = $dir . DIRECTORY_SEPARATOR . "laravel-{$today}.log";
-        if (is_file($daily)) {
-            @chmod($daily, 0664);
-        }
-
-        $single = $dir . DIRECTORY_SEPARATOR . 'laravel.log';
-        if (is_file($single)) {
-            @chmod($single, 0664);
-        }
-    }
 }
-

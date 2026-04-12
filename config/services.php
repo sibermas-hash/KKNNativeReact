@@ -43,6 +43,14 @@ return [
         'cache_minutes' => env('MASTER_API_CACHE_MINUTES', 60),
         'webhook_secret' => env('MASTER_WEBHOOK_SECRET'),
         'webhook_window_seconds' => env('MASTER_WEBHOOK_WINDOW_SECONDS', 600),
+        
+        // Circuit breaker configuration
+        'circuit_breaker_threshold' => env('MASTER_API_CIRCUIT_BREAKER_THRESHOLD', 5),
+        'circuit_breaker_timeout' => env('MASTER_API_CIRCUIT_BREAKER_TIMEOUT', 300), // 5 minutes
+        
+        // Retry configuration
+        'retry_max_attempts' => env('MASTER_API_RETRY_MAX_ATTEMPTS', 3),
+        'retry_initial_delay' => env('MASTER_API_RETRY_INITIAL_DELAY', 300), // 300ms
     ],
 
     'gemini' => [

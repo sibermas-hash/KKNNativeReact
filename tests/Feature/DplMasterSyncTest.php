@@ -35,7 +35,7 @@ class DplMasterSyncTest extends TestCase
             ->get(route('admin.dpl.sync'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dpl/Sync')
+                ->component('Admin/Operational/Dpl/Sync')
                 ->where('summary.local_lecturers', 1)
                 ->where('summary.with_master_link', 1)
                 ->where('title', 'Sinkronisasi Master Dosen')
@@ -65,7 +65,7 @@ class DplMasterSyncTest extends TestCase
         $this->app->instance(MasterApiService::class, $service);
 
         $this->actingAs($admin)
-            ->post(route('admin.dpl.sync.store'))
+            ->post(route('admin.dpl.sinkron.store'))
             ->assertRedirect();
 
         $this->assertDatabaseHas('dosen', [

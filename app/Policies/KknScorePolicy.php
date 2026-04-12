@@ -28,7 +28,7 @@ class KknScorePolicy extends BasePolicy
     public function viewAny(User $user): bool
     {
         return $this->superAdminBypass($user, 'viewAny') ?? 
-               $user->hasAnyRole(['superadmin', 'dpl', 'faculty_admin']);
+               $user->hasAnyRole(['superadmin', 'admin', 'dpl', 'faculty_admin']);
     }
 
     public function view(User $user, NilaiKkn $score): bool
@@ -55,7 +55,7 @@ class KknScorePolicy extends BasePolicy
     public function create(User $user): bool
     {
         return $this->superAdminBypass($user, 'create') ?? 
-               $user->hasAnyRole(['superadmin', 'dpl']);
+               $user->hasAnyRole(['superadmin', 'admin', 'dpl']);
     }
 
     public function update(User $user, NilaiKkn $score): bool
@@ -69,6 +69,10 @@ class KknScorePolicy extends BasePolicy
 
         // Superadmin can update any non-finalized score
         if ($user->hasRole('superadmin')) {
+            return true;
+        }
+
+        if ($user->hasRole('admin')) {
             return true;
         }
         

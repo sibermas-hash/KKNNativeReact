@@ -73,14 +73,12 @@ class RegistrationService
                 ]);
             }
 
-            // 2. DYNAMIC ACADEMIC FILTER: Evaluate all active requirements configured in the database
-            $requirements = \App\Models\KKN\KknRequirement::where('is_active', true)->get();
-            foreach ($requirements as $requirement) {
-                if (!$requirement->evaluate($mahasiswa)) {
-                    throw ValidationException::withMessages([
-                        'period_id' => $requirement->error_message,
-                    ]);
-                }
+            // 2. DYNAMIC ELIGIBILITY FILTER: Check SKS, GPA, and program-specific rules
+            $eligibility = app(\App\Services\EligibilityService::class)->checkEligibility($mahasiswa, $periodeId);
+            if (!$eligibility['is_eligible']) {
+                throw ValidationException::withMessages([
+                    'period_id' => $eligibility['reason'] ?? 'Anda belum memenuhi syarat akademik untuk mengikuti periode KKN ini.',
+                ]);
             }
 
             // 3. DOCUMENT FILTER: Cek keberadaan Surat Sehat & Izin Orang Tua
@@ -115,12 +113,20 @@ class RegistrationService
             }
 
             $existing = PesertaKkn::query()
+                ->withTrashed() // FIX POIN B: Check trashed records too
                 ->where('mahasiswa_id', $mahasiswa->id)
                 ->where('period_id', $periodeId)
                 ->lockForUpdate()
                 ->first();
 
             $queue = $this->groupSelectionService->ensureQueue($mahasiswa, $periodeId, true);
+
+            if ($existing && $existing->trashed()) {
+                // Restore if it was soft-deleted, resetting its status
+                $existing->restore();
+                $existing->status = 'pending';
+                $existing->save();
+            }
 
             if (! $existing) {
                 try {
@@ -139,10 +145,15 @@ class RegistrationService
                     if ($this->isUniqueConstraintViolation($e)) {
                         // Re-query to get the existing registration
                         $existing = PesertaKkn::query()
-                            ->where('mahasiswa_id', $mahasiswa->id)
-                            ->where('period_id', $periodeId)
-                            ->lockForUpdate()
-                            ->firstOrFail();
+                        ->withTrashed()
+                        ->where('mahasiswa_id', $mahasiswa->id)
+                        ->where('period_id', $periodeId)
+                        ->lockForUpdate()
+                        ->firstOrFail();
+
+                    if ($existing->trashed()) {
+                        $existing->restore();
+                    }
                         
                         // If it's in a rejected state, allow resubmission
                         if ($existing->status === 'rejected') {

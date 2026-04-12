@@ -17,11 +17,15 @@ beforeEach(function () {
 
 function createApprovedStudentContext(string $role = 'Anggota'): array
 {
-    $user = User::factory()->create();
+    $user = User::factory()->create([
+        'phone' => '081234567890',
+    ]);
     $user->assignRole('student');
 
     $student = Mahasiswa::factory()->create([
         'user_id' => $user->id,
+        'health_certificate_path' => 'health-certificates/test.pdf',
+        'parent_permission_path' => 'parent-permissions/test.pdf',
     ]);
 
     $location = Lokasi::factory()->create([
@@ -73,7 +77,7 @@ test('approved group leader can upload group posko coordinates and photo', funct
             'gmaps_link' => 'https://maps.google.com/?q=-7.3587905,109.9030928',
             'photo' => UploadedFile::fake()->image('posko.jpg', 1200, 800),
         ])
-        ->assertRedirect(route('student.posko.edit'))
+        ->assertRedirect(route('student.posko.index'))
         ->assertSessionHas('success');
 
     $posko = PoskoKelompok::where('kelompok_id', $group->id)->first();
@@ -146,21 +150,25 @@ test('approved student can access the stored posko photo through the protected r
             'longitude' => '109.9030928',
             'photo' => UploadedFile::fake()->image('posko.jpg', 1200, 800),
         ])
-        ->assertRedirect(route('student.posko.edit'));
+        ->assertRedirect(route('student.posko.index'));
 
     $posko = PoskoKelompok::where('kelompok_id', $group->id)->firstOrFail();
 
     $this->actingAs($user)
-        ->get(route('posko.photo', $posko))
+        ->get(route('student.posko.photo', $posko))
         ->assertOk();
 });
 
 test('student without an approved group assignment cannot access posko management', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create([
+        'phone' => '081234567890',
+    ]);
     $user->assignRole('student');
 
     Mahasiswa::factory()->create([
         'user_id' => $user->id,
+        'health_certificate_path' => 'health-certificates/test.pdf',
+        'parent_permission_path' => 'parent-permissions/test.pdf',
     ]);
 
     $this->actingAs($user)

@@ -2,173 +2,24 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Exports\BpjsParticipantExport;
 use App\Http\Controllers\Controller;
-use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\PesertaKkn;
-use App\Services\AutomaticGroupPlacementService;
-use App\Services\GroupSelectionService;
 use App\Services\KKN\KknRequirementService;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\KKN\RegistrationApprovalService;
+use App\Services\KKN\RegistrationExportService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
-use Maatwebsite\Excel\Facades\Excel;
 use Inertia\Inertia;
 use Inertia\Response;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-
 use Illuminate\Support\Facades\Storage;
 use App\Traits\HandlesPagination;
+use App\Notifications\KKN\RegistrationApprovedNotification;
+use App\Notifications\KKN\RegistrationRejectedNotification;
+use App\Notifications\KKN\GroupPlacementConfirmedNotification;
 
 class PesertaKknController extends Controller
 {
     use HandlesPagination;
-
-    private function documentDownloadUrl(?string $path): ?string
-    {
-        if (blank($path)) {
-            return null;
-        }
-
-        if (filter_var($path, FILTER_VALIDATE_URL)) {
-            return $path;
-        }
-
-        return route('admin.pendaftaran.berkas.unduh', ['path' => $path]);
-    }
-
-    private function registrationDocuments(PesertaKkn $pesertaKkn): array
-    {
-        $existingDocuments = collect($pesertaKkn->dokumen ?? [])
-            ->map(function ($doc) {
-                $path = $doc->file_path;
-
-                return [
-                    'id' => $doc->id,
-                    'document_type' => $doc->document_type ?: 'Dokumen',
-                    'file_name' => $doc->file_name ?: ($path ? basename($path) : null),
-                    'file_path' => $this->documentDownloadUrl($path),
-                    'status' => $doc->status ?: 'document_submitted',
-                ];
-            });
-
-        $fallbackDocuments = collect([
-            [
-                'id' => 'health-certificate',
-                'document_type' => 'Surat sehat',
-                'file_name' => $pesertaKkn->mahasiswa?->health_certificate_path
-                    ? basename($pesertaKkn->mahasiswa->health_certificate_path)
-                    : null,
-                'file_path' => $this->documentDownloadUrl($pesertaKkn->mahasiswa?->health_certificate_path),
-                'status' => 'document_submitted',
-                'storage_path' => $pesertaKkn->mahasiswa?->health_certificate_path,
-            ],
-            [
-                'id' => 'parent-permission',
-                'document_type' => 'Surat izin orang tua',
-                'file_name' => $pesertaKkn->mahasiswa?->parent_permission_path
-                    ? basename($pesertaKkn->mahasiswa->parent_permission_path)
-                    : null,
-                'file_path' => $this->documentDownloadUrl($pesertaKkn->mahasiswa?->parent_permission_path),
-                'status' => 'document_submitted',
-                'storage_path' => $pesertaKkn->mahasiswa?->parent_permission_path,
-            ],
-        ])
-            ->filter(fn (array $doc) => filled($doc['storage_path']))
-            ->reject(function (array $doc) use ($existingDocuments) {
-                return $existingDocuments->contains(function (array $existing) use ($doc) {
-                    return $existing['file_path'] === $doc['file_path']
-                        || $existing['file_name'] === $doc['file_name'];
-                });
-            })
-            ->map(fn (array $doc) => collect($doc)->except('storage_path')->all());
-
-        return $existingDocuments
-            ->concat($fallbackDocuments)
-            ->values()
-            ->all();
-    }
-
-    private function validateAssignedGroupForReview(
-        PesertaKkn $pesertaKkn,
-        GroupSelectionService $groupSelectionService,
-        string $errorKey = 'kelompok_id'
-    ): void {
-        if (! $pesertaKkn->kelompok_id) {
-            return;
-        }
-
-        $pesertaKkn->loadMissing('mahasiswa');
-
-        if (! $pesertaKkn->mahasiswa) {
-            throw ValidationException::withMessages([
-                $errorKey => 'Data mahasiswa pada pendaftaran ini tidak ditemukan.',
-            ]);
-        }
-
-        $kelompok = KelompokKkn::query()
-            ->whereKey($pesertaKkn->kelompok_id)
-            ->where('period_id', $pesertaKkn->period_id)
-            ->where('status', 'active')
-            ->lockForUpdate()
-            ->first();
-
-        if (! $kelompok) {
-            throw ValidationException::withMessages([
-                $errorKey => 'Kelompok yang dipilih sudah tidak aktif atau tidak berada pada periode pendaftaran yang sama.',
-            ]);
-        }
-
-        try {
-            $groupSelectionService->validateGroupAcceptance($kelompok, $pesertaKkn->mahasiswa, $pesertaKkn->id);
-        } catch (ValidationException $exception) {
-            $message = collect($exception->errors())->flatten()->first() ?: 'Kelompok yang dipilih tidak valid.';
-
-            throw ValidationException::withMessages([
-                $errorKey => $message,
-            ]);
-        }
-    }
-
-    private function prepareGroupPlacementForApproval(
-        PesertaKkn $registration,
-        GroupSelectionService $groupSelectionService,
-        AutomaticGroupPlacementService $automaticGroupPlacementService,
-        string $errorKey = 'kelompok_id',
-    ): PesertaKkn {
-        $registration->loadMissing(['mahasiswa', 'periode']);
-
-        if (! $registration->mahasiswa) {
-            throw ValidationException::withMessages([
-                $errorKey => 'Data mahasiswa pada pendaftaran ini tidak ditemukan.',
-            ]);
-        }
-
-        if ($registration->periode?->usesAutomaticPlacementAfterApproval() && ! $registration->kelompok_id) {
-            try {
-                $group = $automaticGroupPlacementService->selectGroupForStudent(
-                    $registration->mahasiswa,
-                    (int) $registration->period_id,
-                );
-            } catch (ValidationException $exception) {
-                $message = collect($exception->errors())->flatten()->first()
-                    ?: 'Belum ada kelompok yang valid untuk penempatan otomatis.';
-
-                throw ValidationException::withMessages([
-                    $errorKey => $message,
-                ]);
-            }
-
-            return $groupSelectionService->assignGroup($registration, $registration->mahasiswa, $group->id);
-        }
-
-        $this->validateAssignedGroupForReview($registration, $groupSelectionService, $errorKey);
-
-        return $registration;
-    }
 
     private function normalizeStatus(?string $status): ?string
     {
@@ -208,59 +59,32 @@ class PesertaKknController extends Controller
     /**
      * Download registration documents from local storage.
      */
-    public function downloadDocument(Request $request): BinaryFileResponse
-    {
+    public function downloadDocument(
+        Request $request,
+        RegistrationApprovalService $approvalService
+    ): \Symfony\Component\HttpFoundation\BinaryFileResponse {
         $path = $request->input('path');
         $user = auth()->user();
 
-        if (!$path || !Storage::disk('local')->exists($path)) {
-            abort(404, 'Dokumen tidak ditemukan.');
-        }
+        $fullPath = $approvalService->downloadDocument($path, $user);
 
-        // Security check: Only allow specific folders
-        if (!str_starts_with($path, 'health-certificates/') && !str_starts_with($path, 'parent-permissions/')) {
-            abort(403, 'Akses folder ditolak.');
-        }
-
-        // SECURITY: Additional path traversal prevention
-        // Resolve the actual path and verify it's within expected directories
-        $storageRoot = Storage::disk('local')->path('');
-        $fullPath = realpath($storageRoot . '/' . $path);
-
-        if (!$fullPath) {
-            abort(404, 'Dokumen tidak ditemukan.');
-        }
-
-        // Verify the resolved path is still within allowed directories
-        $allowedPrefixes = ['health-certificates', 'parent-permissions'];
-        $isAllowed = false;
-        foreach ($allowedPrefixes as $prefix) {
-            if (str_starts_with($fullPath, realpath($storageRoot . '/' . $prefix))) {
-                $isAllowed = true;
-                break;
-            }
-        }
-
-        if (!$isAllowed) {
-            abort(403, 'Akses ditolak: Path traversal terdeteksi.');
-        }
-
-        // Ownership check: If not admin, must be the owner of the document
-        if (!$user->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])) {
+        // Ownership check for non-admin users
+        if (! $user->hasAnyRole(['superadmin', 'faculty_admin'])) {
             $mahasiswa = \App\Models\KKN\Mahasiswa::where('user_id', $user->id)->first();
 
-            if (!$mahasiswa) {
+            if (! $mahasiswa) {
                 abort(403, 'Akses identitas ditolak.');
             }
 
-            $isOwner = ($mahasiswa->health_certificate_path === $path) || ($mahasiswa->parent_permission_path === $path);
+            $isOwner = ($mahasiswa->health_certificate_path === $path)
+                || ($mahasiswa->parent_permission_path === $path);
 
-            if (!$isOwner) {
+            if (! $isOwner) {
                 abort(403, 'Anda tidak memiliki hak akses untuk mendownload dokumen ini.');
             }
         }
 
-        return response()->download(Storage::disk('local')->path($path));
+        return response()->download($fullPath);
     }
 
     public function index(Request $request, KknRequirementService $kknRequirementService): Response
@@ -295,6 +119,10 @@ class PesertaKknController extends Controller
                 'student' => [
                     'nim' => $reg->mahasiswa?->nim,
                     'name' => $reg->mahasiswa?->nama ?? $reg->mahasiswa?->user?->name ?? '-',
+                    'phone' => $reg->mahasiswa?->user?->phone,
+                    'wa_link' => $reg->mahasiswa?->user?->phone
+                        ? 'https://wa.me/' . preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $reg->mahasiswa->user->phone))
+                        : null,
                     'faculty' => $reg->mahasiswa?->fakultas ? ['name' => $reg->mahasiswa->fakultas->nama] : null,
                     'program' => $reg->mahasiswa?->prodi ? ['name' => $reg->mahasiswa->prodi->nama] : null,
                 ],
@@ -334,7 +162,31 @@ class PesertaKknController extends Controller
                 }),
         ];
 
-        return Inertia::render('Admin/Registrations/Index', [
+        // Registration summary per KKN type (mirrors Kampelmas "Detail Pendaftaran KKN")
+        $byTypeStats = PesertaKkn::query()
+            ->join('periode', 'peserta_kkn.period_id', '=', 'periode.id')
+            ->selectRaw("periode.id as period_id, periode.name as period_name, periode.program_type, periode.kuota")
+            ->selectRaw("COUNT(*) as total_pendaftar")
+            ->selectRaw("SUM(CASE WHEN peserta_kkn.status = 'pending' THEN 1 ELSE 0 END) as pending")
+            ->selectRaw("SUM(CASE WHEN peserta_kkn.status = 'approved' THEN 1 ELSE 0 END) as approved")
+            ->selectRaw("SUM(CASE WHEN peserta_kkn.status = 'rejected' THEN 1 ELSE 0 END) as rejected")
+            ->groupBy('periode.id', 'periode.name', 'periode.program_type', 'periode.kuota')
+            ->orderBy('periode.id')
+            ->get()
+            ->map(fn ($row) => [
+                'period_id' => $row->period_id,
+                'jenis' => $row->period_name,
+                'program_type' => $row->program_type,
+                'kuota' => (int) $row->kuota,
+                'pendaftar' => (int) $row->total_pendaftar,
+                'pending' => (int) $row->pending,
+                'setuju' => (int) $row->approved,
+                'tolak' => (int) $row->rejected,
+            ]);
+
+        $periods = \App\Models\KKN\Periode::orderByDesc('is_active')->orderByDesc('periode')->get(['id', 'name', 'periode']);
+
+        return Inertia::render('Admin/Operational/Registrations/Index', [
             'registrations' => $this->formatPaginator($registrations),
             'filters' => [
                 'search' => $request->input('search'),
@@ -342,6 +194,8 @@ class PesertaKknController extends Controller
                 'period_id' => $request->input('period_id'),
             ],
             'stats' => $stats,
+            'byTypeStats' => $byTypeStats,
+            'periods' => $periods,
         ]);
     }
 
@@ -350,54 +204,19 @@ class PesertaKknController extends Controller
      */
     public function bulkApprove(
         Request $request,
-        GroupSelectionService $groupSelectionService,
-        AutomaticGroupPlacementService $automaticGroupPlacementService,
-    ): RedirectResponse
-    {
+        RegistrationApprovalService $approvalService,
+    ): RedirectResponse {
         $validated = $request->validate([
             'ids' => ['required', 'array'],
             'ids.*' => ['required', 'integer', 'exists:peserta_kkn,id'],
         ]);
 
-        $count = \Illuminate\Support\Facades\DB::transaction(function () use (
-            $validated,
-            $groupSelectionService,
-            $automaticGroupPlacementService,
-        ) {
-            // FIX C8: Add faculty scoping for faculty_admin users
-            $registrations = PesertaKkn::query()
-                ->with('mahasiswa')
-                ->whereIn('id', $validated['ids'])
-                ->where('status', 'pending')
-                ->when(auth()->user()->hasRole('faculty_admin'), function ($query) {
-                    $query->whereHas('mahasiswa', function ($q) {
-                        $q->where('faculty_id', auth()->user()->faculty_id);
-                    });
-                })
-                ->lockForUpdate()
-                ->get();
-
-            /** @var PesertaKkn $registration */
-            foreach ($registrations as $registration) {
-                $this->prepareGroupPlacementForApproval(
-                    $registration,
-                    $groupSelectionService,
-                    $automaticGroupPlacementService,
-                    'ids'
-                );
-            }
-
-            /** @var PesertaKkn $registration */
-            foreach ($registrations as $registration) {
-                $registration->update([
-                    'status' => 'approved',
-                    'approved_at' => now(),
-                    'approved_by' => auth()->id(),
-                ]);
-            }
-
-            return $registrations->count();
-        });
+        $count = $approvalService->bulkApprove(
+            $validated['ids'],
+            auth()->id(),
+            auth()->user()->hasRole('faculty_admin'),
+            auth()->user()->faculty_id,
+        );
 
         return redirect()->back()->with('success', "{$count} pendaftaran berhasil disetujui.");
     }
@@ -405,34 +224,23 @@ class PesertaKknController extends Controller
     /**
      * Bulk reject registrations
      */
-    public function bulkReject(Request $request): RedirectResponse
-    {
+    public function bulkReject(
+        Request $request,
+        RegistrationApprovalService $approvalService,
+    ): RedirectResponse {
         $validated = $request->validate([
             'ids' => ['required', 'array'],
             'ids.*' => ['required', 'integer', 'exists:peserta_kkn,id'],
             'notes' => ['required', 'string', 'max:1000'],
         ]);
 
-        // WRAP IN TRANSACTION for atomicity with row-level locking
-        $count = \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
-            // FIX C8: Add faculty scoping for faculty_admin users
-            $affected = PesertaKkn::whereIn('id', $validated['ids'])
-                ->where('status', 'pending')
-                ->when(auth()->user()->hasRole('faculty_admin'), function ($query) {
-                    $query->whereHas('mahasiswa', function ($q) {
-                        $q->where('faculty_id', auth()->user()->faculty_id);
-                    });
-                })
-                ->lockForUpdate()
-                ->update([
-                    'status' => 'rejected',
-                    'rejection_reason' => $validated['notes'],
-                    'last_rejected_at' => now(),
-                    'last_rejected_by' => auth()->id(),
-                ]);
-
-            return $affected;
-        });
+        $count = $approvalService->bulkReject(
+            $validated['ids'],
+            $validated['notes'],
+            auth()->id(),
+            auth()->user()->hasRole('faculty_admin'),
+            auth()->user()->faculty_id,
+        );
 
         return redirect()->back()->with('success', "{$count} pendaftaran ditolak.");
     }
@@ -440,94 +248,27 @@ class PesertaKknController extends Controller
     /**
      * Export registrations to Excel
      */
-    public function export(Request $request): BinaryFileResponse
-    {
+    public function export(
+        Request $request,
+        RegistrationExportService $exportService
+    ): \Symfony\Component\HttpFoundation\BinaryFileResponse {
         $registrations = $this->registrationQuery($request)
             ->orderByDesc('created_at')
             ->get();
 
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-
-        // Header
-        $headers = ['No', 'NIM', 'Nama', 'Fakultas', 'Program Studi', 'Periode', 'Kelompok', 'Status', 'Tanggal Daftar'];
-        $col = 'A';
-        foreach ($headers as $header) {
-            $sheet->setCellValue("{$col}1", $header);
-            $col++;
-        }
-
-        // Styling header
-        $headerStyle = [
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => '2563EB']],
-        ];
-        $sheet->getStyle('A1:I1')->applyFromArray($headerStyle);
-
-        // Data
-        $row = 2;
-        foreach ($registrations as $index => $reg) {
-            $sheet->setCellValue("A{$row}", $index + 1);
-            $sheet->setCellValue("B{$row}", $reg->mahasiswa?->nim ?? '-');
-            $sheet->setCellValue("C{$row}", $reg->mahasiswa?->nama ?? '-');
-            $sheet->setCellValue("D{$row}", $reg->mahasiswa?->fakultas?->nama ?? '-');
-            $sheet->setCellValue("E{$row}", $reg->mahasiswa?->prodi?->nama ?? '-');
-            $sheet->setCellValue("F{$row}", $reg->periode?->name ?? '-');
-            $sheet->setCellValue("G{$row}", $reg->kelompok?->nama_kelompok ?? 'Belum ada');
-            $sheet->setCellValue("H{$row}", ucfirst($reg->status));
-            $sheet->setCellValue("I{$row}", $reg->created_at->format('d M Y H:i'));
-
-            // Color code status
-            $statusColor = [
-                'pending' => 'FFA500',
-                'approved' => '22C55E',
-                'rejected' => 'EF4444',
-            ][$reg->status] ?? '000000';
-
-            $sheet->getStyle("H{$row}")->getFont()->getColor()->setRGB($statusColor);
-            $row++;
-        }
-
-        // Auto-size columns
-        foreach (range('A', 'I') as $col) {
-            $sheet->getColumnDimension($col)->setAutoSize(true);
-        }
-
-        $filename = 'data-pendaftaran-kkn-' . date('Y-m-d-His') . '.xlsx';
-        $writer = new Xlsx($spreadsheet);
-
-        // SECURITY: Use Laravel's storage path instead of system temp directory
-        // This prevents race conditions and orphaned temp files
-        $exportDir = storage_path('framework/cache/exports');
-        if (!is_dir($exportDir)) {
-            mkdir($exportDir, 0750, true); // Restrictive permissions
-        }
-
-        $tempFile = $exportDir . '/' . \Illuminate\Support\Str::uuid() . '.xlsx';
-        try {
-            $writer->save($tempFile);
-            return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
-        } catch (\Throwable $e) {
-            // Clean up on error
-            if (file_exists($tempFile)) {
-                unlink($tempFile);
-            }
-            \Illuminate\Support\Facades\Log::error('Export failed', ['exception' => $e]);
-            abort(500, 'Gagal mengekspor data.');
-        }
+        return $exportService->exportToExcel($registrations);
     }
 
-    public function exportBpjs(Request $request): BinaryFileResponse
-    {
+    public function exportBpjs(
+        Request $request,
+        RegistrationExportService $exportService
+    ): \Symfony\Component\HttpFoundation\BinaryFileResponse {
         $registrations = $this->registrationQuery($request, approvedOnly: true)
             ->orderBy('approved_at')
             ->orderBy('created_at')
             ->get();
 
-        return Excel::download(
-            new BpjsParticipantExport($registrations),
-            'peserta-bpjs-kkn.xlsx'
-        );
+        return $exportService->exportBpjs($registrations);
     }
 
     public function show(PesertaKkn $pesertaKkn, KknRequirementService $kknRequirementService): Response
@@ -547,41 +288,36 @@ class PesertaKknController extends Controller
             ]);
         }
 
-        return Inertia::render('Admin/Registrations/Show', [
+        return Inertia::render('Admin/Operational/Registrations/Show', [
             'registration' => $registration,
         ]);
     }
 
     public function approve(
         PesertaKkn $pesertaKkn,
-        GroupSelectionService $groupSelectionService,
-        AutomaticGroupPlacementService $automaticGroupPlacementService,
-    ): RedirectResponse
-    {
-        \Illuminate\Support\Facades\DB::transaction(function () use ($pesertaKkn, $groupSelectionService, $automaticGroupPlacementService) {
-            $registration = PesertaKkn::query()
-                ->with(['mahasiswa', 'periode'])
-                ->lockForUpdate()
-                ->findOrFail($pesertaKkn->id);
+        RegistrationApprovalService $approvalService,
+    ): RedirectResponse {
+        $approvalService->approve($pesertaKkn, auth()->id());
 
-            $registration = $this->prepareGroupPlacementForApproval(
-                $registration,
-                $groupSelectionService,
-                $automaticGroupPlacementService,
-            );
-
-            $registration->update([
-                'status' => 'approved',
-                'approved_at' => now(),
-                'approved_by' => auth()->id(),
-            ]);
-        });
+        // Notify student
+        $pesertaKkn->load('mahasiswa.user', 'periode', 'kelompok');
+        $user = $pesertaKkn->mahasiswa?->user;
+        if ($user) {
+            $user->notify(new RegistrationApprovedNotification(
+                $pesertaKkn,
+                $pesertaKkn->periode?->name ?? 'KKN',
+                $pesertaKkn->kelompok?->nama_kelompok,
+            ));
+        }
 
         return redirect()->back()->with('success', 'Pendaftaran berhasil disetujui.');
     }
 
-    public function reject(Request $request, PesertaKkn $pesertaKkn): RedirectResponse
-    {
+    public function reject(
+        Request $request,
+        PesertaKkn $pesertaKkn,
+        RegistrationApprovalService $approvalService,
+    ): RedirectResponse {
         $validated = $request->validate([
             'notes' => ['required', 'string', 'max:1000'],
         ]);
@@ -593,71 +329,54 @@ class PesertaKknController extends Controller
             'last_rejected_by' => auth()->id(),
         ]);
 
+        // Notify student
+        $pesertaKkn->load('mahasiswa.user', 'periode');
+        $user = $pesertaKkn->mahasiswa?->user;
+        if ($user) {
+            $user->notify(new RegistrationRejectedNotification(
+                $pesertaKkn,
+                $pesertaKkn->periode?->name ?? 'KKN',
+                $validated['notes'],
+            ));
+        }
+
         return redirect()->back()->with('success', 'Pendaftaran ditolak.');
     }
 
-    public function assignGroup(Request $request, PesertaKkn $pesertaKkn, GroupSelectionService $groupSelectionService): RedirectResponse
-    {
+    public function assignGroup(
+        Request $request,
+        PesertaKkn $pesertaKkn,
+        RegistrationApprovalService $approvalService,
+    ): RedirectResponse {
         $validated = $request->validate([
             'kelompok_id' => ['required', 'integer'],
         ]);
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($pesertaKkn, $validated, $groupSelectionService) {
-            $registration = PesertaKkn::query()
-                ->with('mahasiswa')
-                ->lockForUpdate()
-                ->findOrFail($pesertaKkn->id);
+        $approvalService->assignGroup($pesertaKkn, $validated['kelompok_id']);
 
-            if (! $registration->mahasiswa) {
-                throw ValidationException::withMessages([
-                    'kelompok_id' => 'Data mahasiswa pada pendaftaran ini tidak ditemukan.',
-                ]);
-            }
-
-            if ($registration->status !== 'approved') {
-                throw ValidationException::withMessages([
-                    'kelompok_id' => 'Mahasiswa hanya dapat dipindahkan ke kelompok setelah pendaftaran disetujui admin.',
-                ]);
-            }
-
-            $kelompok = KelompokKkn::query()
-                ->whereKey($validated['kelompok_id'])
-                ->where('period_id', $registration->period_id)
-                ->where('status', 'active')
-                ->lockForUpdate()
-                ->first();
-
-            if (! $kelompok) {
-                throw ValidationException::withMessages([
-                    'kelompok_id' => 'Kelompok tujuan tidak ditemukan pada periode yang sama atau statusnya tidak aktif.',
-                ]);
-            }
-
-            $excludeRegistrationId = $registration->kelompok_id === $kelompok->id
-                ? $registration->id
+        // Notify student about group placement
+        $pesertaKkn->load('mahasiswa.user', 'periode', 'kelompok.lokasi');
+        $user = $pesertaKkn->mahasiswa?->user;
+        if ($user && $pesertaKkn->kelompok) {
+            $locationName = $pesertaKkn->kelompok->lokasi
+                ? trim(($pesertaKkn->kelompok->lokasi->district_name ?? '') . ', ' . ($pesertaKkn->kelompok->lokasi->regency_name ?? ''), ', ')
                 : null;
 
-            $groupSelectionService->validateGroupAcceptance($kelompok, $registration->mahasiswa, $excludeRegistrationId);
-
-            $groupSelectionService->assignGroup($registration, $registration->mahasiswa, $kelompok->id);
-            $registration->update(['role' => 'Anggota']);
-        });
+            $user->notify(new GroupPlacementConfirmedNotification(
+                $pesertaKkn->kelompok->nama_kelompok,
+                $pesertaKkn->periode?->name ?? 'KKN',
+                $locationName ?: null,
+            ));
+        }
 
         return redirect()->back()->with('success', 'Mahasiswa berhasil ditempatkan ke kelompok.');
     }
 
-    public function makeLeader(PesertaKkn $registration): RedirectResponse
-    {
-        // Fix: Validate student is approved and in a group
-        if (!$registration->kelompok_id) {
-            return redirect()->back()->withErrors(['error' => 'Mahasiswa harus ditempatkan di kelompok terlebih dahulu.']);
-        }
-
-        if ($registration->status !== 'approved') {
-            return redirect()->back()->withErrors(['error' => 'Hanya mahasiswa yang sudah disetujui yang dapat menjadi ketua kelompok.']);
-        }
-
-        // FIX C16: Add faculty scope verification for faculty_admin users
+    public function makeLeader(
+        PesertaKkn $registration,
+        RegistrationApprovalService $approvalService,
+    ): RedirectResponse {
+        // Faculty scope verification
         if (auth()->user()->hasRole('faculty_admin')) {
             $studentFacultyId = $registration->mahasiswa?->faculty_id;
             if ($studentFacultyId !== auth()->user()->faculty_id) {
@@ -665,16 +384,11 @@ class PesertaKknController extends Controller
             }
         }
 
-        // WRAP IN TRANSACTION: Ensure atomicity
-        \Illuminate\Support\Facades\DB::transaction(function () use ($registration) {
-            // Reset all other members in the SAME group to 'Anggota'
-            PesertaKkn::where('kelompok_id', $registration->kelompok_id)
-                ->where('id', '!=', $registration->id)
-                ->update(['role' => 'Anggota']);
-
-            // Set this student as 'Ketua'
-            $registration->update(['role' => 'Ketua']);
-        });
+        try {
+            $approvalService->makeLeader($registration);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+        }
 
         return redirect()->back()->with('success', "{$registration->mahasiswa->nama} kini resmi menjadi Ketua Kelompok.");
     }

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use App\Notifications\KKN\AccountActivatedNotification;
 
 class StudentSyncService
 {
@@ -25,7 +26,7 @@ class StudentSyncService
     {
         $externalStudents = !empty($nimList)
             ? $this->masterApi->getStudentsByNimList($nimList)
-            : $this->masterApi->getAllStudents();
+            : $this->masterApi->getSyncMahasiswa();
 
         $results = [
             'total' => count($externalStudents),
@@ -85,18 +86,22 @@ class StudentSyncService
             );
 
             // 3. Create/Update User
+            $email = $data['email'] ?? $data['nim'] . '@student.uinsaizu.ac.id';
+            $isNewUser = !User::where('username', $data['nim'])->exists();
+
             $user = User::firstOrCreate(
                 ['username' => $data['nim']],
                 [
                     'name' => $data['name'],
-                    'email' => $data['email'] ?? $data['nim'] . '@student.uinsaizu.ac.id',
+                    'email' => $email, // Use calculated email
                     'password' => Hash::make($password),
                     'is_active' => true,
+                    'must_change_password' => true, // Force change on first login
                 ]
             );
 
-            $address = $data['address'] ?? $data['alamat'] ?? null;
-            $email = $data['email'] ?? $data['nim'] . '@student.uinsaizu.ac.id';
+            $email = $data['email'] ?? ($data['nim'] . '@student.uinsaizu.ac.id');
+            $address = $data['address'] ?? $data['alamat'] ?? $data['domicile'] ?? null;
 
             $user->fill(array_filter([
                 'name' => $data['name'] ?? null,

@@ -1,127 +1,302 @@
+import React from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { FormInput, FormTextarea, StatusBadge } from '@/Components/ui';
 import type { PageProps } from '@/types';
+import { route } from 'ziggy-js';
+import { CheckCircle2, FileText, Video, Newspaper, Map, Layers, ScrollText, ChevronLeft, UploadCloud, ShieldAlert } from 'lucide-react';
 
 interface Props extends PageProps {
- group: {
- id: number;
- name: string;
- } | null;
- existingReport: {
- id: number;
- title: string;
- status: string;
- file_name?: string | null;
- } | null;
- isLeader: boolean;
+    group: {
+        id: number;
+        name: string;
+    } | null;
+    existingReport: {
+        id: number;
+        title: string;
+        status: string;
+        file_name?: string | null;
+    } | null;
+    isLeader: boolean;
 }
 
 export default function StudentFinalReportCreate({ group, existingReport, isLeader }: Props) {
- const form = useForm({
- title: existingReport?.title ?? '',
- abstract: '',
- file: null as File | null,
- });
+    const form = useForm({
+        title: existingReport?.title ?? '',
+        abstract: '',
+        video_link: '',
+        news_link: '',
+        article_1: null as File | null,
+        article_2: null as File | null,
+        poster_1: null as File | null,
+        poster_2: null as File | null,
+        poster_3: null as File | null,
+        file: null as File | null,
+    });
 
- const handleSubmit = (event: React.FormEvent) => {
- event.preventDefault();
- form.post('/mahasiswa/final-report', {
- forceFormData: true,
- });
- };
+    const handleSubmit = (event: React.FormEvent) => {
+        event.preventDefault();
+        form.post(route('student.laporan-akhir.store'), {
+            forceFormData: true,
+        });
+    };
 
- if (!group) {
- return (
- <AppLayout title="Laporan Akhir">
- <Head title="Laporan Akhir" />
- <div className="rounded-lg border border-slate-200 bg-white px-6 py-12 text-center text-sm text-slate-500">
- Anda belum memiliki kelompok aktif.
- </div>
- </AppLayout>
- );
- }
+    if (!group) {
+        return (
+            <AppLayout title="Laporan Akhir">
+                <Head title="Laporan Akhir" />
+                <div className="mx-auto max-w-4xl py-20 text-center space-y-6">
+                    <div className="mx-auto h-24 w-24 bg-slate-50 rounded-full flex items-center justify-center text-slate-200">
+                        <ShieldAlert size={48} strokeWidth={1} />
+                    </div>
+                    <div className="space-y-2">
+                        <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tighter">Akses Terbatas</h2>
+                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest max-w-md mx-auto">
+                            Anda belum terdaftar dalam unit kelompok manapun untuk periode ini.
+                        </p>
+                    </div>
+                </div>
+            </AppLayout>
+        );
+    }
 
- return (
- <AppLayout title="Laporan Akhir">
- <Head title="Laporan Akhir" />
+    return (
+        <AppLayout title="Laporan Akhir">
+            <Head title="Laporan Akhir" />
 
- <div className="mx-auto max-w-4xl space-y-6">
- <section className="rounded-lg border border-slate-200 bg-white p-8">
- <Link
- href="/mahasiswa"
- className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
- >
- Kembali ke dasbor
- </Link>
- <h1 className="mt-4 text-2xl font-semibold text-slate-900">Unggah Laporan Akhir</h1>
- <p className="mt-2 text-sm text-slate-500">
- Kelompok aktif: {group.name}. Hanya ketua kelompok yang dapat mengunggah laporan akhir.
- </p>
- </section>
+            <div className="mx-auto max-w-5xl space-y-10 pb-24">
+                {/* --- HEADER --- */}
+                <section className="rounded-[2.5rem] border border-slate-100 bg-white p-10 lg:p-12 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-8 relative overflow-hidden group">
+                    <div className="relative z-10 space-y-3">
+                         <div className="flex items-center gap-4 text-emerald-600 mb-2">
+                            <Link
+                                href={route('student.dashboard')}
+                                className="p-2 hover:bg-emerald-50 rounded-xl transition-colors"
+                            >
+                                <ChevronLeft size={20} strokeWidth={2.5} />
+                            </Link>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Terminal Penutup KKN</span>
+                        </div>
+                        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight uppercase leading-none">Final Report & Luaran</h1>
+                        <p className="text-sm font-medium text-slate-400">Puncak dari perjalanan pengabdian unit <span className="text-emerald-600 font-black">{group.name}</span>.</p>
+                    </div>
+                    
+                    {existingReport && (
+                        <div className="relative z-10 flex items-center gap-6 bg-slate-50 px-8 py-6 rounded-[2rem] border border-slate-100">
+                            <div className="space-y-1">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none">Status Terkini</p>
+                                <p className="text-sm font-black text-slate-900 truncate max-w-[150px] tracking-tight">{existingReport.title}</p>
+                            </div>
+                            <StatusBadge status={existingReport.status} className="rounded-xl px-4 py-2 text-[10px] font-extrabold" />
+                        </div>
+                    )}
+                </section>
 
- {existingReport && (
- <section className="rounded-lg border border-slate-200 bg-white p-6">
- <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
- <div>
- <h2 className="text-lg font-semibold text-slate-900">{existingReport.title}</h2>
- <p className="mt-1 text-sm text-slate-500">{existingReport.file_name || 'Dokumen sudah tersimpan.'}</p>
- </div>
- <StatusBadge status={existingReport.status} />
- </div>
- </section>
- )}
+                {/* --- MAIN FORM --- */}
+                {isLeader ? (
+                    <form onSubmit={handleSubmit} className="space-y-10">
+                        {/* 1. DATA IDENTITAS LAPORAN */}
+                        <div className="rounded-[2.5rem] border border-slate-100 bg-white p-10 lg:p-12 shadow-sm space-y-8">
+                            <div className="flex items-center gap-4 border-b border-slate-50 pb-6">
+                                <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
+                                    <ScrollText size={24} />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter leading-none">Identitas Laporan</h2>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2 leading-none">Informasi inti dan abstraksi kegiatan</p>
+                                </div>
+                            </div>
+                            
+                            <div className="grid gap-8">
+                                <FormInput
+                                    label="Judul Laporan Kolektif"
+                                    required
+                                    value={form.data.title}
+                                    onChange={(event) => form.setData('title', event.target.value)}
+                                    error={form.errors.title}
+                                    className="rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white transition-all text-sm font-bold uppercase tracking-tight py-4"
+                                />
+                                <FormTextarea
+                                    label="Abstraksi Ringkas"
+                                    placeholder="Gambarkan inti pengabdian unit dalam 200-300 kata..."
+                                    value={form.data.abstract}
+                                    onChange={(event) => form.setData('abstract', event.target.value)}
+                                    error={form.errors.abstract}
+                                    className="rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white transition-all text-sm font-medium py-4 min-h-[150px]"
+                                />
+                            </div>
+                        </div>
 
- {isLeader ? (
- <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-6">
- <div className="space-y-6">
- <FormInput
- label="Judul laporan"
- required
- value={form.data.title}
- onChange={(event) => form.setData('title', event.target.value)}
- error={form.errors.title}
- />
- <FormTextarea
- label="Abstrak"
- value={form.data.abstract}
- onChange={(event) => form.setData('abstract', event.target.value)}
- error={form.errors.abstract}
- />
- <div className="space-y-2">
-   <label className="block text-sm font-medium text-slate-700">File laporan</label>
-   <input
-     type="file"
-     accept=".pdf,.doc,.docx"
-     onChange={(event) => form.setData('file', event.target.files?.[0] ?? null)}
-     className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary"
-     required
-   />
-   {form.errors.file && <p className="text-xs text-red-600">{form.errors.file}</p>}
- </div>
- </div>
- <div className="mt-6 flex justify-end gap-3">
- <Link
- href="/mahasiswa"
- className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
- >
- Batal
- </Link>
- <button
- type="submit"
- disabled={form.processing}
- className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-60"
- >
- {form.processing ? 'Mengirim...' : 'Kirim laporan akhir'}
- </button>
- </div>
- </form>
- ) : (
- <section className="rounded-lg border border-amber-200 bg-amber-50 px-6 py-4 text-sm text-amber-800">
- Anda hanya dapat melihat status laporan akhir. Pengunggahan hanya bisa dilakukan oleh ketua kelompok.
- </section>
- )}
- </div>
- </AppLayout>
- );
+                        {/* 2. TAUTAN MULTIMEDIA & PUBLIKASI */}
+                        <div className="rounded-[2.5rem] border border-slate-100 bg-white p-10 lg:p-12 shadow-sm space-y-8">
+                            <div className="flex items-center gap-4 border-b border-slate-50 pb-6">
+                                <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
+                                    <Layers size={24} />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter leading-none">Publikasi Digital</h2>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2 leading-none">Link jejak digital pengabdian masyarakat</p>
+                                </div>
+                            </div>
+                            
+                            <div className="grid gap-8 md:grid-cols-2">
+                                <div className="space-y-2">
+                                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                                        <Video size={14} className="text-rose-500" /> Video Dokumentasi (5-7 Menit)
+                                    </label>
+                                    <input
+                                        type="url"
+                                        placeholder="https://youtube.com/watch?v=..."
+                                        value={form.data.video_link}
+                                        onChange={(event) => form.setData('video_link', event.target.value)}
+                                        className="w-full rounded-2xl bg-slate-50/50 border-slate-100 px-5 py-4 text-sm font-bold text-slate-600 focus:ring-emerald-500 focus:border-emerald-500"
+                                    />
+                                    {form.errors.video_link && <p className="text-[10px] font-bold text-rose-500 uppercase px-1">{form.errors.video_link}</p>}
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                                        <Newspaper size={14} className="text-blue-500" /> Link Berita / Press Release
+                                    </label>
+                                    <input
+                                        type="url"
+                                        placeholder="https://media-online.com/kkn-uin-saizu"
+                                        value={form.data.news_link}
+                                        onChange={(event) => form.setData('news_link', event.target.value)}
+                                        className="w-full rounded-2xl bg-slate-50/50 border-slate-100 px-5 py-4 text-sm font-bold text-slate-600 focus:ring-emerald-500 focus:border-emerald-500"
+                                    />
+                                    {form.errors.news_link && <p className="text-[10px] font-bold text-rose-500 uppercase px-1">{form.errors.news_link}</p>}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 3. DOKUMEN & ARSIP FISIK */}
+                        <div className="rounded-[2.5rem] border border-slate-100 bg-white p-10 lg:p-12 shadow-sm space-y-10">
+                             <div className="flex items-center gap-4 border-b border-slate-50 pb-6">
+                                <div className="h-12 w-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-sm">
+                                    <UploadCloud size={24} />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter leading-none">Arsip Dokumen</h2>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2 leading-none">Berkas ilmiah, poster peta, dan laporan utama</p>
+                                </div>
+                            </div>
+
+                            <div className="grid gap-10">
+                                {/* Artikel Section */}
+                                <div className="space-y-6">
+                                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                        Artikel Ilmiah (Min. 2 Berkas)
+                                    </h3>
+                                    <div className="grid gap-6 md:grid-cols-2">
+                                        <FileInput label="Artikel Ilmiah 1" icon={<FileText size={18} />} accept=".pdf,.doc,.docx" onChange={(f) => form.setData('article_1', f)} />
+                                        <FileInput label="Artikel Ilmiah 2" icon={<FileText size={18} />} accept=".pdf,.doc,.docx" onChange={(f) => form.setData('article_2', f)} />
+                                    </div>
+                                </div>
+
+                                {/* Poster Section */}
+                                <div className="space-y-6">
+                                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                        Poster Peta Potensi (Min. 3 Berkas)
+                                    </h3>
+                                    <div className="grid gap-6 md:grid-cols-3">
+                                        <FileInput label="Poster I" icon={<Map size={18} />} accept=".jpg,.jpeg,.png,.pdf" onChange={(f) => form.setData('poster_1', f)} />
+                                        <FileInput label="Poster II" icon={<Map size={18} />} accept=".jpg,.jpeg,.png,.pdf" onChange={(f) => form.setData('poster_2', f)} />
+                                        <FileInput label="Poster III" icon={<Map size={18} />} accept=".jpg,.jpeg,.png,.pdf" onChange={(f) => form.setData('poster_3', f)} />
+                                    </div>
+                                </div>
+
+                                {/* Main Report Section */}
+                                <div className="space-y-6 pt-6 border-t border-slate-50">
+                                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+                                        Main Final Report (Wajib PDF)
+                                    </h3>
+                                    <div className="relative group/main">
+                                        <input
+                                            type="file"
+                                            accept=".pdf"
+                                            required
+                                            onChange={(e) => form.setData('file', e.target.files?.[0] ?? null)}
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                        />
+                                        <div className="bg-rose-50/30 border-2 border-dashed border-rose-100 rounded-[2rem] p-12 text-center group-hover/main:bg-rose-50 transition-all">
+                                            <div className="mx-auto h-16 w-16 bg-white rounded-2xl flex items-center justify-center text-rose-500 shadow-sm mb-4">
+                                                <UploadCloud size={32} />
+                                            </div>
+                                            <p className="text-sm font-black text-slate-900 uppercase tracking-tight">
+                                                {form.data.file ? form.data.file.name : 'Upload Laporan Akhir Utama'}
+                                            </p>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2 leading-none">Sesuai Format Baku LPPM UIN SAIZU</p>
+                                        </div>
+                                    </div>
+                                    {form.errors.file && <p className="text-[10px] font-bold text-rose-500 uppercase px-1">{form.errors.file}</p>}
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end gap-4 pt-10 border-t border-slate-50">
+                                <Link
+                                    href={route('student.dashboard')}
+                                    className="px-10 py-5 rounded-2xl bg-white border border-slate-200 text-[10px] font-black text-slate-400 hover:text-slate-600 transition-all uppercase tracking-[0.2em]"
+                                >
+                                    Batalkan
+                                </Link>
+                                <button
+                                    type="submit"
+                                    disabled={form.processing}
+                                    className="px-12 py-5 rounded-2xl bg-emerald-600 text-white font-black text-[10px] shadow-xl shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-95 uppercase tracking-[0.2em] flex items-center gap-4"
+                                >
+                                    {form.processing ? 'Transmitting Data...' : 'Kirim Laporan Akhir'}
+                                    <CheckCircle2 size={16} strokeWidth={3} />
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                ) : (
+                    <section className="rounded-[2.5rem] border border-amber-100 bg-amber-50 p-12 lg:p-16 text-center space-y-6">
+                        <div className="mx-auto h-20 w-20 rounded-[1.5rem] bg-white flex items-center justify-center text-amber-500 shadow-sm">
+                            <ShieldAlert size={40} />
+                        </div>
+                        <div className="space-y-2">
+                            <h2 className="text-xl font-black text-amber-900 uppercase tracking-tighter">Hanya Ketua Unit</h2>
+                            <p className="text-xs font-bold text-amber-700/70 uppercase tracking-[0.2em] leading-relaxed max-w-sm mx-auto">
+                                Sesuai protokol pimpinan, unggahan laporan kolektif didelegasikan penuh kepada <span className="text-amber-900">Ketua Kelompok</span>.
+                            </p>
+                        </div>
+                    </section>
+                )}
+            </div>
+        </AppLayout>
+    );
+}
+
+function FileInput({ label, icon, accept, onChange }: { label: string, icon: React.ReactNode, accept: string, onChange: (file: File | null) => void }) {
+    const [fileName, setFileName] = React.useState<string | null>(null);
+    
+    return (
+        <div className="relative group/file">
+            <input 
+                type="file" 
+                accept={accept} 
+                onChange={(e) => {
+                    const f = e.target.files?.[0] ?? null;
+                    setFileName(f?.name ?? null);
+                    onChange(f);
+                }} 
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+            />
+            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5 flex items-center gap-4 group-hover/file:bg-white group-hover/file:border-emerald-200 transition-all">
+                <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-slate-400 group-hover/file:text-emerald-500 shadow-sm shrink-0 transition-colors">
+                    {icon}
+                </div>
+                <div className="overflow-hidden">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">{label}</p>
+                    <p className="text-[11px] font-bold text-slate-900 truncate uppercase tracking-tight leading-none group-hover/file:text-emerald-600">
+                        {fileName || 'Pilih File...'}
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
 }

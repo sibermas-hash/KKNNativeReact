@@ -47,7 +47,7 @@ class KonfigurasiPenilaianController extends Controller
                 'label' => $type->label()
             ])->values();
 
-        return Inertia::render('Admin/Grading/Settings', [
+        return Inertia::render('Admin/Academic/Grading/Settings', [
             'sections' => $sections,
             'programOptions' => $programOptions,
             'filters' => [
@@ -91,7 +91,9 @@ class KonfigurasiPenilaianController extends Controller
         }
 
         foreach ($validated['configs'] as $configData) {
-            KonfigurasiPenilaian::find($configData['id'])->update([
+            $config = KonfigurasiPenilaian::find($configData['id']);
+
+            $config->update([
                 'percentage' => $configData['percentage'],
             ]);
         }

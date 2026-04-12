@@ -19,6 +19,16 @@ class EnsureUserIsActive
         $user = Auth::user();
 
         if ($user && !$user->is_active) {
+            // For API requests, return JSON response
+            if ($request->expectsJson() || $request->is('api/*')) {
+                Auth::guard('sanctum')->logout();
+                
+                return response()->json([
+                    'message' => 'Akun Anda telah dinonaktifkan. Silakan hubungi administrator.',
+                ], 403);
+            }
+
+            // For web requests, redirect to login
             Auth::logout();
 
             return redirect()

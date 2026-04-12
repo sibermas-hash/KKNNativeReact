@@ -36,24 +36,24 @@ export default function Schemes({ content }: Props) {
                             className="inline-flex items-center gap-3 px-5 py-2 bg-emerald-50 border border-emerald-100 rounded-full"
                         >
                             <Target size={16} className="text-emerald-500" />
-                            <span className="text-[11px] font-black text-emerald-800 uppercase tracking-[0.3em]">Program & Skema Pengabdian</span>
+                            <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-widest">Program & Skema Pengabdian</span>
                         </motion.div>
                         
                         <motion.h1 
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-6xl lg:text-[100px] font-black tracking-tighter text-slate-900 leading-[0.85] uppercase"
+                            className="text-6xl lg:text-[100px] font-bold tracking-tighter text-slate-900 leading-[0.85] uppercase"
                         >
                             Opsi <br /> 
-                            <span className="text-emerald-500 italic lowercase font-medium">intervensi.</span>
+                            <span className="text-emerald-500   font-medium">intervensi.</span>
                         </motion.h1>
 
                         <motion.p 
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="text-xl lg:text-3xl text-slate-400 font-bold max-w-2xl leading-relaxed italic border-l-8 border-emerald-500 pl-10"
+                            className="text-xl lg:text-3xl text-slate-400 font-bold max-w-2xl leading-relaxed  border-l-8 border-emerald-500 pl-12"
                         >
                             {content.intro}
                         </motion.p>
@@ -82,14 +82,14 @@ export default function Schemes({ content }: Props) {
                                             <Icon size={36} />
                                         </div>
                                         <div className="flex-1 h-[1px] bg-slate-50" />
-                                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">{`SCHEME_${i+1}`}</span>
+                                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">{`SCHEME_${i+1}`}</span>
                                     </div>
 
                                     <div className="space-y-8 relative z-10">
-                                        <h4 className="text-4xl lg:text-5xl font-black text-slate-900 uppercase tracking-tighter leading-none italic group-hover:text-emerald-600 transition-colors">
+                                        <h4 className="text-4xl lg:text-5xl font-bold text-slate-900 uppercase tracking-tighter leading-none  group-hover:text-emerald-600 transition-colors">
                                             {scheme.title}
                                         </h4>
-                                        <p className="text-slate-500 text-lg lg:text-xl font-bold leading-relaxed italic opacity-80 line-clamp-3">
+                                        <p className="text-slate-500 text-lg lg:text-xl font-bold leading-relaxed  opacity-80 line-clamp-3">
                                             {scheme.description}
                                         </p>
                                     </div>
@@ -97,7 +97,7 @@ export default function Schemes({ content }: Props) {
                                     <div className="mt-16 pt-12 border-t border-slate-50 relative z-10 flex items-center justify-between">
                                         <Link
                                             href={route('login')}
-                                            className="px-10 py-5 bg-slate-900 text-white rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-slate-900/10 flex items-center gap-4"
+                                            className="px-10 py-5 bg-slate-900 text-white rounded-full text-[11px] font-bold uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-slate-900/10 flex items-center gap-4"
                                         >
                                             Daftar Skema
                                             <ArrowRight size={16} />

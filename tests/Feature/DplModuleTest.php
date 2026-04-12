@@ -107,12 +107,12 @@ class DplModuleTest extends TestCase
             ->assertOk();
 
         $this->actingAs($context['dplUser'])
-            ->get(route('dpl.groups.index'))
+            ->get(route('dpl.kelompok.index'))
             ->assertOk()
             ->assertSee($context['group']->code);
 
         $this->actingAs($context['dplUser'])
-            ->get(route('dpl.groups.show', $context['group']))
+            ->get(route('dpl.kelompok.show', $context['group']))
             ->assertOk()
             ->assertSee($context['student']->nama);
     }

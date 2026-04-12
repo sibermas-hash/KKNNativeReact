@@ -16,7 +16,7 @@ class KknRequirementController extends Controller
     {
         Gate::authorize('manage-master-data');
 
-        return Inertia::render('Admin/KknRequirements/Index', [
+        return Inertia::render('Admin/System/KknRequirements/Index', [
             'requirements' => KknRequirement::orderBy('id')->get(),
             // Provide a list of available columns in 'mahasiswa' table to pick from
             'availableColumns' => [

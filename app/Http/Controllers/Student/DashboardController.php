@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\PesertaKkn;
-use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\ProgramKerja;
 use App\Models\KKN\NilaiKkn;
 use App\Services\PeriodContextService;
@@ -86,20 +85,12 @@ class DashboardController extends Controller
                 ->first()
             : null;
 
-        // New: Workshop enrollment status (Mandatory phase in UIN SAIZU)
-        $workshopRegistration = $mahasiswa
-            ? PesertaWorkshop::query()
-                ->forPeriod($activePeriodId)
-                ->where('user_id', $user->id)
-                ->latest('registered_at')
-                ->first()
-            : null;
-
         return Inertia::render('Student/Dashboard', [
             'student' => $mahasiswa ? [
                 'id' => $mahasiswa->id,
                 'nim' => $mahasiswa->nim,
                 'name' => $mahasiswa->nama,
+                'avatar' => $user->avatar,
                 'batch_year' => $mahasiswa->batch_year,
             ] : null,
             'registration' => $registrationModel ? [
@@ -107,9 +98,6 @@ class DashboardController extends Controller
                 'status' => $this->normalizeRegistrationStatus($registrationModel->status),
                 'notes' => $registrationModel->notes,
                 'rejection_reason' => $registrationModel->rejection_reason,
-                'revision_count' => (int) ($registrationModel->revision_count ?? 0),
-                'last_rejected_at' => $registrationModel->last_rejected_at?->toIso8601String(),
-                'resubmitted_at' => $registrationModel->resubmitted_at?->toIso8601String(),
                 'role' => $registrationModel->role,
                 'period' => $registrationModel->periode ? [
                     'id' => $registrationModel->periode->id,
@@ -133,13 +121,13 @@ class DashboardController extends Controller
             'dailyReportCount' => $dailyReportCount,
             'workProgramCount' => $workProgramCount,
             'abcdStage' => $abcdStage,
-            'workshopRegistered' => !!$workshopRegistration,
             'finalReport' => $finalReport,
             'grade' => $grade ? [
                 'id' => $grade->id,
                 'score' => (float) $grade->total_score,
                 'letter' => trim((string) $grade->letter_grade),
                 'is_finalized' => (bool) $grade->is_finalized,
+                'is_eligible_certificate' => $grade->total_score >= 70,
             ] : null,
         ]);
     }

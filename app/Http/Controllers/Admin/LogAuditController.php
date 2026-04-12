@@ -10,8 +10,12 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Inertia\Inertia;
 
+use App\Traits\HandlesPagination;
+
 class LogAuditController extends Controller
 {
+    use HandlesPagination;
+
     public function index(Request $request)
     {
         $this->authorize('viewAny', LogAudit::class);
@@ -48,7 +52,7 @@ class LogAuditController extends Controller
             'today_logs' => LogAudit::whereDate('created_at', today())->count(),
         ];
 
-        return Inertia::render('Admin/AuditLog/Index', [
+        return Inertia::render('Admin/Monitoring/AuditLog/Index', [
             'logs' => $this->formatPaginator($logs),
             'stats' => $stats,
             'filters' => $request->only(['action', 'user_id', 'date_from', 'date_to', 'search']),
@@ -64,26 +68,10 @@ class LogAuditController extends Controller
     {
         $this->authorize('view', $auditLog);
 
-        return Inertia::render('Admin/AuditLog/Show', [
+        return Inertia::render('Admin/Monitoring/AuditLog/Show', [
             'log' => $auditLog->load('user:id,name,email'),
         ]);
     }
 
-    private function formatPaginator(LengthAwarePaginator $paginator): array
-    {
-        $payload = $paginator->toArray();
 
-        return [
-            'data' => $payload['data'],
-            'meta' => Arr::only($payload, [
-                'current_page',
-                'last_page',
-                'per_page',
-                'total',
-                'from',
-                'to',
-                'links',
-            ]),
-        ];
-    }
 }

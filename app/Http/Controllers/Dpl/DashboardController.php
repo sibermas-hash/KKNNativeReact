@@ -85,6 +85,7 @@ class DashboardController extends Controller
                 'code' => $group->code,
                 'name' => $group->nama_kelompok,
                 'period_name' => $group->periode?->name ?? '-',
+                'jenis_kkn' => $group->periode?->jenis_label ?? '-',
                 'village_name' => $group->lokasi?->village_name ?? '-',
                 'member_count' => $group->peserta_count,
                 'daily_report_count' => $group->kegiatan_count,

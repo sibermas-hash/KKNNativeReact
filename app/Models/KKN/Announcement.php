@@ -14,10 +14,15 @@ class Announcement extends Model
 
     protected $fillable = [
         'title',
+        'slug',
         'category',
         'content',
+        'image',
         'is_active',
         'published_at',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
     ];
 
     protected $casts = [
@@ -28,5 +33,16 @@ class Announcement extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    protected static function booted()
+    {
+        parent::booted();
+
+        static::creating(function ($announcement) {
+            if (empty($announcement->slug)) {
+                $announcement->slug = \Illuminate\Support\Str::slug($announcement->title) . '-' . uniqid();
+            }
+        });
     }
 }

@@ -2,9 +2,24 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
-import { FormInput, FormTextarea } from '@/Components/ui';
+import { FormInput, FormTextarea, FormSelect } from '@/Components/ui';
 import { getCurrentCoordinates } from '@/lib/geolocation';
 import { listPendingDailyReports, queueDailyReport, syncPendingDailyReports } from '@/lib/offline-daily-reports';
+import { 
+    ChevronLeft, 
+    MapPin, 
+    Wifi, 
+    WifiOff, 
+    History, 
+    CloudUpload, 
+    Camera, 
+    AlertCircle,
+    CheckCircle2,
+    Zap,
+    Navigation,
+    Clock
+} from 'lucide-react';
+import { clsx } from 'clsx';
 
 interface GroupData {
     id: number;
@@ -33,23 +48,12 @@ const DEFAULT_LOCATION_LABEL = 'Lokasi GPS terkini';
 
 function shouldAutofillLocationName(value: string): boolean {
     const trimmed = value.trim();
-
-    if (!trimmed) {
-        return true;
-    }
-
-    if (trimmed.length <= 2) {
-        return true;
-    }
-
+    if (!trimmed || trimmed.length <= 2) return true;
     return trimmed.toLowerCase().includes('lokasi gps');
 }
 
 function formatDateTime(value: string | null): string {
-    if (!value) {
-        return '-';
-    }
-
+    if (!value) return '-';
     return new Date(value).toLocaleString('id-ID', {
         dateStyle: 'medium',
         timeStyle: 'short',
@@ -60,15 +64,17 @@ export default function StudentDailyReportCreate({ group, geoPolicy }: Props) {
     const [isFetchingLocation, setIsFetchingLocation] = useState(false);
     const [isSyncingPending, setIsSyncingPending] = useState(false);
     const [isOnline, setIsOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine);
-    const [locationFeedback, setLocationFeedback] = useState<string | null>(null);
+    const [locationFeedback, setLocationFeedback] = useState<{msg: string, type: 'success' | 'error' | 'info'} | null>(null);
     const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
     const [pendingCount, setPendingCount] = useState(0);
 
     const form = useForm({
-        date: '',
+        date: new Date().toISOString().split('T')[0],
         title: '',
+        abcd_stage: '',
         activity: '',
         reflection: '',
+        social_media_link: '',
         output: '',
         location_name: '',
         latitude: '',
@@ -79,43 +85,29 @@ export default function StudentDailyReportCreate({ group, geoPolicy }: Props) {
         files: [] as File[],
     });
 
-    const coordinateSummary = useMemo(
-        () => ({
-            latitude: form.data.latitude || '-',
-            longitude: form.data.longitude || '-',
-            accuracy: form.data.gps_accuracy ? `${Math.round(Number(form.data.gps_accuracy))} meter` : '-',
-            capturedAt: formatDateTime(form.data.captured_at || null),
-        }),
-        [form.data.captured_at, form.data.gps_accuracy, form.data.latitude, form.data.longitude],
-    );
+    const coordinateSummary = useMemo(() => ({
+        latitude: form.data.latitude || '-',
+        longitude: form.data.longitude || '-',
+        accuracy: form.data.gps_accuracy ? `${Math.round(Number(form.data.gps_accuracy))} meter` : '-',
+        capturedAt: formatDateTime(form.data.captured_at || null),
+    }), [form.data.captured_at, form.data.gps_accuracy, form.data.latitude, form.data.longitude]);
 
     const refreshPendingCount = useCallback(async () => {
         try {
             const records = await listPendingDailyReports();
             setPendingCount(records.length);
-        } catch {
-            setPendingCount(0);
-        }
+        } catch { setPendingCount(0); }
     }, []);
 
     const isCapturedLocationFresh = useCallback((): boolean => {
-        if (!form.data.captured_at) {
-            return false;
-        }
-
+        if (!form.data.captured_at) return false;
         const capturedAt = new Date(form.data.captured_at).getTime();
-
-        if (Number.isNaN(capturedAt)) {
-            return false;
-        }
-
-        return Date.now() - capturedAt <= LOCATION_FRESHNESS_WINDOW_MS;
+        return !Number.isNaN(capturedAt) && (Date.now() - capturedAt <= LOCATION_FRESHNESS_WINDOW_MS);
     }, [form.data.captured_at]);
 
     const handleUseCurrentLocation = useCallback(async (): Promise<boolean> => {
         setIsFetchingLocation(true);
         setLocationFeedback(null);
-
         try {
             const coords = await getCurrentCoordinates();
             form.setData((current) => ({
@@ -125,152 +117,60 @@ export default function StudentDailyReportCreate({ group, geoPolicy }: Props) {
                 gps_accuracy: coords.accuracy ? coords.accuracy.toFixed(2) : '',
                 captured_at: coords.capturedAt,
                 location_source: 'gps',
-                location_name: shouldAutofillLocationName(current.location_name)
-                    ? DEFAULT_LOCATION_LABEL
-                    : current.location_name,
+                location_name: shouldAutofillLocationName(current.location_name) ? DEFAULT_LOCATION_LABEL : current.location_name,
             }));
-
             form.clearErrors('latitude', 'longitude', 'gps_accuracy', 'captured_at', 'location_source');
-            setLocationFeedback(
-                coords.accuracy
-                    ? `Koordinat berhasil diambil dari GPS perangkat. Perkiraan akurasi ${Math.round(coords.accuracy)} meter.`
-                    : 'Koordinat berhasil diambil dari GPS perangkat.',
-            );
-
+            setLocationFeedback({
+                msg: `GPS Terkunci: Akurasi ±${Math.round(coords.accuracy ?? 0)} meter.`,
+                type: 'success'
+            });
             return true;
         } catch (error) {
-            setLocationFeedback(error instanceof Error ? error.message : 'Lokasi GPS gagal diambil.');
+            setLocationFeedback({
+                msg: error instanceof Error ? error.message : 'Gagal mengakses sensor GPS.',
+                type: 'error'
+            });
             return false;
-        } finally {
-            setIsFetchingLocation(false);
-        }
+        } finally { setIsFetchingLocation(false); }
     }, [form]);
-
-    const ensureCurrentLocation = useCallback(async (): Promise<boolean> => {
-        if (form.data.latitude && form.data.longitude && isCapturedLocationFresh()) {
-            return true;
-        }
-
-        return handleUseCurrentLocation();
-    }, [form.data.latitude, form.data.longitude, handleUseCurrentLocation, isCapturedLocationFresh]);
 
     const handlePendingSync = useCallback(async () => {
         if (!navigator.onLine) {
-            setSyncFeedback('Perangkat masih offline. Sinkronisasi akan dicoba lagi saat koneksi kembali.');
+            setSyncFeedback('Perangkat masih luring (Offline).');
             return;
         }
-
         setIsSyncingPending(true);
-        setSyncFeedback(null);
-
         try {
             const summary = await syncPendingDailyReports();
             await refreshPendingCount();
-
-            if (summary.synced > 0) {
-                setSyncFeedback(`${summary.synced} laporan offline berhasil disinkronkan ke server.`);
-            } else if (summary.lastError) {
-                setSyncFeedback(summary.lastError);
-            } else {
-                setSyncFeedback('Tidak ada laporan offline yang perlu disinkronkan.');
-            }
-        } catch {
-            setSyncFeedback('Antrean offline belum bisa dibaca pada perangkat ini.');
-        } finally {
-            setIsSyncingPending(false);
-        }
+            setSyncFeedback(summary.synced > 0 ? `${summary.synced} data berhasil diunggah.` : 'Semua data sudah tersinkron.');
+        } catch { setSyncFeedback('Gagal membaca antrean lokal.'); }
+        finally { setIsSyncingPending(false); }
     }, [refreshPendingCount]);
 
     useEffect(() => {
         void refreshPendingCount();
-
-        const handleOnline = () => {
-            setIsOnline(true);
-            void handlePendingSync();
-        };
-
-        const handleOffline = () => {
-            setIsOnline(false);
-            setSyncFeedback('Koneksi internet terputus. Laporan baru akan disimpan dulu di perangkat.');
-        };
-
+        const handleOnline = () => { setIsOnline(true); void handlePendingSync(); };
+        const handleOffline = () => { setIsOnline(false); setSyncFeedback('Mode Offline aktif.'); };
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
-
-        return () => {
-            window.removeEventListener('online', handleOnline);
-            window.removeEventListener('offline', handleOffline);
-        };
+        return () => { window.removeEventListener('online', handleOnline); window.removeEventListener('offline', handleOffline); };
     }, [handlePendingSync, refreshPendingCount]);
-
-    const handleFilesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        form.setData('files', Array.from(event.target.files ?? []));
-    };
-
-    const validateRequiredFields = (): boolean => {
-        let hasError = false;
-        form.clearErrors();
-
-        if (!form.data.date) {
-            form.setError('date', 'Tanggal kegiatan wajib diisi.');
-            hasError = true;
-        }
-
-        if (!form.data.location_name.trim()) {
-            form.setError('location_name', 'Lokasi kegiatan wajib diisi.');
-            hasError = true;
-        }
-
-        if (!form.data.title.trim()) {
-            form.setError('title', 'Judul kegiatan wajib diisi.');
-            hasError = true;
-        }
-
-        if (!form.data.activity.trim()) {
-            form.setError('activity', 'Uraian kegiatan wajib diisi.');
-            hasError = true;
-        }
-
-        return !hasError;
-    };
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        setSyncFeedback(null);
-
-        if (!validateRequiredFields()) {
-            return;
-        }
-
-        const isLocationReady = await ensureCurrentLocation();
-        if (!isLocationReady) {
-            return;
+        if (!form.data.latitude || !isCapturedLocationFresh()) {
+            const ok = await handleUseCurrentLocation();
+            if (!ok) return;
         }
 
         if (!navigator.onLine) {
             try {
-                await queueDailyReport({
-                    date: form.data.date,
-                    title: form.data.title,
-                    activity: form.data.activity,
-                    reflection: form.data.reflection,
-                    output: form.data.output,
-                    location_name: form.data.location_name,
-                    latitude: form.data.latitude,
-                    longitude: form.data.longitude,
-                    gps_accuracy: form.data.gps_accuracy,
-                    captured_at: form.data.captured_at,
-                    location_source: 'gps',
-                    files: form.data.files,
-                });
-            } catch {
-                setLocationFeedback('Perangkat sedang offline dan penyimpanan lokal tidak tersedia. Sambungkan internet untuk mengirim laporan.');
-                return;
-            }
-
-            form.reset();
-            await refreshPendingCount();
-            setLocationFeedback('Laporan disimpan offline di perangkat. Sistem akan mengirimkannya otomatis saat koneksi kembali.');
+                await queueDailyReport({ ...form.data });
+                form.reset();
+                await refreshPendingCount();
+                setLocationFeedback({ msg: 'Laporan disimpan di memori perangkat (Offline).', type: 'info' });
+            } catch { setLocationFeedback({ msg: 'Gagal menyimpan data lokal.', type: 'error' }); }
             return;
         }
 
@@ -281,217 +181,202 @@ export default function StudentDailyReportCreate({ group, geoPolicy }: Props) {
     };
 
     return (
-        <AppLayout title="Buat Laporan Harian">
-            <Head title="Buat Laporan Harian" />
+        <AppLayout title="Tulis Logbook">
+            <Head title="Tulis Logbook | SIM-KKN" />
 
-            <div className="mx-auto max-w-4xl space-y-6">
-                <section className="rounded-lg border border-slate-200 bg-white p-8">
-                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                        <div>
-                            <Link
-                                href={route('student.laporan-harian.index')}
-                                className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
-                            >
-                                Kembali ke laporan
+            <div className="mx-auto max-w-5xl space-y-10 pb-20">
+                {/* --- TOP BAR --- */}
+                <section className="rounded-[2.5rem] border border-slate-100 bg-white p-10 lg:p-12 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-8">
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-4 text-emerald-600 mb-2">
+                            <Link href={route('student.laporan-harian.index')} className="p-2 hover:bg-emerald-50 rounded-xl transition-colors">
+                                <ChevronLeft size={20} strokeWidth={2.5} />
                             </Link>
-                            <h1 className="mt-4 text-2xl font-semibold text-slate-900">Buat Laporan Harian</h1>
-                            <p className="mt-2 text-sm text-slate-500">
-                                {group ? `Kelompok aktif: ${group.name}` : 'Isi aktivitas harian kelompok Anda.'}
-                            </p>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Riwayat Logbook</span>
+                        </div>
+                        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tighter uppercase leading-none">Catat Aktivitas</h1>
+                        <p className="text-sm font-medium text-slate-400">Unit: <span className="text-emerald-600 font-bold">{group?.name ?? 'Umum'}</span></p>
+                    </div>
+
+                    <div className={clsx(
+                        "px-6 py-4 rounded-[1.5rem] border flex items-center gap-4 transition-all",
+                        isOnline ? "bg-emerald-50 border-emerald-100 text-emerald-700" : "bg-rose-50 border-rose-100 text-rose-700"
+                    )}>
+                        {isOnline ? <Wifi size={24} /> : <WifiOff size={24} />}
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest leading-none mb-1">{isOnline ? 'Sistem Online' : 'Sistem Offline'}</p>
+                            <p className="text-xs font-bold leading-none opacity-70">{pendingCount} Menunggu Sinkron</p>
                         </div>
                     </div>
                 </section>
 
-                <section className="rounded-lg border border-amber-200 bg-amber-50 px-6 py-4 text-sm text-amber-800">
-                    Koordinat laporan diambil langsung dari GPS perangkat. Pengisian manual latitude dan longitude dinonaktifkan.
-                    {!isOnline ? ' Saat offline, laporan akan disimpan dulu di perangkat lalu disinkronkan otomatis.' : ''}
-                </section>
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                    {/* --- LEFT: FORM DATA --- */}
+                    <div className="lg:col-span-2 space-y-10">
+                        <div className="rounded-[2.5rem] border border-slate-100 bg-white p-10 lg:p-12 shadow-sm space-y-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <FormInput
+                                    type="date"
+                                    label="Tanggal Kegiatan"
+                                    required
+                                    value={form.data.date}
+                                    onChange={(e) => form.setData('date', e.target.value)}
+                                    error={form.errors.date}
+                                    className="rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white py-4 font-bold text-slate-700"
+                                />
+                                <FormInput
+                                    label="Lokasi (Nama Tempat)"
+                                    required
+                                    placeholder="Misal: Kantor Desa, Masjid, dsb"
+                                    value={form.data.location_name}
+                                    onChange={(e) => form.setData('location_name', e.target.value)}
+                                    error={form.errors.location_name}
+                                    className="rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white py-4 font-bold text-slate-700"
+                                />
+                            </div>
 
-                <section className="rounded-lg border border-slate-200 bg-white p-6">
-                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                        <div className="space-y-2">
-                            <h2 className="text-lg font-semibold text-slate-900">Aturan Validasi Lokasi</h2>
-                            <p className="text-sm text-slate-600">
-                                Radius validasi GPS: <span className="font-semibold text-slate-900">{geoPolicy.radius_meters.toLocaleString('id-ID')} meter</span>
-                            </p>
-                            <p className="text-sm text-slate-600">
-                                Batas akurasi GPS: <span className="font-semibold text-slate-900">{geoPolicy.max_accuracy_meters.toLocaleString('id-ID')} meter</span>
-                            </p>
-                            <p className="text-sm text-slate-600">
-                                Titik acuan:{' '}
-                                <span className="font-semibold text-slate-900">
-                                    {geoPolicy.reference?.label ?? 'Belum ada koordinat acuan kelompok'}
-                                </span>
-                            </p>
+                            <FormInput
+                                label="Judul Aktivitas"
+                                required
+                                placeholder="Tulis judul yang deskriptif..."
+                                value={form.data.title}
+                                onChange={(e) => form.setData('title', e.target.value)}
+                                error={form.errors.title}
+                                className="rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white py-4 font-bold text-slate-700"
+                            />
+
+                            <FormSelect
+                                label="Metode ABCD (Tahapan)"
+                                required
+                                value={form.data.abcd_stage}
+                                onChange={(e) => form.setData('abcd_stage', e.target.value)}
+                                error={form.errors.abcd_stage}
+                                className="rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white py-4 font-bold text-slate-700"
+                            >
+                                <option value="">-- ILMU & PANDUAN KKN --</option>
+                                <option value="Discovery">DISCOVERY (Penemuan Aset)</option>
+                                <option value="Dream">DREAM (Visi Bersama)</option>
+                                <option value="Design">DESIGN (Perancangan)</option>
+                                <option value="Define">DEFINE (Aksi Nyata)</option>
+                                <option value="Destiny">DESTINY (Keberlanjutan)</option>
+                                <option value="Reflection">REFLECTION (Evaluasi)</option>
+                            </FormSelect>
+
+                            <FormTextarea
+                                label="Uraian Kegiatan"
+                                required
+                                placeholder="Gambarkan apa yang anda lakukan secara detail..."
+                                value={form.data.activity}
+                                onChange={(e) => form.setData('activity', e.target.value)}
+                                error={form.errors.activity}
+                                className="rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white py-4 font-medium"
+                            />
+
+                            <FormTextarea
+                                label="Refleksi Diri (Pelajaran)"
+                                placeholder="Apa yang anda petik dari kegiatan hari ini?"
+                                value={form.data.reflection}
+                                onChange={(e) => form.setData('reflection', e.target.value)}
+                                className="rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white py-4 font-medium opacity-80"
+                            />
                         </div>
 
-                        <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                            <p>Mode koneksi: <span className="font-semibold text-slate-900">{isOnline ? 'Online' : 'Offline'}</span></p>
-                            <p className="mt-1">
-                                Antrean offline: <span className="font-semibold text-slate-900">{pendingCount}</span> laporan
-                            </p>
+                        {/* --- PHOTO UPLOAD --- */}
+                        <div className="rounded-[2.5rem] border border-slate-100 bg-white p-10 lg:p-12 shadow-sm space-y-6">
+                            <div className="flex items-center gap-4 border-b border-slate-50 pb-6 mb-4">
+                                <div className="h-12 w-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-sm">
+                                    <Camera size={24} />
+                                </div>
+                                <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter leading-none">Bukti Visual</h2>
+                            </div>
+
+                            <div className="relative group">
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    onChange={(e) => form.setData('files', Array.from(e.target.files ?? []))}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                />
+                                <div className="bg-slate-50 border-2 border-dashed border-slate-100 rounded-[2rem] p-12 text-center group-hover:bg-emerald-50/30 transition-all">
+                                    <CloudUpload size={48} className="mx-auto text-slate-300 mb-4 group-hover:text-emerald-500" />
+                                    <p className="text-sm font-black text-slate-900 uppercase tracking-tight">
+                                        {form.data.files.length > 0 ? `${form.data.files.length} Foto Terpilih` : 'Klik untuk Unggah Foto'}
+                                    </p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">{isOnline ? 'JPG, PNG Maks 5MB' : 'Ukuran akan divalidasi saat sinkron'}</p>
+                                </div>
+                            </div>
+                            {form.errors.files && <p className="text-[10px] font-bold text-rose-500 uppercase px-4">{form.errors.files}</p>}
+                        </div>
+                    </div>
+
+                    {/* --- RIGHT: GEO & SUBMIT --- */}
+                    <div className="lg:col-span-1 space-y-10">
+                        <section className="rounded-[2rem] border border-slate-100 bg-white p-8 shadow-sm space-y-8 sticky top-6">
+                            <div className="space-y-4">
+                                <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-3 leading-none">
+                                    <div className="h-2 w-2 rounded-full bg-blue-500" />
+                                    Security & GPS
+                                </h3>
+                                
+                                <div className="grid grid-cols-1 gap-4">
+                                    <GeoInfoItem label="Latitude" value={coordinateSummary.latitude} />
+                                    <GeoInfoItem label="Longitude" value={coordinateSummary.longitude} />
+                                    <GeoInfoItem label="Akurasi" value={coordinateSummary.accuracy} color="emerald" />
+                                    <GeoInfoItem label="Tersimpan" value={coordinateSummary.capturedAt} />
+                                </div>
+
+                                {locationFeedback && (
+                                    <div className={clsx(
+                                        "p-4 rounded-xl text-[10px] font-bold uppercase tracking-tight border",
+                                        locationFeedback.type === 'success' ? "bg-emerald-50 border-emerald-100 text-emerald-700" : "bg-rose-50 border-rose-100 text-rose-700"
+                                    )}>
+                                        {locationFeedback.msg}
+                                    </div>
+                                )}
+                            </div>
+
                             <button
                                 type="button"
-                                onClick={handlePendingSync}
-                                disabled={!isOnline || isSyncingPending || pendingCount === 0}
-                                className="mt-3 inline-flex items-center justify-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
+                                onClick={() => void handleUseCurrentLocation()}
+                                disabled={isFetchingLocation}
+                                className="w-full h-12 rounded-xl border border-blue-100 bg-blue-50 text-blue-600 font-black text-[10px] uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                             >
-                                {isSyncingPending ? 'Menyinkronkan...' : 'Sinkronkan antrean'}
+                                <Navigation size={14} strokeWidth={3} /> {isFetchingLocation ? 'Locking GPS...' : 'Update Titik GPS'}
                             </button>
-                        </div>
-                    </div>
 
-                    {syncFeedback ? (
-                        <p className={`mt-4 text-sm ${syncFeedback.includes('berhasil') && !syncFeedback.includes('tidak') ? 'text-emerald-700' : 'text-slate-600'}`}>
-                            {syncFeedback}
-                        </p>
-                    ) : null}
-                </section>
-
-                <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-6">
-                    <div className="grid gap-6 md:grid-cols-2">
-                        <FormInput
-                            type="date"
-                            label="Tanggal kegiatan"
-                            required
-                            value={form.data.date}
-                            onChange={(event) => form.setData('date', event.target.value)}
-                                error={form.errors.date}
-                                hint="Gunakan tanggal kegiatan yang benar-benar dijalankan di lapangan."
-                            />
-                        <FormInput
-                            label="Lokasi kegiatan"
-                            required
-                            value={form.data.location_name}
-                            onChange={(event) => form.setData('location_name', event.target.value)}
-                            error={form.errors.location_name}
-                            placeholder="Contoh: Balai Desa Karangsari atau Posko Kelompok"
-                            hint="Isi nama tempat kegiatan. Koordinat GPS tetap diambil otomatis dari perangkat."
-                        />
-
-                        <div className="md:col-span-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-4">
-                            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                                <div className="space-y-1">
-                                    <p className="text-sm font-medium text-slate-800">Ambil lokasi GPS terkini</p>
-                                    <p className="text-xs text-slate-500">
-                                        Sistem akan mengunci koordinat dari perangkat Anda sebelum laporan dikirim atau disimpan offline. Jika data GPS sudah lebih dari dua menit, sistem akan mengambil ulang lokasi terbaru saat submit.
+                            <div className="pt-8 border-t border-slate-50 space-y-4">
+                                 <div className="flex items-start gap-4 p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                                    <Zap size={18} className="text-amber-600 shrink-0" />
+                                    <p className="text-[9px] font-bold text-amber-700 uppercase tracking-wider leading-relaxed">
+                                        Data GPS wajib dikunci dalam radius {geoPolicy.radius_meters}m dari titik acuan unit.
                                     </p>
                                 </div>
+
                                 <button
-                                    type="button"
-                                    onClick={() => void handleUseCurrentLocation()}
-                                    disabled={isFetchingLocation}
-                                    className="inline-flex items-center justify-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
+                                    type="submit"
+                                    disabled={form.processing || isFetchingLocation}
+                                    className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black text-xs uppercase tracking-[0.2em] shadow-2xl transition-all hover:bg-emerald-600 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-4"
                                 >
-                                    {isFetchingLocation ? 'Mengambil lokasi...' : 'Gunakan lokasi saat ini'}
+                                    {form.processing ? 'Transmitting...' : isOnline ? 'Submit Logbook' : 'Save Offline'}
+                                    <CloudUpload size={18} />
                                 </button>
                             </div>
-
-                            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                                <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-                                    <p className="text-xs uppercase tracking-wide text-slate-500">Latitude</p>
-                                    <p className="mt-1 text-sm font-semibold text-slate-900">{coordinateSummary.latitude}</p>
-                                </div>
-                                <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-                                    <p className="text-xs uppercase tracking-wide text-slate-500">Longitude</p>
-                                    <p className="mt-1 text-sm font-semibold text-slate-900">{coordinateSummary.longitude}</p>
-                                </div>
-                                <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-                                    <p className="text-xs uppercase tracking-wide text-slate-500">Akurasi GPS</p>
-                                    <p className="mt-1 text-sm font-semibold text-slate-900">{coordinateSummary.accuracy}</p>
-                                </div>
-                                <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-                                    <p className="text-xs uppercase tracking-wide text-slate-500">Waktu diambil</p>
-                                    <p className="mt-1 text-sm font-semibold text-slate-900">{coordinateSummary.capturedAt}</p>
-                                </div>
-                            </div>
-
-                            {locationFeedback ? (
-                                <p className={`mt-4 text-sm ${locationFeedback.includes('berhasil') || locationFeedback.includes('offline') ? 'text-emerald-700' : 'text-red-600'}`}>
-                                    {locationFeedback}
-                                </p>
-                            ) : null}
-                            {form.data.captured_at && !isCapturedLocationFresh() ? (
-                                <p className="mt-2 text-sm text-amber-700">
-                                    Data GPS ini sudah lebih dari dua menit. Sistem akan mengambil ulang lokasi terbaru saat Anda mengirim laporan.
-                                </p>
-                            ) : null}
-                            {form.errors.latitude ? <p className="mt-2 text-sm text-red-600">{form.errors.latitude}</p> : null}
-                            {form.errors.gps_accuracy ? <p className="mt-2 text-sm text-red-600">{form.errors.gps_accuracy}</p> : null}
-                            {form.errors.captured_at ? <p className="mt-2 text-sm text-red-600">{form.errors.captured_at}</p> : null}
-                        </div>
-
-                        <div className="md:col-span-2">
-                            <FormInput
-                                label="Judul kegiatan"
-                                required
-                                value={form.data.title}
-                                onChange={(event) => form.setData('title', event.target.value)}
-                                error={form.errors.title}
-                                placeholder="Contoh: Pendampingan posyandu balita"
-                            />
-                        </div>
-                        <div className="md:col-span-2">
-                            <FormTextarea
-                                label="Uraian kegiatan"
-                                required
-                                value={form.data.activity}
-                                onChange={(event) => form.setData('activity', event.target.value)}
-                                error={form.errors.activity}
-                                placeholder="Jelaskan kegiatan yang dilakukan, pihak yang terlibat, dan hasil utamanya."
-                            />
-                        </div>
-                        <div className="md:col-span-2">
-                            <FormTextarea
-                                label="Refleksi"
-                                value={form.data.reflection}
-                                onChange={(event) => form.setData('reflection', event.target.value)}
-                                error={form.errors.reflection}
-                                placeholder="Tuliskan evaluasi singkat, hambatan, atau pembelajaran dari kegiatan hari ini."
-                            />
-                        </div>
-                        <div className="md:col-span-2">
-                            <FormTextarea
-                                label="Luaran"
-                                value={form.data.output}
-                                onChange={(event) => form.setData('output', event.target.value)}
-                                error={form.errors.output}
-                                placeholder="Contoh: daftar hadir, dokumentasi kegiatan, notula, atau hasil pendataan."
-                            />
-                        </div>
-                        <div className="md:col-span-2 space-y-2">
-                            <label className="block text-sm font-medium text-slate-700">Lampiran</label>
-                            <input
-                                type="file"
-                                multiple
-                                accept=".jpg,.jpeg,.png,.pdf"
-                                onChange={handleFilesChange}
-                                className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary"
-                            />
-                            <p className="text-xs text-slate-500">
-                                Format yang diterima: JPG, JPEG, PNG, dan PDF. Ukuran maksimal 5 MB per berkas.
-                            </p>
-                            {form.errors.files && <p className="text-xs text-red-600">{form.errors.files}</p>}
-                        </div>
-                    </div>
-
-                    <div className="mt-6 flex justify-end gap-3">
-                        <Link
-                            href={route('student.laporan-harian.index')}
-                            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
-                        >
-                            Batal
-                        </Link>
-                        <button
-                            type="submit"
-                            disabled={form.processing || isFetchingLocation}
-                            className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-60"
-                        >
-                            {form.processing ? 'Menyimpan...' : isOnline ? 'Kirim laporan' : 'Simpan offline'}
-                        </button>
+                        </section>
                     </div>
                 </form>
             </div>
         </AppLayout>
+    );
+}
+
+function GeoInfoItem({ label, value, color = 'slate' }: { label: string, value: string, color?: 'slate' | 'emerald' }) {
+    return (
+        <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl">
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">{label}</p>
+            <p className={clsx("text-xs font-bold uppercase tracking-tight leading-none", color === 'emerald' ? "text-emerald-600" : "text-slate-900")}>
+                {value}
+            </p>
+        </div>
     );
 }

@@ -117,7 +117,7 @@ class NilaiKknIdentityConsistencyTest extends TestCase
 
         $this->from(route('admin.rekap-nilai.index', ['period_id' => $period->id]))
             ->actingAs($superadmin)
-            ->patch(route('admin.rekap-nilai.finalisasi', $score))
+            ->patch(route('admin.grade-reports.finalisasi', $score))
             ->assertRedirect(route('admin.rekap-nilai.index', ['period_id' => $period->id]));
 
         $this->assertDatabaseHas('nilai_kkn', [

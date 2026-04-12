@@ -11,6 +11,7 @@ use Inertia\Response;
 
 class KegiatanKknController extends Controller
 {
+    use \App\Traits\HandlesPagination;
     public function index(Request $request): Response
     {
         if (!auth()->user()->hasAnyRole(['superadmin', 'admin', 'faculty_admin', 'dpl'])) {
@@ -26,13 +27,13 @@ class KegiatanKknController extends Controller
             ->when($status, fn ($q) => $q->where('status', $status));
 
         // Centralized faculty scoping
-        $reports = \App\Services\KKN\FacultyScopeService::apply($query, 'mahasiswa.faculty_id')
+        $paginator = \App\Services\KKN\FacultyScopeService::apply($query, 'mahasiswa.faculty_id')
             ->orderByDesc('date')
             ->paginate(15)
             ->withQueryString();
 
         // Map relation name to 'student' for frontend consistency
-        $reports->getCollection()->transform(function ($report) {
+        $paginator->getCollection()->transform(function ($report) {
             $report->student = $report->mahasiswa;
             $report->group = $report->kelompok;
             unset($report->mahasiswa);
@@ -40,8 +41,8 @@ class KegiatanKknController extends Controller
             return $report;
         });
 
-        return Inertia::render('Admin/DailyReports/Index', [
-            'reports' => $reports,
+        return Inertia::render('Admin/Monitoring/DailyReports/Index', [
+            'reports' => $this->formatPaginator($paginator),
             'filters' => $request->only('status'),
         ]);
     }

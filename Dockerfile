@@ -1,5 +1,7 @@
 FROM php:8.4-fpm
 
+ARG INSTALL_DEV=true
+
 WORKDIR /var/www
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -28,7 +30,11 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 
 COPY . /var/www
 
-RUN composer install --no-interaction --optimize-autoloader --no-dev \
+RUN if [ "$INSTALL_DEV" = "true" ]; then \
+        composer install --no-interaction --optimize-autoloader; \
+    else \
+        composer install --no-interaction --optimize-autoloader --no-dev; \
+    fi \
     && npm ci && npm run build \
     && rm -rf node_modules
 

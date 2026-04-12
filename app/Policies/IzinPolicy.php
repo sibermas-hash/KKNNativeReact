@@ -7,8 +7,6 @@ use App\Models\User;
 
 class IzinPolicy
 {
-    use HandlesDplScope;
-
     /**
      * DPL hanya bisa approve izin dari kelompok yang dibimbingnya
      */

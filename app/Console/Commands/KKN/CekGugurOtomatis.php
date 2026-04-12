@@ -7,8 +7,10 @@ use App\Models\KKN\IzinMeninggalkan;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\PesertaKkn;
 use Carbon\Carbon;
+use App\Notifications\KKN\StudentDismissedNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 
 class CekGugurOtomatis extends Command
 {
@@ -36,7 +38,7 @@ class CekGugurOtomatis extends Command
         // 1. Get all active (approved) participants from active periods only
         $participants = PesertaKkn::where('status', 'approved')
             ->whereHas('periode', fn($q) => $q->where('is_active', true))
-            ->with(['mahasiswa'])
+            ->with(['mahasiswa.user'])
             ->get();
 
         $gugurCount = 0;
@@ -66,13 +68,20 @@ class CekGugurOtomatis extends Command
             if (!$isConsecutive) continue;
 
             // 3. Rule: 3 consecutive days missing = gugur
+            $reason = 'Dinyatakan gugur oleh sistem (Alpa 3 hari berturut-turut).';
+            
             PesertaKkn::where('id', $peserta->id)->update([
                 'status' => 'gugur',
-                'rejection_reason' => 'Dinyatakan gugur oleh sistem (Alpa 3 hari berturut-turut).',
+                'rejection_reason' => $reason,
                 'last_rejected_at' => now(),
             ]);
+
+            // Notify Student
+            if ($mahasiswa->user) {
+                $mahasiswa->user->notify(new StudentDismissedNotification($mahasiswa, $reason));
+            }
             
-            $this->warn("Mahasiswa NIM {$mahasiswa->nim} ({$mahasiswa->nama}) dinyatakan GUGUR (Alpa 3 hari berturut-turut).");
+            $this->warn("Mahasiswa NIM {$mahasiswa->nim} ({$mahasiswa->nama}) dinyatakan GUGUR (Alpa 3 hari berturut-turut). Notifikasi telah dikirim.");
             $gugurCount++;
         }
 

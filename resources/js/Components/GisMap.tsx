@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
 // Fix for default marker icons in Leaflet with React
-// @ts-expect-error
+// @ts-expect-error - missing leaflet types
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -59,11 +59,11 @@ export default function GisMap({ locations, className = "h-[400px] w-full rounde
                     <Marker key={loc.id} position={[loc.lat, loc.lng]}>
                         <Popup className="premium-popup">
                             <div className="p-2 space-y-2">
-                                <h4 className="font-black text-slate-900 uppercase tracking-tighter text-sm leading-none">{loc.name}</h4>
+                                <h4 className="font-bold text-slate-900 uppercase tracking-tighter text-sm leading-none">{loc.name}</h4>
                                 <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">{loc.village}</p>
                                 <div className="pt-2 border-t border-slate-50 flex items-center gap-2">
                                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{loc.members_count || 0} Mahasiswa</span>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{loc.members_count || 0} Mahasiswa</span>
                                 </div>
                             </div>
                         </Popup>

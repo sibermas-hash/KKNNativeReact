@@ -1,9 +1,8 @@
 import { usePage } from '@inertiajs/react';
-import type { LucideIcon } from 'lucide-react';
-import type { PageProps } from '@/types';
 import {
+    type LucideIcon,
     LayoutDashboard,
-    Users2,
+    Users,
     FileText,
     Star,
     FileSpreadsheet,
@@ -11,6 +10,7 @@ import {
     Settings,
     Bell
 } from 'lucide-react';
+import type { PageProps } from '@/types';
 
 export type UserRole = 'superadmin' | 'faculty_admin' | 'dpl' | 'mahasiswa';
 

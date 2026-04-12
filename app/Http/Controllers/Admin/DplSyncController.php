@@ -22,7 +22,7 @@ class DplSyncController extends Controller
     {
         Gate::authorize('sync-data');
 
-        return Inertia::render('Admin/Dpl/Sync', [
+        return Inertia::render('Admin/Operational/Dpl/Sync', [
             'title' => 'Sinkronisasi Master Dosen',
             'summary' => [
                 'local_lecturers' => Dosen::count(),

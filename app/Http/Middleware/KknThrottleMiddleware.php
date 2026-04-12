@@ -40,7 +40,7 @@ class KknThrottleMiddleware extends ThrottleRequests
             'password.update',
             'student.registration.store',
             'student.registration.leave',
-            'admin.rekap-nilai.finalize-mass',
+            'admin.grade-reports.finalisasi-massal',
             'admin.audit-log.index',
             'dpl.evaluations.import',
         ];

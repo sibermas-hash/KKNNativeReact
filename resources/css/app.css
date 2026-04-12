@@ -2,11 +2,11 @@
 @import "./leaflet.css";
 
 @theme {
-  /* Core Colors - Minimal */
-  --color-primary: #10a853;
-  --color-primary-50: #f0fdf4;
+  /* Core Colors */
+  --color-primary: #10b981;
+  --color-primary-50: #ecfdf5;
 
-  /* Neutral Palette */
+  /* Neutral Palette - Standard High Contrast */
   --color-slate-50: #f8fafc;
   --color-slate-100: #f1f5f9;
   --color-slate-200: #e2e8f0;
@@ -15,91 +15,87 @@
   --color-slate-500: #64748b;
   --color-slate-600: #475569;
   --color-slate-700: #334155;
-  --color-slate-900: #0f172a;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a; 
+
+  /* Brand Colors */
+  --color-emerald-950: #064e3b;
+  --color-emerald-900: #065f46;
+  --color-emerald-800: #064e3b;
 
   /* Typography */
-  --font-sans: system-ui, -apple-system, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 
   /* Design Tokens */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
 }
 
 @layer base {
   body {
-    @apply font-sans antialiased text-slate-700 bg-white;
+    @apply font-sans antialiased text-slate-700 bg-white selection:bg-emerald-100 selection:text-emerald-900;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold;
+    @apply font-bold tracking-tight text-slate-900;
   }
 
+  /* Table Reset - More Spacious */
   .app-workspace table {
-    @apply w-full text-left text-[13px] leading-5;
+    @apply w-full text-left text-sm border-separate border-spacing-0;
   }
 
   .app-workspace thead th {
-    @apply sticky top-0 z-10 border-b border-slate-200 bg-slate-50 font-bold uppercase tracking-[0.14em] text-slate-500;
-    padding: 0.58rem 0.78rem !important;
-    font-size: 0.61rem;
-    line-height: 1rem;
+    @apply sticky top-0 z-10 border-b border-slate-200 bg-slate-50/90 backdrop-blur-sm font-bold text-xs uppercase tracking-wider text-slate-500;
+    padding: 1.25rem 2rem !important; /* Bertambah dari 1rem 1.5rem */
   }
 
   .app-workspace tbody td {
-    @apply border-b border-slate-100 align-top text-slate-700;
-    padding: 0.66rem 0.78rem !important;
+    @apply border-b border-slate-100 align-middle text-slate-700;
+    padding: 1.5rem 2rem !important; /* Bertambah dari 1.25rem 1.5rem */
+    line-height: 1.6;
   }
 
   .app-workspace tbody tr:hover td {
-    @apply bg-slate-50/70;
+    @apply bg-slate-50 text-slate-900 transition-all;
   }
 
-  .app-workspace .overflow-x-auto {
-    scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 transparent;
+  /* Form Labels */
+  label {
+    @apply text-sm font-bold text-slate-700 mb-2 block;
   }
 
-  .app-workspace .overflow-x-auto table {
-    min-width: max-content;
+  /* Input Fields - More Internal Space */
+  input, textarea, select {
+    @apply text-slate-900 border-slate-300 bg-white focus:ring-emerald-500 focus:border-emerald-500 rounded-lg shadow-sm;
+    padding: 0.75rem 1.25rem !important; /* Memberi ruang lebih di dalam kotak */
   }
 }
 
 @layer utilities {
   .glass {
-    @apply bg-white/10 backdrop-blur-xl border border-white/20;
-  }
-  
-  .glass-dark {
-    @apply bg-slate-950/40 backdrop-blur-2xl border border-white/5;
+    @apply bg-white/70 backdrop-blur-md border border-white;
   }
 
-  .text-gradient-gold {
-    @apply bg-clip-text text-transparent bg-gradient-to-tr from-amber-200 via-amber-400 to-amber-200;
+  /* Soft shadows for clean white UI */
+  .shadow-soft {
+    box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
   }
 
-  .bg-mesh {
-    background-image: 
-      radial-gradient(at 0% 0%, rgba(16, 168, 83, 0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(245, 158, 11, 0.1) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(16, 168, 83, 0.1) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, rgba(245, 158, 11, 0.15) 0px, transparent 50%);
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-20px); }
-  }
-
-  .animate-pulse-slow {
-    animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-
-  @keyframes pulse-slow {
-    0%, 100% { opacity: 0.3; transform: scale(1); }
-    50% { opacity: 0.1; transform: scale(1.1); }
+  /* Layout Utility for full width reading comfort */
+  .reading-container {
+    max-width: 1400px;
+    margin: 0 auto;
   }
 }

@@ -14,6 +14,8 @@ use Inertia\Inertia;
 
 class StudentTransferController extends Controller
 {
+    use \App\Traits\HandlesPagination;
+
     public function __construct(
         private StudentTransferService $transferService,
         private PeriodContextService $contextService,
@@ -25,7 +27,7 @@ class StudentTransferController extends Controller
     public function index(Request $request)
     {
         Gate::authorize('transfer-students');
-        $periodId = $this->contextService->getActivePeriodId();
+        $periodId = $this->contextService->getActivePeriodId() ?? $this->contextService->getDefaultPeriodId();
 
         $students = $periodId
             ? PesertaKkn::with(['mahasiswa.user', 'kelompok.location', 'periode'])
@@ -42,14 +44,17 @@ class StudentTransferController extends Controller
             ->get(['id', 'name', 'periode', 'jenis', 'kuota']);
 
         return Inertia::render('Admin/Registrations/Transfer', [
-            'students' => $students ?: [
+            'students' => $students ? $this->formatPaginator($students) : [
                 'data' => [], 
                 'meta' => [
                     'total' => 0, 
                     'current_page' => 1, 
                     'per_page' => 15,
                     'last_page' => 1,
-                    'links' => []
+                    'links' => [],
+                    'from' => 0,
+                    'to' => 0,
+                    'path' => $request->url(),
                 ]
             ],
             'targetPeriods' => $targetPeriods,

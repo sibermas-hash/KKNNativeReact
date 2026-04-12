@@ -1,0 +1,38 @@
+includes:
+    # Uncomment the line below after running: composer require --dev larastan/larastan
+    # - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 5
+    paths:
+        - app
+        - config
+        - routes
+        - database
+
+    excludePaths:
+        - vendor
+        - storage
+        - bootstrap/cache
+        - public
+        - app/Console/Commands/StressTest*
+
+    # Suppress common Laravel magic method false positives
+    # until Larastan is installed and configured
+    ignoreErrors:
+        # Eloquent magic methods (::where, ::find, ::create, etc.)
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder::\w+\(\)#'
+        - '#Call to static method \w+\(\) on class .+ invoked with \d+ parameter#'
+        # Model property access
+        - '#Access to an undefined property App\\Models\\.+::\$\w+#'
+        # Relation return types
+        - '#should return .+ but returns Illuminate\\Database\\Eloquent\\Relations\\.+#'
+        # Auth/Request magic
+        - '#Call to an undefined method Illuminate\\Contracts\\Auth\\Authenticatable::\w+\(\)#'
+        - '#Call to an undefined method Illuminate\\Http\\Request::\w+\(\)#'
+        # Route helper
+        - '#Function route invoked with#'
+
+    # Treat these as allowed undefined variables in config context
+    universalObjectCratesClasses:
+        - Illuminate\Http\Request

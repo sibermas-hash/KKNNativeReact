@@ -3,12 +3,18 @@ export interface User {
   username: string;
   name: string;
   email: string;
+  nim?: string | null;
+  avatar?: string | null;
   student_registration_locked?: boolean;
   faculty?: Faculty | null;
   roles?: (string | { name: string })[];
   permissions?: string[];
   profile?: UserProfile;
+  mahasiswa?: Student | null;
+  dosen?: Lecturer | null;
 }
+
+
 
 export interface Role {
   id: number;
@@ -27,10 +33,13 @@ export interface Student {
   user_id: number;
   nim: string;
   name: string;
+  nik?: string | null;
   faculty: Faculty;
   program: Program;
   batch_year: number;
   gender: 'L' | 'P';
+  health_certificate_path?: string | null;
+  parent_permission_path?: string | null;
 }
 
 export interface Lecturer {
@@ -196,6 +205,36 @@ export interface Download {
     file_type: string | null;
     is_active: boolean;
     created_at: string;
+}
+
+export interface KKNScore {
+  id: number;
+  mahasiswa_id: number;
+  periode_id: number;
+  nilai_dpl?: number;
+  nilai_lppm?: number;
+  nilai_industri?: number;
+  nilai_mandiri?: number;
+  weighted_score?: number;
+  total_score?: number;
+  grade?: string;
+  status?: 'draft' | 'finalized';
+}
+
+export interface CertificateChecksum {
+  has_score: boolean;
+  is_finalized: boolean;
+  report_approved: boolean;
+  min_grade: boolean;
+}
+
+export interface RouteParams {
+  [key: string]: string | number | boolean | undefined;
+}
+
+export interface RouteConfig {
+  only?: string[];
+  exclude?: string[];
 }
 
 // Utility: checks if user has a specific role

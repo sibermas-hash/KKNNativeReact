@@ -33,6 +33,8 @@ class Mahasiswa extends Model
         'health_certificate_path',
         'parent_permission_path',
         'gender',
+        'shirt_size',
+        'bpjs_number',
         'birth_place',
         'birth_date',
         'master_id',

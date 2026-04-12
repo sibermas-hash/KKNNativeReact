@@ -19,7 +19,7 @@ class FacultyScopeService
 
         if (!$user) return $query;
 
-        if (($user->hasRole('faculty_admin') || $user->hasRole('admin_fakultas')) && $user->faculty_id) {
+        if ($user->hasRole('faculty_admin') && $user->faculty_id) {
             // Check if column is a relationship path (e.g. mahasiswa.faculty_id or peserta.mahasiswa.faculty_id)
             if (str_contains($facultyIdColumn, '.')) {
                 $parts = explode('.', $facultyIdColumn);
@@ -49,16 +49,11 @@ class FacultyScopeService
         if (!$user) return false;
 
         // Global admin can access any faculty
-        if (
-            $user->hasRole('superadmin')
-            || $user->hasRole('admin')
-            || $user->hasRole('super_admin')
-            || $user->hasRole('admin_lppm')
-        ) {
+        if ($user->hasRole('superadmin')) {
             return true;
         }
 
-        if ($user->hasRole('faculty_admin') || $user->hasRole('admin_fakultas')) {
+        if ($user->hasRole('faculty_admin')) {
             return $user->faculty_id === $resourceFacultyId;
         }
 

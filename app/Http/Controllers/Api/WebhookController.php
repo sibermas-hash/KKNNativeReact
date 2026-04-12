@@ -68,7 +68,24 @@ class WebhookController extends Controller
 
     protected function syncDosen(string $event, array $data): void
     {
-        // Similar logic for Dosen
+        if (empty($data['nip'])) return;
+
+        if (str_ends_with($event, '.deleted')) {
+            Dosen::where('nip', $data['nip'])->delete();
+            return;
+        }
+
+        // Map Master Data to Local Data
+        Dosen::updateOrCreate(
+            ['nip' => $data['nip']],
+            [
+                'nama' => $data['nama'] ?? null,
+                'faculty_id' => $this->resolveFakultas($data['fakultas_id'] ?? null),
+                'jenis_kelamin' => $data['jenis_kelamin'] ?? 'L',
+                'no_hp' => $data['no_hp'] ?? null,
+                'is_active' => ($data['is_active'] ?? true) ? 1 : 0,
+            ]
+        );
     }
 
     // Helper to map IDs if master uses different IDs than local

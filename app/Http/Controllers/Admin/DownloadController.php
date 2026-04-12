@@ -9,15 +9,26 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Gate;
 
+use App\Traits\HandlesPagination;
+
 class DownloadController extends Controller
 {
+    use HandlesPagination;
+
     public function index()
     {
         Gate::authorize('manage-settings');
         
-        return Inertia::render('Admin/Downloads/Index', [
-            'downloads' => Download::orderBy('created_at', 'desc')->paginate(10),
+        return Inertia::render('Admin/Website/Downloads/Index', [
+            'downloads' => $this->formatPaginator(Download::orderBy('created_at', 'desc')->paginate(10)),
         ]);
+    }
+
+    public function create()
+    {
+        Gate::authorize('manage-settings');
+
+        return $this->index();
     }
 
     public function store(Request $request)

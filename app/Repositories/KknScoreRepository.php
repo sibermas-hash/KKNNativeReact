@@ -68,7 +68,6 @@ class KknScoreRepository
             'ks.attitude_score as nilai_sikap',
             'ks.discipline_score as nilai_kedisiplinan',
             // Komponen C
-            'ks.workshop_score as nilai_workshop',
             'ks.administration_score as nilai_administrasi',
             // Output
             'ks.total_score as nilai_akhir',

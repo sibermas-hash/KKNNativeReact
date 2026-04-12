@@ -63,10 +63,8 @@ class NilaiAkhirService
             );
 
             // 3. Calculate Komponen C (LPPM) - Weighted sum
-            $lppmWeighted = (
-                (floatval($nilai->workshop_score ?? 0) * (floatval($configs['weight_admin_workshop'] ?? 50) / 100)) +
-                (floatval($nilai->administration_score ?? 0) * (floatval($configs['weight_admin_administration'] ?? 50) / 100))
-            );
+            // SURGICAL CLEANUP: LPPM component is now 100% based on Administration Score
+            $lppmWeighted = floatval($nilai->administration_score ?? 0);
 
             // 4. Apply main weights: DPL 40%, Village 20%, LPPM 40%
             $totalScore = (

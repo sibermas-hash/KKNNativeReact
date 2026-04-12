@@ -7,7 +7,6 @@ use App\Http\Requests\Student\StoreDailyReportRequest;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\FileKegiatanKkn;
-use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\SystemSetting;
 use App\Services\PeriodContextService;
 use Carbon\Carbon;
@@ -73,42 +72,17 @@ class DailyReportController extends Controller
                 ->paginate(10)
             : collect();
 
-        // Check workshop status for UI warning
-        $isWorkshopPassed = PesertaWorkshop::query()
-            ->forPeriod($activePeriodId)
-            ->where('user_id', auth()->id())
-            ->where('attendance_status', 'attended')
-            ->exists();
-
         return Inertia::render('Student/DailyReports/Index', [
             'reports' => $kegiatan,
-            'isWorkshopPassed' => $isWorkshopPassed,
         ]);
     }
 
     public function create(): Response
     {
-        $periodContextService = app(PeriodContextService::class);
-        $activePeriodId = $periodContextService->getActivePeriodId() ?? $periodContextService->getDefaultPeriodId();
         $mahasiswa = auth()->user()?->mahasiswa;
         $pendaftaran = $mahasiswa?->peserta()->where('status', 'approved')->with(['kelompok.lokasi', 'kelompok.posko'])->first();
         
         abort_if(!$pendaftaran, 403, 'Anda belum terdaftar dalam kelompok aktif.');
-
-        // SOP ENFORCEMENT: Harus lulus Pembekalan/Workshop
-        $isWorkshopPassed = PesertaWorkshop::query()
-            ->forPeriod($activePeriodId)
-            ->where('user_id', auth()->id())
-            ->where('attendance_status', 'attended')
-            ->exists();
-
-        if (!$isWorkshopPassed) {
-            return Inertia::render('Student/DailyReports/Index', [
-                'flash' => ['error' => 'Akses Terkunci: Anda wajib mengikuti dan dinyatakan LULUS Pembekalan/Workshop sebelum dapat mengisi laporan harian.'],
-                'reports' => $mahasiswa->kegiatan()->orderByDesc('date')->paginate(10),
-                'isWorkshopPassed' => false
-            ]);
-        }
 
         return Inertia::render('Student/DailyReports/Create', [
             'group' => [
@@ -122,42 +96,34 @@ class DailyReportController extends Controller
 
     public function store(StoreDailyReportRequest $request): RedirectResponse|JsonResponse
     {
-        $periodContextService = app(PeriodContextService::class);
-        $activePeriodId = $periodContextService->getActivePeriodId() ?? $periodContextService->getDefaultPeriodId();
         $mahasiswa = auth()->user()?->mahasiswa;
         abort_if(!$mahasiswa, 403, 'Profil mahasiswa tidak ditemukan.');
         
         $pendaftaran = $mahasiswa->peserta()->where('status', 'approved')->with(['kelompok.lokasi', 'kelompok.posko'])->first();
         abort_if(!$pendaftaran || !$pendaftaran->kelompok_id, 403, 'Anda belum ditempatkan di kelompok.');
 
-        // SOP ENFORCEMENT: Safety check for API/Direct POST
-        $isWorkshopPassed = PesertaWorkshop::query()
-            ->forPeriod($activePeriodId)
-            ->where('user_id', auth()->id())
-            ->where('attendance_status', 'attended')
-            ->exists();
-        
-        if (!$isWorkshopPassed) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'message' => 'Anda belum diizinkan mengirim laporan harian karena belum lulus pembekalan.',
-                ], 403);
-            }
+        $validated = $request->validated();
 
-            return redirect()->route('student.laporan-harian.index')
-                ->with('error', 'Anda belum diizinkan mengirim laporan harian karena belum lulus pembekalan.');
+        // 24 HOURS BACKDATE PROTECTION
+        $reportDate = Carbon::parse($validated['date']);
+        if ($reportDate->diffInHours(now()) > 24 && !auth()->user()->hasRole('superadmin')) {
+            throw ValidationException::withMessages([
+                'date' => 'Maaf, logbook maksimal diisi 24 jam setelah kegiatan berlangsung (SOP LPPM UIN SAIZU).',
+            ]);
         }
 
-        $validated = $request->validated();
         $this->enforceGpsPolicy($validated, $pendaftaran->kelompok);
 
         $kegiatan = KegiatanKkn::create([
             'mahasiswa_id' => $mahasiswa->id,
             'kelompok_id' => $pendaftaran->kelompok_id,
             'date' => $validated['date'],
+            'category' => $validated['category'],
             'title' => $validated['title'],
+            'abcd_stage' => $validated['abcd_stage'],
             'activity' => $validated['activity'],
             'reflection' => $validated['reflection'] ?? null,
+            'social_media_link' => $validated['social_media_link'] ?? null,
             'output' => $validated['output'] ?? null,
             'latitude' => $validated['latitude'],
             'longitude' => $validated['longitude'],
@@ -170,15 +136,23 @@ class DailyReportController extends Controller
 
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
-                // Security: Validate magic bytes to prevent MIME spoofing
                 $this->validateFileMagicBytes($file);
 
-                // Security: Store with UUID filename - prevents path traversal
                 $originalName = $file->getClientOriginalName();
                 $extension = strtolower($file->getClientOriginalExtension());
                 $safeFilename = Str::uuid() . '.' . $extension;
 
                 $path = $file->storeAs('daily-reports', $safeFilename, 'local');
+                
+                if (in_array($extension, ['jpg', 'jpeg', 'png', 'webp'])) {
+                    app(\App\Services\PhotoWatermarkService::class)->apply($path, [
+                        'nim' => $mahasiswa->nim,
+                        'captured_at' => $validated['captured_at'],
+                        'latitude' => $validated['latitude'],
+                        'longitude' => $validated['longitude'],
+                    ]);
+                }
+
                 FileKegiatanKkn::create([
                     'kegiatan_kkn_id' => $kegiatan->id,
                     'file_path' => $path,
@@ -220,8 +194,10 @@ class DailyReportController extends Controller
         $dailyReport->update([
             'date' => $validated['date'],
             'title' => $validated['title'],
+            'abcd_stage' => $validated['abcd_stage'],
             'activity' => $validated['activity'],
             'reflection' => $validated['reflection'] ?? null,
+            'social_media_link' => $validated['social_media_link'] ?? null,
             'output' => $validated['output'] ?? null,
             'latitude' => $validated['latitude'],
             'longitude' => $validated['longitude'],

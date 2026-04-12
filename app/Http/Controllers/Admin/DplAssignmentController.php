@@ -11,13 +11,13 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\LogAudit;
 use App\Models\KKN\Periode;
-use App\Models\KKN\Workshop;
 use App\Services\DplAssignmentService;
 use App\Services\PeriodContextService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Notifications\KKN\DplAssignedToGroupNotification;
 
 class DplAssignmentController extends Controller
 {
@@ -50,9 +50,6 @@ class DplAssignmentController extends Controller
 
         $search = trim((string) $request->input('search', ''));
         $escapedSearch = str_replace(['%', '_'], ['\\%', '\\_'], $search);
-        $workshopPeriodId = Workshop::supportsPeriodAssignment()
-            ? ($request->integer('period_id') ?: ($this->contextService->getActivePeriodId() ?? $this->contextService->getDefaultPeriodId()))
-            : null;
 
         // OPTIMIZATION: Use pagination for assignments (main data)
         $assignmentsPaginated = DplPeriod::with([
@@ -103,15 +100,6 @@ class DplAssignmentController extends Controller
 
         // Dropdown options: Keep full list (needed for select inputs)
         $allDosen = Dosen::query()
-            ->with(['user.pesertaWorkshop' => function ($query) use ($workshopPeriodId) {
-                $query
-                    ->select('id', 'workshop_id', 'user_id')
-                    ->where('attendance_status', 'attended');
-
-                if ($workshopPeriodId) {
-                    $query->forPeriod($workshopPeriodId);
-                }
-            }])
             ->orderBy('nama')
             ->get(['id', 'user_id', 'nama', 'nip', 'is_cpns', 'is_tugas_belajar']);
 
@@ -184,7 +172,7 @@ class DplAssignmentController extends Controller
             ],
         ])->values();
 
-        return Inertia::render('Admin/Dpl/Assignment', [
+        return Inertia::render('Admin/Operational/Dpl/Assignment', [
             'assignments' => $assignmentsPaginated->map(fn (DplPeriod $assignment) => [
                 'id' => $assignment->id,
                 'max_groups' => $assignment->max_groups,
@@ -244,7 +232,6 @@ class DplAssignmentController extends Controller
                 'nip' => $dosen->nip,
                 'is_cpns' => (bool) $dosen->is_cpns,
                 'is_tugas_belajar' => (bool) $dosen->is_tugas_belajar,
-                'is_workshop_passed' => $dosen->user?->pesertaWorkshop?->isNotEmpty() ?? false,
             ])->values(),
             'allPeriods' => $allPeriods->map(fn (Periode $period) => [
                 'id' => $period->id,
@@ -352,6 +339,21 @@ class DplAssignmentController extends Controller
                     'dpl_periode_id' => $dplPeriod->id,
                 ]
             );
+
+            // Notify DPL about new group assignment
+            $dplUser = $dplPeriod->dosen?->user;
+            if ($dplUser) {
+                $group->load('lokasi', 'periode');
+                $locationName = $group->lokasi
+                    ? trim(($group->lokasi->district_name ?? '') . ', ' . ($group->lokasi->regency_name ?? ''), ', ')
+                    : null;
+
+                $dplUser->notify(new DplAssignedToGroupNotification(
+                    $group->nama_kelompok,
+                    $group->periode?->name ?? 'KKN',
+                    $locationName ?: null,
+                ));
+            }
         } catch (\DomainException $exception) {
             return back()->with('error', $exception->getMessage());
         }

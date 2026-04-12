@@ -88,7 +88,7 @@ class GroupController extends Controller
                 'posko' => $group->posko ? [
                     'latitude' => $group->posko->latitude,
                     'longitude' => $group->posko->longitude,
-                    'photo_url' => route('posko.photo', $group->posko),
+                    'photo_url' => route('student.posko.photo', $group->posko),
                     'photo_name' => basename((string) $group->posko->photo_path),
                     'updated_at' => optional($group->posko->updated_at)->format('d M Y H:i'),
                 ] : null,

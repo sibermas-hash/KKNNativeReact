@@ -24,7 +24,7 @@ class TahunAkademikController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('Admin/AcademicYears/Index', [
+        return Inertia::render('Admin/MasterData/AcademicYears/Index', [
             'academicYears' => $academicYears,
             'filters' => $request->only('search'),
         ]);

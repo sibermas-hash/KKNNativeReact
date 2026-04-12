@@ -45,6 +45,7 @@ class WorkProgramController extends Controller
             'objectives' => ['nullable', 'string'],
             'target_participants' => ['nullable', 'integer', 'min:1'],
             'budget' => ['required', 'numeric', 'min:0'],
+            'kategori' => ['required', 'in:unggulan,pendukung'],
         ]);
 
         ProgramKerja::create([
@@ -54,7 +55,7 @@ class WorkProgramController extends Controller
             'submitted_at' => now(),
         ]);
 
-        return redirect()->route('student.work-programs.index')
+        return redirect()->route('student.program-kerja.index')
             ->with('success', 'Program kerja berhasil diajukan.');
     }
 }

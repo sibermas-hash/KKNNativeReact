@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dpl;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\FileKegiatanKkn;
 use App\Models\KKN\KegiatanKkn;
+use App\Models\KKN\KelompokKkn;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -65,10 +66,26 @@ class DailyReportController extends Controller
 
     public function index(Request $request): Response
     {
+        $dosen = auth()->user()->dosen;
+        abort_if(!$dosen, 403);
+        
         $groupIds = $this->assignedGroupIds();
+
+        // Get groups with pending counts for the tab/filter UI
+        $groups = KelompokKkn::whereIn('id', $groupIds)
+            ->withCount(['kegiatan' => function ($query) {
+                $query->where('status', 'submitted');
+            }])
+            ->get()
+            ->map(fn ($group) => [
+                'id' => $group->id,
+                'name' => $group->nama_kelompok ?? $group->code,
+                'pending_count' => $group->kegiatan_count,
+            ]);
 
         $kegiatan = KegiatanKkn::whereIn('kelompok_id', $groupIds)
             ->with(['mahasiswa', 'kelompok'])
+            ->when($request->input('kelompok_id'), fn($q, $id) => $q->where('kelompok_id', $id))
             ->when($request->input('status'), fn($q, $s) => $q->where('status', $s))
             ->orderByDesc('date')
             ->paginate(15)
@@ -82,6 +99,7 @@ class DailyReportController extends Controller
                     'nim' => $report->mahasiswa?->nim ?? '-',
                 ],
                 'group' => [
+                    'id' => $report->kelompok_id,
                     'name' => $report->kelompok?->nama_kelompok ?? $report->kelompok?->code ?? '-',
                 ],
             ])
@@ -89,7 +107,8 @@ class DailyReportController extends Controller
 
         return Inertia::render('Dpl/DailyReports/Index', [
             'reports' => $kegiatan,
-            'filters' => $request->only('status'),
+            'groups' => $groups,
+            'filters' => $request->only(['status', 'kelompok_id']),
         ]);
     }
 
@@ -148,7 +167,13 @@ class DailyReportController extends Controller
                 'file_kegiatan' => $dailyReport->fileKegiatan->map(fn (FileKegiatanKkn $file) => [
                     'id' => $file->id,
                     'file_name' => $file->file_name,
+                    'file_path' => $file->file_path,
                     'download_url' => route('dpl.daily-reports.files.download', $file),
+                    'preview_url' => route('dpl.daily-reports.files.preview', $file),
+                    'is_image' => in_array(
+                        strtolower(pathinfo($file->file_name ?? $file->file_path, PATHINFO_EXTENSION)),
+                        ['jpg', 'jpeg', 'png', 'webp', 'gif']
+                    ),
                 ])->values(),
             ],
         ]);
@@ -172,6 +197,41 @@ class DailyReportController extends Controller
         abort_if($disk === null, 404, 'File lampiran tidak ditemukan.');
 
         return Storage::disk($disk)->download($fileKegiatan->file_path, $fileKegiatan->file_name ?: basename($fileKegiatan->file_path));
+    }
+
+    /**
+     * Serve file inline for browser preview (images displayed directly).
+     */
+    public function previewFile(FileKegiatanKkn $fileKegiatan): \Symfony\Component\HttpFoundation\Response
+    {
+        $groupIds = $this->assignedGroupIds();
+        $fileKegiatan->loadMissing('kegiatan');
+
+        abort_if(
+            !$fileKegiatan->kegiatan || !$groupIds->contains($fileKegiatan->kegiatan->kelompok_id),
+            403,
+            'Anda tidak memiliki akses ke lampiran ini.'
+        );
+
+        $disk = Storage::disk('local')->exists($fileKegiatan->file_path)
+            ? 'local'
+            : (Storage::disk('public')->exists($fileKegiatan->file_path) ? 'public' : null);
+
+        abort_if($disk === null, 404, 'File lampiran tidak ditemukan.');
+
+        $mimeType = Storage::disk($disk)->mimeType($fileKegiatan->file_path);
+        $stream = Storage::disk($disk)->readStream($fileKegiatan->file_path);
+
+        return response()->stream(function () use ($stream) {
+            fpassthru($stream);
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }, 200, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline',
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
     }
 
     public function approve(KegiatanKkn $dailyReport): RedirectResponse

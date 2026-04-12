@@ -44,7 +44,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\CspHeaders::class,
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\EnsurePasswordChanged::class,
-            \App\Http\Middleware\EnsureAdminAuthorization::class,
+            \App\Http\Middleware\EnsureUserIsActive::class,
+        ]);
+
+        $middleware->api(append: [
             \App\Http\Middleware\EnsureUserIsActive::class,
         ]);
 
@@ -56,67 +59,49 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.key' => \App\Http\Middleware\ValidateApiKey::class,
             'disable.debugbar' => \App\Http\Middleware\DisableDebugbar::class,
             'restrict.debugbar' => \App\Http\Middleware\RestrictDebugbarAccess::class,
+            'phase' => \App\Http\Middleware\EnsurePhase::class,
         ]);
 
         $middleware->redirectGuestsTo('/login');
         $middleware->redirectUsersTo('/');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // Handle 419 CSRF errors for Inertia requests
-        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {
-            if ($request->header('X-Inertia')) {
-                return redirect()->route('login')->with('error', 'Sesi Anda telah berakhir. Silakan login kembali.');
-            }
-        });
+        // Custom rendering for Inertia requests to show the pretty Error page
+        $exceptions->respond(function ($response, $e, $request) {
+            $status = $response->getStatusCode();
 
-        // Handle 404 Not Found
-        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, $request) {
-            if ($request->header('X-Inertia') || $request->expectsJson()) {
-                return response()->json([
-                    'message' => 'Halaman tidak ditemukan.',
-                ], 404);
-            }
-        });
-
-        // Handle 500 Internal Server Error (hide details in production)
-        $exceptions->render(function (\Throwable $e, $request) {
-            if (
-                $e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface
-                || $e instanceof \Illuminate\Validation\ValidationException
-                || $e instanceof \Illuminate\Auth\AuthenticationException
-                || $e instanceof \Illuminate\Auth\Access\AuthorizationException
-            ) {
-                return null;
-            }
-
-            // Log the error
-            \Illuminate\Support\Facades\Log::error('Unhandled Exception', [
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            // For API requests, return JSON error
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'message' => config('app.debug') ? $e->getMessage() : 'Terjadi kesalahan server.',
-                ], 500);
-            }
-
-            // For Inertia requests, redirect to error page
-            if ($request->header('X-Inertia')) {
-                if (!config('app.debug')) {
-                    return redirect()->back()->with('error', 'Terjadi kesalahan. Silakan coba lagi.');
+            if (in_array($status, [500, 503, 404, 403])) {
+                // If it's an Inertia request or we want to force Inertia error page
+                if ($request->header('X-Inertia') || $request->expectsJson()) {
+                    return \Inertia\Inertia::render('Error', [
+                        'status' => $status,
+                        'message' => $status === 403 ? $e->getMessage() : null,
+                    ])
+                    ->toResponse($request)
+                    ->setStatusCode($status);
                 }
             }
+
+            if ($status === 419) {
+                if ($request->isMethod('GET')) {
+                    return \Inertia\Inertia::location($request->fullUrl());
+                }
+
+                return back()->with([
+                    'error' => 'Sesi Anda telah berakhir untuk keamanan. Sistem sedang menyegarkan akses, silakan coba kirim ulang.',
+                ]);
+            }
+
+            return $response;
         });
+
+        // Handle 419 CSRF errors... (rest of the code is already handled by respond above)
     })
     ->withSchedule(function (Schedule $schedule): void {
         // Event-driven sync trigger (safe no-op when no trigger file exists).
         $schedule->command('master:webhook:sync')->everyMinute();
-        
-        // Daily database backup at 2 AM
-        $schedule->command('db:backup --keep=7')->dailyAt('02:00');
+
+        // Check student discipline (logbook 3 days) at 11 PM sesuai Panduan KKN 56
+        $schedule->command('kkn:check-discipline')->dailyAt('23:00');
     })
     ->create();

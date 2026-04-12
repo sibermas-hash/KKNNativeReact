@@ -25,7 +25,7 @@ class ReportController extends Controller
     {
         $user = $request->user();
 
-        if ($user->hasAnyRole(['superadmin', 'dpl'])) {
+        if ($user->hasAnyRole(['superadmin', 'admin', 'dpl'])) {
             $baseQuery = Laporan::query()
                 ->with([
                     'user:id,name',

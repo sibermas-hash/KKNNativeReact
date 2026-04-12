@@ -50,7 +50,7 @@ class RekapNilaiController extends Controller
         ];
 
         if (!$periodeId) {
-            return Inertia::render('Admin/GradeReports/Index', [
+            return Inertia::render('Admin/Academic/GradeReports/Index', [
                 'scores' => [],
                 'stats' => null,
                 'filters' => $filters,
@@ -66,7 +66,7 @@ class RekapNilaiController extends Controller
 
         $rows = $this->repo->getRekapNilai($periodeId, $filters);
 
-        return Inertia::render('Admin/GradeReports/Index', [
+        return Inertia::render('Admin/Academic/GradeReports/Index', [
             'scores' => $this->transformRows($rows),
             'stats' => [
                 'total_students' => $rows->count(),
@@ -200,54 +200,27 @@ class RekapNilaiController extends Controller
         $this->authorize('export', NilaiKkn::class);
 
         $periodeId = $request->integer('period_id');
-        $rows = $this->repo->getRekapNilai($periodeId, $request->only(['faculty_id', 'kelompok_id']));
-        $finalized = $rows->where('is_finalized', true);
+        $filters = $request->only(['faculty_id', 'kelompok_id']);
 
-        if ($finalized->isEmpty()) {
-            return back()->with('error', 'Tidak ada nilai yang sudah difinalisasi untuk periode ini.');
-        }
+        \App\Jobs\GenerateMassCertificatesJob::dispatch(
+            $periodeId,
+            $filters,
+            auth()->id()
+        );
 
-        $zip = new \ZipArchive();
-        $zipName = "Sertifikat_Massal_KKN_Periode_{$periodeId}.zip";
-        // VULN-014 Fix: Store ZIP in non-public directory to prevent unauthorized access
-        $zipPath = storage_path("app/tmp/{$zipName}");
+        return back()->with('info', "Proses pembuatan sertifikat massal telah dimulai di latar belakang. Anda akan menerima notifikasi jika sudah selesai.");
+    }
+
+    public function getCertificateProgress(Request $request)
+    {
+        $this->authorize('export', NilaiKkn::class);
+        $periodId = $request->integer('period_id');
+        $adminId = auth()->id();
         
-        // Ensure tmp directory exists
-        if (!is_dir(dirname($zipPath))) {
-            mkdir(dirname($zipPath), 0755, true);
-        }
-
-        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
-            // Eager load all required relationships to avoid N+1 queries in the loop
-            $studentIds = $finalized->pluck('user_id');
-            $groupCodes = $finalized->pluck('kode_kelompok')->unique();
-
-            $scores = NilaiKkn::with([
-                'mahasiswa.user',
-                'kelompok.periode',
-                'kelompok.lokasi',
-                'kelompok.dosen.user',
-            ])
-            ->whereIn('user_id', $studentIds)
-            ->whereHas('kelompok', fn($q) => $q->whereIn('code', $groupCodes))
-            ->get()
-            ->groupBy(fn($s) => $s->user_id . '|' . $s->kelompok->code);
-
-            foreach ($finalized as $row) {
-                $lookupKey = $row->user_id . '|' . $row->kode_kelompok;
-                $score = $scores->get($lookupKey)?->first();
-                
-                if ($score && $score->mahasiswa) {
-                    $pdf = $this->certificate->generateForStudent($score);
-                    $nim = $score->mahasiswa->nim ?? '';
-                    $pdfName = "Sertifikat_{$score->mahasiswa->nama}_{$nim}.pdf";
-                    $zip->addFromString($pdfName, $pdf->output());
-                }
-            }
-            $zip->close();
-        }
-
-        return response()->download($zipPath)->deleteFileAfterSend(true);
+        $cacheKey = "cert_progress_{$periodId}_{$adminId}";
+        $progress = \Illuminate\Support\Facades\Cache::get($cacheKey);
+        
+        return response()->json($progress);
     }
     private const ALLOWED_SCORE_COMPONENTS = [
         'final_report_score',
@@ -255,7 +228,6 @@ class RekapNilaiController extends Controller
         'article_score',
         'discipline_score',
         'attitude_score',
-        'workshop_score',
         'administration_score',
         'dpl_score_1',
     ];

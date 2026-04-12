@@ -5,7 +5,7 @@ import {
     MapPin, 
     Navigation, 
     Building2, 
-    Users2, 
+    Users, 
     ChevronRight,
     Map,
     LocateFixed
@@ -59,11 +59,11 @@ export default function Locations({ locations, filters }: Props) {
                         animate={{ opacity: 1, y: 0 }}
                         className="space-y-6 max-w-4xl mx-auto"
                     >
-                         <span className="inline-flex rounded-full border border-emerald-500/20 bg-emerald-50 px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.5em] text-emerald-700 shadow-sm">
+                         <span className="inline-flex rounded-full border border-emerald-500/20 bg-emerald-50 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-emerald-700 shadow-sm">
                             Peta lokasi penempatan
                         </span>
-                        <h1 className="text-5xl lg:text-7xl font-black tracking-tighter text-slate-900 leading-[1.1]">
-                            <span className="font-serif italic font-normal text-emerald-600 block mb-2">Cari Lokasi</span>
+                        <h1 className="text-5xl lg:text-7xl font-bold tracking-tighter text-slate-900 leading-[1.1]">
+                            <span className="font-serif  font-normal text-emerald-600 block mb-2">Cari Lokasi</span>
                             Penempatan KKN <span className="text-slate-400">&</span> Pengabdian.
                         </h1>
                         <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto">
@@ -91,7 +91,7 @@ export default function Locations({ locations, filters }: Props) {
                                 />
                                 <button 
                                     type="submit"
-                                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-[1.5rem] font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-emerald-600/20"
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-[1.5rem] font-bold text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-emerald-600/20"
                                 >
                                     CARI
                                 </button>
@@ -116,7 +116,7 @@ export default function Locations({ locations, filters }: Props) {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: i * 0.05 }}
-                                        className="group relative bg-white border border-slate-100 rounded-[2.5rem] p-10 hover:border-emerald-500/20 hover:shadow-2xl hover:shadow-emerald-600/5 transition-all hover:-translate-y-2 overflow-hidden"
+                                        className="group relative bg-white border border-slate-100 rounded-[2.5rem] p-10 hover:border-emerald-500/20 hover:shadow-soft hover:shadow-emerald-600/5 transition-all hover:-translate-y-2 overflow-hidden"
                                     >
                                         <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-all rotate-12 group-hover:rotate-0">
                                             <LocateFixed size={120} />
@@ -128,19 +128,19 @@ export default function Locations({ locations, filters }: Props) {
                                                     <MapPin size={24} />
                                                 </div>
                                                 <div className="px-5 py-2 bg-emerald-50 rounded-full border border-emerald-500/10 flex items-center gap-3">
-                                                    <Users2 size={14} className="text-emerald-600" />
-                                                    <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">{loc.groups_count} Kelompok</span>
+                                                    <Users size={14} className="text-emerald-600" />
+                                                    <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">{loc.groups_count} Kelompok</span>
                                                 </div>
                                             </div>
 
                                             <div className="space-y-3">
-                                                <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-tight uppercase italic">{loc.name}</h3>
+                                                <h3 className="text-2xl font-bold text-slate-900 tracking-tight leading-tight uppercase ">{loc.name}</h3>
                                                 <div className="space-y-2 text-slate-500">
                                                     <div className="flex items-center gap-3 text-xs font-bold leading-relaxed">
                                                         <Navigation size={14} className="text-emerald-500" />
                                                         <span className="uppercase tracking-widest">{loc.district}, {loc.city}</span>
                                                     </div>
-                                                    <p className="text-[11px] font-medium leading-relaxed opacity-70 flex items-start gap-3 italic">
+                                                    <p className="text-[11px] font-medium leading-relaxed opacity-70 flex items-start gap-3 ">
                                                         <Building2 size={14} className="shrink-0 mt-0.5" />
                                                         {loc.address || 'Alamat lengkap belum terdefinisi secara geospasial.'}
                                                     </p>
@@ -148,7 +148,7 @@ export default function Locations({ locations, filters }: Props) {
                                             </div>
 
                                             <button className="w-full h-14 border border-slate-100 group-hover:border-emerald-500/20 group-hover:bg-slate-50 rounded-2xl p-4 flex items-center justify-between transition-all">
-                                                <span className="text-[10px] font-black text-slate-400 group-hover:text-emerald-700 uppercase tracking-[0.2em] italic">Lihat ringkasan</span>
+                                                <span className="text-[10px] font-bold text-slate-400 group-hover:text-emerald-700 uppercase tracking-[0.2em] ">Lihat ringkasan</span>
                                                 <ChevronRight size={16} className="text-slate-300 group-hover:text-emerald-600 transition-transform group-hover:translate-x-1" />
                                             </button>
                                         </div>
@@ -166,12 +166,12 @@ export default function Locations({ locations, filters }: Props) {
                                     <Map size={60} strokeWidth={1} />
                                 </div>
                                 <div className="text-center space-y-2">
-                                    <h3 className="text-2xl font-black text-slate-900 uppercase italic">Lokasi Tidak Ditemukan</h3>
+                                    <h3 className="text-2xl font-bold text-slate-900 uppercase ">Lokasi Tidak Ditemukan</h3>
                                     <p className="text-slate-400 font-medium max-w-xs mx-auto">Kami tidak dapat menemukan wilayah yang sesuai dengan kata kunci Anda.</p>
                                 </div>
                                 <button 
                                     onClick={() => { setSearch(''); router.get('/cari-lokasi'); }}
-                                    className="text-xs font-black text-emerald-600 uppercase tracking-widest border-b-2 border-emerald-500/20 hover:border-emerald-600 transition-all pb-1"
+                                    className="text-xs font-bold text-emerald-600 uppercase tracking-widest border-b-2 border-emerald-500/20 hover:border-emerald-600 transition-all pb-1"
                                 >
                                     Atur ulang pencarian
                                 </button>
@@ -184,7 +184,7 @@ export default function Locations({ locations, filters }: Props) {
                         <div className="mt-24 border-t border-slate-50 pt-16 flex flex-col items-center gap-8">
                              <Pagination meta={locations.meta} />
                              <PageInfo meta={locations.meta} />
-                             <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em]">Sistem Verifikasi Geospasial v4.0.1</p>
+                             <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Sistem Verifikasi Geospasial v4.0.1</p>
                         </div>
                     )}
                 </section>
@@ -195,12 +195,12 @@ export default function Locations({ locations, filters }: Props) {
                 <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(#10a853_1px,transparent_1px)] bg-[size:40px_40px] opacity-[0.03]" />
                 <div className="container mx-auto px-6 lg:px-12 text-center relative z-10 space-y-12">
                     <div className="space-y-4">
-                        <h2 className="text-4xl lg:text-5xl font-black text-white italic tracking-tighter uppercase leading-none">Siap Berkontribusi?</h2>
+                        <h2 className="text-4xl lg:text-5xl font-bold text-white  tracking-tighter uppercase leading-none">Siap Berkontribusi?</h2>
                         <p className="text-slate-400 max-w-xl mx-auto font-medium">Jangan tunda pengabdian Anda. Masuk ke portal untuk memulai pendaftaran penempatan.</p>
                     </div>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                        <Link href="/login" className="bg-emerald-600 text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-600/10 hover:bg-emerald-700 transition-all">Masuk ke Portal</Link>
-                        <Link href="/" className="text-white/60 hover:text-white px-12 py-5 font-black text-xs uppercase tracking-widest transition-all">Kembali Beranda</Link>
+                        <Link href="/login" className="bg-emerald-600 text-white px-12 py-5 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-emerald-600/10 hover:bg-emerald-700 transition-all">Masuk ke Portal</Link>
+                        <Link href="/" className="text-white/60 hover:text-white px-12 py-5 font-bold text-xs uppercase tracking-widest transition-all">Kembali Beranda</Link>
                     </div>
                 </div>
             </section>

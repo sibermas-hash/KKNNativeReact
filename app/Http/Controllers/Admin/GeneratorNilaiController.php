@@ -92,7 +92,7 @@ class GeneratorNilaiController extends Controller
                 ];
             });
 
-        return Inertia::render('Admin/GradeGenerator/Index', [
+        return Inertia::render('Admin/Academic/GradeGenerator/Index', [
             'periods' => $periods,
             'groups' => $groups,
         ]);

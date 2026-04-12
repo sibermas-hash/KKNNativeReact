@@ -17,6 +17,7 @@ export interface PendingDailyReportPayload {
     gps_accuracy: string;
     captured_at: string;
     location_source: 'gps';
+    social_media_link?: string;
     files: File[];
 }
 

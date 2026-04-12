@@ -14,6 +14,9 @@ use App\Services\KKN\KknRequirementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Notifications\KKN\RegistrationSubmittedNotification;
+use App\Notifications\KKN\NewRegistrationForAdminNotification;
+use App\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -39,6 +42,8 @@ class RegistrationController extends Controller
             'birth_place' => $mahasiswa?->birth_place,
             'birth_date' => optional($mahasiswa?->birth_date)?->toDateString(),
             'gender' => $mahasiswa?->gender,
+            'shirt_size' => $mahasiswa?->shirt_size,
+            'bpjs_number' => $mahasiswa?->bpjs_number,
             'phone' => $user?->phone,
             'address' => $user?->address,
         ];
@@ -49,6 +54,8 @@ class RegistrationController extends Controller
             'birth_place' => 'Tempat lahir',
             'birth_date' => 'Tanggal lahir',
             'gender' => 'Jenis kelamin',
+            'shirt_size' => 'Ukuran kaos KKN (M, L, XL, dsb)',
+            'bpjs_number' => 'Nomor kartu BPJS/Asuransi',
             'phone' => 'Nomor WhatsApp',
             'address' => 'Alamat lengkap',
         ];
@@ -197,7 +204,6 @@ class RegistrationController extends Controller
                 'has_health_certificate' => (bool) $mahasiswa->health_certificate_path,
                 'has_parent_permission' => (bool) $mahasiswa->parent_permission_path,
                 'parent_permission_template' => asset('templates/surat_izin_orang_tua.docx'),
-                'min_sks' => (int) SystemSetting::get('min_sks_registration', 100),
             ] : null,
             'bpjs_profile' => $this->bpjsProfileSummary($mahasiswa, auth()->user()),
             'domicile_profile' => $this->domicileProfileSummary(auth()->user()),
@@ -278,15 +284,35 @@ class RegistrationController extends Controller
             auth()->id()
         );
 
-        $kknType = $period->jenis instanceof \App\Enums\KknType
-            ? $period->jenis
-            : \App\Enums\KknType::tryFrom($period->jenis) ?? \App\Enums\KknType::REGULER;
+        // Send notification to student
+        $latestRegistration = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
+            ->where('period_id', $periodId)
+            ->latest()
+            ->first();
+
+        if ($latestRegistration) {
+            $request->user()->notify(new RegistrationSubmittedNotification(
+                $latestRegistration,
+                $period->name,
+            ));
+
+            // Notify all superadmin users
+            User::role('superadmin')->each(function (User $admin) use ($latestRegistration, $mahasiswa, $period) {
+                $admin->notify(new NewRegistrationForAdminNotification(
+                    $latestRegistration,
+                    $mahasiswa->nama ?? 'Mahasiswa',
+                    $period->name,
+                ));
+            });
+        }
+
+        $governance = $period->governance();
         $message = "Pendaftaran {$period->name} berhasil diajukan.";
 
-        if ($kknType === \App\Enums\KknType::REGULER) {
+        if ($governance['registration_mode'] === 'open') {
             $message .= " Setelah admin menyetujui pendaftaran Anda, sistem akan menempatkan Anda otomatis ke kelompok yang sesuai di luar kabupaten/kota domisili.";
         } else {
-            $message .= " Skema " . $kknType->label() . " memerlukan tahap seleksi khusus. Mohon pantau status pendaftaran Anda secara berkala.";
+            $message .= " Skema " . ($governance['jenis_label'] ?? 'Khusus') . " memerlukan tahap seleksi khusus. Mohon pantau status pendaftaran Anda secara berkala.";
         }
 
         return redirect()->back()->with('success', $message);

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\TahunAkademik;
 use App\Models\KKN\Periode;
+use App\Models\KKN\JenisKkn;
 use App\Enums\KknType;
 use App\Services\RedisCacheService;
 use Illuminate\Http\RedirectResponse;
@@ -29,11 +30,12 @@ class PeriodeController extends Controller
     private function validatedPayload(Request $request): array
     {
         $validated = $request->validate([
-            'academic_year_id' => ['required', 'exists:tahun_akademik,id'],
+            'academic_year_id' => ['required', 'exists:App\Models\KKN\TahunAkademik,id'],
+            'jenis_kkn_id' => ['nullable', 'exists:App\Models\KKN\JenisKkn,id'],
             'periode' => ['required', 'integer'],
             'jenis' => ['nullable', 'string', 'max:100'],
-            'program_type' => ['nullable', Rule::in(array_keys(Periode::programTypeOptions()))],
-            'program_subtype' => ['nullable', Rule::in(array_keys(Periode::programSubtypeOptions()))],
+            'program_type' => ['nullable', 'string', 'max:100'],
+            'program_subtype' => ['nullable', 'string', 'max:100'],
             'name' => ['required', 'string', 'max:100'],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after:start_date'],
@@ -43,12 +45,18 @@ class PeriodeController extends Controller
             'grading_start' => ['nullable', 'date'],
             'grading_end' => ['nullable', 'date', 'after_or_equal:grading_start'],
             'is_active' => ['boolean'],
+            'current_phase' => ['nullable', 'string', 'in:upcoming,registration,placement,execution,grading,finished'],
         ]);
 
-        $governance = Periode::governanceBlueprint(
-            $validated['program_type'] ?? null,
+        $jenisKkn = ! empty($validated['jenis_kkn_id'])
+            ? JenisKkn::query()->find($validated['jenis_kkn_id'])
+            : null;
+
+        $governance = \App\Services\KKN\PeriodeGovernanceService::blueprint(
+            $validated['program_type'] ?? $jenisKkn?->code,
             $validated['program_subtype'] ?? null,
-            $validated['jenis'] ?? null,
+            $validated['jenis'] ?? $jenisKkn?->code,
+            $jenisKkn,
         );
 
         $validated['jenis'] = $governance['jenis_value'];
@@ -65,13 +73,17 @@ class PeriodeController extends Controller
         Gate::authorize('manage-master-data');
         
         $periods = RedisCacheService::getPeriods(function () use ($request) {
-            return Periode::with('tahunAkademik')
+            return Periode::with('tahunAkademik', 'jenisKkn')
                 ->withCount(['kelompok', 'peserta', 'dplPeriods'])
                 ->when($request->search, function ($query, $search) {
                     $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
                     $query->where('periode', 'like', "%{$s}%")
                           ->orWhere('jenis', 'like', "%{$s}%")
-                          ->orWhere('name', 'like', "%{$s}%");
+                          ->orWhere('name', 'like', "%{$s}%")
+                          ->orWhereHas('jenisKkn', function($q) use ($s) {
+                              $q->where('name', 'ilike', "%{$s}%")
+                                ->orWhere('code', 'ilike', "%{$s}%");
+                          });
                 })
                 ->orderByDesc('periode')
                 ->get();
@@ -93,6 +105,7 @@ class PeriodeController extends Controller
 
             return [
             'id' => $p->id,
+            'jenis_kkn_id' => $p->jenis_kkn_id,
             'periode' => $p->periode,
             'jenis' => $p->jenis instanceof KknType ? $p->jenis->label() : $p->jenis,
             'program_type' => $governance['program_type'],
@@ -113,6 +126,7 @@ class PeriodeController extends Controller
             'grading_end' => $p->grading_end?->format('Y-m-d'),
             'kuota' => $p->kuota,
             'is_active' => $p->is_active,
+            'current_phase' => $p->current_phase,
             'academic_year' => $p->tahunAkademik ? ['id' => $p->tahunAkademik->id, 'year' => $p->tahunAkademik->year] : null,
             'groups_count' => $p->kelompok_count,
             'participants_count' => $p->peserta_count,
@@ -128,17 +142,35 @@ class PeriodeController extends Controller
         $academicYears = TahunAkademik::orderByDesc('year')->get()
             ->map(fn ($ay) => ['id' => $ay->id, 'year' => $ay->year]);
 
-        return Inertia::render('Admin/Periods/Index', [
+        return Inertia::render('Admin/MasterData/Periods/Index', [
             'periods' => $this->formatPaginator($periods),
             'academicYears' => $academicYears,
             'filters' => $request->only('search'),
             'programOptions' => [
-                'types' => collect(Periode::programTypeOptions())
-                    ->map(fn (string $label, string $value) => [
-                        'value' => $value,
-                        'label' => $label,
-                        'description' => Periode::programTypeDescriptions()[$value] ?? null,
-                    ])
+                'types' => JenisKkn::query()
+                    ->active()
+                    ->ordered()
+                    ->get()
+                    ->map(function (JenisKkn $jenisKkn) {
+                        $governance = \App\Services\KKN\PeriodeGovernanceService::blueprint(
+                            $jenisKkn->code,
+                            null,
+                            $jenisKkn->code,
+                            $jenisKkn,
+                        );
+
+                        return [
+                            'id' => $jenisKkn->id,
+                            'value' => (string) $jenisKkn->id,
+                            'label' => $jenisKkn->name,
+                            'description' => $jenisKkn->description,
+                            'registration_mode_label' => $jenisKkn->registrationModeLabel(),
+                            'placement_mode_label' => $jenisKkn->placementModeLabel(),
+                            'program_type' => $governance['program_type'],
+                            'program_subtype' => $governance['program_subtype'],
+                            'code' => $jenisKkn->code,
+                        ];
+                    })
                     ->values(),
                 'subtypes' => collect(Periode::programSubtypeOptions())
                     ->map(fn (string $label, string $value) => [
@@ -157,7 +189,8 @@ class PeriodeController extends Controller
 
         $overlap = $this->checkDateOverlap(
             $validated['start_date'],
-            $validated['end_date']
+            $validated['end_date'],
+            $validated['jenis_kkn_id'] ?? null
         );
 
         if ($overlap) {
@@ -173,7 +206,7 @@ class PeriodeController extends Controller
         Periode::create($validated);
         RedisCacheService::invalidateMasterData();
 
-        return redirect()->route('admin.periods.index')->with('success', 'Periode KKN berhasil ditambahkan.');
+        return redirect()->route('admin.periode.index')->with('success', 'Periode KKN berhasil ditambahkan.');
     }
 
     public function update(Request $request, Periode $periode): RedirectResponse
@@ -183,6 +216,7 @@ class PeriodeController extends Controller
         $overlap = $this->checkDateOverlap(
             $validated['start_date'],
             $validated['end_date'],
+            $validated['jenis_kkn_id'] ?? null,
             $periode->id
         );
 
@@ -201,7 +235,7 @@ class PeriodeController extends Controller
         $periode->update($validated);
         RedisCacheService::invalidateMasterData();
 
-        return redirect()->route('admin.periods.index')->with('success', 'Periode KKN berhasil diperbarui.');
+        return redirect()->route('admin.periode.index')->with('success', 'Periode KKN berhasil diperbarui.');
     }
 
     public function duplicate(Periode $periode): RedirectResponse
@@ -232,7 +266,7 @@ class PeriodeController extends Controller
             }
         });
 
-        return redirect()->route('admin.periods.index')->with('success', 'Struktur periode dan kelompok berhasil diduplikasi.');
+        return redirect()->route('admin.periode.index')->with('success', 'Struktur periode dan kelompok berhasil diduplikasi.');
     }
 
     public function destroy(Periode $periode): RedirectResponse
@@ -240,13 +274,13 @@ class PeriodeController extends Controller
         $periode->loadCount(['kelompok', 'peserta', 'dplPeriods']);
 
         if (!$this->canDeletePeriod($periode)) {
-            return redirect()->route('admin.periods.index')->with('error', $this->getDeleteBlockerReason($periode));
+            return redirect()->route('admin.periode.index')->with('error', $this->getDeleteBlockerReason($periode));
         }
 
         $periode->delete();
         RedisCacheService::invalidateMasterData();
 
-        return redirect()->route('admin.periods.index')->with('success', 'Periode KKN berhasil dihapus.');
+        return redirect()->route('admin.periode.index')->with('success', 'Periode KKN berhasil dihapus.');
     }
 
     private function canDeletePeriod(Periode $period): bool
@@ -306,7 +340,7 @@ class PeriodeController extends Controller
         return $token;
     }
 
-    private function checkDateOverlap(string $startDate, string $endDate, ?int $excludeId = null): ?Periode
+    private function checkDateOverlap(string $startDate, string $endDate, ?int $jenisKknId = null, ?int $excludeId = null): ?Periode
     {
         $query = Periode::where(function ($q) use ($startDate, $endDate) {
             $q->whereBetween('start_date', [$startDate, $endDate])
@@ -319,6 +353,10 @@ class PeriodeController extends Controller
 
         if ($excludeId) {
             $query->where('id', '!=', $excludeId);
+        }
+
+        if ($jenisKknId) {
+            $query->where('jenis_kkn_id', $jenisKknId);
         }
 
         return $query->first();

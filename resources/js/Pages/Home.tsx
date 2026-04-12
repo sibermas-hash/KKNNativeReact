@@ -1,5 +1,6 @@
-import { Head, Link } from '@inertiajs/react';
-import { motion } from 'framer-motion';
+import { Head, Link, usePage } from '@inertiajs/react';
+import type { PageProps } from '@/types';
+import { motion, AnimatePresence } from 'framer-motion';
 import { route } from 'ziggy-js';
 import {
     ArrowRight,
@@ -15,6 +16,12 @@ import {
     ShieldCheck,
     Calendar,
     MousePointer2,
+    Zap,
+    Activity,
+    Lock,
+    Binary,
+    Cpu,
+    Globe
 } from 'lucide-react';
 import PublicLayout from '@/Layouts/PublicLayout';
 
@@ -80,28 +87,43 @@ const schemeCards = [
         title: 'KKN Reguler',
         tag: 'Skema utama',
         description: 'Skema utama penempatan mahasiswa pada desa mitra dengan program kerja kolektif yang terukur.',
+        icon: Globe
     },
     {
         title: 'KKN Tematik',
         tag: 'Berbasis isu',
-        description: 'Intervensi strategis berbasis isu prioritas seperti kesehatan, ekonomi kreatif, dan lingkungan hidup.',
+        description: 'Intervensi strategis berbasis isu prioritas seperti kesehatan, ekonomi kreatif, dan lingkungan.',
+        icon: Lock
     },
     {
         title: 'KKN Nusantara',
         tag: 'Lintas wilayah',
-        description: 'Program khusus lintas wilayah yang mengikuti seleksi dan tata kelola nasional/mitra.',
+        description: 'Program khusus lintas wilayah yang mengikuti seleksi dan tata kelola nasional/mitra kompetensi.',
+        icon: MapPin
     },
     {
         title: 'KKN Kolaborasi PTKIN',
         tag: 'Kemitraan PTKIN',
         description: 'Program kolaborasi antar-PTKIN dengan penempatan dan tata kelola yang mengikuti host program.',
+        icon: Users
     },
     {
         title: 'KKN Internasional',
         tag: 'Kemitraan global',
         description: 'Program luar negeri berbasis mitra yang dikelola melalui seleksi khusus dan penempatan host.',
+        icon: Zap
     },
 ];
+
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+};
 
 function formatDate(value?: string | null): string {
     if (!value) return '-';
@@ -119,91 +141,100 @@ export default function Home({
     featuredDownloads = [],
     stats = {},
 }: Props) {
+    const { auth } = usePage<PageProps>().props;
+    const portalHref = auth.user ? route('dashboard') : route('login');
+
     return (
         <PublicLayout>
             <Head title="Pusat Portal KKN | UIN Prof. K.H. Saifuddin Zuhri" />
 
-            <div className="min-h-screen bg-white font-sans overflow-x-hidden selection:bg-emerald-500/10 selection:text-emerald-700">
-                {/* --- ELITE HERO SECTION --- */}
-                <section className="relative pt-32 pb-40 lg:pt-48 lg:pb-60 bg-[#FBFBFA] border-b border-slate-50">
-                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none overflow-hidden">
-                        <div className="absolute top-20 right-[-10%] w-[600px] h-[600px] rounded-full border-[60px] border-emerald-950 animate-pulse duration-[10s]" />
-                        <div className="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] rounded-full border-[40px] border-emerald-950/50" />
+            <div className="min-h-screen bg-white font-sans overflow-x-hidden selection:bg-emerald-500 selection:text-white">
+                {/* --- TACTICAL HERO: DARK INDUSTRIAL --- */}
+                <section className="relative pt-40 pb-48 lg:pt-64 lg:pb-80 bg-slate-950 text-white overflow-hidden">
+                    {/* Background Intelligence */}
+                    <div className="absolute inset-0 opacity-[0.05] pointer-events-none">
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] aspect-square border-[1px] border-emerald-500/20 rounded-full animate-[spin_60s_linear_infinite]" />
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] aspect-square border-[1px] border-emerald-500/10 rounded-full animate-[spin_40s_linear_infinite_reverse]" />
                     </div>
+                    <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-slate-950 to-transparent z-10" />
+                    <div className="absolute -top-40 -right-40 h-[600px] w-[600px] bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none" />
 
-                    <div className="mx-auto max-w-7xl px-6 lg:px-12 relative z-10">
-                        <div className="flex flex-col lg:items-center text-left lg:text-center space-y-12">
+                    <div className="mx-auto max-w-7xl px-8 lg:px-12 relative z-20">
+                        <div className="flex flex-col items-center text-center space-y-16">
                             <motion.div
                                 initial={{ opacity: 0, y: 15 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="flex items-center lg:justify-center gap-4"
+                                className="flex items-center gap-6"
                             >
-                                <span className="h-px w-10 bg-emerald-500/30 hidden sm:block" />
-                                <span className="px-6 py-2 bg-emerald-50 text-[10px] font-black text-emerald-700 rounded-full border border-emerald-100 uppercase tracking-[0.5em] inline-block shadow-sm">
-                                    Portal Akademik KKN
+                                <div className="h-px w-12 bg-emerald-500 hidden sm:block" />
+                                <span className="px-8 py-3 bg-emerald-600/10 text-[10px] font-black text-emerald-400 rounded-2xl border border-emerald-500/20 uppercase tracking-[0.4em] inline-block shadow-2xl">
+                                    Operational Command Center
                                 </span>
-                                <span className="h-px w-10 bg-emerald-500/30 hidden sm:block" />
+                                <div className="h-px w-12 bg-emerald-500 hidden sm:block" />
                             </motion.div>
 
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.98 }}
+                                initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                                className="space-y-10"
+                                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                                className="space-y-4"
                             >
-                                <h1 className="text-[12vw] sm:text-7xl lg:text-9xl font-black text-emerald-950 tracking-[-0.04em] leading-[0.85] uppercase italic font-sans italic selection:bg-emerald-500">
-                                    <span className="font-serif italic font-normal text-emerald-600 capitalize lowercase block lg:inline">Aksi</span> <br className="lg:hidden" />
-                                    Nyata <span className="text-slate-200">/</span> <br className="lg:hidden" />
-                                    Terukur.
+                                <h1 className="text-[14vw] sm:text-7xl lg:text-9xl font-black tracking-[-0.05em] leading-[0.8] uppercase">
+                                    Aksi <span className="text-emerald-500">Nyata.</span> <br />
+                                    Terukur <span className="text-slate-700">/</span> <br className="lg:hidden" />
+                                    Digital.
                                 </h1>
-                                <p className="mx-auto max-w-3xl text-lg lg:text-2xl font-bold text-slate-400 italic leading-relaxed">
-                                    Simpul utama manajemen pengabdian masyarakat Universitas Islam Negeri <br className="hidden lg:block" /> 
-                                    Prof. K.H. Saifuddin Zuhri dalam satu ekosistem digital yang otoritatif.
+                                <p className="mx-auto max-w-2xl text-lg lg:text-2xl font-bold text-slate-400 leading-relaxed uppercase tracking-tight opacity-70">
+                                    Simpul pusat tata kelola pengabdian masyarakat Universitas Islam Negeri <br className="hidden lg:block" /> 
+                                    Prof. K.H. Saifuddin Zuhri. Berbasis data, berdampak nyata.
                                 </p>
                             </motion.div>
 
                             <motion.div
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.3 }}
-                                className="flex flex-col sm:flex-row gap-6 lg:justify-center w-full"
+                                transition={{ delay: 0.4 }}
+                                className="flex flex-col sm:flex-row gap-6 w-full lg:w-auto"
                             >
                                  <Link
-                                  href={route('login')}
-                                     className="group h-20 px-10 bg-emerald-600 text-white rounded-[2rem] text-sm font-black flex items-center justify-center gap-5 hover:bg-emerald-700 hover:-translate-y-1 transition-all shadow-2xl active:scale-95 uppercase italic tracking-[0.2em]"
+                                     href={portalHref}
+                                     className="group h-24 px-12 bg-emerald-600 text-slate-950 rounded-[2.5rem] text-sm font-black flex items-center justify-center gap-6 hover:bg-emerald-400 hover:-translate-y-2 transition-all shadow-2xl shadow-emerald-500/20 active:scale-95 uppercase tracking-[0.3em]"
                                  >
-                                     <span>Masuk ke portal</span>
-                                     <ArrowRight className="h-5 w-5 group-hover:translate-x-2 transition-transform" />
+                                     <Zap size={20} strokeWidth={3} />
+                                     <span>{auth.user ? 'Enter Console' : 'Initialize Portal'}</span>
+                                     <ArrowRight className="h-5 w-5 group-hover:translate-x-3 transition-transform" />
                                  </Link>
                                  <Link
                                      href={route('public.schemes')}
-                                    className="h-20 px-10 bg-white border border-slate-100 text-emerald-900 rounded-[2rem] text-sm font-black flex items-center justify-center gap-4 hover:bg-slate-50 transition-all shadow-sm active:scale-95 uppercase italic tracking-[0.2em]"
+                                    className="h-24 px-12 bg-white/5 border-2 border-white/10 text-white rounded-[2.5rem] text-sm font-black flex items-center justify-center gap-4 hover:bg-white/10 transition-all active:scale-95 uppercase tracking-[0.3em]"
                                 >
                                     Eksplorasi Skema
                                 </Link>
                             </motion.div>
                         </div>
 
-                        {/* --- BENTO PERFORMANCE STATS --- */}
-                        <div className="mt-40 grid grid-cols-2 lg:grid-cols-4 gap-10">
+                        {/* --- TACTICAL BENTO STATS --- */}
+                        <div className="mt-48 grid grid-cols-2 lg:grid-cols-4 gap-8">
                             {[
-                                { label: 'Mahasiswa aktif', value: stats.students || '12K+', icon: Users, color: 'emerald' },
-                                { label: 'Kelompok aktif', value: stats.groups || '850+', icon: Sparkles, color: 'blue' },
-                                { label: 'Lokasi penempatan', value: stats.locations || '45+', icon: MapPin, color: 'rose' },
-                                { label: 'Tahun akademik', value: stats.academic_years || '2026', icon: Calendar, color: 'amber' },
+                                { label: 'Mahasiswa Aktif', value: stats.students || '12K+', icon: Users, color: 'emerald' },
+                                { label: 'Unit Operasional', value: stats.groups || '850+', icon: Activity, color: 'emerald' },
+                                { label: 'Zonasi Lokal', value: stats.locations || '45+', icon: MapPin, color: 'emerald' },
+                                { label: 'Tahun Deployment', value: stats.academic_years || '2026', icon: Calendar, color: 'emerald' },
                             ].map((stat, i) => (
                                 <motion.div
                                     key={i}
-                                    initial={{ opacity: 0, y: 20 }}
+                                    initial={{ opacity: 0, y: 40 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
                                     transition={{ delay: i * 0.1 }}
-                                    className="p-10 bg-white border border-slate-100 rounded-[3rem] shadow-[0_30px_70px_-30px_rgba(0,0,0,0.05)] group hover:shadow-2xl transition-all"
+                                    className="p-12 bg-slate-900 border border-white/5 rounded-[3.5rem] shadow-2xl group hover:border-emerald-500/50 transition-all flex flex-col justify-between"
                                 >
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-8 italic leading-none">{stat.label}</p>
-                                    <div className="space-y-2">
-                                        <h4 className="text-5xl font-black text-emerald-950 italic tracking-tighter leading-none group-hover:text-emerald-600 transition-colors">{stat.value}</h4>
-                                        <div className="h-1 w-8 bg-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div className="h-12 w-12 rounded-2xl bg-emerald-600/10 text-emerald-500 flex items-center justify-center mb-10 group-hover:scale-110 transition-transform">
+                                        <stat.icon size={24} strokeWidth={2.5} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h4 className="text-5xl font-black text-white tracking-tighter leading-none group-hover:text-emerald-400 transition-colors uppercase">{stat.value}</h4>
+                                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] group-hover:text-emerald-500 transition-colors">{stat.label}</p>
                                     </div>
                                 </motion.div>
                             ))}
@@ -211,29 +242,33 @@ export default function Home({
                     </div>
                 </section>
 
-                {/* --- VALUE PROPOSITION --- */}
-                <section className="py-40 bg-white">
-                    <div className="mx-auto max-w-7xl px-6 lg:px-12">
-                        <div className="grid lg:grid-cols-2 gap-20 lg:items-center">
-                            <div className="space-y-12">
-                                <div className="space-y-6">
-                                    <h2 className="text-4xl lg:text-6xl font-black text-emerald-900 tracking-tighter leading-none italic uppercase">
-                                        Pilar Utama <span className="font-serif italic font-normal text-emerald-600 capitalize">Pengabdian.</span>
+                {/* --- STRATEGIC PILLARS --- */}
+                <section className="py-48 bg-white overflow-hidden">
+                    <div className="mx-auto max-w-7xl px-8 lg:px-12 relative">
+                        <div className="absolute top-0 right-0 p-32 opacity-[0.02] text-slate-900 pointer-events-none">
+                            <Cpu size={500} />
+                        </div>
+                        <div className="grid lg:grid-cols-2 gap-32 lg:items-center">
+                            <div className="space-y-16">
+                                <div className="space-y-8">
+                                    <div className="h-1.5 w-24 bg-emerald-600 rounded-full" />
+                                    <h2 className="text-5xl lg:text-7xl font-black text-slate-900 tracking-tighter leading-[0.9] uppercase">
+                                        Pilar Utama <br /> <span className="text-emerald-600">Governance KKN.</span>
                                     </h2>
-                                    <p className="text-xl font-bold text-slate-400 italic leading-relaxed">
-                                        Membangun jembatan teoretis ke ranah praktis melalui pengawasan digital yang presisi dan transparan.
+                                    <p className="text-xl font-bold text-slate-400 leading-relaxed uppercase tracking-tight opacity-80">
+                                        Membangun jembatan teoretis ke ranah praktis melalui pengawasan digital yang presisi, transparan, dan otoritatif.
                                     </p>
                                 </div>
                                 
-                                <div className="grid gap-6">
+                                <div className="grid gap-10">
                                     {valueCards.map((item) => (
-                                        <div key={item.title} className="flex gap-8 group">
-                                            <div className="h-16 w-16 rounded-[1.2rem] bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-sm shrink-0">
-                                                <item.icon size={24} />
+                                        <div key={item.title} className="flex gap-10 group">
+                                            <div className="h-20 w-20 rounded-[1.8rem] bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-emerald-500 transition-all shadow-sm shrink-0">
+                                                <item.icon size={28} strokeWidth={2.5} />
                                             </div>
-                                            <div className="space-y-2 pt-2">
-                                                <h3 className="text-xl font-black text-emerald-900 italic tracking-tight">{item.title}</h3>
-                                                <p className="text-sm font-medium text-slate-500 leading-relaxed max-w-md">{item.description}</p>
+                                            <div className="space-y-3 pt-2">
+                                                <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase">{item.title}</h3>
+                                                <p className="text-sm font-bold text-slate-400 leading-relaxed max-w-md uppercase tracking-wide opacity-70">{item.description}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -241,48 +276,53 @@ export default function Home({
                             </div>
 
                             <div className="relative group">
-                                <div className="aspect-[4/5] rounded-[3.5rem] bg-slate-100 overflow-hidden relative shadow-2xl border border-slate-200">
-                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent z-10" />
-                                    <div className="absolute inset-0 flex items-center justify-center z-0 opacity-10 group-hover:scale-110 transition-transform duration-[4s]">
-                                         <ShieldCheck size={400} className="text-emerald-950" />
+                                <div className="aspect-[4/5] rounded-[4rem] bg-slate-950 overflow-hidden relative shadow-2xl border-8 border-slate-900">
+                                    <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/60 to-transparent z-10" />
+                                    <div className="absolute inset-0 flex items-center justify-center z-0 opacity-10 group-hover:scale-110 transition-transform duration-[5s]">
+                                         <ShieldCheck size={500} className="text-emerald-500" />
                                     </div>
-                                    <div className="absolute bottom-0 left-0 right-0 p-16 z-20 space-y-4">
-                                        <div className="px-5 py-2 bg-emerald-600 text-[10px] font-black text-white rounded-full inline-block shadow-lg uppercase tracking-widest italic">Integritas Terjamin</div>
-                                        <p className="text-3xl font-black text-white italic tracking-tighter leading-tight uppercase font-serif">Amanah <br /> Untuk Bangsa.</p>
+                                    <div className="absolute bottom-0 left-0 right-0 p-16 z-20 space-y-8">
+                                        <div className="px-8 py-3 bg-emerald-600 text-[10px] font-black text-slate-950 rounded-2xl inline-block shadow-2xl uppercase tracking-[0.3em]">INTEGRITY_PROTOCOL_READY</div>
+                                        <p className="text-4xl md:text-5xl font-black text-white tracking-tighter leading-none uppercase">Amanah <br /> Untuk <span className="text-emerald-500">Bangsa.</span></p>
                                     </div>
                                 </div>
-                                <div className="absolute -top-10 -right-10 h-40 w-40 bg-emerald-600 rounded-full flex flex-col items-center justify-center text-white p-8 animate-spin-slow shadow-2xl hover:scale-110 transition-transform cursor-crosshair">
+                                <div className="absolute -top-12 -right-12 h-44 w-44 bg-emerald-600 rounded-full flex flex-col items-center justify-center text-slate-950 p-8 animate-spin-slow shadow-2xl hover:scale-110 transition-transform cursor-pointer border-8 border-white">
                                     <MousePointer2 size={32} className="mb-2" />
-                                    <span className="text-[8px] font-black uppercase tracking-widest text-center leading-tight">Interaction_State Ready</span>
+                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-center leading-tight">Interaction Active</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                {/* --- SKEMA SECTION --- */}
-                <section className="py-40 bg-slate-50 overflow-hidden group">
-                    <div className="mx-auto max-w-7xl px-6 lg:px-12 relative z-10">
-                        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 mb-24">
-                            <div className="space-y-6">
-                                <span className="px-5 py-2 bg-emerald-100 border border-emerald-200 rounded-full text-[9px] font-black text-emerald-700 tracking-[0.4em] uppercase italic inline-block">Ragam skema KKN</span>
-                                <h2 className="text-5xl lg:text-8xl font-black text-emerald-950 italic tracking-tighter leading-[0.85] uppercase font-serif">Inovasi <br /> Tanpa Batas.</h2>
+                {/* --- SCHEMA MATRIX --- */}
+                <section className="py-48 bg-slate-50 overflow-hidden relative">
+                    <div className="mx-auto max-w-7xl px-8 lg:px-12 relative z-10">
+                        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-16 mb-32">
+                            <div className="space-y-8">
+                                <div className="h-1.5 w-24 bg-emerald-600 rounded-full" />
+                                <h2 className="text-5xl lg:text-8xl font-black text-slate-900 tracking-tighter leading-[0.8] uppercase">
+                                    Inovasi <br /> <span className="text-emerald-600">Schema Matrix.</span>
+                                </h2>
                             </div>
-                            <p className="max-w-md text-lg font-bold text-slate-500 italic leading-relaxed">Penyediaan kanal pengabdian masyarakat yang terspesialisasi sesuai disiplin ilmu dan kompetensi strategis.</p>
+                            <p className="max-w-md text-lg font-bold text-slate-400 leading-relaxed uppercase tracking-tight">Kanal pengabdian masyarakat yang terspesialisasi sesuai disiplin ilmu dan kompetensi strategis institusi.</p>
                         </div>
 
-                        <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-5">
+                        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                             {schemeCards.map((scheme) => (
-                                <div key={scheme.title} className="group/scheme h-[400px] p-12 bg-white border border-slate-100 rounded-[3rem] hover:bg-emerald-600 transition-all duration-500 flex flex-col justify-between hover:shadow-2xl hover:shadow-emerald-900/20">
-                                    <div className="space-y-6">
-                                        <span className="text-[9px] font-black text-emerald-600 group-hover/scheme:text-white uppercase tracking-widest italic leading-none">{scheme.tag}</span>
+                                <div key={scheme.title} className="group/scheme h-[480px] p-12 bg-white border border-slate-100 rounded-[3.5rem] hover:bg-slate-900 transition-all duration-700 flex flex-col justify-between hover:shadow-2xl hover:-translate-y-4">
+                                    <div className="space-y-8">
+                                        <div className="h-16 w-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover/scheme:bg-emerald-600 group-hover/scheme:text-slate-950 transition-all">
+                                            <scheme.icon size={28} strokeWidth={2.5} />
+                                        </div>
                                         <div className="space-y-4">
-                                            <h3 className="text-3xl font-black text-emerald-950 group-hover/scheme:text-white italic tracking-tighter leading-none uppercase">{scheme.title}</h3>
-                                            <p className="text-sm font-medium text-slate-500 group-hover/scheme:text-emerald-50 leading-relaxed font-sans">{scheme.description}</p>
+                                            <span className="text-[10px] font-black text-emerald-600 group-hover/scheme:text-emerald-400 uppercase tracking-widest">{scheme.tag}</span>
+                                            <h3 className="text-3xl font-black text-slate-900 group-hover/scheme:text-white tracking-tighter leading-none uppercase">{scheme.title}</h3>
+                                            <p className="text-xs font-bold text-slate-400 group-hover/scheme:text-slate-500 leading-relaxed uppercase tracking-tight">{scheme.description}</p>
                                         </div>
                                     </div>
-                                    <Link href={route('public.schemes')} className="h-12 w-12 rounded-full border border-slate-200 group-hover/scheme:border-white/50 flex items-center justify-center text-slate-400 group-hover/scheme:text-white group-hover/scheme:bg-white/10 transition-all">
-                                        <ArrowUpRight size={20} />
+                                    <Link href={route('public.schemes')} className="h-14 w-14 rounded-2xl border-2 border-slate-50 group-hover/scheme:border-emerald-600/50 flex items-center justify-center text-slate-300 group-hover/scheme:text-emerald-500 transition-all">
+                                        <ArrowUpRight size={24} strokeWidth={3} />
                                     </Link>
                                 </div>
                             ))}
@@ -290,72 +330,73 @@ export default function Home({
                     </div>
                 </section>
 
-                {/* --- FEED & RESOURCES --- */}
-                <section className="py-40 bg-white">
-                    <div className="mx-auto max-w-7xl px-6 lg:px-12 grid lg:grid-cols-2 gap-20">
+                {/* --- FEED & INTELLIGENCE --- */}
+                <section className="py-48 bg-white">
+                    <div className="mx-auto max-w-7xl px-8 lg:px-12 grid lg:grid-cols-2 gap-32">
                         {/* Warta Feed */}
-                        <div className="space-y-12">
-                            <div className="flex items-end justify-between border-b border-slate-100 pb-10">
+                        <div className="space-y-16">
+                            <div className="flex items-end justify-between border-b border-slate-50 pb-12">
                                 <div className="space-y-4">
-                                    <h2 className="text-4xl font-black text-emerald-950 italic tracking-tighter leading-none uppercase font-serif">Warta <span className="font-sans italic text-emerald-600">Utama.</span></h2>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">Informasi terbaru</p>
+                                    <h2 className="text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none">Warta <span className="text-emerald-600">Utama.</span></h2>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] leading-none">Live Dispatch Feed</p>
                                 </div>
-                                <Link href={route('public.announcements')} className="text-[10px] font-black text-emerald-600 uppercase tracking-widest italic hover:text-emerald-900 transition-colors">Semua Berita</Link>
+                                <Link href={route('public.announcements')} className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] hover:text-emerald-900 transition-colors">View All Archive</Link>
                             </div>
 
-                            <div className="space-y-6">
+                            <div className="space-y-8">
                                 {featuredAnnouncements.length > 0 ? featuredAnnouncements.slice(0, 3).map((item) => (
                                     <article key={item.id} className="group cursor-pointer">
-                                        <div className="p-8 rounded-[2rem] border border-slate-100 hover:border-emerald-200 hover:shadow-2xl hover:shadow-emerald-900/5 transition-all space-y-4 relative overflow-hidden">
-                                            <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest italic text-slate-400 group-hover:text-emerald-600 transition-colors">
-                                                <span>{item.category || 'Warta akademik'}</span>
-                                                <span>{formatDate(item.published_at)}</span>
+                                        <div className="p-10 rounded-[3rem] border border-slate-50 hover:border-emerald-500/30 hover:bg-slate-50/50 transition-all space-y-6 relative overflow-hidden">
+                                            <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-emerald-600 transition-colors">
+                                                <span>{item.category || 'ACADEMIC DISPATCH'}</span>
+                                                <span className="mono">{formatDate(item.published_at)}</span>
                                             </div>
-                                            <h3 className="text-xl font-black text-emerald-900 italic tracking-tight group-hover:translate-x-2 transition-transform">{item.title}</h3>
-                                            <div className="absolute right-8 bottom-8 text-slate-100 group-hover:text-emerald-50 transition-colors">
-                                                <Newspaper size={40} />
+                                            <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-tight group-hover:translate-x-4 transition-transform uppercase">{item.title}</h3>
+                                            <div className="absolute right-10 bottom-10 opacity-5 group-hover:opacity-10 transition-opacity">
+                                                <Newspaper size={80} />
                                             </div>
                                         </div>
                                     </article>
                                 )) : (
-                                    <div className="py-20 text-center opacity-20 italic space-y-4">
-                                        <Newspaper size={60} className="mx-auto" />
-                                        <p className="text-[11px] font-black uppercase tracking-[0.5em]">Belum ada warta</p>
+                                    <div className="py-24 text-center opacity-10 space-y-4">
+                                        <Newspaper size={80} className="mx-auto" />
+                                        <p className="text-[10px] font-black uppercase tracking-widest">Feed Empty</p>
                                     </div>
                                 )}
                             </div>
                         </div>
 
                         {/* Repository Feed */}
-                        <div className="space-y-12">
-                            <div className="flex items-end justify-between border-b border-slate-100 pb-10">
+                        <div className="space-y-16">
+                            <div className="flex items-end justify-between border-b border-slate-50 pb-12">
                                 <div className="space-y-4">
-                                    <h2 className="text-4xl font-black text-emerald-950 italic tracking-tighter leading-none uppercase font-serif">Repositori <span className="font-sans italic text-emerald-600">Pusat.</span></h2>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic leading-none">Dokumen pilihan</p>
+                                    <h2 className="text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none">Pusat <span className="text-emerald-600">Repositori.</span></h2>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] leading-none">Global Assets</p>
                                 </div>
-                                <Link href={route('public.downloads')} className="text-[10px] font-black text-emerald-600 uppercase tracking-widest italic hover:text-emerald-900 transition-colors">Semua Berkas</Link>
+                                <Link href={route('public.downloads')} className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] hover:text-emerald-900 transition-colors">View All Assets</Link>
                             </div>
 
-                            <div className="space-y-6">
+                            <div className="space-y-8">
                                 {featuredDownloads.length > 0 ? featuredDownloads.slice(0, 3).map((item) => (
                                     <article key={item.id} className="group cursor-pointer">
-                                        <div className="p-8 rounded-[2rem] bg-slate-50 border border-slate-100 hover:bg-emerald-50 hover:border-emerald-200 transition-all flex items-center justify-between border-l-8 border-l-slate-200 hover:border-l-emerald-600">
-                                            <div className="space-y-2">
-                                                <div className="flex items-center gap-3">
-                                                    <span className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-[8px] font-black text-slate-400 uppercase tracking-widest italic">{item.file_type || 'DOC'}</span>
-                                                    <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest italic opacity-0 group-hover:opacity-100 transition-opacity">Siap Diunduh</span>
+                                        <div className="p-10 rounded-[3rem] bg-slate-900 text-white hover:bg-emerald-600 transition-all flex items-center justify-between shadow-2xl relative overflow-hidden">
+                                            <div className="absolute top-0 right-0 h-full w-24 bg-white/5 skew-x-12 translate-x-12" />
+                                            <div className="space-y-3 relative z-10">
+                                                <div className="flex items-center gap-4">
+                                                    <span className="px-4 py-1.5 bg-white/10 border border-white/10 rounded-xl text-[9px] font-black uppercase tracking-widest">{item.file_type || 'DATA'}</span>
+                                                    <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Ingestion Ready</span>
                                                 </div>
-                                                <h3 className="text-xl font-black text-emerald-900 italic tracking-tight uppercase leading-none">{item.title}</h3>
+                                                <h3 className="text-2xl font-black tracking-tight uppercase leading-none group-hover:text-slate-950 transition-colors">{item.title}</h3>
                                             </div>
-                                            <div className="h-14 w-14 bg-white rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-emerald-700 transition-all shadow-sm">
-                                                <Download size={24} />
+                                            <div className="h-16 w-16 bg-white/5 rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-slate-950 group-hover:bg-white transition-all transition-all shadow-sm shrink-0">
+                                                <Download size={28} strokeWidth={2.5} />
                                             </div>
                                         </div>
                                     </article>
                                 )) : (
-                                    <div className="py-20 text-center opacity-20 italic space-y-4">
-                                        <Download size={60} className="mx-auto" />
-                                        <p className="text-[11px] font-black uppercase tracking-[0.5em]">Belum ada dokumen</p>
+                                    <div className="py-24 text-center opacity-10 space-y-4">
+                                        <Download size={80} className="mx-auto" />
+                                        <p className="text-[10px] font-black uppercase tracking-widest">No Assets</p>
                                     </div>
                                 )}
                             </div>
@@ -363,24 +404,28 @@ export default function Home({
                     </div>
                 </section>
 
-                {/* --- CLOSING CTA --- */}
-                <section className="bg-white py-40">
-                    <div className="mx-auto max-w-7xl px-6 lg:px-12">
-                        <div className="bg-emerald-600 rounded-[4rem] p-20 lg:p-32 relative overflow-hidden group shadow-2xl">
-                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-700 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-                            <div className="relative z-10 flex flex-col items-center text-center space-y-12">
-                                <h2 className="text-5xl lg:text-8xl font-black text-white italic tracking-tighter leading-none uppercase font-serif">Mulai <br /> Langkahmu.</h2>
-                                <p className="max-w-2xl text-xl font-bold text-emerald-50 italic leading-relaxed">Bergabunglah dalam jajaran agen perubahan Universitas Islam Negeri Prof. K.H. Saifuddin Zuhri melalui platform manajemen pengabdian terbaik.</p>
-                                <div className="flex flex-col sm:flex-row gap-6 w-full lg:w-auto">
+                {/* --- DEPLOYMENT CTA --- */}
+                <section className="bg-white py-48">
+                    <div className="mx-auto max-w-7xl px-8 lg:px-12">
+                        <div className="bg-slate-950 rounded-[5rem] p-24 lg:p-40 relative overflow-hidden group shadow-2xl">
+                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                            <div className="absolute -bottom-40 -left-40 h-[600px] w-[600px] bg-emerald-600/5 blur-[120px] rounded-full" />
+                            
+                            <div className="relative z-10 flex flex-col items-center text-center space-y-16">
+                                <div className="h-1.5 w-24 bg-emerald-600 rounded-full" />
+                                <h2 className="text-6xl lg:text-[10rem] font-black text-white tracking-tighter leading-[0.8] uppercase">Mulai <br /> <span className="text-emerald-500">Langkah.</span></h2>
+                                <p className="max-w-xl text-xl font-bold text-slate-400 leading-relaxed uppercase tracking-tight opacity-80">Bergabunglah dalam ekosistem digital pengabdian masyarakat Universitas Islam Negeri Prof. K.H. Saifuddin Zuhri.</p>
+                                <div className="flex flex-col sm:flex-row gap-8 w-full lg:w-auto">
                                     <Link
-                                        href={route('login')}
-                                        className="h-20 px-12 bg-white text-emerald-600 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-4 hover:bg-emerald-50 transition-all shadow-2xl italic"
+                                        href={auth.user ? route('dashboard') : route('login')}
+                                        className="h-28 px-16 bg-emerald-600 text-slate-950 rounded-[3rem] text-[10px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-6 hover:bg-white hover:-translate-y-2 transition-all shadow-2xl shadow-emerald-500/20 active:scale-95 group/cta"
                                     >
-                                        Masuk ke portal <ChevronRight size={16} />
+                                        <Zap size={20} className="group-hover:scale-125 transition-transform" />
+                                        {auth.user ? 'Enter Console' : 'Portal Login'}
                                     </Link>
                                     <Link
                                         href={route('public.about')}
-                                        className="h-20 px-12 border border-white/30 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center hover:bg-white/10 transition-all italic"
+                                        className="h-28 px-16 border-2 border-white/10 text-white rounded-[3rem] text-[10px] font-black uppercase tracking-[0.4em] flex items-center justify-center hover:bg-white hover:text-slate-950 transition-all active:scale-95"
                                     >
                                         Profil LPPM
                                     </Link>

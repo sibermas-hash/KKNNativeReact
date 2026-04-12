@@ -24,13 +24,6 @@ class StoreRegistrationRequest extends FormRequest
                         ->whereDate('registration_end', '>=', now());
                 }),
             ],
-            'kelompok_id' => [
-                'nullable',
-                Rule::exists('kelompok_kkn', 'id')->where(function ($query) {
-                    $query->where('period_id', $this->period_id)
-                        ->where('status', 'active');
-                }),
-            ],
             'health_certificate' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'],
             'parent_permission' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'],
             'notes' => ['nullable', 'string', 'max:1000'],

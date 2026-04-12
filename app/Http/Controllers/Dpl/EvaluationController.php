@@ -40,36 +40,15 @@ class EvaluationController extends Controller
         return true;
     }
 
-    /**
-     * @return array{final_report: float, execution: float, article: float}
-     */
-    private function dplWeights(): array
+    private function calculateWeightedDplScore(float $reportScore, float $executionScore, float $articleScore, KelompokKkn $group): float
     {
-        KonfigurasiPenilaian::ensureDefaults();
-
-        $weights = KonfigurasiPenilaian::query()
-            ->whereIn('config_key', [
-                'weight_dpl_report',
-                'weight_dpl_execution',
-                'weight_dpl_article',
-            ])
-            ->pluck('percentage', 'config_key');
-
-        return [
-            'final_report' => (float) ($weights['weight_dpl_report'] ?? 30),
-            'execution' => (float) ($weights['weight_dpl_execution'] ?? 40),
-            'article' => (float) ($weights['weight_dpl_article'] ?? 30),
-        ];
-    }
-
-    private function calculateWeightedDplScore(float $reportScore, float $executionScore, float $articleScore): float
-    {
-        $weights = $this->dplWeights();
+        $kknType = $group->getKknType();
+        $configs = \App\Models\KKN\KonfigurasiPenilaian::getForType($kknType)->pluck('percentage', 'config_key');
 
         return round(
-            ($reportScore * ($weights['final_report'] / 100)) +
-            ($executionScore * ($weights['execution'] / 100)) +
-            ($articleScore * ($weights['article'] / 100)),
+            ($reportScore * (floatval($configs['weight_dpl_report'] ?? 30) / 100)) +
+            ($executionScore * (floatval($configs['weight_dpl_execution'] ?? 40) / 100)) +
+            ($articleScore * (floatval($configs['weight_dpl_article'] ?? 30) / 100)),
             2
         );
     }
@@ -130,7 +109,11 @@ class EvaluationController extends Controller
                     'name' => $registration->mahasiswa?->nama ?? 'Mahasiswa tidak ditemukan',
                 ])->filter(fn ($student) => $student['id'] !== null)->values(),
             ])->values(),
-            'dplWeights' => $this->dplWeights(),
+            'dplWeights' => [
+                'final_report' => 30, // Dummy for UI, actual calculation is central
+                'execution' => 40,
+                'article' => 30,
+            ],
         ]);
     }
 
@@ -300,9 +283,10 @@ class EvaluationController extends Controller
                 $total = $this->calculateWeightedDplScore(
                     (float) $item['final_report_score'],
                     (float) $item['execution_score'],
-                    (float) $item['article_score']
+                    (float) $item['article_score'],
+                    $group
                 );
-                $eval->update(['total_score' => $total, 'grade' => $this->calculateGrade($total)]);
+                $eval->update(['total_score' => $total, 'grade' => \App\Services\KKN\GradeConversionService::convert($total)['grade']]);
 
                 // Sync to NilaiKkn (Centralized)
                 $mahasiswa = $students->get($item['id']);
@@ -310,9 +294,13 @@ class EvaluationController extends Controller
                     $this->gradingService->submitDPLScores(
                         $mahasiswa->user_id,
                         $groupId,
-                        (float) $item['final_report_score'],
-                        (float) $item['execution_score'],
-                        (float) $item['article_score'],
+                        [
+                            'relevansi' => (float) $item['final_report_score'],
+                            'ketercapaian' => (float) $item['execution_score'],
+                            'inovasi' => 0,
+                            'administrasi' => (float) $item['final_report_score'],
+                            'artikel' => (float) $item['article_score'],
+                        ],
                         $lecturerId
                     );
                 }
@@ -333,17 +321,7 @@ class EvaluationController extends Controller
         return redirect()->route('dpl.evaluations.index')->with('success', 'Import evaluasi berhasil diselesaikan.');
     }
 
-    private function calculateGrade($score)
-    {
-        if ($score >= 85) return 'A';
-        if ($score >= 80) return 'A-';
-        if ($score >= 75) return 'B+';
-        if ($score >= 70) return 'B';
-        if ($score >= 65) return 'B-';
-        if ($score >= 60) return 'C+';
-        if ($score >= 55) return 'C';
-        return 'D';
-    }
+
 
     public function create(Request $request): RedirectResponse
     {
@@ -401,7 +379,7 @@ class EvaluationController extends Controller
         }
 
         $finalScore = $totalWeight > 0 ? round($totalScore, 2) : 0;
-        $grade = $this->calculateGrade($finalScore);
+        $grade = \App\Services\KKN\GradeConversionService::convert($finalScore)['grade'];
 
         $evaluation->update([
             'total_score' => $finalScore,
@@ -414,9 +392,13 @@ class EvaluationController extends Controller
             $this->gradingService->submitDPLScores(
                 $mahasiswa->user_id,
                 $validated['group_id'],
-                $reportScore,
-                $executionScore,
-                $articleScore,
+                [
+                    'relevansi' => $reportScore,
+                    'ketercapaian' => $executionScore,
+                    'inovasi' => 0,
+                    'administrasi' => $reportScore,
+                    'artikel' => $articleScore,
+                ],
                 auth()->id()
             );
         }

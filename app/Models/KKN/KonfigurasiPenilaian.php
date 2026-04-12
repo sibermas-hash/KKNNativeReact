@@ -94,14 +94,14 @@ class KonfigurasiPenilaian extends Model
         [
             'config_key' => 'weight_admin_workshop',
             'label' => 'Kehadiran Pembekalan',
-            'percentage' => 50.00,
+            'percentage' => 0.00,
             'group' => 'lppm',
-            'description' => 'Bobot kehadiran pembekalan dalam komponen penilaian LPPM.',
+            'description' => 'Bobot kehadiran pembekalan dalam komponen penilaian LPPM (Dinonaktifkan).',
         ],
         [
             'config_key' => 'weight_admin_administration',
             'label' => 'Kelengkapan Administrasi',
-            'percentage' => 50.00,
+            'percentage' => 100.00,
             'group' => 'lppm',
             'description' => 'Bobot kelengkapan administrasi dalam komponen penilaian LPPM.',
         ],

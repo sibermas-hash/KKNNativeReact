@@ -15,6 +15,8 @@ class AdminWorkshopsManagementTest extends TestCase
     {
         parent::setUp();
 
+        $this->markTestSkipped('Workshop module deprecated and routes removed in KKN 56 consolidation.');
+
         $this->seed(RoleSeeder::class);
         Storage::fake('public');
     }

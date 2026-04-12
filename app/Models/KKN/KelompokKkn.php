@@ -5,6 +5,7 @@ namespace App\Models\KKN;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -31,6 +32,21 @@ class KelompokKkn extends Model
     protected $casts = [
         'capacity' => 'integer',
     ];
+
+    public function getKknType(): \App\Enums\KknType
+    {
+        $period = $this->periode;
+        if (!$period) return \App\Enums\KknType::REGULER;
+
+        return $period->jenis instanceof \App\Enums\KknType 
+            ? $period->jenis 
+            : \App\Enums\KknType::tryFrom($period->jenis) ?? \App\Enums\KknType::REGULER;
+    }
+
+    public function adminGradedBy(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'admin_graded_by');
+    }
 
     public function periode(): BelongsTo
     {
@@ -77,8 +93,13 @@ class KelompokKkn extends Model
         return $this->hasMany(LaporanAkhir::class, 'kelompok_id');
     }
 
+    public function rekapitulasiKegiatan(): HasMany
+    {
+        return $this->hasMany(RekapitulasiKegiatan::class, 'kelompok_id');
+    }
+
     // Relationship: A group can have multiple DPLs (Many-to-Many)
-    public function dosen()
+    public function dosen(): BelongsToMany
     {
         return $this->belongsToMany(Dosen::class , 'dpl_kelompok', 'kelompok_kkn_id', 'dosen_id')
             ->withPivot('role')
@@ -88,7 +109,7 @@ class KelompokKkn extends Model
     /**
      * Get the main DPL (Ketua) record.
      */
-    public function getKetuaDplAttribute()
+    public function getKetuaDplAttribute(): ?Dosen
     {
         return $this->dosen()->wherePivot('role', 'Ketua')->first();
     }

@@ -103,7 +103,7 @@ class MultiRoleWorkflowTest extends TestCase
 
         // Superadmin creates period
         $this->actingAs($superadmin)
-            ->post(route('admin.periods.store'), [
+            ->post(route('admin.periode.store'), [
                 'academic_year_id' => $academicYear->id,
                 'periode' => 57,
                 'program_type' => Periode::PROGRAM_TYPE_REGULER,
@@ -117,7 +117,7 @@ class MultiRoleWorkflowTest extends TestCase
                 'kuota' => 2000,
                 'is_active' => true,
             ])
-            ->assertRedirect(route('admin.periods.index'));
+            ->assertRedirect(route('admin.periode.index'));
 
         $period = Periode::where('name', 'KKN Reguler 2026')->firstOrFail();
         expect($period->is_active)->toBeTrue();

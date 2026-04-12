@@ -15,9 +15,11 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Notifications\KKN\AccountActivatedNotification;
 
 class UserController extends Controller
 {
+    use \App\Traits\HandlesPagination;
     public function index(Request $request): Response
     {
         $users = User::with(['roles', 'mahasiswa.prodi.fakultas', 'dosen.fakultas', 'fakultas'])
@@ -33,21 +35,19 @@ class UserController extends Controller
             ->when($request->input('role'), fn($q, $role) => $q->role($role))
             ->orderBy('name')
             ->paginate(15)
-            ->withQueryString();
+            ->withQueryString()
+            ->through(fn($user) => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'username' => $user->username,
+                'email' => $user->email,
+                'is_active' => (bool)$user->is_active,
+                'email_verified_at' => $user->email_verified_at ? $user->email_verified_at->toIso8601String() : null,
+                'roles' => $user->roles->pluck('name')->toArray(),
+            ]);
 
-        return Inertia::render('Admin/Users/Index', [
-            'users' => [
-                'data' => $users->items(),
-                'meta' => [
-                    'current_page' => $users->currentPage(),
-                    'last_page' => $users->lastPage(),
-                    'per_page' => $users->perPage(),
-                    'total' => $users->total(),
-                    'from' => $users->firstItem(),
-                    'to' => $users->lastItem(),
-                    'links' => $users->linkCollection()->toArray(),
-                ],
-            ],
+        return Inertia::render('Admin/System/Users/Index', [
+            'users' => $this->formatPaginator($users),
             'filters' => $request->only('search', 'role'),
             'title' => 'Manajemen Semua Pengguna'
         ]);
@@ -67,21 +67,19 @@ class UserController extends Controller
             })
             ->orderBy('name')
             ->paginate(15)
-            ->withQueryString();
+            ->withQueryString()
+            ->through(fn($user) => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'username' => $user->username,
+                'email' => $user->email,
+                'is_active' => (bool)$user->is_active,
+                'email_verified_at' => $user->email_verified_at ? $user->email_verified_at->toIso8601String() : null,
+                'roles' => $user->roles->pluck('name')->toArray(),
+            ]);
 
-        return Inertia::render('Admin/Users/DosenIndex', [
-            'users' => [
-                'data' => $users->items(),
-                'meta' => [
-                    'current_page' => $users->currentPage(),
-                    'last_page' => $users->lastPage(),
-                    'per_page' => $users->perPage(),
-                    'total' => $users->total(),
-                    'from' => $users->firstItem(),
-                    'to' => $users->lastItem(),
-                    'links' => $users->linkCollection()->toArray(),
-                ],
-            ],
+        return Inertia::render('Admin/System/Users/DosenIndex', [
+            'users' => $this->formatPaginator($users),
             'filters' => $request->only('search'),
             'title' => 'Manajemen Data Dosen (DPL)'
         ]);
@@ -208,19 +206,8 @@ class UserController extends Controller
             ->pluck('batch_year')
             ->values();
 
-        return Inertia::render('Admin/Users/MahasiswaIndex', [
-            'students' => [
-                'data' => $students->items(),
-                'meta' => [
-                    'current_page' => $students->currentPage(),
-                    'last_page' => $students->lastPage(),
-                    'per_page' => $students->perPage(),
-                    'total' => $students->total(),
-                    'from' => $students->firstItem(),
-                    'to' => $students->lastItem(),
-                    'links' => $students->linkCollection()->toArray(),
-                ],
-            ],
+        return Inertia::render('Admin/System/Users/MahasiswaIndex', [
+            'students' => $this->formatPaginator($students),
             'filters' => $filters,
             'faculties' => Fakultas::query()
                 ->orderBy('nama')
@@ -258,7 +245,7 @@ class UserController extends Controller
         $programs = Prodi::orderBy('nama')->get()
             ->map(fn ($p) => ['id' => $p->id, 'name' => $p->nama]);
 
-        return Inertia::render('Admin/Users/Form', [
+        return Inertia::render('Admin/System/Users/Form', [
             'faculties' => $faculties,
             'programs' => $programs,
         ]);
@@ -293,6 +280,7 @@ class UserController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'is_active' => true,
+            'must_change_password' => true, // Force change on first login
             'faculty_id' => $validated['role'] === 'faculty_admin' ? $validated['faculty_id'] : null,
         ]);
 
@@ -322,6 +310,22 @@ class UserController extends Controller
             ]);
         }
 
+        // Notify user about their new account
+        $roleLabel = match($validated['role']) {
+            'student' => 'Mahasiswa',
+            'dpl' => 'Dosen Pembimbing Lapangan',
+            'faculty_admin' => 'Admin Fakultas',
+            'superadmin' => 'Super Administrator',
+            default => 'Pengguna',
+        };
+
+        $user->notify(new AccountActivatedNotification(
+            $user->name,
+            $user->username,
+            $roleLabel,
+            $validated['password'] // In manual creation, we can pass the password
+        ));
+
         return redirect()->route('admin.pengguna.index')->with('success', 'Pengguna berhasil ditambahkan.');
     }
 
@@ -334,6 +338,15 @@ class UserController extends Controller
 
         $user->update(['is_active' => !$user->is_active]);
         $status = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
+
+        if ($user->is_active) {
+            $user->notify(new AccountActivatedNotification(
+                $user->name,
+                $user->username,
+                'Mahasiswa',
+                null // No password passed on reactivation
+            ));
+        }
 
         return redirect()->back()->with('success', "Pengguna berhasil {$status}.");
     }

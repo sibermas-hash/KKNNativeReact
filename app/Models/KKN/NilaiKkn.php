@@ -18,13 +18,26 @@ class NilaiKkn extends Model
     protected $fillable = [
         'user_id',
         'kelompok_id',
+        // Aspek Desa (Hal 41)
+        'desa_interaksi_score',
+        'desa_disiplin_score',
+        'desa_kinerja_score',
+        // Aspek DPL (Hal 42)
+        'dpl_relevansi_score',
+        'dpl_ketercapaian_score',
+        'dpl_inovasi_score',
+        'dpl_administrasi_score',
+        'dpl_artikel_score',
+        // Legacy fields (will be mapped from sub-components)
         'final_report_score',
         'execution_score',
         'article_score',
         'discipline_score',
         'attitude_score',
+        // LPPM (Hal 43)
         'workshop_score',
         'administration_score',
+        // Weighted
         'dpl_weighted_score',
         'village_weighted_score',
         'lppm_weighted_score',
@@ -46,6 +59,14 @@ class NilaiKkn extends Model
         'village_graded_at' => 'datetime',
         'admin_graded_at' => 'datetime',
         'is_finalized' => 'boolean',
+        'desa_interaksi_score' => 'decimal:2',
+        'desa_disiplin_score' => 'decimal:2',
+        'desa_kinerja_score' => 'decimal:2',
+        'dpl_relevansi_score' => 'decimal:2',
+        'dpl_ketercapaian_score' => 'decimal:2',
+        'dpl_inovasi_score' => 'decimal:2',
+        'dpl_administrasi_score' => 'decimal:2',
+        'dpl_artikel_score' => 'decimal:2',
         'final_report_score' => 'decimal:2',
         'execution_score' => 'decimal:2',
         'article_score' => 'decimal:2',
@@ -58,6 +79,37 @@ class NilaiKkn extends Model
         'lppm_weighted_score' => 'decimal:2',
         'total_score' => 'decimal:2',
     ];
+
+    /**
+     * Calculate Village Subtotal (Hal 41)
+     */
+    public function calculateVillageScore(): float
+    {
+        return ($this->desa_interaksi_score * 0.30) + 
+               ($this->desa_disiplin_score * 0.40) + 
+               ($this->desa_kinerja_score * 0.30);
+    }
+
+    /**
+     * Calculate DPL Subtotal (Hal 42)
+     */
+    public function calculateDplScore(): float
+    {
+        return ($this->dpl_relevansi_score * 0.20) + 
+               ($this->dpl_ketercapaian_score * 0.20) + 
+               ($this->dpl_inovasi_score * 0.20) + 
+               ($this->dpl_administrasi_score * 0.20) + 
+               ($this->dpl_artikel_score * 0.20);
+    }
+
+    /**
+     * Calculate LPPM Subtotal (Hal 43)
+     */
+    public function calculateLppmScore(): float
+    {
+        // SURGICAL CLEANUP: LPPM component is now 100% based on Administration Score
+        return floatval($this->administration_score ?? 0);
+    }
 
     /**
      * FIXED: Proper relationship - nilai_kkn.user_id → users.id

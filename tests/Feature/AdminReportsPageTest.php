@@ -49,7 +49,7 @@ class AdminReportsPageTest extends TestCase
         ]);
 
         $this->actingAs($superadmin)
-            ->get(route('admin.reports.index'))
+            ->get(route('admin.laporan.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Reports/Index')
@@ -113,7 +113,7 @@ class AdminReportsPageTest extends TestCase
         ]);
 
         $this->actingAs($dplUser)
-            ->get(route('admin.reports.index'))
+            ->get(route('admin.laporan.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Reports/Index')

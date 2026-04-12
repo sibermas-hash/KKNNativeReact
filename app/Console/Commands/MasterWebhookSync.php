@@ -1,34 +1,47 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
+use Throwable;
+
+use const DIRECTORY_SEPARATOR;
+use const LOCK_EX;
+use const LOCK_NB;
+use const LOCK_UN;
 
 class MasterWebhookSync extends Command
 {
-    protected $signature = 'master:webhook:sync';
-
     protected $description = 'Handle Master webhook trigger file and run sync:master-data as needed';
+
+    protected $signature = 'master:webhook:sync';
 
     public function handle(): int
     {
         $dir = storage_path('app/master-webhook');
-        $triggerPath = $dir . DIRECTORY_SEPARATOR . 'trigger.json';
-        $lockPath = $dir . DIRECTORY_SEPARATOR . 'sync.lock';
+        $triggerPath = $dir.DIRECTORY_SEPARATOR.'trigger.json';
+        $lockPath = $dir.DIRECTORY_SEPARATOR.'sync.lock';
 
         if (!is_file($triggerPath)) {
             return 0;
         }
 
         if (!is_dir($dir)) {
-            @mkdir($dir, 0775, true);
+            if (!mkdir($dir, 0775, true)) {
+                $this->warn('Cannot create directory for Master webhook sync');
+
+                return 0;
+            }
         }
 
-        $fp = @fopen($lockPath, 'c');
-        if (!is_resource($fp)) {
+        $fp = fopen($lockPath, 'c');
+        if (!\is_resource($fp)) {
             $this->warn('Cannot open lock file for Master webhook sync');
+
             return 0;
         }
 
@@ -38,9 +51,15 @@ class MasterWebhookSync extends Command
                 return 0;
             }
 
-            $raw = @file_get_contents($triggerPath);
-            $payload = is_string($raw) ? json_decode($raw, true) : null;
-            $resources = (is_array($payload) && isset($payload['resources']) && is_array($payload['resources']))
+            $raw = file_get_contents($triggerPath);
+            if ($raw === false) {
+                $this->warn('Cannot read trigger file');
+
+                return 0;
+            }
+
+            $payload = json_decode($raw, true);
+            $resources = (\is_array($payload) && isset($payload['resources']) && \is_array($payload['resources']))
                 ? $payload['resources']
                 : [];
 
@@ -62,10 +81,13 @@ class MasterWebhookSync extends Command
                     'exit' => $exit,
                     'output' => Artisan::output(),
                 ]);
+
                 return $exit;
             }
 
-            @unlink($triggerPath);
+            if (!unlink($triggerPath)) {
+                Log::warning('Failed to delete trigger file', ['path' => $triggerPath]);
+            }
 
             Log::info('Master webhook sync completed (KKN)', [
                 'type' => $type,
@@ -73,15 +95,19 @@ class MasterWebhookSync extends Command
             ]);
 
             $this->info('Master webhook sync completed.');
+
             return 0;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Master webhook sync exception (KKN)', [
                 'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
             ]);
+
             return 1;
         } finally {
-            @flock($fp, LOCK_UN);
-            @fclose($fp);
+            flock($fp, LOCK_UN);
+            fclose($fp);
         }
     }
 
@@ -103,11 +129,10 @@ class MasterWebhookSync extends Command
             }
         }
 
-        if (count($types) === 1) {
+        if (\count($types) === 1) {
             return array_key_first($types);
         }
 
         return 'all';
     }
 }
-

@@ -112,7 +112,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         $admin = $this->createAdminUser();
 
         $this->actingAs($admin)
-            ->post(route('admin.periods.store'), [
+            ->post(route('admin.periode.store'), [
                 'academic_year_id' => \App\Models\KKN\TahunAkademik::factory()->create(['year' => '2026/2027'])->id,
                 'periode' => 57,
                 'program_type' => Periode::PROGRAM_TYPE_REGULER,
@@ -128,7 +128,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
                 'kuota' => 2000,
                 'is_active' => true,
             ])
-            ->assertRedirect(route('admin.periods.index'));
+            ->assertRedirect(route('admin.periode.index'));
 
         $period = Periode::where('name', 'KKN Reguler 2026')->firstOrFail();
         expect($period->is_active)->toBeTrue();
@@ -195,11 +195,11 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->from(route('admin.dpl.assignment'))
-            ->post(route('admin.dpl.assign-group', $group), [
+            ->from(route('admin.dpl.penugasan'))
+            ->post(route('admin.dpl.tugaskan-kelompok', $group), [
                 'dpl_period_id' => $dplPeriod->id,
             ])
-            ->assertRedirect(route('admin.dpl.assignment'));
+            ->assertRedirect(route('admin.dpl.penugasan'));
 
         $group->refresh();
         expect($group->dpl_id)->toBe($dosen->id);
@@ -251,7 +251,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
 
         // ── Step 7: Student submits work program ──────────────────────
         $this->actingAs($studentUser)
-            ->post(route('student.work-programs.store'), [
+            ->post(route('student.program-kerja.store'), [
                 'title' => 'Program Kerja Pendidikan Masyarakat',
                 'description' => 'Penyuluhan pentingnya pendidikan bagi anak-anak di pedesaan.',
                 'objectives' => 'Meningkatkan kesadaran masyarakat tentang pendidikan.',
@@ -325,7 +325,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
 
         // ── Step 9: Admin finalizes grades ───────────────────────────
         $this->actingAs($admin)
-            ->patch(route('admin.rekap-nilai.finalisasi', $nilaiKkn))
+            ->patch(route('admin.grade-reports.finalisasi', $nilaiKkn))
             ->assertRedirect()
             ->assertSessionHas('success');
 

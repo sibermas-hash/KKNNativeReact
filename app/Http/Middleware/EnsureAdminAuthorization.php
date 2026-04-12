@@ -78,6 +78,63 @@ class EnsureAdminAuthorization
      */
     protected array $auditControllers = [
         \App\Http\Controllers\Admin\LogAuditController::class,
+        \App\Http\Controllers\Admin\ActivityAuditController::class,
+    ];
+
+    /**
+     * List of controllers that require 'manage-reports' permission
+     */
+    protected array $reportControllers = [
+        \App\Http\Controllers\Admin\RekapNilaiController::class,
+        \App\Http\Controllers\Admin\RekapitulasiController::class,
+    ];
+
+    /**
+     * List of controllers that require 'manage-settings' permission
+     */
+    protected array $settingControllers = [
+        \App\Http\Controllers\Admin\CertificateConfigController::class,
+        \App\Http\Controllers\Admin\SystemSettingController::class,
+        \App\Http\Controllers\Admin\KonfigurasiPenilaianController::class,
+    ];
+
+    /**
+     * List of controllers that require 'manage-database-sync' permission
+     */
+    protected array $databaseSyncControllers = [
+        \App\Http\Controllers\Admin\DatabaseSyncController::class,
+    ];
+
+    /**
+     * List of controllers that require 'manage-workshops' permission
+     */
+    protected array $workshopControllers = [
+        \App\Http\Controllers\Admin\WorkshopController::class,
+    ];
+
+    /**
+     * List of controllers that require 'manage-kkn-operations' permission
+     */
+    protected array $kknOperationsControllers = [
+        \App\Http\Controllers\Admin\EvaluasiController::class,
+        \App\Http\Controllers\Admin\KegiatanKknController::class,
+        \App\Http\Controllers\Admin\ProgramKerjaController::class,
+        \App\Http\Controllers\Admin\LaporanAkhirController::class,
+        \App\Http\Controllers\Admin\YudisiumController::class,
+    ];
+
+    /**
+     * List of controllers that require 'manage-eligibility' permission
+     */
+    protected array $eligibilityControllers = [
+        \App\Http\Controllers\Admin\EligibilityController::class,
+    ];
+
+    /**
+     * List of controllers that require 'manage-requirements' permission
+     */
+    protected array $requirementControllers = [
+        \App\Http\Controllers\Admin\KknRequirementController::class,
     ];
 
     /**
@@ -117,6 +174,34 @@ class EnsureAdminAuthorization
             return 'view-audit-logs';
         }
 
+        if (in_array($controllerClass, $this->reportControllers)) {
+            return 'manage-reports';
+        }
+
+        if (in_array($controllerClass, $this->settingControllers)) {
+            return 'manage-settings';
+        }
+
+        if (in_array($controllerClass, $this->databaseSyncControllers)) {
+            return 'manage-database-sync';
+        }
+
+        if (in_array($controllerClass, $this->workshopControllers)) {
+            return 'manage-workshops';
+        }
+
+        if (in_array($controllerClass, $this->kknOperationsControllers)) {
+            return 'manage-kkn-operations';
+        }
+
+        if (in_array($controllerClass, $this->eligibilityControllers)) {
+            return 'manage-eligibility';
+        }
+
+        if (in_array($controllerClass, $this->requirementControllers)) {
+            return 'manage-requirements';
+        }
+
         return null;
     }
 
@@ -146,7 +231,7 @@ class EnsureAdminAuthorization
 
         // Ensure user is authenticated
         if (!$user) {
-            abort(401, 'Authentication required.');
+            return redirect()->guest(route('login'));
         }
 
         // Check if user has any admin role

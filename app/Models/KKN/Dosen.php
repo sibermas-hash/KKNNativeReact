@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Dosen extends Model
@@ -46,7 +47,7 @@ class Dosen extends Model
     }
 
     // Relationship: A lecturer can supervise multiple groups (Many-to-Many via pivot)
-    public function pimpinKelompok()
+    public function pimpinKelompok(): BelongsToMany
     {
         return $this->belongsToMany(KelompokKkn::class , 'dpl_kelompok', 'dosen_id', 'kelompok_kkn_id')
             ->withPivot('role')
@@ -54,19 +55,19 @@ class Dosen extends Model
     }
 
     // Helper: Get groups where this Dosen is the 'Ketua' (Admin)
-    public function adminKelompok()
+    public function adminKelompok(): BelongsToMany
     {
         return $this->pimpinKelompok()->wherePivot('role', 'Ketua');
     }
 
     // Alias used by DPL controllers (DailyReport, FinalReport, Evaluation, Grading)
-    public function kelompokKkn()
+    public function kelompokKkn(): BelongsToMany
     {
         return $this->pimpinKelompok();
     }
 
     // Legacy: Keep this for backward compatibility if needed, or remove if fully migrated
-    public function kelompok()
+    public function kelompok(): HasMany
     {
         return $this->hasMany(KelompokKkn::class , 'dpl_id');
     }

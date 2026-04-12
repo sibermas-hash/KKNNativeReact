@@ -16,7 +16,7 @@ class CertificateConfigController extends Controller
     {
         Gate::authorize('manage-settings');
         $configs = KonfigurasiSertifikat::orderBy('id')->get();
-        return Inertia::render('Admin/Settings/Certificate', [
+        return Inertia::render('Admin/System/Settings/Certificate', [
             'configs' => $configs
         ]);
     }

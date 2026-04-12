@@ -1,0 +1,239 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Services\DatabaseSyncMonitoringService;
+use App\Models\KKN\DatabaseSyncLog;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+
+class DatabaseSyncController extends Controller
+{
+    public function __construct(
+        private readonly DatabaseSyncMonitoringService $monitoringService
+    ) {
+        $this->middleware(['auth', 'role:superadmin|admin']);
+    }
+
+    /**
+     * Display sync monitoring dashboard
+     */
+    public function index(Request $request)
+    {
+        $health = $this->monitoringService->checkDatabaseHealth();
+        $apiHealth = $this->monitoringService->checkMasterApiHealth();
+        $dashboard = $this->monitoringService->getSyncDashboard();
+
+        // Entity type filter
+        $entityType = $request->get('entity_type', 'all');
+        $period = $request->get('period', '7'); // days
+
+        // Get detailed logs with pagination
+        $logsQuery = DatabaseSyncLog::query()
+            ->with('syncedBy:id,name')
+            ->orderByDesc('created_at');
+
+        if ($entityType !== 'all') {
+            $logsQuery->where('entity_type', $entityType);
+        }
+
+        if ($period) {
+            $logsQuery->where('created_at', '>=', now()->subDays((int) $period));
+        }
+
+        $logs = $logsQuery->paginate(50)->withQueryString();
+
+        // Get entity types for filter
+        $entityTypes = DatabaseSyncLog::query()
+            ->selectRaw('entity_type, COUNT(*) as count')
+            ->groupBy('entity_type')
+            ->get();
+
+        return Inertia::render('Admin/DatabaseSync/Index', [
+            'health' => $health,
+            'apiHealth' => $apiHealth,
+            'dashboard' => $dashboard,
+            'logs' => $logs,
+            'entityTypes' => $entityTypes,
+            'filters' => [
+                'entity_type' => $entityType,
+                'period' => $period,
+            ],
+        ]);
+    }
+
+    /**
+     * Get real-time health status (API endpoint)
+     */
+    public function health()
+    {
+        $health = $this->monitoringService->checkDatabaseHealth();
+        $apiHealth = $this->monitoringService->checkMasterApiHealth();
+
+        return response()->json([
+            'status' => $health['overall_status'],
+            'databases' => [
+                'kkn' => $health['kkn'],
+                'master' => $health['master'],
+                'redis' => $health['redis'],
+            ],
+            'master_api' => $apiHealth,
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * Get sync statistics (API endpoint)
+     */
+    public function statistics(Request $request)
+    {
+        $entityType = $request->get('entity_type', 'all');
+        $period = $request->get('period', '7');
+
+        if ($entityType === 'all') {
+            $stats = $this->monitoringService->getLastSyncStatistics();
+        } else {
+            $stats = [
+                $entityType => DatabaseSyncLog::getStatistics($entityType, $period),
+            ];
+        }
+
+        return response()->json($stats);
+    }
+
+    /**
+     * Retry failed syncs
+     */
+    public function retry(Request $request)
+    {
+        $request->validate([
+            'entity_type' => 'required|in:mahasiswa,dosen,faculty,program',
+            'limit' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $entityType = $request->input('entity_type');
+        $limit = $request->input('limit', 10);
+
+        $retried = $this->monitoringService->retryFailedSyncs($entityType, $limit);
+
+        return back()->with('success', "Berhasil retry {$retried} sync yang gagal untuk {$entityType}.");
+    }
+
+    /**
+     * Retry specific sync log
+     */
+    public function retryLog(DatabaseSyncLog $log)
+    {
+        if ($log->status !== 'failed') {
+            return back()->with('error', 'Sync log ini tidak dalam status failed.');
+        }
+
+        try {
+            $this->monitoringService->processRetry($log);
+
+            return back()->with('success', "Berhasil retry sync log #{$log->id}.");
+        } catch (\Exception $e) {
+            return back()->with('error', "Gagal retry: {$e->getMessage()}");
+        }
+    }
+
+    /**
+     * Cleanup old sync logs
+     */
+    public function cleanup(Request $request)
+    {
+        $request->validate([
+            'retain_days' => 'required|integer|min:1|max:365',
+        ]);
+
+        $retainDays = $request->input('retain_days', 30);
+        $deleted = $this->monitoringService->cleanupOldLogs($retainDays);
+
+        return back()->with('success', "Berhasil cleanup {$deleted} sync logs lama (lebih dari {$retainDays} hari).");
+    }
+
+    /**
+     * Test master database connection
+     */
+    public function testConnection()
+    {
+        try {
+            // Test master database connection
+            $result = DB::connection('master')->select('SELECT 1 as test');
+
+            // Get master database info
+            $database = DB::connection('master')->getDatabaseName();
+            $host = DB::connection('master')->getConfig('host');
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Master database connection successful',
+                'database' => $database,
+                'host' => $host,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Master database connection failed',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Manual sync trigger
+     */
+    public function manualSync(Request $request)
+    {
+        $request->validate([
+            'entity_type' => 'required|in:mahasiswa,dosen,faculty,program',
+            'entity_id' => 'nullable|string',
+            'sync_mode' => 'required|in:full,incremental',
+        ]);
+
+        $entityType = $request->input('entity_type');
+        $entityId = $request->input('entity_id');
+        $syncMode = $request->input('sync_mode');
+
+        // Log manual sync attempt
+        $log = $this->monitoringService->logManualSync(
+            $entityType,
+            $entityId,
+            'manual_sync',
+            'pending'
+        );
+
+        // Dispatch sync job
+        match ($entityType) {
+            'mahasiswa' => $syncMode === 'full'
+                ? \App\Jobs\SyncAllMahasiswaJob::dispatch()
+                : \App\Jobs\SyncMahasiswaJob::dispatch($entityId),
+            'dosen' => $syncMode === 'full'
+                ? \App\Jobs\SyncAllDosenJob::dispatch()
+                : \App\Jobs\SyncDosenJob::dispatch($entityId),
+            'faculty' => \App\Jobs\SyncFacultyJob::dispatch(),
+            'program' => \App\Jobs\SyncProgramJob::dispatch(),
+        };
+
+        $log->update([
+            'status' => 'pending',
+            'request_data' => $request->all(),
+        ]);
+
+        return back()->with('success', "Manual sync untuk {$entityType} sedang diproses.");
+    }
+
+    /**
+     * Show specific sync log details
+     */
+    public function show(DatabaseSyncLog $log)
+    {
+        $log->load('syncedBy:id,name');
+
+        return Inertia::render('Admin/DatabaseSync/Show', [
+            'log' => $log,
+        ]);
+    }
+}

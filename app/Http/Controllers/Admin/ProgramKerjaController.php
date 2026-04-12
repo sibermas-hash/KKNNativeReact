@@ -11,6 +11,7 @@ use Inertia\Response;
 
 class ProgramKerjaController extends Controller
 {
+    use \App\Traits\HandlesPagination;
     public function index(Request $request): Response
     {
         Gate::authorize('view-reports');
@@ -47,8 +48,8 @@ class ProgramKerjaController extends Controller
             'count' => $count
         ])->values();
 
-        return Inertia::render('Admin/WorkPrograms/Index', [
-            'workPrograms' => $workPrograms,
+        return Inertia::render('Admin/Monitoring/WorkPrograms/Index', [
+            'workPrograms' => $this->formatPaginator($workPrograms),
             'sdg_distribution' => $sdgDistribution,
             'filters' => $request->only('status'),
         ]);

@@ -10,10 +10,13 @@ use Inertia\Inertia;
 
 class AnnouncementController extends Controller
 {
+    use \App\Traits\HandlesPagination;
     public function index()
     {
-        return Inertia::render('Admin/Announcements/Index', [
-            'announcements' => Announcement::orderByDesc('published_at')->paginate(10),
+        $announcements = Announcement::orderByDesc('published_at')->paginate(10);
+        
+        return Inertia::render('Admin/Website/Announcements/Index', [
+            'announcements' => $this->formatPaginator($announcements),
         ]);
     }
 
@@ -27,11 +30,20 @@ class AnnouncementController extends Controller
             'content' => 'required|string',
             'is_active' => 'required|boolean',
             'published_at' => 'required|date',
+            'image' => 'nullable|image|max:2048',
+            'slug' => 'nullable|string|max:255',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string',
+            'meta_keywords' => 'nullable|string',
         ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('announcements', 'public');
+        }
 
         Announcement::create($validated);
 
-        return redirect()->back()->with('success', 'Pengumuman berhasil dibuat.');
+        return redirect()->back()->with('success', 'Warta berhasil diterbitkan dengan parameter SEO.');
     }
 
     public function update(Request $request, Announcement $announcement)
@@ -44,11 +56,20 @@ class AnnouncementController extends Controller
             'content' => 'required|string',
             'is_active' => 'required|boolean',
             'published_at' => 'required|date',
+            'image' => 'nullable|image|max:2048',
+            'slug' => 'nullable|string|max:255|unique:kkn.announcements,slug,' . $announcement->id,
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string',
+            'meta_keywords' => 'nullable|string',
         ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('announcements', 'public');
+        }
 
         $announcement->update($validated);
 
-        return redirect()->back()->with('success', 'Pengumuman berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Warta berhasil diperbarui.');
     }
 
     public function destroy(Announcement $announcement)

@@ -23,7 +23,7 @@ class IzinController extends Controller
         abort_if(!$mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
 
         $izins = IzinMeninggalkan::where('mahasiswa_id', $mahasiswa->id)
-            ->with(['kelompok', 'dpl'])
+            ->with(['kelompok', 'diprosesOleh'])
             ->orderByDesc('created_at')
             ->paginate(15);
 
@@ -46,7 +46,13 @@ class IzinController extends Controller
             'tanggal_mulai' => ['required', 'date', 'after_or_equal:today'],
             'tanggal_kembali' => ['required', 'date', 'after_or_equal:tanggal_mulai'],
             'alasan' => ['required', 'string', 'max:1000'],
+            'file_bukti' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
         ]);
+
+        if ($request->hasFile('file_bukti')) {
+            $path = $request->file('file_bukti')->store('evidence/perizinan', 'local');
+            $validated['file_bukti'] = $path;
+        }
 
         $this->izinService->ajukanIzin($mahasiswa, $validated);
 

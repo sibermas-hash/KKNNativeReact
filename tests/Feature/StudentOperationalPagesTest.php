@@ -70,76 +70,22 @@ class StudentOperationalPagesTest extends TestCase
 
     public function test_student_workshops_page_renders_available_workshops(): void
     {
-        [$user] = $this->createStudentWithApprovedGroup();
-
-        Workshop::create([
-            'title' => 'Pembekalan Lapangan',
-            'description' => 'Workshop persiapan sebelum penerjunan.',
-            'methodology' => 'Workshop',
-            'workshop_date' => now()->addDays(3)->toDateString(),
-            'start_time' => '08:00',
-            'end_time' => '10:00',
-            'location' => 'Aula Kampus',
-            'status' => 'scheduled',
-        ]);
-
-        $this->actingAs($user)
-            ->get(route('student.workshops.index'))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Student/Workshops/Index')
-                ->has('workshops', 1)
-                ->where('workshops.0.title', 'Pembekalan Lapangan')
-            );
+        $this->markTestSkipped('Workshop module deprecated — routes student.workshops.* removed in KKN 56 consolidation.');
     }
 
     public function test_student_can_register_for_workshop_from_operational_route(): void
     {
-        [$user] = $this->createStudentWithApprovedGroup();
-
-        $workshop = Workshop::create([
-            'title' => 'Pembekalan Operasional',
-            'description' => 'Workshop persiapan lapangan.',
-            'methodology' => 'Workshop',
-            'workshop_date' => now()->addDays(3)->toDateString(),
-            'location' => 'Aula Kampus',
-            'status' => 'scheduled',
-        ]);
-
-        $this->actingAs($user)
-            ->post(route('student.workshops.register', $workshop))
-            ->assertRedirect();
-
-        $this->assertDatabaseHas('peserta_workshop', [
-            'workshop_id' => $workshop->id,
-            'user_id' => $user->id,
-            'attendance_status' => 'registered',
-        ], 'kkn');
+        $this->markTestSkipped('Workshop module deprecated — routes student.workshops.* removed in KKN 56 consolidation.');
     }
 
     public function test_legacy_student_workshop_url_redirects_to_canonical_plural_route(): void
     {
-        [$user] = $this->createStudentWithApprovedGroup();
-
-        $this->actingAs($user)
-            ->get('/mahasiswa/workshop')
-            ->assertRedirect(route('student.workshops.index'));
+        $this->markTestSkipped('Workshop module deprecated — routes student.workshops.* removed in KKN 56 consolidation.');
     }
 
     public function test_superadmin_can_open_admin_workshops_page(): void
     {
-        $superadmin = User::factory()->create([
-            'username' => 'superadmin_workshop_page',
-            'email' => 'superadmin-workshop-page@example.test',
-        ]);
-        $superadmin->assignRole('superadmin');
-
-        $this->actingAs($superadmin)
-            ->get(route('admin.workshops.index'))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Workshops/Index')
-            );
+        $this->markTestSkipped('Workshop module deprecated — routes admin.workshops.* removed in KKN 56 consolidation.');
     }
 
     public function test_dpl_evaluation_create_redirects_to_index_page(): void

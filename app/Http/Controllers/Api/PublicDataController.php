@@ -15,12 +15,8 @@ class PublicDataController extends Controller
      * Map table names to their respective Eloquent Models for integrity enforcement.
      */
     private const MODEL_MAP = [
-        '_projects'      => Project::class,
-        'mahasiswa'      => \App\Models\KKN\Mahasiswa::class,
-        'dosen'          => \App\Models\KKN\Dosen::class,
         'fakultas'       => \App\Models\KKN\Fakultas::class,
         'prodi'          => \App\Models\KKN\Prodi::class,
-        'kelompok_kkn'   => \App\Models\KKN\KelompokKkn::class,
         'lokasi'         => \App\Models\KKN\Lokasi::class,
         'periode'        => \App\Models\KKN\Periode::class,
         'tahun_akademik' => \App\Models\KKN\TahunAkademik::class,
@@ -28,25 +24,19 @@ class PublicDataController extends Controller
 
     /**
      * Strict allowlist of writable columns per table via public API.
-     * SECURITY: Reference/master data tables (fakultas, prodi, mahasiswa) are NOT writable
-     * via public API to prevent mass assignment attacks.
      */
     private const WRITABLE_COLUMNS = [
-        '_projects' => ['email', 'project_name', 'use_case'],
-        'mahasiswa' => [], // REMOVED: Reference data - admin control only
-        'dosen' => [], // Not writable via API
-        'fakultas' => [], // REMOVED: Reference data - admin control only
-        'prodi' => [], // REMOVED: Reference data - admin control only
-        'kelompok_kkn' => [], // Not writable via API
-        'lokasi' => [], // REMOVED: Location data should be admin-controlled
-        'periode' => [], // Not writable via API
-        'tahun_akademik' => [], // REMOVED: Academic year data should be admin-controlled
+        'fakultas' => [],
+        'prodi' => [],
+        'lokasi' => [],
+        'periode' => [],
+        'tahun_akademik' => [],
     ];
 
     /**
-     * Tables that can be deleted via public API (empty by default for safety).
+     * Tables that can be deleted via public API (None allowed for public).
      */
-    private const DELETABLE_TABLES = ['_projects'];
+    private const DELETABLE_TABLES = [];
 
     /**
      * Standard API response wrapper untuk consistency across all endpoints.
@@ -92,7 +82,13 @@ class PublicDataController extends Controller
         }
 
         $model = $this->getModel($table);
-        $query = $model ? $model->query() : DB::table($table);
+        
+        // SECURITY: Tables WITHOUT a mapped model are strictly forbidden
+        if (!$model) {
+            return $this->apiResponse(false, "Akses data mentah ke tabel '{$table}' dilarang.", null, 403);
+        }
+
+        $query = $model->query();
 
         // Get allowed columns for this table to prevent SQL injection
         $allowedColumns = $this->getTableColumns($table);

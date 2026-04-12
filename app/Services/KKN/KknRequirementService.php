@@ -13,7 +13,7 @@ class KknRequirementService
         $legacyJenis = strtolower(trim((string) ($periode->jenis instanceof KknType ? $periode->jenis->label() : $periode->jenis)));
 
         if (str_contains($legacyJenis, 'responsif')) {
-            return KknType::RESPONSIF;
+            return KknType::TEMATIK;
         }
 
         $governance = $periode->governance();
@@ -33,59 +33,15 @@ class KknRequirementService
 
     /**
      * Validate if a student meets the requirements for a specific KKN period.
-     * Based on Pedoman KKN Angkatan 56 Tahun 2025.
+     * Delegates to centralized EligibilityService.
      */
     public function validate(Mahasiswa $mahasiswa, Periode $periode): array
     {
-        $errors = [];
-        $kknType = $this->resolveType($periode);
-
-        // 1. GLOBAL REQUIREMENTS (Bab II)
-        if (!$mahasiswa->is_bta_ppi_passed) {
-            $errors[] = 'Anda harus lulus ujian BTA/PPI terlebih dahulu.';
-        }
-
-        // 2. SCHEMA SPECIFIC REQUIREMENTS
-        switch ($kknType) {
-            case KknType::REGULER:
-            case KknType::KOLABORASI_PTKIN:
-            case KknType::DESA_KATANA:
-            case KknType::TEMATIK:
-            case KknType::RESPONSIF:
-                if ($mahasiswa->sks_completed < 100) {
-                    $errors[] = 'Minimal harus menempuh 100 SKS untuk skema KKN ini.';
-                }
-                break;
-
-            case KknType::NUSANTARA:
-                if ($mahasiswa->sks_completed < 85) {
-                    $errors[] = 'Minimal harus menempuh 85 SKS untuk KKN Nusantara.';
-                }
-                if ($mahasiswa->gpa < 3.25) {
-                    $errors[] = 'Minimal IPK 3.25 untuk KKN Nusantara.';
-                }
-                break;
-
-            case KknType::INTERNASIONAL:
-                if ($mahasiswa->sks_completed < 100) {
-                    $errors[] = 'Minimal harus menempuh 100 SKS untuk KKN Internasional.';
-                }
-                if ($mahasiswa->gpa < 3.25) {
-                    $errors[] = 'Minimal IPK 3.25 untuk KKN Internasional.';
-                }
-                break;
-
-            case KknType::KAMPUNG_ZAKAT:
-                if ($mahasiswa->sks_completed < 100) {
-                    $errors[] = 'Minimal harus menempuh 100 SKS untuk KKN Tematik Kampung Zakat.';
-                }
-                if (!$this->isMazawaStudent($mahasiswa)) {
-                    $errors[] = 'KKN Tematik Kampung Zakat dikhususkan untuk mahasiswa Prodi Manajemen Zakat dan Wakaf (Mazawa).';
-                }
-                break;
-        }
-
-        return $errors;
+        $eligibility = app(\App\Services\EligibilityService::class)->checkEligibility($mahasiswa, $periode->id);
+        
+        return array_map(function($issue) {
+            return $issue['message'] . ($issue['reason'] ? " ({$issue['reason']})" : "");
+        }, $eligibility['issues']);
     }
 
     /**
@@ -102,51 +58,32 @@ class KknRequirementService
         
         $requirements = ['Lulus ujian BTA/PPI.'];
         $governanceNotes = [];
+        
+        // Dynamic Requirement Lines
+        $minSks = $periode->jenisKkn?->min_sks ?? 100;
+        $minGpa = $periode->jenisKkn ? (float)$periode->jenisKkn->min_gpa : 0;
+        
+        $requirements[] = "Minimal telah menempuh {$minSks} SKS.";
+        if ($minGpa > 0) {
+            $requirements[] = "Minimal IPK " . number_format($minGpa, 2) . ".";
+        }
 
+        if ($periode->jenisKkn?->description) {
+            $governanceNotes[] = $periode->jenisKkn->description;
+        }
+
+        $governanceNotes[] = "Pendaftaran: " . ($governance['registration_mode_label'] ?? 'Standar');
+        $governanceNotes[] = "Penempatan: " . ($governance['placement_mode_label'] ?? 'Standar');
+
+        // Specific legacy logic for certain types
         switch ($kknType) {
-            case KknType::REGULER:
-                $requirements[] = 'Minimal telah menempuh 100 SKS.';
-                $governanceNotes[] = 'Mahasiswa dapat mengajukan pendaftaran mandiri pada portal KKN.';
-                $governanceNotes[] = 'Penempatan reguler dilakukan otomatis oleh sistem dan tidak boleh berada pada kabupaten/kota domisili yang sama.';
-                break;
-
             case KknType::NUSANTARA:
-                $requirements[] = 'Minimal telah menempuh 85 SKS.';
-                $requirements[] = 'Minimal IPK 3.25.';
-                $requirements[] = 'Aktif berorganisasi (intra/ekstra) dibuktikan dengan SK.';
-                $requirements[] = 'Diutamakan memiliki kemampuan menulis esai populer.';
-                $governanceNotes[] = 'Program dikelola melalui seleksi khusus oleh LPPM/panitia sesuai juknis program.';
-                $governanceNotes[] = 'Penempatan ditetapkan secara manual oleh panitia/admin.';
+                $requirements[] = 'Berstatus Belum Menikah.';
+                $requirements[] = 'Aktif berorganisasi (intra/ekstra).';
                 break;
-
             case KknType::INTERNASIONAL:
-                $requirements[] = 'Minimal telah menempuh 100 SKS.';
-                $requirements[] = 'Minimal IPK 3.25.';
-                $requirements[] = 'Menguasai Bahasa Inggris.';
-                $requirements[] = 'Sehat jasmani rohani dan tidak sedang hamil/menyusui.';
-                $governanceNotes[] = 'Mengikuti seleksi khusus dan kesiapan mitra di luar negeri.';
-                break;
-
-            case KknType::KOLABORASI_PTKIN:
-                $requirements[] = 'Minimal telah menempuh 100 SKS.';
-                $governanceNotes[] = 'Program kolaborasi mengikuti seleksi dan koordinasi bersama PTKIN mitra.';
-                $governanceNotes[] = 'Penempatan peserta mengikuti keputusan PTKIN mitra.';
-                break;
-                
-            case KknType::KAMPUNG_ZAKAT:
-                $requirements[] = 'Minimal telah menempuh 100 SKS.';
-                $requirements[] = 'Berstatus sebagai mahasiswa aktif Prodi Mazawa.';
-                $governanceNotes[] = 'Fokus pada pemberdayaan masyarakat berbasis zakat, infak, dan sedekah.';
-                break;
-
-            case KknType::DESA_KATANA:
-                $requirements[] = 'Minimal telah menempuh 100 SKS.';
-                $governanceNotes[] = 'Fokus pada edukasi dan mitigasi kebencanaan (Kampung Tanggap Bencana).';
-                break;
-
-            default:
-                $requirements[] = 'Minimal telah menempuh 100 SKS.';
-                $governanceNotes[] = 'Program tematik usulan dosen atau responsif.';
+                $requirements[] = 'Berstatus Belum Menikah dan Tidak Sedang Hamil/Menyusui.';
+                $requirements[] = 'Memiliki Paspor aktif.';
                 break;
         }
 

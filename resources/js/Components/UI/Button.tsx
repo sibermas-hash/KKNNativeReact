@@ -9,16 +9,17 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: Variant;
     size?: Size;
     loading?: boolean;
+    icon?: React.ReactNode;
 }
 
 const variantStyles: Record<Variant, string> = {
-    primary: 'bg-emerald-600 dark:bg-emerald-600 text-white hover:bg-emerald-700 dark:hover:bg-emerald-500 active:scale-95 shadow-sm',
-    secondary: 'bg-emerald-50 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-100 hover:bg-emerald-100 dark:hover:bg-emerald-900 active:bg-emerald-200 dark:active:bg-emerald-800',
-    danger: 'bg-rose-600 dark:bg-rose-600 text-white hover:bg-rose-700 dark:hover:bg-rose-500 active:scale-95 shadow-sm',
-    ghost: 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-slate-800 active:bg-emerald-100 dark:active:bg-slate-700',
-    outline: 'border border-emerald-100 dark:border-slate-700 bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-slate-800 active:bg-emerald-100 dark:active:bg-slate-700',
-    link: 'text-emerald-600 dark:text-emerald-400 underline-offset-4 hover:underline',
-    clean: 'border border-emerald-50 dark:border-slate-700 bg-white dark:bg-slate-900 text-[10px] font-black uppercase tracking-widest text-emerald-900 dark:text-slate-100 hover:border-emerald-500 dark:hover:border-emerald-500 shadow-sm transition-all active:scale-95'
+    primary: 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 shadow-[0_4px_12px_rgba(16,185,129,0.25)] hover:shadow-[0_4px_20px_rgba(16,185,129,0.4)]',
+    secondary: 'bg-emerald-50 text-emerald-900 hover:bg-emerald-100 active:scale-95 border border-emerald-100',
+    danger: 'bg-rose-600 text-white hover:bg-rose-700 active:scale-95 shadow-[0_4px_12px_rgba(225,29,72,0.25)] hover:shadow-[0_4px_20px_rgba(225,29,72,0.4)]',
+    ghost: 'text-emerald-700 hover:bg-emerald-50 active:bg-emerald-100',
+    outline: 'border border-emerald-100 bg-white text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 active:bg-emerald-100',
+    link: 'text-emerald-600 underline-offset-4 hover:underline',
+    clean: 'border border-emerald-50 bg-white text-[10px] font-extrabold uppercase tracking-widest text-emerald-950 hover:border-emerald-500 shadow-sm transition-all active:scale-95'
 };
 
 const sizeStyles: Record<Size, string> = {
@@ -29,13 +30,13 @@ const sizeStyles: Record<Size, string> = {
 };
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant = 'primary', size = 'md', loading, children, disabled, ...props }, ref) => {
+    ({ className, variant = 'primary', size = 'md', loading, icon, children, disabled, ...props }, ref) => {
         return (
             <button
                 ref={ref}
                 disabled={disabled || loading}
                 className={clsx(
-                    'inline-flex items-center justify-center font-black uppercase tracking-widest transition-all focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed',
+                    'inline-flex items-center justify-center font-bold uppercase tracking-widest transition-all focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed',
                     variantStyles[variant],
                     sizeStyles[size],
                     className
@@ -43,6 +44,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 {...props}
             >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {!loading && icon && <span className="mr-2">{icon}</span>}
                 {children}
             </button>
         );

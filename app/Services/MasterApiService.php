@@ -1,19 +1,47 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\KKN\SystemSetting;
-use Illuminate\Support\Facades\Http;
+use App\Traits\RetryWithBackoff;
+use Exception;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Master API Service dengan Fallback & Retry Logic.
+ *
+ * Features:
+ * - Retry dengan exponential backoff
+ * - Circuit breaker pattern
+ * - Fallback ke cached data
+ * - Health check monitoring
+ */
 class MasterApiService
 {
+    use RetryWithBackoff;
+
     protected string $baseUrl;
-    protected string $clientId;
-    protected string $clientSecret;
-    protected string $staticToken;
+
     protected int $cacheMinutes;
+
+    // Circuit breaker config
+    protected int $circuitBreakerThreshold; // Failures before opening circuit
+
+    protected int $circuitBreakerTimeout; // Seconds before half-open
+
+    protected string $clientId;
+
+    protected string $clientSecret;
+
+    // Cache for fallback
+    protected string $fallbackCachePrefix = 'master_api_fallback_';
+
+    protected string $staticToken;
+
     protected bool $verifySsl;
 
     public function __construct()
@@ -24,10 +52,115 @@ class MasterApiService
         $this->staticToken = (string) $this->settingOrConfig('master_api_token', 'services.master_api.token', '');
         $this->cacheMinutes = max(5, (int) config('services.master_api.cache_minutes', 60));
         $this->verifySsl = config('app.env') !== 'local';
+
+        // Circuit breaker config
+        $this->circuitBreakerThreshold = (int) config('services.master_api.circuit_breaker_threshold', 5);
+        $this->circuitBreakerTimeout = (int) config('services.master_api.circuit_breaker_timeout', 300);
     }
 
     /**
-     * Get JWT Token from Master API
+     * Clear all caches.
+     */
+    public function clearCache(): void
+    {
+        Cache::forget('master_api_token_'.$this->clientId);
+        Cache::forget($this->getCircuitBreakerKey());
+        Cache::forget($this->getCircuitBreakerKey().'_time');
+
+        // Clear fallback cache (pattern matching)
+        // Note: This requires Redis or file driver that supports tags
+        if (Cache::supportsTags()) {
+            Cache::tags(['master_api_fallback'])->flush();
+        }
+    }
+
+    /**
+     * GET request dengan retry dan fallback.
+     */
+    public function get(string $endpoint, array $params = []): array
+    {
+        // Check circuit breaker
+        if ($this->isCircuitOpen()) {
+            Log::warning('Master API: Circuit breaker is OPEN, using fallback', [
+                'endpoint' => $endpoint,
+            ]);
+
+            return $this->getFromFallbackCache($endpoint, $params);
+        }
+
+        try {
+            $payload = $this->retry(fn () => $this->request($endpoint, $params), maxAttempts: 3, initialDelay: 300);
+
+            if ($payload !== null) {
+                $this->circuitBreakerSuccess();
+                // Cache successful response for fallback
+                $this->cacheForFallback($endpoint, $params, $payload);
+
+                return \is_array($payload) ? ($payload['data'] ?? []) : [];
+            }
+
+            // Request failed but didn't throw exception
+            $this->circuitBreakerFailure();
+
+            return $this->getFromFallbackCache($endpoint, $params);
+        } catch (Exception $e) {
+            $this->circuitBreakerFailure();
+            Log::error('Master API: GET request failed', [
+                'endpoint' => $endpoint,
+                'error' => $e->getMessage(),
+            ]);
+
+            // Fallback ke cached data
+            return $this->getFromFallbackCache($endpoint, $params);
+        }
+    }
+
+    /**
+     * Sync dosen dengan retry dan fallback.
+     */
+    public function getSyncDosen(?string $since = null): array
+    {
+        $params = $since ? ['since' => $since] : [];
+
+        return $this->getAllPagesWithFallback('/sync/dosen', $params, 'dosen');
+    }
+
+    /**
+     * Sync mahasiswa dengan retry dan fallback.
+     */
+    public function getSyncMahasiswa(?string $since = null): array
+    {
+        $params = $since ? ['since' => $since] : [];
+
+        return $this->getAllPagesWithFallback('/sync/mahasiswa', $params, 'mahasiswa');
+    }
+
+    /**
+     * Fetch specific students by NIM list.
+     */
+    public function getStudentsByNimList(array $nimList): array
+    {
+        if (empty($nimList)) {
+            return [];
+        }
+
+        return $this->get('/sync/mahasiswa', ['nims' => $nimList]);
+    }
+
+    /**
+     * Fetch specific employees by NIP list.
+     */
+    public function getEmployeesByNipList(array $nipList): array
+    {
+        if (empty($nipList)) {
+            return [];
+        }
+
+        return $this->get('/sync/dosen', ['nips' => $nipList]);
+    }
+
+    /**
+     * Get JWT Token from Master API dengan retry.
      */
     public function getToken(): ?string
     {
@@ -35,273 +168,434 @@ class MasterApiService
             return $this->staticToken;
         }
 
-        $cacheKey = 'master_api_token_' . $this->clientId;
+        $cacheKey = 'master_api_token_'.$this->clientId;
 
         return Cache::remember($cacheKey, now()->addMinutes($this->cacheMinutes - 5), function () {
             try {
-                $response = Http::withOptions(['verify' => $this->verifySsl])->post($this->baseUrl . '/auth/token', [
-                    'client_id' => $this->clientId,
-                    'client_secret' => $this->clientSecret,
-                    'scope' => 'sync:read',
-                ]);
+                return $this->retry(function () {
+                    $response = Http::withOptions(['verify' => $this->verifySsl])
+                        ->timeout(30)
+                        ->post($this->baseUrl.'/auth/token', [
+                            'client_id' => $this->clientId,
+                            'client_secret' => $this->clientSecret,
+                            'scope' => 'sync:read',
+                        ]);
 
-                if ($response->successful()) {
-                    return $response->json('data.access_token');
-                }
+                    if ($response->successful()) {
+                        $this->circuitBreakerSuccess();
 
-                Log::error('Master API: Failed to get token', [
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
-            }
-            catch (\Exception $e) {
+                        return $response->json('data.access_token');
+                    }
+
+                    $this->circuitBreakerFailure();
+                    Log::error('Master API: Failed to get token', [
+                        'status' => $response->status(),
+                        'body' => $response->body(),
+                    ]);
+                }, maxAttempts: 3, initialDelay: 200);
+            } catch (Exception $e) {
+                $this->circuitBreakerFailure();
                 Log::error('Master API: Connection error', ['error' => $e->getMessage()]);
-            }
 
-            return null;
+                // Fallback: return cached token if available
+                return Cache::get($cacheKey.'_fallback');
+            }
         });
     }
 
     /**
-     * Authenticated GET request
+     * GET request dengan fallback ke local database.
      */
-    public function get(string $endpoint, array $params = []): array
+    public function getWithDatabaseFallback(string $entityType, array $params = []): array
     {
-        $payload = $this->request($endpoint, $params);
-        return is_array($payload) ? ($payload['data'] ?? []) : [];
+        $apiData = $this->get($this->mapEntityTypeToEndpoint($entityType), $params);
+
+        // Jika API gagal, fallback ke database lokal
+        if (empty($apiData) && $this->isCircuitOpen()) {
+            Log::info("Using database fallback for {$entityType}");
+
+            return $this->getFromLocalDatabase($entityType, $params);
+        }
+
+        return $apiData;
     }
 
     /**
-     * Authenticated GET request (raw JSON payload).
+     * Health check dengan circuit breaker status.
      */
-    protected function request(string $endpoint, array $params = []): ?array
+    public function healthCheck(): array
     {
-        $token = $this->getToken();
-
-        if (!$token) {
-            Log::error("Master API: No token available for GET {$endpoint}");
-            return null;
-        }
+        $circuitStatus = $this->getCircuitBreakerStatus();
 
         try {
-            $response = Http::withToken($token)
-                ->withOptions(['verify' => $this->verifySsl])
-                ->timeout(30)
-                ->get($this->baseUrl . $endpoint, $params);
+            $response = Http::withOptions(['verify' => $this->verifySsl])
+                ->timeout(10)
+                ->get($this->baseUrl.'/health');
 
-            if ($response->successful()) {
-                return $response->json();
+            $data = $response->json();
+
+            if (isset($data['success']) && $data['success'] && isset($data['data']['status'])) {
+                return array_merge($data['data'], [
+                    'circuit_breaker' => $circuitStatus,
+                    'reachable' => true,
+                ]);
             }
 
-            Log::error("Master API: GET {$endpoint} failed", [
-                'status' => $response->status(),
-                'body' => $response->body()
-            ]);
-        }
-        catch (\Exception $e) {
-            Log::error("Master API: GET {$endpoint} exception", ['error' => $e->getMessage()]);
-        }
+            if (isset($data['status'])) {
+                return array_merge($data, [
+                    'circuit_breaker' => $circuitStatus,
+                    'reachable' => true,
+                ]);
+            }
 
-        return null;
+            return [
+                'status' => 'DOWN',
+                'error' => 'Invalid response format',
+                'circuit_breaker' => $circuitStatus,
+                'reachable' => true,
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => 'DOWN',
+                'error' => $e->getMessage(),
+                'circuit_breaker' => $circuitStatus,
+                'reachable' => false,
+            ];
+        }
     }
 
     /**
-     * Fetch all pages for a paginated Master API endpoint.
+     * Cache response for fallback.
+     */
+    protected function cacheForFallback(string $endpoint, array $params, mixed $data): void
+    {
+        $key = $this->getFallbackCacheKey($endpoint, $params);
+        Cache::put($key, $data, now()->addHours(24));
+    }
+
+    /**
+     * Circuit Breaker: Record failure.
+     */
+    protected function circuitBreakerFailure(): void
+    {
+        $key = $this->getCircuitBreakerKey();
+        $failures = (int) Cache::get($key, 0) + 1;
+
+        Cache::put($key, $failures, $this->circuitBreakerTimeout * 2);
+        Cache::put($key.'_time', now()->timestamp, $this->circuitBreakerTimeout * 2);
+
+        if ($failures >= $this->circuitBreakerThreshold) {
+            Log::warning("Circuit breaker: OPEN after {$failures} failures");
+        }
+    }
+
+    /**
+     * Circuit Breaker: Record success.
+     */
+    protected function circuitBreakerSuccess(): void
+    {
+        Cache::put($this->getCircuitBreakerKey(), 0, $this->circuitBreakerTimeout * 2);
+        Log::debug('Circuit breaker: Success, resetting counter');
+    }
+
+    /**
+     * Format models for API response compatibility.
+     */
+    protected function formatDosenForApi(\App\Models\KKN\Dosen $dosen): array
+    {
+        return [
+            'nip' => $dosen->nip,
+            'name' => $dosen->name,
+            'faculty' => [
+                'code' => $dosen->faculty?->code,
+                'name' => $dosen->faculty?->name,
+            ],
+            'email' => $dosen->user?->email,
+            'phone' => $dosen->phone,
+            'updated_at' => $dosen->updated_at?->toIso8601String(),
+        ];
+    }
+
+    protected function formatFacultyForApi(\App\Models\KKN\Fakultas $faculty): array
+    {
+        return [
+            'code' => $faculty->code,
+            'name' => $faculty->name,
+            'updated_at' => $faculty->updated_at?->toIso8601String(),
+        ];
+    }
+
+    protected function formatMahasiswaForApi(\App\Models\KKN\Mahasiswa $mhs): array
+    {
+        return [
+            'nim' => $mhs->nim,
+            'name' => $mhs->name,
+            'faculty' => [
+                'code' => $mhs->faculty?->code,
+                'name' => $mhs->faculty?->name,
+            ],
+            'program' => [
+                'code' => $mhs->program?->code,
+                'name' => $mhs->program?->name,
+            ],
+            'batch_year' => $mhs->batch_year,
+            'gpa' => $mhs->gpa,
+            'sks_completed' => $mhs->sks_completed,
+            'updated_at' => $mhs->updated_at?->toIso8601String(),
+        ];
+    }
+
+    protected function formatProgramForApi(\App\Models\KKN\Program $program): array
+    {
+        return [
+            'code' => $program->code,
+            'name' => $program->name,
+            'faculty' => [
+                'code' => $program->faculty?->code,
+                'name' => $program->faculty?->name,
+            ],
+            'updated_at' => $program->updated_at?->toIso8601String(),
+        ];
+    }
+
+    /**
+     * Fetch all pages dengan retry logic.
      */
     protected function getAllPages(string $endpoint, array $params = [], int $perPage = 100): array
     {
         $results = [];
         $page = 1;
+        $consecutiveFailures = 0;
+        $maxConsecutiveFailures = 2;
 
         while (true) {
-            $payload = $this->request($endpoint, array_merge($params, [
-                'page' => $page,
-                'per_page' => $perPage,
-            ]));
+            try {
+                $payload = $this->request($endpoint, array_merge($params, [
+                    'page' => $page,
+                    'per_page' => $perPage,
+                ]));
 
-            if (!$payload || !isset($payload['data'])) {
-                break;
+                if (!$payload || !isset($payload['data'])) {
+                    break;
+                }
+
+                $consecutiveFailures = 0; // Reset on success
+                $results = array_merge($results, $payload['data']);
+
+                // Check pagination meta
+                $pagination = $payload['pagination'] ?? $payload['meta']['pagination'] ?? null;
+
+                if (!$pagination) {
+                    break;
+                }
+
+                $lastPage = $pagination['last_page'] ?? 1;
+
+                if ($page >= $lastPage) {
+                    break;
+                }
+
+                ++$page;
+            } catch (Exception $e) {
+                ++$consecutiveFailures;
+
+                Log::warning("Page {$page} fetch failed", [
+                    'error' => $e->getMessage(),
+                    'consecutive_failures' => $consecutiveFailures,
+                ]);
+
+                if ($consecutiveFailures >= $maxConsecutiveFailures) {
+                    Log::error('Too many consecutive failures, stopping pagination');
+                    break;
+                }
+
+                // Retry this page with backoff
+                usleep(500000); // 500ms delay
             }
-
-            $currentData = $payload['data'];
-            $results = array_merge($results, $currentData);
-
-            // Check pagination meta
-            $pagination = $payload['pagination'] ?? $payload['meta']['pagination'] ?? null;
-
-            if (!$pagination) {
-                // If no pagination meta, assume single page
-                break;
-            }
-
-            $lastPage = $pagination['last_page'] ?? 1;
-
-            if ($page >= $lastPage) {
-                break;
-            }
-
-            $page++;
         }
 
         return $results;
     }
 
     /**
-     * Fetch Dosen data for sync
+     * Fetch all pages dengan fallback.
      */
-    public function getSyncDosen(?string $since = null): array
+    protected function getAllPagesWithFallback(string $endpoint, array $params = [], ?string $entityType = null): array
     {
-        $params = [];
-        if ($since) {
-            $params['since'] = $since;
-        }
-        return $this->getAllPages('/sync/dosen', $params);
-    }
+        try {
+            $results = $this->getAllPages($endpoint, $params);
 
-    /**
-     * Fetch Mahasiswa data for sync
-     */
-    public function getSyncMahasiswa(?string $since = null): array
-    {
-        $params = [];
-        if ($since) {
-            $params['since'] = $since;
-        }
-        return $this->getAllPages('/sync/mahasiswa', $params);
-    }
-
-    /**
-     * Fetch all employees (lecturers) for DPL sync.
-     */
-    public function getAllEmployees(): array
-    {
-        return $this->getAllPages('/sync/dosen');
-    }
-
-    /**
-     * Fetch employees for a specific list of NIP.
-     */
-    public function getEmployeesByNipList(array $nipList): array
-    {
-        $normalized = collect($nipList)
-            ->map(static fn ($nip) => trim((string) $nip))
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
-
-        if ($normalized === []) {
-            return [];
+            if (!empty($results)) {
+                return $results;
+            }
+        } catch (Exception $e) {
+            Log::warning("API fetch failed, using fallback for {$endpoint}", [
+                'error' => $e->getMessage(),
+            ]);
         }
 
-        $filtered = $this->getAllPages('/sync/dosen', [
-            'nip_list' => implode(',', $normalized),
-        ]);
-
-        if ($filtered !== [] && $this->containsOnlyRequestedNips($filtered, $normalized)) {
-            return $this->deduplicateEmployees($filtered);
+        // Fallback ke database lokal jika entity type diketahui
+        if ($entityType) {
+            return $this->getFromLocalDatabase($entityType, $params);
         }
 
-        return $this->filterEmployeesByNipList($this->getAllEmployees(), $normalized);
-    }
-
-    /**
-     * Fetch all students for student sync.
-     */
-    public function getAllStudents(): array
-    {
-        return $this->getAllPages('/sync/mahasiswa');
-    }
-
-    /**
-     * Fetch students for a specific list of NIM.
-     */
-    public function getStudentsByNimList(array $nimList): array
-    {
-        $normalized = collect($nimList)
-            ->map(static fn ($nim) => trim((string) $nim))
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
-
-        if ($normalized === []) {
-            return [];
-        }
-
-        $filtered = $this->getAllPages('/sync/mahasiswa', [
-            'nim_list' => implode(',', $normalized),
-        ]);
-
-        if ($filtered !== [] && $this->containsOnlyRequestedNims($filtered, $normalized)) {
-            return $this->deduplicateStudents($filtered);
-        }
-
-        return $this->filterStudentsByNimList($this->getAllStudents(), $normalized);
-    }
-
-    /**
-     * Fetch all organizations (Faculties)
-     */
-    public function getAllOrganizations(): array
-    {
-        return $this->getAllPages('/organizations', [], 100);
-    }
-
-    /**
-     * Get groups from Master API (stub for local development)
-     */
-    public function getGroups(): array
-    {
-        // Return empty for local development (not using master API)
         return [];
     }
 
-    public function healthCheck(): array
+    /**
+     * Get circuit breaker cache key.
+     */
+    protected function getCircuitBreakerKey(): string
+    {
+        return 'master_api_circuit_breaker_'.$this->baseUrl;
+    }
+
+    /**
+     * Get circuit breaker status.
+     */
+    protected function getCircuitBreakerStatus(): array
+    {
+        $failures = (int) Cache::get($this->getCircuitBreakerKey(), 0);
+        $lastFailure = Cache::get($this->getCircuitBreakerKey().'_time');
+
+        return [
+            'status' => $failures >= $this->circuitBreakerThreshold ? 'OPEN' : 'CLOSED',
+            'failures' => $failures,
+            'threshold' => $this->circuitBreakerThreshold,
+            'timeout' => $this->circuitBreakerTimeout,
+            'last_failure' => $lastFailure ? now()->createFromTimestamp($lastFailure)->toIso8601String() : null,
+            'half_open_at' => $lastFailure ? now()->createFromTimestamp($lastFailure + $this->circuitBreakerTimeout)->toIso8601String() : null,
+        ];
+    }
+
+    /**
+     * Get fallback cache key.
+     */
+    protected function getFallbackCacheKey(string $endpoint, array $params): string
+    {
+        $paramsHash = md5(json_encode($params));
+
+        return $this->fallbackCachePrefix.md5($endpoint).'_'.$paramsHash;
+    }
+
+    /**
+     * Get from fallback cache.
+     */
+    protected function getFromFallbackCache(string $endpoint, array $params): array
+    {
+        $key = $this->getFallbackCacheKey($endpoint, $params);
+
+        return Cache::get($key, []);
+    }
+
+    /**
+     * Get from local database (fallback).
+     */
+    protected function getFromLocalDatabase(string $entityType, array $params = []): array
     {
         try {
-            $response = Http::withOptions(['verify' => $this->verifySsl])->get($this->baseUrl . '/health');
-            $data = $response->json();
+            return match ($entityType) {
+                'dosen' => \App\Models\KKN\Dosen::with('user', 'faculty')
+                    ->when(isset($params['since']), static fn ($q) => $q->where('updated_at', '>=', $params['since']))
+                    ->get()
+                    ->map(fn ($d) => $this->formatDosenForApi($d))
+                    ->toArray(),
 
-            if (isset($data['success']) && $data['success'] && isset($data['data']['status'])) {
-                return $data['data'];
-            }
+                'mahasiswa' => \App\Models\KKN\Mahasiswa::with('user', 'faculty', 'program')
+                    ->when(isset($params['since']), static fn ($q) => $q->where('updated_at', '>=', $params['since']))
+                    ->get()
+                    ->map(fn ($m) => $this->formatMahasiswaForApi($m))
+                    ->toArray(),
 
-            if (isset($data['status'])) {
-                return $data;
-            }
+                'faculty' => \App\Models\KKN\Fakultas::all()
+                    ->map(fn ($f) => $this->formatFacultyForApi($f))
+                    ->toArray(),
 
-            return ['status' => 'DOWN', 'error' => 'Invalid response format'];
-        }
-        catch (\Exception $e) {
-            return ['status' => 'DOWN', 'error' => $e->getMessage()];
+                'program' => \App\Models\KKN\Program::with('faculty')
+                    ->get()
+                    ->map(fn ($p) => $this->formatProgramForApi($p))
+                    ->toArray(),
+
+                default => [],
+            };
+        } catch (Exception $e) {
+            Log::error("Database fallback failed for {$entityType}", [
+                'error' => $e->getMessage(),
+            ]);
+
+            return [];
         }
     }
 
-    public function clearCache(): void
+    /**
+     * Circuit Breaker: Check if circuit is open.
+     */
+    protected function isCircuitOpen(): bool
     {
-        Cache::forget('master_api_token_' . $this->clientId);
-    }
+        $failures = (int) Cache::get($this->getCircuitBreakerKey(), 0);
+        $lastFailure = Cache::get($this->getCircuitBreakerKey().'_time');
 
-    private function settingOrConfig(string $settingKey, string $configKey, mixed $default = null): mixed
-    {
-        $settingValue = SystemSetting::get($settingKey);
+        if ($failures >= $this->circuitBreakerThreshold) {
+            // Check if timeout has passed (half-open state)
+            if ($lastFailure && now()->timestamp - $lastFailure > $this->circuitBreakerTimeout) {
+                Log::info('Circuit breaker: Half-open state, allowing test request');
 
-        if ($settingValue !== null && $settingValue !== '') {
-            return $settingValue;
+                return false;
+            }
+
+            return true;
         }
 
-        return config($configKey, $default);
+        return false;
+    }
+
+    /**
+     * Map entity type to API endpoint.
+     */
+    protected function mapEntityTypeToEndpoint(string $entityType): string
+    {
+        return match ($entityType) {
+            'dosen' => '/sync/dosen',
+            'mahasiswa' => '/sync/mahasiswa',
+            'faculty' => '/organizations',
+            'program' => '/programs',
+            default => '/sync/'.$entityType,
+        };
+    }
+
+    protected function request(string $endpoint, array $params = []): ?array
+    {
+        $token = $this->getToken();
+
+        if (!$token) {
+            Log::error("Master API: No token available for GET {$endpoint}");
+
+            return null;
+        }
+
+        $response = Http::withToken($token)
+            ->withOptions(['verify' => $this->verifySsl])
+            ->timeout(30)
+            ->get($this->baseUrl.$endpoint, $params);
+
+        if ($response->successful()) {
+            return $response->json();
+        }
+
+        Log::error("Master API: GET {$endpoint} failed", [
+            'status' => $response->status(),
+            'body' => $response->body(),
+        ]);
+
+        return null;
     }
 
     private function containsOnlyRequestedNims(array $students, array $nimList): bool
     {
         $lookup = array_flip($nimList);
-
         foreach ($students as $student) {
             $nim = trim((string) ($student['nim'] ?? ''));
-
-            if ($nim === '' || ! isset($lookup[$nim])) {
+            if ($nim === '' || !isset($lookup[$nim])) {
                 return false;
             }
         }
@@ -312,11 +606,9 @@ class MasterApiService
     private function containsOnlyRequestedNips(array $employees, array $nipList): bool
     {
         $lookup = array_flip($nipList);
-
         foreach ($employees as $employee) {
             $nip = trim((string) ($employee['nip'] ?? ''));
-
-            if ($nip === '' || ! isset($lookup[$nip])) {
+            if ($nip === '' || !isset($lookup[$nip])) {
                 return false;
             }
         }
@@ -324,29 +616,31 @@ class MasterApiService
         return true;
     }
 
-    private function filterStudentsByNimList(array $students, array $nimList): array
+    private function deduplicateEmployees(array $employees): array
     {
-        $lookup = array_flip($nimList);
+        $seen = [];
+        $deduplicated = [];
+        foreach ($employees as $employee) {
+            $nip = trim((string) ($employee['nip'] ?? ''));
+            if ($nip === '' || isset($seen[$nip])) {
+                continue;
+            }
+            $seen[$nip] = true;
+            $deduplicated[] = $employee;
+        }
 
-        return $this->deduplicateStudents(array_values(array_filter($students, static function ($student) use ($lookup) {
-            $nim = trim((string) ($student['nim'] ?? ''));
-
-            return $nim !== '' && isset($lookup[$nim]);
-        })));
+        return $deduplicated;
     }
 
     private function deduplicateStudents(array $students): array
     {
         $seen = [];
         $deduplicated = [];
-
         foreach ($students as $student) {
             $nim = trim((string) ($student['nim'] ?? ''));
-
             if ($nim === '' || isset($seen[$nim])) {
                 continue;
             }
-
             $seen[$nim] = true;
             $deduplicated[] = $student;
         }
@@ -365,22 +659,25 @@ class MasterApiService
         })));
     }
 
-    private function deduplicateEmployees(array $employees): array
+    private function filterStudentsByNimList(array $students, array $nimList): array
     {
-        $seen = [];
-        $deduplicated = [];
+        $lookup = array_flip($nimList);
 
-        foreach ($employees as $employee) {
-            $nip = trim((string) ($employee['nip'] ?? ''));
+        return $this->deduplicateStudents(array_values(array_filter($students, static function ($student) use ($lookup) {
+            $nim = trim((string) ($student['nim'] ?? ''));
 
-            if ($nip === '' || isset($seen[$nip])) {
-                continue;
-            }
+            return $nim !== '' && isset($lookup[$nim]);
+        })));
+    }
 
-            $seen[$nip] = true;
-            $deduplicated[] = $employee;
+    private function settingOrConfig(string $settingKey, string $configKey, mixed $default = null): mixed
+    {
+        $settingValue = SystemSetting::get($settingKey);
+
+        if ($settingValue !== null && $settingValue !== '') {
+            return $settingValue;
         }
 
-        return $deduplicated;
+        return config($configKey, $default);
     }
 }

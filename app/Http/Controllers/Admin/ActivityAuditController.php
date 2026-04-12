@@ -4,14 +4,19 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use App\Models\KKN\Laporan;
 use App\Services\QualityAuditService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+use App\Traits\HandlesPagination;
+
 class ActivityAuditController extends Controller
 {
+    use HandlesPagination;
+
     public function __construct(
         protected QualityAuditService $auditService
     ) {}
@@ -22,7 +27,7 @@ class ActivityAuditController extends Controller
             ->latest('submitted_at')
             ->paginate(50);
 
-        $auditedReports = $reports->through(function ($report) {
+        $reports->through(function ($report) {
             $audit = $this->auditService->auditReport($report);
             return [
                 'id' => $report->id,
@@ -37,12 +42,12 @@ class ActivityAuditController extends Controller
             ];
         });
 
-        return Inertia::render('Admin/QualityAudit/Index', [
-            'reports' => $auditedReports,
+        return Inertia::render('Admin/Monitoring/QualityAudit/Index', [
+            'reports' => $this->formatPaginator($reports),
             'stats' => [
                 'high_risk_count' => Laporan::where('status', 'submitted')
-                    ->whereRaw('LENGTH(description) < 30')
-                    ->count(), // Heuristic for now
+                    ->where(DB::raw('LENGTH(description)'), '<', 30)
+                    ->count(),
             ]
         ]);
     }

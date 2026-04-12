@@ -48,7 +48,7 @@ class ProdiController extends Controller
             ->latest('master_synced_at')
             ->first()?->master_synced_at;
 
-        return Inertia::render('Admin/Programs/Index', [
+        return Inertia::render('Admin/MasterData/Programs/Index', [
             'programs' => $programs,
             'faculties' => Fakultas::query()
                 ->orderBy('nama')

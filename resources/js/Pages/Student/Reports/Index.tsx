@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { StatusBadge } from '@/Components/ui';
+import { route } from 'ziggy-js';
 
 interface ProgressItem {
  type: string;
@@ -38,7 +39,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
 
  const handleSubmit = (event: React.FormEvent) => {
  event.preventDefault();
- form.post('/mahasiswa/reports/upload', {
+ form.post(route('student.reports.upload'), {
  forceFormData: true,
  onSuccess: () => form.reset('title', 'file'),
  });

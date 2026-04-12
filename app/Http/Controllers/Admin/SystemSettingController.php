@@ -50,7 +50,7 @@ class SystemSettingController extends Controller
             return $setting;
         });
 
-        return Inertia::render('Admin/Settings/System', [
+        return Inertia::render('Admin/System/Settings/System', [
             'settings' => $settings->groupBy('group'),
             'title' => 'Pengaturan Sistem & API'
         ]);

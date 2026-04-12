@@ -38,6 +38,14 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
         $studentRegistrationLocked = false;
+        $periodContext = app(\App\Services\PeriodContextService::class);
+        $activePhase = rescue(
+            fn () => $periodContext->getActivePeriod()?->current_phase
+                ?? data_get($periodContext->getActivePeriodData(), 'current_phase')
+                ?? 'upcoming',
+            'upcoming',
+            report: false,
+        );
 
         if ($user?->hasRole('student') && $user->mahasiswa) {
             $studentRegistrationLocked = PesertaKkn::query()
@@ -56,6 +64,8 @@ class HandleInertiaRequests extends Middleware
                     'username' => $user->username,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'avatar' => $user->avatar,
+                    'nim' => $user->hasRole('student') ? $user->mahasiswa?->nim : null,
                     'must_change_password' => $user->must_change_password,
                     'student_registration_locked' => $studentRegistrationLocked,
                     'faculty' => $user->fakultas ? [
@@ -65,6 +75,7 @@ class HandleInertiaRequests extends Middleware
                     'roles' => $user->getRoleNames()->toArray(),
                     'permissions' => $user->getPermissionsViaRoles()->pluck('name')->unique()->values(),
                 ] : null,
+                'active_phase' => $activePhase,
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),

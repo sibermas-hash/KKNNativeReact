@@ -14,32 +14,33 @@ const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
   const describedBy = [errorId, hintId].filter(Boolean).join(' ') || undefined;
 
   return (
-  <div>
+  <div className="space-y-1.5">
     {label && (
-      <label htmlFor={id} className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 italic">
+      <label htmlFor={id} className="block text-sm font-semibold text-slate-700 mb-1.5">
         {label}
-        {rest.required && <span className="ml-1 text-rose-500" aria-hidden="true">*</span>}
+        {rest.required && <span className="ml-1 text-red-500" aria-hidden="true">*</span>}
       </label>
     )}
-    <div className="relative group">
+    <div className="relative group/input">
       <input
         ref={ref}
         id={id}
         aria-invalid={!!error}
         aria-describedby={describedBy}
         className={clsx(
-          'w-full rounded-2xl border bg-slate-50/50 dark:bg-slate-900/50 px-5 py-4 text-sm font-semibold transition-all duration-300 placeholder:text-slate-300 dark:placeholder:text-slate-600 dark:text-slate-100',
-          'focus:bg-white dark:focus:bg-slate-900 focus:border-emerald-500 dark:focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 dark:focus:ring-emerald-500/20',
+          'w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 transition-all placeholder:text-slate-400',
+          'focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500',
           error
-            ? 'border-rose-300 dark:border-rose-700/50 focus:border-rose-500 dark:focus:border-rose-500 focus:ring-rose-100 dark:focus:ring-rose-500/10 bg-rose-50/10 dark:bg-rose-950/20'
-            : 'border-slate-100 dark:border-slate-700 hover:border-emerald-200 dark:hover:border-slate-600',
+            ? 'border-red-500 focus:ring-red-500'
+            : 'hover:border-slate-400',
+          rest.disabled && 'bg-slate-50 text-slate-500 cursor-not-allowed border-slate-200',
           className,
         )}
         {...rest}
       />
     </div>
-    {error && <p id={errorId} role="alert" className="mt-2 text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest">{error}</p>}
-    {hint && !error && <p id={hintId} className="mt-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{hint}</p>}
+    {error && <p id={errorId} role="alert" className="mt-1 text-xs font-medium text-red-600">{error}</p>}
+    {hint && !error && <p id={hintId} className="mt-1 text-xs text-slate-500">{hint}</p>}
   </div>
  );
 },

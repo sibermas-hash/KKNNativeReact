@@ -210,11 +210,12 @@ class WorkshopService
             $adminId = auth()->id()
                 ?? \App\Models\User::role('superadmin')->value('id');
 
-            $this->gradingService->submitAdminScores(
+            $this->gradingService->updateUnifiedScore(
                 $user->id,
                 $groupId,
-                $workshopScore,
-                $participant->user->nilaiKkn()->where('kelompok_id', $groupId)->first()?->administration_score ?? 0,
+                [
+                    'administration_score' => $workshopScore,
+                ],
                 $adminId
             );
         }

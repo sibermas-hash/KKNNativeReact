@@ -210,7 +210,7 @@ class PoskoController extends Controller
             );
         }
 
-        return redirect()->route('student.posko.edit')->with('success', 'Data posko kelompok berhasil diperbarui.');
+        return redirect()->route('student.posko.index')->with('success', 'Data posko kelompok berhasil diperbarui.');
     }
 
     private function extractGoogleMapsCoordinates(string $url): ?array

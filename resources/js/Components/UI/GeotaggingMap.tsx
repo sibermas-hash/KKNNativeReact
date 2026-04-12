@@ -4,7 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default marker icons in Leaflet with React
-// @ts-expect-error
+// @ts-expect-error - missing leaflet types
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -53,15 +53,15 @@ export default function GeotaggingMap({ lat, lng, label = 'Lokasi Laporan', zoom
                 <Marker position={position}>
                     <Popup>
                         <div className="p-2 text-center">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1">Geotagging Verified</p>
-                            <p className="text-xs font-bold text-slate-900 uppercase italic">{label}</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 mb-1">Geotagging Verified</p>
+                            <p className="text-xs font-bold text-slate-900 uppercase ">{label}</p>
                         </div>
                     </Popup>
                 </Marker>
             </MapContainer>
             
             {/* Tactical Overlay */}
-            <div className="absolute top-4 right-4 z-[1000] px-4 py-2 bg-emerald-950/80 backdrop-blur-md border border-emerald-500/30 text-white text-[9px] font-black uppercase italic tracking-[0.2em] shadow-2xl pointer-events-none group-hover/map:opacity-0 transition-opacity">
+            <div className="absolute top-4 right-4 z-[1000] px-4 py-2 bg-slate-900/80 backdrop-blur-md border border-emerald-500/30 text-white text-[9px] font-bold uppercase  tracking-[0.2em] shadow-2xl pointer-events-none group-hover/map:opacity-0 transition-opacity">
                 TERMINAL DATA SPASIAL v4.0
             </div>
         </div>

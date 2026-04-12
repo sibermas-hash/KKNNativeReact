@@ -130,7 +130,7 @@ export default function SchemeContentPage({ content }: Props) {
                     <MetricCard label="Active Nodes" value={form.data.schemes.length} icon={Box} color="emerald" desc="Total active scheme configurations" />
                     <MetricCard label="Visual Identity" value="ENFORCED" icon={Palette} color="emerald" desc="Color grouping systems nominal" />
                     <MetricCard label="Data Structure" value="ARRAY_STG" icon={Binary} color="emerald" desc="Object schema integrity verified" />
-                    <MetricCard label="Broadcast Level" value="PUBLIC" icon={Globe} color="emerald" desc="Global interface visibility active" />
+                    <MetricCard label="Level Siaran" value="PUBLIK" icon={Globe} color="emerald" desc="Visibilitas antarmuka global aktif" />
                 </motion.div>
 
                 <form onSubmit={submit} className="space-y-16">
@@ -142,7 +142,7 @@ export default function SchemeContentPage({ content }: Props) {
                                        <Layers3 size={28} />
                                   </div>
                                   <div className="space-y-2">
-                                       <h3 className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">Global Parameters</h3>
+                                       <h3 className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">Parameter Global</h3>
                                        <p className="text-2xl font-black text-white uppercase tracking-tighter italic leading-none">Interface Core Settings</p>
                                   </div>
                              </div>
@@ -313,7 +313,7 @@ export default function SchemeContentPage({ content }: Props) {
                                     <motion.div key="default"><Save size={24} strokeWidth={3} className="group-hover:animate-pulse" /></motion.div>
                                 )}
                             </AnimatePresence>
-                            {form.processing ? 'COMMITING_LOGIC...' : 'DEPLOY_SCHEMA'}
+                            {form.processing ? 'MENERAPKAN_SKEMA...' : 'TERAPKAN_SKEMA'}
                         </Button>
                     </motion.div>
                 </form>
@@ -329,7 +329,7 @@ export default function SchemeContentPage({ content }: Props) {
                                   <Lock className="text-emerald-500" size={32} />
                                   <div className="space-y-1">
                                        <span className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-500">Schema Governance</span>
-                                       <h3 className="text-3xl font-black tracking-tighter uppercase italic leading-none">Global Programmatic Standard</h3>
+                                       <h3 className="text-3xl font-black tracking-tighter uppercase italic leading-none">Standar Programatik Global</h3>
                                   </div>
                              </div>
                              <p className="text-lg font-bold text-slate-400 uppercase tracking-tight leading-relaxed max-w-2xl opacity-80 italic">

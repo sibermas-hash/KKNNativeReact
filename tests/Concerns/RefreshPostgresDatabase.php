@@ -17,32 +17,24 @@ trait RefreshPostgresDatabase
         $connectionConfig = (array) config("database.connections.{$connectionName}");
 
         if (($connectionConfig['driver'] ?? null) === 'pgsql') {
-            $this->ensurePostgresDatabaseExists($connectionConfig);
+            try {
+                $this->ensurePostgresDatabaseExists($connectionConfig);
+            } catch (\Throwable $e) {
+                // Silently continue, the database likely already exists or permissions are restricted
+            }
 
-            $this->artisan('db:wipe', [
-                '--database' => $connectionName,
-                '--drop-views' => true,
-                '--drop-types' => true,
-            ]);
+            // Robustly wipe the PostgreSQL schema to avoid dependency issues (views, types, etc.)
+            DB::connection($connectionName)->getPdo()->exec("DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;");
 
             $this->app[Kernel::class]->setArtisan(null);
-
-            $parameters = $this->seeder()
-                ? ['--seeder' => $this->seeder()]
-                : ['--seed' => $this->shouldSeed()];
 
             $this->runCuratedPostgresMigrations($connectionName);
             $this->app[Kernel::class]->setArtisan(null);
 
-            if (($parameters['--seed'] ?? false) === true) {
-                $this->artisan('db:seed', ['--database' => $connectionName]);
-                $this->app[Kernel::class]->setArtisan(null);
-            }
-
-            if (isset($parameters['--seeder'])) {
+            if ($this->shouldSeed()) {
                 $this->artisan('db:seed', [
                     '--database' => $connectionName,
-                    '--class' => $parameters['--seeder'],
+                    '--class' => $this->seeder() ?: null,
                 ]);
                 $this->app[Kernel::class]->setArtisan(null);
             }

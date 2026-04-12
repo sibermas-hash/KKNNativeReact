@@ -244,7 +244,7 @@ export default function AnnouncementIndex({ announcements }: Props) {
                 {/* --- TELEMETRY BENTO MATRIX --- */}
                 <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <MetricCard label="Broadcast Total" value={announcements.meta?.total || 0} icon={Megaphone} color="emerald" desc="Total narrative vectors published" />
-                    <MetricCard label="Global Reach" value="SEO_OPT" icon={Globe} color="emerald" desc="Algorithm compatibility nominal" />
+                    <MetricCard label="Jangkauan Global" value="OPTIMASI_SEO" icon={Globe} color="emerald" desc="Kompatibilitas algoritma nominal" />
                     <MetricCard label="Kernel Engine" value="vNARRATIVE 2.0" icon={Cpu} color="emerald" desc="Transmission logic secure" />
                 </motion.div>
 
@@ -257,7 +257,7 @@ export default function AnnouncementIndex({ announcements }: Props) {
                               </div>
                               <div className="space-y-1">
                                    <h3 className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">Narrative stream</h3>
-                                   <p className="text-2xl font-black text-white uppercase tracking-tighter italic leading-none">Global Broadcast Ledger</p>
+                                   <p className="text-2xl font-black text-white uppercase tracking-tighter italic leading-none">Buku Besar Siaran Global</p>
                               </div>
                          </div>
                          <div className="flex items-center gap-4">
@@ -365,7 +365,7 @@ export default function AnnouncementIndex({ announcements }: Props) {
                     <div className="px-12 py-10 border-t border-slate-50 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-10">
                         <div className="flex items-center gap-5">
                              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Communications Hub Active. Global Broadcast Stream Nominal.</span>
+                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Hub Komunikasi Aktif. Aliran Siaran Global Nominal.</span>
                         </div>
                         <Pagination 
                             meta={announcements.meta}

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Dpl;
 
 use App\Http\Controllers\Controller;
@@ -9,18 +11,17 @@ use App\Http\Requests\Dpl\ValidateEvaluationImportRequest;
 use App\Models\KKN\Evaluasi;
 use App\Models\KKN\ItemEvaluasi;
 use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\KonfigurasiPenilaian;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use App\Services\GradingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Str;
 
 class EvaluationController extends Controller
 {
@@ -37,6 +38,7 @@ class EvaluationController extends Controller
                 return false;
             }
         }
+
         return true;
     }
 
@@ -64,7 +66,7 @@ class EvaluationController extends Controller
 
     private function ensureStudentBelongsToGroup(int $studentId, int $groupId): void
     {
-        if (!$this->studentBelongsToGroup($studentId, $groupId)) {
+        if (! $this->studentBelongsToGroup($studentId, $groupId)) {
             throw ValidationException::withMessages([
                 'student_id' => 'Mahasiswa tidak terdaftar pada kelompok yang dipilih.',
             ]);
@@ -74,7 +76,7 @@ class EvaluationController extends Controller
     public function index(): Response
     {
         $dosen = auth()->user()->dosen;
-        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        abort_if(! $dosen, 403, 'Data dosen tidak ditemukan.');
         $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
 
         $evaluations = Evaluasi::whereIn('kelompok_id', $groupIds)
@@ -83,7 +85,7 @@ class EvaluationController extends Controller
             ->get();
 
         $groups = KelompokKkn::whereIn('id', $groupIds)
-            ->with(['peserta' => fn($q) => $q->where('status', 'approved')->with('mahasiswa'), 'periode'])
+            ->with(['peserta' => fn ($q) => $q->where('status', 'approved')->with('mahasiswa'), 'periode'])
             ->get();
 
         return Inertia::render('Dpl/Evaluations/Index', [
@@ -122,14 +124,15 @@ class EvaluationController extends Controller
         $group = KelompokKkn::with(['peserta.mahasiswa', 'periode'])->findOrFail($request->group_id);
         \Illuminate\Support\Facades\Gate::authorize('update', [Evaluasi::class, $group]);
 
-        if (!$this->checkGradingPeriod($group)) {
+        if (! $this->checkGradingPeriod($group)) {
             return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
         }
 
-        $rows = Excel::toCollection(new class implements \Maatwebsite\Excel\Concerns\ToCollection {
+        $rows = Excel::toCollection(new class implements \Maatwebsite\Excel\Concerns\ToCollection
+        {
             public function collection(\Illuminate\Support\Collection $rows) {}
         }, $request->file('file'))->first();
-        
+
         // --- SMART COLUMN DETECTION ---
         $headerRowIndex = -1;
         $colMapping = [
@@ -144,11 +147,21 @@ class EvaluationController extends Controller
         foreach ($rows->take(20) as $index => $row) {
             foreach ($row as $colIndex => $content) {
                 $clean = Str::lower(trim($content));
-                if (Str::contains($clean, ['nim', 'nomor induk'])) $colMapping['nim'] = $colIndex;
-                if (Str::contains($clean, ['nama', 'name', 'mahasiswa'])) $colMapping['name'] = $colIndex;
-                if (Str::contains($clean, ['laporan akhir', 'final report', 'laporan'])) $colMapping['final_report'] = $colIndex;
-                if (Str::contains($clean, ['pelaksanaan', 'execution', 'implementasi', 'program'])) $colMapping['execution'] = $colIndex;
-                if (Str::contains($clean, ['artikel', 'article', 'jurnal'])) $colMapping['article'] = $colIndex;
+                if (Str::contains($clean, ['nim', 'nomor induk'])) {
+                    $colMapping['nim'] = $colIndex;
+                }
+                if (Str::contains($clean, ['nama', 'name', 'mahasiswa'])) {
+                    $colMapping['name'] = $colIndex;
+                }
+                if (Str::contains($clean, ['laporan akhir', 'final report', 'laporan'])) {
+                    $colMapping['final_report'] = $colIndex;
+                }
+                if (Str::contains($clean, ['pelaksanaan', 'execution', 'implementasi', 'program'])) {
+                    $colMapping['execution'] = $colIndex;
+                }
+                if (Str::contains($clean, ['artikel', 'article', 'jurnal'])) {
+                    $colMapping['article'] = $colIndex;
+                }
             }
 
             if (
@@ -177,7 +190,9 @@ class EvaluationController extends Controller
 
         foreach ($dataRows as $row) {
             $nim = trim($row[$colMapping['nim']] ?? '');
-            if (!$nim) continue;
+            if (! $nim) {
+                continue;
+            }
 
             $mahasiswa = Mahasiswa::where('nim', $nim)->first();
             $isMember = $group->peserta->pluck('mahasiswa_id')->contains($mahasiswa?->id);
@@ -189,7 +204,7 @@ class EvaluationController extends Controller
                 'execution_score' => $row[$colMapping['execution']] ?? 0,
                 'article_score' => $row[$colMapping['article']] ?? 0,
                 'status' => $mahasiswa ? ($isMember ? 'READY' : 'NOT_IN_GROUP') : 'NOT_FOUND',
-                'id' => $mahasiswa?->id
+                'id' => $mahasiswa?->id,
             ];
         }
 
@@ -201,7 +216,7 @@ class EvaluationController extends Controller
                 'period_name' => $group->periode?->name ?? '-',
             ],
             'dplWeights' => $this->dplWeights(),
-            'mapping' => $colMapping // Send mapping for transparency
+            'mapping' => $colMapping, // Send mapping for transparency
         ]);
     }
 
@@ -210,7 +225,7 @@ class EvaluationController extends Controller
         $group = KelompokKkn::with('periode')->findOrFail($request->group_id);
         \Illuminate\Support\Facades\Gate::authorize('update', [Evaluasi::class, $group]);
 
-        if (!$this->checkGradingPeriod($group)) {
+        if (! $this->checkGradingPeriod($group)) {
             return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
         }
 
@@ -228,17 +243,20 @@ class EvaluationController extends Controller
 
             // First pass: Create/update Evaluasi and collect IDs
             foreach ($request->data as $item) {
-                if ($item['status'] !== 'READY') continue;
+                if ($item['status'] !== 'READY') {
+                    continue;
+                }
 
                 // VULN-005 Fix: Verify student is actually a member of this group
                 $isMember = $this->studentBelongsToGroup((int) $item['id'], (int) $groupId);
 
-                if (!$isMember) {
-                    \Illuminate\Support\Facades\Log::warning("DPL attempted to grade non-member student", [
+                if (! $isMember) {
+                    \Illuminate\Support\Facades\Log::warning('DPL attempted to grade non-member student', [
                         'student_id' => $item['id'],
                         'group_id' => $groupId,
                         'dpl_id' => $lecturerId,
                     ]);
+
                     continue; // Skip non-members
                 }
 
@@ -246,7 +264,7 @@ class EvaluationController extends Controller
                     'mahasiswa_id' => $item['id'],
                     'kelompok_id' => $groupId,
                     'evaluator_id' => $lecturerId,
-                    'evaluator_type' => 'dpl'
+                    'evaluator_type' => 'dpl',
                 ], [
                     'evaluated_at' => now(),
                 ]);
@@ -307,12 +325,12 @@ class EvaluationController extends Controller
             }
 
             // OPTIMIZATION: Bulk delete old items and bulk insert new ones
-            if (!empty($evaluasiIds)) {
+            if (! empty($evaluasiIds)) {
                 // Delete all old items for these evaluasi
                 ItemEvaluasi::whereIn('evaluasi_id', array_values($evaluasiIds))->delete();
 
                 // Bulk insert all new items (3x fewer queries)
-                if (!empty($itemEvaluasiData)) {
+                if (! empty($itemEvaluasiData)) {
                     ItemEvaluasi::insert($itemEvaluasiData);
                 }
             }
@@ -320,8 +338,6 @@ class EvaluationController extends Controller
 
         return redirect()->route('dpl.evaluations.index')->with('success', 'Import evaluasi berhasil diselesaikan.');
     }
-
-
 
     public function create(Request $request): RedirectResponse
     {
@@ -339,7 +355,7 @@ class EvaluationController extends Controller
         $group = KelompokKkn::with('periode')->findOrFail($validated['group_id']);
         \Illuminate\Support\Facades\Gate::authorize('create', [Evaluasi::class, $group]);
 
-        if (!$this->checkGradingPeriod($group)) {
+        if (! $this->checkGradingPeriod($group)) {
             return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
         }
 
@@ -370,9 +386,15 @@ class EvaluationController extends Controller
                 'weight' => $item['weight'],
             ]);
 
-            if (stripos($item['criterion'], 'laporan') !== false) $reportScore = (float) $item['score'];
-            if (stripos($item['criterion'], 'pelaksanaan') !== false) $executionScore = (float) $item['score'];
-            if (stripos($item['criterion'], 'artikel') !== false) $articleScore = (float) $item['score'];
+            if (stripos($item['criterion'], 'laporan') !== false) {
+                $reportScore = (float) $item['score'];
+            }
+            if (stripos($item['criterion'], 'pelaksanaan') !== false) {
+                $executionScore = (float) $item['score'];
+            }
+            if (stripos($item['criterion'], 'artikel') !== false) {
+                $articleScore = (float) $item['score'];
+            }
 
             $totalScore += $item['score'] * ($item['weight'] / 100);
             $totalWeight += $item['weight'];

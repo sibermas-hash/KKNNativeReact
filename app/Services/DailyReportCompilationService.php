@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\KKN\KegiatanKkn;
@@ -17,7 +19,7 @@ class DailyReportCompilationService
     {
         $user = User::with(['mahasiswa.prodi.fakultas'])->findOrFail($userId);
 
-        if (!$user->mahasiswa) {
+        if (! $user->mahasiswa) {
             throw new \RuntimeException('User tidak memiliki data mahasiswa.');
         }
 

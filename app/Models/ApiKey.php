@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 
 class ApiKey extends Model
@@ -31,8 +33,8 @@ class ApiKey extends Model
 
     protected static function booted()
     {
-        static::saved(fn() => self::clearCache());
-        static::deleted(fn() => self::clearCache());
+        static::saved(fn () => self::clearCache());
+        static::deleted(fn () => self::clearCache());
     }
 
     /**

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,6 +17,7 @@ class Workshop extends Model
     protected static ?bool $supportsPeriodAssignment = null;
 
     protected $connection = 'kkn';
+
     protected $table = 'workshop';
 
     protected $fillable = [
@@ -46,7 +49,7 @@ class Workshop extends Model
         }
 
         return static::$supportsPeriodAssignment = Schema::connection(config('database.kkn_connection', 'kkn'))
-            ->hasColumn((new static())->getTable(), 'period_id');
+            ->hasColumn((new static)->getTable(), 'period_id');
     }
 
     public function getStartTimeAttribute($value): ?string

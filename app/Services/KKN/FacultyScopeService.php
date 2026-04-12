@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\KKN;
 
 use App\Models\User;
@@ -9,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 class FacultyScopeService
 {
     /**
-     * Apply faculty scoping to a query builder if the authenticated user 
+     * Apply faculty scoping to a query builder if the authenticated user
      * is a Faculty Admin.
      */
     public static function apply(Builder $query, string $facultyIdColumn = 'faculty_id'): Builder
@@ -17,7 +19,9 @@ class FacultyScopeService
         /** @var User|null $user */
         $user = Auth::user();
 
-        if (!$user) return $query;
+        if (! $user) {
+            return $query;
+        }
 
         if ($user->hasRole('faculty_admin') && $user->faculty_id) {
             // Check if column is a relationship path (e.g. mahasiswa.faculty_id or peserta.mahasiswa.faculty_id)
@@ -46,7 +50,9 @@ class FacultyScopeService
         /** @var User|null $user */
         $user = Auth::user();
 
-        if (!$user) return false;
+        if (! $user) {
+            return false;
+        }
 
         // Global admin can access any faculty
         if ($user->hasRole('superadmin')) {

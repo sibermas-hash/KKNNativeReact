@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ApiKey;
-use App\Models\Project;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class PublicDataController extends Controller
 {
@@ -15,11 +15,12 @@ class PublicDataController extends Controller
      * Map table names to their respective Eloquent Models for integrity enforcement.
      */
     private const MODEL_MAP = [
-        'fakultas'       => \App\Models\KKN\Fakultas::class,
-        'prodi'          => \App\Models\KKN\Prodi::class,
-        'lokasi'         => \App\Models\KKN\Lokasi::class,
-        'periode'        => \App\Models\KKN\Periode::class,
+        'fakultas' => \App\Models\KKN\Fakultas::class,
+        'prodi' => \App\Models\KKN\Prodi::class,
+        'lokasi' => \App\Models\KKN\Lokasi::class,
+        'periode' => \App\Models\KKN\Periode::class,
         'tahun_akademik' => \App\Models\KKN\TahunAkademik::class,
+        '_projects' => \App\Models\Project::class,
     ];
 
     /**
@@ -31,6 +32,7 @@ class PublicDataController extends Controller
         'lokasi' => [],
         'periode' => [],
         'tahun_akademik' => [],
+        '_projects' => ['project_name', 'email', 'description'],
     ];
 
     /**
@@ -61,6 +63,7 @@ class PublicDataController extends Controller
     private function getModel(string $table)
     {
         $class = self::MODEL_MAP[$table] ?? null;
+
         return $class ? new $class : null;
     }
 
@@ -82,9 +85,9 @@ class PublicDataController extends Controller
         }
 
         $model = $this->getModel($table);
-        
+
         // SECURITY: Tables WITHOUT a mapped model are strictly forbidden
-        if (!$model) {
+        if (! $model) {
             return $this->apiResponse(false, "Akses data mentah ke tabel '{$table}' dilarang.", null, 403);
         }
 
@@ -96,7 +99,7 @@ class PublicDataController extends Controller
         // Apply filters — only allow whitelisted column names
         $reserved = ['page', 'per_page', 'order_by', 'order'];
         foreach ($request->query() as $key => $value) {
-            if (!in_array($key, $reserved, true) && in_array($key, $allowedColumns, true)) {
+            if (! in_array($key, $reserved, true) && in_array($key, $allowedColumns, true)) {
                 $query->where($key, $value);
             }
         }
@@ -109,7 +112,7 @@ class PublicDataController extends Controller
             }
         }
 
-        $perPage = min((int)$request->get('per_page', 25), 100);
+        $perPage = min((int) $request->get('per_page', 25), 100);
         $paginated = $query->paginate($perPage);
 
         return $this->apiResponse(
@@ -119,11 +122,11 @@ class PublicDataController extends Controller
             200,
             [
                 'meta' => [
-                'current_page' => $paginated->currentPage(),
-                'per_page' => $paginated->perPage(),
-                'total' => $paginated->total(),
-                'last_page' => $paginated->lastPage(),
-            ],
+                    'current_page' => $paginated->currentPage(),
+                    'per_page' => $paginated->perPage(),
+                    'total' => $paginated->total(),
+                    'last_page' => $paginated->lastPage(),
+                ],
             ]
         );
     }
@@ -138,7 +141,7 @@ class PublicDataController extends Controller
         }
 
         $modelClass = self::MODEL_MAP[$table] ?? null;
-        if (!$modelClass) {
+        if (! $modelClass) {
             return $this->apiResponse(false, 'Model mapping tidak ditemukan untuk tabel ini.', null, 500);
         }
 
@@ -151,9 +154,9 @@ class PublicDataController extends Controller
             $record = $modelClass::create($request->only($allowedColumns));
 
             return $this->apiResponse(true, 'Data berhasil ditambahkan.', $record, 201);
-        }
-        catch (\Throwable $e) {
+        } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('PublicData API error', ['exception' => $e]);
+
             return $this->apiResponse(false, 'Terjadi kesalahan pada server.', null, 500);
         }
     }
@@ -170,7 +173,7 @@ class PublicDataController extends Controller
         $modelClass = self::MODEL_MAP[$table] ?? null;
         $record = $modelClass ? $modelClass::find($id) : null;
 
-        if (!$record) {
+        if (! $record) {
             return $this->apiResponse(false, 'Data tidak ditemukan.', null, 404);
         }
 
@@ -183,9 +186,9 @@ class PublicDataController extends Controller
             $record->update($request->only($allowedColumns));
 
             return $this->apiResponse(true, 'Data berhasil diupdate dan disinkronkan.', $record->fresh());
-        }
-        catch (\Throwable $e) {
+        } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('PublicData API error', ['exception' => $e]);
+
             return $this->apiResponse(false, 'Terjadi kesalahan pada server.', null, 500);
         }
     }
@@ -197,22 +200,22 @@ class PublicDataController extends Controller
         }
 
         // Fix: Prevent deletion of reference tables via API
-        if (!in_array($table, self::DELETABLE_TABLES, true)) {
+        if (! in_array($table, self::DELETABLE_TABLES, true)) {
             return $this->apiResponse(false, "Penghapusan data '{$table}' tidak diizinkan melalui API.", null, 403);
         }
 
         $modelClass = self::MODEL_MAP[$table] ?? null;
         $record = $modelClass ? $modelClass::find($id) : null;
 
-        if (!$record) {
+        if (! $record) {
             return $this->apiResponse(false, 'Data tidak ditemukan.', null, 404);
         }
 
         try {
             $record->delete();
+
             return $this->apiResponse(true, 'Data berhasil dihapus.');
-        }
-        catch (\Throwable $e) {
+        } catch (\Throwable $e) {
             return $this->apiResponse(false, 'Gagal menghapus data.', null, 500);
         }
     }
@@ -227,7 +230,7 @@ class PublicDataController extends Controller
         $model = $this->getModel($table);
 
         // Require model to exist - never introspect schema directly
-        if (!$model) {
+        if (! $model) {
             return [];
         }
 
@@ -239,6 +242,7 @@ class PublicDataController extends Controller
                 'table' => $table,
                 'model' => get_class($model),
             ]);
+
             return [];
         }
 
@@ -248,13 +252,13 @@ class PublicDataController extends Controller
     private function validateAccess(Request $request, string $table, string $permission): ?JsonResponse
     {
         $allowed = config('api_keys.allowed_tables', []);
-        if (!in_array($table, $allowed, true)) {
+        if (! in_array($table, $allowed, true)) {
             return $this->apiResponse(false, "Tabel '{$table}' tidak tersedia atau tidak diizinkan.", null, 403);
         }
 
         /** @var ApiKey $apiKey */
         $apiKey = $request->attributes->get('api_key');
-        if ($apiKey && !$apiKey->hasPermission($permission)) {
+        if ($apiKey && ! $apiKey->hasPermission($permission)) {
             return $this->apiResponse(false, "Izin '{$permission}' ditolak.", null, 403);
         }
 

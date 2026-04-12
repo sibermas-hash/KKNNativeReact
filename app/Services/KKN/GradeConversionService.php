@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\KKN;
 
 class GradeConversionService
@@ -19,7 +21,7 @@ class GradeConversionService
             $score >= 61 => ['grade' => 'C+', 'index' => 2.3],
             $score >= 56 => ['grade' => 'C',  'index' => 2.0],
             $score >= 42 => ['grade' => 'D',  'index' => 1.0],
-            default      => ['grade' => 'E',  'index' => 0.0],
+            default => ['grade' => 'E',  'index' => 0.0],
         };
     }
 

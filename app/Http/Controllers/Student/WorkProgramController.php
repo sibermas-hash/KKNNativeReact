@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
@@ -37,7 +39,7 @@ class WorkProgramController extends Controller
     {
         $mahasiswa = auth()->user()->mahasiswa;
         $pendaftaran = $mahasiswa->peserta()->where('status', 'approved')->first();
-        abort_if(!$pendaftaran || !$pendaftaran->kelompok_id, 403);
+        abort_if(! $pendaftaran || ! $pendaftaran->kelompok_id, 403);
 
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:200'],

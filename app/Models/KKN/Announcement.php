@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,6 +12,7 @@ class Announcement extends Model
     use HasFactory;
 
     protected $connection = 'kkn';
+
     protected $table = 'announcements';
 
     protected $fillable = [
@@ -41,7 +44,7 @@ class Announcement extends Model
 
         static::creating(function ($announcement) {
             if (empty($announcement->slug)) {
-                $announcement->slug = \Illuminate\Support\Str::slug($announcement->title) . '-' . uniqid();
+                $announcement->slug = \Illuminate\Support\Str::slug($announcement->title).'-'.uniqid();
             }
         });
     }

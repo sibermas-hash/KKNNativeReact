@@ -320,8 +320,8 @@ export default function StudentDailyReportCreate({ group, geoPolicy }: Props) {
                                 </h3>
                                 
                                 <div className="grid grid-cols-1 gap-4">
-                                    <GeoInfoItem label="Latitude" value={coordinateSummary.latitude} />
-                                    <GeoInfoItem label="Longitude" value={coordinateSummary.longitude} />
+                                    <GeoInfoItem label="Lintang" value={coordinateSummary.latitude} />
+                                    <GeoInfoItem label="Bujur" value={coordinateSummary.longitude} />
                                     <GeoInfoItem label="Akurasi" value={coordinateSummary.accuracy} color="emerald" />
                                     <GeoInfoItem label="Tersimpan" value={coordinateSummary.capturedAt} />
                                 </div>

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
@@ -7,16 +9,15 @@ use App\Http\Requests\Student\StoreRegistrationRequest;
 use App\Models\KKN\AntrianKkn;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
-use App\Models\KKN\SystemSetting;
+use App\Models\User;
+use App\Notifications\KKN\NewRegistrationForAdminNotification;
+use App\Notifications\KKN\RegistrationSubmittedNotification;
+use App\Services\KKN\KknRequirementService;
 use App\Services\RegistrationPortalService;
 use App\Services\RegistrationService;
-use App\Services\KKN\KknRequirementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Notifications\KKN\RegistrationSubmittedNotification;
-use App\Notifications\KKN\NewRegistrationForAdminNotification;
-use App\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -176,7 +177,7 @@ class RegistrationController extends Controller
                     $registrations->get($periodData['id']),
                     $queues->get($periodData['id']),
                 );
-                
+
                 // Add dynamic requirement descriptions
                 $periodData['requirement_info'] = $requirementService->describe($period);
 
@@ -225,9 +226,9 @@ class RegistrationController extends Controller
 
         // Validate KKN Scheme Requirements
         $requirementErrors = $requirementService->validate($mahasiswa, $period);
-        if (!empty($requirementErrors)) {
+        if (! empty($requirementErrors)) {
             return redirect()->back()->withErrors([
-                'period_id' => $requirementErrors
+                'period_id' => $requirementErrors,
             ]);
         }
 
@@ -310,9 +311,9 @@ class RegistrationController extends Controller
         $message = "Pendaftaran {$period->name} berhasil diajukan.";
 
         if ($governance['registration_mode'] === 'open') {
-            $message .= " Setelah admin menyetujui pendaftaran Anda, sistem akan menempatkan Anda otomatis ke kelompok yang sesuai di luar kabupaten/kota domisili.";
+            $message .= ' Setelah admin menyetujui pendaftaran Anda, sistem akan menempatkan Anda otomatis ke kelompok yang sesuai di luar kabupaten/kota domisili.';
         } else {
-            $message .= " Skema " . ($governance['jenis_label'] ?? 'Khusus') . " memerlukan tahap seleksi khusus. Mohon pantau status pendaftaran Anda secara berkala.";
+            $message .= ' Skema '.($governance['jenis_label'] ?? 'Khusus').' memerlukan tahap seleksi khusus. Mohon pantau status pendaftaran Anda secara berkala.';
         }
 
         return redirect()->back()->with('success', $message);

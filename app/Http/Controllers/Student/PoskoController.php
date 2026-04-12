@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
@@ -28,7 +30,7 @@ class PoskoController extends Controller
         $registration->load(['kelompok.lokasi', 'kelompok.posko.uploadedBy']);
         $group = $registration->kelompok;
         $posko = $group->posko;
-        
+
         // Status Otoritas
         $isLeader = $registration->role === 'Ketua';
 
@@ -66,22 +68,22 @@ class PoskoController extends Controller
 
         if ($user->hasRole('student')) {
             $registration = $this->getApprovedRegistration();
-            abort_if(!$registration || $registration->kelompok_id !== $posko->kelompok_id, 403, 'Anda tidak memiliki akses ke foto posko ini.');
-        } elseif ($user->hasRole('dpl') && !$user->hasRole('superadmin')) {
+            abort_if(! $registration || $registration->kelompok_id !== $posko->kelompok_id, 403, 'Anda tidak memiliki akses ke foto posko ini.');
+        } elseif ($user->hasRole('dpl') && ! $user->hasRole('superadmin')) {
             $dosen = $user->dosen;
-            abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+            abort_if(! $dosen, 403, 'Data dosen tidak ditemukan.');
 
             $isAssigned = $dosen->kelompokKkn()
                 ->where('kelompok_kkn.id', $posko->kelompok_id)
                 ->exists();
 
-            abort_if(!$isAssigned, 403, 'Anda tidak memiliki akses ke foto posko ini.');
+            abort_if(! $isAssigned, 403, 'Anda tidak memiliki akses ke foto posko ini.');
         } else {
             abort_unless($user->hasRole('superadmin'), 403, 'Anda tidak memiliki akses ke foto posko ini.');
         }
 
         [$disk, $path] = $this->resolvePhotoStorage($posko->photo_path);
-        abort_if(!$path, 404, 'Foto posko tidak ditemukan.');
+        abort_if(! $path, 404, 'Foto posko tidak ditemukan.');
 
         return Storage::disk($disk)->response($path, $posko->photo_name);
     }
@@ -91,7 +93,7 @@ class PoskoController extends Controller
         $registration = $this->getApprovedRegistration();
         abort_if(! $registration || ! $registration->kelompok, 403, 'Anda belum ditempatkan di kelompok.');
         $registration->loadMissing('kelompok.lokasi');
-        
+
         // Otoritas Keamanan: Hanya Ketua yang boleh Update Lokasi Posko
         abort_if($registration->role !== 'Ketua', 403, 'Hanya Ketua Kelompok yang diizinkan memperbarui data posko.');
 
@@ -287,7 +289,7 @@ class PoskoController extends Controller
             $response = Http::timeout(10)
                 ->acceptJson()
                 ->withHeaders([
-                    'User-Agent' => config('app.name', 'SIM KKN') . ' PoskoVerifier/1.0',
+                    'User-Agent' => config('app.name', 'SIM KKN').' PoskoVerifier/1.0',
                 ])
                 ->get('https://nominatim.openstreetmap.org/reverse', [
                     'format' => 'jsonv2',
@@ -384,7 +386,7 @@ class PoskoController extends Controller
 
     private function resolvePhotoStorage(?string $path): array
     {
-        if (!$path) {
+        if (! $path) {
             return ['local', null];
         }
 
@@ -401,7 +403,7 @@ class PoskoController extends Controller
 
     private function deletePhotoFromKnownDisks(?string $path): void
     {
-        if (!$path) {
+        if (! $path) {
             return;
         }
 

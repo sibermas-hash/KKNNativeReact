@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -77,7 +79,7 @@ class LokasiController extends Controller
             'file' => ['required', 'file', 'mimes:xlsx,xls,csv,txt', 'max:10240'],
         ]);
 
-        $import = new LokasiWilayahImport();
+        $import = new LokasiWilayahImport;
         Excel::import($import, $validated['file']);
 
         return redirect()->back()->with(

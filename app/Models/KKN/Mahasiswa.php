@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use App\Models\User;
@@ -13,6 +15,7 @@ class Mahasiswa extends Model
     use HasFactory;
 
     protected $connection = 'kkn';
+
     protected $table = 'mahasiswa';
 
     protected $fillable = [
@@ -90,5 +93,4 @@ class Mahasiswa extends Model
     {
         return $this->hasMany(NilaiKkn::class, 'user_id', 'user_id');
     }
-
 }

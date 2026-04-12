@@ -33,6 +33,7 @@ class PeriodeFactory extends Factory
             'registration_start' => $registrationStart->toDateString(),
             'registration_end' => $registrationEnd->toDateString(),
             'is_active' => false,
+            'current_phase' => 'registration',
         ];
     }
 

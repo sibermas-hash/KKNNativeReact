@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -18,7 +20,7 @@ class AuthenticatedSessionController extends Controller
     public function create(Request $request): Response
     {
         // Ensure fresh session for login page to prevent stale CSRF tokens
-        if (!$request->session()->isStarted()) {
+        if (! $request->session()->isStarted()) {
             $request->session()->start();
         }
 
@@ -62,7 +64,7 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         // Ensure session is started and regenerate token for security
-        if (!$request->session()->isStarted()) {
+        if (! $request->session()->isStarted()) {
             $request->session()->start();
         }
 
@@ -70,7 +72,7 @@ class AuthenticatedSessionController extends Controller
         $captchaHash = $request->session()->get('captcha_hash');
 
         // Verify captcha hash existence and strict TTL enforcement
-        if (!$captchaHash || $this->captchaExpired($request) || !$this->verifyCaptchaAnswer($userAnswer, $captchaHash)) {
+        if (! $captchaHash || $this->captchaExpired($request) || ! $this->verifyCaptchaAnswer($userAnswer, $captchaHash)) {
             $this->refreshCaptcha($request);
 
             // Regenerate CSRF token to prevent "page expired" loop
@@ -97,7 +99,7 @@ class AuthenticatedSessionController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => config('app.debug') ? $e->getTraceAsString() : null,
             ]);
-            
+
             $this->refreshCaptcha($request);
 
             // Regenerate CSRF token on unexpected error
@@ -191,11 +193,12 @@ class AuthenticatedSessionController extends Controller
      */
     private function verifyCaptchaAnswer(?string $userAnswer, string $captchaHash): bool
     {
-        if ($userAnswer === null || !is_numeric($userAnswer)) {
+        if ($userAnswer === null || ! is_numeric($userAnswer)) {
             return false;
         }
-        
+
         $userHash = $this->hashCaptchaAnswer((int) $userAnswer);
+
         return hash_equals($captchaHash, $userHash);
     }
 }

@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\KKN\Laporan;
-use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class ReportManagementService
 {
@@ -58,7 +58,7 @@ class ReportManagementService
         string $title,
         ?string $description = null
     ): Laporan {
-        if (!isset(self::REPORT_TYPES[$type])) {
+        if (! isset(self::REPORT_TYPES[$type])) {
             throw new \InvalidArgumentException("Jenis laporan tidak valid: {$type}");
         }
 
@@ -70,13 +70,13 @@ class ReportManagementService
         }
 
         $extension = $file->getClientOriginalExtension();
-        if (!in_array(strtolower($extension), $config['allowed_types'])) {
+        if (! in_array(strtolower($extension), $config['allowed_types'])) {
             $allowedTypes = implode(', ', $config['allowed_types']);
             throw new \InvalidArgumentException("Jenis file tidak valid. Jenis yang diizinkan: {$allowedTypes}");
         }
 
         return DB::transaction(function () use ($userId, $groupId, $type, $file, $title, $description) {
-            $filename = "{$userId}_{$type}_" . now()->format('YmdHis') . "." . $file->getClientOriginalExtension();
+            $filename = "{$userId}_{$type}_".now()->format('YmdHis').'.'.$file->getClientOriginalExtension();
 
             // Issue 9 Fix: Store in private storage instead of public
             $path = $file->storeAs(
@@ -111,9 +111,9 @@ class ReportManagementService
         ?string $feedback = null
     ): Laporan {
         $allowedActions = ['approved', 'rejected', 'revision_required'];
-        
-        if (!in_array($action, $allowedActions)) {
-            throw new \InvalidArgumentException("Tindakan tidak valid");
+
+        if (! in_array($action, $allowedActions)) {
+            throw new \InvalidArgumentException('Tindakan tidak valid');
         }
 
         return DB::transaction(function () use ($reportId, $reviewerId, $action, $feedback) {
@@ -143,7 +143,7 @@ class ReportManagementService
         $progress = [];
         foreach (self::REPORT_TYPES as $type => $config) {
             $report = $reports->get($type);
-            
+
             $progress[] = [
                 'type' => $type,
                 'name' => $config['name'],

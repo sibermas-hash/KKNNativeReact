@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\Mahasiswa;
@@ -23,6 +24,11 @@ class MultiDplSampleSeederV2 extends Seeder
 {
     public function run()
     {
+        if (!app()->environment('local', 'testing')) {
+            $this->command->error('This seeder can only run in local or testing environment.');
+            return;
+        }
+
         // NO Transaction here because of cross-connection issues
         $this->command->info('Start seeding Multi-DPL Sample Data...');
 
@@ -84,7 +90,7 @@ class MultiDplSampleSeederV2 extends Seeder
         [
             'name' => 'Dr. Sutrisno (Ketua)',
             'username' => 'dplketua',
-            'password' => bcrypt('password'),
+            'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', Str::random(32))),
             'is_active' => true,
             'phone' => '081234567890',
         ]
@@ -112,7 +118,7 @@ class MultiDplSampleSeederV2 extends Seeder
         [
             'name' => 'Budi Santoso, M.Kom (Anggota)',
             'username' => 'dplanggota',
-            'password' => bcrypt('password'),
+            'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', Str::random(32))),
             'is_active' => true,
             'phone' => '081234567891',
         ]
@@ -164,7 +170,7 @@ class MultiDplSampleSeederV2 extends Seeder
             [
                 'name' => "Mahasiswa Sample $i",
                 'username' => "mhs$i" . rand(100, 999),
-                'password' => bcrypt('password'),
+                'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', Str::random(32))),
                 'is_active' => true,
             ]
             );

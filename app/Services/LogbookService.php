@@ -1,12 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\KKN\KegiatanKkn;
-use App\Models\KKN\KelompokKkn;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class LogbookService
 {
@@ -43,9 +42,9 @@ class LogbookService
 
             // If there are files, we can handle them
             foreach ($documentationFiles as $file) {
-                $filename = time() . '_' . $mahasiswaId . '_' . $file->getClientOriginalName();
+                $filename = time().'_'.$mahasiswaId.'_'.$file->getClientOriginalName();
                 $path = $file->storeAs("daily_reports/{$kelompokId}", $filename, 'public');
-                
+
                 if (method_exists($kegiatan, 'fileKegiatan')) {
                     $kegiatan->fileKegiatan()->create(['file_path' => $path]);
                 }

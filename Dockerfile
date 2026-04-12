@@ -44,4 +44,5 @@ RUN groupadd -g 1000 www \
 
 USER www
 EXPOSE 9000
+RUN echo "expose_php = Off" >> /usr/local/etc/php/conf.d/docker-php.ini
 CMD ["php-fpm"]

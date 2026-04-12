@@ -266,8 +266,8 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                                 </h2>
 
                                 <div className="space-y-3">
-                                    <GeoInfoItem label="Latitude" value={coordinateSummary.latitude} />
-                                    <GeoInfoItem label="Longitude" value={coordinateSummary.longitude} />
+                                    <GeoInfoItem label="Lintang" value={coordinateSummary.latitude} />
+                                    <GeoInfoItem label="Bujur" value={coordinateSummary.longitude} />
                                     <GeoInfoItem label="Akurasi" value={coordinateSummary.accuracy} color="emerald" />
                                 </div>
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\KKN\Mahasiswa;
@@ -15,7 +17,7 @@ class EligibilityService
     public function checkEligibility(Mahasiswa $mahasiswa, ?int $periodeId = null): array
     {
         $periode = Periode::find($periodeId) ?? Periode::getActivePeriod();
-        
+
         $checks = [
             'registration_window' => $this->checkRegistrationWindow($periode),
             'no_prior_completion' => $this->checkNoPriorCompletion($mahasiswa),
@@ -30,20 +32,20 @@ class EligibilityService
 
         // Apply dispensasi bypass — override failed checks if student has active dispensasi
         $bypassed = \App\Models\KKN\DispensasiKkn::getBypassedRequirements($mahasiswa->nim, $periodeId);
-        $hasDispensasi = !empty($bypassed);
-        
+        $hasDispensasi = ! empty($bypassed);
+
         if ($hasDispensasi) {
             foreach ($bypassed as $key) {
-                if (isset($checks[$key]) && !$checks[$key]['passed']) {
+                if (isset($checks[$key]) && ! $checks[$key]['passed']) {
                     $checks[$key]['passed'] = true;
-                    $checks[$key]['message'] = ($checks[$key]['message'] ?? '') . ' (DISPENSASI)';
+                    $checks[$key]['message'] = ($checks[$key]['message'] ?? '').' (DISPENSASI)';
                     $checks[$key]['dispensasi'] = true;
                 }
             }
         }
 
-        $issues = array_filter($checks, fn($check) => !$check['passed']);
-        
+        $issues = array_filter($checks, fn ($check) => ! $check['passed']);
+
         return [
             'mahasiswa_id' => $mahasiswa->id,
             'nim' => $mahasiswa->nim,
@@ -51,8 +53,8 @@ class EligibilityService
             'sks_completed' => $mahasiswa->sks_completed,
             'gpa' => $mahasiswa->gpa,
             'is_bta_ppi_passed' => $mahasiswa->is_bta_ppi_passed,
-            'has_health_certificate' => !empty($mahasiswa->health_certificate_path),
-            'has_parent_permission' => !empty($mahasiswa->parent_permission_path),
+            'has_health_certificate' => ! empty($mahasiswa->health_certificate_path),
+            'has_parent_permission' => ! empty($mahasiswa->parent_permission_path),
             'checks' => $checks,
             'is_eligible' => empty($issues),
             'issues' => array_values($issues),
@@ -66,7 +68,7 @@ class EligibilityService
      */
     private function checkRegistrationWindow(?Periode $periode): array
     {
-        if (!$periode) {
+        if (! $periode) {
             return ['passed' => false, 'key' => 'no_active_period', 'message' => 'Tidak ada periode KKN aktif'];
         }
 
@@ -76,8 +78,8 @@ class EligibilityService
         return [
             'passed' => $withinWindow,
             'key' => 'registration_window',
-            'message' => $withinWindow 
-                ? 'Dalam jadwal registrasi' 
+            'message' => $withinWindow
+                ? 'Dalam jadwal registrasi'
                 : 'Di luar jadwal registrasi',
             'registration_start' => $periode->registration_start?->format('d M Y'),
             'registration_end' => $periode->registration_end?->format('d M Y'),
@@ -94,10 +96,10 @@ class EligibilityService
             ->exists();
 
         return [
-            'passed' => !$hasCompleted,
+            'passed' => ! $hasCompleted,
             'key' => 'no_prior_completion',
-            'message' => $hasCompleted 
-                ? 'Sudah lulus KKN sebelumnya' 
+            'message' => $hasCompleted
+                ? 'Sudah lulus KKN sebelumnya'
                 : 'Belum pernah lulus KKN',
         ];
     }
@@ -108,16 +110,16 @@ class EligibilityService
     private function checkMinimumSKS(Mahasiswa $mahasiswa, ?Periode $periode = null): array
     {
         // Prioritaskan dari Master Data Jenis KKN (jika ada)
-        $minSks = $periode?->jenisKkn?->min_sks 
+        $minSks = $periode?->jenisKkn?->min_sks
                 ?? SystemSetting::get('min_sks_registration', 100);
-                
+
         $hasEnoughSks = ($mahasiswa->sks_completed ?? 0) >= $minSks;
 
         return [
             'passed' => $hasEnoughSks,
             'key' => 'min_sks',
-            'message' => $hasEnoughSks 
-                ? "SKS mencukupi ({$mahasiswa->sks_completed}/{$minSks})" 
+            'message' => $hasEnoughSks
+                ? "SKS mencukupi ({$mahasiswa->sks_completed}/{$minSks})"
                 : "SKS tidak mencukupi ({$mahasiswa->sks_completed}/{$minSks})",
             'current_sks' => $mahasiswa->sks_completed,
             'required_sks' => $minSks,
@@ -130,13 +132,13 @@ class EligibilityService
     private function checkMinimumGPA(Mahasiswa $mahasiswa, ?Periode $periode = null): array
     {
         // Prioritaskan dari Master Data Jenis KKN (jika ada)
-        $minGpa = $periode?->jenisKkn ? (float)$periode->jenisKkn->min_gpa : null;
+        $minGpa = $periode?->jenisKkn ? (float) $periode->jenisKkn->min_gpa : null;
         $isDynamic = $minGpa !== null && $minGpa > 0;
 
-        if (!$isDynamic) {
+        if (! $isDynamic) {
             $minGpaEnabled = SystemSetting::get('enable_gpa_requirement', false);
-            
-            if (!$minGpaEnabled) {
+
+            if (! $minGpaEnabled) {
                 return [
                     'passed' => true,
                     'key' => 'min_gpa',
@@ -154,8 +156,8 @@ class EligibilityService
         return [
             'passed' => $hasEnoughGpa,
             'key' => 'min_gpa',
-            'message' => $hasEnoughGpa 
-                ? "IPK mencukupi ({$studentGpa}/{$minGpa})" 
+            'message' => $hasEnoughGpa
+                ? "IPK mencukupi ({$studentGpa}/{$minGpa})"
                 : "IPK tidak mencukupi ({$studentGpa}/{$minGpa})",
             'current_gpa' => $studentGpa,
             'required_gpa' => $minGpa,
@@ -182,10 +184,12 @@ class EligibilityService
      */
     private function checkProgramProdiRestriction(Mahasiswa $mahasiswa, ?Periode $periode): array
     {
-        if (!$periode || !$periode->jenisKkn) return ['passed' => true, 'key' => 'program_prodi', 'message' => 'N/A'];
+        if (! $periode || ! $periode->jenisKkn) {
+            return ['passed' => true, 'key' => 'program_prodi', 'message' => 'N/A'];
+        }
 
         $kknTypeLabel = strtolower($periode->jenisKkn->name);
-        
+
         if (str_contains($kknTypeLabel, 'zakat')) {
             $mahasiswa->loadMissing('prodi');
             $prodiName = strtolower($mahasiswa->prodi?->nama ?? '');
@@ -207,11 +211,13 @@ class EligibilityService
      */
     private function checkPersonalStatusMandate(Mahasiswa $mahasiswa, ?Periode $periode): array
     {
-        if (!$periode || !$periode->jenisKkn) return ['passed' => true, 'key' => 'personal_status', 'message' => 'N/A'];
+        if (! $periode || ! $periode->jenisKkn) {
+            return ['passed' => true, 'key' => 'personal_status', 'message' => 'N/A'];
+        }
 
         $specialPrograms = ['nusantara', 'internasional', 'kolaborasi', 'tematik', 'katana', 'zakat'];
         $kknTypeLabel = strtolower($periode->jenisKkn->name);
-        
+
         $isSpecial = false;
         foreach ($specialPrograms as $program) {
             if (str_contains($kknTypeLabel, $program)) {
@@ -221,7 +227,7 @@ class EligibilityService
         }
 
         if ($isSpecial) {
-             return [
+            return [
                 'passed' => true, // Notice only, manual verification by Admin later
                 'key' => 'personal_status',
                 'message' => 'WAJIB: Belum Menikah & Tidak Sedang Hamil/Menyusui (Khusus Perempuan)',
@@ -236,15 +242,15 @@ class EligibilityService
      */
     private function checkDocuments(Mahasiswa $mahasiswa): array
     {
-        $hasHealthCert = !empty($mahasiswa->health_certificate_path);
-        $hasParentPerm = !empty($mahasiswa->parent_permission_path);
+        $hasHealthCert = ! empty($mahasiswa->health_certificate_path);
+        $hasParentPerm = ! empty($mahasiswa->parent_permission_path);
         $allDocs = $hasHealthCert && $hasParentPerm;
 
         return [
             'passed' => $allDocs,
             'key' => 'documents',
-            'message' => $allDocs 
-                ? 'Dokumen lengkap' 
+            'message' => $allDocs
+                ? 'Dokumen lengkap'
                 : 'Dokumen tidak lengkap',
             'has_health_certificate' => $hasHealthCert,
             'has_parent_permission' => $hasParentPerm,
@@ -258,16 +264,16 @@ class EligibilityService
     {
         $query = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
             ->whereIn('status', ['pending', 'approved']);
-        
+
         // FIX C3: Exclude current period to avoid false positives
         if ($currentPeriodeId) {
             $query->where('period_id', '!=', $currentPeriodeId);
         }
-        
+
         $hasActive = $query->exists();
 
         return [
-            'passed' => !$hasActive,
+            'passed' => ! $hasActive,
             'key' => 'no_active_registration',
             'message' => $hasActive
                 ? 'Masih memiliki pendaftaran aktif di periode lain'
@@ -306,8 +312,8 @@ class EligibilityService
             'total' => $students->count(),
             'eligible_count' => count($eligible),
             'not_eligible_count' => count($notEligible),
-            'eligibility_rate' => $students->count() > 0 
-                ? round((count($eligible) / $students->count()) * 100, 1) 
+            'eligibility_rate' => $students->count() > 0
+                ? round((count($eligible) / $students->count()) * 100, 1)
                 : 0,
         ];
     }

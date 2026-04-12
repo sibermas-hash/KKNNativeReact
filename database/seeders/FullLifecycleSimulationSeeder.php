@@ -10,6 +10,11 @@ class FullLifecycleSimulationSeeder extends Seeder
 {
     public function run(): void
     {
+        if (!app()->environment('local', 'testing')) {
+            $this->command->error('This seeder can only run in local or testing environment.');
+            return;
+        }
+
         // 1. Ambil Periode 56 & Lokasi & DPL
         $periode = DB::table('periode')->where('periode', 56)->where('jenis', 'KKN Reguler')->first();
         if (!$periode) return;

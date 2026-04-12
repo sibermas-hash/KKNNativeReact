@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\KKN\KelompokKkn;
@@ -12,8 +14,7 @@ class AutomaticGroupPlacementService
 {
     public function __construct(
         private readonly GroupSelectionService $groupSelectionService,
-    ) {
-    }
+    ) {}
 
     public function selectGroupForStudent(Mahasiswa $mahasiswa, int $periodId): KelompokKkn
     {

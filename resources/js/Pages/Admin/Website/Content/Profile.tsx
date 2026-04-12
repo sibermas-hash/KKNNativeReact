@@ -198,7 +198,7 @@ export default function ProfileContentPage({ content }: Props) {
                                     <motion.div key="default"><Save size={24} strokeWidth={3} className="group-hover:animate-pulse" /></motion.div>
                                 )}
                             </AnimatePresence>
-                            {form.processing ? 'COMMITING_IDENTITY...' : 'DEPLOY_NARRATIVE'}
+                            {form.processing ? 'MENERAPKAN_NARASI...' : 'TERAPKAN_NARASI'}
                         </Button>
                     </motion.div>
                 </form>

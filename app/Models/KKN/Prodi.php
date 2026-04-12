@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,6 +14,7 @@ class Prodi extends Model
     use HasFactory;
 
     protected $connection = 'kkn';
+
     protected $table = 'prodi';
 
     protected $fillable = [
@@ -29,11 +32,11 @@ class Prodi extends Model
 
     public function fakultas(): BelongsTo
     {
-        return $this->belongsTo(Fakultas::class , 'faculty_id');
+        return $this->belongsTo(Fakultas::class, 'faculty_id');
     }
 
     public function mahasiswa(): HasMany
     {
-        return $this->hasMany(Mahasiswa::class , 'program_id');
+        return $this->hasMany(Mahasiswa::class, 'program_id');
     }
 }

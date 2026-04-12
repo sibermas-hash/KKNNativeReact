@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Models\KKN\Workshop;
 use App\Models\KKN\PesertaWorkshop;
+use App\Models\KKN\Workshop;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -16,6 +18,7 @@ class WorkshopService
     {
         $this->gradingService = $gradingService;
     }
+
     /**
      * Create a new workshop
      */
@@ -94,7 +97,7 @@ class WorkshopService
             $workshop = Workshop::lockForUpdate()->findOrFail($workshopId);
 
             if ($workshop->status !== 'scheduled') {
-                throw new \InvalidArgumentException("Pembekalan belum dibuka untuk pendaftaran");
+                throw new \InvalidArgumentException('Pembekalan belum dibuka untuk pendaftaran');
             }
 
             // Check if already registered
@@ -103,15 +106,15 @@ class WorkshopService
                 ->first();
 
             if ($existing) {
-                throw new \InvalidArgumentException("Anda sudah terdaftar pada pembekalan ini");
+                throw new \InvalidArgumentException('Anda sudah terdaftar pada pembekalan ini');
             }
 
             // Check if workshop is full (inside transaction with lock)
             if ($workshop->max_participants) {
                 $currentParticipants = PesertaWorkshop::where('workshop_id', $workshopId)->count();
-                
+
                 if ($currentParticipants >= $workshop->max_participants) {
-                    throw new \InvalidArgumentException("Kuota pembekalan sudah penuh");
+                    throw new \InvalidArgumentException('Kuota pembekalan sudah penuh');
                 }
             }
 
@@ -133,19 +136,19 @@ class WorkshopService
 
             // 1. Validate Secret Token
             if ($workshop->active_token !== $token) {
-                throw new \InvalidArgumentException("Kode rahasia absensi salah atau sudah kadaluwarsa.");
+                throw new \InvalidArgumentException('Kode rahasia absensi salah atau sudah kadaluwarsa.');
             }
 
             // 2. Validate Geofence (GPS)
             if ($workshop->latitude && $workshop->longitude) {
-                $distance = $this->calculateDistance($lat, $lng, (float)$workshop->latitude, (float)$workshop->longitude);
-                
+                $distance = $this->calculateDistance($lat, $lng, (float) $workshop->latitude, (float) $workshop->longitude);
+
                 // Add 10% tolerance for GPS jitter (min 5 meters)
                 $tolerance = max(5, $workshop->radius_meters * 0.1);
                 $maxAllowedDistance = $workshop->radius_meters + $tolerance;
 
                 if ($distance > $maxAllowedDistance) {
-                    throw new \InvalidArgumentException("Posisi Anda berada di luar radius lokasi pembekalan (" . round($distance) . "m).");
+                    throw new \InvalidArgumentException('Posisi Anda berada di luar radius lokasi pembekalan ('.round($distance).'m).');
                 }
             }
 
@@ -157,7 +160,7 @@ class WorkshopService
                 ->exists();
 
             if ($deviceUsed) {
-                throw new \InvalidArgumentException("Perangkat ini sudah digunakan untuk melakukan absensi NIM lain. Akses ditolak.");
+                throw new \InvalidArgumentException('Perangkat ini sudah digunakan untuk melakukan absensi NIM lain. Akses ditolak.');
             }
 
             $participant = PesertaWorkshop::where('workshop_id', $workshopId)
@@ -190,6 +193,7 @@ class WorkshopService
              cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
              sin($dLng / 2) * sin($dLng / 2);
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
         return $earthRadius * $c;
     }
 
@@ -233,7 +237,7 @@ class WorkshopService
 
             foreach ($participants as $participant) {
                 $attended = in_array($participant->user_id, $attendedUserIds);
-                
+
                 $participant->update([
                     'attendance_status' => $attended ? 'attended' : 'absent',
                     'checked_in_at' => $attended ? now() : null,
@@ -278,9 +282,9 @@ class WorkshopService
             ->setPaper('a4', 'landscape');
 
         // Save to storage
-        $filename = "certificate_" . ($user->mahasiswa?->nim ?? $user->id) . "_{$workshop->id}_" . time() . ".pdf";
+        $filename = 'certificate_'.($user->mahasiswa?->nim ?? $user->id)."_{$workshop->id}_".time().'.pdf';
         $path = "certificates/workshops/{$workshop->id}/{$filename}";
-        
+
         Storage::disk('public')->put($path, $pdf->output());
 
         // Update participant record
@@ -300,7 +304,7 @@ class WorkshopService
     {
         $workshop = $participant->workshop;
         $date = now()->format('Ymd');
-        
+
         return "B-449/Un.19/K.LPPM/P.{$date}/{$workshop->id}";
     }
 
@@ -325,8 +329,7 @@ class WorkshopService
         bool $includeParticipants = false,
         bool $includeAllStatuses = false,
         ?int $periodId = null
-    ): array
-    {
+    ): array {
         $query = Workshop::where('workshop_date', '>=', now()->toDateString())
             ->withCount('participants');
 
@@ -389,7 +392,7 @@ class WorkshopService
                         'name' => $workshop->periode->name,
                     ]
                     : null,
-                'is_full' => $workshop->max_participants 
+                'is_full' => $workshop->max_participants
                     ? $workshop->participants_count >= $workshop->max_participants
                     : false,
                 'can_edit' => $includeParticipants && $workshop->status === 'scheduled' && ! $hasRecordedAttendance,

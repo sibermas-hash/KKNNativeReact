@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\KKN;
 
 use App\Models\KKN\KelompokKkn;
@@ -19,8 +21,7 @@ class RegistrationApprovalService
     public function __construct(
         private readonly GroupSelectionService $groupSelectionService,
         private readonly AutomaticGroupPlacementService $automaticGroupPlacementService,
-    ) {
-    }
+    ) {}
 
     /**
      * Prepare group placement for approval with validation.
@@ -109,6 +110,7 @@ class RegistrationApprovalService
                     'rejection_reason' => $reason,
                     'last_rejected_at' => now(),
                     'last_rejected_by' => $rejectedBy,
+                    'updated_at' => now(),
                 ]);
         });
     }
@@ -214,7 +216,7 @@ class RegistrationApprovalService
 
         // Path traversal prevention
         $storageRoot = Storage::disk('local')->path('');
-        $fullPath = realpath($storageRoot . '/' . $path);
+        $fullPath = realpath($storageRoot.'/'.$path);
 
         if (! $fullPath) {
             throw ValidationException::withMessages([
@@ -226,7 +228,7 @@ class RegistrationApprovalService
         $allowedPrefixes = ['health-certificates', 'parent-permissions'];
         $isAllowed = false;
         foreach ($allowedPrefixes as $prefix) {
-            if (str_starts_with($fullPath, realpath($storageRoot . '/' . $prefix))) {
+            if (str_starts_with($fullPath, realpath($storageRoot.'/'.$prefix))) {
                 $isAllowed = true;
                 break;
             }

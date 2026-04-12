@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,6 +17,7 @@ class KelompokKkn extends Model
     use HasFactory, SoftDeletes;
 
     protected $connection = 'kkn';
+
     protected $table = 'kelompok_kkn';
 
     protected $fillable = [
@@ -36,10 +39,12 @@ class KelompokKkn extends Model
     public function getKknType(): \App\Enums\KknType
     {
         $period = $this->periode;
-        if (!$period) return \App\Enums\KknType::REGULER;
+        if (! $period) {
+            return \App\Enums\KknType::REGULER;
+        }
 
-        return $period->jenis instanceof \App\Enums\KknType 
-            ? $period->jenis 
+        return $period->jenis instanceof \App\Enums\KknType
+            ? $period->jenis
             : \App\Enums\KknType::tryFrom($period->jenis) ?? \App\Enums\KknType::REGULER;
     }
 
@@ -50,12 +55,12 @@ class KelompokKkn extends Model
 
     public function periode(): BelongsTo
     {
-        return $this->belongsTo(Periode::class , 'period_id');
+        return $this->belongsTo(Periode::class, 'period_id');
     }
 
     public function lokasi(): BelongsTo
     {
-        return $this->belongsTo(Lokasi::class , 'location_id');
+        return $this->belongsTo(Lokasi::class, 'location_id');
     }
 
     public function dpl(): BelongsTo
@@ -101,7 +106,7 @@ class KelompokKkn extends Model
     // Relationship: A group can have multiple DPLs (Many-to-Many)
     public function dosen(): BelongsToMany
     {
-        return $this->belongsToMany(Dosen::class , 'dpl_kelompok', 'kelompok_kkn_id', 'dosen_id')
+        return $this->belongsToMany(Dosen::class, 'dpl_kelompok', 'kelompok_kkn_id', 'dosen_id')
             ->withPivot('role')
             ->withTimestamps();
     }
@@ -121,7 +126,7 @@ class KelompokKkn extends Model
     public function syncKetuaFlatColumns(): void
     {
         $ketua = $this->dosen()->wherePivot('role', 'Ketua')->first();
-        
+
         if ($ketua) {
             $dplPeriod = DplPeriod::where('dosen_id', $ketua->id)
                 ->where('period_id', $this->period_id)
@@ -129,12 +134,12 @@ class KelompokKkn extends Model
 
             $this->updateQuietly([
                 'dpl_id' => $ketua->id,
-                'dpl_period_id' => $dplPeriod?->id
+                'dpl_period_id' => $dplPeriod?->id,
             ]);
         } else {
             $this->updateQuietly([
                 'dpl_id' => null,
-                'dpl_period_id' => null
+                'dpl_period_id' => null,
             ]);
         }
     }

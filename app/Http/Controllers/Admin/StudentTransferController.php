@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Services\PeriodContextService;
-use App\Services\StudentTransferService;
+use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
-use App\Models\KKN\KelompokKkn;
+use App\Services\PeriodContextService;
+use App\Services\StudentTransferService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -33,7 +35,7 @@ class StudentTransferController extends Controller
             ? PesertaKkn::with(['mahasiswa.user', 'kelompok.location', 'periode'])
                 ->where('period_id', $periodId)
                 ->whereNotIn('status', ['rejected', 'pending'])
-                ->when($request->input('search'), fn($q, $search) => $q->search($search))
+                ->when($request->input('search'), fn ($q, $search) => $q->search($search))
                 ->orderBy('created_at', 'desc')
                 ->paginate(15)
                 ->withQueryString()
@@ -45,23 +47,24 @@ class StudentTransferController extends Controller
 
         return Inertia::render('Admin/Registrations/Transfer', [
             'students' => $students ? $this->formatPaginator($students) : [
-                'data' => [], 
+                'data' => [],
                 'meta' => [
-                    'total' => 0, 
-                    'current_page' => 1, 
+                    'total' => 0,
+                    'current_page' => 1,
                     'per_page' => 15,
                     'last_page' => 1,
                     'links' => [],
                     'from' => 0,
                     'to' => 0,
                     'path' => $request->url(),
-                ]
+                ],
             ],
             'targetPeriods' => $targetPeriods,
             'filters' => $request->only('search'),
             'title' => 'Transfer Peserta',
         ]);
     }
+
     public function transfer(Request $request)
     {
         Gate::authorize('transfer-students');
@@ -85,6 +88,7 @@ class StudentTransferController extends Controller
             return back()->with('success', 'Peserta berhasil dipindahkan.');
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Student transfer failed', ['error' => $e->getMessage()]);
+
             return back()->with('error', 'Transfer peserta gagal. Silakan coba lagi.');
         }
     }

@@ -1,20 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Services\DashboardStatisticsService;
-use App\Services\KKN\IntelligenceService;
-use App\Services\GroupSelectionService;
-use App\Services\PeriodContextService;
 use App\Models\KKN\KegiatanKkn;
+use App\Models\KKN\Periode;
+use App\Services\DashboardStatisticsService;
+use App\Services\GroupSelectionService;
+use App\Services\KKN\IntelligenceService;
+use App\Services\PeriodContextService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Http\Request;
-use App\Models\KKN\Periode;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
 
 class DashboardController extends Controller
 {
@@ -30,7 +32,7 @@ class DashboardController extends Controller
 
         // Fetch active periods for the switcher
         $activePeriods = Periode::where('is_active', true)->latest()->get();
-        
+
         // Get selected period from request or default to the primary active one
         $periodId = $request->query('period_id') ?? ($this->contextService->getActivePeriodId() ?? $this->contextService->getDefaultPeriodId());
         $periodData = $periodId ? Periode::find($periodId) : $this->contextService->getActivePeriodData();
@@ -50,7 +52,7 @@ class DashboardController extends Controller
                 'grading' => ['key' => 'grading', 'label' => 'Masa Penilaian', 'color' => 'amber'],
                 'finished' => ['key' => 'finished', 'label' => 'Selesai', 'color' => 'slate'],
             ];
-            
+
             $currentPhase = $phaseLabels[$period->current_phase] ?? $phaseLabels['upcoming'];
         }
 
@@ -85,6 +87,7 @@ class DashboardController extends Controller
                 }
                 $facultyId = $user?->hasRole('faculty_admin') ? $user?->faculty_id : null;
                 $statistics = $this->statsService->getPeriodStatistics($periodId, $facultyId);
+
                 return $statistics['sdg_distribution'];
             }),
             'recentRegistrations' => Inertia::defer(function () use ($periodId) {
@@ -103,7 +106,7 @@ class DashboardController extends Controller
                 if (! $periodId) {
                     return [];
                 }
-                
+
                 $query = \App\Models\KKN\KelompokKkn::query()
                     ->where('period_id', $periodId)
                     ->with('lokasi')
@@ -111,11 +114,11 @@ class DashboardController extends Controller
                         'peserta as peserta_count' => fn ($q) => $q
                             ->whereIn('status', GroupSelectionService::activeRegistrationStatuses()),
                     ])
-                    ->whereHas('lokasi', fn($q) => $q->whereNotNull('latitude')->whereNotNull('longitude'));
+                    ->whereHas('lokasi', fn ($q) => $q->whereNotNull('latitude')->whereNotNull('longitude'));
 
                 return \App\Services\KKN\FacultyScopeService::apply($query, 'peserta.mahasiswa.faculty_id')
                     ->get()
-                    ->map(fn($group) => [
+                    ->map(fn ($group) => [
                         'id' => $group->id,
                         'name' => $group->nama_kelompok,
                         'lat' => (float) $group->lokasi->latitude,
@@ -128,14 +131,14 @@ class DashboardController extends Controller
                 'is_faculty_admin' => $isFacultyAdmin,
                 'can_manage_public_content' => $user?->hasAnyRole(['superadmin', 'admin']) ?? false,
             ],
-            'activity_trend' => Inertia::defer(function () use ($user) {
+            'activity_trend' => Inertia::defer(function () {
                 $days = collect(range(0, 13))->map(fn ($i) => now()->subDays($i)->format('Y-m-d'))->reverse();
-                
+
                 $query = KegiatanKkn::query()
                     ->where('date', '>=', now()->subDays(14));
 
                 $trends = \App\Services\KKN\FacultyScopeService::apply($query, 'mahasiswa.faculty_id')
-                    ->select(DB::raw("date as date"), DB::raw('count(*) as count'))
+                    ->select(DB::raw('date as date'), DB::raw('count(*) as count'))
                     ->groupBy('date')
                     ->get()
                     ->pluck('count', 'date');
@@ -157,12 +160,12 @@ class DashboardController extends Controller
             'current_phase' => $currentPhase,
             'active_period_id' => (int) $periodId,
             'active_period_name' => $periodData instanceof Periode ? ($periodData->name ?? $periodData->periode ?? '-') : ($periodData['name'] ?? $periodData['periode'] ?? '-'),
-            'active_periods' => $activePeriods->map(fn($p) => [
-                'id' => $p->id, 
+            'active_periods' => $activePeriods->map(fn ($p) => [
+                'id' => $p->id,
                 'nama' => $p->name ?? $p->nama ?? $p->periode ?? '-',
             ]),
             'phase_context' => Inertia::defer(function () use ($periodId, $period, $user) {
-                if (!$period || !$periodId) {
+                if (! $period || ! $periodId) {
                     return ['hint' => 'Tidak ada periode aktif.'];
                 }
 
@@ -199,37 +202,37 @@ class DashboardController extends Controller
     private function calculateCurrentPhase(Periode $period): array
     {
         $now = now();
-        
+
         if ($period->registration_start?->isFuture()) {
             return ['key' => 'upcoming', 'label' => 'Pra-Pendaftaran', 'color' => 'slate'];
         }
-        
+
         if ($period->registration_start?->isPast() && $period->registration_end?->isFuture()) {
             return ['key' => 'registration', 'label' => 'Masa Pendaftaran', 'color' => 'emerald'];
         }
-        
+
         if ($period->registration_end?->isPast() && $period->start_date?->isFuture()) {
             return ['key' => 'placement', 'label' => 'Seleksi & Plotting', 'color' => 'blue'];
         }
-        
+
         if ($period->start_date?->isPast() && $period->end_date?->isFuture()) {
             return ['key' => 'execution', 'label' => 'Terjun Lapangan', 'color' => 'purple'];
         }
-        
+
         if ($period->end_date?->isPast() && ($period->grading_end?->isFuture() ?? true)) {
             return ['key' => 'grading', 'label' => 'Masa Penilaian', 'color' => 'amber'];
         }
-        
+
         return ['key' => 'finished', 'label' => 'Selesai', 'color' => 'slate'];
     }
 
     public function switchPhase(Request $request): RedirectResponse
     {
         Gate::authorize('manage-master-data');
-        
+
         $request->validate([
             'target' => 'required|string|in:upcoming,registration,placement,execution,grading,finished',
-            'period_id' => 'required|exists:periode,id'
+            'period_id' => 'required|exists:periode,id',
         ]);
 
         $period = Periode::findOrFail($request->period_id);
@@ -276,8 +279,8 @@ class DashboardController extends Controller
 
         $period->update($updateData);
         \App\Services\RedisCacheService::invalidateMasterData();
-        
-        return back()->with('success', "Fase berhasil dipindahkan ke: " . $request->target);
+
+        return back()->with('success', 'Fase berhasil dipindahkan ke: '.$request->target);
     }
 
     // ── Phase Context Helpers ─────────────────────────────────────────
@@ -286,7 +289,7 @@ class DashboardController extends Controller
     {
         $query = \App\Models\KKN\PesertaKkn::where('period_id', $periodId);
         if ($facultyId) {
-            $query->whereHas('mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
+            $query->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
         }
 
         $total = (clone $query)->count();
@@ -312,7 +315,7 @@ class DashboardController extends Controller
         $query = \App\Models\KKN\PesertaKkn::where('period_id', $periodId)
             ->where('status', 'approved');
         if ($facultyId) {
-            $query->whereHas('mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
+            $query->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
         }
 
         $approved = (clone $query)->count();

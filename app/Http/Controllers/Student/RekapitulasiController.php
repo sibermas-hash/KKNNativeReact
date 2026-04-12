@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
@@ -15,14 +17,14 @@ class RekapitulasiController extends Controller
     public function index(): Response
     {
         $mahasiswa = auth()->user()->mahasiswa;
-        abort_if(!$mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
+        abort_if(! $mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
 
         $peserta = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
             ->where('status', 'approved')
             ->with(['kelompok.lokasi', 'kelompok.periode', 'kelompok.dosen'])
             ->first();
 
-        abort_if(!$peserta || !$peserta->kelompok, 403, 'Anda belum memiliki kelompok KKN aktif.');
+        abort_if(! $peserta || ! $peserta->kelompok, 403, 'Anda belum memiliki kelompok KKN aktif.');
 
         $rekapitulasi = RekapitulasiKegiatan::where('kelompok_id', $peserta->kelompok_id)
             ->orderBy('uraian_kegiatan')
@@ -51,13 +53,13 @@ class RekapitulasiController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $mahasiswa = auth()->user()->mahasiswa;
-        abort_if(!$mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
+        abort_if(! $mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
 
         $peserta = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
             ->where('status', 'approved')
             ->first();
 
-        abort_if(!$peserta || !$peserta->kelompok_id, 403, 'Anda belum memiliki kelompok KKN aktif.');
+        abort_if(! $peserta || ! $peserta->kelompok_id, 403, 'Anda belum memiliki kelompok KKN aktif.');
 
         $validated = $request->validate([
             'items' => ['required', 'array', 'min:1'],
@@ -77,7 +79,7 @@ class RekapitulasiController extends Controller
 
         // Insert new entries
         foreach ($validated['items'] as $item) {
-            if (!empty($item['uraian_kegiatan'])) {
+            if (! empty($item['uraian_kegiatan'])) {
                 RekapitulasiKegiatan::create([
                     'kelompok_id' => $peserta->kelompok_id,
                     'uraian_kegiatan' => $item['uraian_kegiatan'],

@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        INSTALL_DEV: "true"
+        INSTALL_DEV: "${INSTALL_DEV:-false}"
     container_name: kkn-app
     restart: unless-stopped
     working_dir: /var/www
@@ -29,6 +29,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm -t || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   nginx:
     image: nginx:alpine
@@ -44,6 +50,12 @@ services:
       - kkn-network
     depends_on:
       - app
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   postgres:
     image: postgres:16-alpine
@@ -87,7 +99,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        INSTALL_DEV: "true"
+        INSTALL_DEV: "${INSTALL_DEV:-false}"
     container_name: kkn-queue
     restart: unless-stopped
     command: php artisan queue:work redis --queue=high,default,low --tries=3 --timeout=120
@@ -111,6 +123,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'queue:work' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   mailpit:
     image: axllent/mailpit:latest

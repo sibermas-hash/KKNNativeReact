@@ -1,21 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Imports\KelompokKknImport;
-use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\DplPeriod;
+use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\Periode;
+use App\Traits\HandlesPagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Traits\HandlesPagination;
 use Maatwebsite\Excel\Facades\Excel;
 
 class KelompokKknController extends Controller
@@ -59,7 +61,7 @@ class KelompokKknController extends Controller
     public function index(Request $request): Response
     {
         Gate::authorize('manage-groups');
-        
+
         $query = KelompokKkn::with('periode', 'lokasi', 'dosen')
             ->withCount([
                 'peserta',
@@ -70,14 +72,14 @@ class KelompokKknController extends Controller
                 $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
                 $query->where(function ($q) use ($s) {
                     $q->where('nama_kelompok', 'like', "%{$s}%")
-                      ->orWhere('code', 'like', "%{$s}%")
-                      ->orWhereHas('lokasi', function ($locQuery) use ($s) {
-                          $locQuery->where('village_name', 'like', "%{$s}%")
-                                   ->orWhere('district_name', 'like', "%{$s}%");
-                      })
-                      ->orWhereHas('dosen', function ($dplQuery) use ($s) {
-                          $dplQuery->where('nama', 'like', "%{$s}%");
-                      });
+                        ->orWhere('code', 'like', "%{$s}%")
+                        ->orWhereHas('lokasi', function ($locQuery) use ($s) {
+                            $locQuery->where('village_name', 'like', "%{$s}%")
+                                ->orWhere('district_name', 'like', "%{$s}%");
+                        })
+                        ->orWhereHas('dosen', function ($dplQuery) use ($s) {
+                            $dplQuery->where('nama', 'like', "%{$s}%");
+                        });
                 });
             })
             ->when($request->input('period_id'), function ($query, $periodId) {
@@ -101,10 +103,10 @@ class KelompokKknController extends Controller
         // Transform for frontend
         $groups->getCollection()->transform(function ($g) {
             $mainDpl = $g->dosen->where('pivot.role', 'Ketua')->first();
-            $allDpls = $g->dosen->map(fn($d) => [
+            $allDpls = $g->dosen->map(fn ($d) => [
                 'id' => $d->id,
                 'name' => $d->nama,
-                'role' => $d->pivot->role
+                'role' => $d->pivot->role,
             ])->values();
             $governance = $g->periode?->governance();
             $availableSlots = max((int) $g->capacity - (int) ($g->peserta_count ?? 0), 0);
@@ -155,15 +157,15 @@ class KelompokKknController extends Controller
         });
 
         $periods = Periode::where('is_active', true)->orderByDesc('start_date')->get()
-            ->map(fn($p) => ['id' => $p->id, 'name' => $p->name]);
+            ->map(fn ($p) => ['id' => $p->id, 'name' => $p->name]);
         $locations = Lokasi::orderBy('village_name')->get()
-            ->map(fn($l) => [
+            ->map(fn ($l) => [
                 'id' => $l->id,
                 'village_name' => $l->village_name,
                 'full_name' => $l->full_name,
             ]);
         $lecturers = Dosen::orderBy('nama')->get()
-            ->map(fn($d) => ['id' => $d->id, 'name' => $d->nama]);
+            ->map(fn ($d) => ['id' => $d->id, 'name' => $d->nama]);
         $jenisKknOptions = \App\Models\KKN\JenisKkn::dropdownOptions();
 
         $groupCollection = collect($groups->items());
@@ -244,22 +246,25 @@ class KelompokKknController extends Controller
         ]);
 
         // Proteksi: Validasi Kuota DPL & Peran Ketua
-        if (!empty($validated['lecturers'])) {
+        if (! empty($validated['lecturers'])) {
             $ketuaCount = 0;
             foreach ($validated['lecturers'] as $l) {
-                if ($l['role'] === 'Ketua') $ketuaCount++;
+                if ($l['role'] === 'Ketua') {
+                    $ketuaCount++;
+                }
 
                 $dplPeriod = \App\Models\KKN\DplPeriod::where('dosen_id', $l['id'])
                     ->where('period_id', $validated['period_id'])
                     ->where('is_active', true)
                     ->first();
 
-                if (!$dplPeriod) {
+                if (! $dplPeriod) {
                     $dosen = \App\Models\KKN\Dosen::find($l['id']);
+
                     return back()->withErrors(['lecturers' => "Dosen {$dosen->nama} belum terdaftar/aktif di periode ini."])->withInput();
                 }
 
-                if (!$dplPeriod->hasCapacity()) {
+                if (! $dplPeriod->hasCapacity()) {
                     return back()->withErrors(['lecturers' => "Dosen {$dplPeriod->dosen->nama} sudah mencapai batas maksimal kelompok."])->withInput();
                 }
             }
@@ -275,12 +280,12 @@ class KelompokKknController extends Controller
             'nama_kelompok' => $validated['name'],
             'capacity' => $validated['capacity'],
             'status' => $validated['status'],
-            'code' => 'KKN-' . strtoupper(Str::random(6)),
+            'code' => 'KKN-'.strtoupper(Str::random(6)),
             'token' => strtoupper(Str::random(8)),
         ]);
 
         // Sync DPLs via Pivot Table & Sync Flat Columns
-        if (!empty($validated['lecturers'])) {
+        if (! empty($validated['lecturers'])) {
             $syncData = [];
             foreach ($validated['lecturers'] as $l) {
                 $syncData[$l['id']] = ['role' => $l['role']];
@@ -290,7 +295,7 @@ class KelompokKknController extends Controller
         }
 
         return redirect()->route('admin.kelompok.index')->with('success', 'Kelompok berhasil ditambahkan.');
-        }
+    }
 
     public function import(Request $request): RedirectResponse
     {
@@ -304,7 +309,7 @@ class KelompokKknController extends Controller
             'file' => ['required', 'file', 'mimes:xlsx,xls,csv,txt', 'max:10240'],
         ]);
 
-        $import = new KelompokKknImport();
+        $import = new KelompokKknImport;
         Excel::import($import, $validated['file']);
 
         $message = "Import kelompok selesai. {$import->createdCount} data baru, {$import->updatedCount} data diperbarui, {$import->skippedCount} baris dilewati.";
@@ -317,10 +322,10 @@ class KelompokKknController extends Controller
         }
 
         return back()->with($import->errors === [] ? 'success' : 'warning', $message);
-        }
+    }
 
-        public function update(Request $request, KelompokKkn $kelompokKkn): RedirectResponse
-        {
+    public function update(Request $request, KelompokKkn $kelompokKkn): RedirectResponse
+    {
         Gate::authorize('manage-groups');
 
         $this->prepareMutationPayload($request);
@@ -341,21 +346,24 @@ class KelompokKknController extends Controller
         if (isset($validated['lecturers'])) {
             $ketuaCount = 0;
             foreach ($validated['lecturers'] as $l) {
-                if ($l['role'] === 'Ketua') $ketuaCount++;
+                if ($l['role'] === 'Ketua') {
+                    $ketuaCount++;
+                }
 
                 $dplPeriod = \App\Models\KKN\DplPeriod::where('dosen_id', $l['id'])
                     ->where('period_id', $validated['period_id'])
                     ->where('is_active', true)
                     ->first();
 
-                if (!$dplPeriod) {
+                if (! $dplPeriod) {
                     $dosen = \App\Models\KKN\Dosen::find($l['id']);
+
                     return back()->withErrors(['lecturers' => "Dosen {$dosen->nama} belum terdaftar/aktif di periode ini."])->withInput();
                 }
 
                 // Cek kuota, abaikan jika dosen tersebut memang sudah ada di kelompok ini (update)
                 $isAlreadyInGroup = $kelompokKkn->dosen()->where('dosen_id', $l['id'])->exists();
-                if (!$isAlreadyInGroup && !$dplPeriod->hasCapacity()) {
+                if (! $isAlreadyInGroup && ! $dplPeriod->hasCapacity()) {
                     return back()->withErrors(['lecturers' => "Dosen {$dplPeriod->dosen->nama} sudah mencapai batas maksimal kelompok."])->withInput();
                 }
             }
@@ -384,7 +392,8 @@ class KelompokKknController extends Controller
         }
 
         return redirect()->route('admin.kelompok.index')->with('success', 'Kelompok berhasil diperbarui.');
-        }
+    }
+
     public function destroy(KelompokKkn $kelompokKkn): RedirectResponse
     {
         Gate::authorize('manage-groups');

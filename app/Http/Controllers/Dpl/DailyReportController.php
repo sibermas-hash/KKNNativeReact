@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Dpl;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\FileKegiatanKkn;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\KelompokKkn;
+use App\Services\GeoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -15,6 +18,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DailyReportController extends Controller
 {
+    public function __construct(
+        private readonly GeoService $geoService,
+    ) {}
+
     private function resolveReferenceCoordinates(KegiatanKkn $dailyReport): ?array
     {
         if ($dailyReport->kelompok?->posko?->latitude !== null && $dailyReport->kelompok?->posko?->longitude !== null) {
@@ -36,25 +43,10 @@ class DailyReportController extends Controller
         return null;
     }
 
-    private function calculateDistanceMeters(float $latitude, float $longitude, float $referenceLatitude, float $referenceLongitude): float
-    {
-        $earthRadius = 6371000;
-
-        $latitudeDelta = deg2rad($referenceLatitude - $latitude);
-        $longitudeDelta = deg2rad($referenceLongitude - $longitude);
-
-        $a = sin($latitudeDelta / 2) ** 2
-            + cos(deg2rad($latitude)) * cos(deg2rad($referenceLatitude)) * sin($longitudeDelta / 2) ** 2;
-
-        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-
-        return $earthRadius * $c;
-    }
-
     private function assignedGroupIds(): \Illuminate\Support\Collection
     {
         $dosen = auth()->user()->dosen;
-        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        abort_if(! $dosen, 403, 'Data dosen tidak ditemukan.');
 
         return $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
     }
@@ -67,8 +59,8 @@ class DailyReportController extends Controller
     public function index(Request $request): Response
     {
         $dosen = auth()->user()->dosen;
-        abort_if(!$dosen, 403);
-        
+        abort_if(! $dosen, 403);
+
         $groupIds = $this->assignedGroupIds();
 
         // Get groups with pending counts for the tab/filter UI
@@ -85,8 +77,8 @@ class DailyReportController extends Controller
 
         $kegiatan = KegiatanKkn::whereIn('kelompok_id', $groupIds)
             ->with(['mahasiswa', 'kelompok'])
-            ->when($request->input('kelompok_id'), fn($q, $id) => $q->where('kelompok_id', $id))
-            ->when($request->input('status'), fn($q, $s) => $q->where('status', $s))
+            ->when($request->input('kelompok_id'), fn ($q, $id) => $q->where('kelompok_id', $id))
+            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
             ->orderByDesc('date')
             ->paginate(15)
             ->through(fn (KegiatanKkn $report) => [
@@ -115,7 +107,7 @@ class DailyReportController extends Controller
     public function show(KegiatanKkn $dailyReport): Response
     {
         $groupIds = $this->assignedGroupIds();
-        abort_if(!$groupIds->contains($dailyReport->kelompok_id), 403, 'Anda tidak memiliki akses ke laporan ini.');
+        abort_if(! $groupIds->contains($dailyReport->kelompok_id), 403, 'Anda tidak memiliki akses ke laporan ini.');
 
         $dailyReport->load(['mahasiswa', 'kelompok.lokasi', 'kelompok.posko', 'fileKegiatan', 'reviewer']);
         $reference = $this->resolveReferenceCoordinates($dailyReport);
@@ -126,7 +118,7 @@ class DailyReportController extends Controller
             && $dailyReport->latitude !== null
             && $dailyReport->longitude !== null
         ) {
-            $distance = round($this->calculateDistanceMeters(
+            $distance = round($this->geoService->calculateDistanceMeters(
                 (float) $dailyReport->latitude,
                 (float) $dailyReport->longitude,
                 $reference['latitude'],
@@ -185,7 +177,7 @@ class DailyReportController extends Controller
         $fileKegiatan->loadMissing('kegiatan');
 
         abort_if(
-            !$fileKegiatan->kegiatan || !$groupIds->contains($fileKegiatan->kegiatan->kelompok_id),
+            ! $fileKegiatan->kegiatan || ! $groupIds->contains($fileKegiatan->kegiatan->kelompok_id),
             403,
             'Anda tidak memiliki akses ke lampiran ini.'
         );
@@ -208,7 +200,7 @@ class DailyReportController extends Controller
         $fileKegiatan->loadMissing('kegiatan');
 
         abort_if(
-            !$fileKegiatan->kegiatan || !$groupIds->contains($fileKegiatan->kegiatan->kelompok_id),
+            ! $fileKegiatan->kegiatan || ! $groupIds->contains($fileKegiatan->kegiatan->kelompok_id),
             403,
             'Anda tidak memiliki akses ke lampiran ini.'
         );
@@ -237,9 +229,9 @@ class DailyReportController extends Controller
     public function approve(KegiatanKkn $dailyReport): RedirectResponse
     {
         $groupIds = $this->assignedGroupIds();
-        abort_if(!$groupIds->contains($dailyReport->kelompok_id), 403);
+        abort_if(! $groupIds->contains($dailyReport->kelompok_id), 403);
 
-        if (!$this->canReview($dailyReport)) {
+        if (! $this->canReview($dailyReport)) {
             return back()->with('error', 'Laporan harian ini sudah selesai ditinjau dan tidak dapat diproses ulang.');
         }
 
@@ -255,7 +247,7 @@ class DailyReportController extends Controller
             $dailyReport->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
                 'type' => 'success',
                 'title' => 'Laporan Harian Disetujui',
-                'message' => "Laporan harian Anda tanggal " . $dailyReport->date->format('d/m/Y') . " telah disetujui.",
+                'message' => 'Laporan harian Anda tanggal '.$dailyReport->date->format('d/m/Y').' telah disetujui.',
                 'icon' => 'check-circle',
                 'url' => route('student.laporan-harian.index'),
             ]));
@@ -267,9 +259,9 @@ class DailyReportController extends Controller
     public function revision(Request $request, KegiatanKkn $dailyReport): RedirectResponse
     {
         $groupIds = $this->assignedGroupIds();
-        abort_if(!$groupIds->contains($dailyReport->kelompok_id), 403);
+        abort_if(! $groupIds->contains($dailyReport->kelompok_id), 403);
 
-        if (!$this->canReview($dailyReport)) {
+        if (! $this->canReview($dailyReport)) {
             return back()->with('error', 'Laporan harian ini sudah selesai ditinjau dan tidak dapat diproses ulang.');
         }
 
@@ -289,7 +281,7 @@ class DailyReportController extends Controller
             $dailyReport->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
                 'type' => 'warning',
                 'title' => 'Revisi Laporan Harian',
-                'message' => "Laporan harian Anda tanggal " . $dailyReport->date->format('d/m/Y') . " memerlukan revisi.",
+                'message' => 'Laporan harian Anda tanggal '.$dailyReport->date->format('d/m/Y').' memerlukan revisi.',
                 'icon' => 'exclamation-circle',
                 'url' => route('student.laporan-harian.index'),
             ]));
@@ -297,6 +289,7 @@ class DailyReportController extends Controller
 
         return redirect()->back()->with('success', 'Laporan dikembalikan untuk revisi.');
     }
+
     public function batchApprove(Request $request): RedirectResponse
     {
         // SECURITY: Limit batch approve to prevent abuse
@@ -313,7 +306,7 @@ class DailyReportController extends Controller
         $groupIds = $this->assignedGroupIds();
 
         // If specific groups provided, filter by DPL's groups
-        if (!empty($validated['group_ids'])) {
+        if (! empty($validated['group_ids'])) {
             $groupIds = $groupIds->intersect($validated['group_ids']);
         }
 
@@ -321,10 +314,10 @@ class DailyReportController extends Controller
         $query = KegiatanKkn::whereIn('kelompok_id', $groupIds)
             ->where('status', 'submitted');
 
-        if (!empty($validated['date_from'])) {
+        if (! empty($validated['date_from'])) {
             $query->where('date', '>=', $validated['date_from']);
         }
-        if (!empty($validated['date_to'])) {
+        if (! empty($validated['date_to'])) {
             $query->where('date', '<=', $validated['date_to']);
         }
 

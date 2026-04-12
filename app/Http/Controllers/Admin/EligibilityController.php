@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -28,7 +30,7 @@ class EligibilityController extends Controller
 
         $user = auth()->user();
         $isFacultyAdmin = $user?->hasRole('faculty_admin');
-        
+
         $periodeId = $request->integer('period_id');
         $facultyId = $isFacultyAdmin ? $user?->faculty_id : $request->integer('faculty_id');
         $showEligible = $request->boolean('show_eligible', true);
@@ -84,25 +86,25 @@ class EligibilityController extends Controller
 
         $user = auth()->user();
         $isFacultyAdmin = $user?->hasRole('faculty_admin');
-        
+
         $periodeId = $request->integer('period_id');
         $facultyId = $isFacultyAdmin ? $user?->faculty_id : $request->integer('faculty_id');
 
         $result = $this->eligibilityService->getEligibleStudents($periodeId, $facultyId);
 
-        $spreadsheet = new Spreadsheet();
-        
+        $spreadsheet = new Spreadsheet;
+
         // Sheet 1: Eligible Students
         $sheet1 = $spreadsheet->getActiveSheet();
         $sheet1->setTitle('Mahasiswa Eligible');
-        
+
         $headers1 = ['No', 'NIM', 'Nama', 'Fakultas', 'Program Studi', 'SKS', 'IPK', 'BTA-PPI', 'Surat Sehat', 'Izin Ortu'];
         $col = 'A';
         foreach ($headers1 as $header) {
             $sheet1->setCellValue("{$col}1", $header);
             $col++;
         }
-        
+
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => '22C55E']],
@@ -127,14 +129,14 @@ class EligibilityController extends Controller
         // Sheet 2: Not Eligible Students
         $sheet2 = $spreadsheet->createSheet();
         $sheet2->setTitle('Mahasiswa Tidak Eligible');
-        
+
         $headers2 = ['No', 'NIM', 'Nama', 'Fakultas', 'Program Studi', 'SKS', 'IPK', 'BTA-PPI', 'Issues'];
         $col = 'A';
         foreach ($headers2 as $header) {
             $sheet2->setCellValue("{$col}1", $header);
             $col++;
         }
-        
+
         $headerStyle2 = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'EF4444']],
@@ -161,18 +163,19 @@ class EligibilityController extends Controller
             $sheet2->getColumnDimension($col)->setAutoSize(true);
         }
 
-        $filename = 'Eligibility_Report_KKN_' . date('Y-m-d_His') . '.xlsx';
+        $filename = 'Eligibility_Report_KKN_'.date('Y-m-d_His').'.xlsx';
         $writer = new Xlsx($spreadsheet);
 
         // SECURITY: Use Laravel's storage path instead of system temp directory
         $exportDir = storage_path('framework/cache/exports');
-        if (!is_dir($exportDir)) {
+        if (! is_dir($exportDir)) {
             mkdir($exportDir, 0750, true);
         }
 
-        $tempFile = $exportDir . '/' . \Illuminate\Support\Str::uuid() . '.xlsx';
+        $tempFile = $exportDir.'/'.\Illuminate\Support\Str::uuid().'.xlsx';
         try {
             $writer->save($tempFile);
+
             return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
         } catch (\Throwable $e) {
             if (file_exists($tempFile)) {

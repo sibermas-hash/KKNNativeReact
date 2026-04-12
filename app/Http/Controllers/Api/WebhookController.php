@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\KKN\Dosen;
+use App\Models\KKN\Mahasiswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Models\KKN\Mahasiswa;
-use App\Models\KKN\Dosen;
 
 class WebhookController extends Controller
 {
@@ -22,7 +24,7 @@ class WebhookController extends Controller
     public function handle(Request $request)
     {
         $validated = $request->validate([
-            'event' => ['required', 'string', 'in:' . implode(',', self::ALLOWED_EVENTS)],
+            'event' => ['required', 'string', 'in:'.implode(',', self::ALLOWED_EVENTS)],
             'webhook_id' => ['nullable', 'string', 'max:100'],
             'data' => ['required', 'array'],
             'data.payload' => ['required', 'array'],
@@ -45,10 +47,13 @@ class WebhookController extends Controller
 
     protected function syncMahasiswa(string $event, array $data): void
     {
-        if (empty($data['nim'])) return;
+        if (empty($data['nim'])) {
+            return;
+        }
 
         if (str_ends_with($event, '.deleted')) {
             Mahasiswa::where('nim', $data['nim'])->delete();
+
             return;
         }
 
@@ -68,10 +73,13 @@ class WebhookController extends Controller
 
     protected function syncDosen(string $event, array $data): void
     {
-        if (empty($data['nip'])) return;
+        if (empty($data['nip'])) {
+            return;
+        }
 
         if (str_ends_with($event, '.deleted')) {
             Dosen::where('nip', $data['nip'])->delete();
+
             return;
         }
 
@@ -92,13 +100,19 @@ class WebhookController extends Controller
     // Issue 11 Fix: Validate IDs exist in local database instead of pass-through
     protected function resolveProdi($masterId)
     {
-        if (!$masterId) return null;
+        if (! $masterId) {
+            return null;
+        }
+
         return \App\Models\KKN\Prodi::where('master_id', (string) $masterId)->value('id');
     }
-    
+
     protected function resolveFakultas($masterId)
     {
-        if (!$masterId) return null;
+        if (! $masterId) {
+            return null;
+        }
+
         return \App\Models\KKN\Fakultas::where('master_id', (string) $masterId)->value('id');
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\KKN\Periode;
@@ -11,13 +13,13 @@ use Illuminate\Support\Facades\Cache;
 class RegistrationPortalService
 {
     private const VERSION_CACHE_KEY = 'registration_portal.snapshot_version';
+
     private const DEFAULT_SNAPSHOT_TTL_SECONDS = 3;
 
     public function __construct(
         private readonly GroupSelectionService $groupSelectionService,
         private readonly KknRequirementService $kknRequirementService,
-    ) {
-    }
+    ) {}
 
     /**
      * @return Collection<int, array<string, mixed>>

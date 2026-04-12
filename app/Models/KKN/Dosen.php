@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use App\Models\User;
@@ -14,6 +16,7 @@ class Dosen extends Model
     use HasFactory;
 
     protected $connection = 'kkn';
+
     protected $table = 'dosen';
 
     protected $fillable = [
@@ -43,13 +46,13 @@ class Dosen extends Model
 
     public function fakultas(): BelongsTo
     {
-        return $this->belongsTo(Fakultas::class , 'faculty_id');
+        return $this->belongsTo(Fakultas::class, 'faculty_id');
     }
 
     // Relationship: A lecturer can supervise multiple groups (Many-to-Many via pivot)
     public function pimpinKelompok(): BelongsToMany
     {
-        return $this->belongsToMany(KelompokKkn::class , 'dpl_kelompok', 'dosen_id', 'kelompok_kkn_id')
+        return $this->belongsToMany(KelompokKkn::class, 'dpl_kelompok', 'dosen_id', 'kelompok_kkn_id')
             ->withPivot('role')
             ->withTimestamps();
     }
@@ -69,12 +72,12 @@ class Dosen extends Model
     // Legacy: Keep this for backward compatibility if needed, or remove if fully migrated
     public function kelompok(): HasMany
     {
-        return $this->hasMany(KelompokKkn::class , 'dpl_id');
+        return $this->hasMany(KelompokKkn::class, 'dpl_id');
     }
 
     public function dplPeriods(): HasMany
     {
-        return $this->hasMany(DplPeriod::class , 'dosen_id');
+        return $this->hasMany(DplPeriod::class, 'dosen_id');
     }
 
     public function coordinatorAssignments(): HasMany
@@ -92,7 +95,7 @@ class Dosen extends Model
             ->where('is_active', true)
             ->first();
 
-        if (!$dplPeriod) {
+        if (! $dplPeriod) {
             return false;
         }
 

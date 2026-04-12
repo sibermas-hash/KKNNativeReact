@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -16,8 +18,9 @@ class CertificateConfigController extends Controller
     {
         Gate::authorize('manage-settings');
         $configs = KonfigurasiSertifikat::orderBy('id')->get();
+
         return Inertia::render('Admin/System/Settings/Certificate', [
-            'configs' => $configs
+            'configs' => $configs,
         ]);
     }
 
@@ -27,12 +30,12 @@ class CertificateConfigController extends Controller
         $validated = $request->validate([
             'configs' => ['required', 'array'],
             'configs.*.id' => ['required', 'exists:kkn.konfigurasi_sertifikat,id'],
-            'configs.*.value' => ['nullable', 'string']
+            'configs.*.value' => ['nullable', 'string'],
         ]);
 
         foreach ($validated['configs'] as $configData) {
             KonfigurasiSertifikat::where('id', $configData['id'])->update([
-                'value' => $configData['value']
+                'value' => $configData['value'],
             ]);
         }
 

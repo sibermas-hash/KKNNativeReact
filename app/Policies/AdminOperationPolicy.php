@@ -135,4 +135,34 @@ class AdminOperationPolicy extends BasePolicy
 
         return $user->hasRole('admin');
     }
+
+    public function manageReports(User $user): bool
+    {
+        return $user->hasAnyRole(['superadmin', 'admin', 'faculty_admin']);
+    }
+
+    public function manageKknOperations(User $user): bool
+    {
+        return $user->hasAnyRole(['superadmin', 'admin']);
+    }
+
+    public function manageEligibility(User $user): bool
+    {
+        return $user->hasAnyRole(['superadmin', 'admin', 'faculty_admin']);
+    }
+
+    public function manageRequirements(User $user): bool
+    {
+        return $user->hasAnyRole(['superadmin', 'admin']);
+    }
+
+    public function manageWorkshops(User $user): bool
+    {
+        return $user->hasAnyRole(['superadmin', 'admin']);
+    }
+
+    public function manageDatabaseSync(User $user): bool
+    {
+        return $user->hasAnyRole(['superadmin', 'admin']);
+    }
 }

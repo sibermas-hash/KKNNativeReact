@@ -32,6 +32,9 @@ Route::middleware([
         ->name('grade-reports.sertifikat-massal');
     Route::get('grade-reports/progres-sertifikat', [Admin\RekapNilaiController::class, 'getCertificateProgress'])
         ->name('grade-reports.progres-sertifikat');
+    Route::get('certificates/bulk-download', [\App\Http\Controllers\CertificateController::class, 'downloadMass'])
+        ->middleware('throttle:2,60')
+        ->name('certificates.bulk-download');
     
     // Backward compatibility: keep legacy rekap-nilai URLs alive as real endpoints.
     Route::get('rekap-nilai', [Admin\RekapNilaiController::class, 'index'])->name('rekap-nilai.index');

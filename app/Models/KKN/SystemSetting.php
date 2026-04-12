@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,6 +14,7 @@ class SystemSetting extends Model
     use HasFactory;
 
     protected $connection = 'kkn';
+
     protected $table = 'system_settings';
 
     /**
@@ -39,11 +42,11 @@ class SystemSetting extends Model
     {
         return Cache::remember("system_setting_{$key}", now()->addHours(24), function () use ($key, $default) {
             try {
-                if (!\Illuminate\Support\Facades\Schema::connection('kkn')->hasTable('system_settings')) {
+                if (! \Illuminate\Support\Facades\Schema::connection('kkn')->hasTable('system_settings')) {
                     return $default;
                 }
                 $setting = self::where('config_key', $key)->first();
-                if (!$setting) {
+                if (! $setting) {
                     return $default;
                 }
                 $value = $setting->value;
@@ -55,9 +58,9 @@ class SystemSetting extends Model
                         // Value stored before encryption was added; return as-is
                     }
                 }
+
                 return $value;
-            }
-            catch (\Exception $e) {
+            } catch (\Exception $e) {
                 return $default;
             }
         });
@@ -80,8 +83,7 @@ class SystemSetting extends Model
         $setting = self::where('config_key', $key)->first();
         if ($setting) {
             $setting->update(['value' => $storedValue]);
-        }
-        else {
+        } else {
             self::create([
                 'config_key' => $key,
                 'label' => ucwords(str_replace('_', ' ', $key)),

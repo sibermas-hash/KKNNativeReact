@@ -951,8 +951,7 @@ PDF;
             $student['user']->id,
             $group->id,
             [
-                'workshop_score' => $workshopScore,
-                'administration_score' => $administrationScore,
+                'administration_score' => $workshopScore,
             ],
             $evaluator->id,
         );

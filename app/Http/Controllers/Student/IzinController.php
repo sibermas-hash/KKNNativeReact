@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
@@ -7,7 +9,6 @@ use App\Models\KKN\IzinMeninggalkan;
 use App\Services\IzinService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -20,7 +21,7 @@ class IzinController extends Controller
     public function index(): Response
     {
         $mahasiswa = auth()->user()->mahasiswa;
-        abort_if(!$mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
+        abort_if(! $mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
 
         $izins = IzinMeninggalkan::where('mahasiswa_id', $mahasiswa->id)
             ->with(['kelompok', 'diprosesOleh'])

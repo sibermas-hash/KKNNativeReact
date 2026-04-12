@@ -48,5 +48,11 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage-content', fn($user) => $adminPolicy->manageContent($user));
         Gate::define('view-audit-logs', fn($user) => $adminPolicy->viewAuditLogs($user));
         Gate::define('manage-dpl', fn($user) => $adminPolicy->manageDplAssignment($user));
+        Gate::define('manage-reports', fn($user) => $adminPolicy->manageReports($user));
+        Gate::define('manage-kkn-operations', fn($user) => $adminPolicy->manageKknOperations($user));
+        Gate::define('manage-eligibility', fn($user) => $adminPolicy->manageEligibility($user));
+        Gate::define('manage-requirements', fn($user) => $adminPolicy->manageRequirements($user));
+        Gate::define('manage-workshops', fn($user) => $adminPolicy->manageWorkshops($user));
+        Gate::define('manage-database-sync', fn($user) => $adminPolicy->manageDatabaseSync($user));
     }
 }

@@ -1,18 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Repositories\KknScoreRepository;
-use App\Services\GradingService;
-use App\Services\CertificateService;
 use App\Exports\RekapNilaiExport;
-use App\Models\KKN\NilaiKkn;
-use App\Models\KKN\LaporanAkhir;
-use App\Models\KKN\Periode;
+use App\Http\Controllers\Controller;
 use App\Models\KKN\Fakultas;
-use Illuminate\Support\Collection;
+use App\Models\KKN\LaporanAkhir;
+use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\Periode;
+use App\Repositories\KknScoreRepository;
+use App\Services\CertificateService;
+use App\Services\GradingService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
@@ -49,7 +51,7 @@ class RekapNilaiController extends Controller
             'huruf' => $request->string('huruf')->toString() ?: null,
         ];
 
-        if (!$periodeId) {
+        if (! $periodeId) {
             return Inertia::render('Admin/Academic/GradeReports/Index', [
                 'scores' => [],
                 'stats' => null,
@@ -72,7 +74,7 @@ class RekapNilaiController extends Controller
                 'total_students' => $rows->count(),
                 'graded_count' => $rows->whereNotNull('nilai_akhir')->count(),
                 'locked_count' => $rows->where('is_finalized', true)->count(),
-                'average_value' => round((float)($rows->avg('nilai_akhir') ?? 0), 1),
+                'average_value' => round((float) ($rows->avg('nilai_akhir') ?? 0), 1),
             ],
             'filters' => $filters,
             'periodeId' => $periodeId,
@@ -93,7 +95,7 @@ class RekapNilaiController extends Controller
 
         $periodeId = $this->resolveRequestedPeriodId($request);
 
-        if (!$periodeId) {
+        if (! $periodeId) {
             return back()->with('error', 'Pilih periode terlebih dahulu sebelum mengekspor rekap nilai.');
         }
 
@@ -105,13 +107,13 @@ class RekapNilaiController extends Controller
         ]);
         $periode = Periode::find($periodeId);
 
-        if (!$periode) {
+        if (! $periode) {
             return back()->with('error', 'Periode rekap nilai tidak ditemukan.');
         }
 
         return Excel::download(
             new RekapNilaiExport($rows, $periode),
-            "Rekap_Nilai_KKN_{$periode->name}_" . now()->format('Ymd') . ".xlsx"
+            "Rekap_Nilai_KKN_{$periode->name}_".now()->format('Ymd').'.xlsx'
         );
     }
 
@@ -125,7 +127,7 @@ class RekapNilaiController extends Controller
 
         $this->grading->dispatchMassFinalization($validated['period_id']);
 
-        return back()->with('info', "Proses finalisasi massal telah dimulai di latar belakang.");
+        return back()->with('info', 'Proses finalisasi massal telah dimulai di latar belakang.');
     }
 
     public function finalize(NilaiKkn $score)
@@ -142,7 +144,7 @@ class RekapNilaiController extends Controller
             return back()->with('error', 'Nilai akhir belum lengkap dan belum dapat difinalisasi.');
         }
 
-        if (!$score->mahasiswa) {
+        if (! $score->mahasiswa) {
             return back()->with('error', 'Data mahasiswa untuk nilai ini tidak ditemukan.');
         }
 
@@ -151,7 +153,7 @@ class RekapNilaiController extends Controller
             ->where('status', 'approved')
             ->exists();
 
-        if (!$reportApproved) {
+        if (! $reportApproved) {
             return back()->with('error', 'Laporan akhir mahasiswa belum disetujui, sehingga nilai belum dapat difinalisasi.');
         }
 
@@ -174,9 +176,9 @@ class RekapNilaiController extends Controller
     {
         $this->authorize('bulkFinalize', NilaiKkn::class);
         $periodId = $request->integer('period_id');
-        
+
         $progress = \Illuminate\Support\Facades\Cache::get("finalize_progress_{$periodId}");
-        
+
         return response()->json($progress);
     }
 
@@ -184,14 +186,14 @@ class RekapNilaiController extends Controller
     {
         $this->authorize('view', $score);
 
-        if (!$score->is_finalized) {
+        if (! $score->is_finalized) {
             return back()->with('error', 'Sertifikat hanya tersedia untuk nilai yang sudah difinalisasi.');
         }
 
         $pdf = $this->certificate->generateForStudent($score);
         $nim = $score->mahasiswa->nim ?? '';
         $filename = "Sertifikat_KKN_{$score->mahasiswa->nama}_{$nim}.pdf";
-        
+
         return $pdf->download($filename);
     }
 
@@ -208,7 +210,7 @@ class RekapNilaiController extends Controller
             auth()->id()
         );
 
-        return back()->with('info', "Proses pembuatan sertifikat massal telah dimulai di latar belakang. Anda akan menerima notifikasi jika sudah selesai.");
+        return back()->with('info', 'Proses pembuatan sertifikat massal telah dimulai di latar belakang. Anda akan menerima notifikasi jika sudah selesai.');
     }
 
     public function getCertificateProgress(Request $request)
@@ -216,12 +218,13 @@ class RekapNilaiController extends Controller
         $this->authorize('export', NilaiKkn::class);
         $periodId = $request->integer('period_id');
         $adminId = auth()->id();
-        
+
         $cacheKey = "cert_progress_{$periodId}_{$adminId}";
         $progress = \Illuminate\Support\Facades\Cache::get($cacheKey);
-        
+
         return response()->json($progress);
     }
+
     private const ALLOWED_SCORE_COMPONENTS = [
         'final_report_score',
         'execution_score',
@@ -237,7 +240,7 @@ class RekapNilaiController extends Controller
         $validated = $request->validate([
             'user_id' => ['required', 'integer'],
             'kelompok_id' => ['required', 'integer'],
-            'component' => ['required', 'string', 'in:' . implode(',', self::ALLOWED_SCORE_COMPONENTS)],
+            'component' => ['required', 'string', 'in:'.implode(',', self::ALLOWED_SCORE_COMPONENTS)],
             'value' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
 
@@ -289,7 +292,7 @@ class RekapNilaiController extends Controller
 
     private function lockedFacultyPayload($user): ?array
     {
-        if (!$user->hasRole('faculty_admin') || !$user->fakultas) {
+        if (! $user->hasRole('faculty_admin') || ! $user->fakultas) {
             return null;
         }
 
@@ -366,7 +369,7 @@ class RekapNilaiController extends Controller
 
         $periodeId = $this->resolveRequestedPeriodId($request);
 
-        if (!$periodeId) {
+        if (! $periodeId) {
             return back()->with('error', 'Pilih periode terlebih dahulu sebelum mengekspor ledger nilai.');
         }
 
@@ -378,10 +381,10 @@ class RekapNilaiController extends Controller
 
         $periode = Periode::find($periodeId);
 
-        if (!$periode) {
+        if (! $periode) {
             return back()->with('error', 'Periode rekap nilai tidak ditemukan.');
         }
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
         // Headers
@@ -416,7 +419,7 @@ class RekapNilaiController extends Controller
             $sheet->setCellValue("L{$row}", $r->is_finalized ? 'Final' : 'Draft');
 
             // Color code grade
-            $gradeColor = match($r->huruf) {
+            $gradeColor = match ($r->huruf) {
                 'A' => '22C55E',
                 'A-' => '4ADE80',
                 'B+' => '60A5FA',
@@ -440,18 +443,19 @@ class RekapNilaiController extends Controller
 
         $facultyId = $validated['faculty_id'] ?? null;
         $facultyName = $facultyId ? Fakultas::find($facultyId)?->nama : 'Semua';
-        $filename = "Ledger_Nilai_KKN_{$periode->name}_{$facultyName}_" . date('Y-m-d_His') . '.xlsx';
+        $filename = "Ledger_Nilai_KKN_{$periode->name}_{$facultyName}_".date('Y-m-d_His').'.xlsx';
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
 
         // SECURITY: Use Laravel's storage path instead of system temp directory
         $exportDir = storage_path('framework/cache/exports');
-        if (!is_dir($exportDir)) {
+        if (! is_dir($exportDir)) {
             mkdir($exportDir, 0750, true);
         }
 
-        $tempFile = $exportDir . '/' . \Illuminate\Support\Str::uuid() . '.xlsx';
+        $tempFile = $exportDir.'/'.\Illuminate\Support\Str::uuid().'.xlsx';
         try {
             $writer->save($tempFile);
+
             return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
         } catch (\Throwable $e) {
             if (file_exists($tempFile)) {

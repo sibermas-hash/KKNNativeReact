@@ -251,7 +251,7 @@ export default function RekapNilaiIndex({
                                     <GraduationCap size={18} />
                                 )}
                             </AnimatePresence>
-                            {certProgress.status === 'processing' ? `PROCESSING...` : 'GENERATE CERTIFICATES'}
+                            {certProgress.status === 'processing' ? `MEMPROSES...` : 'BUAT SERTIFIKAT'}
                         </Button>
                     </div>
                 </motion.div>
@@ -272,7 +272,7 @@ export default function RekapNilaiIndex({
                                 <div className="space-y-4">
                                      <div className="flex items-center gap-4 text-emerald-500">
                                           <Activity size={20} className="animate-pulse" />
-                                          <span className="text-[10px] font-black uppercase tracking-[0.3em]">Asynchronous Job Processing</span>
+                                          <span className="text-[10px] font-black uppercase tracking-[0.3em]">Pemrosesan Tugas Asinkron</span>
                                      </div>
                                      <h3 className="text-3xl font-black uppercase tracking-tighter italic leading-none">Casting Certification Vault</h3>
                                      <p className="text-slate-400 font-bold uppercase tracking-tight italic opacity-80 leading-relaxed max-w-xl">

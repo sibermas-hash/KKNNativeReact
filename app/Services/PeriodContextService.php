@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\KKN\Periode;
@@ -9,7 +11,9 @@ use Illuminate\Support\Facades\Session;
 class PeriodContextService
 {
     private const CACHE_PREFIX = 'period_context:';
+
     private const SESSION_KEY = 'active_period_id';
+
     private const SESSION_DATA_KEY = 'active_period_data';
 
     /**
@@ -24,7 +28,7 @@ class PeriodContextService
 
         // Cache for quick access per user
         if (auth()->check()) {
-            Cache::put(self::CACHE_PREFIX . auth()->id(), $periodId, now()->addHours(24));
+            Cache::put(self::CACHE_PREFIX.auth()->id(), $periodId, now()->addHours(24));
         }
     }
 
@@ -127,7 +131,7 @@ class PeriodContextService
     {
         Session::forget([self::SESSION_KEY, self::SESSION_DATA_KEY]);
         if (auth()->check()) {
-            Cache::forget(self::CACHE_PREFIX . auth()->id());
+            Cache::forget(self::CACHE_PREFIX.auth()->id());
         }
     }
 

@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\KKN\AbsensiHarian;
 use App\Models\KKN\IzinMeninggalkan;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
-use App\Models\KKN\Periode;
 use App\Models\User;
 use App\Notifications\KknActivityNotification;
 use Illuminate\Support\Facades\DB;

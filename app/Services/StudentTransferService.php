@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Models\KKN\DplPeriod;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;

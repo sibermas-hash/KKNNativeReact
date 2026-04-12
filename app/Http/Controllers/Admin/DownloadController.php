@@ -1,15 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\Download;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Gate;
-
 use App\Traits\HandlesPagination;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class DownloadController extends Controller
 {
@@ -18,7 +19,7 @@ class DownloadController extends Controller
     public function index()
     {
         Gate::authorize('manage-settings');
-        
+
         return Inertia::render('Admin/Website/Downloads/Index', [
             'downloads' => $this->formatPaginator(Download::orderBy('created_at', 'desc')->paginate(10)),
         ]);
@@ -34,7 +35,7 @@ class DownloadController extends Controller
     public function store(Request $request)
     {
         Gate::authorize('manage-settings');
-        
+
         $request->validate([
             'title' => 'required|string|max:255',
             'file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:10240',
@@ -61,7 +62,7 @@ class DownloadController extends Controller
     public function update(Request $request, Download $download)
     {
         Gate::authorize('manage-settings');
-        
+
         $request->validate([
             'title' => 'required|string|max:255',
             'file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:10240',

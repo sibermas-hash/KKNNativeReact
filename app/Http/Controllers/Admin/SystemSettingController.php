@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -8,9 +10,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Gate;
 use Inertia\Response;
 
 class SystemSettingController extends Controller
@@ -40,19 +42,20 @@ class SystemSettingController extends Controller
             if (in_array($setting->config_key, self::SECRET_KEYS) && $setting->value) {
                 try {
                     $decrypted = Crypt::decryptString($setting->value);
-                    $setting->value = str_repeat('*', max(0, strlen($decrypted) - 4)) . substr($decrypted, -4);
+                    $setting->value = str_repeat('*', max(0, strlen($decrypted) - 4)).substr($decrypted, -4);
                     $setting->is_secret = true;
                 } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
                     $setting->value = '********';
                     $setting->is_secret = true;
                 }
             }
+
             return $setting;
         });
 
         return Inertia::render('Admin/System/Settings/System', [
             'settings' => $settings->groupBy('group'),
-            'title' => 'Pengaturan Sistem & API'
+            'title' => 'Pengaturan Sistem & API',
         ]);
     }
 
@@ -101,7 +104,7 @@ class SystemSettingController extends Controller
         }
 
         foreach ($indexedSettings as $item) {
-            $setting = SystemSetting::find($item['id']);
+            $setting = $settingModels->get($item['id']);
             if ($setting) {
                 $value = $item['value'];
                 // Encrypt secret values before storing

@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
-use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 
 class PhotoWatermarkService
 {
@@ -15,11 +17,11 @@ class PhotoWatermarkService
     public function apply(string $path, array $metadata): bool
     {
         try {
-            $manager = new ImageManager(new Driver());
+            $manager = new ImageManager(new Driver);
             $fullPath = Storage::disk('local')->path($path);
-            
+
             $image = $manager->read($fullPath);
-            
+
             $text = sprintf(
                 "NIM: %s\nTime: %s\nLoc: %s, %s",
                 $metadata['nim'],
@@ -43,9 +45,11 @@ class PhotoWatermarkService
             });
 
             $image->save();
+
             return true;
         } catch (\Exception $e) {
-            \Log::error('Watermark failed: ' . $e->getMessage());
+            \Log::error('Watermark failed: '.$e->getMessage());
+
             return false;
         }
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,8 +13,8 @@ class ProposalProgramKerja extends Model
     use HasFactory;
 
     protected $connection = 'kkn';
-    protected $table = 'proposal_program_kerja';
 
+    protected $table = 'proposal_program_kerja';
 
     public $timestamps = false;
 

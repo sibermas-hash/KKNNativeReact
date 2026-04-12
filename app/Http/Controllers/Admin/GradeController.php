@@ -1,16 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\PesertaKkn;
+use App\Services\GradingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-
-use App\Services\GradingService;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class GradeController extends Controller
@@ -18,24 +20,25 @@ class GradeController extends Controller
     public function __construct(
         private GradingService $gradingService
     ) {}
+
     public function index()
     {
         Gate::authorize('access-admin-panel');
         $this->authorize('viewAny', NilaiKkn::class);
-        
+
         $user = auth()->user();
         $isFacultyAdmin = $user?->hasRole('faculty_admin');
         $facultyId = $isFacultyAdmin ? $user?->faculty_id : null;
 
         $groups = KelompokKkn::with(['dpl.user:id,name', 'periode'])
             ->when($facultyId, function ($query, $id) {
-                $query->whereHas('peserta.mahasiswa', fn($q) => $q->where('faculty_id', $id));
+                $query->whereHas('peserta.mahasiswa', fn ($q) => $q->where('faculty_id', $id));
             })
             ->when(request('jenis_kkn_id'), function ($query, $jenisId) {
-                $query->whereHas('periode', fn($q) => $q->where('jenis_kkn_id', $jenisId));
+                $query->whereHas('periode', fn ($q) => $q->where('jenis_kkn_id', $jenisId));
             })
             ->orderBy('code')
-            ->get(['id','code','nama_kelompok','dpl_id', 'period_id']);
+            ->get(['id', 'code', 'nama_kelompok', 'dpl_id', 'period_id']);
 
         $jenisKknOptions = \App\Models\KKN\JenisKkn::dropdownOptions();
 
@@ -57,10 +60,11 @@ class GradeController extends Controller
         $students = PesertaKkn::with(['mahasiswa:id,user_id,nim,nama', 'mahasiswa.user:id,username,email,name'])
             ->where('kelompok_id', $group->id)
             ->where('status', 'approved')
-            ->when($facultyId, fn($q) => $q->whereHas('mahasiswa', fn($m) => $m->where('faculty_id', $facultyId)))
+            ->when($facultyId, fn ($q) => $q->whereHas('mahasiswa', fn ($m) => $m->where('faculty_id', $facultyId)))
             ->get()
             ->map(function ($reg) use ($group) {
                 $user = $reg->mahasiswa->user;
+
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
@@ -95,6 +99,20 @@ class GradeController extends Controller
             // LPPM
             'scores.*.administration_score' => ['nullable', 'numeric', 'between:0,100'],
         ]);
+
+        // Validate that all students belong to the specified kelompok
+        $studentIds = collect($data['scores'])->pluck('student_id')->unique();
+        $validStudentIds = PesertaKkn::where('kelompok_id', $data['kelompok_id'])
+            ->where('status', 'approved')
+            ->whereHas('mahasiswa', fn ($q) => $q->whereIn('user_id', $studentIds))
+            ->pluck('mahasiswa.user_id');
+
+        $invalidIds = $studentIds->diff($validStudentIds);
+        if ($invalidIds->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'scores' => 'One or more students do not belong to the selected kelompok.',
+            ]);
+        }
 
         DB::transaction(function () use ($data) {
             foreach ($data['scores'] as $row) {

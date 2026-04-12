@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,6 +14,7 @@ class NilaiKkn extends Model
     use HasFactory;
 
     protected $connection = 'kkn';
+
     protected $table = 'nilai_kkn';
 
     // FIXED: Remove confusing mahasiswa_id - only use user_id
@@ -85,8 +88,8 @@ class NilaiKkn extends Model
      */
     public function calculateVillageScore(): float
     {
-        return ($this->desa_interaksi_score * 0.30) + 
-               ($this->desa_disiplin_score * 0.40) + 
+        return ($this->desa_interaksi_score * 0.30) +
+               ($this->desa_disiplin_score * 0.40) +
                ($this->desa_kinerja_score * 0.30);
     }
 
@@ -95,10 +98,10 @@ class NilaiKkn extends Model
      */
     public function calculateDplScore(): float
     {
-        return ($this->dpl_relevansi_score * 0.20) + 
-               ($this->dpl_ketercapaian_score * 0.20) + 
-               ($this->dpl_inovasi_score * 0.20) + 
-               ($this->dpl_administrasi_score * 0.20) + 
+        return ($this->dpl_relevansi_score * 0.20) +
+               ($this->dpl_ketercapaian_score * 0.20) +
+               ($this->dpl_inovasi_score * 0.20) +
+               ($this->dpl_administrasi_score * 0.20) +
                ($this->dpl_artikel_score * 0.20);
     }
 

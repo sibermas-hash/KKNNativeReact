@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\KknType;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\KonfigurasiPenilaian;
-use App\Enums\KknType;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class KonfigurasiPenilaianController extends Controller
@@ -44,15 +45,15 @@ class KonfigurasiPenilaianController extends Controller
         $programOptions = collect(KknType::cases())
             ->map(fn (KknType $type) => [
                 'value' => $type->value,
-                'label' => $type->label()
+                'label' => $type->label(),
             ])->values();
 
         return Inertia::render('Admin/Academic/Grading/Settings', [
             'sections' => $sections,
             'programOptions' => $programOptions,
             'filters' => [
-                'kkn_type' => $selectedType->value
-            ]
+                'kkn_type' => $selectedType->value,
+            ],
         ]);
     }
 

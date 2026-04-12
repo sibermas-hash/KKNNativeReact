@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -12,6 +14,7 @@ use Inertia\Response;
 class ProgramKerjaController extends Controller
 {
     use \App\Traits\HandlesPagination;
+
     public function index(Request $request): Response
     {
         Gate::authorize('view-reports');
@@ -24,7 +27,7 @@ class ProgramKerjaController extends Controller
         $query = ProgramKerja::query()
             ->when($status, fn ($q) => $q->where('status', $status))
             ->when($facultyId, function ($query, $id) {
-                $query->whereHas('kelompok.peserta.mahasiswa', fn($q) => $q->where('faculty_id', $id));
+                $query->whereHas('kelompok.peserta.mahasiswa', fn ($q) => $q->where('faculty_id', $id));
             });
 
         $workPrograms = (clone $query)->with(['kelompok.lokasi'])
@@ -43,9 +46,9 @@ class ProgramKerjaController extends Controller
             }
         });
 
-        $sdgDistribution = collect($sdgCounts)->map(fn($count, $id) => [
+        $sdgDistribution = collect($sdgCounts)->map(fn ($count, $id) => [
             'id' => $id,
-            'count' => $count
+            'count' => $count,
         ])->values();
 
         return Inertia::render('Admin/Monitoring/WorkPrograms/Index', [

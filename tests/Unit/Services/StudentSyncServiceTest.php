@@ -39,7 +39,7 @@ class StudentSyncServiceTest extends TestCase
         ];
 
         $this->masterApiMock
-            ->shouldReceive('getAllStudents')
+            ->shouldReceive('getSyncMahasiswa')
             ->once()
             ->andReturn($mockStudents);
 
@@ -73,7 +73,7 @@ class StudentSyncServiceTest extends TestCase
         ];
 
         $this->masterApiMock
-            ->shouldReceive('getAllStudents')
+            ->shouldReceive('getSyncMahasiswa')
             ->once()
             ->andReturn($mockStudents);
 

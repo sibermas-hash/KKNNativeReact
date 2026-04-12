@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,6 +13,7 @@ class FileKegiatanKkn extends Model
     use HasFactory;
 
     protected $connection = 'kkn';
+
     protected $table = 'file_kegiatan_kkn';
 
     protected $fillable = [

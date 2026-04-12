@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\KKN\Dosen;
@@ -41,7 +43,7 @@ class DplAssignmentService
 
     public function assignPrimaryGroup(DplPeriod $dplPeriod, KelompokKkn $group): void
     {
-        if (!$dplPeriod->is_active) {
+        if (! $dplPeriod->is_active) {
             throw new DomainException('Penugasan DPL untuk periode tersebut sudah tidak aktif.');
         }
 
@@ -50,7 +52,7 @@ class DplAssignmentService
         }
 
         $isCurrentAssignment = $group->dpl_period_id === $dplPeriod->id;
-        if (!$isCurrentAssignment && !$dplPeriod->hasCapacity()) {
+        if (! $isCurrentAssignment && ! $dplPeriod->hasCapacity()) {
             throw new DomainException('DPL sudah mencapai batas maksimum kelompok untuk periode ini.');
         }
 
@@ -76,7 +78,7 @@ class DplAssignmentService
         ?string $regencyName,
         ?int $assignedBy = null,
     ): DplKecamatanAssignment {
-        if (!$dplPeriod->is_active) {
+        if (! $dplPeriod->is_active) {
             throw new DomainException('Koordinator wilayah hanya dapat ditetapkan untuk DPL yang aktif.');
         }
 

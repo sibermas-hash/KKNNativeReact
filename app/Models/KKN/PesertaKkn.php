@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use App\Models\User;
@@ -15,6 +17,7 @@ class PesertaKkn extends Model
     use HasFactory, SoftDeletes;
 
     protected $connection = 'kkn';
+
     protected $table = 'peserta_kkn';
 
     protected $fillable = [
@@ -90,9 +93,10 @@ class PesertaKkn extends Model
     public function scopeSearch(Builder $query, string $search): Builder
     {
         $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+
         return $query->whereHas('mahasiswa', function ($q) use ($s) {
             $q->where('nama', 'like', "%{$s}%")
-              ->orWhere('nim', 'like', "%{$s}%");
+                ->orWhere('nim', 'like', "%{$s}%");
         });
     }
 }

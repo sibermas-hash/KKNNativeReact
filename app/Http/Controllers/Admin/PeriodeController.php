@@ -1,24 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\TahunAkademik;
-use App\Models\KKN\Periode;
-use App\Models\KKN\JenisKkn;
 use App\Enums\KknType;
+use App\Http\Controllers\Controller;
+use App\Models\KKN\JenisKkn;
+use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\Periode;
+use App\Models\KKN\TahunAkademik;
 use App\Services\RedisCacheService;
+use App\Traits\HandlesPagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Traits\HandlesPagination;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -71,24 +72,24 @@ class PeriodeController extends Controller
     public function index(Request $request): Response
     {
         Gate::authorize('manage-master-data');
-        
+
         $periods = RedisCacheService::getPeriods(function () use ($request) {
             return Periode::with('tahunAkademik', 'jenisKkn')
                 ->withCount(['kelompok', 'peserta', 'dplPeriods'])
                 ->when($request->search, function ($query, $search) {
                     $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
                     $query->where('periode', 'like', "%{$s}%")
-                          ->orWhere('jenis', 'like', "%{$s}%")
-                          ->orWhere('name', 'like', "%{$s}%")
-                          ->orWhereHas('jenisKkn', function($q) use ($s) {
-                              $q->where('name', 'ilike', "%{$s}%")
+                        ->orWhere('jenis', 'like', "%{$s}%")
+                        ->orWhere('name', 'like', "%{$s}%")
+                        ->orWhereHas('jenisKkn', function ($q) use ($s) {
+                            $q->where('name', 'ilike', "%{$s}%")
                                 ->orWhere('code', 'ilike', "%{$s}%");
-                          });
+                        });
                 })
                 ->orderByDesc('periode')
                 ->get();
         });
-        
+
         $page = $request->input('page', 1);
         $perPage = 10;
         $periodsCollection = collect($periods);
@@ -104,38 +105,38 @@ class PeriodeController extends Controller
             $governance = $p->governance();
 
             return [
-            'id' => $p->id,
-            'jenis_kkn_id' => $p->jenis_kkn_id,
-            'periode' => $p->periode,
-            'jenis' => $p->jenis instanceof KknType ? $p->jenis->label() : $p->jenis,
-            'program_type' => $governance['program_type'],
-            'program_subtype' => $governance['program_subtype'],
-            'registration_mode' => $governance['registration_mode'],
-            'placement_mode' => $governance['placement_mode'],
-            'program_type_label' => $governance['program_type_label'],
-            'program_subtype_label' => $governance['program_subtype_label'],
-            'registration_mode_label' => $governance['registration_mode_label'],
-            'placement_mode_label' => $governance['placement_mode_label'],
-            'self_service_enabled' => $p->usesSelfServiceRegistration(),
-            'name' => $p->name,
-            'start_date' => $p->start_date?->format('Y-m-d'),
-            'end_date' => $p->end_date?->format('Y-m-d'),
-            'registration_start' => $p->registration_start?->format('Y-m-d'),
-            'registration_end' => $p->registration_end?->format('Y-m-d'),
-            'grading_start' => $p->grading_start?->format('Y-m-d'),
-            'grading_end' => $p->grading_end?->format('Y-m-d'),
-            'kuota' => $p->kuota,
-            'is_active' => $p->is_active,
-            'current_phase' => $p->current_phase,
-            'academic_year' => $p->tahunAkademik ? ['id' => $p->tahunAkademik->id, 'year' => $p->tahunAkademik->year] : null,
-            'groups_count' => $p->kelompok_count,
-            'participants_count' => $p->peserta_count,
-            'dpl_periods_count' => $p->dpl_periods_count,
-            'can_delete' => $this->canDeletePeriod($p),
-            'delete_blocker' => $this->getDeleteBlockerReason($p),
-            'duration_days' => $p->start_date && $p->end_date ? $p->start_date->diffInDays($p->end_date) : 0,
-            'registration_duration_days' => $p->registration_start && $p->registration_end ? $p->registration_start->diffInDays($p->registration_end) : 0,
-            'capacity_percentage' => $p->kuota > 0 ? round(($p->peserta_count / $p->kuota) * 100, 1) : 0,
+                'id' => $p->id,
+                'jenis_kkn_id' => $p->jenis_kkn_id,
+                'periode' => $p->periode,
+                'jenis' => $p->jenis instanceof KknType ? $p->jenis->label() : $p->jenis,
+                'program_type' => $governance['program_type'],
+                'program_subtype' => $governance['program_subtype'],
+                'registration_mode' => $governance['registration_mode'],
+                'placement_mode' => $governance['placement_mode'],
+                'program_type_label' => $governance['program_type_label'],
+                'program_subtype_label' => $governance['program_subtype_label'],
+                'registration_mode_label' => $governance['registration_mode_label'],
+                'placement_mode_label' => $governance['placement_mode_label'],
+                'self_service_enabled' => $p->usesSelfServiceRegistration(),
+                'name' => $p->name,
+                'start_date' => $p->start_date?->format('Y-m-d'),
+                'end_date' => $p->end_date?->format('Y-m-d'),
+                'registration_start' => $p->registration_start?->format('Y-m-d'),
+                'registration_end' => $p->registration_end?->format('Y-m-d'),
+                'grading_start' => $p->grading_start?->format('Y-m-d'),
+                'grading_end' => $p->grading_end?->format('Y-m-d'),
+                'kuota' => $p->kuota,
+                'is_active' => $p->is_active,
+                'current_phase' => $p->current_phase,
+                'academic_year' => $p->tahunAkademik ? ['id' => $p->tahunAkademik->id, 'year' => $p->tahunAkademik->year] : null,
+                'groups_count' => $p->kelompok_count,
+                'participants_count' => $p->peserta_count,
+                'dpl_periods_count' => $p->dpl_periods_count,
+                'can_delete' => $this->canDeletePeriod($p),
+                'delete_blocker' => $this->getDeleteBlockerReason($p),
+                'duration_days' => $p->start_date && $p->end_date ? $p->start_date->diffInDays($p->end_date) : 0,
+                'registration_duration_days' => $p->registration_start && $p->registration_end ? $p->registration_start->diffInDays($p->registration_end) : 0,
+                'capacity_percentage' => $p->kuota > 0 ? round(($p->peserta_count / $p->kuota) * 100, 1) : 0,
             ];
         });
 
@@ -195,11 +196,11 @@ class PeriodeController extends Controller
 
         if ($overlap) {
             return redirect()->back()->withErrors([
-                'start_date' => "Tanggal overlap dengan periode '{$overlap->name}' ({$overlap->start_date->format('d M Y')} - {$overlap->end_date->format('d M Y')})"
+                'start_date' => "Tanggal overlap dengan periode '{$overlap->name}' ({$overlap->start_date->format('d M Y')} - {$overlap->end_date->format('d M Y')})",
             ]);
         }
 
-        if (!empty($validated['is_active'])) {
+        if (! empty($validated['is_active'])) {
             Periode::where('is_active', true)->update(['is_active' => false]);
         }
 
@@ -222,11 +223,11 @@ class PeriodeController extends Controller
 
         if ($overlap) {
             return redirect()->back()->withErrors([
-                'start_date' => "Tanggal overlap dengan periode '{$overlap->name}' ({$overlap->start_date->format('d M Y')} - {$overlap->end_date->format('d M Y')})"
+                'start_date' => "Tanggal overlap dengan periode '{$overlap->name}' ({$overlap->start_date->format('d M Y')} - {$overlap->end_date->format('d M Y')})",
             ]);
         }
 
-        if (!empty($validated['is_active'])) {
+        if (! empty($validated['is_active'])) {
             Periode::where('id', '!=', $periode->id)
                 ->where('is_active', true)
                 ->update(['is_active' => false]);
@@ -273,7 +274,7 @@ class PeriodeController extends Controller
     {
         $periode->loadCount(['kelompok', 'peserta', 'dplPeriods']);
 
-        if (!$this->canDeletePeriod($periode)) {
+        if (! $this->canDeletePeriod($periode)) {
             return redirect()->route('admin.periode.index')->with('error', $this->getDeleteBlockerReason($periode));
         }
 
@@ -285,7 +286,7 @@ class PeriodeController extends Controller
 
     private function canDeletePeriod(Periode $period): bool
     {
-        return !$period->is_active
+        return ! $period->is_active
             && (int) ($period->kelompok_count ?? 0) === 0
             && (int) ($period->peserta_count ?? 0) === 0
             && (int) ($period->dpl_periods_count ?? 0) === 0;
@@ -311,7 +312,7 @@ class PeriodeController extends Controller
     private function generateCopyName(string $name): string
     {
         $baseName = preg_replace('/\s+\(Copy(?: \d+)?\)$/', '', $name) ?: $name;
-        $candidate = $baseName . ' (Copy)';
+        $candidate = $baseName.' (Copy)';
         $suffix = 2;
 
         while (Periode::withTrashed()->where('name', $candidate)->exists()) {
@@ -325,7 +326,7 @@ class PeriodeController extends Controller
     private function generateUniqueGroupCode(): string
     {
         do {
-            $code = 'KKN-' . strtoupper(Str::random(6));
+            $code = 'KKN-'.strtoupper(Str::random(6));
         } while (KelompokKkn::withTrashed()->where('code', $code)->exists());
 
         return $code;
@@ -344,11 +345,11 @@ class PeriodeController extends Controller
     {
         $query = Periode::where(function ($q) use ($startDate, $endDate) {
             $q->whereBetween('start_date', [$startDate, $endDate])
-              ->orWhereBetween('end_date', [$startDate, $endDate])
-              ->orWhere(function ($q2) use ($startDate, $endDate) {
-                  $q2->where('start_date', '<=', $startDate)
-                     ->where('end_date', '>=', $endDate);
-              });
+                ->orWhereBetween('end_date', [$startDate, $endDate])
+                ->orWhere(function ($q2) use ($startDate, $endDate) {
+                    $q2->where('start_date', '<=', $startDate)
+                        ->where('end_date', '>=', $endDate);
+                });
         });
 
         if ($excludeId) {
@@ -369,7 +370,7 @@ class PeriodeController extends Controller
             ->orderByDesc('periode')
             ->get();
 
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
         $sheet->setCellValue('A1', 'No');
@@ -407,7 +408,7 @@ class PeriodeController extends Controller
             $sheet->setCellValue("I{$row}", $period->registration_end?->format('d M Y') ?? '-');
             $sheet->setCellValue("J{$row}", $period->kuota);
             $sheet->setCellValue("K{$row}", $period->peserta_count);
-            $sheet->setCellValue("L{$row}", $period->kuota > 0 ? round(($period->peserta_count / $period->kuota) * 100, 1) . '%' : '0%');
+            $sheet->setCellValue("L{$row}", $period->kuota > 0 ? round(($period->peserta_count / $period->kuota) * 100, 1).'%' : '0%');
             $sheet->setCellValue("M{$row}", $period->kelompok_count);
             $sheet->setCellValue("N{$row}", $period->dpl_periods_count);
             $sheet->setCellValue("O{$row}", $period->is_active ? 'Aktif' : 'Tidak Aktif');
@@ -423,17 +424,18 @@ class PeriodeController extends Controller
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        $filename = 'data-periode-kkn-' . date('Y-m-d-His') . '.xlsx';
+        $filename = 'data-periode-kkn-'.date('Y-m-d-His').'.xlsx';
         $writer = new Xlsx($spreadsheet);
 
         $exportDir = storage_path('framework/cache/exports');
-        if (!is_dir($exportDir)) {
+        if (! is_dir($exportDir)) {
             mkdir($exportDir, 0750, true);
         }
 
-        $tempFile = $exportDir . '/' . \Illuminate\Support\Str::uuid() . '.xlsx';
+        $tempFile = $exportDir.'/'.\Illuminate\Support\Str::uuid().'.xlsx';
         try {
             $writer->save($tempFile);
+
             return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
         } catch (\Throwable $e) {
             if (file_exists($tempFile)) {

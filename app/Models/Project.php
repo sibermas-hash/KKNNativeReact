@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -17,6 +19,6 @@ class Project extends Model
 
     public function apiKeys(): HasMany
     {
-        return $this->hasMany(ApiKey::class , 'email', 'email');
+        return $this->hasMany(ApiKey::class, 'email', 'email');
     }
 }

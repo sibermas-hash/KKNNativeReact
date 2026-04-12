@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -49,7 +51,7 @@ class TahunAkademikController extends Controller
         Gate::authorize('manage-master-data');
 
         $validated = $request->validate([
-            'year' => ['required', 'string', 'max:9', 'unique:tahun_akademik,year,' . $tahunAkademik->id],
+            'year' => ['required', 'string', 'max:9', 'unique:tahun_akademik,year,'.$tahunAkademik->id],
             'is_active' => ['boolean'],
         ]);
 
@@ -85,4 +87,3 @@ class TahunAkademikController extends Controller
         return redirect()->back()->with('success', 'Tahun akademik berhasil dihapus.');
     }
 }
-

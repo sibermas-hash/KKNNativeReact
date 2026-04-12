@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\KKN\NilaiKkn;
-use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use RuntimeException;
 
@@ -23,7 +24,7 @@ class CertificateService
 
         $mahasiswaModel = $score->mahasiswa;
 
-        if (!$mahasiswaModel) {
+        if (! $mahasiswaModel) {
             throw new RuntimeException('Data mahasiswa untuk nilai ini tidak ditemukan.');
         }
 
@@ -32,7 +33,7 @@ class CertificateService
             ->where('kelompok_id', $score->kelompok_id)
             ->first();
 
-        if (!$laporanAkhir || $laporanAkhir->status !== 'approved') {
+        if (! $laporanAkhir || $laporanAkhir->status !== 'approved') {
             throw new RuntimeException('Sertifikat belum tersedia. Laporan akhir belum disetujui DPL.');
         }
         if ($score->total_score < 70) {
@@ -71,13 +72,13 @@ class CertificateService
             'score' => $score->total_score,
             'grade' => $score->letter_grade,
             'date' => now()->translatedFormat('d F Y'),
-            'certificate_no' => 'KKN/' . $score->kelompok->periode->id . '/' . $verificationToken,
+            'certificate_no' => 'KKN/'.$score->kelompok->periode->id.'/'.$verificationToken,
             'signer1_name' => $configs['cert_signer_left_name'] ?? '-',
             'signer1_title' => $configs['cert_signer_left_title'] ?? '-',
             'signer2_name' => $configs['cert_signer_right_name'] ?? '-',
             'signer2_title' => $configs['cert_signer_right_title'] ?? '-',
             'bg_image' => $configs['cert_background'] ?? public_path('images/cert-bg-default.png'),
-            'qr_url' => "https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=" . urlencode($verificationUrl) . "&choe=UTF-8",
+            'qr_url' => 'https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl='.urlencode($verificationUrl).'&choe=UTF-8',
         ];
 
         return Pdf::loadView('reports.certificate', $data)
@@ -89,9 +90,9 @@ class CertificateService
      */
     public function generateZip(\Illuminate\Support\Collection $scores)
     {
-        $zip = new \ZipArchive();
-        $zipFileName = 'Sertifikat_KKN_Massal_' . now()->format('Ymd_His') . '.zip';
-        $zipFilePath = storage_path('app/public/' . $zipFileName);
+        $zip = new \ZipArchive;
+        $zipFileName = 'Sertifikat_KKN_Massal_'.now()->format('Ymd_His').'.zip';
+        $zipFilePath = storage_path('app/public/'.$zipFileName);
 
         if ($zip->open($zipFilePath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
             throw new RuntimeException('Gagal membuat file ZIP.');

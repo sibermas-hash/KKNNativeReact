@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\LaporanAkhir;
+use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\ProgramKerja;
-use App\Models\KKN\NilaiKkn;
 use App\Services\PeriodContextService;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -63,7 +65,7 @@ class DashboardController extends Controller
         $workProgram = $registrationModel?->kelompok_id
             ? ProgramKerja::where('kelompok_id', $registrationModel->kelompok_id)->first()
             : null;
-            
+
         $workProgramCount = $workProgram ? 1 : 0;
         $abcdStage = $workProgram?->abcd_stage?->value;
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Model;
@@ -8,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class DispensasiKkn extends Model
 {
     protected $connection = 'kkn';
+
     protected $table = 'dispensasi_kkn';
 
     protected $fillable = [
@@ -40,13 +43,13 @@ class DispensasiKkn extends Model
     public static function hasDispensasi(string $nim, ?int $periodId = null): bool
     {
         $query = static::where('nim', $nim)->where('is_active', true);
-        
+
         if ($periodId) {
             $query->where(function ($q) use ($periodId) {
                 $q->where('period_id', $periodId)->orWhereNull('period_id');
             });
         }
-        
+
         return $query->exists();
     }
 
@@ -56,14 +59,15 @@ class DispensasiKkn extends Model
     public static function getBypassedRequirements(string $nim, ?int $periodId = null): array
     {
         $query = static::where('nim', $nim)->where('is_active', true);
-        
+
         if ($periodId) {
             $query->where(function ($q) use ($periodId) {
                 $q->where('period_id', $periodId)->orWhereNull('period_id');
             });
         }
-        
+
         $dispensasi = $query->first();
+
         return $dispensasi?->bypassed_requirements ?? [];
     }
 }

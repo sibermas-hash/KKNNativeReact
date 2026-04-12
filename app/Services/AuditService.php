@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Models\KKN\LogAudit;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 
@@ -51,12 +52,14 @@ class AuditService
 
         $actionUpper = strtoupper($action);
         foreach ($high as $h) {
-            if (str_contains($actionUpper, $h))
+            if (str_contains($actionUpper, $h)) {
                 return 'high';
+            }
         }
         foreach ($medium as $m) {
-            if (str_contains($actionUpper, $m))
+            if (str_contains($actionUpper, $m)) {
                 return 'medium';
+            }
         }
 
         return 'low';

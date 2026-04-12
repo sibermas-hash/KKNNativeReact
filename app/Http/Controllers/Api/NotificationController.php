@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -18,7 +20,7 @@ class NotificationController extends Controller
             ->latest()
             ->take(15)
             ->get()
-            ->map(fn($n) => [
+            ->map(fn ($n) => [
                 'id' => $n->id,
                 'type' => $n->data['type'] ?? 'info',
                 'title' => $n->data['title'] ?? 'Notification',
@@ -42,7 +44,7 @@ class NotificationController extends Controller
     {
         $notification = $request->user()->notifications()->findOrFail($id);
         $notification->markAsRead();
-        
+
         return response()->json(['ok' => true]);
     }
 
@@ -52,6 +54,7 @@ class NotificationController extends Controller
     public function markAllRead(Request $request): JsonResponse
     {
         $request->user()->unreadNotifications->markAsRead();
+
         return response()->json(['ok' => true]);
     }
 
@@ -62,11 +65,11 @@ class NotificationController extends Controller
     {
         $request->validate([
             'token' => 'required|string',
-            'device_type' => 'nullable|string'
+            'device_type' => 'nullable|string',
         ]);
 
         $request->user()->update([
-            'device_token' => $request->token
+            'device_token' => $request->token,
         ]);
 
         return response()->json(['ok' => true, 'message' => 'Device token updated successfully']);

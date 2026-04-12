@@ -71,7 +71,7 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => env('DB_SSLMODE', 'prefer'),
+            'sslmode' => env('DB_SSLMODE', 'require'),
         ],
 
         'master' => [
@@ -86,7 +86,7 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => env('DB_MASTER_SCHEMA', env('DB_SEARCH_PATH', 'public')),
-            'sslmode' => env('DB_MASTER_SSLMODE', env('DB_SSLMODE', 'prefer')),
+            'sslmode' => env('DB_MASTER_SSLMODE', env('DB_SSLMODE', 'require')),
         ],
 
         'kkn' => [
@@ -101,7 +101,7 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => env('DB_KKN_SCHEMA', env('DB_SEARCH_PATH', 'public')),
-            'sslmode' => env('DB_KKN_SSLMODE', env('DB_SSLMODE', 'prefer')),
+            'sslmode' => env('DB_KKN_SSLMODE', env('DB_SSLMODE', 'require')),
         ],
 
         'sqlsrv' => [

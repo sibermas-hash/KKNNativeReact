@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\KKN;
 
-use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\KonfigurasiPenilaian;
+use App\Models\KKN\NilaiKkn;
 use App\Services\AuditService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -21,7 +23,7 @@ class NilaiAkhirService
             $nilai = NilaiKkn::with('kelompok.periode', 'mahasiswa')->findOrFail($nilaiKknId);
             $period = $nilai->kelompok?->periode;
 
-            if (!$period) {
+            if (! $period) {
                 throw new \Exception('Periode KKN tidak ditemukan untuk penilaian ini.');
             }
 
@@ -33,18 +35,18 @@ class NilaiAkhirService
                     ->where('status', 'approved')
                     ->exists();
 
-                if (!$reportApproved) {
+                if (! $reportApproved) {
                     throw new \Exception('Laporan akhir mahasiswa belum disetujui. Nilai tidak dapat difinalisasi.');
                 }
             }
 
             // Get KKN type and load grading configuration (aligned with GradingService)
             $kknType = $nilai->kelompok?->periode?->jenis;
-            if (!$kknType instanceof \App\Enums\KknType) {
+            if (! $kknType instanceof \App\Enums\KknType) {
                 $kknType = \App\Enums\KknType::tryFrom($kknType) ?? \App\Enums\KknType::REGULER;
             }
 
-            $cacheKey = 'grading_configs_' . $kknType->value;
+            $cacheKey = 'grading_configs_'.$kknType->value;
             $configs = Cache::remember($cacheKey, 3600, function () use ($kknType) {
                 return KonfigurasiPenilaian::getForType($kknType)->pluck('percentage', 'config_key');
             });

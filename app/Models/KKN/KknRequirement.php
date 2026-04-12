@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,9 +12,9 @@ class KknRequirement extends Model
     use HasFactory;
 
     protected $table = 'kkn_requirements';
-    
+
     // Explicitly define the connection if needed (as per KKN architecture)
-    protected $connection = 'kkn'; 
+    protected $connection = 'kkn';
 
     protected $fillable = [
         'name',
@@ -54,26 +56,28 @@ class KknRequirement extends Model
         // 2. Compare based on the selected operator
         switch ($this->operator) {
             case '>=':
-                return (float)$actualValue >= (float)$expected;
+                return (float) $actualValue >= (float) $expected;
             case '<=':
-                return (float)$actualValue <= (float)$expected;
+                return (float) $actualValue <= (float) $expected;
             case '>':
-                return (float)$actualValue > (float)$expected;
+                return (float) $actualValue > (float) $expected;
             case '<':
-                return (float)$actualValue < (float)$expected;
+                return (float) $actualValue < (float) $expected;
             case '==':
             case '=':
-                return (string)$actualValue === (string)$expected;
+                return (string) $actualValue === (string) $expected;
             case '!=':
             case '<>':
-                return (string)$actualValue !== (string)$expected;
+                return (string) $actualValue !== (string) $expected;
             case 'in':
                 // Expected format: "LULUS, PASSED, TRUE"
                 $allowedValues = array_map('trim', explode(',', strtoupper($expected)));
-                return in_array(strtoupper((string)$actualValue), $allowedValues);
+
+                return in_array(strtoupper((string) $actualValue), $allowedValues);
             case 'not_in':
                 $disallowedValues = array_map('trim', explode(',', strtoupper($expected)));
-                return !in_array(strtoupper((string)$actualValue), $disallowedValues);
+
+                return ! in_array(strtoupper((string) $actualValue), $disallowedValues);
             default:
                 return false; // Unknown operator implies failure
         }

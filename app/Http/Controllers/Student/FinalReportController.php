@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
@@ -39,16 +41,17 @@ class FinalReportController extends Controller
                 }
             }
 
-            abort_if(!$valid, 422, 'File format tidak valid atau tidak sesuai dengan type yang dideklarasikan.');
+            abort_if(! $valid, 422, 'File format tidak valid atau tidak sesuai dengan type yang dideklarasikan.');
         } catch (\Exception $e) {
             abort(422, 'Gagal memvalidasi file.');
         }
     }
+
     public function create(): Response
     {
         $mahasiswa = auth()->user()?->mahasiswa;
         $pendaftaran = $mahasiswa?->peserta()->where('status', 'approved')->first();
-        
+
         // Check if student is the leader of the group
         $isLeader = $pendaftaran && $pendaftaran->role === 'Ketua';
 
@@ -66,11 +69,11 @@ class FinalReportController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $mahasiswa = auth()->user()?->mahasiswa;
-        abort_if(!$mahasiswa, 403, 'Profil mahasiswa tidak ditemukan.');
-        
+        abort_if(! $mahasiswa, 403, 'Profil mahasiswa tidak ditemukan.');
+
         $pendaftaran = $mahasiswa->peserta()->where('status', 'approved')->first();
-        
-        abort_if(!$pendaftaran || !$pendaftaran->kelompok_id, 403, 'Anda belum terdaftar dalam kelompok.');
+
+        abort_if(! $pendaftaran || ! $pendaftaran->kelompok_id, 403, 'Anda belum terdaftar dalam kelompok.');
         abort_if($pendaftaran->role !== 'Ketua', 403, 'Hanya Ketua Kelompok yang diizinkan mengunggah Laporan Akhir.');
 
         $validated = $request->validate([
@@ -88,33 +91,33 @@ class FinalReportController extends Controller
 
         $file = $request->file('file');
         $this->validateFileMagicBytes($file);
-        $path = $file->storeAs('final-reports', Str::uuid() . '.' . $file->getClientOriginalExtension(), 'local');
+        $path = $file->storeAs('final-reports', Str::uuid().'.'.$file->getClientOriginalExtension(), 'local');
 
         $article1Path = null;
         if ($request->hasFile('article_1')) {
             $this->validateFileMagicBytes($request->file('article_1'));
-            $article1Path = $request->file('article_1')->storeAs('final-reports', Str::uuid() . '.' . $request->file('article_1')->getClientOriginalExtension(), 'local');
+            $article1Path = $request->file('article_1')->storeAs('final-reports', Str::uuid().'.'.$request->file('article_1')->getClientOriginalExtension(), 'local');
         }
 
         $article2Path = null;
         if ($request->hasFile('article_2')) {
             $this->validateFileMagicBytes($request->file('article_2'));
-            $article2Path = $request->file('article_2')->storeAs('final-reports', Str::uuid() . '.' . $request->file('article_2')->getClientOriginalExtension(), 'local');
+            $article2Path = $request->file('article_2')->storeAs('final-reports', Str::uuid().'.'.$request->file('article_2')->getClientOriginalExtension(), 'local');
         }
 
         $poster1Path = null;
         if ($request->hasFile('poster_1')) {
-            $poster1Path = $request->file('poster_1')->storeAs('final-reports/posters', Str::uuid() . '.' . $request->file('poster_1')->getClientOriginalExtension(), 'local');
+            $poster1Path = $request->file('poster_1')->storeAs('final-reports/posters', Str::uuid().'.'.$request->file('poster_1')->getClientOriginalExtension(), 'local');
         }
 
         $poster2Path = null;
         if ($request->hasFile('poster_2')) {
-            $poster2Path = $request->file('poster_2')->storeAs('final-reports/posters', Str::uuid() . '.' . $request->file('poster_2')->getClientOriginalExtension(), 'local');
+            $poster2Path = $request->file('poster_2')->storeAs('final-reports/posters', Str::uuid().'.'.$request->file('poster_2')->getClientOriginalExtension(), 'local');
         }
 
         $poster3Path = null;
         if ($request->hasFile('poster_3')) {
-            $poster3Path = $request->file('poster_3')->storeAs('final-reports/posters', Str::uuid() . '.' . $request->file('poster_3')->getClientOriginalExtension(), 'local');
+            $poster3Path = $request->file('poster_3')->storeAs('final-reports/posters', Str::uuid().'.'.$request->file('poster_3')->getClientOriginalExtension(), 'local');
         }
 
         LaporanAkhir::updateOrCreate(

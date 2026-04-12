@@ -37,6 +37,9 @@ class RegistrationTest extends TestCase
             'mother_name' => 'Siti Salamah',
             'birth_place' => 'Purwokerto',
             'birth_date' => '2003-01-11',
+            'gender' => 'L',
+            'health_certificate_path' => 'files/health.pdf',
+            'parent_permission_path' => 'files/parent.pdf',
         ]);
 
         Periode::factory()->active()->create();

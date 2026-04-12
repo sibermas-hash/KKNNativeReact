@@ -1,16 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\KKN\DatabaseSyncLog;
-use App\Models\KKN\SystemSetting;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class DatabaseSyncMonitoringService
 {
     protected string $masterDbConnection;
+
     protected string $kknDbConnection;
 
     public function __construct()
@@ -180,7 +181,7 @@ class DatabaseSyncMonitoringService
         $critical = ['kkn', 'master', 'redis'];
 
         foreach ($critical as $service) {
-            if (!isset($results[$service]['status']) || $results[$service]['status'] !== 'connected') {
+            if (! isset($results[$service]['status']) || $results[$service]['status'] !== 'connected') {
                 return 'critical';
             }
         }

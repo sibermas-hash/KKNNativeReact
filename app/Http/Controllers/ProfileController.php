@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
@@ -185,17 +187,20 @@ class ProfileController extends Controller
             $user->save();
 
             if ($user->mahasiswa) {
-                $user->mahasiswa->fill([
-                    'nama' => $validated['name'],
-                    'nik' => $validated['nik'] ?? null,
-                    'mother_name' => $validated['mother_name'] ?? null,
-                    'gender' => $validated['gender'] ?? $user->mahasiswa->gender,
-                    'shirt_size' => $validated['shirt_size'] ?? null,
-                    'bpjs_number' => $validated['bpjs_number'] ?? null,
-                    'birth_place' => $validated['birth_place'] ?? null,
-                    'birth_date' => $validated['birth_date'] ?? null,
-                ]);
-                $user->mahasiswa->save();
+                $mahasiswa = \App\Models\KKN\Mahasiswa::where('user_id', $user->id)->lockForUpdate()->first();
+                if ($mahasiswa) {
+                    $mahasiswa->fill([
+                        'nama' => $validated['name'],
+                        'nik' => $validated['nik'] ?? null,
+                        'mother_name' => $validated['mother_name'] ?? null,
+                        'gender' => $validated['gender'] ?? $mahasiswa->gender,
+                        'shirt_size' => $validated['shirt_size'] ?? null,
+                        'bpjs_number' => $validated['bpjs_number'] ?? null,
+                        'birth_place' => $validated['birth_place'] ?? null,
+                        'birth_date' => $validated['birth_date'] ?? null,
+                    ]);
+                    $mahasiswa->save();
+                }
             }
         });
 

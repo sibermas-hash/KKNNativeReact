@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -11,10 +13,11 @@ use Inertia\Inertia;
 class AnnouncementController extends Controller
 {
     use \App\Traits\HandlesPagination;
+
     public function index()
     {
         $announcements = Announcement::orderByDesc('published_at')->paginate(10);
-        
+
         return Inertia::render('Admin/Website/Announcements/Index', [
             'announcements' => $this->formatPaginator($announcements),
         ]);
@@ -57,7 +60,7 @@ class AnnouncementController extends Controller
             'is_active' => 'required|boolean',
             'published_at' => 'required|date',
             'image' => 'nullable|image|max:2048',
-            'slug' => 'nullable|string|max:255|unique:kkn.announcements,slug,' . $announcement->id,
+            'slug' => 'nullable|string|max:255|unique:kkn.announcements,slug,'.$announcement->id,
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
             'meta_keywords' => 'nullable|string',
@@ -77,6 +80,7 @@ class AnnouncementController extends Controller
         Gate::authorize('manage-announcements');
 
         $announcement->delete();
+
         return redirect()->back()->with('success', 'Pengumuman berhasil dihapus.');
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\KKN\Workshop;
@@ -140,9 +142,11 @@ class WorkshopController extends Controller
                 $workshopId,
                 $request->user()->id
             );
+
             return back()->with('success', 'Pendaftaran pembekalan berhasil.');
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Workshop registration failed', ['error' => $e->getMessage()]);
+
             return back()->with('error', 'Pendaftaran pembekalan gagal. Silakan coba lagi.');
         }
     }

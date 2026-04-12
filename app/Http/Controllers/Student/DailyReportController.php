@@ -1,26 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\StoreDailyReportRequest;
-use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\FileKegiatanKkn;
+use App\Models\KKN\KegiatanKkn;
+use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\SystemSetting;
+use App\Services\GeoService;
 use App\Services\PeriodContextService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DailyReportController extends Controller
 {
+    public function __construct(
+        private readonly GeoService $geoService,
+    ) {}
+
     /**
      * Validate file magic bytes to prevent MIME spoofing.
      */
@@ -38,7 +45,7 @@ class DailyReportController extends Controller
 
         try {
             $stream = fopen($file->getRealPath(), 'rb');
-            if (!$stream) {
+            if (! $stream) {
                 abort(422, 'Gagal membuka file.');
             }
             $bytes = array_values(unpack('C4', fread($stream, 4)));
@@ -54,11 +61,12 @@ class DailyReportController extends Controller
                 }
             }
 
-            abort_if(!$valid, 422, 'Format file tidak valid atau tidak sesuai dengan type yang didekladasikan.');
+            abort_if(! $valid, 422, 'Format file tidak valid atau tidak sesuai dengan type yang didekladasikan.');
         } catch (\Exception $e) {
             abort(422, 'Gagal memvalidasi file.');
         }
     }
+
     public function index(): Response
     {
         $periodContextService = app(PeriodContextService::class);
@@ -81,8 +89,8 @@ class DailyReportController extends Controller
     {
         $mahasiswa = auth()->user()?->mahasiswa;
         $pendaftaran = $mahasiswa?->peserta()->where('status', 'approved')->with(['kelompok.lokasi', 'kelompok.posko'])->first();
-        
-        abort_if(!$pendaftaran, 403, 'Anda belum terdaftar dalam kelompok aktif.');
+
+        abort_if(! $pendaftaran, 403, 'Anda belum terdaftar dalam kelompok aktif.');
 
         return Inertia::render('Student/DailyReports/Create', [
             'group' => [
@@ -97,19 +105,28 @@ class DailyReportController extends Controller
     public function store(StoreDailyReportRequest $request): RedirectResponse|JsonResponse
     {
         $mahasiswa = auth()->user()?->mahasiswa;
-        abort_if(!$mahasiswa, 403, 'Profil mahasiswa tidak ditemukan.');
-        
+        abort_if(! $mahasiswa, 403, 'Profil mahasiswa tidak ditemukan.');
+
         $pendaftaran = $mahasiswa->peserta()->where('status', 'approved')->with(['kelompok.lokasi', 'kelompok.posko'])->first();
-        abort_if(!$pendaftaran || !$pendaftaran->kelompok_id, 403, 'Anda belum ditempatkan di kelompok.');
+        abort_if(! $pendaftaran || ! $pendaftaran->kelompok_id, 403, 'Anda belum ditempatkan di kelompok.');
 
         $validated = $request->validated();
 
         // 24 HOURS BACKDATE PROTECTION
         $reportDate = Carbon::parse($validated['date']);
-        if ($reportDate->diffInHours(now()) > 24 && !auth()->user()->hasRole('superadmin')) {
-            throw ValidationException::withMessages([
-                'date' => 'Maaf, logbook maksimal diisi 24 jam setelah kegiatan berlangsung (SOP LPPM UIN SAIZU).',
-            ]);
+        if ($reportDate->diffInHours(now()) > 24) {
+            if (auth()->user()->hasRole('superadmin')) {
+                Log::info('Superadmin bypassed 24-hour backdate protection', [
+                    'user_id' => auth()->id(),
+                    'mahasiswa_id' => $mahasiswa->id,
+                    'report_date' => $validated['date'],
+                    'hours_ago' => $reportDate->diffInHours(now()),
+                ]);
+            } else {
+                throw ValidationException::withMessages([
+                    'date' => 'Maaf, logbook maksimal diisi 24 jam setelah kegiatan berlangsung (SOP LPPM UIN SAIZU).',
+                ]);
+            }
         }
 
         $this->enforceGpsPolicy($validated, $pendaftaran->kelompok);
@@ -140,10 +157,10 @@ class DailyReportController extends Controller
 
                 $originalName = $file->getClientOriginalName();
                 $extension = strtolower($file->getClientOriginalExtension());
-                $safeFilename = Str::uuid() . '.' . $extension;
+                $safeFilename = Str::uuid().'.'.$extension;
 
                 $path = $file->storeAs('daily-reports', $safeFilename, 'local');
-                
+
                 if (in_array($extension, ['jpg', 'jpeg', 'png', 'webp'])) {
                     app(\App\Services\PhotoWatermarkService::class)->apply($path, [
                         'nim' => $mahasiswa->nim,
@@ -222,7 +239,7 @@ class DailyReportController extends Controller
     public function destroy(KegiatanKkn $dailyReport): RedirectResponse
     {
         \Illuminate\Support\Facades\Gate::authorize('delete', $dailyReport);
-        
+
         foreach ($dailyReport->fileKegiatan as $file) {
             Storage::disk('local')->delete($file->file_path);
         }
@@ -269,16 +286,24 @@ class DailyReportController extends Controller
         $accuracy = isset($validated['gps_accuracy']) ? (float) $validated['gps_accuracy'] : null;
 
         if ($accuracy !== null && $policy['max_accuracy_meters'] > 0 && $accuracy > $policy['max_accuracy_meters']) {
-            throw ValidationException::withMessages([
-                'gps_accuracy' => "Akurasi GPS terlalu lemah ({$accuracy} m). Coba ambil lokasi lagi di area yang lebih terbuka.",
-            ]);
+            if (auth()->check() && auth()->user()->hasRole('superadmin')) {
+                Log::info('Superadmin bypassed GPS accuracy validation', [
+                    'user_id' => auth()->id(),
+                    'gps_accuracy' => $accuracy,
+                    'max_allowed' => $policy['max_accuracy_meters'],
+                ]);
+            } else {
+                throw ValidationException::withMessages([
+                    'gps_accuracy' => "Akurasi GPS terlalu lemah ({$accuracy} m). Coba ambil lokasi lagi di area yang lebih terbuka.",
+                ]);
+            }
         }
 
         if (! $policy['reference']) {
             return;
         }
 
-        $distance = $this->calculateDistanceMeters(
+        $distance = $this->geoService->calculateDistanceMeters(
             (float) $validated['latitude'],
             (float) $validated['longitude'],
             $policy['reference']['latitude'],
@@ -286,24 +311,18 @@ class DailyReportController extends Controller
         );
 
         if ($distance > $policy['radius_meters']) {
-            throw ValidationException::withMessages([
-                'latitude' => "Lokasi GPS berada di luar radius yang diizinkan (" . round($distance) . " meter dari {$policy['reference']['label']}).",
-            ]);
+            if (auth()->check() && auth()->user()->hasRole('superadmin')) {
+                Log::info('Superadmin bypassed GPS radius validation', [
+                    'user_id' => auth()->id(),
+                    'distance' => round($distance),
+                    'radius' => $policy['radius_meters'],
+                    'reference' => $policy['reference']['label'],
+                ]);
+            } else {
+                throw ValidationException::withMessages([
+                    'latitude' => 'Lokasi GPS berada di luar radius yang diizinkan ('.round($distance)." meter dari {$policy['reference']['label']}).",
+                ]);
+            }
         }
-    }
-
-    private function calculateDistanceMeters(float $latitude, float $longitude, float $referenceLatitude, float $referenceLongitude): float
-    {
-        $earthRadius = 6371000;
-
-        $latitudeDelta = deg2rad($referenceLatitude - $latitude);
-        $longitudeDelta = deg2rad($referenceLongitude - $longitude);
-
-        $a = sin($latitudeDelta / 2) ** 2
-            + cos(deg2rad($latitude)) * cos(deg2rad($referenceLatitude)) * sin($longitudeDelta / 2) ** 2;
-
-        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-
-        return $earthRadius * $c;
     }
 }

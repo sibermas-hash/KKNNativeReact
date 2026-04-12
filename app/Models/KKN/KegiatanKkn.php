@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use App\Models\User;
@@ -13,6 +15,7 @@ class KegiatanKkn extends Model
     use HasFactory;
 
     protected $connection = 'kkn';
+
     protected $table = 'kegiatan_kkn';
 
     protected $fillable = [

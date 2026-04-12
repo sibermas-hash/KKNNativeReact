@@ -464,7 +464,7 @@ export default function ProfileShow() {
                                         disabled={profileForm.processing}
                                         className="h-20 min-w-full md:min-w-[320px] bg-slate-900 text-white rounded-[1.5rem] flex items-center justify-center gap-6 group hover:bg-emerald-600 transition-all duration-500 shadow-2xl shadow-slate-200 active:scale-[0.98] disabled:opacity-50"
                                     >
-                                        <span className="text-sm font-black uppercase tracking-[0.3em]">{profileForm.processing ? 'Syncing...' : 'Commit Changes'}</span>
+                                        <span className="text-sm font-black uppercase tracking-[0.3em]">{profileForm.processing ? 'Menyinkronkan...' : 'Simpan Perubahan'}</span>
                                         <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white group-hover:text-emerald-600 transition-all duration-500">
                                             <ChevronRight size={18} strokeWidth={3} />
                                         </div>
@@ -521,7 +521,7 @@ export default function ProfileShow() {
                                         disabled={passwordForm.processing}
                                         className="h-16 px-12 bg-white border border-slate-100 text-slate-900 rounded-[1.25rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-slate-900 hover:text-white transition-all shadow-sm active:scale-95 disabled:opacity-50"
                                     >
-                                        {passwordForm.processing ? 'Processing...' : 'Sync Security Matrix'}
+                                        {passwordForm.processing ? 'Memproses...' : 'Perbarui Keamanan'}
                                     </button>
                                 </div>
                              </form>

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\KKN\NilaiKkn;
@@ -24,13 +26,13 @@ class CertificateController extends Controller
         // DPL: can only download certificates for students in their groups
         elseif ($user->hasRole('dpl')) {
             $dosen = $user->dosen;
-            abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+            abort_if(! $dosen, 403, 'Data dosen tidak ditemukan.');
             $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
-            abort_if(!$groupIds->contains($score->kelompok_id), 403, 'Anda tidak memiliki akses ke sertifikat ini.');
+            abort_if(! $groupIds->contains($score->kelompok_id), 403, 'Anda tidak memiliki akses ke sertifikat ini.');
         }
         // Superadmin: unrestricted access (handled by Gate::before)
 
-        abort_if(!$score->is_finalized, 403, 'Sertifikat belum difinalisasi.');
+        abort_if(! $score->is_finalized, 403, 'Sertifikat belum difinalisasi.');
 
         $pdf = $this->certificateService->generateForStudent($score);
 
@@ -51,13 +53,14 @@ class CertificateController extends Controller
         if ($matchedScore) {
             // Return masked data to protect student privacy
             $mahasiswa = $matchedScore->mahasiswa;
+
             return view('public.verify-certificate', [
                 'token' => e($token),
                 'is_valid' => true,
                 'verified_at' => now(),
                 'certificate_data' => [
-                    'name' => substr($mahasiswa->nama ?? $mahasiswa->user->name, 0, 3) . '***',
-                    'nim' => substr($mahasiswa->nim, 0, 6) . '***',
+                    'name' => substr($mahasiswa->nama ?? $mahasiswa->user->name, 0, 3).'***',
+                    'nim' => substr($mahasiswa->nim, 0, 6).'***',
                     'period' => $matchedScore->kelompok->periode->name ?? '-',
                     'location' => $matchedScore->kelompok->lokasi->village_name ?? '-',
                     'grade' => $matchedScore->letter_grade,
@@ -72,17 +75,18 @@ class CertificateController extends Controller
             'certificate_data' => null,
         ]);
     }
+
     public function downloadMass(Request $request)
     {
         $user = auth()->user();
         $isFacultyAdmin = $user->hasRole('faculty_admin');
-        
+
         $query = NilaiKkn::query()
             ->where('is_finalized', true)
             ->with(['mahasiswa', 'kelompok.periode', 'kelompok.lokasi']);
 
         if ($isFacultyAdmin) {
-            $query->whereHas('mahasiswa', fn($q) => $q->where('faculty_id', $user->faculty_id));
+            $query->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $user->faculty_id));
         }
 
         if ($request->filled('kelompok_id')) {
@@ -90,7 +94,7 @@ class CertificateController extends Controller
         }
 
         if ($request->filled('period_id')) {
-            $query->whereHas('kelompok', fn($q) => $q->where('period_id', $request->period_id));
+            $query->whereHas('kelompok', fn ($q) => $q->where('period_id', $request->period_id));
         }
 
         $scores = $query->get();
@@ -105,8 +109,8 @@ class CertificateController extends Controller
     public function preview(NilaiKkn $score)
     {
         $score->loadMissing(['mahasiswa', 'kelompok']);
-        abort_if(!$score->is_finalized, 403, 'Sertifikat belum difinalisasi.');
-        
+        abort_if(! $score->is_finalized, 403, 'Sertifikat belum difinalisasi.');
+
         return $this->certificateService->generateForStudent($score)->stream();
     }
 }

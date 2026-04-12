@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\KKN\Dosen;
@@ -20,11 +22,11 @@ class DplProvisioningService
 
         $user = $dosen->user;
 
-        if (!$user) {
+        if (! $user) {
             $user = User::query()->where('username', $dosen->nip)->first();
         }
 
-        if (!$user) {
+        if (! $user) {
             $temporaryPassword = Str::password(12);
             $user = User::create([
                 'username' => $dosen->nip,
@@ -39,7 +41,7 @@ class DplProvisioningService
         } else {
             $updates = [];
 
-            if (!$user->is_active) {
+            if (! $user->is_active) {
                 $updates['is_active'] = true;
                 $activated = true;
             }
@@ -61,7 +63,7 @@ class DplProvisioningService
             $dosen->update(['user_id' => $user->id]);
         }
 
-        if (!$user->hasRole('dpl')) {
+        if (! $user->hasRole('dpl')) {
             $user->assignRole('dpl');
             $activated = true;
         }

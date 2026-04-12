@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use App\Models\User;
@@ -12,6 +14,7 @@ class DplKecamatanAssignment extends Model
     use HasFactory;
 
     protected $connection = 'kkn';
+
     protected $table = 'dpl_kecamatan_assignments';
 
     protected $fillable = [

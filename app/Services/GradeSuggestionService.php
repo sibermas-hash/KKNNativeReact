@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\PesertaKkn;
 use App\Services\KKN\GradeConversionService;
 use Illuminate\Support\Collection;
@@ -16,14 +17,14 @@ class GradeSuggestionService
     public function suggestGrade(int $pesertaKknId): array
     {
         $peserta = PesertaKkn::with('mahasiswa.kegiatan')->findOrFail($pesertaKknId);
-        $reports = $peserta->mahasiswa?->kegiatan ?? new Collection();
-        
+        $reports = $peserta->mahasiswa?->kegiatan ?? new Collection;
+
         if ($reports->isEmpty()) {
             return [
                 'score' => 0,
                 'label' => 'E',
                 'reason' => 'Tidak ada aktivitas laporan harian ditemukan.',
-                'metrics' => ['completion' => 0, 'sentiment' => 0]
+                'metrics' => ['completion' => 0, 'sentiment' => 0],
             ];
         }
 
@@ -35,9 +36,9 @@ class GradeSuggestionService
         // 2. Mock Sentiment Analysis
         $positiveWords = ['berhasil', 'lancar', 'antusias', 'partisipasi', 'sukses', 'bermanfaat', 'kolaborasi'];
         $negativeWords = ['kendala', 'sulit', 'hambatan', 'kurang', 'gagal', 'menolak', 'konflik'];
-        
+
         $sentimentScore = 70; // Baseline
-        
+
         foreach ($reports as $report) {
             $content = Str::lower(implode(' ', array_filter([
                 $report->title,
@@ -46,18 +47,22 @@ class GradeSuggestionService
                 $report->output,
             ])));
             foreach ($positiveWords as $word) {
-                if (Str::contains($content, $word)) $sentimentScore += 0.5;
+                if (Str::contains($content, $word)) {
+                    $sentimentScore += 0.5;
+                }
             }
             foreach ($negativeWords as $word) {
-                if (Str::contains($content, $word)) $sentimentScore -= 0.5;
+                if (Str::contains($content, $word)) {
+                    $sentimentScore -= 0.5;
+                }
             }
         }
-        
+
         $sentimentScore = max(0, min(100, $sentimentScore));
-        
+
         // 3. Final Calculation
         $finalScore = ($completionScore * 0.7) + ($sentimentScore * 0.3);
-        
+
         $gradeData = GradeConversionService::convert($finalScore);
 
         return [
@@ -66,8 +71,8 @@ class GradeSuggestionService
             'reason' => "Analisis berbasis {$actualDays} laporan harian dengan tingkat keberhasilan program yang tinggi.",
             'metrics' => [
                 'completion' => round($completionScore, 1),
-                'sentiment' => round($sentimentScore, 1)
-            ]
+                'sentiment' => round($sentimentScore, 1),
+            ],
         ];
     }
 }

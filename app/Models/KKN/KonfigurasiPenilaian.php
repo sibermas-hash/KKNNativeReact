@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use App\Enums\KknType;
@@ -9,6 +11,7 @@ use Illuminate\Support\Facades\Cache;
 class KonfigurasiPenilaian extends Model
 {
     protected $connection = 'kkn';
+
     protected $table = 'konfigurasi_penilaian';
 
     protected $fillable = [
@@ -17,7 +20,7 @@ class KonfigurasiPenilaian extends Model
         'label',
         'percentage',
         'group',
-        'description'
+        'description',
     ];
 
     protected $casts = [
@@ -27,8 +30,8 @@ class KonfigurasiPenilaian extends Model
 
     protected static function booted()
     {
-        static::saved(fn(self $model) => Cache::forget('grading_configs_' . ($model->kkn_type?->value ?? 'REGULER')));
-        static::deleted(fn(self $model) => Cache::forget('grading_configs_' . ($model->kkn_type?->value ?? 'REGULER')));
+        static::saved(fn (self $model) => Cache::forget('grading_configs_'.($model->kkn_type?->value ?? 'REGULER')));
+        static::deleted(fn (self $model) => Cache::forget('grading_configs_'.($model->kkn_type?->value ?? 'REGULER')));
     }
 
     public const DEFAULT_COMPONENTS = [

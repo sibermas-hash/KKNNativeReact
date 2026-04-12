@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Helpers\PasswordHelper;
@@ -10,8 +12,6 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
-use App\Notifications\KKN\AccountActivatedNotification;
 
 class StudentSyncService
 {
@@ -24,7 +24,7 @@ class StudentSyncService
      */
     public function syncFromApi(array $nimList = []): array
     {
-        $externalStudents = !empty($nimList)
+        $externalStudents = ! empty($nimList)
             ? $this->masterApi->getStudentsByNimList($nimList)
             : $this->masterApi->getSyncMahasiswa();
 
@@ -32,7 +32,7 @@ class StudentSyncService
             'total' => count($externalStudents),
             'synced' => 0,
             'errors' => 0,
-            'log' => []
+            'log' => [],
         ];
 
         foreach ($externalStudents as $studentData) {
@@ -45,7 +45,7 @@ class StudentSyncService
                 }
             } catch (\Exception $e) {
                 $results['errors']++;
-                $results['log'][] = "Error syncing NIM {$studentData['nim']}: " . $e->getMessage();
+                $results['log'][] = "Error syncing NIM {$studentData['nim']}: ".$e->getMessage();
             }
         }
 
@@ -64,7 +64,7 @@ class StudentSyncService
             if ($organizationMasterId !== null) {
                 $facultyId = Fakultas::where('master_id', $organizationMasterId)->first()?->id;
             }
-            
+
             $prodiId = null;
             $programMasterId = $this->normalizeMasterId($data['prodi_id'] ?? null);
             if ($programMasterId !== null) {
@@ -72,10 +72,10 @@ class StudentSyncService
             }
 
             // Fallbacks - Log warning instead of silent wrong assignment
-            if (!$facultyId && $organizationMasterId !== null) {
+            if (! $facultyId && $organizationMasterId !== null) {
                 Log::warning("Student {$data['nim']} has unmapped organization_id: {$organizationMasterId}. Skipping faculty assignment.");
             }
-            if (!$prodiId && $programMasterId !== null) {
+            if (! $prodiId && $programMasterId !== null) {
                 Log::warning("Student {$data['nim']} has unmapped prodi_id: {$programMasterId}. Skipping prodi assignment.");
             }
 
@@ -86,8 +86,8 @@ class StudentSyncService
             );
 
             // 3. Create/Update User
-            $email = $data['email'] ?? $data['nim'] . '@student.uinsaizu.ac.id';
-            $isNewUser = !User::where('username', $data['nim'])->exists();
+            $email = $data['email'] ?? $data['nim'].'@student.uinsaizu.ac.id';
+            $isNewUser = ! User::where('username', $data['nim'])->exists();
 
             $user = User::firstOrCreate(
                 ['username' => $data['nim']],
@@ -100,7 +100,7 @@ class StudentSyncService
                 ]
             );
 
-            $email = $data['email'] ?? ($data['nim'] . '@student.uinsaizu.ac.id');
+            $email = $data['email'] ?? ($data['nim'].'@student.uinsaizu.ac.id');
             $address = $data['address'] ?? $data['alamat'] ?? $data['domicile'] ?? null;
 
             $user->fill(array_filter([
@@ -113,7 +113,7 @@ class StudentSyncService
                 $user->save();
             }
 
-            if (!$user->hasRole('student')) {
+            if (! $user->hasRole('student')) {
                 $user->assignRole('student');
             }
 
@@ -156,6 +156,7 @@ class StudentSyncService
             // Basic validation
             if (empty($row['nim']) || empty($row['nama'])) {
                 $errors[] = "Baris {$line}: NIM dan Nama wajib diisi.";
+
                 continue;
             }
 
@@ -166,7 +167,7 @@ class StudentSyncService
 
         return [
             'data' => $validRows,
-            'errors' => $errors
+            'errors' => $errors,
         ];
     }
 

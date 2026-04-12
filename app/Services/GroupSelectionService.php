@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\KKN\AntrianKkn;
@@ -15,8 +17,11 @@ use Illuminate\Validation\ValidationException;
 class GroupSelectionService
 {
     private const ACTIVE_REGISTRATION_STATUSES = ['pending', 'document_submitted', 'approved'];
+
     private const REQUIRED_MALE_GENDER = 'L';
+
     private const DEFAULT_MALE_MIN_PERCENT = 20.0;
+
     private const DEFAULT_MALE_TARGET_PERCENT = 30.0;
 
     public static function activeRegistrationStatuses(): array
@@ -256,10 +261,10 @@ class GroupSelectionService
 
     /**
      * Assert that a group can accept a student.
-     * 
+     *
      * IMPORTANT: The KelompokKkn row MUST be locked with lockForUpdate() BEFORE calling this method.
      * This ensures no race conditions occur when checking and updating capacity.
-     * 
+     *
      * FIX C2: This method uses lockForUpdate() on peserta_kkn rows to prevent concurrent modifications.
      * Since the KelompokKkn row is already locked by the caller, this creates a proper critical section.
      */
@@ -414,8 +419,8 @@ class GroupSelectionService
     private function slotLabel(SlotTerkunci $rule): string
     {
         return match ($rule->tipe_slot) {
-            'fakultas' => 'Slot Fakultas ' . ($rule->fakultas?->nama ?? 'terkunci'),
-            'prodi' => 'Slot Prodi ' . ($rule->prodi?->nama ?? 'terkunci'),
+            'fakultas' => 'Slot Fakultas '.($rule->fakultas?->nama ?? 'terkunci'),
+            'prodi' => 'Slot Prodi '.($rule->prodi?->nama ?? 'terkunci'),
             default => 'Slot terkunci',
         };
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Dpl;
 
 use App\Http\Controllers\Controller;
@@ -12,7 +14,7 @@ class GroupController extends Controller
     public function index(): Response
     {
         $dosen = auth()->user()->dosen;
-        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        abort_if(! $dosen, 403, 'Data dosen tidak ditemukan.');
 
         $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
 
@@ -39,15 +41,15 @@ class GroupController extends Controller
     public function show(KelompokKkn $group): Response
     {
         $dosen = auth()->user()->dosen;
-        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        abort_if(! $dosen, 403, 'Data dosen tidak ditemukan.');
         $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
-        abort_if(!$groupIds->contains($group->id), 403, 'Anda tidak memiliki akses ke kelompok ini.');
+        abort_if(! $groupIds->contains($group->id), 403, 'Anda tidak memiliki akses ke kelompok ini.');
 
         $group->load([
             'periode', 'lokasi',
             'peserta.mahasiswa.fakultas',
             'peserta.mahasiswa.prodi',
-            'peserta.mahasiswa.nilai' => fn($q) => $q->where('kelompok_id', $group->id),
+            'peserta.mahasiswa.nilai' => fn ($q) => $q->where('kelompok_id', $group->id),
             'programKerja',
             'posko',
         ]);
@@ -64,6 +66,7 @@ class GroupController extends Controller
                 'address' => $group->lokasi?->address,
                 'members' => $group->peserta->map(function ($registration) {
                     $nilai = $registration->mahasiswa?->nilai?->first();
+
                     return [
                         'id' => $registration->id,
                         'status' => $registration->status,
@@ -76,7 +79,7 @@ class GroupController extends Controller
                         ],
                         'nilai' => $nilai ? [
                             'id' => $nilai->id,
-                            'is_finalized' => (bool)$nilai->is_finalized,
+                            'is_finalized' => (bool) $nilai->is_finalized,
                         ] : null,
                     ];
                 })->values(),

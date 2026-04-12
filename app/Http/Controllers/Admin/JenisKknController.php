@@ -1,18 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\JenisKkn;
+use App\Models\KKN\PesertaKkn;
 use App\Services\RedisCacheService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Models\KKN\PesertaKkn;
-use Illuminate\Support\Facades\DB;
 
 class JenisKknController extends Controller
 {
@@ -136,22 +138,22 @@ class JenisKknController extends Controller
         Gate::authorize('manage-master-data');
 
         // Stats per status
-        $stats = PesertaKkn::whereHas('periode', fn($q) => $q->where('jenis_kkn_id', $jenisKkn->id))
+        $stats = PesertaKkn::whereHas('periode', fn ($q) => $q->where('jenis_kkn_id', $jenisKkn->id))
             ->select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->get()
             ->pluck('count', 'status');
 
         $registrations = PesertaKkn::with([
-                'mahasiswa:id,user_id,nim,nama,faculty_id,program_id',
-                'mahasiswa.user:id,name,email,phone',
-                'mahasiswa.fakultas:id,nama',
-                'periode:id,name,periode',
-                'kelompok:id,period_id,nama_kelompok,code',
-            ])
-            ->whereHas('periode', fn($q) => $q->where('jenis_kkn_id', $jenisKkn->id))
-            ->when($request->search, function($q, $s) {
-                $q->whereHas('mahasiswa', fn($m) => $m->where('nama', 'ilike', "%{$s}%")->orWhere('nim', 'ilike', "%{$s}%"));
+            'mahasiswa:id,user_id,nim,nama,faculty_id,program_id',
+            'mahasiswa.user:id,name,email,phone',
+            'mahasiswa.fakultas:id,nama',
+            'periode:id,name,periode',
+            'kelompok:id,period_id,nama_kelompok,code',
+        ])
+            ->whereHas('periode', fn ($q) => $q->where('jenis_kkn_id', $jenisKkn->id))
+            ->when($request->search, function ($q, $s) {
+                $q->whereHas('mahasiswa', fn ($m) => $m->where('nama', 'ilike', "%{$s}%")->orWhere('nim', 'ilike', "%{$s}%"));
             })
             ->orderByDesc('created_at')
             ->paginate(50)

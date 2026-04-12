@@ -1,18 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use Illuminate\Cache\TaggableStore;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
-use Carbon\Carbon;
 
 /**
  * Redis Cache Service
- * 
+ *
  * Centralized cache management for KKN system with intelligent invalidation,
  * tag-based organization, and performance optimization.
- * 
+ *
  * Usage:
  *   RedisCacheService::cacheMasterData('periods', $ttl, $callback);
  *   RedisCacheService::invalidateTag('master_data');
@@ -23,34 +24,44 @@ class RedisCacheService
     // ─────────────────────────────────────────────────────────────
     // Cache Keys & Constants
     // ─────────────────────────────────────────────────────────────
-    
+
     public const TAG_MASTER_DATA = 'master_data';
+
     public const TAG_REGISTRATIONS = 'registrations';
+
     public const TAG_GROUPS = 'groups';
+
     public const TAG_GRADES = 'grades';
+
     public const TAG_REPORTS = 'reports';
+
     public const TAG_ASSIGNMENTS = 'assignments';
+
     private const TAG_INDEX_PREFIX = 'cache_tag_index.';
-    
+
     // Default TTLs (in seconds)
     public const TTL_MASTER_DATA = 86400;        // 24 hours - Master data rarely changes
+
     public const TTL_REGISTRATIONS = 3600;       // 1 hour - Subject to frequent updates
+
     public const TTL_GROUPS = 7200;              // 2 hours - Stable but may change
+
     public const TTL_GRADES = 1800;              // 30 mins - May be updated frequently
+
     public const TTL_REPORTS = 900;              // 15 mins - Frequently updated
+
     public const TTL_ASSIGNMENTS = 3600;         // 1 hour - Semi-static
-    
+
     // ─────────────────────────────────────────────────────────────
     // Master Data Caching
     // ─────────────────────────────────────────────────────────────
-    
+
     /**
      * Cache master data (periods, locations, faculties, programs, etc.)
-     * 
-     * @param string $key Unique cache key
-     * @param \Closure $callback Data fetching callback
-     * @param int|null $ttl Time to live in seconds (default: 24h)
-     * @return mixed
+     *
+     * @param  string  $key  Unique cache key
+     * @param  \Closure  $callback  Data fetching callback
+     * @param  int|null  $ttl  Time to live in seconds (default: 24h)
      */
     public static function cacheMasterData(string $key, \Closure $callback, ?int $ttl = null): mixed
     {
@@ -61,7 +72,7 @@ class RedisCacheService
             $ttl ?? self::TTL_MASTER_DATA,
         );
     }
-    
+
     /**
      * Get cached periods with automatic refresh
      */
@@ -69,7 +80,7 @@ class RedisCacheService
     {
         return self::cacheMasterData('periods', $callback);
     }
-    
+
     /**
      * Get cached locations with automatic refresh
      */
@@ -77,7 +88,7 @@ class RedisCacheService
     {
         return self::cacheMasterData('locations', $callback);
     }
-    
+
     /**
      * Get cached faculties with automatic refresh
      */
@@ -85,7 +96,7 @@ class RedisCacheService
     {
         return self::cacheMasterData('faculties', $callback);
     }
-    
+
     /**
      * Get cached programs with automatic refresh
      */
@@ -93,7 +104,7 @@ class RedisCacheService
     {
         return self::cacheMasterData('programs', $callback);
     }
-    
+
     /**
      * Get cached lecturers (DPL) with automatic refresh
      */
@@ -101,11 +112,11 @@ class RedisCacheService
     {
         return self::cacheMasterData('lecturers', $callback, self::TTL_MASTER_DATA);
     }
-    
+
     // ─────────────────────────────────────────────────────────────
     // Registration Caching
     // ─────────────────────────────────────────────────────────────
-    
+
     /**
      * Cache registration data with shorter TTL for frequent updates
      */
@@ -118,7 +129,7 @@ class RedisCacheService
             $ttl ?? self::TTL_REGISTRATIONS,
         );
     }
-    
+
     /**
      * Cache user registrations (student-specific view)
      */
@@ -126,7 +137,7 @@ class RedisCacheService
     {
         return self::cacheRegistrations("user_{$userId}", $callback);
     }
-    
+
     /**
      * Cache period registrations (admin view)
      */
@@ -134,11 +145,11 @@ class RedisCacheService
     {
         return self::cacheRegistrations("period_{$periodId}", $callback);
     }
-    
+
     // ─────────────────────────────────────────────────────────────
     // Group Caching
     // ─────────────────────────────────────────────────────────────
-    
+
     /**
      * Cache group/kelompok data
      */
@@ -151,7 +162,7 @@ class RedisCacheService
             $ttl ?? self::TTL_GROUPS,
         );
     }
-    
+
     /**
      * Cache group details by period
      */
@@ -159,7 +170,7 @@ class RedisCacheService
     {
         return self::cacheGroups("period_{$periodId}", $callback);
     }
-    
+
     /**
      * Cache single group details
      */
@@ -167,11 +178,11 @@ class RedisCacheService
     {
         return self::cacheGroups("group_{$groupId}", $callback, self::TTL_GROUPS);
     }
-    
+
     // ─────────────────────────────────────────────────────────────
     // Grade Caching
     // ─────────────────────────────────────────────────────────────
-    
+
     /**
      * Cache grade/nilai data with shorter TTL as it's frequently updated
      */
@@ -184,7 +195,7 @@ class RedisCacheService
             $ttl ?? self::TTL_GRADES,
         );
     }
-    
+
     /**
      * Cache grades for a specific group
      */
@@ -192,11 +203,11 @@ class RedisCacheService
     {
         return self::cacheGrades("group_{$groupId}", $callback);
     }
-    
+
     // ─────────────────────────────────────────────────────────────
     // Report Caching
     // ─────────────────────────────────────────────────────────────
-    
+
     /**
      * Cache report data with very short TTL as it's constantly updated
      */
@@ -209,7 +220,7 @@ class RedisCacheService
             $ttl ?? self::TTL_REPORTS,
         );
     }
-    
+
     /**
      * Cache daily reports for a group
      */
@@ -217,11 +228,11 @@ class RedisCacheService
     {
         return self::cacheReports("daily_group_{$groupId}", $callback);
     }
-    
+
     // ─────────────────────────────────────────────────────────────
     // Cache Invalidation
     // ─────────────────────────────────────────────────────────────
-    
+
     /**
      * Invalidate all master data caches
      * Use when: Period, Location, Faculty, Program data changes
@@ -230,13 +241,15 @@ class RedisCacheService
     {
         try {
             self::flushTagged(self::TAG_MASTER_DATA);
+
             return true;
         } catch (\Exception $e) {
             \Log::error('Redis invalidate master data failed', ['error' => $e->getMessage()]);
+
             return false;
         }
     }
-    
+
     /**
      * Invalidate registration caches
      * Use when: Registration status changes, period changes
@@ -245,17 +258,18 @@ class RedisCacheService
     {
         try {
             self::flushTagged(self::TAG_REGISTRATIONS);
-            
+
             // Also invalidate related caches
             self::invalidateGroups($periodId);
-            
+
             return true;
         } catch (\Exception $e) {
             \Log::error('Redis invalidate registrations failed', ['error' => $e->getMessage()]);
+
             return false;
         }
     }
-    
+
     /**
      * Invalidate group caches
      * Use when: Group data changes, assignments change
@@ -264,13 +278,15 @@ class RedisCacheService
     {
         try {
             self::flushTagged(self::TAG_GROUPS);
+
             return true;
         } catch (\Exception $e) {
             \Log::error('Redis invalidate groups failed', ['error' => $e->getMessage()]);
+
             return false;
         }
     }
-    
+
     /**
      * Invalidate grade caches
      * Use when: Grades are entered/updated
@@ -279,13 +295,15 @@ class RedisCacheService
     {
         try {
             self::flushTagged(self::TAG_GRADES);
+
             return true;
         } catch (\Exception $e) {
             \Log::error('Redis invalidate grades failed', ['error' => $e->getMessage()]);
+
             return false;
         }
     }
-    
+
     /**
      * Invalidate report caches
      * Use when: Reports are submitted, reviewed, approved
@@ -294,13 +312,15 @@ class RedisCacheService
     {
         try {
             self::flushTagged(self::TAG_REPORTS);
+
             return true;
         } catch (\Exception $e) {
             \Log::error('Redis invalidate reports failed', ['error' => $e->getMessage()]);
+
             return false;
         }
     }
-    
+
     /**
      * Invalidate all caches (full reset)
      * ⚠️ Use sparingly - only for major system changes
@@ -309,20 +329,22 @@ class RedisCacheService
     {
         try {
             Cache::flush();
+
             return true;
         } catch (\Exception $e) {
             \Log::error('Redis full flush failed', ['error' => $e->getMessage()]);
+
             return false;
         }
     }
-    
+
     // ─────────────────────────────────────────────────────────────
     // Cache Management & Monitoring
     // ─────────────────────────────────────────────────────────────
-    
+
     /**
      * Get Redis cache statistics
-     * 
+     *
      * @return array Cache stats including memory usage, hits/misses, etc.
      */
     public static function getStats(): array
@@ -330,7 +352,7 @@ class RedisCacheService
         try {
             $info = Redis::info();
             $memory = Redis::info('memory');
-            
+
             return [
                 'status' => 'connected',
                 'memory_used' => $memory['used_memory_human'] ?? 'N/A',
@@ -347,7 +369,7 @@ class RedisCacheService
             ];
         }
     }
-    
+
     /**
      * Get cache health status
      */
@@ -355,13 +377,15 @@ class RedisCacheService
     {
         try {
             Redis::ping();
+
             return true;
         } catch (\Exception $e) {
             \Log::error('Redis health check failed', ['error' => $e->getMessage()]);
+
             return false;
         }
     }
-    
+
     /**
      * Warm up critical caches (call on app startup)
      * This pre-loads frequently accessed data into Redis
@@ -369,7 +393,7 @@ class RedisCacheService
     public static function warmUp(): array
     {
         $warmed = [];
-        
+
         try {
             // Warm up master data
             if (class_exists(\App\Models\KKN\Periode::class)) {
@@ -379,25 +403,27 @@ class RedisCacheService
                 );
                 $warmed[] = 'periods';
             }
-            
+
             if (class_exists(\App\Models\KKN\Lokasi::class)) {
                 self::getLocations(fn () => \App\Models\KKN\Lokasi::withCount('kelompok')->get());
                 $warmed[] = 'locations';
             }
-            
+
             if (class_exists(\App\Models\KKN\Fakultas::class)) {
                 self::getFaculties(fn () => \App\Models\KKN\Fakultas::all());
                 $warmed[] = 'faculties';
             }
-            
+
             \Log::info('Redis cache warmup completed', ['items' => $warmed]);
+
             return ['success' => true, 'warmed' => $warmed];
         } catch (\Exception $e) {
             \Log::error('Redis warmup failed', ['error' => $e->getMessage()]);
+
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
-    
+
     /**
      * Get memory efficiency metrics
      */
@@ -406,10 +432,10 @@ class RedisCacheService
         try {
             $memory = Redis::info('memory');
             $keyspace = Redis::info('keyspace');
-            
+
             $used = $memory['used_memory'] ?? 0;
             $peak = $memory['used_memory_peak'] ?? $used;
-            
+
             return [
                 'used_bytes' => $used,
                 'used_human' => $memory['used_memory_human'] ?? 'N/A',
@@ -464,7 +490,7 @@ class RedisCacheService
 
     private static function tagIndexKey(string $tag): string
     {
-        return self::TAG_INDEX_PREFIX . $tag;
+        return self::TAG_INDEX_PREFIX.$tag;
     }
 
     private static function supportsTags(): bool

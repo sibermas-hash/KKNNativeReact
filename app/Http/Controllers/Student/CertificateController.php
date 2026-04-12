@@ -1,11 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
-use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\NilaiKkn;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class CertificateController extends Controller
@@ -15,7 +15,7 @@ class CertificateController extends Controller
         $user = auth()->user();
         $mahasiswa = $user->mahasiswa;
 
-        if (!$mahasiswa) {
+        if (! $mahasiswa) {
             return Inertia::render('Student/Certificate/Index', [
                 'eligible' => false,
                 'reason' => 'Data mahasiswa tidak ditemukan.',
@@ -37,7 +37,7 @@ class CertificateController extends Controller
             'min_grade' => ($score?->total_score >= 70),
         ];
 
-        $eligible = !in_array(false, $checks, true);
+        $eligible = ! in_array(false, $checks, true);
 
         return Inertia::render('Student/Certificate/Index', [
             'eligible' => $eligible,
@@ -51,7 +51,7 @@ class CertificateController extends Controller
     public function download($id, \App\Services\CertificateService $certificateService)
     {
         $user = auth()->user();
-        
+
         $score = NilaiKkn::where('id', $id)
             ->where('user_id', $user->id)
             ->where('is_finalized', true)
@@ -60,6 +60,7 @@ class CertificateController extends Controller
         try {
             $pdf = $certificateService->generateForStudent($score);
             $nim = $score->mahasiswa->nim ?? 'Unknown';
+
             return $pdf->download("Sertifikat_KKN_{$nim}.pdf");
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());

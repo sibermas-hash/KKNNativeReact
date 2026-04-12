@@ -28,8 +28,9 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
+            'phone' => fake()->phoneNumber(),
             'is_active' => true,
-            'password' => static::$password ??= Hash::make('password'),
+            'password' => static::$password ??= Hash::make(env('KKN_LOCAL_SEED_PASSWORD', Str::random(32))),
             'remember_token' => Str::random(10),
         ];
     }

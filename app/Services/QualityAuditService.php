@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\KKN\Laporan;
@@ -93,12 +95,14 @@ class QualityAuditService
         foreach ($reports as $report) {
             // Clean text for normalization: lowercase, remove punctuation and spaces
             $cleanText = preg_replace('/[^a-z0-9]/', '', strtolower($report->description));
-            
+
             // If text is too short to be unique, skip
-            if (strlen($cleanText) < 10) continue;
+            if (strlen($cleanText) < 10) {
+                continue;
+            }
 
             $hash = md5($cleanText);
-            
+
             if (isset($fingerprints[$hash])) {
                 // Exact match found!
                 $match = $fingerprints[$hash];
@@ -107,47 +111,54 @@ class QualityAuditService
                         'report_a_id' => $match->id,
                         'report_b_id' => $report->id,
                         'similarity' => 100.0,
-                        'type' => 'EXACT_MATCH'
+                        'type' => 'EXACT_MATCH',
                     ]);
                 }
             }
-            
+
             $fingerprints[$hash] = $report;
         }
 
         // Phase 2: Structural Similarity (O(N log N) or windowed comparison)
         // Only compare reports submitted on the same date or near each other
-        $groupedByDate = $reports->groupBy(fn($r) => $r->submitted_at?->toDateString());
+        $groupedByDate = $reports->groupBy(fn ($r) => $r->submitted_at?->toDateString());
 
         foreach ($groupedByDate as $date => $dateReports) {
-            if ($dateReports->count() < 2) continue;
+            if ($dateReports->count() < 2) {
+                continue;
+            }
 
             foreach ($dateReports as $i => $reportA) {
                 foreach ($dateReports as $j => $reportB) {
-                    if ($i >= $j) continue;
-                    if ($reportA->user_id === $reportB->user_id) continue;
+                    if ($i >= $j) {
+                        continue;
+                    }
+                    if ($reportA->user_id === $reportB->user_id) {
+                        continue;
+                    }
 
                     // Length proximity filter: if lengths differ by > 30%, they aren't duplicates
                     $lenA = strlen($reportA->description);
                     $lenB = strlen($reportB->description);
-                    if (abs($lenA - $lenB) > min($lenA, $lenB) * 0.3) continue;
+                    if (abs($lenA - $lenB) > min($lenA, $lenB) * 0.3) {
+                        continue;
+                    }
 
                     $similarity = 0;
                     similar_text($reportA->description, $reportB->description, $similarity);
 
                     if ($similarity > 85) {
                         // Avoid adding if already added via exact match
-                        $exists = $duplicates->contains(fn($d) => 
-                            ($d['report_a_id'] == $reportA->id && $d['report_b_id'] == $reportB->id) ||
+                        $exists = $duplicates->contains(fn ($d) => ($d['report_a_id'] == $reportA->id && $d['report_b_id'] == $reportB->id) ||
                             ($d['report_a_id'] == $reportB->id && $d['report_b_id'] == $reportA->id)
                         );
 
-                        if (!$exists) {
+                        if (! $exists) {
                             $duplicates->push([
                                 'report_a_id' => $reportA->id,
                                 'report_b_id' => $reportB->id,
                                 'similarity' => round($similarity, 2),
-                                'type' => 'NEAR_DUPLICATE'
+                                'type' => 'NEAR_DUPLICATE',
                             ]);
                         }
                     }
@@ -160,9 +171,16 @@ class QualityAuditService
 
     protected function getRiskLevel(int $score): string
     {
-        if ($score >= 80) return 'CRITICAL';
-        if ($score >= 60) return 'HIGH';
-        if ($score >= 30) return 'MEDIUM';
+        if ($score >= 80) {
+            return 'CRITICAL';
+        }
+        if ($score >= 60) {
+            return 'HIGH';
+        }
+        if ($score >= 30) {
+            return 'MEDIUM';
+        }
+
         return 'LOW';
     }
 }

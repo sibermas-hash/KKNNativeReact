@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\KKN\NilaiKkn;
-use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class YudisiumService
@@ -72,8 +73,8 @@ class YudisiumService
     {
         // FIX C13: Use correct column name 'period_id' via relationship
         $nilaiPerMahasiswa = NilaiKkn::whereHas('kelompok', function ($query) use ($periodeId) {
-                $query->where('period_id', $periodeId);
-            })
+            $query->where('period_id', $periodeId);
+        })
             ->where('is_finalized', true)
             ->with(['mahasiswa.prodi.fakultas', 'kelompok'])
             ->get()

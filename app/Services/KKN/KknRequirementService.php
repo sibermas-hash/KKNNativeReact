@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\KKN;
 
+use App\Enums\KknType;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
-use App\Enums\KknType;
 
 class KknRequirementService
 {
@@ -38,9 +40,9 @@ class KknRequirementService
     public function validate(Mahasiswa $mahasiswa, Periode $periode): array
     {
         $eligibility = app(\App\Services\EligibilityService::class)->checkEligibility($mahasiswa, $periode->id);
-        
-        return array_map(function($issue) {
-            return $issue['message'] . ($issue['reason'] ? " ({$issue['reason']})" : "");
+
+        return array_map(function ($issue) {
+            return $issue['message'].($issue['reason'] ? " ({$issue['reason']})" : '');
         }, $eligibility['issues']);
     }
 
@@ -55,25 +57,25 @@ class KknRequirementService
     {
         $governance = $periode->governance();
         $kknType = $this->resolveType($periode);
-        
+
         $requirements = ['Lulus ujian BTA/PPI.'];
         $governanceNotes = [];
-        
+
         // Dynamic Requirement Lines
         $minSks = $periode->jenisKkn?->min_sks ?? 100;
-        $minGpa = $periode->jenisKkn ? (float)$periode->jenisKkn->min_gpa : 0;
-        
+        $minGpa = $periode->jenisKkn ? (float) $periode->jenisKkn->min_gpa : 0;
+
         $requirements[] = "Minimal telah menempuh {$minSks} SKS.";
         if ($minGpa > 0) {
-            $requirements[] = "Minimal IPK " . number_format($minGpa, 2) . ".";
+            $requirements[] = 'Minimal IPK '.number_format($minGpa, 2).'.';
         }
 
         if ($periode->jenisKkn?->description) {
             $governanceNotes[] = $periode->jenisKkn->description;
         }
 
-        $governanceNotes[] = "Pendaftaran: " . ($governance['registration_mode_label'] ?? 'Standar');
-        $governanceNotes[] = "Penempatan: " . ($governance['placement_mode_label'] ?? 'Standar');
+        $governanceNotes[] = 'Pendaftaran: '.($governance['registration_mode_label'] ?? 'Standar');
+        $governanceNotes[] = 'Penempatan: '.($governance['placement_mode_label'] ?? 'Standar');
 
         // Specific legacy logic for certain types
         switch ($kknType) {
@@ -100,10 +102,13 @@ class KknRequirementService
     private function isMazawaStudent(Mahasiswa $mahasiswa): bool
     {
         $mahasiswa->loadMissing('prodi');
-        
-        if (!$mahasiswa->prodi) return false;
+
+        if (! $mahasiswa->prodi) {
+            return false;
+        }
 
         $name = strtolower($mahasiswa->prodi->nama);
+
         return str_contains($name, 'zakat') || str_contains($name, 'mazawa');
     }
 }

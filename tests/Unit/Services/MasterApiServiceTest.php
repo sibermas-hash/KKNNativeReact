@@ -67,7 +67,7 @@ class MasterApiServiceTest extends TestCase
 
         Http::assertSent(function ($request) {
             return str_contains($request->url(), '/sync/mahasiswa')
-                && $request['nim_list'] === '24010001,24010002';
+                && $request['nims'] === '24010001,24010002';
         });
     }
 }

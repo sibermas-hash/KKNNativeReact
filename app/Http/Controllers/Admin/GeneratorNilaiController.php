@@ -1,22 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SaveGradeGeneratorRequest;
 use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\Periode;
 use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
-use App\Models\KKN\Mahasiswa;
-use App\Services\GradingService;
 use App\Services\GradeExportService;
+use App\Services\GradingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class GeneratorNilaiController extends Controller
 {
@@ -30,19 +30,19 @@ class GeneratorNilaiController extends Controller
      */
     private function authorizeDplGroup(int $groupId): void
     {
-        if (!auth()->user()->hasRole('dpl')) {
+        if (! auth()->user()->hasRole('dpl')) {
             return;
         }
 
         $dosen = auth()->user()->dosen;
-        abort_if(!$dosen, 403, 'Data profil dosen tidak ditemukan.');
+        abort_if(! $dosen, 403, 'Data profil dosen tidak ditemukan.');
 
         $isAssigned = $dosen->kelompokKkn()
             ->where('kelompok_kkn.id', $groupId)
             ->wherePivot('role', 'Ketua')
             ->exists();
 
-        abort_if(!$isAssigned, 403, 'Akses Ditolak: Anda harus menjadi Ketua DPL untuk kelompok ini agar dapat memberikan nilai.');
+        abort_if(! $isAssigned, 403, 'Akses Ditolak: Anda harus menjadi Ketua DPL untuk kelompok ini agar dapat memberikan nilai.');
     }
 
     public function index(): Response
@@ -52,12 +52,12 @@ class GeneratorNilaiController extends Controller
             ->orderByDesc('id')
             ->limit(50)
             ->get()
-            ->map(fn($p) => [
-            'id' => $p->id,
-            'name' => "Angkatan " . ($p->name ?? '-') . " (" . ($p->tahunAkademik?->year ?? '-') . ")",
-            'grading_start' => $p->grading_start?->format('Y-m-d'),
-            'grading_end' => $p->grading_end?->format('Y-m-d'),
-        ]);
+            ->map(fn ($p) => [
+                'id' => $p->id,
+                'name' => 'Angkatan '.($p->name ?? '-').' ('.($p->tahunAkademik?->year ?? '-').')',
+                'grading_start' => $p->grading_start?->format('Y-m-d'),
+                'grading_end' => $p->grading_end?->format('Y-m-d'),
+            ]);
 
         $query = KelompokKkn::with(['lokasi', 'dosen.user:id,name']);
 
@@ -67,7 +67,7 @@ class GeneratorNilaiController extends Controller
             if ($dosenId) {
                 $query->whereHas('dosen', function ($q) use ($dosenId) {
                     $q->where('dosen_id', $dosenId)
-                      ->where('role', 'Ketua');
+                        ->where('role', 'Ketua');
                 });
             } else {
                 $query->whereRaw('1 = 0');
@@ -81,14 +81,14 @@ class GeneratorNilaiController extends Controller
                 $mainDpl = $g->dosen->where('pivot.role', 'Ketua')->first();
 
                 return [
-                    'id'         => $g->id,
-                    'period_id'  => $g->period_id,
-                    'code'       => $kelompokNum,
-                    'name'       => "Kelompok " . $kelompokNum,
-                    'desa'       => $g->lokasi?->village_name ?? '-',
-                    'kecamatan'  => $g->lokasi?->district_name ?? '-',
-                    'kabupaten'  => $g->lokasi?->regency_name ?? '-',
-                    'dpl'        => $mainDpl?->user?->name ?? '-',
+                    'id' => $g->id,
+                    'period_id' => $g->period_id,
+                    'code' => $kelompokNum,
+                    'name' => 'Kelompok '.$kelompokNum,
+                    'desa' => $g->lokasi?->village_name ?? '-',
+                    'kecamatan' => $g->lokasi?->district_name ?? '-',
+                    'kabupaten' => $g->lokasi?->regency_name ?? '-',
+                    'dpl' => $mainDpl?->user?->name ?? '-',
                 ];
             });
 
@@ -102,6 +102,7 @@ class GeneratorNilaiController extends Controller
     {
         Gate::authorize('manage-grades');
         $this->authorizeDplGroup($kelompokKkn->id);
+
         return response()->json($this->getStudentsForGroup($kelompokKkn));
     }
 
@@ -126,7 +127,7 @@ class GeneratorNilaiController extends Controller
         $scores = NilaiKkn::whereIn('kelompok_id', $groupIds)
             ->whereIn('user_id', $userIds)
             ->get()
-            ->groupBy(fn($s) => "{$s->kelompok_id}:{$s->user_id}");
+            ->groupBy(fn ($s) => "{$s->kelompok_id}:{$s->user_id}");
 
         // Map sekaligus tanpa loop N+1
         $allStudents = [];
@@ -138,13 +139,13 @@ class GeneratorNilaiController extends Controller
                 $score = $scores[$scoreKey]?->first();
 
                 $allStudents[] = [
-                    'user_id'    => $userId,
-                    'name'       => $reg->mahasiswa->nama,
-                    'nim'        => $reg->mahasiswa->nim,
+                    'user_id' => $userId,
+                    'name' => $reg->mahasiswa->nama,
+                    'nim' => $reg->mahasiswa->nim,
                     'group_code' => $group->code,
                     'group_name' => $group->nama_kelompok,
-                    'discipline' => $score?->discipline_score ? (int)$score->discipline_score : null,
-                    'attitude'   => $score?->attitude_score ? (int)$score->attitude_score : null,
+                    'discipline' => $score?->discipline_score ? (int) $score->discipline_score : null,
+                    'attitude' => $score?->attitude_score ? (int) $score->attitude_score : null,
                 ];
             }
         }
@@ -183,33 +184,37 @@ class GeneratorNilaiController extends Controller
                 $extension = 'jpg';
             }
 
-            if (!in_array($extension, $allowedExtensions)) {
+            if (! in_array($extension, $allowedExtensions)) {
                 return back()->withErrors(['evidence_file' => 'Ekstensi file tidak diizinkan. Hanya PDF, JPG, dan PNG yang diperbolehkan.']);
             }
 
             // Store in private storage (local disk) for security
             $evidencePath = $file->storeAs(
                 "evidence/{$data['kelompok_id']}",
-                "blanko_" . time() . ".{$extension}"
+                'blanko_'.time().".{$extension}"
             );
         }
 
         DB::transaction(function () use ($data, $request, $evidencePath) {
             foreach ($data['scores'] as $row) {
                 $discipline = $row['discipline'] ?? null;
-                $attitude   = $row['attitude'] ?? null;
+                $attitude = $row['attitude'] ?? null;
 
-                if ($discipline === null && $attitude === null && !$evidencePath) {
+                if ($discipline === null && $attitude === null && ! $evidencePath) {
                     continue;
                 }
 
                 $score = NilaiKkn::firstOrNew([
                     'user_id' => $row['user_id'],
-                    'kelompok_id'  => $data['kelompok_id'],
+                    'kelompok_id' => $data['kelompok_id'],
                 ]);
 
-                if ($discipline !== null) $score->discipline_score = $discipline;
-                if ($attitude !== null) $score->attitude_score = $attitude;
+                if ($discipline !== null) {
+                    $score->discipline_score = $discipline;
+                }
+                if ($attitude !== null) {
+                    $score->attitude_score = $attitude;
+                }
 
                 if ($discipline !== null || $attitude !== null) {
                     $score->dpl_graded_by = $request->user()->id;
@@ -242,10 +247,12 @@ class GeneratorNilaiController extends Controller
 
         if ($id === 'all' && $periodId) {
             $students = $this->getStudentsForPeriod($periodId);
+
             return $this->exportService->exportExcel('all', $students, (int) $periodId);
         } else {
             $kelompokKkn = KelompokKkn::with(['lokasi', 'dosen.user:id,name', 'periode.tahunAkademik'])->findOrFail($id);
             $students = $this->getStudentsForGroup($kelompokKkn);
+
             return $this->exportService->exportExcel($kelompokKkn, $students);
         }
     }
@@ -262,10 +269,12 @@ class GeneratorNilaiController extends Controller
 
         if ($id === 'all' && $periodId) {
             $students = $this->getStudentsForPeriod($periodId);
+
             return $this->exportService->exportPdf('all', $students, (int) $periodId);
         } else {
             $kelompokKkn = KelompokKkn::with(['lokasi', 'dosen.user:id,name', 'periode.tahunAkademik'])->findOrFail($id);
             $students = $this->getStudentsForGroup($kelompokKkn);
+
             return $this->exportService->exportPdf($kelompokKkn, $students);
         }
     }
@@ -275,14 +284,16 @@ class GeneratorNilaiController extends Controller
         abort_if(auth()->user()->hasRole('dpl'), 403, 'DPL hanya dapat mengekspor kelompok yang ditugaskan.');
 
         $periodId = $request->query('period_id');
-        if (!$periodId) abort(400, 'Missing period_id');
+        if (! $periodId) {
+            abort(400, 'Missing period_id');
+        }
 
         $groups = KelompokKkn::with(['lokasi', 'dosen.user:id,name', 'periode.tahunAkademik'])
             ->where('period_id', $periodId)
-            ->whereHas('dosen', function($q) {
+            ->whereHas('dosen', function ($q) {
                 if (auth()->user()->hasRole('dpl')) {
                     $dosenId = auth()->user()->dosen?->id;
-                    if (!$dosenId) {
+                    if (! $dosenId) {
                         return;
                     }
                     $q->where('dosen_id', $dosenId)->where('role', 'Ketua');
@@ -291,18 +302,18 @@ class GeneratorNilaiController extends Controller
             ->orderBy('code')
             ->get();
 
-        $zip = new \ZipArchive();
+        $zip = new \ZipArchive;
         $zipFileName = "Separated_Blanko_Penilaian_Periode_{$periodId}.zip";
-        $zipPath = storage_path("app/public/{$zipFileName}");
+        $zipPath = storage_path("app/private/{$zipFileName}");
 
-        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
             foreach ($groups as $group) {
                 $students = $this->getStudentsForGroup($group);
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.blanko_nilai', [
-                    'group'    => $group,
+                    'group' => $group,
                     'students' => $students,
                     'periode' => $group->periode?->name ?? '57',
-                    'tahun'    => $group->periode?->tahunAkademik?->year ?? date('Y')
+                    'tahun' => $group->periode?->tahunAkademik?->year ?? date('Y'),
                 ]);
 
                 $pdfName = "Blanko_Penilaian_Kelompok_{$group->code}.pdf";
@@ -331,12 +342,13 @@ class GeneratorNilaiController extends Controller
         return $registrations->map(function ($reg) use ($scores) {
             $userId = $reg->mahasiswa->user_id;
             $score = $scores->get($userId);
+
             return [
-                'user_id'    => $userId,
-                'name'       => $reg->mahasiswa->nama,
-                'nim'        => $reg->mahasiswa->nim,
-                'discipline' => $score?->discipline_score ? (int)$score->discipline_score : null,
-                'attitude'   => $score?->attitude_score ? (int)$score->attitude_score : null,
+                'user_id' => $userId,
+                'name' => $reg->mahasiswa->nama,
+                'nim' => $reg->mahasiswa->nim,
+                'discipline' => $score?->discipline_score ? (int) $score->discipline_score : null,
+                'attitude' => $score?->attitude_score ? (int) $score->attitude_score : null,
             ];
         })->values()->toArray();
     }
@@ -349,7 +361,7 @@ class GeneratorNilaiController extends Controller
             ->join('kelompok_kkn as g', 'r.kelompok_id', '=', 'g.id')
             ->leftJoin('nilai_kkn as ks', function ($join) {
                 $join->on('ks.user_id', '=', 'u.id')
-                     ->on('ks.kelompok_id', '=', 'g.id');
+                    ->on('ks.kelompok_id', '=', 'g.id');
             })
             ->where('g.period_id', $periodId)
             ->select([
@@ -364,13 +376,13 @@ class GeneratorNilaiController extends Controller
             ->orderBy('u.name')
             ->limit(50000)
             ->get()
-            ->map(fn($s) => [
-                'user_id'    => $s->user_id,
-                'name'       => $s->name,
-                'nim'        => $s->nim,
+            ->map(fn ($s) => [
+                'user_id' => $s->user_id,
+                'name' => $s->name,
+                'nim' => $s->nim,
                 'group_code' => $s->group_code,
-                'discipline' => $s->discipline ? (int)$s->discipline : null,
-                'attitude'   => $s->attitude ? (int)$s->attitude : null,
+                'discipline' => $s->discipline ? (int) $s->discipline : null,
+                'attitude' => $s->attitude ? (int) $s->attitude : null,
             ])
             ->toArray();
     }

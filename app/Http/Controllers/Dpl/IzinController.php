@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Dpl;
 
 use App\Http\Controllers\Controller;
@@ -19,7 +21,7 @@ class IzinController extends Controller
     public function index(): Response
     {
         $dosen = auth()->user()->dosen;
-        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        abort_if(! $dosen, 403, 'Data dosen tidak ditemukan.');
 
         $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
 

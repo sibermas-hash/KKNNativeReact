@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Dpl;
 
 use App\Http\Controllers\Controller;
@@ -22,11 +24,11 @@ class DashboardController extends Controller
         $user = auth()->user();
         $dosen = $user->dosen;
 
-        if (!$dosen) {
+        if (! $dosen) {
             return Inertia::render('Dpl/Dashboard', [
                 'groups' => [],
                 'pendingReports' => 0,
-                'gradingProgress' => "0%",
+                'gradingProgress' => '0%',
                 'atRiskStudents' => [],
                 'activityTrend' => [],
                 'coordinatorAreas' => [],
@@ -37,7 +39,7 @@ class DashboardController extends Controller
 
         $kelompok = KelompokKkn::query()
             ->whereIn('id', $groupIds)
-            ->withCount(['peserta' => function($q) {
+            ->withCount(['peserta' => function ($q) {
                 $q->where('status', 'approved');
             }, 'kegiatan'])
             ->with(['lokasi', 'periode'])
@@ -48,7 +50,7 @@ class DashboardController extends Controller
             ->count();
 
         $totalStudents = $kelompok->sum('peserta_count');
-        
+
         $gradedCount = NilaiKkn::whereIn('kelompok_id', $groupIds)
             ->whereNotNull('dpl_graded_at')
             ->count();
@@ -60,13 +62,13 @@ class DashboardController extends Controller
             ? Mahasiswa::whereHas('peserta', function ($q) use ($groupIds) {
                 $q->whereIn('kelompok_id', $groupIds)->where('status', 'approved');
             })
-            ->whereDoesntHave('kegiatan', function ($q) {
-                $q->where('date', '>=', now()->subDays(3));
-            })
-            ->with(['user', 'peserta' => function($q) use ($groupIds) {
-                $q->whereIn('kelompok_id', $groupIds);
-            }, 'peserta.kelompok'])
-            ->get()
+                ->whereDoesntHave('kegiatan', function ($q) {
+                    $q->where('date', '>=', now()->subDays(3));
+                })
+                ->with(['user', 'peserta' => function ($q) use ($groupIds) {
+                    $q->whereIn('kelompok_id', $groupIds);
+                }, 'peserta.kelompok'])
+                ->get()
             : collect();
 
         // Logbook Activity Trend (Last 14 days)

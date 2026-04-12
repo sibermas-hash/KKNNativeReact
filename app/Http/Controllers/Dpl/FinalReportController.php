@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Dpl;
 
 use App\Http\Controllers\Controller;
@@ -16,7 +18,7 @@ class FinalReportController extends Controller
     private function assignedGroupIds(): \Illuminate\Support\Collection
     {
         $dosen = auth()->user()->dosen;
-        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        abort_if(! $dosen, 403, 'Data dosen tidak ditemukan.');
 
         return $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
     }
@@ -32,7 +34,7 @@ class FinalReportController extends Controller
 
         $reports = LaporanAkhir::whereIn('kelompok_id', $groupIds)
             ->with(['mahasiswa', 'kelompok'])
-            ->when($request->input('status'), fn($q, $s) => $q->where('status', $s))
+            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
             ->orderByDesc('submitted_at')
             ->paginate(15)
             ->through(fn (LaporanAkhir $report) => [
@@ -60,7 +62,7 @@ class FinalReportController extends Controller
     public function show(LaporanAkhir $report): Response
     {
         $groupIds = $this->assignedGroupIds();
-        abort_if(!$groupIds->contains($report->kelompok_id), 403, 'Anda tidak memiliki akses ke laporan ini.');
+        abort_if(! $groupIds->contains($report->kelompok_id), 403, 'Anda tidak memiliki akses ke laporan ini.');
 
         $report->load(['mahasiswa', 'kelompok.lokasi']);
 
@@ -94,8 +96,8 @@ class FinalReportController extends Controller
     public function download(LaporanAkhir $report): StreamedResponse
     {
         $groupIds = $this->assignedGroupIds();
-        abort_if(!$groupIds->contains($report->kelompok_id), 403, 'Anda tidak memiliki akses ke laporan ini.');
-        abort_if(!$report->file_path, 404, 'Dokumen laporan akhir tidak ditemukan.');
+        abort_if(! $groupIds->contains($report->kelompok_id), 403, 'Anda tidak memiliki akses ke laporan ini.');
+        abort_if(! $report->file_path, 404, 'Dokumen laporan akhir tidak ditemukan.');
 
         $disk = Storage::disk('local')->exists($report->file_path)
             ? 'local'
@@ -112,9 +114,9 @@ class FinalReportController extends Controller
     public function approve(LaporanAkhir $report): RedirectResponse
     {
         $groupIds = $this->assignedGroupIds();
-        abort_if(!$groupIds->contains($report->kelompok_id), 403, 'Anda tidak memiliki akses ke laporan ini.');
+        abort_if(! $groupIds->contains($report->kelompok_id), 403, 'Anda tidak memiliki akses ke laporan ini.');
 
-        if (!$this->canReview($report)) {
+        if (! $this->canReview($report)) {
             return back()->with('error', 'Laporan akhir ini sudah selesai ditinjau dan tidak dapat diproses ulang.');
         }
 
@@ -130,7 +132,7 @@ class FinalReportController extends Controller
             $report->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
                 'type' => 'success',
                 'title' => 'Laporan Akhir Disetujui',
-                'message' => "Laporan akhir Anda (" . e($report->title) . ") telah disetujui oleh DPL.",
+                'message' => 'Laporan akhir Anda ('.e($report->title).') telah disetujui oleh DPL.',
                 'icon' => 'check-circle',
                 'url' => route('student.dashboard'),
             ]));
@@ -142,9 +144,9 @@ class FinalReportController extends Controller
     public function revision(Request $request, LaporanAkhir $report): RedirectResponse
     {
         $groupIds = $this->assignedGroupIds();
-        abort_if(!$groupIds->contains($report->kelompok_id), 403, 'Anda tidak memiliki akses ke laporan ini.');
+        abort_if(! $groupIds->contains($report->kelompok_id), 403, 'Anda tidak memiliki akses ke laporan ini.');
 
-        if (!$this->canReview($report)) {
+        if (! $this->canReview($report)) {
             return back()->with('error', 'Laporan akhir ini sudah selesai ditinjau dan tidak dapat diproses ulang.');
         }
 
@@ -164,7 +166,7 @@ class FinalReportController extends Controller
             $report->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
                 'type' => 'warning',
                 'title' => 'Revisi Laporan Akhir',
-                'message' => "Laporan akhir Anda memerlukan perbaikan. Catatan: " . e($validated['notes']),
+                'message' => 'Laporan akhir Anda memerlukan perbaikan. Catatan: '.e($validated['notes']),
                 'icon' => 'exclamation-triangle',
                 'url' => route('student.dashboard'),
             ]));

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -15,9 +17,8 @@ class DispensasiController extends Controller
     public function index(Request $request): Response
     {
         $dispensasi = DispensasiKkn::with(['periode:id,name,periode', 'grantedByUser:id,name'])
-            ->when($request->input('search'), fn ($q, $search) =>
-                $q->where('nim', 'ilike', "%{$search}%")
-                    ->orWhere('alasan', 'ilike', "%{$search}%")
+            ->when($request->input('search'), fn ($q, $search) => $q->where('nim', 'ilike', "%{$search}%")
+                ->orWhere('alasan', 'ilike', "%{$search}%")
             )
             ->latest()
             ->paginate(15)

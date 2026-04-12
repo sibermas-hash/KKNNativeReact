@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Dpl;
 
 use App\Http\Controllers\Controller;
@@ -15,7 +17,7 @@ class MonitoringController extends Controller
     public function index(): Response
     {
         $dosen = auth()->user()->dosen;
-        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        abort_if(! $dosen, 403, 'Data dosen tidak ditemukan.');
 
         $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
 
@@ -36,6 +38,7 @@ class MonitoringController extends Controller
             ->get()
             ->map(function ($group) use ($statsPerKelompok) {
                 $stat = $statsPerKelompok->get($group->id);
+
                 return [
                     'id' => $group->id,
                     'nama' => $group->nama_kelompok,
@@ -54,7 +57,7 @@ class MonitoringController extends Controller
     public function create(Request $request): Response
     {
         $dosen = auth()->user()->dosen;
-        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        abort_if(! $dosen, 403, 'Data dosen tidak ditemukan.');
 
         $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
         $groups = KelompokKkn::whereIn('id', $groupIds)
@@ -72,7 +75,7 @@ class MonitoringController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $dosen = auth()->user()->dosen;
-        abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+        abort_if(! $dosen, 403, 'Data dosen tidak ditemukan.');
 
         $validated = $request->validate([
             'kelompok_id' => ['required', 'exists:kelompok_kkn,id'],

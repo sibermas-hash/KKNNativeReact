@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\KKN;
 
 use App\Enums\KknType;
@@ -27,7 +29,7 @@ class PeriodeGovernanceService
         if ($jenisKkn) {
             $registrationMode = $jenisKkn->registration_mode;
             $placementMode = $jenisKkn->placement_mode;
-            
+
             return [
                 'program_type' => $resolvedProgramType,
                 'program_subtype' => $resolvedProgramSubtype,

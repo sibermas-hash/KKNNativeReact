@@ -242,7 +242,7 @@ export default function AdminFinalReportsIndex({ reports, filters }: Props) {
                         </div>
                         <div className="px-12 py-6 bg-white/5 border border-white/10 rounded-[2.5rem] backdrop-blur-xl flex flex-col items-center justify-center gap-2">
                              <Cpu size={28} className="text-emerald-500" />
-                             <span className="text-[9px] font-black text-white/40 uppercase tracking-[0.3em]">Processing Node Active</span>
+                             <span className="text-[9px] font-black text-white/40 uppercase tracking-[0.3em]">Node Pemrosesan Aktif</span>
                         </div>
                     </div>
                 </motion.div>

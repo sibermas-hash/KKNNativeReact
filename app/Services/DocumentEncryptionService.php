@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use Illuminate\Support\Facades\Crypt;
@@ -15,12 +17,12 @@ class DocumentEncryptionService
     {
         $contents = file_get_contents($file->getRealPath());
         $encryptedContents = Crypt::encrypt($contents);
-        
-        $filename = Str::random(40) . '.enc';
+
+        $filename = Str::random(40).'.enc';
         $fullPath = "{$path}/{$filename}";
-        
+
         Storage::disk($disk)->put($fullPath, $encryptedContents);
-        
+
         return $fullPath;
     }
 
@@ -29,16 +31,17 @@ class DocumentEncryptionService
      */
     public static function decryptAndRetrieve(string $path, string $disk = 'private')
     {
-        if (!Storage::disk($disk)->exists($path)) {
+        if (! Storage::disk($disk)->exists($path)) {
             return null;
         }
 
         $encryptedContents = Storage::disk($disk)->get($path);
-        
+
         try {
             return Crypt::decrypt($encryptedContents);
         } catch (\Exception $e) {
-            \Log::error("Gagal mendekripsi dokumen pada path: {$path}. Error: " . $e->getMessage());
+            \Log::error("Gagal mendekripsi dokumen pada path: {$path}. Error: ".$e->getMessage());
+
             return null;
         }
     }

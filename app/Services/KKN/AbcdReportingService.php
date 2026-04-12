@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\KKN;
 
-use App\Models\KKN\ProgramKerja;
-use App\Models\KKN\KegiatanKkn;
 use App\Enums\AbcdStage;
-use Illuminate\Support\Collection;
+use App\Models\KKN\KegiatanKkn;
+use App\Models\KKN\ProgramKerja;
 
 class AbcdReportingService
 {
@@ -33,9 +34,9 @@ class AbcdReportingService
     {
         $program = ProgramKerja::with('kelompok')->findOrFail($programId);
         $currentStage = $program->abcd_stage;
-        
+
         $nextStage = $this->getNextStage($currentStage);
-        if (!$nextStage) {
+        if (! $nextStage) {
             return ['can_advance' => false, 'reason' => 'Tahapan terakhir (Reflection) sudah tercapai.'];
         }
 
@@ -43,14 +44,14 @@ class AbcdReportingService
         $activitiesCount = KegiatanKkn::where('kelompok_id', $program->kelompok_id)
             ->where('status', 'approved')
             ->count();
-        
+
         // Dynamic threshold based on stage week
-        $threshold = $currentStage->weekNumber() * 7; 
-        
+        $threshold = $currentStage->weekNumber() * 7;
+
         if ($activitiesCount < $threshold) {
             return [
-                'can_advance' => false, 
-                'reason' => "Minimal butuh {$threshold} aktivitas terverifikasi untuk melanjutkan ke tahap {$nextStage->value}."
+                'can_advance' => false,
+                'reason' => "Minimal butuh {$threshold} aktivitas terverifikasi untuk melanjutkan ke tahap {$nextStage->value}.",
             ];
         }
 
@@ -63,7 +64,9 @@ class AbcdReportingService
     public function advance(int $programId): bool
     {
         $status = $this->canAdvance($programId);
-        if (!$status['can_advance']) return false;
+        if (! $status['can_advance']) {
+            return false;
+        }
 
         $program = ProgramKerja::findOrFail($programId);
         $program->update(['abcd_stage' => $status['next_stage']]);
@@ -79,6 +82,7 @@ class AbcdReportingService
                 return $stages[$index + 1];
             }
         }
+
         return null;
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -8,16 +10,17 @@ use App\Models\KKN\Dosen;
 use App\Models\KKN\DplKecamatanAssignment;
 use App\Models\KKN\DplPeriod;
 use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\Lokasi;
 use App\Models\KKN\LogAudit;
+use App\Models\KKN\Lokasi;
 use App\Models\KKN\Periode;
+use App\Notifications\KKN\DplAssignedToGroupNotification;
 use App\Services\DplAssignmentService;
 use App\Services\PeriodContextService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Notifications\KKN\DplAssignedToGroupNotification;
 
 class DplAssignmentController extends Controller
 {
@@ -53,9 +56,9 @@ class DplAssignmentController extends Controller
 
         // OPTIMIZATION: Use pagination for assignments (main data)
         $assignmentsPaginated = DplPeriod::with([
-                'dosen:id,nama,nip',
-                'periode:id,name,periode,jenis',
-            ])
+            'dosen:id,nama,nip',
+            'periode:id,name,periode,jenis',
+        ])
             ->withCount('kelompok')
             ->where('is_active', true)
             ->when($search !== '', function ($query) use ($escapedSearch) {
@@ -76,10 +79,10 @@ class DplAssignmentController extends Controller
 
         // OPTIMIZATION: Limit groups query with pagination
         $groupsPaginated = KelompokKkn::with([
-                'dpl:id,nama,nip',
-                'periode:id,name,periode,jenis',
-                'lokasi:id,district_name,regency_name',
-            ])
+            'dpl:id,nama,nip',
+            'periode:id,name,periode,jenis',
+            'lokasi:id,district_name,regency_name',
+        ])
             ->when($search !== '', function ($query) use ($escapedSearch) {
                 $query->where(function ($builder) use ($escapedSearch) {
                     $builder
@@ -118,9 +121,9 @@ class DplAssignmentController extends Controller
 
         // OPTIMIZATION: Paginate district coordinators
         $districtCoordinatorsPaginated = DplKecamatanAssignment::with([
-                'dosen:id,nama,nip',
-                'periode:id,name,periode,jenis',
-            ])
+            'dosen:id,nama,nip',
+            'periode:id,name,periode,jenis',
+        ])
             ->where('is_active', true)
             ->when($search !== '', function ($query) use ($escapedSearch) {
                 $query->where(function ($builder) use ($escapedSearch) {
@@ -264,8 +267,8 @@ class DplAssignmentController extends Controller
             'summary' => [
                 'active_assignments' => $assignmentsPaginated->total(),
                 'groups_total' => $groupsPaginated->total(),
-                'groups_without_dpl' => KelompokKkn::query()->whereNull('dpl_period_id')->count(),
-                'active_groups_without_dpl' => KelompokKkn::query()->where('status', 'active')->whereNull('dpl_period_id')->count(),
+                'groups_without_dpl' => Cache::remember('dpl_summary_groups_without_dpl', 60, fn () => KelompokKkn::query()->whereNull('dpl_period_id')->count()),
+                'active_groups_without_dpl' => Cache::remember('dpl_summary_active_groups_without_dpl', 60, fn () => KelompokKkn::query()->where('status', 'active')->whereNull('dpl_period_id')->count()),
                 'district_coordinators' => $districtCoordinatorsPaginated->total(),
             ],
         ]);
@@ -345,7 +348,7 @@ class DplAssignmentController extends Controller
             if ($dplUser) {
                 $group->load('lokasi', 'periode');
                 $locationName = $group->lokasi
-                    ? trim(($group->lokasi->district_name ?? '') . ', ' . ($group->lokasi->regency_name ?? ''), ', ')
+                    ? trim(($group->lokasi->district_name ?? '').', '.($group->lokasi->regency_name ?? ''), ', ')
                     : null;
 
                 $dplUser->notify(new DplAssignedToGroupNotification(
@@ -389,7 +392,7 @@ class DplAssignmentController extends Controller
             ->select('district_id', 'district_name', 'regency_name')
             ->first();
 
-        if (!$district) {
+        if (! $district) {
             return back()->with('error', 'Kecamatan tidak ditemukan pada master lokasi.');
         }
 
@@ -481,7 +484,7 @@ class DplAssignmentController extends Controller
 
         $periodId = $this->contextService->getActivePeriodId();
 
-        if (!$periodId) {
+        if (! $periodId) {
             return response()->json([]);
         }
 
@@ -490,8 +493,9 @@ class DplAssignmentController extends Controller
                 $q->where('period_id', $periodId);
             }])
             ->get()
-            ->map(function ($dosen) use ($periodId) {
+            ->map(function ($dosen) {
                 $dplPeriod = $dosen->dplPeriods->first();
+
                 return [
                     'id' => $dosen->id,
                     'nama' => $dosen->nama,

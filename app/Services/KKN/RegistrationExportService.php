@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\KKN;
 
 use App\Exports\BpjsParticipantExport;
@@ -23,7 +25,7 @@ class RegistrationExportService
      */
     public function exportToExcel(Collection $registrations): BinaryFileResponse
     {
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
         // Headers
@@ -49,7 +51,7 @@ class RegistrationExportService
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        return $this->saveAndDownload($spreadsheet, 'data-pendaftaran-kkn-' . date('Y-m-d-His') . '.xlsx');
+        return $this->saveAndDownload($spreadsheet, 'data-pendaftaran-kkn-'.date('Y-m-d-His').'.xlsx');
     }
 
     /**
@@ -111,11 +113,12 @@ class RegistrationExportService
             mkdir($exportDir, 0750, true);
         }
 
-        $tempFile = $exportDir . '/' . Str::uuid() . '.xlsx';
+        $tempFile = $exportDir.'/'.Str::uuid().'.xlsx';
         $writer = new Xlsx($spreadsheet);
 
         try {
             $writer->save($tempFile);
+
             return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
         } catch (\Throwable $e) {
             if (file_exists($tempFile)) {

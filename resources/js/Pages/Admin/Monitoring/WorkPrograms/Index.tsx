@@ -153,7 +153,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
                             <div className="flex items-center gap-5">
                                 <Globe size={20} className="text-emerald-500 animate-spin-slow" />
                                 <div className="space-y-0.5">
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Global Alignment Matrix</h3>
+                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Matriks Penyelarasan Global</h3>
                                     <p className="text-xl font-black text-slate-900 uppercase tracking-tighter italic">Distribusi Dampak Strategis (SDGs)</p>
                                 </div>
                             </div>

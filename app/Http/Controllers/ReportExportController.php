@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Services\DailyReportCompilationService;
-use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class ReportExportController extends Controller
@@ -21,10 +22,10 @@ class ReportExportController extends Controller
     {
         $userId = auth()->id();
         $user = auth()->user();
-        
+
         $pdf = $this->compilationService->generateForStudent($userId);
         $filename = "Laporan_Harian_KKN_{$user->name}.pdf";
-        
+
         return $pdf->download($filename);
     }
 
@@ -43,7 +44,7 @@ class ReportExportController extends Controller
         $mahasiswa = Mahasiswa::with('user')->findOrFail($studentId);
 
         // DPL can only download reports for students in their groups
-        if ($user->hasRole('dpl') && !$user->hasRole('superadmin')) {
+        if ($user->hasRole('dpl') && ! $user->hasRole('superadmin')) {
             $dosen = \App\Models\KKN\Dosen::where('user_id', $user->id)->first();
             abort_unless($dosen, 403);
             $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
@@ -54,7 +55,7 @@ class ReportExportController extends Controller
 
         $pdf = $this->compilationService->generateForStudent($mahasiswa->user_id);
         $filename = "Laporan_Harian_KKN_{$mahasiswa->user->name}.pdf";
-        
+
         return $pdf->download($filename);
     }
 
@@ -73,7 +74,7 @@ class ReportExportController extends Controller
         $kelompok = KelompokKkn::findOrFail($groupId);
 
         // DPL can only download reports for their own groups
-        if ($user->hasRole('dpl') && !$user->hasRole('superadmin')) {
+        if ($user->hasRole('dpl') && ! $user->hasRole('superadmin')) {
             $dosen = \App\Models\KKN\Dosen::where('user_id', $user->id)->first();
             abort_unless($dosen, 403);
             $isAssigned = $dosen->kelompokKkn()->where('kelompok_kkn.id', $groupId)->exists();
@@ -82,7 +83,7 @@ class ReportExportController extends Controller
 
         $pdf = $this->compilationService->generateForGroup($groupId);
         $filename = "Ringkasan_Laporan_Kelompok_{$kelompok->code}.pdf";
-        
+
         return $pdf->download($filename);
     }
 }

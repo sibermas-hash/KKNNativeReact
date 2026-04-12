@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Services\DatabaseSyncMonitoringService;
 use App\Models\KKN\DatabaseSyncLog;
+use App\Services\DatabaseSyncMonitoringService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;

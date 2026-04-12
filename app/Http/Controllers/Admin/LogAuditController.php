@@ -1,16 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\LogAudit;
 use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Arr;
-use Inertia\Inertia;
-
 use App\Traits\HandlesPagination;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class LogAuditController extends Controller
 {
@@ -21,15 +20,15 @@ class LogAuditController extends Controller
         $this->authorize('viewAny', LogAudit::class);
 
         $query = LogAudit::with('user:id,name,email')
-            ->when($request->action, fn($q, $v) => $q->where('action', $v))
-            ->when($request->user_id, fn($q, $v) => $q->where('user_id', $v))
-            ->when($request->date_from, fn($q, $v) => $q->whereDate('created_at', '>=', $v))
-            ->when($request->date_to, fn($q, $v) => $q->whereDate('created_at', '<=', $v))
-            ->when($request->search, fn($q, $v) => $q->where(function($q) use ($v) {
+            ->when($request->action, fn ($q, $v) => $q->where('action', $v))
+            ->when($request->user_id, fn ($q, $v) => $q->where('user_id', $v))
+            ->when($request->date_from, fn ($q, $v) => $q->whereDate('created_at', '>=', $v))
+            ->when($request->date_to, fn ($q, $v) => $q->whereDate('created_at', '<=', $v))
+            ->when($request->search, fn ($q, $v) => $q->where(function ($q) use ($v) {
                 $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $v);
                 $q->where('description', 'like', "%{$escaped}%")
-                  ->orWhere('ip_address', 'like', "%{$escaped}%");
-                
+                    ->orWhere('ip_address', 'like', "%{$escaped}%");
+
                 // VULN-014 Fix: Cross-database search for user name
                 $userIds = \App\Models\User::where('name', 'like', "%{$escaped}%")->pluck('id');
                 if ($userIds->isNotEmpty()) {
@@ -44,10 +43,10 @@ class LogAuditController extends Controller
         // Stats untuk header & cards
         $stats = [
             'total' => LogAudit::count(),
-            'high_risk' => LogAudit::where(function($q) {
-                                $q->where('action', 'like', 'GATE_BYPASS%')
-                                  ->orWhere('action', 'DELETE');
-                            })->count(),
+            'high_risk' => LogAudit::where(function ($q) {
+                $q->where('action', 'like', 'GATE_BYPASS%')
+                    ->orWhere('action', 'DELETE');
+            })->count(),
             'unique_users' => LogAudit::distinct('user_id')->count('user_id'),
             'today_logs' => LogAudit::whereDate('created_at', today())->count(),
         ];
@@ -57,7 +56,7 @@ class LogAuditController extends Controller
             'stats' => $stats,
             'filters' => $request->only(['action', 'user_id', 'date_from', 'date_to', 'search']),
             'actions' => LogAudit::distinct('action')->pluck('action'),
-            'users' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['superadmin', 'faculty_admin', 'dpl']))
+            'users' => User::whereHas('roles', fn ($q) => $q->whereIn('name', ['superadmin', 'faculty_admin', 'dpl']))
                 ->select('id', 'name')
                 ->orderBy('name')
                 ->get(),
@@ -72,6 +71,4 @@ class LogAuditController extends Controller
             'log' => $auditLog->load('user:id,name,email'),
         ]);
     }
-
-
 }

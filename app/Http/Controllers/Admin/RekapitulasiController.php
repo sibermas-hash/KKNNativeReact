@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -50,6 +52,7 @@ class RekapitulasiController extends Controller
             ->get()
             ->map(function ($kelompok) {
                 $total = $kelompok->rekapitulasiKegiatan()->sum('jumlah');
+
                 return [
                     'id' => $kelompok->id,
                     'nama_kelompok' => $kelompok->nama_kelompok,

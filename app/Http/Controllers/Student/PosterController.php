@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
@@ -16,14 +18,14 @@ class PosterController extends Controller
     public function index(): Response
     {
         $mahasiswa = auth()->user()->mahasiswa;
-        abort_if(!$mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
+        abort_if(! $mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
 
         $peserta = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
             ->where('status', 'approved')
             ->with('kelompok')
             ->first();
 
-        abort_if(!$peserta || !$peserta->kelompok, 403, 'Anda belum memiliki kelompok KKN aktif.');
+        abort_if(! $peserta || ! $peserta->kelompok, 403, 'Anda belum memiliki kelompok KKN aktif.');
 
         $kelompok = $peserta->kelompok;
 
@@ -42,13 +44,13 @@ class PosterController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $mahasiswa = auth()->user()->mahasiswa;
-        abort_if(!$mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
+        abort_if(! $mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
 
         $peserta = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
             ->where('status', 'approved')
             ->first();
 
-        abort_if(!$peserta || !$peserta->kelompok_id, 403, 'Anda belum memiliki kelompok KKN aktif.');
+        abort_if(! $peserta || ! $peserta->kelompok_id, 403, 'Anda belum memiliki kelompok KKN aktif.');
 
         $validated = $request->validate([
             'poster' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],

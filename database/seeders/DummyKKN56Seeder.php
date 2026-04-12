@@ -6,11 +6,17 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class DummyKKN56Seeder extends Seeder
 {
     public function run(): void
     {
+        if (!app()->environment('local', 'testing')) {
+            $this->command->error('This seeder can only run in local or testing environment.');
+            return;
+        }
+
         // ═══════════════════════════════════════════════════
         // STEP 0: TOTAL CLEANUP
         // ═══════════════════════════════════════════════════
@@ -157,7 +163,7 @@ class DummyKKN56Seeder extends Seeder
             if (!$existing) {
                 $userId = DB::table('users')->insertGetId([
                     'username' => $nip, 'name' => "Dr. DPL Simulator $i, M.Ag",
-                    'email' => $email, 'password' => Hash::make('password'),
+                    'email' => $email, 'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', Str::random(32))),
                     'email_verified_at' => now(), 'created_at' => now(), 'updated_at' => now(),
                 ]);
             } else {
@@ -185,7 +191,7 @@ class DummyKKN56Seeder extends Seeder
                 $userId = DB::table('users')->insertGetId([
                     'username' => $nim, 'name' => "Mahasiswa Dummy $i",
                     'email' => $email,
-                    'password' => Hash::make('password'),
+                    'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', Str::random(32))),
                     'email_verified_at' => now(), 'created_at' => now(), 'updated_at' => now(),
                 ]);
             } else {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,6 +14,7 @@ class TahunAkademik extends Model
     use HasFactory;
 
     protected $connection = 'kkn';
+
     protected $table = 'tahun_akademik';
 
     protected $fillable = [
@@ -38,7 +41,7 @@ class TahunAkademik extends Model
                 self::where('id', '!=', $model->id)
                     ->where('is_active', true)
                     ->update(['is_active' => false]);
-                
+
                 Cache::forget('active_year');
             }
         });

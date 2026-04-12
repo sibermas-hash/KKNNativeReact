@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\KegiatanKkn;
+use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\LaporanAkhir;
-use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\NilaiKkn;
-use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\ProgramKerja;
 use Illuminate\Support\Facades\Cache;
@@ -22,7 +22,7 @@ class DashboardStatisticsService
      */
     public function getPeriodStatistics(int $periodId, ?int $facultyId = null): array
     {
-        $cacheKey = "dashboard:period:{$periodId}:faculty:" . ($facultyId ?? 'global');
+        $cacheKey = "dashboard:period:{$periodId}:faculty:".($facultyId ?? 'global');
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($periodId, $facultyId) {
             return [
@@ -53,11 +53,11 @@ class DashboardStatisticsService
         });
 
         if ($facultyId) {
-            $studentQuery->whereHas('mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
-            $groupQuery->whereHas('peserta.mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
-            $reportQuery->whereHas('mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
-            $wpQuery->whereHas('kelompok.peserta.mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
-            $finalReportQuery->whereHas('mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
+            $studentQuery->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
+            $groupQuery->whereHas('peserta.mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
+            $reportQuery->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
+            $wpQuery->whereHas('kelompok.peserta.mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
+            $finalReportQuery->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
         }
 
         $totalStudents = (clone $studentQuery)->count();
@@ -66,15 +66,15 @@ class DashboardStatisticsService
         $pendingRegistrations = (clone $studentQuery)->where('status', 'pending')->count();
         $totalWorkPrograms = (clone $wpQuery)->count();
         $totalFinalReports = (clone $finalReportQuery)->count();
-        
+
         $assignedStudents = (clone $studentQuery)->whereNotNull('kelompok_id')->count();
         $unassignedStudents = (clone $studentQuery)->whereNull('kelompok_id')->count();
-        
+
         $poskoQuery = \App\Models\KKN\PoskoKelompok::whereHas('kelompok', function ($q) use ($periodId) {
             $q->where('period_id', $periodId);
         });
         if ($facultyId) {
-            $poskoQuery->whereHas('kelompok.peserta.mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
+            $poskoQuery->whereHas('kelompok.peserta.mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
         }
         $reportedPosko = $poskoQuery->count();
 
@@ -102,7 +102,7 @@ class DashboardStatisticsService
 
         if ($facultyId) {
             $query->join('mahasiswa', 'peserta_kkn.mahasiswa_id', '=', 'mahasiswa.id')
-                  ->where('mahasiswa.faculty_id', $facultyId);
+                ->where('mahasiswa.faculty_id', $facultyId);
         }
 
         return $query->groupBy('status')
@@ -157,7 +157,7 @@ class DashboardStatisticsService
 
         if ($facultyId) {
             $query->join('mahasiswa', 'peserta_kkn.mahasiswa_id', '=', 'mahasiswa.id')
-                  ->where('mahasiswa.faculty_id', $facultyId);
+                ->where('mahasiswa.faculty_id', $facultyId);
         }
 
         return $query->groupBy('dosen.id', 'dosen.nama', 'dosen.nip')
@@ -174,15 +174,15 @@ class DashboardStatisticsService
         $query = ProgramKerja::whereHas('kelompok', function ($q) use ($periodId) {
             $q->where('period_id', $periodId);
         })
-        ->whereNotNull('sdg_goals');
+            ->whereNotNull('sdg_goals');
 
         if ($facultyId) {
-            $query->whereHas('kelompok.peserta.mahasiswa', fn($q) => $q->where('faculty_id', $facultyId));
+            $query->whereHas('kelompok.peserta.mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
         }
 
         $rawSdgs = $query->select('sdg_goals')
             ->get()
-            ->flatMap(fn($wp) => (array) $wp->sdg_goals);
+            ->flatMap(fn ($wp) => (array) $wp->sdg_goals);
 
         return $rawSdgs->countBy()->map(function ($count, $id) {
             return [

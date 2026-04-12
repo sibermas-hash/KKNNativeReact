@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -46,7 +48,7 @@ class LaporanAkhirController extends Controller
     public function updateStatus(Request $request, LaporanAkhir $report)
     {
         Gate::authorize('manage-grades'); // Reuse permission for grading/approval
-        
+
         $validated = $request->validate([
             'status' => ['required', 'in:disetujui,revisi'],
             'review_notes' => ['nullable', 'string', 'max:1000'],
@@ -60,6 +62,6 @@ class LaporanAkhirController extends Controller
         ]);
 
         return redirect()->route('admin.laporan.akhir.index')
-            ->with('success', "Status laporan berhasil diperbarui menjadi: " . strtoupper($validated['status']));
+            ->with('success', 'Status laporan berhasil diperbarui menjadi: '.strtoupper($validated['status']));
     }
 }

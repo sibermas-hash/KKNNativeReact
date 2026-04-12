@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -41,7 +43,7 @@ class RegistrationController extends Controller
             ], 409);
         }
 
-        $apiKey = 'sk_' . Str::replace('-', '', Str::uuid()->toString());
+        $apiKey = 'sk_'.Str::replace('-', '', Str::uuid()->toString());
 
         // Create project
         $project = Project::create([
@@ -64,8 +66,7 @@ class RegistrationController extends Controller
             Mail::to($validated['email'])->send(
                 new ApiKeyGenerated($validated['project_name'], $apiKey, $serverUrl)
             );
-        }
-        catch (\Throwable $e) {
+        } catch (\Throwable $e) {
             // Log but don't fail — key is returned in response as fallback
             logger()->warning('Failed to send API key email', [
                 'email' => $validated['email'],

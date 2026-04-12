@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\KKN\Laporan;
@@ -68,7 +70,7 @@ class ReportController extends Controller
                     ],
                 ]);
 
-            return Inertia::render('Admin/Reports/Index', [
+            return Inertia::render('Admin/Monitoring/Reports/Index', [
                 'summary' => $summary,
                 'reports' => $reports,
             ]);
@@ -121,13 +123,13 @@ class ReportController extends Controller
         $validated = $request->validate([
             'type' => ['required', 'string', Rule::in($availableTypes)],
             'title' => 'required|string|max:255',
-            'file' => 'required|file|max:512000|mimes:' . $allowedMimeTypes,
+            'file' => 'required|file|max:512000|mimes:'.$allowedMimeTypes,
         ]);
 
         $user = $request->user();
         $groupId = $user->getActiveGroupId();
 
-        if (!$groupId) {
+        if (! $groupId) {
             return back()->with('error', 'Kelompok tidak ditemukan.');
         }
 
@@ -156,22 +158,22 @@ class ReportController extends Controller
 
         if ($user->hasRole('student')) {
             abort_if($report->user_id !== $user->id, 403, 'Anda tidak memiliki akses ke file laporan ini.');
-        } elseif ($user->hasRole('dpl') && !$user->hasRole('superadmin')) {
+        } elseif ($user->hasRole('dpl') && ! $user->hasRole('superadmin')) {
             $dosen = $user->dosen;
-            abort_if(!$dosen, 403, 'Data dosen tidak ditemukan.');
+            abort_if(! $dosen, 403, 'Data dosen tidak ditemukan.');
 
             $isAssigned = $dosen->kelompokKkn()
                 ->where('kelompok_kkn.id', $report->kelompok_id)
                 ->exists();
 
-            abort_if(!$isAssigned, 403, 'Anda tidak memiliki akses ke file laporan ini.');
+            abort_if(! $isAssigned, 403, 'Anda tidak memiliki akses ke file laporan ini.');
         } else {
             abort_unless($user->hasRole('superadmin'), 403, 'Anda tidak memiliki akses ke file laporan ini.');
         }
 
         [$disk, $path] = $this->resolveReportStorage($report->file_path);
 
-        if (!$path) {
+        if (! $path) {
             abort(404, 'File laporan tidak ditemukan.');
         }
 
@@ -186,8 +188,8 @@ class ReportController extends Controller
         $user = auth()->user();
 
         // Authorization check
-        if (!$user->hasRole('superadmin')) {
-            if (!$user->hasRole('dpl')) {
+        if (! $user->hasRole('superadmin')) {
+            if (! $user->hasRole('dpl')) {
                 abort(403);
             }
 
@@ -198,21 +200,21 @@ class ReportController extends Controller
                 ->wherePivot('role', 'Ketua')
                 ->exists();
 
-            abort_if(!$isAssigned, 403, 'Anda tidak memiliki akses ke bukti nilai kelompok ini.');
+            abort_if(! $isAssigned, 403, 'Anda tidak memiliki akses ke bukti nilai kelompok ini.');
         }
 
         // VULN-011 Fix: Validate file path to prevent path traversal
-        if (!$score->evidence_file) {
+        if (! $score->evidence_file) {
             abort(404, 'File bukti tidak ditemukan.');
         }
-        
+
         // Ensure path is within expected directory
         $basePath = 'evidence/';
-        if (str_starts_with($score->evidence_file, '../') || !str_starts_with($score->evidence_file, $basePath)) {
+        if (str_starts_with($score->evidence_file, '../') || ! str_starts_with($score->evidence_file, $basePath)) {
             abort(403, 'Path file tidak valid.');
         }
 
-        if (!\Illuminate\Support\Facades\Storage::exists($score->evidence_file)) {
+        if (! \Illuminate\Support\Facades\Storage::exists($score->evidence_file)) {
             abort(404, 'File bukti tidak ditemukan.');
         }
 
@@ -221,7 +223,7 @@ class ReportController extends Controller
 
     private function resolveReportStorage(?string $path): array
     {
-        if (!$path) {
+        if (! $path) {
             return ['local', null];
         }
 

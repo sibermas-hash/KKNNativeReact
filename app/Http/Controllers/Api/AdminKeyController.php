@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -16,10 +18,11 @@ class AdminKeyController extends Controller
         $adminSecret = config('api_keys.admin_secret');
 
         // SECURITY: If admin_secret is not configured, reject all requests
-        if (!$adminSecret || trim($adminSecret) === '') {
+        if (! $adminSecret || trim($adminSecret) === '') {
             \Illuminate\Support\Facades\Log::warning('Admin secret not configured', [
                 'ip' => $request->ip(),
             ]);
+
             return false;
         }
 
@@ -43,7 +46,7 @@ class AdminKeyController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        if (!$this->hasValidAdminSecret($request)) {
+        if (! $this->hasValidAdminSecret($request)) {
             return response()->json(['error' => 'Unauthorized. Admin secret tidak valid.'], 401);
         }
 
@@ -55,12 +58,12 @@ class AdminKeyController extends Controller
         ]);
 
         $permissions = $validated['permissions'] ?? ['read'];
-        $apiKey = 'sk_' . Str::replace('-', '', Str::uuid()->toString());
+        $apiKey = 'sk_'.Str::replace('-', '', Str::uuid()->toString());
 
         // Create or update project
         $project = Project::updateOrCreate(
-        ['email' => $validated['owner']],
-        ['project_name' => $validated['name']]
+            ['email' => $validated['owner']],
+            ['project_name' => $validated['name']]
         );
 
         // Create API key
@@ -82,7 +85,7 @@ class AdminKeyController extends Controller
 
     public function revoke(Request $request, ApiKey $apiKey): JsonResponse
     {
-        if (!$this->hasValidAdminSecret($request)) {
+        if (! $this->hasValidAdminSecret($request)) {
             return response()->json(['error' => 'Unauthorized. Admin secret tidak valid.'], 401);
         }
 

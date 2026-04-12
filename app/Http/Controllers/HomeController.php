@@ -1,23 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Models\KKN\Announcement;
+use App\Models\KKN\Download;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\PesertaKkn;
-use App\Models\KKN\Announcement;
-use App\Models\KKN\Download;
 use App\Models\KKN\SystemSetting;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Collection;
+use Inertia\Inertia;
 
 class HomeController extends Controller
 {
     public function index()
     {
         return Inertia::render('Home', [
-            'stats' => Inertia::defer(function() {
+            'stats' => Inertia::defer(function () {
                 try {
                     return [
                         'students' => PesertaKkn::whereIn('status', ['approved', 'verifikasi_pusat', 'completed'])->count(),
@@ -25,7 +27,8 @@ class HomeController extends Controller
                         'locations' => Lokasi::count(),
                     ];
                 } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::warning("Home statistics error: " . $e->getMessage());
+                    \Illuminate\Support\Facades\Log::warning('Home statistics error: '.$e->getMessage());
+
                     return [
                         'students' => 0,
                         'groups' => 0,
@@ -33,14 +36,16 @@ class HomeController extends Controller
                     ];
                 }
             }),
-            'featuredAnnouncements' => (function() {
+            'featuredAnnouncements' => (function () {
                 $announcements = Announcement::active()->orderBy('published_at', 'desc')->take(3)->get();
+
                 return $announcements->isNotEmpty()
                     ? $this->transformAnnouncements($announcements, false)
                     : $this->fallbackAnnouncements();
             })(),
-            'featuredDownloads' => (function() {
+            'featuredDownloads' => (function () {
                 $downloads = Download::active()->orderBy('created_at', 'desc')->take(3)->get();
+
                 return $downloads->isNotEmpty()
                     ? $this->transformDownloads($downloads, false)
                     : $this->fallbackDownloads();
@@ -54,6 +59,7 @@ class HomeController extends Controller
             'canRegister' => true,
         ]);
     }
+
     public function about()
     {
         return Inertia::render('Public/About', [
@@ -61,7 +67,7 @@ class HomeController extends Controller
                 'about' => SystemSetting::get('site_about', 'Lembaga Penelitian dan Pengabdian kepada Masyarakat (LPPM) UIN Profesor Kiai Haji Saifuddin Zuhri Purwokerto.'),
                 'visi' => SystemSetting::get('site_visi', 'Menjadi pusat unggulan penelitian dan pengabdian masyarakat.'),
                 'misi' => SystemSetting::get('site_misi', 'Mengembangkan riset aplikatif.'),
-            ]
+            ],
         ]);
     }
 
@@ -123,13 +129,13 @@ class HomeController extends Controller
     public function locations(Request $request)
     {
         $search = $request->input('search');
-        
+
         $locations = Lokasi::withCount('groups')
-            ->when($search, function($query, $search) {
+            ->when($search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('address', 'like', "%{$search}%")
-                      ->orWhere('district', 'like', "%{$search}%")
-                      ->orWhere('city', 'like', "%{$search}%");
+                    ->orWhere('address', 'like', "%{$search}%")
+                    ->orWhere('district', 'like', "%{$search}%")
+                    ->orWhere('city', 'like', "%{$search}%");
             })
             ->orderBy('name')
             ->paginate(12)
@@ -137,7 +143,7 @@ class HomeController extends Controller
 
         return Inertia::render('Public/Locations', [
             'locations' => $locations,
-            'filters' => $request->only(['search'])
+            'filters' => $request->only(['search']),
         ]);
     }
 

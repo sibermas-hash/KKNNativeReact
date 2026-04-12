@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\KKN\Fakultas;
 use App\Models\KKN\Dosen;
-use App\Models\KKN\Prodi;
+use App\Models\KKN\Fakultas;
 use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\Prodi;
 use App\Models\User;
+use App\Notifications\KKN\AccountActivatedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -15,11 +18,11 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Notifications\KKN\AccountActivatedNotification;
 
 class UserController extends Controller
 {
     use \App\Traits\HandlesPagination;
+
     public function index(Request $request): Response
     {
         $users = User::with(['roles', 'mahasiswa.prodi.fakultas', 'dosen.fakultas', 'fakultas'])
@@ -32,16 +35,16 @@ class UserController extends Controller
                         ->orWhereHas('fakultas', fn ($facultyQuery) => $facultyQuery->where('nama', 'like', "%{$s}%"));
                 });
             })
-            ->when($request->input('role'), fn($q, $role) => $q->role($role))
+            ->when($request->input('role'), fn ($q, $role) => $q->role($role))
             ->orderBy('name')
             ->paginate(15)
             ->withQueryString()
-            ->through(fn($user) => [
+            ->through(fn ($user) => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'username' => $user->username,
                 'email' => $user->email,
-                'is_active' => (bool)$user->is_active,
+                'is_active' => (bool) $user->is_active,
                 'email_verified_at' => $user->email_verified_at ? $user->email_verified_at->toIso8601String() : null,
                 'roles' => $user->roles->pluck('name')->toArray(),
             ]);
@@ -49,7 +52,7 @@ class UserController extends Controller
         return Inertia::render('Admin/System/Users/Index', [
             'users' => $this->formatPaginator($users),
             'filters' => $request->only('search', 'role'),
-            'title' => 'Manajemen Semua Pengguna'
+            'title' => 'Manajemen Semua Pengguna',
         ]);
     }
 
@@ -62,18 +65,18 @@ class UserController extends Controller
                 $q->where(function ($query) use ($s) {
                     $query->where('name', 'like', "%{$s}%")
                         ->orWhere('email', 'like', "%{$s}%")
-                        ->orWhereHas('dosen', fn($sq) => $sq->where('nip', 'like', "%{$s}%"));
+                        ->orWhereHas('dosen', fn ($sq) => $sq->where('nip', 'like', "%{$s}%"));
                 });
             })
             ->orderBy('name')
             ->paginate(15)
             ->withQueryString()
-            ->through(fn($user) => [
+            ->through(fn ($user) => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'username' => $user->username,
                 'email' => $user->email,
-                'is_active' => (bool)$user->is_active,
+                'is_active' => (bool) $user->is_active,
                 'email_verified_at' => $user->email_verified_at ? $user->email_verified_at->toIso8601String() : null,
                 'roles' => $user->roles->pluck('name')->toArray(),
             ]);
@@ -81,7 +84,7 @@ class UserController extends Controller
         return Inertia::render('Admin/System/Users/DosenIndex', [
             'users' => $this->formatPaginator($users),
             'filters' => $request->only('search'),
-            'title' => 'Manajemen Data Dosen (DPL)'
+            'title' => 'Manajemen Data Dosen (DPL)',
         ]);
     }
 
@@ -286,7 +289,7 @@ class UserController extends Controller
 
         $user->assignRole($validated['role']);
 
-        if ($validated['role'] === 'student' && !empty($validated['nim'])) {
+        if ($validated['role'] === 'student' && ! empty($validated['nim'])) {
             Mahasiswa::create([
                 'user_id' => $user->id,
                 'nim' => $validated['nim'],
@@ -301,7 +304,7 @@ class UserController extends Controller
             $user->update(['name' => $validated['name']]);
         }
 
-        if ($validated['role'] === 'dpl' && !empty($validated['nip'])) {
+        if ($validated['role'] === 'dpl' && ! empty($validated['nip'])) {
             Dosen::create([
                 'user_id' => $user->id,
                 'nip' => $validated['nip'],
@@ -311,7 +314,7 @@ class UserController extends Controller
         }
 
         // Notify user about their new account
-        $roleLabel = match($validated['role']) {
+        $roleLabel = match ($validated['role']) {
             'student' => 'Mahasiswa',
             'dpl' => 'Dosen Pembimbing Lapangan',
             'faculty_admin' => 'Admin Fakultas',
@@ -332,11 +335,11 @@ class UserController extends Controller
     public function toggleActive(User $user): RedirectResponse
     {
         // Pastikan hanya mahasiswa yang bisa di-toggle
-        if (!$user->hasRole('student')) {
+        if (! $user->hasRole('student')) {
             return redirect()->back()->withErrors(['error' => 'Hanya dapat mengubah status mahasiswa.']);
         }
 
-        $user->update(['is_active' => !$user->is_active]);
+        $user->update(['is_active' => ! $user->is_active]);
         $status = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
         if ($user->is_active) {

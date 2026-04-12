@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
 
 class LogAudit extends Model
 {
     protected $connection = 'kkn';
+
     protected $table = 'log_audit';
 
     protected $fillable = [

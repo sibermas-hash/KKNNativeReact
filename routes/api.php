@@ -37,7 +37,12 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->name('api.')->group(functi
 
 // Frontend Error Logging (no auth required - errors can happen before login)
 Route::post('log-error', function (Request $request) {
-    \Illuminate\Support\Facades\Log::channel('frontend')->error('Frontend Error: ' . $request->input('message'), $request->all());
+    $validated = $request->validate([
+        'message' => 'required|string|max:2000',
+        'url' => 'nullable|string|max:2048',
+        'stack' => 'nullable|string|max:10000',
+    ]);
+    \Illuminate\Support\Facades\Log::channel('frontend')->error('Frontend Error: ' . $validated['message'], $validated);
     return response()->json(['status' => 'logged']);
 })->middleware('throttle:10,1')->name('api.log-error');
 

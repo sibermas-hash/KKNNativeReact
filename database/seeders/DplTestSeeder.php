@@ -22,6 +22,11 @@ class DplTestSeeder extends Seeder
      */
     public function run(): void
     {
+        if (!app()->environment('local', 'testing')) {
+            $this->command->error('This seeder can only run in local or testing environment.');
+            return;
+        }
+
         $this->command->info('🌱 Seeding DPL test data...');
 
         // 1. Create Tahun Akademik
@@ -129,7 +134,7 @@ class DplTestSeeder extends Seeder
                 [
                     'name' => $dData['nama'],
                     'email' => Str::slug($dData['nama']) . '@uinsaizu.ac.id',
-                    'password' => Hash::make('password123'),
+                    'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', Str::random(32))),
                     'is_active' => true,
                     'faculty_id' => $dData['faculty_id'],
                 ]

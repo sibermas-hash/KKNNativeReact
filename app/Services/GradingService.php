@@ -1,16 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Models\KKN\NilaiKkn;
-use App\Models\KKN\Mahasiswa;
-use App\Models\User;
-use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\KonfigurasiPenilaian;
-use App\Notifications\KknActivityNotification;
-use Illuminate\Support\Facades\DB;
+use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\NilaiKkn;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\DB;
 
 class GradingService
 {
@@ -41,6 +39,7 @@ class GradingService
             );
 
             $this->calculateFinalGrade($score);
+
             return $score->fresh();
         });
     }
@@ -67,6 +66,7 @@ class GradingService
             );
 
             $this->calculateFinalGrade($score);
+
             return $score->fresh();
         });
     }
@@ -78,14 +78,14 @@ class GradingService
     {
         $score->loadMissing('kelompok.periode');
         $period = $score->kelompok?->periode;
-        
+
         // Resolve KKN Type for config lookup
-        $kknType = $period?->jenis instanceof \App\Enums\KknType 
-            ? $period->jenis 
+        $kknType = $period?->jenis instanceof \App\Enums\KknType
+            ? $period->jenis
             : \App\Enums\KknType::tryFrom($period?->jenis) ?? \App\Enums\KknType::REGULER;
 
         // Load configs from DB (cached)
-        $cacheKey = 'grading_configs_' . $kknType->value;
+        $cacheKey = 'grading_configs_'.$kknType->value;
         $configs = Cache::remember($cacheKey, 3600, function () use ($kknType) {
             return KonfigurasiPenilaian::getForType($kknType)->pluck('percentage', 'config_key');
         });
@@ -201,10 +201,10 @@ class GradingService
             );
 
             $this->calculateFinalGrade($score);
-            
+
             \App\Services\AuditService::log(
                 'UPDATE_SCORE_ADMIN',
-                "Admin mengupdate komponen nilai secara manual: " . json_encode($components),
+                'Admin mengupdate komponen nilai secara manual: '.json_encode($components),
                 $score,
                 null, // will be handled by observer if registered, but service logging is more specific
                 $components
@@ -219,7 +219,7 @@ class GradingService
      */
     public function dispatchMassFinalization(int $periodId): void
     {
-        $total = NilaiKkn::whereHas('kelompok', fn($q) => $q->where('period_id', $periodId))
+        $total = NilaiKkn::whereHas('kelompok', fn ($q) => $q->where('period_id', $periodId))
             ->where('is_finalized', false)
             ->whereNotNull('total_score')
             ->count();

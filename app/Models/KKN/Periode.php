@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use App\Enums\KknType;
@@ -16,21 +18,31 @@ class Periode extends Model
     use HasFactory, SoftDeletes;
 
     public const PROGRAM_TYPE_REGULER = 'reguler';
+
     public const PROGRAM_TYPE_NUSANTARA = 'nusantara';
+
     public const PROGRAM_TYPE_INTERNASIONAL_MANDIRI = 'internasional_mandiri';
+
     public const PROGRAM_TYPE_KOLABORASI_PTKIN = 'kolaborasi_ptkin';
+
     public const PROGRAM_TYPE_TEMATIK = 'tematik';
 
     public const PROGRAM_SUBTYPE_KAMPUNG_ZAKAT = 'kampung_zakat';
+
     public const PROGRAM_SUBTYPE_DESA_KATANA = 'desa_katana';
 
     public const REGISTRATION_MODE_OPEN = 'open';
+
     public const REGISTRATION_MODE_SELECTIVE = 'selective';
+
     public const REGISTRATION_MODE_PROPOSAL_BASED = 'proposal_based';
 
     public const PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL = 'automatic_after_approval';
+
     public const PLACEMENT_MODE_MANUAL_ADMIN = 'manual_admin';
+
     public const PLACEMENT_MODE_HOST_DEFINED = 'host_defined';
+
     public const PLACEMENT_MODE_PROPOSAL_DEFINED = 'proposal_defined';
 
     private const CACHE_KEYS = [
@@ -40,6 +52,7 @@ class Periode extends Model
     ];
 
     protected $connection = 'kkn';
+
     protected $table = 'periode';
 
     protected $fillable = [

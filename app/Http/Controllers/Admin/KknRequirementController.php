@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\KknRequirement;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Gate;
 
 class KknRequirementController extends Controller
 {
@@ -78,10 +80,11 @@ class KknRequirementController extends Controller
     {
         Gate::authorize('manage-master-data');
 
-        $requirement->is_active = !$requirement->is_active;
+        $requirement->is_active = ! $requirement->is_active;
         $requirement->save();
 
         $status = $requirement->is_active ? 'diaktifkan' : 'dinonaktifkan';
+
         return back()->with('success', "Syarat '{$requirement->name}' berhasil {$status}.");
     }
 

@@ -124,7 +124,7 @@ export default function GradingSettings({ sections, programOptions, filters }: P
                 <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <MetricCard label="System Integrity" value="VERIFIED" icon={ShieldCheck} color="emerald" desc="Grading logic authenticated" />
                     <MetricCard label="Kernel Status" value="RE-CALIBRATING" icon={Cpu} color="emerald" desc="Ready for weight injection" />
-                    <MetricCard label="Operational Loop" value="GLOBAL" icon={Database} color="emerald" desc="Syncing cross-session metrics" />
+                    <MetricCard label="Lingkar Operasional" value="GLOBAL" icon={Database} color="emerald" desc="Menyinkronkan metrik lintas-sesi" />
                     <MetricCard label="Governance" value="ENFORCED" icon={Lock} color="emerald" desc="100% total calculation required" />
                 </motion.div>
 

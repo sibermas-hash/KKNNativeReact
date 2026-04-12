@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -8,8 +10,8 @@ use App\Models\KKN\Fakultas;
 use App\Services\MasterApiService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Gate;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class DplSyncController extends Controller
@@ -66,6 +68,7 @@ class DplSyncController extends Controller
             );
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('DPL sync failed', ['error' => $e->getMessage()]);
+
             return back()->with('error', 'Gagal melakukan sinkronisasi. Silakan coba lagi atau hubungi administrator.');
         }
     }
@@ -81,6 +84,7 @@ class DplSyncController extends Controller
 
             if ($nip === '' || $name === '') {
                 $errors++;
+
                 continue;
             }
 
@@ -92,11 +96,11 @@ class DplSyncController extends Controller
                     $facultyId = Fakultas::where('master_id', $organizationMasterId)->value('id');
                 }
 
-                if (!$facultyId) {
+                if (! $facultyId) {
                     $facultyId = Fakultas::query()->value('id');
                 }
 
-                if (!$facultyId) {
+                if (! $facultyId) {
                     throw new \RuntimeException('Master fakultas belum tersedia untuk pemetaan dosen.');
                 }
 

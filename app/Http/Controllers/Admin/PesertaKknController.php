@@ -1,21 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\PesertaKkn;
+use App\Notifications\KKN\GroupPlacementConfirmedNotification;
+use App\Notifications\KKN\RegistrationApprovedNotification;
+use App\Notifications\KKN\RegistrationRejectedNotification;
 use App\Services\KKN\KknRequirementService;
 use App\Services\KKN\RegistrationApprovalService;
 use App\Services\KKN\RegistrationExportService;
+use App\Traits\HandlesPagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\Storage;
-use App\Traits\HandlesPagination;
-use App\Notifications\KKN\RegistrationApprovedNotification;
-use App\Notifications\KKN\RegistrationRejectedNotification;
-use App\Notifications\KKN\GroupPlacementConfirmedNotification;
 
 class PesertaKknController extends Controller
 {
@@ -98,12 +100,12 @@ class PesertaKknController extends Controller
         $registrations->through(function (PesertaKkn $reg) use ($kknRequirementService) {
             $mahasiswa = $reg->mahasiswa;
             $periode = $reg->periode;
-            
+
             $issues = [];
             if ($mahasiswa && $periode) {
                 $issues = $kknRequirementService->validate($mahasiswa, $periode);
             }
-            
+
             $isEligible = empty($issues);
 
             return [
@@ -121,7 +123,7 @@ class PesertaKknController extends Controller
                     'name' => $reg->mahasiswa?->nama ?? $reg->mahasiswa?->user?->name ?? '-',
                     'phone' => $reg->mahasiswa?->user?->phone,
                     'wa_link' => $reg->mahasiswa?->user?->phone
-                        ? 'https://wa.me/' . preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $reg->mahasiswa->user->phone))
+                        ? 'https://wa.me/'.preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $reg->mahasiswa->user->phone))
                         : null,
                     'faculty' => $reg->mahasiswa?->fakultas ? ['name' => $reg->mahasiswa->fakultas->nama] : null,
                     'program' => $reg->mahasiswa?->prodi ? ['name' => $reg->mahasiswa->prodi->nama] : null,
@@ -165,8 +167,8 @@ class PesertaKknController extends Controller
         // Registration summary per KKN type (mirrors Kampelmas "Detail Pendaftaran KKN")
         $byTypeStats = PesertaKkn::query()
             ->join('periode', 'peserta_kkn.period_id', '=', 'periode.id')
-            ->selectRaw("periode.id as period_id, periode.name as period_name, periode.program_type, periode.kuota")
-            ->selectRaw("COUNT(*) as total_pendaftar")
+            ->selectRaw('periode.id as period_id, periode.name as period_name, periode.program_type, periode.kuota')
+            ->selectRaw('COUNT(*) as total_pendaftar')
             ->selectRaw("SUM(CASE WHEN peserta_kkn.status = 'pending' THEN 1 ELSE 0 END) as pending")
             ->selectRaw("SUM(CASE WHEN peserta_kkn.status = 'approved' THEN 1 ELSE 0 END) as approved")
             ->selectRaw("SUM(CASE WHEN peserta_kkn.status = 'rejected' THEN 1 ELSE 0 END) as rejected")
@@ -359,7 +361,7 @@ class PesertaKknController extends Controller
         $user = $pesertaKkn->mahasiswa?->user;
         if ($user && $pesertaKkn->kelompok) {
             $locationName = $pesertaKkn->kelompok->lokasi
-                ? trim(($pesertaKkn->kelompok->lokasi->district_name ?? '') . ', ' . ($pesertaKkn->kelompok->lokasi->regency_name ?? ''), ', ')
+                ? trim(($pesertaKkn->kelompok->lokasi->district_name ?? '').', '.($pesertaKkn->kelompok->lokasi->regency_name ?? ''), ', ')
                 : null;
 
             $user->notify(new GroupPlacementConfirmedNotification(

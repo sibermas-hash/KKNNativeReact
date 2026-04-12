@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -14,9 +16,7 @@ class StudentSyncController extends Controller
 {
     public function __construct(
         private StudentSyncService $syncService
-        )
-    {
-    }
+    ) {}
 
     public function index(): Response
     {

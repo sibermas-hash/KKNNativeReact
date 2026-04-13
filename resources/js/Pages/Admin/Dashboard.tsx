@@ -1,512 +1,391 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link, Head, usePage, router } from '@inertiajs/react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import type { PageProps } from '@/types';
-import {
-    type LucideIcon,
-    Users,
-    FileText,
-    ClipboardList,
-    GraduationCap,
-    BarChart3,
-    FolderKanban,
-    AlertTriangle,
-    FileCheck,
-    ArrowRight,
-    CalendarDays,
-    ChevronDown,
-    CheckCircle2,
-    Plus,
-    LayoutGrid,
-    MapPin,
-    ShieldCheck,
-    Shuffle,
-    Cpu,
-    Award,
-    Presentation,
-    Globe,
-    Megaphone,
-    Download,
-    Settings,
-    Layers,
-    Activity,
-    Zap,
-    ChevronRight,
-    Sparkles,
-    Search
+import { 
+  Users, 
+  Activity, 
+  CheckCircle2, 
+  Calendar,
+  Layers,
+  ChevronRight,
+  ChevronDown,
+  Info,
+  LayoutGrid,
+  FileText,
+  ClipboardList,
+  Award,
+  Loader2,
+  UserPlus,
+  Clock,
+  AlertTriangle,
+  AlertCircle,
+  Building2
 } from 'lucide-react';
-import { ConfirmDialog } from '@/Components/ui';
 import { clsx } from 'clsx';
 
-interface Registration {
-    id: number;
-    status: string;
-    mahasiswa?: { nim: string; user?: { name: string; }; };
-    periode?: { nama: string; };
-}
+import type { PageProps } from '@/types';
+import type { LucideIcon } from '@/types';
 
-interface DashboardStats {
-    total_students: number;
-    total_groups: number;
-    total_reports: number;
-    pending_registrations: number;
-    total_work_programs: number;
-    total_final_reports: number;
-    assigned_students: number;
-    unassigned_students: number;
-    reported_posko: number;
-    active_period: string;
-}
+export default function Dashboard({
+  auth,
+  active_period_id,
+  active_period_name,
+  active_periods = [],
+  stats = {},
+  current_phase = {},
+  recentRegistrations = []
+}: PageProps & {
+  active_period_id?: number | null;
+  active_period_name?: string | null;
+  active_periods?: Any[];
+  stats?: Record<string, any>;
+  current_phase?: Record<string, any>;
+  recentRegistrations?: Any[];
+}) {
+  const [periodDropdown, setPeriodDropdown] = useState(false);
+  const [switching, setSwitching] = useState(false);
+  const [confirmPhase, setConfirmPhase] = useState<string | null>(null);
 
-interface Props {
-    stats?: DashboardStats;
-    recentRegistrations?: Registration[];
-    intelligence?: {
-        high_risk_count: number;
-        anomalies?: any[];
-    };
-    ui?: {
-        is_faculty_admin?: boolean;
-        can_manage_public_content?: boolean;
-    };
-    current_phase?: {
-        key: string;
-        label: string;
-        color: string;
-    };
-    active_period_id?: number;
-    active_period_name?: string;
-    active_periods?: { id: number; nama: string }[];
-    phase_context?: {
-        hint: string;
-        actions?: { label: string; href: string; color: string; }[];
-    };
-}
+  const currentPhaseKey = current_phase?.key || 'upcoming';
+  
+  const phases = [
+    { id: 'registration', label: '1. Pendaftaran', desc: 'Akses pendaftaran mahasiswa terbuka' },
+    { id: 'placement', label: '2. Plotting', desc: 'Proses pembagian kelompok & lokasi' },
+    { id: 'execution', label: '3. Lapangan', desc: 'Input logbook & aktivitas aktif' },
+    { id: 'grading', label: '4. Penilaian', desc: 'Proses input & sinkronisasi nilai' },
+  ];
 
-const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: { staggerChildren: 0.1, delayChildren: 0.2 }
-    }
-};
+  const phaseLabels: Record<string, string> = {
+    registration: 'Pendaftaran',
+    placement: 'Plotting',
+    execution: 'Lapangan',
+    grading: 'Penilaian',
+    upcoming: 'Pra-Pendaftaran',
+    finished: 'Selesai',
+  };
 
-const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
-};
+  function handleSwitchPhase(target: string) {
+    if (!active_period_id || switching) return;
+    setSwitching(true);
+    router.post('/admin/dashboard/switch-phase', {
+      target,
+      period_id: active_period_id,
+    }, {
+      preserveScroll: true,
+      onFinish: () => {
+        setSwitching(false);
+        setConfirmPhase(null);
+      },
+    });
+  }
 
-export default function AdminDashboard({ 
-    stats, 
-    recentRegistrations, 
-    intelligence, 
-    ui, 
-    current_phase, 
-    active_period_id, 
-    active_period_name,
-    active_periods = [],
-    phase_context 
-}: Props) {
-    const { auth } = usePage<PageProps>().props;
-    const [phaseConfirm, setPhaseConfirm] = useState({ show: false, target: '', label: '' });
-    const [processing, setProcessing] = useState(false);
-    const [dropdownOpen, setDropdownOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-    
-    const roles = ((auth.user as any)?.roles || []).map((r: any) => (typeof r === 'string' ? r : r.name).toLowerCase());
-    const isAdmin = roles.includes('admin') || roles.includes('superadmin');
+  return (
+    <AppLayout>
+      <Head title="Pusat Kendali Admin" />
 
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setDropdownOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const handlePeriodSwitch = (id: number) => {
-        setDropdownOpen(false);
-        router.get('/admin', { period_id: id }, { preserveState: false });
-    };
-
-    return (
-        <AppLayout title="Dashboard">
-            <Head title="Admin Dashboard | KKN UIN Saizu" />
-
-            <motion.div 
-                initial="hidden"
-                animate="visible"
-                variants={containerVariants}
-                className="space-y-12 pb-32"
-            >
-                {/* --- COMMAND HEADER --- */}
-                <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-3 text-emerald-600">
-                             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                             <span className="text-[10px] font-black uppercase tracking-[0.4em] leading-none">Pusat Kendali Operasional</span>
-                        </div>
-                        <h1 className="text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-none uppercase">
-                             Dashboard <span className="text-emerald-600">Administrasi</span>
-                        </h1>
-                        
-                        <div className="flex flex-wrap items-center gap-4">
-                            <div className="relative" ref={dropdownRef}>
-                                <button 
-                                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                                    className="flex items-center gap-3 px-6 py-2.5 bg-white border border-slate-100 rounded-2xl hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-50 transition-all group lg:min-w-[280px]"
-                                >
-                                    <CalendarDays size={16} className="text-emerald-500" />
-                                    <div className="flex flex-col items-start min-w-0">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Focus Period</span>
-                                        <span className="text-[12px] font-black text-slate-900 tracking-tight truncate uppercase">{active_period_name || 'NO ACTIVE PERIOD'}</span>
-                                    </div>
-                                    <ChevronDown size={14} className={clsx("ml-auto text-slate-300 transition-transform duration-500", dropdownOpen && "rotate-180")} />
-                                </button>
-                                <AnimatePresence>
-                                    {dropdownOpen && (
-                                        <motion.div 
-                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                            className="absolute top-full left-0 mt-4 w-full min-w-[320px] bg-white border border-slate-100 rounded-[2.5rem] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] z-[100] overflow-hidden p-4"
-                                        >
-                                            <div className="space-y-2">
-                                                {active_periods.map((p) => (
-                                                    <button
-                                                        key={p.id}
-                                                        onClick={() => handlePeriodSwitch(p.id)}
-                                                        className={clsx(
-                                                            "w-full flex items-center justify-between p-5 rounded-2xl text-[11px] font-black tracking-widest transition-all uppercase",
-                                                            p.id === active_period_id 
-                                                                ? "bg-emerald-600 text-white shadow-xl shadow-emerald-100" 
-                                                                : "text-slate-500 hover:bg-emerald-50 hover:text-emerald-700"
-                                                        )}
-                                                    >
-                                                        <span>{p.nama}</span>
-                                                        {p.id === active_period_id && <CheckCircle2 size={16} />}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-                            {current_phase && (
-                                <div className="px-6 py-3 bg-slate-900 text-emerald-500 rounded-2xl text-[10px] font-black uppercase tracking-[0.25em] border border-slate-800 shadow-xl shadow-slate-200">
-                                    Phase: <span className="text-white">{current_phase.label}</span>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="hidden xl:flex items-center gap-8 bg-white border border-slate-100 p-8 rounded-[3rem] shadow-sm">
-                         <div className="flex items-center gap-5 border-r border-slate-100 pr-8">
-                              <div className="h-14 w-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
-                                   <Activity size={24} strokeWidth={2.5} />
-                              </div>
-                              <div>
-                                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">System Load</p>
-                                   <p className="text-xl font-black text-slate-900 uppercase tracking-tighter">Nominal</p>
-                              </div>
-                         </div>
-                         <div className="flex items-center gap-5">
-                              <div className="h-14 w-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
-                                   <ShieldCheck size={24} strokeWidth={2.5} />
-                              </div>
-                              <div>
-                                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Audit Status</p>
-                                   <p className="text-xl font-black text-slate-900 uppercase tracking-tighter">Secure</p>
-                              </div>
-                         </div>
-                    </div>
-                </motion.div>
-
-                {/* --- STATS & WORKFLOW GRID --- */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                    <motion.div variants={itemVariants} className="lg:col-span-2 bg-slate-900 rounded-[3.5rem] p-12 text-white relative overflow-hidden group shadow-2xl shadow-slate-200">
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.1),transparent)]" />
-                        <div className="absolute bottom-0 right-0 p-12 opacity-[0.03] rotate-12 pointer-events-none group-hover:rotate-0 transition-transform duration-1000">
-                            <Layers size={300} strokeWidth={1} />
-                        </div>
-
-                        <div className="flex items-center gap-5 mb-14 relative z-10">
-                            <div className="p-4 bg-emerald-600 rounded-2xl shadow-2xl shadow-emerald-500/20">
-                                <FolderKanban size={26} strokeWidth={2.5} />
-                            </div>
-                            <div>
-                                <h2 className="text-xs font-black uppercase tracking-[0.4em] text-emerald-500 mb-1">Operational Flow</h2>
-                                <p className="text-2xl font-black text-white tracking-tighter uppercase leading-none">Alur Kerja Strategis</p>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 relative z-10">
-                            <StageBtn label="1. Pendaftaran" active={current_phase?.key === 'registration'} done={['placement', 'execution', 'grading', 'finished'].includes(current_phase?.key || '')} onAction={() => setPhaseConfirm({ show: true, target: 'registration', label: 'Buka Pendaftaran' })} />
-                            <StageBtn label="2. Plotting" active={current_phase?.key === 'placement'} done={['execution', 'grading', 'finished'].includes(current_phase?.key || '')} onAction={() => setPhaseConfirm({ show: true, target: 'placement', label: 'Mulai Plotting' })} />
-                            <StageBtn label="3. Lapangan" active={current_phase?.key === 'execution'} done={['grading', 'finished'].includes(current_phase?.key || '')} onAction={() => setPhaseConfirm({ show: true, target: 'execution', label: 'Terjun Lapangan' })} />
-                            <StageBtn label="4. Penilaian" active={current_phase?.key === 'grading'} done={['finished'].includes(current_phase?.key || '')} onAction={() => setPhaseConfirm({ show: true, target: 'grading', label: 'Buka Penilaian' })} />
-                        </div>
-
-                        <div className="mt-14 p-8 bg-white/5 border border-white/10 rounded-[2.5rem] backdrop-blur-xl relative z-10">
-                            <div className="flex items-center gap-4 text-emerald-400 mb-4">
-                                <Zap size={16} />
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Quick Hint</span>
-                            </div>
-                            <p className="text-[11px] font-bold text-slate-400 leading-relaxed uppercase tracking-tight opacity-80">
-                                Kontrol alur otomatis membatasi akses fitur tertentu secara global. Pastikan database mahasiswa telah disinkronkan sebelum membuka fase plotting koordinat lokasi.
-                            </p>
-                        </div>
-                    </motion.div>
-
-                    <motion.div variants={itemVariants} className="bg-white border border-slate-100 rounded-[3.5rem] p-12 shadow-sm relative overflow-hidden group">
-                        <div className="flex items-center gap-5 mb-14">
-                            <div className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl border border-emerald-100">
-                                <CheckCircle2 size={26} strokeWidth={2.5} />
-                            </div>
-                            <div>
-                                <h2 className="text-xs font-black uppercase tracking-[0.4em] text-emerald-600 mb-1">Integrity Check</h2>
-                                <p className="text-2xl font-black text-slate-900 tracking-tighter uppercase leading-none">Kesiapan Sistem</p>
-                            </div>
-                        </div>
-                        <div className="space-y-8">
-                            <StatusRow label="Sinkronisasi Data" status="OPTIMAL" badge="emerald" />
-                            <StatusRow label="Plotting Group" status="SECURED" badge="blue" icon={<ShieldCheck size={16} />} />
-                            <StatusRow label="ABCD Engine" status="READY" badge="emerald" icon={<Zap size={16} className="text-amber-500 animate-pulse" />} />
-                            <StatusRow label="Credential Server" status="ACTIVE" badge="emerald" />
-                        </div>
-                    </motion.div>
-                </div>
-
-                {/* --- METRICS Bento --- */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-                    <Metric title="Peserta KKN" subtitle="Terdaftar di SIKAD" value={stats?.total_students || 0} icon={Users} color="emerald" />
-                    <Metric title="Total Unit" subtitle="Siap Terjun" value={stats?.total_groups || 0} icon={LayoutGrid} color="blue" />
-                    <Metric title="Laporan Harian" subtitle="Log Digital" value={stats?.total_reports || 0} icon={FileText} color="purple" />
-                    <Metric title="Antologi Akhir" subtitle="Produk Final" value={stats?.total_final_reports || 0} icon={FileCheck} color="amber" />
-                </div>
-
-                {/* --- NAVIGATION CENTER (PREMIUM GRID) --- */}
-                <div className="space-y-12">
-                    <motion.div variants={itemVariants} className="flex items-center justify-between">
-                        <div className="flex items-center gap-6">
-                            <div className="h-16 w-16 bg-emerald-600 rounded-[1.5rem] flex items-center justify-center text-white shadow-2xl shadow-emerald-500/30">
-                                <LayoutGrid size={30} strokeWidth={2.5} />
-                            </div>
-                            <div>
-                                <h2 className="text-xs font-black text-emerald-600 uppercase tracking-[0.4em] mb-1">Operational Matrix</h2>
-                                <p className="text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">Pusat Navigasi Portal</p>
-                            </div>
-                        </div>
-                        <div className="hidden lg:flex items-center gap-4 bg-white border border-slate-100 px-6 py-3 rounded-2xl shadow-sm group cursor-pointer hover:border-emerald-500/30 transition-all">
-                             <Search size={18} className="text-slate-300 group-hover:text-emerald-500" />
-                             <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest italic group-hover:text-emerald-700">Quick Navigation Finder...</span>
-                        </div>
-                    </motion.div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
-                        <NavGroup title="Infrastruktur & Master" color="emerald" icon={CalendarDays}>
-                            <NavLink label="Tahun Akademik" href={route('admin.tahun-akademik.index')} desc="Konfigurasi tahunan" />
-                            <NavLink label="Periode KKN" href={route('admin.periode.index')} desc="Manajemen siklus aktif" />
-                            <NavLink label="Lokasi KKN" href={route('admin.lokasi.index')} desc="Database wilayah" />
-                            <NavLink label="Data Mahasiswa" href={route('admin.mahasiswa.index')} desc="Sinkronisasi SIKAD" />
-                        </NavGroup>
-
-                        <NavGroup title="Mesin Operasional" color="blue" icon={Shuffle}>
-                            <NavLink label="Validasi Berkas" href={route('admin.pendaftaran.index')} desc="Review registrasi" />
-                            <NavLink label="Plotting Unit" href={route('admin.kelompok.index')} desc="Distribusi peserta" />
-                            <NavLink label="Penugasan DPL" href={route('admin.dpl.penugasan')} desc="Workflow pembimbing" />
-                            <NavLink label="Mutasi Peserta" href={route('admin.peserta.pindah.index')} desc="Redistribusi manual" />
-                        </NavGroup>
-
-                        <NavGroup title="Monitoring & Audit" color="purple" icon={Activity}>
-                            <NavLink label="Log Aktivitas" href={route('admin.laporan.index')} desc="Tracking log digital" />
-                            <NavLink label="Program Kerja" href={route('admin.laporan.program-kerja.index')} desc="Audit progker" />
-                            <NavLink label="Audit Kualitas" href={route('admin.activity-audit.index')} desc="Deep system check" />
-                            <NavLink label="Rekapitulasi Nilai" href={route('admin.grade-reports.index')} desc="Final sertifikasi" />
-                        </NavGroup>
-
-                        <NavGroup title="Informasi & Publik" color="amber" icon={Globe}>
-                            <NavLink label="Profil LPPM" href={route('admin.konten.profil.index')} desc="CMS profil lembaga" />
-                            <NavLink label="Warta Utama" href={route('admin.warta-utama.index')} desc="Broadcast pengumuman" />
-                            <NavLink label="Unduhan Dokumen" href={route('admin.unduhan.index')} desc="Bank data dokumen" />
-                            <NavLink label="Sistem Param" href={route('admin.pengaturan.sistem')} desc="Global settings" />
-                        </NavGroup>
-                    </div>
-                </div>
-
-                {/* --- INTELLIGENCE ALERT (URGENT FIX) --- */}
-                {(intelligence?.high_risk_count ?? 0) > 0 && (
-                    <motion.div 
-                        variants={itemVariants}
-                        whileHover={{ scale: 1.01 }}
-                        className="bg-rose-600 rounded-[3.5rem] p-12 text-white relative overflow-hidden shadow-2xl shadow-rose-200"
-                    >
-                        <div className="absolute top-0 right-0 p-16 opacity-10 pointer-events-none rotate-12">
-                             <AlertTriangle size={260} strokeWidth={1} />
-                        </div>
-                        <div className="flex flex-col lg:flex-row items-center justify-between gap-12 relative z-10">
-                            <div className="space-y-6 flex-1">
-                                <div className="flex items-center gap-4 border-b border-white/20 pb-6 w-fit">
-                                    <div className="h-2 w-2 rounded-full bg-white animate-ping" />
-                                    <span className="text-[11px] font-black uppercase tracking-[0.4em]">Audit Intelligence Security</span>
-                                </div>
-                                <h3 className="text-4xl lg:text-5xl font-black tracking-tighter uppercase leading-none">
-                                     {intelligence?.high_risk_count} Anomali Pendaftaran Ditemukan
-                                </h3>
-                                <p className="text-sm font-black text-rose-100 uppercase tracking-tight opacity-70 leading-relaxed max-w-2xl">
-                                    Sistem mendeteksi adanya ketidaksesuaian data pendaftaran antar faksi atau indikasi duplikasi NIK. Tindakan manual diperlukan untuk menjaga integritas database KKN 2026/2027.
-                                </p>
-                            </div>
-                            <Link 
-                                href="/admin/auditor-aktivitas" 
-                                className="px-16 py-8 bg-white text-rose-600 rounded-[2.5rem] font-black text-[13px] uppercase tracking-[0.3em] hover:bg-slate-900 hover:text-white transition-all shadow-2xl shadow-rose-900/20 active:scale-95"
-                            >
-                                Jalankan Auditor
-                            </Link>
-                        </div>
-                    </motion.div>
-                )}
-            </motion.div>
-
-            <ConfirmDialog
-                open={phaseConfirm.show}
-                onClose={() => setPhaseConfirm({ ...phaseConfirm, show: false })}
-                onConfirm={() => {
-                    if (active_period_id) {
-                        setProcessing(true);
-                        router.post('/admin/dashboard/switch-phase', { target: phaseConfirm.target, period_id: active_period_id }, { onSuccess: () => { setPhaseConfirm({ show: false, target: '', label: '' }); setProcessing(false); } });
-                    }
-                }}
-                title="Konfirmasi Fase"
-                message={`Pindahkan program ke fase ${phaseConfirm.label.toUpperCase()}?`}
-                confirmLabel="Eksekusi"
-                confirmVariant="primary"
-                processing={processing}
-            />
-        </AppLayout>
-    );
-}
-
-interface NavGroupProps {
-    title: string;
-    children: React.ReactNode;
-    color: string;
-    icon: LucideIcon;
-}
-
-function NavGroup({ title, children, color, icon: Icon }: NavGroupProps) {
-    const borders: Record<string, string> = { 
-        emerald: 'border-emerald-100 bg-emerald-50/20', 
-        blue: 'border-blue-100 bg-blue-50/20', 
-        purple: 'border-purple-100 bg-purple-50/20', 
-        amber: 'border-amber-100 bg-amber-50/20' 
-    };
-    const groupTexts: Record<string, string> = { 
-        emerald: 'text-emerald-500', 
-        blue: 'text-blue-500', 
-        purple: 'text-purple-500', 
-        amber: 'text-amber-500' 
-    };
-
-    return (
-        <motion.div 
-            whileHover={{ y: -8 }}
-            className={clsx(
-                "border rounded-[3rem] p-10 space-y-10 transition-all hover:bg-white hover:shadow-2xl hover:shadow-slate-200 group relative overflow-hidden",
-                borders[color]
-            )}
-        >
-            <div className={clsx("absolute -top-4 -right-4 opacity-[0.03] transition-opacity duration-700 group-hover:opacity-[0.08]", groupTexts[color])}>
-                 <Icon size={120} strokeWidth={1} />
+      <div className="max-w-7xl mx-auto space-y-8 pb-24 text-slate-900 font-sans">
+        
+        {/* --- DYNAMIC HEADER --- */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+            <span className="text-xs font-bold text-emerald-600 uppercase tracking-[0.25em] opacity-80">Operational Intelligence Center</span>
+          </div>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-1">
+                <h1 className="text-5xl font-extrabold text-slate-900 tracking-tight">
+                Dashboard <span className="text-emerald-500">Sistem.</span>
+                </h1>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-3">
+                    Manajemen Strategis Pelaksanaan KKN UIN SAIZU Purwokerto
+                </p>
             </div>
-            <h4 className={clsx("text-[10px] font-black uppercase tracking-[0.4em] mb-2 pl-1", groupTexts[color])}>{title}</h4>
-            <div className="grid grid-cols-1 gap-3 relative z-10">
-                {children}
-            </div>
-        </motion.div>
-    );
-}
-
-function NavLink({ label, href, desc }: { label: string; href: string; desc: string }) {
-    return (
-        <Link 
-            href={href} 
-            className="flex items-center justify-between p-5 rounded-2xl bg-white border border-slate-50 text-slate-900 hover:bg-emerald-600 hover:text-white hover:border-emerald-500 transition-all group/link shadow-sm hover:shadow-xl hover:shadow-emerald-100"
-        >
-            <div className="min-w-0">
-                <p className="text-[12px] font-black uppercase tracking-tight leading-none mb-1 text-slate-800 group-hover/link:text-white transition-colors">{label}</p>
-                <p className="text-[9px] font-bold text-slate-400 group-hover/link:text-emerald-100 uppercase tracking-widest truncate">{desc}</p>
-            </div>
-            <ChevronRight size={14} className="text-slate-200 group-hover/link:text-white transition-all transform group-hover/link:translate-x-1" />
-        </Link>
-    );
-}
-
-function Metric({ title, subtitle, value, icon: Icon, color }: { title: string; subtitle: string; value: number; icon: LucideIcon; color: string }) {
-    const iconColors: Record<string, string> = { emerald: 'text-emerald-500 bg-emerald-50', blue: 'text-blue-500 bg-blue-50', purple: 'text-purple-500 bg-purple-50', amber: 'text-amber-500 bg-amber-50' };
-    
-    return (
-        <motion.div 
-            whileHover={{ scale: 1.05, y: -5 }}
-            className="bg-white border border-slate-100 rounded-[3rem] p-10 shadow-sm transition-all hover:shadow-2xl hover:shadow-slate-100 flex flex-col justify-between group overflow-hidden relative"
-        >
-            <div className="absolute top-0 right-0 p-10 text-slate-50 pointer-events-none group-hover:text-emerald-500/5 transition-colors">
-                <Icon size={140} strokeWidth={1} />
-            </div>
-            <div className={clsx("h-14 w-14 rounded-2xl flex items-center justify-center mb-8 border border-transparent transition-all group-hover:bg-slate-900 group-hover:text-white", iconColors[color])}>
-                <Icon size={26} strokeWidth={2.5} />
-            </div>
-            <div className="relative z-10">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-1 group-hover:text-emerald-600 transition-colors">{title}</p>
-                <p className="text-[9px] font-bold text-slate-300 uppercase tracking-widest hidden lg:block mb-4">{subtitle}</p>
-                <p className="text-4xl font-black text-slate-900 tracking-tighter leading-none">{value.toLocaleString()}</p>
-            </div>
-        </motion.div>
-    );
-}
-
-function StageBtn({ label, active, done, onAction }: { label: string; active: boolean; done: boolean; onAction: () => void }) {
-    return (
-        <motion.button 
-            whileHover={!active && !done ? { scale: 1.05 } : {}}
-            whileTap={!active && !done ? { scale: 0.95 } : {}}
-            onClick={onAction} 
-            disabled={active || done} 
-            className={clsx(
-                "px-8 py-5 rounded-2xl text-[10px] font-black tracking-[0.2em] transition-all border uppercase",
-                active 
-                    ? "bg-emerald-600 text-white border-white shadow-2xl shadow-emerald-500/30 scale-110 z-20" 
-                    : done 
-                        ? "bg-emerald-950/20 text-emerald-500 border-white/5 opacity-50 cursor-default" 
-                        : "bg-white/5 text-slate-400 border-white/10 hover:border-emerald-500/30 hover:text-emerald-500"
-            )}
-        >
-            {label}
-        </motion.button>
-    );
-}
-
-function StatusRow({ label, status, badge, icon }: { label: string; status: string; badge: string; icon?: React.ReactNode }) {
-    return (
-        <div className="flex items-center justify-between group py-3 border-b border-slate-50 last:border-0">
-            <div className="flex items-center gap-3">
-                 <div className={clsx("h-2 w-2 rounded-full", badge === 'emerald' ? "bg-emerald-500" : badge === 'blue' ? "bg-blue-500" : "bg-amber-500")} />
-                 <span className="text-[11px] font-black text-slate-500 uppercase tracking-tight group-hover:text-slate-900 transition-colors">{label}</span>
-            </div>
+            
             <div className="flex items-center gap-4">
-                 <span className={clsx(
-                    "px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all",
-                    badge === 'emerald' ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-                    badge === 'blue' ? "bg-blue-50 text-blue-600 border-blue-100" :
-                    "bg-amber-50 text-amber-600 border-amber-100"
-                 )}>
-                    {status}
-                 </span>
-                 {icon && <div className="hidden group-hover:block transition-all transform scale-125">{icon}</div>}
+              {/* DROPDOWN PERIODE PREMIUM */}
+              <div className="relative">
+                <button
+                  onClick={() => setPeriodDropdown(!periodDropdown)}
+                  className="flex items-center gap-3 px-6 py-3 bg-white border border-slate-200 rounded-2xl hover:border-emerald-200 hover:bg-emerald-50/30 transition-all shadow-sm group"
+                >
+                  <Calendar size={16} className="text-emerald-500 group-hover:scale-110 transition-transform" />
+                  <div className="flex flex-col items-start">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Fokus Periode</span>
+                    <span className="text-xs font-bold text-slate-700 leading-none">
+                        {active_period_name || 'Pilih Periode'}
+                    </span>
+                  </div>
+                  <ChevronDown size={14} className={clsx("text-slate-300 transition-transform ml-2", periodDropdown && "rotate-180")} />
+                </button>
+
+                {periodDropdown && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setPeriodDropdown(false)} />
+                    <div className="absolute right-0 mt-3 w-80 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 py-2 p-1 overflow-hidden ring-4 ring-black/5 animate-in fade-in zoom-in-95 duration-200">
+                      <div className="px-4 py-2 mb-1">
+                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">History Periode</span>
+                      </div>
+                      <div className="max-h-64 overflow-y-auto">
+                        {(active_periods || []).length > 0 ? (active_periods || []).map((p: { id: number; name: string }) => (
+                            <Link
+                            key={p.id}
+                            href={`/admin?period_id=${p.id}`}
+                            onClick={() => setPeriodDropdown(false)}
+                            className={clsx(
+                                "flex items-center justify-between px-4 py-4 rounded-xl text-sm transition-all mb-1",
+                                p.id === active_period_id 
+                                ? "bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-100" 
+                                : "text-slate-600 hover:bg-slate-50 font-semibold"
+                            )}
+                            >
+                            <span>{p.nama}</span>
+                            {p.id === active_period_id && <CheckCircle2 size={16} />}
+                            </Link>
+                        )) : (
+                            <div className="px-4 py-6 text-center text-xs text-slate-400 italic">Data belum tersedia</div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="h-14 px-6 bg-slate-100 border border-slate-200 rounded-2xl flex items-center gap-4">
+                <Activity size={18} className="text-emerald-500" />
+                <div className="flex flex-col">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Status Fase</span>
+                    <span className="text-[11px] font-bold text-slate-700 uppercase leading-none">
+                        {phaseLabels[currentPhaseKey] || currentPhaseKey}
+                    </span>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
-    );
+
+        {/* --- WORKFLOW MATRIX --- */}
+        <div className="bg-white border border-slate-200 rounded-3xl p-8 space-y-8 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+                <div className="h-12 w-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 border border-emerald-100 shadow-sm">
+                    <Layers size={22} />
+                </div>
+                <div>
+                    <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Kontrol Alur Kerja KKN</h2>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-1">Implementasi Protokol Operasional Berdasarkan Fase</p>
+                </div>
+            </div>
+            {switching && <Loader2 size={24} className="animate-spin text-emerald-500" />}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {phases.map((phase) => {
+              const isActive = currentPhaseKey === phase.id;
+              return (
+                <button
+                  key={phase.id}
+                  onClick={() => {
+                    if (!isActive && active_period_id) {
+                      setConfirmPhase(phase.id);
+                    }
+                  }}
+                  disabled={switching}
+                  className={clsx(
+                    "group flex flex-col items-center justify-center gap-3 p-6 rounded-3xl border transition-all duration-300 relative overflow-hidden active:scale-95",
+                    isActive 
+                      ? "bg-emerald-500 text-white border-emerald-500 shadow-xl shadow-emerald-200/50 translate-y-[-4px]" 
+                      : "bg-white text-slate-400 border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/50 hover:text-emerald-600",
+                    switching && "opacity-50 cursor-wait"
+                  )}
+                >
+                  <div className={clsx("h-10 w-10 rounded-xl flex items-center justify-center transition-all", isActive ? "bg-white/20" : "bg-slate-50 text-slate-300 group-hover:bg-white group-hover:text-emerald-500 shadow-sm")}>
+                    <CheckCircle2 size={20} />
+                  </div>
+                  <div className="text-center">
+                    <span className="text-xs font-bold uppercase tracking-widest block mb-1">{phase.label}</span>
+                    <span className={clsx("text-[9px] font-medium leading-tight block px-2", isActive ? "text-emerald-100" : "text-slate-300 group-hover:text-emerald-400")}>
+                        {phase.desc}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6 flex items-start gap-5">
+             <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-sm text-emerald-500">
+                <Info size={20} />
+             </div>
+             <div className="space-y-1">
+                <h4 className="text-sm font-bold text-emerald-900 uppercase tracking-tight">Informasi Kebijakan Akses</h4>
+                <p className="text-sm font-medium text-emerald-700/80 leading-relaxed max-w-4xl">
+                    Perubahan fase akan merekonfigurasi otorisasi fitur secara otomatis bagi seluruh mahasiswa dan DPL. Pastikan verifikasi data pada fase sebelumnya telah mencapai 100% sebelum memindahkan sistem ke tahap berikutnya.
+                </p>
+             </div>
+          </div>
+        </div>
+
+        {/* --- STATISTIK STRATEGIS --- */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          <MetricCard label="Total Mahasiswa" value={stats?.total_students} icon={Users} color="emerald" desc="Partisipan Terdaftar" />
+          <MetricCard label="Unit Kelompok" value={stats?.total_groups} icon={LayoutGrid} color="sky" desc="Formasi Lapangan" />
+          <MetricCard label="Logbook Harian" value={stats?.total_reports} icon={FileText} color="amber" desc="Validasi Aktivitas" />
+          <MetricCard label="Registrasi Baru" value={stats?.pending_registrations} icon={ClipboardList} color="rose" desc="Menunggu Verifikasi" />
+        </div>
+
+        {/* --- OPERATIONAL INSIGHTS --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-1 bg-white border border-slate-200 rounded-3xl p-8 space-y-6 shadow-sm">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-[0.2em] border-b border-slate-50 pb-4">Audit Periode Aktif</h3>
+            <div className="space-y-5">
+              <DetailRow label="Program Kerja" value={stats?.total_work_programs} icon={Award} />
+              <DetailRow label="Laporan Akhir" value={stats?.total_final_reports} icon={FileText} />
+              <DetailRow label="Target Mahasiswa" value={stats?.total_students} icon={Users} />
+              <DetailRow label="Lokasi Strategis" value={stats?.total_groups} icon={LayoutGrid} />
+            </div>
+            <div className="pt-4 border-t border-slate-50 opacity-40 italic">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Update Data: {new Date().toLocaleDateString('id-ID')}</span>
+            </div>
+          </div>
+
+          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-3xl p-8 space-y-8 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400">
+                    <Clock size={20} />
+                </div>
+                <div>
+                   <h3 className="text-sm font-bold text-slate-900 uppercase tracking-[0.2em]">Pendaftaran Terkini</h3>
+                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Logging Aktivitas Sinkronisasi</p>
+                </div>
+              </div>
+              <Link href="/admin/pendaftaran" className="h-10 px-6 bg-emerald-500 text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-600 transition-all flex items-center gap-2 shadow-lg shadow-emerald-100 active:scale-95">
+                Kelola Semua <ChevronRight size={14} />
+              </Link>
+            </div>
+            
+            {recentRegistrations === null ? (
+              <div className="flex flex-col items-center justify-center py-20 text-emerald-500 gap-4 border-2 border-dashed border-emerald-50 rounded-2xl">
+                <Loader2 size={48} className="animate-spin" />
+                <p className="text-xs font-bold uppercase tracking-[0.3em]">Menyinkronkan Data Pendaftaran...</p>
+              </div>
+            ) : recentRegistrations.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {recentRegistrations.map((reg: Record<string, any>) => (
+                  <div key={reg.id} className="flex items-center gap-5 p-4 bg-slate-50/50 border border-slate-100 rounded-2xl hover:bg-emerald-50/30 hover:border-emerald-100 transition-all group">
+                    <div className="h-12 w-12 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-300 group-hover:text-emerald-500 shadow-sm transition-all italic font-bold">
+                      {reg.mahasiswa?.user?.name?.[0] || '?'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] font-bold text-slate-900 truncate uppercase tracking-tight">{reg.mahasiswa?.user?.name || '—'}</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest tabular-nums mt-0.5">{reg.mahasiswa?.nim || '—'}</p>
+                    </div>
+                    <div className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 text-slate-200 gap-4 border-2 border-dashed border-slate-50 rounded-2xl">
+                <Clock size={48} strokeWidth={1.5} />
+                <p className="text-xs font-bold uppercase tracking-[0.3em]">Antrean Pendaftaran Kosong</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* --- MODAL KONFIRMASI TRANSISI FASE --- */}
+      {confirmPhase && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-emerald-950/40 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setConfirmPhase(null)}>
+          <div className="bg-white rounded-[2.5rem] shadow-2xl p-10 max-w-md w-full mx-4 space-y-8 animate-in zoom-in-95 duration-200 border border-slate-200" onClick={(e) => e.stopPropagation()}>
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="h-20 w-20 bg-amber-50 rounded-[2rem] flex items-center justify-center text-amber-500 border border-amber-100 shadow-inner">
+                <AlertTriangle size={32} />
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Otorisasi Transisi</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Security Override Control Required</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 rounded-2xl p-6 space-y-3">
+              <p className="text-sm font-medium text-slate-600 leading-relaxed text-center">
+                Anda akan melakukan transisi fase dari <span className="text-slate-900 font-bold px-1.5 py-0.5 bg-slate-200 rounded uppercase text-[11px] tracking-wider">{phaseLabels[currentPhaseKey]}</span> ke{' '}
+                <span className="text-emerald-700 font-bold px-1.5 py-0.5 bg-emerald-100 rounded uppercase text-[11px] tracking-wider">{phaseLabels[confirmPhase]}</span>.
+              </p>
+              <p className="text-[10px] font-bold text-slate-400 text-center uppercase tracking-widest italic">
+                Tindakan ini permanen untuk periode berjalan.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => handleSwitchPhase(confirmPhase)}
+                disabled={switching}
+                className="w-full h-14 bg-emerald-500 text-white rounded-2xl text-[11px] font-extrabold uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-100 flex items-center justify-center gap-3 disabled:opacity-50 active:scale-95"
+              >
+                {switching ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
+                {switching ? 'MENYINKRONKAN SISTEM...' : 'KONFIRMASI TRANSISI'}
+              </button>
+              <button
+                onClick={() => setConfirmPhase(null)}
+                className="w-full h-14 bg-white border border-slate-200 rounded-2xl text-[11px] font-extrabold uppercase tracking-widest text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all active:scale-95"
+              >
+                BATALKAN PROSES
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </AppLayout>
+  );
+}
+
+function MetricCard({ label, value, icon: Icon, color, desc }: { label: string; value: string |number; icon: LucideIcon; color: string; desc: string }) {
+  const colorMap: Record<string, string> = {
+    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-emerald-50',
+    sky: 'bg-sky-50 text-sky-600 border-sky-100 shadow-sky-50',
+    amber: 'bg-amber-50 text-amber-600 border-amber-100 shadow-amber-50',
+    rose: 'bg-rose-50 text-rose-600 border-rose-100 shadow-rose-50',
+  };
+  const isLoading = value === undefined || value === null;
+  return (
+    <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-6 hover:shadow-xl hover:shadow-slate-100 transition-all group relative overflow-hidden active:scale-[0.98]">
+      <div className="flex items-center justify-between relative z-10">
+        <div className={clsx("h-12 w-12 rounded-xl flex items-center justify-center border transition-all duration-500 group-hover:rotate-6 shadow-sm", colorMap[color])}>
+          <Icon size={20} />
+        </div>
+        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">{desc}</span>
+      </div>
+      <div className="space-y-1 relative z-10">
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</p>
+        {isLoading ? (
+          <Loader2 className="w-6 h-6 animate-spin text-slate-200" />
+        ) : (
+          <p className="text-3xl font-black text-slate-900 tracking-tighter tabular-nums leading-none uppercase">
+              {Number(value).toLocaleString('id-ID')}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DetailRow({ label, value, icon: Icon }: { label: string; value: string | number; icon: LucideIcon }) {
+  const isLoading = value === undefined || value === null;
+  return (
+    <div className="flex items-center justify-between group py-1">
+      <div className="flex items-center gap-4">
+        <div className="h-8 w-8 bg-slate-50 rounded-lg flex items-center justify-center text-slate-300 group-hover:text-emerald-500 group-hover:bg-emerald-50 transition-all border border-transparent group-hover:border-emerald-100 shadow-sm">
+            <Icon size={14} />
+        </div>
+        <span className="text-sm font-bold text-slate-600 uppercase tracking-tight">{label}</span>
+      </div>
+      {isLoading ? (
+        <Loader2 className="w-4 h-4 animate-spin text-slate-200" />
+      ) : (
+        <span className="text-sm font-black text-slate-900 tabular-nums uppercase underline decoration-emerald-200 decoration-2 underline-offset-4">{Number(value).toLocaleString('id-ID')}</span>
+      )}
+    </div>
+  );
 }

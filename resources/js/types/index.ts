@@ -237,9 +237,77 @@ export interface RouteConfig {
   exclude?: string[];
 }
 
+// Lucide React Icon Component Type
+export type LucideIcon = React.ComponentType<{ size?: number; className?: string }>;
+
+// Color Palette Type for Dashboard Components
+export type ColorPalette = {
+  [key: string]: string;
+};
+
+// Dashboard Stat/Metric Props
+export interface DashboardStatProps {
+  icon: LucideIcon;
+  label: string;
+  value: string | number;
+  color?: string;
+}
+
+export interface DashboardMetricProps {
+  label: string;
+  value: string | number;
+  icon: LucideIcon;
+}
+
+export interface DashboardQuickLinkProps {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+}
+
+// Grade Form Data Types
+export interface GradeScoreField {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+export interface GradeFormData {
+  [key: string]: string | number | null | undefined;
+}
+
+// Auth Error Types
+export interface AuthLoginErrors {
+  login?: string;
+  password?: string;
+  captcha_answer?: string;
+  remember?: string;
+}
+
+export interface AuthResetPasswordErrors {
+  token?: string;
+  email?: string;
+  password?: string;
+  password_confirmation?: string;
+}
+
+export type FormErrors<T extends Record<string, unknown>> = {
+  [K in keyof T]?: string;
+};
+
 // Utility: checks if user has a specific role
 export function hasRole(user: User | null | undefined, role: string): boolean {
   return user?.roles?.includes(role) ?? false;
+}
+
+// Utility: checks if errors object has any errors
+export function hasErrors<T extends Record<string, unknown>>(errors: FormErrors<T>): boolean {
+  return Object.keys(errors).length > 0;
+}
+
+// Utility: returns array of error messages
+export function getErrorMessages<T extends Record<string, unknown>>(errors: FormErrors<T>): string[] {
+  return Object.values(errors).filter((err): err is string => typeof err === 'string');
 }
 
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = {

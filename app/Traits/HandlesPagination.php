@@ -24,6 +24,8 @@ trait HandlesPagination
                 'from',
                 'to',
                 'links',
+                'prev_page_url',
+                'next_page_url',
             ]),
         ];
     }

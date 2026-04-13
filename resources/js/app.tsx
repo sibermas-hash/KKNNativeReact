@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { initCapacitor } from '@/lib/capacitor-init';
+import { ToastProvider } from '@/hooks/useToast';
 import axios from 'axios';
 
 // Initialize theme on page load

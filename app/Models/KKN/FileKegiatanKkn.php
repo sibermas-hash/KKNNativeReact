@@ -8,25 +8,35 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class FileKegiatanKkn extends Model
-{
-    use HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $connection = 'kkn';
-
-    protected $table = 'file_kegiatan_kkn';
-
-    protected $fillable = [
-        'kegiatan_kkn_id',
+#[Connection('kkn')]
+#[Table('file_kegiatan_kkn')]
+#[Fillable([
+    'kegiatan_kkn_id',
         'file_path',
         'file_name',
         'file_type',
         'file_size',
-    ];
+])]
+#[Casts([
+    'file_size' => 'integer',
+])]
+class FileKegiatanKkn extends Model
+{
+    use HasFactory;
 
-    protected $casts = [
-        'file_size' => 'integer',
-    ];
+    
+
+    
+
+    
+
+    
 
     public function kegiatan(): BelongsTo
     {

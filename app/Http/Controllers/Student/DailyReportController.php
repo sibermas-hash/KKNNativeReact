@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Student;
 
+use App\Constants\AppConstants;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\StoreDailyReportRequest;
 use App\Models\KKN\FileKegiatanKkn;
@@ -78,6 +79,16 @@ class DailyReportController extends Controller
                 ->with(['kelompok', 'fileKegiatan'])
                 ->orderByDesc('date')
                 ->paginate(10)
+                ->through(fn ($report) => [
+                    'id' => $report->id,
+                    'date' => optional($report->date)->format('d M Y') ?? '-',
+                    'title' => $report->title,
+                    'status' => $report->status,
+                    'ai_summary' => $report->ai_summary,
+                    'ai_analysis' => $report->ai_analysis,
+                    'kelompok' => $report->kelompok,
+                    'file_kegiatan' => $report->fileKegiatan,
+                ])
             : collect();
 
         return Inertia::render('Student/DailyReports/Index', [
@@ -114,7 +125,7 @@ class DailyReportController extends Controller
 
         // 24 HOURS BACKDATE PROTECTION
         $reportDate = Carbon::parse($validated['date']);
-        if ($reportDate->diffInHours(now()) > 24) {
+        if ($reportDate->diffInHours(now()) > AppConstants::MAX_BACKDATE_HOURS) {
             if (auth()->user()->hasRole('superadmin')) {
                 Log::info('Superadmin bypassed 24-hour backdate protection', [
                     'user_id' => auth()->id(),

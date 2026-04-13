@@ -2,76 +2,112 @@ import type { ReactNode } from 'react';
 import Pagination, { type PaginationMeta } from './Pagination';
 
 interface Column<T> {
- key: string;
- label: string;
- render?: (item: T) => ReactNode;
- className?: string;
+    key: string;
+    label: string;
+    render?: (item: T) => ReactNode;
+    className?: string;
+    hideOnMobile?: boolean;
 }
 
 interface DataTableProps<T extends { id: number | string }> {
- columns: Column<T>[];
- data: T[];
- meta?: PaginationMeta;
- emptyMessage?: string;
+    columns: Column<T>[];
+    data: T[];
+    meta?: PaginationMeta;
+    emptyMessage?: string;
 }
 
 export default function DataTable<T extends { id: number | string }>({
- columns,
- data,
- meta,
- emptyMessage = 'Tidak ada data.',
+    columns,
+    data,
+    meta,
+    emptyMessage = 'Tidak ada data.',
 }: DataTableProps<T>) {
- return (
- <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
- <div className="overflow-x-auto">
- <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
- <thead className="bg-slate-50 dark:bg-slate-800">
- <tr>
- {columns.map((col) => (
- <th
- key={col.key}
- className={`px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 ${col.className ?? ''}`}
- >
- {col.label}
- </th>
- ))}
- </tr>
- </thead>
- <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
- {data.length === 0 ? (
- <tr>
- <td
- colSpan={columns.length}
- className="px-4 py-6 text-center text-sm text-slate-500 dark:text-slate-400"
- >
- {emptyMessage}
- </td>
- </tr>
- ) : (
- data.map((item) => (
- <tr
- key={item.id}
- className="transition hover:bg-slate-50/80 dark:hover:bg-slate-800/50"
- >
- {columns.map((col) => (
- <td key={col.key} className={`px-4 py-3 text-sm text-slate-700 dark:text-slate-300 ${col.className ?? ''}`}>
- {col.render
- ? col.render(item)
- : (item as Record<string, unknown>)[col.key] as ReactNode}
- </td>
- ))}
- </tr>
- ))
- )}
- </tbody>
- </table>
- </div>
+    const visibleColumns = columns.filter(col => !col.hideOnMobile);
 
- {meta && (
- <div className="border-t border-slate-200 dark:border-slate-700 px-4">
- <Pagination meta={meta} />
- </div>
- )}
- </div>
- );
+    return (
+        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+            {/* Desktop Table View */}
+            <div className="hidden sm:block overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            {columns.map((col) => (
+                                <th
+                                    key={col.key}
+                                    className={`px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider ${col.className ?? ''}`}
+                                >
+                                    {col.label}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                        {data.length === 0 ? (
+                            <tr>
+                                <td
+                                    colSpan={columns.length}
+                                    className="px-4 py-8 text-center text-sm text-gray-500"
+                                >
+                                    {emptyMessage}
+                                </td>
+                            </tr>
+                        ) : (
+                            data.map((item) => (
+                                <tr key={item.id} className="hover:bg-gray-50">
+                                    {columns.map((col) => (
+                                        <td
+                                            key={col.key}
+                                            className={`px-4 py-3 text-sm text-gray-700 ${col.className ?? ''}`}
+                                        >
+                                            {col.render
+                                                ? col.render(item)
+                                                : ((item as Record<string, unknown>)[
+                                                      col.key
+                                                  ] as ReactNode)}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="sm:hidden">
+                {data.length === 0 ? (
+                    <div className="px-4 py-8 text-center text-sm text-gray-500">
+                        {emptyMessage}
+                    </div>
+                ) : (
+                    <div className="divide-y divide-gray-100">
+                        {data.map((item) => (
+                            <div key={item.id} className="px-4 py-4 space-y-3">
+                                {visibleColumns.map((col) => (
+                                    <div key={col.key} className="flex justify-between items-start gap-2">
+                                        <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex-shrink-0">
+                                            {col.label}
+                                        </span>
+                                        <span className="text-sm text-gray-700 text-right flex-1">
+                                            {col.render
+                                                ? col.render(item)
+                                                : ((item as Record<string, unknown>)[
+                                                      col.key
+                                                  ] as ReactNode)}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {meta && (
+                <div className="border-t border-gray-200 px-4 py-3">
+                    <Pagination meta={meta} />
+                </div>
+            )}
+        </div>
+    );
 }

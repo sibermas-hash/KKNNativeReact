@@ -13,6 +13,8 @@ use Inertia\Response;
 
 class LaporanAkhirController extends Controller
 {
+    use \App\Traits\HandlesPagination;
+
     public function index(Request $request): Response
     {
         Gate::authorize('view-reports');
@@ -30,7 +32,7 @@ class LaporanAkhirController extends Controller
             ->withQueryString();
 
         return Inertia::render('Admin/Monitoring/FinalReports/Index', [
-            'reports' => $reports,
+            'reports' => Inertia::defer(fn () => $this->formatPaginator($reports)),
             'filters' => $request->only('status'),
         ]);
     }

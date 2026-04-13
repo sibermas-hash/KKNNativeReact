@@ -16,6 +16,13 @@ Route::middleware([
 ])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [Admin\DashboardController::class , 'index'])->name('dashboard');
     Route::post('/dashboard/switch-phase', [Admin\DashboardController::class , 'switchPhase'])->name('dashboard.switch-phase');
+    
+    // TEMPORARY: Dev route to seed dummy data for stabilization testing
+    Route::get('/dev/seed-dummy', function() {
+        if (config('app.env') !== 'local') return abort(404);
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'DummyKKN56Seeder']);
+        return "Dummy data seeded successfully! Dashboard should now show statistics.";
+    })->name('dev.seed-dummy');
 
     // Grade & Score Management (Consolidated)
     // Canonical routes: grade-reports
@@ -89,11 +96,11 @@ Route::middleware([
 Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->group(function () {
 
     // Periods & Academic Years
-    Route::get('periods', [Admin\PeriodeController::class, 'index'])->name('periods.index');
     Route::get('periode/ekspor', [Admin\PeriodeController::class, 'export'])->name('periode.ekspor');
     Route::post('periode/{periode}/duplikasi', [Admin\PeriodeController::class , 'duplicate'])->name('periode.duplicate');
     Route::resource('periode', Admin\PeriodeController::class)
-        ->only(['index', 'store', 'update', 'destroy']);
+        ->only(['index', 'show', 'store', 'update', 'destroy']);
+    Route::get('periods', [Admin\PeriodeController::class, 'index'])->name('periods.index');
 
     // Master Data
     Route::resource('tahun-akademik', Admin\TahunAkademikController::class)
@@ -101,9 +108,8 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
 
     // Jenis KKN (Program Types)
     Route::resource('jenis-kkn', Admin\JenisKknController::class)
-        ->only(['index', 'store', 'update', 'destroy']);
+        ->only(['index', 'show', 'store', 'update', 'destroy']);
 
-    // Faculties & Programs
     // Faculties & Programs
     Route::resource('fakultas', Admin\FakultasController::class)
         ->only(['index', 'store', 'update', 'destroy']);
@@ -116,8 +122,8 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
         ->only(['index', 'store', 'update', 'destroy']);
 
     // Locations
-    Route::get('locations', [Admin\LokasiController::class, 'index'])->name('locations.index');
     Route::post('lokasi/impor', [Admin\LokasiController::class, 'import'])->name('lokasi.import');
+    Route::get('locations', [Admin\LokasiController::class, 'index'])->name('locations.index');
     Route::resource('lokasi', Admin\LokasiController::class)
         ->only(['index', 'store', 'update', 'destroy']);
 
@@ -172,9 +178,9 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
     Route::delete('warta-utama/{announcement}', [Admin\AnnouncementController::class, 'destroy'])->name('warta-utama.destroy');
     Route::prefix('konten-publik')->name('konten.')->group(function () {
         Route::get('profil', [PublicContentController::class, 'profile'])->name('profil.index');
-        Route::post('profil', [PublicContentController::class, 'updateProfile'])->name('profil.update');
+        Route::patch('profil', [PublicContentController::class, 'updateProfile'])->name('profil.update');
         Route::get('skema', [PublicContentController::class, 'schemes'])->name('skema.index');
-        Route::post('skema', [PublicContentController::class, 'updateSchemes'])->name('skema.update');
+        Route::patch('skema', [PublicContentController::class, 'updateSchemes'])->name('skema.update');
     });
 
     // Database Sync Monitoring
@@ -194,14 +200,14 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
     // Grading write operations
     Route::post('nilai', [Admin\GradeController::class , 'store'])->name('nilai.store');
     Route::get('konfigurasi-penilaian', [Admin\KonfigurasiPenilaianController::class , 'index'])->name('konfigurasi-penilaian.index');
-    Route::post('konfigurasi-penilaian', [Admin\KonfigurasiPenilaianController::class , 'update'])->name('konfigurasi-penilaian.update');
+    Route::patch('konfigurasi-penilaian', [Admin\KonfigurasiPenilaianController::class , 'update'])->name('konfigurasi-penilaian.update');
 
     // Settings
     Route::prefix('pengaturan')->name('pengaturan.')->group(function () {
         Route::get('sertifikat', [Admin\CertificateConfigController::class , 'index'])->name('sertifikat.index');
-        Route::post('sertifikat', [Admin\CertificateConfigController::class , 'update'])->name('sertifikat.update');
+        Route::patch('sertifikat', [Admin\CertificateConfigController::class , 'update'])->name('sertifikat.update');
         Route::get('sistem', [Admin\SystemSettingController::class , 'index'])->name('sistem');
-        Route::post('sistem', [Admin\SystemSettingController::class , 'update'])->name('sistem.update');
+        Route::patch('sistem', [Admin\SystemSettingController::class , 'update'])->name('sistem.update');
     });
 
     Route::get('audit-log', [Admin\LogAuditController::class , 'index'])->name('audit-log.index');

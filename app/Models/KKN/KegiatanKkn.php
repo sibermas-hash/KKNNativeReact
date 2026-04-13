@@ -10,42 +10,59 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+
+#[Connection('kkn')]
+#[Table('kegiatan_kkn')]
+#[Fillable([
+    'mahasiswa_id',
+    'kelompok_id',
+    'date',
+    'title',
+    'abcd_stage',
+    'activity',
+    'reflection',
+    'social_media_link',
+    'output',
+    'latitude',
+    'longitude',
+    'gps_accuracy',
+    'captured_at',
+    'location_source',
+    'location_name',
+    'status',
+    'reviewed_at',
+    'reviewed_by',
+    'review_notes',
+    'ai_summary',
+    'ai_analysis',
+])]
+#[Casts([
+    'date' => 'date',
+    'captured_at' => 'datetime',
+    'gps_accuracy' => 'float',
+    'reviewed_at' => 'datetime',
+    'ai_analysis' => 'array',
+])]
 class KegiatanKkn extends Model
 {
     use HasFactory;
 
-    protected $connection = 'kkn';
+    protected static function booted(): void
+    {
+        static::created(function (KegiatanKkn $kegiatan) {
+            defer(fn () => \App\Jobs\ProcessActivityAiAnalysis::dispatch($kegiatan->withoutRelations()));
+        });
 
-    protected $table = 'kegiatan_kkn';
-
-    protected $fillable = [
-        'mahasiswa_id',
-        'kelompok_id',
-        'date',
-        'title',
-        'abcd_stage',
-        'activity',
-        'reflection',
-        'social_media_link',
-        'output',
-        'latitude',
-        'longitude',
-        'gps_accuracy',
-        'captured_at',
-        'location_source',
-        'location_name',
-        'status',
-        'reviewed_at',
-        'reviewed_by',
-        'review_notes',
-    ];
-
-    protected $casts = [
-        'date' => 'date',
-        'captured_at' => 'datetime',
-        'gps_accuracy' => 'float',
-        'reviewed_at' => 'datetime',
-    ];
+        static::deleting(function (KegiatanKkn $kegiatan) {
+            $kegiatan->fileKegiatan()
+                ->cursorPaginate(200)
+                ->each(fn ($f) => $f->delete());
+        });
+    }
 
     public function mahasiswa(): BelongsTo
     {

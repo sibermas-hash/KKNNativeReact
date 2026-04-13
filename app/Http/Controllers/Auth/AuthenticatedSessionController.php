@@ -68,6 +68,10 @@ class AuthenticatedSessionController extends Controller
             $request->session()->start();
         }
 
+        // Sanitize login input (allow alphanumeric, @ and .)
+        $loginInput = trim((string) $request->input('login', ''));
+        $request->merge(['login' => $loginInput]);
+
         $userAnswer = $request->input('captcha_answer');
         $captchaHash = $request->session()->get('captcha_hash');
 
@@ -94,7 +98,7 @@ class AuthenticatedSessionController extends Controller
             throw $e;
         } catch (\Throwable $e) {
             \Log::error('Authentication error during login attempt', [
-                'email' => $request->email,
+                'login_identifier' => $request->input('login'),
                 'ip' => $request->ip(),
                 'error' => $e->getMessage(),
                 'trace' => config('app.debug') ? $e->getTraceAsString() : null,

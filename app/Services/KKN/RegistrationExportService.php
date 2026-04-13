@@ -21,47 +21,24 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class RegistrationExportService
 {
     /**
-     * Export registrations to Excel.
+     * Export registrations to Excel using Query approach for memory efficiency.
      */
-    public function exportToExcel(Collection $registrations): BinaryFileResponse
+    public function exportToExcel($query): BinaryFileResponse
     {
-        $spreadsheet = new Spreadsheet;
-        $sheet = $spreadsheet->getActiveSheet();
-
-        // Headers
-        $headers = ['No', 'NIM', 'Nama', 'Fakultas', 'Program Studi', 'Periode', 'Kelompok', 'Status', 'Tanggal Daftar'];
-        $col = 'A';
-        foreach ($headers as $header) {
-            $sheet->setCellValue("{$col}1", $header);
-            $col++;
-        }
-
-        // Style headers
-        $this->styleHeaderRow($sheet, count($headers));
-
-        // Data rows
-        $row = 2;
-        foreach ($registrations as $index => $reg) {
-            $this->fillDataRow($sheet, $row, $index, $reg);
-            $row++;
-        }
-
-        // Auto-size columns
-        foreach (range('A', 'I') as $col) {
-            $sheet->getColumnDimension($col)->setAutoSize(true);
-        }
-
-        return $this->saveAndDownload($spreadsheet, 'data-pendaftaran-kkn-'.date('Y-m-d-His').'.xlsx');
+        return Excel::download(
+            new \App\Exports\PesertaKknExport($query),
+            'data-pendaftaran-kkn-'.date('Y-m-d-His').'.xlsx'
+        );
     }
 
     /**
      * Export BPJS participant data to Excel.
      */
-    public function exportBpjs(Collection $registrations): BinaryFileResponse
+    public function exportBpjs($query): BinaryFileResponse
     {
         return Excel::download(
-            new BpjsParticipantExport($registrations),
-            'peserta-bpjs-kkn.xlsx'
+            new BpjsParticipantExport($query),
+            'peserta-bpjs-kkn-'.date('Y-m-d-His').'.xlsx'
         );
     }
 

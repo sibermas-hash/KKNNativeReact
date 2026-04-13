@@ -1,40 +1,28 @@
-import { clsx } from "clsx";
+import { clsx } from 'clsx';
 
-type BadgeVariant =
-    | "default"
-    | "success"
-    | "warning"
-    | "danger"
-    | "info"
-    | "primary"
-    | "outline";
+type Variant = 'success' | 'warning' | 'danger' | 'info' | 'default' | 'gray';
 
 interface BadgeProps {
-    variant?: BadgeVariant;
+    variant?: Variant;
     children: React.ReactNode;
     className?: string;
 }
 
-const variantStyles: Record<BadgeVariant, string> = {
-    default: "bg-emerald-50/50 text-emerald-400 border-emerald-50 ",
-    success: "bg-emerald-600 text-white border-emerald-500 shadow-lg shadow-emerald-600/10 ",
-    warning: "bg-amber-500 text-white border-amber-400 shadow-lg shadow-amber-500/10 ",
-    danger: "bg-rose-500 text-white border-rose-400 shadow-lg shadow-rose-500/10 ",
-    info: "bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-600/10 ",
-    primary: "bg-slate-900 text-white border-emerald-900 shadow-lg shadow-slate-900/10 ",
-    outline: "bg-white text-slate-600 border-slate-200 ",
+const variants: Record<Variant, string> = {
+    success: 'bg-primary-100 text-primary-700 border border-primary-200',
+    warning: 'bg-accent-amber-100 text-accent-amber-600 border border-accent-amber-200',
+    danger: 'bg-rose-100 text-rose-700 border border-rose-200',
+    info: 'bg-accent-sky-100 text-accent-sky-600 border border-accent-sky-200',
+    default: 'bg-slate-100 text-slate-700 border border-slate-200',
+    gray: 'bg-slate-100 text-slate-600 border border-slate-200',
 };
 
-export default function Badge({
-    variant = "default",
-    children,
-    className,
-}: BadgeProps) {
+export default function Badge({ variant = 'default', children, className }: BadgeProps) {
     return (
         <span
             className={clsx(
-                "inline-flex items-center rounded-[0.5rem] px-3 py-1 text-[0.6rem] font-bold uppercase tracking-[0.2em] border whitespace-nowrap transition-all duration-300",
-                variantStyles[variant],
+                'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+                variants[variant],
                 className,
             )}
         >

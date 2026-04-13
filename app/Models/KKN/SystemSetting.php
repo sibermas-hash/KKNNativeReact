@@ -9,13 +9,28 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
+
+#[Connection('kkn')]
+#[Table('system_settings')]
+#[Fillable([
+    'config_key',
+        'label',
+        'value',
+        'type',
+        'group',
+])]
 class SystemSetting extends Model
 {
     use HasFactory;
 
-    protected $connection = 'kkn';
+    
 
-    protected $table = 'system_settings';
+    
 
     /**
      * Config keys that contain sensitive values and are encrypted in DB.
@@ -27,13 +42,7 @@ class SystemSetting extends Model
         'storage_secret',
     ];
 
-    protected $fillable = [
-        'config_key',
-        'label',
-        'value',
-        'type',
-        'group',
-    ];
+    
 
     /**
      * Get a setting value by key with caching. Decrypts secret values automatically.

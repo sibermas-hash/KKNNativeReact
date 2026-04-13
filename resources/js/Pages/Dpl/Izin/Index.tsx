@@ -70,7 +70,7 @@ export default function DplIzinIndex({ izins }: Props) {
         }
     };
 
-    const statusColor = (status: string) => {
+    const statusColor = (status: string): 'success' | 'danger' | 'warning' => {
         switch (status) {
             case 'disetujui': return 'success';
             case 'ditolak': return 'danger';
@@ -111,8 +111,8 @@ export default function DplIzinIndex({ izins }: Props) {
                 <section className="rounded-lg border border-slate-200 bg-white p-8">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
-                            <h1 className="text-2xl font-semibold text-slate-900">Permohonan Izin Mahasiswa</h1>
-                            <p className="mt-2 text-sm text-slate-500">
+                            <h1 className="text-2xl font-semibold text-gray-900">Permohonan Izin Mahasiswa</h1>
+                            <p className="mt-2 text-sm text-gray-500">
                                 Tinjau permohonan izin mahasiswa yang meninggalkan lokasi KKN.
                             </p>
                         </div>
@@ -123,7 +123,7 @@ export default function DplIzinIndex({ izins }: Props) {
                     {izins.data.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-16 text-center">
                             <FileText className="h-12 w-12 text-slate-300" />
-                            <p className="mt-4 text-sm text-slate-500">Belum ada permohonan izin.</p>
+                            <p className="mt-4 text-sm text-gray-500">Belum ada permohonan izin.</p>
                         </div>
                     ) : (
                         <div className="divide-y divide-slate-100">
@@ -132,34 +132,34 @@ export default function DplIzinIndex({ izins }: Props) {
                                     <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                                         <div className="space-y-3 flex-1">
                                             <div className="flex items-center gap-3">
-                                                <User className="h-4 w-4 text-slate-400" />
-                                                <span className="text-sm font-semibold text-slate-900">{izin.mahasiswa.nama}</span>
-                                                <span className="text-xs text-slate-400">({izin.mahasiswa.nim})</span>
+                                                <User className="h-4 w-4 text-gray-400" />
+                                                <span className="text-sm font-semibold text-gray-900">{izin.mahasiswa.nama}</span>
+                                                <span className="text-xs text-gray-400">({izin.mahasiswa.nim})</span>
                                             </div>
-                                            <div className="flex items-center gap-3 text-sm text-slate-600">
-                                                <MapPin className="h-4 w-4 text-slate-400" />
+                                            <div className="flex items-center gap-3 text-sm text-gray-600">
+                                                <MapPin className="h-4 w-4 text-gray-400" />
                                                 <span>{izin.kelompok.nama_kelompok}</span>
                                             </div>
-                                            <div className="flex items-center gap-3 text-sm text-slate-600">
-                                                <Calendar className="h-4 w-4 text-slate-400" />
+                                            <div className="flex items-center gap-3 text-sm text-gray-600">
+                                                <Calendar className="h-4 w-4 text-gray-400" />
                                                 <span>
                                                     {new Date(izin.tanggal_mulai).toLocaleDateString('id-ID')} s/d{' '}
                                                     {new Date(izin.tanggal_kembali).toLocaleDateString('id-ID')}
                                                     {' '}({izin.durasi_hari} hari)
                                                 </span>
                                             </div>
-                                            <p className="text-sm text-slate-700 bg-slate-50 rounded-lg p-3">
-                                                <span className="font-medium text-slate-500">Alasan:</span> {izin.alasan}
+                                            <p className="text-sm text-gray-700 bg-slate-50 rounded-lg p-3">
+                                                <span className="font-medium text-gray-500">Alasan:</span> {izin.alasan}
                                             </p>
                                             {izin.catatan_dpl && (
-                                                <p className="text-xs text-slate-400">
+                                                <p className="text-xs text-gray-400">
                                                     <span className="font-medium">Catatan DPL:</span> {izin.catatan_dpl}
                                                 </p>
                                             )}
                                         </div>
 
                                         <div className="flex flex-col items-end gap-3">
-                                            <Badge variant={statusColor(izin.status) as any}>
+                                            <Badge variant={statusColor(izin.status)}>
                                                 {statusLabel(izin.status)}
                                             </Badge>
                                             {izin.status === 'menunggu' && (
@@ -188,7 +188,7 @@ export default function DplIzinIndex({ izins }: Props) {
 
                 {izins.last_page > 1 && (
                     <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-6 py-4">
-                        <p className="text-sm text-slate-500">
+                        <p className="text-sm text-gray-500">
                             Halaman {izins.current_page} dari {izins.last_page}
                         </p>
                         <div className="flex gap-2">
@@ -202,7 +202,7 @@ export default function DplIzinIndex({ izins }: Props) {
                                         link.active
                                             ? 'bg-emerald-600 text-white'
                                             : link.url
-                                                ? 'bg-white text-slate-700 hover:bg-slate-100'
+                                                ? 'bg-white text-gray-700 hover:bg-slate-100'
                                                 : 'text-slate-300 cursor-not-allowed'
                                     )}
                                 >

@@ -8,27 +8,37 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class MonitoringDpl extends Model
-{
-    use HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $connection = 'kkn';
-
-    protected $table = 'monitoring_dpl';
-
-    protected $fillable = [
-        'dpl_id',
+#[Connection('kkn')]
+#[Table('monitoring_dpl')]
+#[Fillable([
+    'dpl_id',
         'kelompok_id',
         'periode_id',
         'tanggal_kunjungan',
         'permasalahan',
         'solusi',
         'catatan_tambahan',
-    ];
+])]
+#[Casts([
+    'tanggal_kunjungan' => 'date',
+])]
+class MonitoringDpl extends Model
+{
+    use HasFactory;
 
-    protected $casts = [
-        'tanggal_kunjungan' => 'date',
-    ];
+    
+
+    
+
+    
+
+    
 
     public function dpl(): BelongsTo
     {

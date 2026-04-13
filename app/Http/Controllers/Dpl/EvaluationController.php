@@ -64,6 +64,18 @@ class EvaluationController extends Controller
             ->exists();
     }
 
+    /**
+     * Get DPL evaluation weights
+     */
+    private function dplWeights(): array
+    {
+        return [
+            'final_report' => 30,
+            'execution' => 40,
+            'article' => 30,
+        ];
+    }
+
     private function ensureStudentBelongsToGroup(int $studentId, int $groupId): void
     {
         if (! $this->studentBelongsToGroup($studentId, $groupId)) {
@@ -88,6 +100,17 @@ class EvaluationController extends Controller
             ->with(['peserta' => fn ($q) => $q->where('status', 'approved')->with('mahasiswa'), 'periode'])
             ->get();
 
+        // LARAVEL 13 OPTIMIZATION: Concurrency for Parallel AI Data Fetching
+        $studentIds = $groups->flatMap(fn($g) => $g->peserta->pluck('mahasiswa_id'))->filter()->unique()->values();
+        
+        $aiPerformanceData = \Illuminate\Support\Facades\Concurrency::run(
+            $studentIds->map(fn($id) => fn() => [
+                'id' => $id,
+                'data' => $this->gradingService->getAiPerformanceSummary((int) $id)
+            ])->toArray()
+        );
+        $aiLookup = collect($aiPerformanceData)->pluck('data', 'id');
+
         return Inertia::render('Dpl/Evaluations/Index', [
             'evaluations' => $evaluations->map(fn (Evaluasi $evaluation) => [
                 'id' => $evaluation->id,
@@ -109,6 +132,7 @@ class EvaluationController extends Controller
                     'id' => $registration->mahasiswa?->id,
                     'nim' => $registration->mahasiswa?->nim ?? '-',
                     'name' => $registration->mahasiswa?->nama ?? 'Mahasiswa tidak ditemukan',
+                    'ai_performance' => $registration->mahasiswa ? ($aiLookup[$registration->mahasiswa->id] ?? null) : null,
                 ])->filter(fn ($student) => $student['id'] !== null)->values(),
             ])->values(),
             'dplWeights' => [
@@ -237,7 +261,7 @@ class EvaluationController extends Controller
         $studentIds = collect($request->data)->pluck('id')->filter()->all();
         $students = Mahasiswa::whereIn('id', $studentIds)->get()->keyBy('id');
 
-        DB::transaction(function () use ($request, $lecturerId, $groupId, $weights, $students) {
+        DB::transaction(function () use ($request, $lecturerId, $groupId, $weights, $students, $group) {
             $evaluasiIds = [];
             $itemEvaluasiData = [];
 
@@ -361,71 +385,68 @@ class EvaluationController extends Controller
 
         $this->ensureStudentBelongsToGroup((int) $validated['student_id'], (int) $validated['group_id']);
 
-        // SECURITY: Hardcode evaluator_type to 'dpl' to prevent privilege escalation
-        // The evaluator_type should NEVER be user-controlled
-        $evaluation = Evaluasi::create([
-            'mahasiswa_id' => $validated['student_id'],
-            'kelompok_id' => $validated['group_id'],
-            'evaluator_id' => auth()->id(),
-            'evaluator_type' => 'dpl', // Fixed value - not from user input
-            'notes' => $validated['notes'] ?? null,
-            'evaluated_at' => now(),
-        ]);
-
-        $totalScore = 0;
-        $totalWeight = 0;
-        $reportScore = 0;
-        $executionScore = 0;
-        $articleScore = 0;
-
-        foreach ($validated['items'] as $item) {
-            ItemEvaluasi::create([
-                'evaluasi_id' => $evaluation->id,
-                'criterion' => $item['criterion'],
-                'score' => $item['score'],
-                'weight' => $item['weight'],
+        return DB::transaction(function () use ($validated, $group) {
+            // SECURITY: Hardcode evaluator_type to 'dpl' to prevent privilege escalation
+            $evaluation = Evaluasi::create([
+                'mahasiswa_id' => $validated['student_id'],
+                'kelompok_id' => $validated['group_id'],
+                'evaluator_id' => auth()->id(),
+                'evaluator_type' => 'dpl',
+                'notes' => $validated['notes'] ?? null,
+                'evaluated_at' => now(),
             ]);
 
-            if (stripos($item['criterion'], 'laporan') !== false) {
-                $reportScore = (float) $item['score'];
+            $reportScore = 0;
+            $executionScore = 0;
+            $articleScore = 0;
+
+            foreach ($validated['items'] as $item) {
+                ItemEvaluasi::create([
+                    'evaluasi_id' => $evaluation->id,
+                    'criterion' => $item['criterion'],
+                    'score' => $item['score'],
+                    'weight' => $item['weight'],
+                ]);
+
+                if (stripos($item['criterion'], 'laporan') !== false) {
+                    $reportScore = (float) $item['score'];
+                }
+                if (stripos($item['criterion'], 'pelaksanaan') !== false) {
+                    $executionScore = (float) $item['score'];
+                }
+                if (stripos($item['criterion'], 'artikel') !== false) {
+                    $articleScore = (float) $item['score'];
+                }
             }
-            if (stripos($item['criterion'], 'pelaksanaan') !== false) {
-                $executionScore = (float) $item['score'];
+
+            // Recalculate based on central config for precision
+            $finalScore = $this->calculateWeightedDplScore($reportScore, $executionScore, $articleScore, $group);
+            $grade = \App\Services\KKN\GradeConversionService::convert($finalScore)['grade'];
+
+            $evaluation->update([
+                'total_score' => $finalScore,
+                'grade' => $grade,
+            ]);
+
+            // Sync to NilaiKkn (Centralized)
+            $mahasiswa = Mahasiswa::find($validated['student_id']);
+            if ($mahasiswa) {
+                $this->gradingService->submitDPLScores(
+                    $mahasiswa->user_id,
+                    $validated['group_id'],
+                    [
+                        'relevansi' => $reportScore,
+                        'ketercapaian' => $executionScore,
+                        'inovasi' => 0,
+                        'administrasi' => $reportScore,
+                        'artikel' => $articleScore,
+                    ],
+                    auth()->id()
+                );
             }
-            if (stripos($item['criterion'], 'artikel') !== false) {
-                $articleScore = (float) $item['score'];
-            }
 
-            $totalScore += $item['score'] * ($item['weight'] / 100);
-            $totalWeight += $item['weight'];
-        }
-
-        $finalScore = $totalWeight > 0 ? round($totalScore, 2) : 0;
-        $grade = \App\Services\KKN\GradeConversionService::convert($finalScore)['grade'];
-
-        $evaluation->update([
-            'total_score' => $finalScore,
-            'grade' => $grade,
-        ]);
-
-        // Sync to NilaiKkn (Centralized)
-        $mahasiswa = Mahasiswa::find($validated['student_id']);
-        if ($mahasiswa) {
-            $this->gradingService->submitDPLScores(
-                $mahasiswa->user_id,
-                $validated['group_id'],
-                [
-                    'relevansi' => $reportScore,
-                    'ketercapaian' => $executionScore,
-                    'inovasi' => 0,
-                    'administrasi' => $reportScore,
-                    'artikel' => $articleScore,
-                ],
-                auth()->id()
-            );
-        }
-
-        return redirect()->route('dpl.evaluations.index')
-            ->with('success', 'Evaluasi berhasil disimpan.');
+            return redirect()->route('dpl.evaluations.index')
+                ->with('success', 'Evaluasi berhasil disimpan.');
+        });
     }
 }

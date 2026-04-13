@@ -9,16 +9,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DplKecamatanAssignment extends Model
-{
-    use HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $connection = 'kkn';
-
-    protected $table = 'dpl_kecamatan_assignments';
-
-    protected $fillable = [
-        'dpl_period_id',
+#[Connection('kkn')]
+#[Table('dpl_kecamatan_assignments')]
+#[Fillable([
+    'dpl_period_id',
         'dosen_id',
         'period_id',
         'district_id',
@@ -26,11 +26,21 @@ class DplKecamatanAssignment extends Model
         'regency_name',
         'assigned_by',
         'is_active',
-    ];
+])]
+#[Casts([
+    'is_active' => 'boolean',
+])]
+class DplKecamatanAssignment extends Model
+{
+    use HasFactory;
 
-    protected $casts = [
-        'is_active' => 'boolean',
-    ];
+    
+
+    
+
+    
+
+    
 
     public function dplPeriod(): BelongsTo
     {

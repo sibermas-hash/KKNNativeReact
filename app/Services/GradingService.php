@@ -233,4 +233,49 @@ class GradingService
 
         \App\Jobs\FinalizeMassScoresJob::dispatch($periodId, auth()->id());
     }
+
+    /**
+     * Get AI-driven performance summary for a student
+     */
+    public function getAiPerformanceSummary(int $studentId): array
+    {
+        return Cache::remember("ai_performance_v3_{$studentId}", 3600, function () use ($studentId) {
+            $activities = \App\Models\KKN\KegiatanKkn::where('mahasiswa_id', $studentId)
+                ->where('status', 'approved')
+                ->whereNotNull('ai_analysis')
+                ->get();
+
+            if ($activities->isEmpty()) {
+                return [
+                    'has_data' => false,
+                    'avg_compliance' => 0,
+                    'avg_quality' => 0,
+                    'total_reports' => 0,
+                    'suggested_admin_score' => 0,
+                    'top_tags' => [],
+                ];
+            }
+
+            $avgCompliance = $activities->avg(fn($a) => ($a->ai_analysis['abcd_compliance'] ?? 0));
+            $avgQuality = $activities->avg(fn($a) => ($a->ai_analysis['quality_score'] ?? 0));
+            
+            $tags = $activities->flatMap(fn($a) => $a->ai_analysis['tags'] ?? [])
+                ->countBy()
+                ->sortDesc()
+                ->take(3)
+                ->keys()
+                ->toArray();
+
+            $rawScore = ($avgCompliance * 7) + ($avgQuality * 3);
+            
+            return [
+                'has_data' => true,
+                'avg_compliance' => round($avgCompliance, 1),
+                'avg_quality' => round($avgQuality, 1),
+                'total_reports' => $activities->count(),
+                'suggested_admin_score' => round($rawScore, 1),
+                'top_tags' => $tags,
+            ];
+        });
+    }
 }

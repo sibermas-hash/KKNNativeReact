@@ -41,7 +41,7 @@ export default function Downloads({ downloads }: Props) {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-6xl lg:text-[100px] font-bold tracking-tighter text-slate-900 leading-[0.85] uppercase"
+                            className="text-6xl lg:text-[100px] font-bold tracking-tighter text-gray-900 leading-[0.85] uppercase"
                         >
                             Repositori <br /> 
                             <span className="text-emerald-500   font-medium">dokumen.</span>
@@ -51,7 +51,7 @@ export default function Downloads({ downloads }: Props) {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="text-xl lg:text-3xl text-slate-400 font-bold max-w-2xl leading-relaxed  border-l-8 border-emerald-500 pl-12"
+                            className="text-xl lg:text-3xl text-gray-400 font-bold max-w-2xl leading-relaxed  border-l-8 border-emerald-500 pl-12"
                         >
                             Unduh dokumen panduan, berkas administrasi, dan referensi akademik untuk kemudahan operasional KKN Anda.
                         </motion.p>
@@ -81,10 +81,10 @@ export default function Downloads({ downloads }: Props) {
                                     </div>
 
                                     <div className="space-y-4">
-                                        <h4 className="text-3xl lg:text-4xl font-bold text-slate-900 uppercase tracking-tighter leading-none  group-hover:text-emerald-600 transition-colors">
+                                        <h4 className="text-3xl lg:text-4xl font-bold text-gray-900 uppercase tracking-tighter leading-none  group-hover:text-emerald-600 transition-colors">
                                             {d.title}
                                         </h4>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dokumen resmi LPPM</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Dokumen resmi LPPM</p>
                                     </div>
 
                                     <div className="pt-10 border-t border-slate-50 flex items-center justify-between">
@@ -92,7 +92,7 @@ export default function Downloads({ downloads }: Props) {
                                             href={d.external_url || d.file_path || '#'}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="px-10 py-5 bg-slate-900 text-white rounded-full text-[11px] font-bold uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-slate-900/10 flex items-center gap-4"
+                                            className="px-10 py-5 bg-emerald-600 text-white rounded-full text-[11px] font-bold uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-xl flex items-center gap-4"
                                         >
                                             Unduh Berkas
                                             <DownloadIcon size={16} />

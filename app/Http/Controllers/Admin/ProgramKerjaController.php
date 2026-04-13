@@ -30,31 +30,37 @@ class ProgramKerjaController extends Controller
                 $query->whereHas('kelompok.peserta.mahasiswa', fn ($q) => $q->where('faculty_id', $id));
             });
 
-        $workPrograms = (clone $query)->with(['kelompok.lokasi'])
+        $workPrograms = $query->with(['kelompok.lokasi'])
             ->orderByDesc('submitted_at')
             ->paginate(15)
             ->withQueryString();
 
-        // Calculate SDG distribution for the filtered set
-        $sdgCounts = array_fill(1, 17, 0);
-        (clone $query)->get(['sdg_goals'])->each(function ($item) use (&$sdgCounts) {
-            $goals = is_array($item->sdg_goals) ? $item->sdg_goals : [];
-            foreach ($goals as $goalId) {
-                if (isset($sdgCounts[$goalId])) {
-                    $sdgCounts[$goalId]++;
-                }
-            }
-        });
-
-        $sdgDistribution = collect($sdgCounts)->map(fn ($count, $id) => [
-            'id' => $id,
-            'count' => $count,
-        ])->values();
-
         return Inertia::render('Admin/Monitoring/WorkPrograms/Index', [
-            'workPrograms' => $this->formatPaginator($workPrograms),
-            'sdg_distribution' => $sdgDistribution,
-            'filters' => $request->only('status'),
+            'workPrograms' => Inertia::defer(fn () => $this->formatPaginator($workPrograms)),
+            'sdg_distribution' => Inertia::defer(function () use ($query) {
+                $sdgCounts = array_fill(1, 17, 0);
+                
+                // Optimized for memory stability using chunking
+                (clone $query)->select('sdg_goals')->chunk(200, function ($programs) use (&$sdgCounts) {
+                    foreach ($programs as $item) {
+                        $goals = is_array($item->sdg_goals) ? $item->sdg_goals : [];
+                        foreach ($goals as $goalId) {
+                            if (isset($sdgCounts[$goalId])) {
+                                $sdgCounts[$goalId]++;
+                            }
+                        }
+                    }
+                });
+
+                return collect($sdgCounts)->map(fn ($count, $id) => [
+                    'id' => $id,
+                    'count' => $count,
+                ])->values();
+            }),
+            'filters' => $request->only('status', 'semantic_search'),
+            'semantic_results' => $request->filled('semantic_search') 
+                ? Inertia::defer(fn () => \App\Models\KKN\ProgramKerja::whereVector('title', \Laravel\Ai\Ai::embeddings([$request->input('semantic_search')])[0])->take(5)->get())
+                : null,
         ]);
     }
 }

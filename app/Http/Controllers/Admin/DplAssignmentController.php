@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Constants\AppConstants;
 use App\Http\Controllers\Controller;
 use App\Imports\DplAssignmentImport;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\DplKecamatanAssignment;
 use App\Models\KKN\DplPeriod;
 use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\LogAudit;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\Periode;
-use App\Notifications\KKN\DplAssignedToGroupNotification;
-use App\Services\DplAssignmentService;
+use App\Services\Admin\DplAssignmentService;
 use App\Services\PeriodContextService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -29,23 +28,8 @@ class DplAssignmentController extends Controller
         private DplAssignmentService $assignmentService,
     ) {}
 
-    private function logAudit(string $action, string $description, ?array $newValues = null): void
-    {
-        LogAudit::create([
-            'user_id' => auth()->id(),
-            'action' => $action,
-            'description' => $description,
-            'model_type' => 'DplPeriod',
-            'severity' => 'info',
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'new_values' => $newValues,
-        ]);
-    }
-
     /**
      * Display the DPL assignment management page.
-     * OPTIMIZED: Added pagination and query limits to prevent memory issues
      */
     public function index(Request $request)
     {
@@ -54,7 +38,6 @@ class DplAssignmentController extends Controller
         $search = trim((string) $request->input('search', ''));
         $escapedSearch = str_replace(['%', '_'], ['\\%', '\\_'], $search);
 
-        // OPTIMIZATION: Use pagination for assignments (main data)
         $assignmentsPaginated = DplPeriod::with([
             'dosen:id,nama,nip',
             'periode:id,name,periode,jenis',
@@ -75,9 +58,8 @@ class DplAssignmentController extends Controller
                 });
             })
             ->orderByDesc('created_at')
-            ->paginate(50);
+            ->paginate(AppConstants::MAX_BATCH_LIMIT);
 
-        // OPTIMIZATION: Limit groups query with pagination
         $groupsPaginated = KelompokKkn::with([
             'dpl:id,nama,nip',
             'periode:id,name,periode,jenis',
@@ -101,7 +83,6 @@ class DplAssignmentController extends Controller
             ->orderBy('nama_kelompok')
             ->paginate(100);
 
-        // Dropdown options: Keep full list (needed for select inputs)
         $allDosen = Dosen::query()
             ->orderBy('nama')
             ->get(['id', 'user_id', 'nama', 'nip', 'is_cpns', 'is_tugas_belajar']);
@@ -119,7 +100,6 @@ class DplAssignmentController extends Controller
             ->orderBy('district_name')
             ->get();
 
-        // OPTIMIZATION: Paginate district coordinators
         $districtCoordinatorsPaginated = DplKecamatanAssignment::with([
             'dosen:id,nama,nip',
             'periode:id,name,periode,jenis',
@@ -141,7 +121,7 @@ class DplAssignmentController extends Controller
                 });
             })
             ->orderBy('district_name')
-            ->paginate(50);
+            ->paginate(AppConstants::MAX_BATCH_LIMIT);
 
         $districtCoordinatorRows = $districtCoordinatorsPaginated->map(fn (DplKecamatanAssignment $assignment) => [
             'id' => $assignment->id,
@@ -176,7 +156,7 @@ class DplAssignmentController extends Controller
         ])->values();
 
         return Inertia::render('Admin/Operational/Dpl/Assignment', [
-            'assignments' => $assignmentsPaginated->map(fn (DplPeriod $assignment) => [
+            'assignments' => $assignmentsPaginated->getCollection()->map(fn (DplPeriod $assignment) => [
                 'id' => $assignment->id,
                 'max_groups' => $assignment->max_groups,
                 'current_groups' => $assignment->kelompok_count,
@@ -200,7 +180,7 @@ class DplAssignmentController extends Controller
                 'per_page' => $assignmentsPaginated->perPage(),
                 'total' => $assignmentsPaginated->total(),
             ],
-            'groups' => $groupsPaginated->map(fn (KelompokKkn $group) => [
+            'groups' => Inertia::defer(fn () => $groupsPaginated->getCollection()->map(fn (KelompokKkn $group) => [
                 'id' => $group->id,
                 'name' => $group->nama_kelompok,
                 'code' => $group->code,
@@ -222,36 +202,36 @@ class DplAssignmentController extends Controller
                     'nama' => $group->dpl->nama,
                     'nip' => $group->dpl->nip,
                 ] : null,
-            ])->values(),
+            ])->values()),
             'groups_pagination' => [
                 'current_page' => $groupsPaginated->currentPage(),
                 'last_page' => $groupsPaginated->lastPage(),
                 'per_page' => $groupsPaginated->perPage(),
                 'total' => $groupsPaginated->total(),
             ],
-            'allDosen' => $allDosen->map(fn (Dosen $dosen) => [
+            'allDosen' => Inertia::defer(fn () => $allDosen->map(fn (Dosen $dosen) => [
                 'id' => $dosen->id,
                 'nama' => $dosen->nama,
                 'nip' => $dosen->nip,
                 'is_cpns' => (bool) $dosen->is_cpns,
                 'is_tugas_belajar' => (bool) $dosen->is_tugas_belajar,
-            ])->values(),
-            'allPeriods' => $allPeriods->map(fn (Periode $period) => [
+            ])->values()),
+            'allPeriods' => Inertia::defer(fn () => $allPeriods->map(fn (Periode $period) => [
                 'id' => $period->id,
                 'name' => $period->name,
                 'periode' => $period->periode,
                 'jenis' => $period->jenis,
-            ])->values(),
-            'districts' => $districts->map(fn (Lokasi $district) => [
+            ])->values()),
+            'districts' => Inertia::defer(fn () => $districts->map(fn (Lokasi $district) => [
                 'id' => (string) $district->district_id,
                 'name' => $district->district_name,
                 'sub_districts_count' => (int) ($district->sub_districts_count ?? 0),
                 'district_id' => (string) $district->district_id,
                 'district_name' => $district->district_name,
                 'regency_name' => $district->regency_name,
-            ])->values(),
-            'districtCoordinators' => $districtCoordinatorRows,
-            'currentCoordinators' => $currentCoordinatorRows,
+            ])->values()),
+            'districtCoordinators' => Inertia::defer(fn () => $districtCoordinatorRows),
+            'currentCoordinators' => Inertia::defer(fn () => $currentCoordinatorRows),
             'coordinators_pagination' => [
                 'current_page' => $districtCoordinatorsPaginated->currentPage(),
                 'last_page' => $districtCoordinatorsPaginated->lastPage(),
@@ -264,13 +244,13 @@ class DplAssignmentController extends Controller
                 'has_locations' => Lokasi::query()->exists(),
                 'has_groups' => KelompokKkn::query()->exists(),
             ],
-            'summary' => [
+            'summary' => Inertia::defer(fn () => [
                 'active_assignments' => $assignmentsPaginated->total(),
                 'groups_total' => $groupsPaginated->total(),
                 'groups_without_dpl' => Cache::remember('dpl_summary_groups_without_dpl', 60, fn () => KelompokKkn::query()->whereNull('dpl_period_id')->count()),
                 'active_groups_without_dpl' => Cache::remember('dpl_summary_active_groups_without_dpl', 60, fn () => KelompokKkn::query()->where('status', 'active')->whereNull('dpl_period_id')->count()),
                 'district_coordinators' => $districtCoordinatorsPaginated->total(),
-            ],
+            ]),
         ]);
     }
 
@@ -288,19 +268,6 @@ class DplAssignmentController extends Controller
         $period = Periode::query()->findOrFail($validated['period_id']);
         $activation = $this->assignmentService->activateForPeriod($dosen, $period, (int) ($validated['max_groups'] ?? 5));
 
-        $this->logAudit(
-            'assign_dpl_period',
-            "DPL {$dosen->nama} (NIP: {$dosen->nip}) diaktifkan pada periode {$period->name}",
-            [
-                'dosen_id' => $dosen->id,
-                'dosen_nama' => $dosen->nama,
-                'period_id' => $period->id,
-                'period_name' => $period->name,
-                'max_groups' => $validated['max_groups'] ?? 5,
-                'account_created' => $activation['provisioning']['created'] ?? false,
-            ]
-        );
-
         $message = "DPL {$dosen->nama} berhasil diaktifkan pada periode {$period->name}.";
         if ($activation['provisioning']['temp_password']) {
             $message .= " Akun login dibuat dengan username {$activation['provisioning']['user']->username} dan kata sandi sementara {$activation['provisioning']['temp_password']}. DPL wajib mengganti kata sandi saat login pertama.";
@@ -309,10 +276,6 @@ class DplAssignmentController extends Controller
         return back()->with('success', $message);
     }
 
-    /**
-     * Assign a DPL-Period entry to a group.
-     * IMPROVED: No-op prevention if group already assigned to same DPL
-     */
     public function assignToGroup(Request $request, KelompokKkn $group)
     {
         Gate::authorize('manageDplAssignment');
@@ -323,40 +286,12 @@ class DplAssignmentController extends Controller
 
         $dplPeriod = DplPeriod::with('dosen')->findOrFail($validated['dpl_period_id']);
 
-        // NO-OP PREVENTION: Skip if group already assigned to this exact DPL period
         if ($group->dpl_period_id === $dplPeriod->id) {
             return back()->with('info', "Kelompok {$group->nama_kelompok} sudah ditugaskan kepada DPL {$dplPeriod->dosen->nama}. Tidak ada perubahan.");
         }
 
         try {
-            $this->assignmentService->assignPrimaryGroup($dplPeriod, $group);
-
-            $this->logAudit(
-                'assign_group_to_dpl',
-                "Kelompok {$group->nama_kelompok} ({$group->code}) ditugaskan kepada DPL {$dplPeriod->dosen->nama}",
-                [
-                    'group_id' => $group->id,
-                    'group_code' => $group->code,
-                    'group_name' => $group->nama_kelompok,
-                    'dpl_id' => $dplPeriod->dosen_id,
-                    'dpl_periode_id' => $dplPeriod->id,
-                ]
-            );
-
-            // Notify DPL about new group assignment
-            $dplUser = $dplPeriod->dosen?->user;
-            if ($dplUser) {
-                $group->load('lokasi', 'periode');
-                $locationName = $group->lokasi
-                    ? trim(($group->lokasi->district_name ?? '').', '.($group->lokasi->regency_name ?? ''), ', ')
-                    : null;
-
-                $dplUser->notify(new DplAssignedToGroupNotification(
-                    $group->nama_kelompok,
-                    $group->periode?->name ?? 'KKN',
-                    $locationName ?: null,
-                ));
-            }
+            $this->assignmentService->assignToGroup($dplPeriod, $group);
         } catch (\DomainException $exception) {
             return back()->with('error', $exception->getMessage());
         }
@@ -376,74 +311,39 @@ class DplAssignmentController extends Controller
             'max_groups' => 'nullable|integer|min:1|max:20',
         ]);
 
-        $dplPeriod = null;
+        try {
+            if (! empty($validated['dpl_period_id'])) {
+                $dplPeriod = DplPeriod::query()->with(['dosen', 'periode'])->findOrFail($validated['dpl_period_id']);
+                $dosen = $dplPeriod->dosen;
+                $period = $dplPeriod->periode;
+            } else {
+                $dosen = Dosen::query()->findOrFail($validated['dosen_id']);
+                $period = Periode::query()->findOrFail($validated['period_id']);
+            }
 
-        if (! empty($validated['dpl_period_id'])) {
-            $dplPeriod = DplPeriod::query()->with(['dosen', 'periode'])->findOrFail($validated['dpl_period_id']);
-            $dosen = $dplPeriod->dosen;
-            $period = $dplPeriod->periode;
-        } else {
-            $dosen = Dosen::query()->findOrFail($validated['dosen_id']);
-            $period = Periode::query()->findOrFail($validated['period_id']);
+            $activation = $this->assignmentService->assignDistrictCoordinator(
+                $dosen,
+                $period,
+                $validated['district_id'],
+                (int) ($validated['max_groups'] ?? 5)
+            );
+
+            $message = "Koordinator DPL untuk kecamatan berhasil ditetapkan.";
+            if ($activation['provisioning']['temp_password']) {
+                $message .= " Akun login dibuat dengan username {$activation['provisioning']['user']->username} and kata sandi sementara {$activation['provisioning']['temp_password']}.";
+            }
+
+            return back()->with('success', $message);
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        $district = Lokasi::query()
-            ->where('district_id', $validated['district_id'])
-            ->select('district_id', 'district_name', 'regency_name')
-            ->first();
-
-        if (! $district) {
-            return back()->with('error', 'Kecamatan tidak ditemukan pada master lokasi.');
-        }
-
-        $activation = $dplPeriod
-            ? ['assignment' => $dplPeriod, 'provisioning' => ['temp_password' => null]]
-            : $this->assignmentService->activateForPeriod($dosen, $period, (int) ($validated['max_groups'] ?? 5));
-        $this->assignmentService->assignDistrictCoordinator(
-            $activation['assignment'],
-            (string) $district->district_id,
-            $district->district_name,
-            $district->regency_name,
-            auth()->id(),
-        );
-
-        $this->logAudit(
-            'assign_district_coordinator',
-            "DPL {$dosen->nama} (NIP: {$dosen->nip}) ditetapkan sebagai koordinator kecamatan {$district->district_name}",
-            [
-                'dosen_id' => $dosen->id,
-                'dosen_nama' => $dosen->nama,
-                'period_id' => $period->id,
-                'period_name' => $period->name,
-                'district_id' => $district->district_id,
-                'district_name' => $district->district_name,
-                'regency_name' => $district->regency_name,
-            ]
-        );
-
-        $message = "Koordinator DPL untuk kecamatan {$district->district_name} berhasil ditetapkan.";
-        if ($activation['provisioning']['temp_password']) {
-            $message .= " Akun login dibuat dengan username {$activation['provisioning']['user']->username} dan kata sandi sementara {$activation['provisioning']['temp_password']}.";
-        }
-
-        return back()->with('success', $message);
     }
 
     public function removeDistrictCoordinator(DplKecamatanAssignment $districtCoordinator)
     {
         Gate::authorize('manageDplAssignment');
 
-        $districtCoordinator->update(['is_active' => false]);
-
-        $this->logAudit(
-            'remove_district_coordinator',
-            "Koordinator DPL {$districtCoordinator->dosen->nama} untuk kecamatan {$districtCoordinator->district_name} dinonaktifkan",
-            [
-                'dosen_id' => $districtCoordinator->dosen_id,
-                'district_id' => $districtCoordinator->district_id,
-                'district_name' => $districtCoordinator->district_name,
-            ]
-        );
+        $this->assignmentService->removeDistrictCoordinator($districtCoordinator);
 
         return back()->with('success', 'Koordinator kecamatan berhasil dinonaktifkan.');
     }
@@ -460,7 +360,10 @@ class DplAssignmentController extends Controller
             'file' => ['required', 'file', 'mimes:xlsx,xls,csv,txt', 'max:10240'],
         ]);
 
-        $import = new DplAssignmentImport($this->assignmentService);
+        // Using base service for import as it might be complex and already implemented there
+        // but the import class might need the base service.
+        $baseService = app(\App\Services\DplAssignmentService::class);
+        $import = new DplAssignmentImport($baseService);
         Excel::import($import, $validated['file']);
 
         $message = "Import penugasan DPL selesai. {$import->activatedCount} aktivasi periode, {$import->groupAssignmentCount} penugasan kelompok, {$import->districtCoordinatorCount} koordinator kecamatan, {$import->provisionedAccountCount} akun baru.";
@@ -475,9 +378,6 @@ class DplAssignmentController extends Controller
         return back()->with($import->errors === [] ? 'success' : 'warning', $message);
     }
 
-    /**
-     * Get available DPLs for the active period with remaining capacity.
-     */
     public function getAvailableDpl()
     {
         Gate::authorize('manageDplAssignment');
@@ -510,45 +410,15 @@ class DplAssignmentController extends Controller
         return response()->json($dplList);
     }
 
-    /**
-     * Remove DPL assignment from a period.
-     */
     public function removeDplFromPeriod(DplPeriod $dplPeriod)
     {
         Gate::authorize('manageDplAssignment');
 
-        // Check if DPL has assigned groups
-        $assignedGroupsCount = $dplPeriod->kelompok()->count();
-        if ($assignedGroupsCount > 0) {
-            return back()->with('error', "Tidak dapat menghapus DPL yang masih memiliki {$assignedGroupsCount} kelompok aktif. Lepaskan kelompok terlebih dahulu.");
+        try {
+            $this->assignmentService->removeDplFromPeriod($dplPeriod);
+            return back()->with('success', 'DPL berhasil dihapus dari periode.');
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        // CRITICAL FIX: Also clear dpl_id and dpl_period_id from any orphaned groups
-        // This prevents stale references if the pivot table sync failed
-        \Illuminate\Support\Facades\DB::transaction(function () use ($dplPeriod) {
-            // Clear any groups that still reference this DPL period
-            \App\Models\KKN\KelompokKkn::where('dpl_period_id', $dplPeriod->id)
-                ->update([
-                    'dpl_period_id' => null,
-                    'dpl_id' => null,
-                ]);
-
-            // Detach from pivot table
-            $dplPeriod->kelompok()->detach();
-
-            // Mark as inactive
-            $dplPeriod->update(['is_active' => false]);
-        });
-
-        $this->logAudit(
-            'remove_dpl_period',
-            "DPL {$dplPeriod->dosen->nama} dihapus dari periode {$dplPeriod->periode->name}",
-            [
-                'dosen_id' => $dplPeriod->dosen_id,
-                'period_id' => $dplPeriod->period_id,
-            ]
-        );
-
-        return back()->with('success', 'DPL berhasil dihapus dari periode.');
     }
 }

@@ -8,28 +8,38 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ItemEvaluasi extends Model
-{
-    use HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $connection = 'kkn';
-
-    protected $table = 'item_evaluasi';
-
-    public $timestamps = false;
-
-    protected $fillable = [
-        'evaluasi_id',
+#[Connection('kkn')]
+#[Table('item_evaluasi')]
+#[Fillable([
+    'evaluasi_id',
         'criterion',
         'score',
         'weight',
         'notes',
-    ];
-
-    protected $casts = [
-        'score' => 'decimal:2',
+])]
+#[Casts([
+    'score' => 'decimal:2',
         'weight' => 'decimal:2',
-    ];
+])]
+class ItemEvaluasi extends Model
+{
+    use HasFactory;
+
+    
+
+    
+
+    public $timestamps = false;
+
+    
+
+    
 
     public function evaluasi(): BelongsTo
     {

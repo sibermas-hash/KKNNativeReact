@@ -24,8 +24,7 @@ export default function ConfirmDialog({
 }: ConfirmDialogProps) {
     return (
         <Modal show={open} onClose={onClose} title={title} maxWidth="sm">
-            <div className="space-y-6">
-                <p className="text-[11px] font-bold uppercase tracking-tight text-emerald-900 leading-relaxed">
+                <p className="text-[11px] font-bold uppercase tracking-tight text-slate-600 leading-relaxed italic">
                     {message}
                 </p>
                 <div className="flex justify-end gap-3 pt-2">
@@ -36,7 +35,6 @@ export default function ConfirmDialog({
                         {confirmLabel}
                     </Button>
                 </div>
-            </div>
         </Modal>
     );
 }

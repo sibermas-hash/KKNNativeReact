@@ -11,16 +11,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class ProgramKerja extends Model
-{
-    use HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $connection = 'kkn';
-
-    protected $table = 'program_kerja';
-
-    protected $fillable = [
-        'kelompok_id',
+#[Connection('kkn')]
+#[Table('program_kerja')]
+#[Fillable([
+    'kelompok_id',
         'title',
         'description',
         'sdg_goals',
@@ -34,16 +34,26 @@ class ProgramKerja extends Model
         'approval_notes',
         'abcd_stage',
         'kategori',
-    ];
-
-    protected $casts = [
-        'sdg_goals' => 'array',
+])]
+#[Casts([
+    'sdg_goals' => 'array',
         'target_participants' => 'integer',
         'budget' => 'decimal:2',
         'submitted_at' => 'datetime',
         'approved_at' => 'datetime',
         'abcd_stage' => AbcdStage::class,
-    ];
+])]
+class ProgramKerja extends Model
+{
+    use HasFactory;
+
+    
+
+    
+
+    
+
+    
 
     public function kelompok(): BelongsTo
     {

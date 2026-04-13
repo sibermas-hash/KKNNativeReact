@@ -86,14 +86,15 @@ export default [
       ],
       'react/require-default-props': 'off',
       'react/function-component-definition': 'off',
-      // allow inline components in render for current codebase
-      'react/no-unstable-nested-components': 'off',
+      // allow inline components in render for current codebase (warn instead of off to track violations)
+      'react/no-unstable-nested-components': 'warn',
       'react-hooks/set-state-in-effect': 'off',
       'react-hooks/static-components': 'off',
-      'jsx-a11y/label-has-associated-control': 'off',
-      'jsx-a11y/click-events-have-key-events': 'off',
-      'jsx-a11y/no-static-element-interactions': 'off',
-      'jsx-a11y/no-autofocus': 'off',
+      // Accessibility rules set to warn for incremental fixes
+      'jsx-a11y/label-has-associated-control': 'warn',
+      'jsx-a11y/click-events-have-key-events': 'warn',
+      'jsx-a11y/no-static-element-interactions': 'warn',
+      'jsx-a11y/no-autofocus': 'warn',
       'react/no-unescaped-entities': 'off',
       // Enable stricter checks for better code quality
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],

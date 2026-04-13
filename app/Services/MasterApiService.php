@@ -62,6 +62,22 @@ class MasterApiService
         return $this->getAllPagesWithFallback('/sync/mahasiswa', $params, 'mahasiswa');
     }
 
+    public function yieldSyncMahasiswa(?string $since = null): \Generator
+    {
+        $params = $since ? ['since' => $since] : [];
+        $this->client->setToken($this->tokenService->getToken() ?? '');
+        
+        return $this->client->yieldAllPages('/sync/mahasiswa', $params);
+    }
+
+    public function yieldSyncDosen(?string $since = null): \Generator
+    {
+        $params = $since ? ['since' => $since] : [];
+        $this->client->setToken($this->tokenService->getToken() ?? '');
+        
+        return $this->client->yieldAllPages('/sync/dosen', $params);
+    }
+
     public function getStudentsByNimList(array $nimList): array
     {
         if (empty($nimList)) {

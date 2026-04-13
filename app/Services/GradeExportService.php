@@ -191,4 +191,65 @@ class GradeExportService
             $currentRow++;
         }
     }
+
+    /**
+     * Memory-efficient ZIP export for multiple group PDFs.
+     * Uses temporary files and row-level cursor to prevent memory exhaustion.
+     */
+    public function exportZip(iterable $groups, callable $studentResolver): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        // Increase execution time for potentially massive exports
+        set_time_limit(600);
+        ini_set('memory_limit', '1024M');
+
+        $zip = new \ZipArchive;
+        $timestamp = time();
+        $zipFileName = "Blanko_Penilaian_Massal_{$timestamp}.zip";
+        $zipPath = storage_path("app/private/{$zipFileName}");
+
+        // Ensure temporary directory exists
+        $tempDir = storage_path('app/temp/exports_'.$timestamp);
+        if (!file_exists($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+
+        $filesToCleanup = [];
+
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
+            foreach ($groups as $group) {
+                $students = $studentResolver($group);
+                
+                $pdf = Pdf::loadView('admin.exports.blanko_nilai', [
+                    'group' => $group,
+                    'students' => $students,
+                    'periode' => $group->periode?->name ?? '57',
+                    'tahun' => $group->periode?->tahunAkademik?->year ?? date('Y'),
+                ]);
+
+                $pdfName = "Blanko_Penilaian_Kelompok_{$group->code}.pdf";
+                $tempPdfPath = $tempDir . '/' . $pdfName;
+                
+                // Save to disk instead of injecting large strings into ZipArchive memory
+                $pdf->save($tempPdfPath);
+                $zip->addFile($tempPdfPath, $pdfName);
+                
+                $filesToCleanup[] = $tempPdfPath;
+
+                // SURGICAL MEMORY MANAGEMENT: Clear DOMPDF objects and trigger GC
+                unset($pdf);
+                if (count($filesToCleanup) % 10 === 0) {
+                    gc_collect_cycles();
+                }
+            }
+            $zip->close();
+        }
+
+        // Cleanup temporary files after ZIP is closed (important!)
+        foreach ($filesToCleanup as $file) {
+            if (file_exists($file)) unlink($file);
+        }
+        if (file_exists($tempDir)) rmdir($tempDir);
+
+        return response()->download($zipPath)->deleteFileAfterSend(true);
+    }
 }

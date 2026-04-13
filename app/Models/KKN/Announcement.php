@@ -7,16 +7,16 @@ namespace App\Models\KKN;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Announcement extends Model
-{
-    use HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $connection = 'kkn';
-
-    protected $table = 'announcements';
-
-    protected $fillable = [
-        'title',
+#[Connection('kkn')]
+#[Table('announcements')]
+#[Fillable([
+    'title',
         'slug',
         'category',
         'content',
@@ -26,12 +26,22 @@ class Announcement extends Model
         'meta_title',
         'meta_description',
         'meta_keywords',
-    ];
-
-    protected $casts = [
-        'is_active' => 'boolean',
+])]
+#[Casts([
+    'is_active' => 'boolean',
         'published_at' => 'datetime',
-    ];
+])]
+class Announcement extends Model
+{
+    use HasFactory;
+
+    
+
+    
+
+    
+
+    
 
     public function scopeActive($query)
     {

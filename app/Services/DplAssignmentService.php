@@ -56,19 +56,24 @@ class DplAssignmentService
             throw new DomainException('DPL sudah mencapai batas maksimum kelompok untuk periode ini.');
         }
 
-        $existingKetua = $group->dosen()->wherePivot('role', 'Ketua')->first();
-        if ($existingKetua && $existingKetua->id !== $dplPeriod->dosen_id) {
-            $group->dosen()->updateExistingPivot($existingKetua->id, ['role' => 'Anggota']);
-        }
+        \Illuminate\Support\Facades\DB::transaction(function () use ($dplPeriod, $group) {
+            $existingKetua = $group->dosen()->wherePivot('role', 'Ketua')->first();
+            if ($existingKetua && $existingKetua->id !== $dplPeriod->dosen_id) {
+                // Downgrade existing ketua to ordinary member if they are different
+                $group->dosen()->updateExistingPivot($existingKetua->id, ['role' => 'Anggota']);
+            }
 
-        $group->update([
-            'dpl_id' => $dplPeriod->dosen_id,
-            'dpl_period_id' => $dplPeriod->id,
-        ]);
+            // Sync flat columns for simple reporting/queries
+            $group->update([
+                'dpl_id' => $dplPeriod->dosen_id,
+                'dpl_period_id' => $dplPeriod->id,
+            ]);
 
-        $group->dosen()->syncWithoutDetaching([
-            $dplPeriod->dosen_id => ['role' => 'Ketua'],
-        ]);
+            // Sync pivot table for multiple DPL support
+            $group->dosen()->syncWithoutDetaching([
+                $dplPeriod->dosen_id => ['role' => 'Ketua'],
+            ]);
+        });
     }
 
     public function assignDistrictCoordinator(

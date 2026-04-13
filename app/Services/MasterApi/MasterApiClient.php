@@ -67,6 +67,19 @@ class MasterApiClient
     public function getAllPages(string $endpoint, array $params = [], int $perPage = 100): array
     {
         $results = [];
+        foreach ($this->yieldAllPages($endpoint, $params, $perPage) as $item) {
+            $results[] = $item;
+        }
+
+        return $results;
+    }
+
+    /**
+     * Memory-efficient way to fetch all pages sequentially.
+     * Replaces array_merge heap issues with Generator patterns.
+     */
+    public function yieldAllPages(string $endpoint, array $params = [], int $perPage = 100): \Generator
+    {
         $page = 1;
         $consecutiveFailures = 0;
         $maxConsecutiveFailures = 2;
@@ -78,21 +91,22 @@ class MasterApiClient
                     'per_page' => $perPage,
                 ]));
 
-                if (! $payload || ! isset($payload['data'])) {
+                if (! $payload || ! isset($payload['data']) || ! \is_array($payload['data'])) {
                     break;
                 }
 
                 $consecutiveFailures = 0;
-                $results = array_merge($results, $payload['data']);
+                
+                foreach ($payload['data'] as $item) {
+                    yield $item;
+                }
 
                 $pagination = $payload['pagination'] ?? $payload['meta']['pagination'] ?? null;
-
                 if (! $pagination) {
                     break;
                 }
 
                 $lastPage = $pagination['last_page'] ?? 1;
-
                 if ($page >= $lastPage) {
                     break;
                 }
@@ -100,7 +114,6 @@ class MasterApiClient
                 $page++;
             } catch (Exception $e) {
                 $consecutiveFailures++;
-
                 Log::warning("Page {$page} fetch failed", [
                     'error' => $e->getMessage(),
                     'consecutive_failures' => $consecutiveFailures,
@@ -114,8 +127,6 @@ class MasterApiClient
                 usleep(500000);
             }
         }
-
-        return $results;
     }
 
     public function healthCheck(): array

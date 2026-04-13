@@ -70,19 +70,23 @@ class PeriodContextService
 
     /**
      * Get the active period model from session or system default.
+     * Optimized with Cache to reduce database hits on the hot path.
      */
     public function getActivePeriod(): ?Periode
     {
         $sessionPeriodId = $this->getActivePeriodId();
 
         if ($sessionPeriodId) {
-            $sessionPeriod = Periode::with(['tahunAkademik', 'jenisKkn'])->find($sessionPeriodId);
+            $sessionPeriod = Cache::remember("period_model_{$sessionPeriodId}", 3600, function () use ($sessionPeriodId) {
+                return Periode::with(['tahunAkademik', 'jenisKkn'])->find($sessionPeriodId);
+            });
 
             if ($sessionPeriod) {
                 return $sessionPeriod;
             }
 
             Session::forget([self::SESSION_KEY, self::SESSION_DATA_KEY]);
+            Cache::forget("period_model_{$sessionPeriodId}");
         }
 
         $defaultPeriodId = $this->getDefaultPeriodId();
@@ -91,7 +95,9 @@ class PeriodContextService
             return null;
         }
 
-        return Periode::with(['tahunAkademik', 'jenisKkn'])->find($defaultPeriodId);
+        return Cache::remember("period_model_{$defaultPeriodId}", 3600, function () use ($defaultPeriodId) {
+            return Periode::with(['tahunAkademik', 'jenisKkn'])->find($defaultPeriodId);
+        });
     }
 
     /**

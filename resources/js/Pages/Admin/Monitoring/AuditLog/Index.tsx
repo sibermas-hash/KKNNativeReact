@@ -23,37 +23,28 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Pagination } from '@/Components/ui';
+import { Pagination, Button } from '@/Components/ui';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
+import type { LucideIcon } from '@/types';
 
 interface AuditLog {
     id: number;
     description: string;
     subject_type: string | null;
-    causer?: { name: string; };
-    properties: Record<string, unknown>;
+    user?: { name: string; email: string };
+    severity: 'low' | 'medium' | 'high';
+    action: string;
+    ip_address?: string;
     created_at: string;
 }
 
 interface Props {
-    logs: {
-        data: AuditLog[];
-        meta: PaginationMeta;
-    };
+    logs: { data: AuditLog[]; meta: PaginationMeta };
     filters: { search?: string };
+    stats: { total: number; high_risk: number; unique_users: number; today_logs: number };
 }
 
-const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.1 } }
-};
-
-const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }
-};
-
-export default function AuditLogIndex({ logs, filters }: Props) {
+export default function AuditLogIndex({ logs, filters, stats }: Props) {
     const [search, setSearch] = useState(filters.search || '');
 
     const handleSearch = (e: React.FormEvent) => {
@@ -62,218 +53,154 @@ export default function AuditLogIndex({ logs, filters }: Props) {
     };
 
     return (
-        <AppLayout title="System Intelligence Tracker">
-            <Head title="Audit Log | SIKKKN" />
+        <AppLayout title="Audit Log">
+            <Head title="System Intelligence Tracker" />
 
-            <motion.div 
-                initial="hidden"
-                animate="visible"
-                variants={containerVariants}
-                className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16 font-sans"
-            >
-                {/* --- COMMAND HEADER --- */}
-                <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-4 text-emerald-600">
-                             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                             <span className="text-[10px] font-black uppercase tracking-[0.4em] leading-none">Security Node / Chronological Integrity Audit</span>
-                        </div>
-                        <h1 className="text-5xl lg:text-7xl font-black text-slate-900 tracking-tighter uppercase leading-[0.8] flex flex-col">
-                            System <span>Intelligence.</span>
-                        </h1>
-                        <p className="text-lg font-bold text-slate-400 tracking-tight leading-relaxed max-w-2xl uppercase italic opacity-80">
-                            Pemantauan aktivitas sistem menyeluruh. <br />
-                            <span className="text-slate-900 not-italic">Audit kronologis terhadap setiap mutasi data, interaksi operator, dan anomali eksekusi.</span>
-                        </p>
+            <div className="space-y-4 font-sans text-slate-900">
+                {/* --- HEADER --- */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-0.5">
+                        <h1 className="text-base font-black tracking-tight uppercase italic leading-none">System Intelligence Tracker</h1>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Security Node / Chronological Integrity Audit</p>
                     </div>
-
-                    <div className="flex flex-col items-end gap-3 shrink-0">
-                         <div className="h-24 px-10 bg-slate-900 rounded-[2.5rem] flex items-center gap-8 shadow-2xl relative overflow-hidden group">
-                              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:rotate-12 transition-transform">
-                                   <History size={80} strokeWidth={1} />
-                              </div>
-                              <div className="flex flex-col justify-center">
-                                   <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest leading-none mb-2">Total Transmissions</span>
-                                   <div className="flex items-baseline gap-3">
-                                        <span className="text-5xl font-black text-white tracking-tighter leading-none">{logs.meta.total.toLocaleString()}</span>
-                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Logs</span>
-                                   </div>
-                              </div>
+                    <div className="flex items-center gap-3">
+                         <div className="h-10 px-4 bg-slate-100 border border-slate-200 rounded-lg flex items-center gap-4 shadow-sm">
+                            <div className="flex items-center gap-2">
+                                <History size={14} className="text-slate-400" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 italic tabular-nums">{stats.total.toLocaleString()} Records</span>
+                            </div>
+                            <div className="h-4 w-px bg-slate-200" />
+                            <div className="flex items-center gap-2">
+                                <AlertTriangle size={14} className="text-amber-500" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 italic tabular-nums">{stats.high_risk} Risks</span>
+                            </div>
                          </div>
                     </div>
-                </motion.div>
+                </div>
 
-                {/* --- TELEMETRY BENTO MATRIX --- */}
-                <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <MetricCard label="Audit Pipeline" value="SECURE" icon={ShieldCheck} color="emerald" desc="End-to-end data tracing active" />
-                    <MetricCard label="Transmission Speed" value="NOMINAL" icon={Zap} color="emerald" desc="IOPS performance within limits" />
-                    <MetricCard label="Kernel Status" value="OPTIMIZED" icon={Cpu} color="emerald" desc="Middleware hooks authenticated" />
-                </motion.div>
+                {/* --- METRIC STRIPS --- */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <LogMetricStrip label="Users Active" value={stats.unique_users} icon={User} />
+                    <LogMetricStrip label="Daily Threads" value={stats.today_logs} icon={Activity} />
+                    <LogMetricStrip label="Kernel Status" value="OPTIMIZED" icon={Cpu} />
+                    <LogMetricStrip label="Pipeline" value="SECURE" icon={ShieldCheck} />
+                </div>
 
-                {/* --- COMMAND FILTER BAR --- */}
-                <motion.div variants={itemVariants} className="bg-white border border-slate-100 rounded-[3rem] p-3 shadow-sm flex flex-col md:flex-row items-center gap-4">
-                    <form onSubmit={handleSearch} className="flex-1 w-full relative group">
-                        <Search className="absolute left-8 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
-                        <input
-                            type="text"
-                            placeholder="CARI AKTIVITAS / AKTOR / SUBJECT IDENTIFIER..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="w-full h-16 pl-20 pr-8 bg-transparent text-sm font-black text-slate-900 border-none focus:ring-0 outline-none placeholder:text-slate-200 uppercase tracking-tight"
-                        />
-                    </form>
-                </motion.div>
-
-                {/* --- TACTICAL AUDIT LEDGER --- */}
-                <motion.section variants={itemVariants} className="bg-white border border-slate-100 rounded-[3.5rem] overflow-hidden shadow-2xl shadow-slate-200/50">
-                    <div className="px-12 py-8 bg-slate-950 flex flex-col md:flex-row md:items-center justify-between gap-8 border-b border-white/5">
-                         <div className="flex items-center gap-6">
-                              <div className="h-14 w-14 bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-500/20">
-                                   <Binary size={24} />
-                              </div>
-                              <div className="space-y-1">
-                                   <h3 className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">Audit stream</h3>
-                                   <p className="text-xl font-black text-white uppercase tracking-tighter italic leading-none">Intelligence Chronology Ledger</p>
-                              </div>
+                {/* --- AUDIT LEDGER --- */}
+                <section className="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-sm">
+                    <div className="p-3 bg-slate-50/20 border-b border-slate-50 flex items-center justify-between">
+                         <div className="flex items-center gap-3 font-sans">
+                            <Binary size={14} className="text-emerald-500" />
+                            <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest italic">Intelligence Chronology Stream</span>
                          </div>
+                         <form onSubmit={handleSearch} className="relative w-64 group">
+                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
+                             <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="SEARCH IDENTIFIER..." className="w-full h-8 pl-10 pr-3 bg-white border border-slate-100 rounded-lg text-[10px] font-bold focus:border-emerald-500 outline-none transition-all uppercase tracking-tight italic" />
+                         </form>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto min-h-[400px]">
                         <table className="w-full text-left">
-                            <thead className="bg-slate-50 border-b border-slate-100">
+                            <thead className="bg-slate-50 border-b border-slate-50 text-[9px] font-bold uppercase tracking-widest text-slate-400">
                                 <tr>
-                                    <th className="px-12 py-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Node</th>
-                                    <th className="px-12 py-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Activity Sequence</th>
-                                    <th className="px-12 py-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Security Causer</th>
-                                    <th className="px-12 py-8 text-[10px] font-black uppercase tracking-[0.4em] text-center">Subject Link</th>
-                                    <th className="px-12 py-8 text-[10px] font-black uppercase tracking-[0.4em] text-right">Execution Time</th>
+                                    <th className="px-6 py-4">Node</th>
+                                    <th className="px-6 py-4">Activity Sequence</th>
+                                    <th className="px-6 py-4">Security Causer</th>
+                                    <th className="px-6 py-4 text-center">Subject Link</th>
+                                    <th className="px-6 py-4 text-right">Execution Time</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
-                                {logs.data.length > 0 ? logs.data.map((log) => (
-                                    <tr key={log.id} className="hover:bg-emerald-50/20 transition-all group font-sans">
-                                        <td className="px-12 py-8">
-                                            <span className="text-[10px] font-black text-slate-200 font-mono tracking-tighter italic group-hover:text-emerald-500 transition-colors">
-                                                #{log.id}
-                                            </span>
+                                {logs.data.map((log) => (
+                                    <tr key={log.id} className={clsx("group transition-all", {
+                                        "bg-red-50/10": log.severity === 'high',
+                                        "bg-amber-50/10": log.severity === 'medium',
+                                        "hover:bg-slate-50/50": log.severity === 'low',
+                                    })}>
+                                        <td className="px-6 py-4">
+                                             <span className="text-[10px] font-black text-slate-200 font-mono italic">#{log.id}</span>
                                         </td>
-                                        <td className="px-12 py-8">
-                                            <div className="flex items-center gap-8">
-                                                <div className="h-16 w-16 bg-white border border-slate-100 text-slate-300 rounded-2xl flex items-center justify-center group-hover:bg-slate-900 group-hover:text-emerald-500 group-hover:border-slate-900 transition-all shadow-sm">
-                                                    <Activity size={22} strokeWidth={2.5} />
-                                                </div>
-                                                <div className="flex flex-col gap-2">
-                                                    <span className="text-sm font-black text-slate-900 tracking-tight leading-none group-hover:text-emerald-700 transition-colors uppercase italic max-w-md truncate">{log.description}</span>
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                                                        <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] font-mono italic">TRACE ID: {Math.random().toString(36).substring(7).toUpperCase()}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-12 py-8">
+                                        <td className="px-6 py-4">
                                             <div className="flex items-center gap-4">
-                                                <div className="h-11 w-11 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center font-black text-xs border border-slate-100 group-hover:bg-slate-900 group-hover:text-white transition-all italic shadow-sm">
-                                                    <User size={16} />
+                                                <div className={clsx(
+                                                    "h-10 w-10 border rounded-xl flex items-center justify-center transition-all shrink-0",
+                                                    {
+                                                        "bg-red-50 border-red-100 text-red-600 group-hover:bg-red-600 group-hover:text-white": log.severity === 'high',
+                                                        "bg-amber-50 border-amber-100 text-amber-600 group-hover:bg-amber-600 group-hover:text-white": log.severity === 'medium',
+                                                        "bg-emerald-50 border-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white": log.severity === 'low',
+                                                    }
+                                                )}>
+                                                    {log.severity === 'high' ? <AlertTriangle size={18} /> : <Activity size={18} />}
                                                 </div>
-                                                <div className="flex flex-col gap-0.5">
-                                                    <span className="text-[11px] font-black text-slate-800 uppercase italic leading-none">{log.causer?.name || 'SYSTEM_DAEMON'}</span>
-                                                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none pt-1">Authorized Actor</span>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[12px] font-bold text-slate-900 uppercase leading-none italic truncate max-w-[250px]">{log.description}</span>
+                                                    <span className={clsx("text-[8px] font-bold uppercase tracking-widest mt-1 opacity-60", {
+                                                        "text-red-500": log.severity === 'high',
+                                                        "text-amber-500": log.severity === 'medium',
+                                                        "text-slate-400": log.severity === 'low',
+                                                    })}>{log.action}</span>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-12 py-8 text-center">
-                                            <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-2xl group-hover:bg-slate-900 group-hover:text-emerald-500 transition-all shadow-sm">
-                                                <Fingerprint size={12} className="text-emerald-500" />
-                                                <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest group-hover:text-emerald-500 transition-colors">{log.subject_type?.split('\\').pop() || 'STATIC_EVENT'}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-12 py-8 text-right">
-                                            <div className="flex flex-col items-end gap-2">
-                                                <div className="flex items-center gap-2 text-slate-500">
-                                                    <Clock size={14} className="text-emerald-500" />
-                                                    <span className="text-[11px] font-black text-slate-900 uppercase tracking-tighter tabular-nums leading-none">{log.created_at}</span>
+                                        <td className="px-6 py-4">
+                                             <div className="flex items-center gap-3">
+                                                <div className="h-7 w-7 bg-slate-100 text-slate-400 rounded-md flex items-center justify-center text-[10px] font-black italic">{log.user?.name.charAt(0) || 'S'}</div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[11px] font-bold text-slate-700 uppercase leading-none italic">{log.user?.name || 'SYSTEM_DAEMON'}</span>
+                                                    <span className="text-[8px] font-bold text-emerald-500/60 uppercase tracking-widest leading-none mt-1">AUTHORIZED_ACTOR</span>
                                                 </div>
-                                                <Link 
-                                                    href={route('admin.audit-log.show', log.id)}
-                                                    className="h-9 px-4 bg-white border border-slate-100 text-slate-300 hover:text-emerald-600 hover:border-emerald-200 rounded-xl flex items-center justify-center text-[9px] font-black uppercase tracking-widest transition-all shadow-sm opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0"
-                                                >
-                                                    Inspect Packet
-                                                </Link>
-                                            </div>
+                                             </div>
                                         </td>
-                                    </tr>
-                                )) : (
-                                    <tr>
-                                        <td colSpan={5} className="px-12 py-40 text-center">
-                                            <div className="flex flex-col items-center gap-8 text-slate-200 opacity-50">
-                                                <Ghost size={100} strokeWidth={1} />
-                                                <div className="space-y-2">
-                                                    <p className="text-xl font-black uppercase tracking-[0.4em] italic leading-none">Security Silence</p>
-                                                    <p className="text-[10px] font-bold uppercase tracking-widest italic leading-none">NO ACTIVITY LOGS DETECTED IN CURRENT AUDIT BUFFER.</p>
-                                                </div>
-                                            </div>
+                                        <td className="px-6 py-4 text-center">
+                                             <span className="inline-flex h-6 items-center px-3 bg-white border border-slate-100 text-slate-400 rounded-md text-[9px] font-black uppercase tracking-widest italic">{log.subject_type?.split('\\').pop() || 'STATIC_EVENT'}</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                             <div className="flex flex-col items-end gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                                <span className="text-[10px] font-bold text-slate-900 font-mono tracking-tighter italic tabular-nums">{log.created_at}</span>
+                                                <Link href={route('admin.audit-log.show', log.id)} className="text-[8px] font-black text-emerald-600 uppercase tracking-widest underline decoration-emerald-200 hover:text-emerald-800">Inspect_Packet</Link>
+                                             </div>
                                         </td>
                                     </tr>
+                                ))}
+                                {logs.data.length === 0 && (
+                                    <tr><td colSpan={5} className="py-20 text-center text-[10px] font-bold text-slate-300 uppercase italic tracking-widest">Security silence. buffer null.</td></tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
 
-                    <div className="px-12 py-10 border-t border-slate-50 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-10">
-                        <div className="flex items-center gap-5">
-                             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Inventory Sequence Hal. {logs.meta?.current_page || 1} / {logs.meta?.last_page || 1} Transmitted</span>
-                        </div>
+                    <div className="px-6 py-4 border-t border-slate-50 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest italic leading-none">Transmission. Page {logs.meta?.current_page || 1} OF {logs.meta?.last_page || 1}</span>
                         {logs.meta && <Pagination meta={logs.meta} />}
                     </div>
-                </motion.section>
+                </section>
 
-                {/* --- FOOTER COMPLIANCE --- */}
-                <motion.div variants={itemVariants} className="bg-slate-900 rounded-[3.5rem] p-16 text-white relative overflow-hidden group/f shadow-2xl">
-                    <div className="absolute top-0 right-0 p-16 opacity-5 group-hover/f:rotate-12 transition-transform duration-1000">
-                         <ShieldCheck size={300} strokeWidth={1} />
-                    </div>
-                    <div className="flex flex-col lg:flex-row items-center justify-between gap-12 relative z-10">
-                        <div className="space-y-6 flex-1">
-                             <div className="flex items-center gap-5">
-                                  <Layers className="text-emerald-500" size={32} />
-                                  <div className="space-y-1">
-                                       <span className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-500">Security Layer</span>
-                                       <h3 className="text-3xl font-black tracking-tighter uppercase italic leading-none">Immutable Audit Record</h3>
-                                  </div>
-                             </div>
-                             <p className="text-lg font-bold text-slate-400 uppercase tracking-tight leading-relaxed max-w-2xl opacity-80 italic">
-                                Seluruh aktivitas sistem tercatat secara immutable. Audit log ini menjamin transparansi operasional dan akuntabilitas personil dalam mengelola metadata pendaftaran KKN.
-                             </p>
+                {/* COMPLIANCE OVERLAY */}
+                <div className="bg-emerald-600 rounded-xl p-8 text-white relative overflow-hidden shadow-xl shadow-emerald-100">
+                    <div className="absolute top-0 right-0 p-8 opacity-5 rotate-12"><ShieldCheck size={200} /></div>
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                        <div className="flex items-center gap-6">
+                            <div className="h-14 w-14 bg-white/20 rounded-xl flex items-center justify-center shrink-0 text-white"><Layers size={28} /></div>
+                            <div className="space-y-1">
+                                <h4 className="text-lg font-black uppercase tracking-tight leading-none italic text-white">Immutable Audit Architecture</h4>
+                                <p className="text-[10px] font-bold text-emerald-50 uppercase tracking-widest leading-relaxed max-w-xl">Seluruh aktivitas sistem tercatat secara immutable. Audit log menjamin transparansi operasional dan akuntabilitas personil dalam manajemen metadata KKN.</p>
+                            </div>
                         </div>
-                        <div className="flex flex-col items-center gap-3">
-                             <div className="h-2 w-20 bg-emerald-600 rounded-full animate-pulse" />
-                             <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em]">Audit Active</span>
-                        </div>
+                        <div className="flex items-center gap-2 text-emerald-500/40 italic"><Zap size={14} /><span className="text-[9px] font-black uppercase tracking-widest">Audit Chain Secured</span></div>
                     </div>
-                </motion.div>
-            </motion.div>
+                </div>
+            </div>
         </AppLayout>
     );
 }
 
-function MetricCard({ label, value, icon: Icon, color, desc }: { label: string, value: string, icon: any, color: 'emerald' | 'amber', desc: string }) {
+function LogMetricStrip({ label, value, icon: Icon }: { label: string, value: string | number, icon: LucideIcon }) {
     return (
-        <div className="bg-white border border-slate-100 rounded-[3rem] p-10 space-y-10 hover:shadow-2xl hover:shadow-slate-100 transition-all group overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-10 opacity-[0.03] group-hover:scale-110 transition-transform">
-                <Icon size={140} strokeWidth={1} />
-            </div>
-            <div className={clsx(
-                "h-16 w-16 rounded-2xl flex items-center justify-center transition-all group-hover:rotate-6",
-                color === 'emerald' ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
-            )}>
-                <Icon size={30} strokeWidth={2.5} />
-            </div>
-            <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2 italic leading-none">{label}</p>
-                <p className="text-4xl font-black tracking-tighter text-slate-900 group-hover:text-emerald-600 transition-colors uppercase italic leading-none">{value}</p>
-                <p className="mt-6 text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] italic">{desc}</p>
+        <div className="bg-white border border-slate-100 rounded-xl p-4 flex items-center gap-4 shadow-sm hover:border-emerald-200 transition-all group overflow-hidden relative">
+            <div className="h-8 w-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center shrink-0 group-hover:rotate-6 transition-transform shadow-sm"><Icon size={16} /></div>
+            <div className="flex flex-col relative z-20">
+                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</span>
+                <span className="text-xl font-black text-slate-900 uppercase italic tracking-tighter tabular-nums leading-none group-hover:text-emerald-600 transition-colors">{value}</span>
             </div>
         </div>
     );

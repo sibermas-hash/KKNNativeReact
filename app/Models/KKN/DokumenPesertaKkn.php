@@ -8,18 +8,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DokumenPesertaKkn extends Model
-{
-    use HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $connection = 'kkn';
-
-    protected $table = 'dokumen_peserta_kkn';
-
-    public $timestamps = false;
-
-    protected $fillable = [
-        'peserta_kkn_id',
+#[Connection('kkn')]
+#[Table('dokumen_peserta_kkn')]
+#[Fillable([
+    'peserta_kkn_id',
         'document_type',
         'file_path',
         'file_name',
@@ -27,12 +25,24 @@ class DokumenPesertaKkn extends Model
         'uploaded_at',
         'status',
         'notes',
-    ];
-
-    protected $casts = [
-        'file_size' => 'integer',
+])]
+#[Casts([
+    'file_size' => 'integer',
         'uploaded_at' => 'datetime',
-    ];
+])]
+class DokumenPesertaKkn extends Model
+{
+    use HasFactory;
+
+    
+
+    
+
+    public $timestamps = false;
+
+    
+
+    
 
     public function peserta(): BelongsTo
     {

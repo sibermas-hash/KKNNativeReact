@@ -62,16 +62,16 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  <div>
  <Link
  href={route('student.dashboard')}
- className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
+ className="inline-flex items-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:border-primary hover:text-primary"
  >
  Kembali ke dasbor
  </Link>
- <h1 className="mt-4 text-2xl font-semibold text-slate-900">Data Posko Kelompok</h1>
- <p className="mt-2 text-sm text-slate-500">
+ <h1 className="mt-4 text-2xl font-semibold text-gray-900">Data Posko Kelompok</h1>
+ <p className="mt-2 text-sm text-gray-500">
  {group.name} · {group.location?.full_name || group.location?.village_name || 'Lokasi belum tersedia'}
  </p>
  </div>
- <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+ <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-gray-700">
  {isLeader ? 'Ketua kelompok' : 'Anggota kelompok'}
  </span>
  </div>
@@ -80,19 +80,19 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  <div className="grid gap-6 lg:grid-cols-3">
  <section className="space-y-6 lg:col-span-1">
  <div className="rounded-lg border border-slate-200 bg-white p-6">
- <h2 className="text-lg font-semibold text-slate-900">Ringkasan Posko</h2>
+ <h2 className="text-lg font-semibold text-gray-900">Ringkasan Posko</h2>
  <dl className="mt-4 space-y-3">
  <div>
- <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">Latitude</dt>
- <dd className="mt-1 text-sm text-slate-800">{posko?.latitude ?? '-'}</dd>
+ <dt className="text-xs font-semibold uppercase tracking-wide text-gray-400">Latitude</dt>
+ <dd className="mt-1 text-sm text-gray-800">{posko?.latitude ?? '-'}</dd>
  </div>
  <div>
- <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">Longitude</dt>
- <dd className="mt-1 text-sm text-slate-800">{posko?.longitude ?? '-'}</dd>
+ <dt className="text-xs font-semibold uppercase tracking-wide text-gray-400">Longitude</dt>
+ <dd className="mt-1 text-sm text-gray-800">{posko?.longitude ?? '-'}</dd>
  </div>
  <div>
- <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">Diunggah oleh</dt>
- <dd className="mt-1 text-sm text-slate-800">{posko?.uploaded_by ?? '-'}</dd>
+ <dt className="text-xs font-semibold uppercase tracking-wide text-gray-400">Diunggah oleh</dt>
+ <dd className="mt-1 text-sm text-gray-800">{posko?.uploaded_by ?? '-'}</dd>
  </div>
  </dl>
 
@@ -101,7 +101,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  href={posko.gmaps_link}
  target="_blank"
  rel="noreferrer"
- className="mt-4 inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
+ className="mt-4 inline-flex items-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:border-primary hover:text-primary"
  >
  Buka Google Maps
  </a>
@@ -109,7 +109,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  </div>
 
  <div className="rounded-lg border border-slate-200 bg-white p-6">
- <h2 className="text-lg font-semibold text-slate-900">Foto Posko</h2>
+ <h2 className="text-lg font-semibold text-gray-900">Foto Posko</h2>
  {posko?.photo_url ? (
  <div className="mt-4 overflow-hidden rounded-lg border border-slate-200">
  <img
@@ -119,7 +119,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  />
  </div>
  ) : (
- <p className="mt-4 text-sm text-slate-500">Belum ada foto posko yang diunggah.</p>
+ <p className="mt-4 text-sm text-gray-500">Belum ada foto posko yang diunggah.</p>
  )}
  </div>
  </section>
@@ -127,7 +127,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  <section className="lg:col-span-2">
  {isLeader ? (
  <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-6">
- <h2 className="text-lg font-semibold text-slate-900">Perbarui Posko</h2>
+ <h2 className="text-lg font-semibold text-gray-900">Perbarui Posko</h2>
  <div className="mt-6 grid gap-6 md:grid-cols-2">
  <FormInput
  type="number"
@@ -156,26 +156,27 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  onChange={(event) => form.setData('gmaps_link', event.target.value)}
  error={form.errors.gmaps_link}
  />
- <p className="mt-2 text-xs text-slate-500">
+ <p className="mt-2 text-xs text-gray-500">
   Tautan harus berasal dari Google Maps, koordinat di dalam tautan harus sama dengan latitude serta longitude posko, dan titiknya harus masih berada di wilayah {group.location?.full_name || 'desa penempatan kelompok'}.
  </p>
  </div>
  <div className="md:col-span-2 space-y-2">
-   <label className="block text-sm font-medium text-slate-700">Foto posko</label>
+   <label htmlFor="posko-photo" className="block text-sm font-medium text-gray-700">Foto posko</label>
    <input
+     id="posko-photo"
      type="file"
      accept=".jpg,.jpeg,.png,.webp"
      onChange={handlePhotoChange}
-     className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary"
+     className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary"
    />
-   {selectedFileName && <p className="text-sm text-slate-500">{selectedFileName}</p>}
+   {selectedFileName && <p className="text-sm text-gray-500">{selectedFileName}</p>}
    {form.errors.photo && <p className="text-xs text-red-600">{form.errors.photo}</p>}
  </div> </div>
 
  <div className="mt-6 flex justify-end gap-3">
  <Link
  href={route('student.dashboard')}
- className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:border-primary hover:text-primary"
+ className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:border-primary hover:text-primary"
  >
  Batal
  </Link>

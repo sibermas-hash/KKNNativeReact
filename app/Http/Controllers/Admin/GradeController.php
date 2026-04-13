@@ -137,6 +137,14 @@ class GradeController extends Controller
                 );
 
                 $this->gradingService->calculateFinalGrade($score);
+
+                \App\Services\AuditService::log(
+                    'UPDATE_SCORE_ADMIN',
+                    "Admin mengupdate nilai mahasiswa ID {$row['student_id']}",
+                    $score,
+                    null,
+                    $row
+                );
             }
         });
 

@@ -24,7 +24,7 @@ class RegistrationService
     ) {}
 
     /**
-     * Execute registration with distributed locking and transaction safety.
+     * Execute student registration for a KKN period with distributed locking and transaction safety.
      *
      * FIX C12: The locking strategy is now:
      * 1. Acquire cache-based distributed lock (per student + period)
@@ -37,6 +37,16 @@ class RegistrationService
      *
      * The unique constraint on (mahasiswa_id, period_id) added in C14 provides
      * a final safety net against race conditions.
+     *
+     * @param  \App\Models\KKN\Mahasiswa  $mahasiswa  The student registering.
+     * @param  int  $periodeId  The KKN period ID.
+     * @param  int|null  $kelompokId  The group to join, or null for queue-only.
+     * @param  string|null  $notes  Optional registration notes.
+     * @param  int|null  $userId  The authenticated user ID (for ownership verification).
+     * @return \App\Models\KKN\PesertaKkn  The created or updated registration record.
+     *
+     * @throws \Illuminate\Auth\Access\AuthorizationException  If the user does not own this mahasiswa record.
+     * @throws \Illuminate\Validation\ValidationException  If validation or eligibility fails.
      */
     public function register(Mahasiswa $mahasiswa, int $periodeId, ?int $kelompokId, ?string $notes, ?int $userId = null): PesertaKkn
     {

@@ -35,7 +35,7 @@ export default function PhaseBlocked({ message, current_phase }: Props) {
 
                     {/* Title */}
                     <div className="space-y-3">
-                        <h1 className="text-2xl font-bold text-emerald-900 tracking-tight">
+                        <h1 className="text-2xl font-bold text-bg-emerald-100 tracking-tight">
                             Fitur Belum Tersedia
                         </h1>
                         <p className="text-sm text-emerald-700/70 leading-relaxed font-medium">

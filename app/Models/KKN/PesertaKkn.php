@@ -12,16 +12,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class PesertaKkn extends Model
-{
-    use HasFactory, SoftDeletes;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $connection = 'kkn';
-
-    protected $table = 'peserta_kkn';
-
-    protected $fillable = [
-        'mahasiswa_id',
+#[Connection('kkn')]
+#[Table('peserta_kkn')]
+#[Fillable([
+    'mahasiswa_id',
         'period_id',
         'kelompok_id',
         'status',
@@ -37,17 +37,27 @@ class PesertaKkn extends Model
         'revision_count',
         'joined_group_at',
         'group_locked_until',
-    ];
-
-    protected $casts = [
-        'registration_date' => 'datetime',
+])]
+#[Casts([
+    'registration_date' => 'datetime',
         'approved_at' => 'datetime',
         'last_rejected_at' => 'datetime',
         'resubmitted_at' => 'datetime',
         'revision_count' => 'integer',
         'joined_group_at' => 'datetime',
         'group_locked_until' => 'datetime',
-    ];
+])]
+class PesertaKkn extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    
+
+    
+
+    
+
+    
 
     public function mahasiswa(): BelongsTo
     {

@@ -221,7 +221,7 @@ class DatabaseSyncController extends Controller
 
         $log->update([
             'status' => 'pending',
-            'request_data' => $request->all(),
+            'request_data' => $request->except(['_token', 'password', 'key', 'secret']),
         ]);
 
         return back()->with('success', "Manual sync untuk {$entityType} sedang diproses.");

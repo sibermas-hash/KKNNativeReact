@@ -9,32 +9,34 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
+
+#[Connection('kkn')]
+#[Table('posko_kelompok')]
+#[Fillable([
+    'kelompok_id',
+    'latitude',
+    'longitude',
+    'gmaps_link',
+    'photo_path',
+    'photo_name',
+    'photo_size',
+    'uploaded_by',
+])]
+#[Casts([
+    'latitude' => 'decimal:8',
+    'longitude' => 'decimal:8',
+    'photo_size' => 'integer',
+])]
 class PoskoKelompok extends Model
 {
     use HasFactory;
 
-    protected $connection = 'kkn';
-
-    protected $table = 'posko_kelompok';
-
     protected $appends = ['photo_url'];
-
-    protected $fillable = [
-        'kelompok_id',
-        'latitude',
-        'longitude',
-        'gmaps_link',
-        'photo_path',
-        'photo_name',
-        'photo_size',
-        'uploaded_by',
-    ];
-
-    protected $casts = [
-        'latitude' => 'decimal:8',
-        'longitude' => 'decimal:8',
-        'photo_size' => 'integer',
-    ];
 
     public function kelompok(): BelongsTo
     {
@@ -46,8 +48,7 @@ class PoskoKelompok extends Model
         return $this->belongsTo(User::class, 'uploaded_by');
     }
 
-    public function getPhotoUrlAttribute(): ?string
-    {
-        return $this->photo_path ? route('student.posko.photo', $this) : null;
+    public string $photo_url {
+        get => $this->photo_path ? route('student.posko.photo', $this) : '';
     }
 }

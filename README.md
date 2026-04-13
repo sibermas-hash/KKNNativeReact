@@ -14,7 +14,7 @@ Aplikasi ini mengelola seluruh siklus KKN:
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Laravel 12 (PHP 8.4) + PostgreSQL 16 + Redis 7
+- **Backend**: Laravel 13 (PHP 8.4) + PostgreSQL 16 + Redis 7
 - **Frontend**: React 19 + TypeScript + Inertia.js + Tailwind CSS 4
 - **Mobile**: Capacitor 8 (Android)
 - **Testing**: Pest PHP + Vitest

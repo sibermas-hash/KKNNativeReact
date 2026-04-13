@@ -42,7 +42,7 @@ class KknRequirementService
         $eligibility = app(\App\Services\EligibilityService::class)->checkEligibility($mahasiswa, $periode->id);
 
         return array_map(function ($issue) {
-            return $issue['message'].($issue['reason'] ? " ({$issue['reason']})" : '');
+            return $issue['message'].(! empty($issue['reason']) ? " ({$issue['reason']})" : '');
         }, $eligibility['issues']);
     }
 

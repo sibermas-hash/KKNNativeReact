@@ -25,8 +25,8 @@ export default function DplGroupsIndex({ groups }: Props) {
 
  <div className="space-y-8">
  <section className="rounded-lg border border-slate-200 bg-white p-8">
- <h1 className="text-2xl font-semibold text-slate-900">Kelompok Bimbingan</h1>
- <p className="mt-2 text-sm text-slate-500">
+ <h1 className="text-2xl font-semibold text-gray-900">Kelompok Bimbingan</h1>
+ <p className="mt-2 text-sm text-gray-500">
  Daftar kelompok yang ditugaskan kepada Anda sebagai DPL.
  </p>
  </section>
@@ -35,29 +35,29 @@ export default function DplGroupsIndex({ groups }: Props) {
  <table className="min-w-full divide-y divide-slate-200">
  <thead className="bg-slate-50">
  <tr>
- <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Kode</th>
- <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Kelompok</th>
- <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Lokasi</th>
- <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Anggota</th>
- <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Laporan</th>
- <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Proker</th>
- <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Status</th>
- <th className="px-6 py-3 text-right text-xs font-semibold text-slate-500">Aksi</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">Kode</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">Kelompok</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">Lokasi</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">Anggota</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">Laporan</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">Proker</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">Status</th>
+ <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500">Aksi</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-slate-100">
  {groups.length > 0 ? (
  groups.map((group) => (
  <tr key={group.id}>
- <td className="px-6 py-4 text-sm font-semibold text-slate-900">{group.code}</td>
+ <td className="px-6 py-4 text-sm font-semibold text-gray-900">{group.code}</td>
  <td className="px-6 py-4">
- <p className="text-sm font-medium text-slate-800">{group.name}</p>
- <p className="text-xs text-slate-500">{group.period_name}</p>
+ <p className="text-sm font-medium text-gray-800">{group.name}</p>
+ <p className="text-xs text-gray-500">{group.period_name}</p>
  </td>
- <td className="px-6 py-4 text-sm text-slate-600">{group.village_name}</td>
- <td className="px-6 py-4 text-sm text-slate-600">{group.member_count}</td>
- <td className="px-6 py-4 text-sm text-slate-600">{group.daily_report_count}</td>
- <td className="px-6 py-4 text-sm text-slate-600">{group.work_program_count}</td>
+ <td className="px-6 py-4 text-sm text-gray-600">{group.village_name}</td>
+ <td className="px-6 py-4 text-sm text-gray-600">{group.member_count}</td>
+ <td className="px-6 py-4 text-sm text-gray-600">{group.daily_report_count}</td>
+ <td className="px-6 py-4 text-sm text-gray-600">{group.work_program_count}</td>
  <td className="px-6 py-4">
  <StatusBadge status={group.status} />
  </td>
@@ -68,7 +68,7 @@ export default function DplGroupsIndex({ groups }: Props) {
  ))
  ) : (
  <tr>
- <td colSpan={8} className="px-6 py-12 text-center text-sm text-slate-500">
+ <td colSpan={8} className="px-6 py-12 text-center text-sm text-gray-500">
  Belum ada kelompok yang ditugaskan.
  </td>
  </tr>

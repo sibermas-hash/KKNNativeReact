@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\Prodi;
+use App\Traits\HandlesPagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -15,6 +16,8 @@ use Inertia\Response;
 
 class ProdiController extends Controller
 {
+    use HandlesPagination;
+
     public function index(Request $request): Response
     {
         Gate::authorize('manage-master-data');
@@ -51,7 +54,7 @@ class ProdiController extends Controller
             ->first()?->master_synced_at;
 
         return Inertia::render('Admin/MasterData/Programs/Index', [
-            'programs' => $programs,
+            'programs' => $this->formatPaginator($programs),
             'faculties' => Fakultas::query()
                 ->orderBy('nama')
                 ->get()

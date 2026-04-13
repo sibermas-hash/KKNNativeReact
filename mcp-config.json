@@ -5,12 +5,12 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-postgres",
-        "postgresql://kknuinsaizu:kknuinsaizu2026@127.0.0.1:5433/kkn"
+        "postgresql://kknuinsaizu:kknuinsaizu2026@127.0.0.1:5435/kkn"
       ],
       "env": {
         "PGPASSWORD": "kknuinsaizu2026",
         "PGHOST": "127.0.0.1",
-        "PGPORT": "5433",
+        "PGPORT": "5435",
         "PGUSER": "kknuinsaizu",
         "PGDATABASE": "kkn",
         "PGSCHEMA": "public"

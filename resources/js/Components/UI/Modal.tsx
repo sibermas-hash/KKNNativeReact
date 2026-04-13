@@ -1,85 +1,70 @@
 import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { clsx } from 'clsx';
+import { X } from 'lucide-react';
 
 interface ModalProps {
     children: React.ReactNode;
     show: boolean;
-    maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | '7xl';
-    closeable?: boolean;
+    maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
     onClose: () => void;
     title?: string;
 }
 
-export default function Modal({
-    children,
-    show,
-    maxWidth = '2xl',
-    closeable = true,
-    onClose,
-    title,
-}: ModalProps) {
-    const close = () => {
-        if (closeable) {
-            onClose();
-        }
-    };
-
+export default function Modal({ children, show, maxWidth = 'md', onClose, title }: ModalProps) {
     const maxWidthClass = {
-        sm: 'sm:max-w-sm',
-        md: 'sm:max-w-md',
-        lg: 'sm:max-w-lg',
-        xl: 'sm:max-w-xl',
-        '2xl': 'sm:max-w-2xl',
-        '4xl': 'sm:max-w-4xl',
-        '7xl': 'sm:max-w-7xl',
+        sm: 'max-w-sm',
+        md: 'max-w-md',
+        lg: 'max-w-lg',
+        xl: 'max-w-xl',
+        '2xl': 'max-w-2xl',
     };
 
     return (
-        <Transition show={show} as={Fragment} leave="duration-200">
-            <Dialog
-                as="div"
-                id="modal"
-                className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
-                onClose={close}
-            >
+        <Transition show={show} as={Fragment}>
+            <Dialog onClose={onClose} className="relative z-50">
                 <Transition.Child
                     as={Fragment}
-                    enter="ease-out duration-300"
+                    enter="ease-out duration-200"
                     enterFrom="opacity-0"
                     enterTo="opacity-100"
-                    leave="ease-in duration-200"
+                    leave="ease-in duration-150"
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-emerald-950/20 backdrop-blur-sm" />
+                    <div className="fixed inset-0 bg-black/25" />
                 </Transition.Child>
 
                 <div className="fixed inset-0 overflow-y-auto">
                     <div className="flex min-h-full items-center justify-center p-4">
                         <Transition.Child
                             as={Fragment}
-                            enter="ease-out duration-300"
-                            enterFrom="opacity-0 translate-y-4 scale-95"
-                            enterTo="opacity-100 translate-y-0 scale-100"
-                            leave="ease-in duration-200"
-                            leaveFrom="opacity-100 translate-y-0 scale-100"
-                            leaveTo="opacity-0 translate-y-4 scale-95"
+                            enter="ease-out duration-200"
+                            enterFrom="opacity-0 scale-95"
+                            enterTo="opacity-100 scale-100"
+                            leave="ease-in duration-150"
+                            leaveFrom="opacity-100 scale-100"
+                            leaveTo="opacity-0 scale-95"
                         >
                             <Dialog.Panel
                                 className={clsx(
-                                    'w-full transform overflow-hidden bg-white border border-emerald-50 p-6 text-left align-middle shadow-2xl shadow-emerald-900/10 transition-all font-sans antialiased rounded-3xl',
-                                    maxWidthClass[maxWidth]
+                                    'w-full transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all',
+                                    maxWidthClass[maxWidth],
                                 )}
                             >
-                                {title && (
-                                    <Dialog.Title
-                                        as="h3"
-                                        className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-950 mb-6 border-b border-emerald-50 pb-4"
+                                <div className="flex items-center justify-between mb-4">
+                                    {title && (
+                                        <Dialog.Title className="text-lg font-semibold text-gray-900">
+                                            {title}
+                                        </Dialog.Title>
+                                    )}
+                                    <button
+                                        onClick={onClose}
+                                        className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
                                     >
-                                        {title}
-                                    </Dialog.Title>
-                                )}
+                                        <X className="h-5 w-5" />
+                                    </button>
+                                </div>
                                 {children}
                             </Dialog.Panel>
                         </Transition.Child>

@@ -45,7 +45,7 @@ export default function Announcements({ announcements }: Props) {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-6xl lg:text-[100px] font-bold tracking-tighter text-slate-900 leading-[0.85] uppercase"
+                            className="text-6xl lg:text-[100px] font-bold tracking-tighter text-gray-900 leading-[0.85] uppercase"
                         >
                             Warta <br /> 
                             <span className="text-emerald-500   font-medium">utama.</span>
@@ -55,7 +55,7 @@ export default function Announcements({ announcements }: Props) {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="text-xl lg:text-3xl text-slate-400 font-bold max-w-2xl leading-relaxed  border-l-8 border-emerald-500 pl-12"
+                            className="text-xl lg:text-3xl text-gray-400 font-bold max-w-2xl leading-relaxed  border-l-8 border-emerald-500 pl-12"
                         >
                             Informasi terkini mengenai pelaksanaan KKN, pendaftaran periodik, dan pengumuman resmi LPPM UIN SAIZU.
                         </motion.p>
@@ -74,10 +74,10 @@ export default function Announcements({ announcements }: Props) {
                             >
                                 <div className="flex flex-col lg:flex-row gap-16 lg:items-center">
                                     {/* Date Display */}
-                                    <div className="flex flex-col items-center justify-center p-10 bg-slate-900 rounded-[3rem] min-w-[180px] text-white shadow-soft group-hover:bg-emerald-600 transition-colors duration-500">
+                                    <div className="flex flex-col items-center justify-center p-10 bg-emerald-50 rounded-[3rem] min-w-[180px] text-bg-emerald-100 shadow-sm group-hover:bg-emerald-100 transition-colors duration-500">
                                         <Calendar className="w-8 h-8 mb-6 text-emerald-400" />
                                         <span className="text-6xl font-bold tracking-tighter leading-none ">{dayjs(news.published_at).format('DD')}</span>
-                                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-4 group-hover:text-emerald-100 transition-colors">
+                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-4 group-hover:text-emerald-100 transition-colors">
                                             {dayjs(news.published_at).format('MMM YYYY')}
                                         </span>
                                     </div>
@@ -94,10 +94,10 @@ export default function Announcements({ announcements }: Props) {
                                         </div>
 
                                         <div className="space-y-6">
-                                            <h4 className="text-3xl lg:text-5xl font-bold text-slate-950 group-hover:text-emerald-600 transition-colors leading-none uppercase  tracking-tighter">
+                                            <h4 className="text-3xl lg:text-5xl font-bold text-gray-950 group-hover:text-emerald-600 transition-colors leading-none uppercase  tracking-tighter">
                                                 {news.title}
                                             </h4>
-                                            <p className="text-slate-500 text-lg lg:text-2xl leading-relaxed font-bold  line-clamp-3 opacity-80">
+                                            <p className="text-gray-500 text-lg lg:text-2xl leading-relaxed font-bold  line-clamp-3 opacity-80">
                                                 {news.content}
                                             </p>
                                         </div>
@@ -122,7 +122,7 @@ export default function Announcements({ announcements }: Props) {
                     {announcements.data.length === 0 && (
                         <div className="py-40 text-center bg-white rounded-[5rem] border border-dashed border-slate-200">
                             <BookOpen size={80} className="text-slate-200 mx-auto mb-10" />
-                            <p className="text-slate-400 font-bold  text-2xl uppercase tracking-tighter">Belum ada warta yang dipublikasikan.</p>
+                            <p className="text-gray-400 font-bold  text-2xl uppercase tracking-tighter">Belum ada warta yang dipublikasikan.</p>
                         </div>
                     )}
                 </div>

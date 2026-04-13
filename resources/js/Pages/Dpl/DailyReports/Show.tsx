@@ -61,6 +61,14 @@ interface ReportDetail {
         };
     };
     file_kegiatan: Attachment[];
+    ai_summary?: string;
+    ai_analysis?: {
+        summary: string;
+        abcd_compliance: number;
+        quality_score: number;
+        feedback: string;
+        tags: string[];
+    };
 }
 
 interface Props {
@@ -110,13 +118,13 @@ export default function DplDailyReportShow({ report }: Props) {
                     <div className="flex items-center gap-6">
                         <Link 
                             href="/dpl/laporan-harian" 
-                            className="h-12 w-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm"
+                            className="h-12 w-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-gray-400 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm"
                         >
                             <ArrowLeft size={22} strokeWidth={2.5} />
                         </Link>
                         <div>
-                            <h1 className="text-3xl font-black text-slate-900 tracking-tight">{report.title}</h1>
-                            <p className="text-sm text-slate-400 font-bold mt-1">
+                            <h1 className="text-3xl font-black text-gray-900 tracking-tight">{report.title}</h1>
+                            <p className="text-sm text-gray-400 font-bold mt-1">
                                 <span className="text-slate-300">#{String(report.id).padStart(4, '0')}</span>
                                 <span className="mx-3 text-slate-200">•</span>
                                 {report.date}
@@ -134,14 +142,14 @@ export default function DplDailyReportShow({ report }: Props) {
                             {report.student.name.charAt(0)}
                         </div>
                         <div>
-                            <p className="text-lg font-black text-slate-900">{report.student.name}</p>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{report.student.nim}</p>
+                            <p className="text-lg font-black text-gray-900">{report.student.name}</p>
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{report.student.nim}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100">
-                            <MapPin size={14} className="text-slate-400" />
-                            <span className="text-xs font-bold text-slate-600">{report.group.name}</span>
+                            <MapPin size={14} className="text-gray-400" />
+                            <span className="text-xs font-bold text-gray-600">{report.group.name}</span>
                         </div>
                         {report.group.location?.village_name && (
                             <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-xl border border-emerald-100">
@@ -159,19 +167,19 @@ export default function DplDailyReportShow({ report }: Props) {
                         <section className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
                             <div className="px-8 py-5 border-b border-slate-100 flex items-center gap-3">
                                 <FileText size={18} className="text-emerald-500" />
-                                <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest">Deskripsi Kegiatan</h2>
+                                <h2 className="text-sm font-black text-gray-900 uppercase tracking-widest">Deskripsi Kegiatan</h2>
                             </div>
                             <div className="p-8">
-                                <p className="text-base text-slate-700 leading-[1.9] whitespace-pre-line font-medium">
+                                <p className="text-base text-gray-700 leading-[1.9] whitespace-pre-line font-medium">
                                     {report.activity}
                                 </p>
                                 {report.output && (
                                     <div className="mt-8 pt-6 border-t border-slate-100">
                                         <div className="flex items-center gap-2 mb-3">
                                             <Target size={14} className="text-emerald-500" />
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Target & Output</span>
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Target & Output</span>
                                         </div>
-                                        <p className="text-sm text-slate-500 leading-relaxed bg-slate-50 p-6 rounded-2xl border border-slate-100 whitespace-pre-line">
+                                        <p className="text-sm text-gray-500 leading-relaxed bg-slate-50 p-6 rounded-2xl border border-slate-100 whitespace-pre-line">
                                             {report.output}
                                         </p>
                                     </div>
@@ -184,7 +192,7 @@ export default function DplDailyReportShow({ report }: Props) {
                             <div className="px-8 py-5 border-b border-slate-100 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <Camera size={18} className="text-emerald-500" />
-                                    <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest">Bukti Dokumentasi</h2>
+                                    <h2 className="text-sm font-black text-gray-900 uppercase tracking-widest">Bukti Dokumentasi</h2>
                                 </div>
                                 <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
                                     {report.file_kegiatan.length} Lampiran
@@ -235,7 +243,7 @@ export default function DplDailyReportShow({ report }: Props) {
                                 {/* Non-Image Files */}
                                 {otherFiles.length > 0 && (
                                     <div className="mt-6 space-y-3">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Berkas Lainnya</p>
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Berkas Lainnya</p>
                                         {otherFiles.map((file) => (
                                             <a
                                                 key={file.id}
@@ -243,8 +251,8 @@ export default function DplDailyReportShow({ report }: Props) {
                                                 className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50 transition-all group"
                                             >
                                                 <div className="flex items-center gap-3">
-                                                    <FileText size={18} className="text-slate-400 group-hover:text-emerald-500" />
-                                                    <span className="text-xs font-bold text-slate-700 truncate max-w-[200px]">{file.file_name}</span>
+                                                    <FileText size={18} className="text-gray-400 group-hover:text-emerald-500" />
+                                                    <span className="text-xs font-bold text-gray-700 truncate max-w-[200px]">{file.file_name}</span>
                                                 </div>
                                                 <Download size={14} className="text-slate-300 group-hover:text-emerald-500" />
                                             </a>
@@ -270,11 +278,79 @@ export default function DplDailyReportShow({ report }: Props) {
 
                     {/* Sidebar Column */}
                     <div className="space-y-8">
+                        {/* AI Intelligence Audit Panel */}
+                        {report.ai_analysis && (
+                            <section className="bg-white rounded-[2rem] border-2 border-emerald-100 shadow-xl shadow-emerald-500/5 overflow-hidden relative group">
+                                <div className="absolute top-0 right-0 p-8 opacity-5 -mr-10 -mt-10 group-hover:scale-110 transition-transform duration-700">
+                                    <ShieldCheck size={160} />
+                                </div>
+                                <div className="bg-emerald-50 px-6 py-5 flex items-center gap-4 border-b border-emerald-100">
+                                    <div className="h-10 w-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-200">
+                                        <LayoutGrid size={20} strokeWidth={3} />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-emerald-800">Automated Audit</p>
+                                        <p className="text-sm font-black text-emerald-900 uppercase tracking-tighter italic">AI Assistant Review</p>
+                                    </div>
+                                    <div className="ml-auto">
+                                        <div className="h-8 w-8 rounded-full bg-emerald-600 text-white flex items-center justify-center animate-pulse shadow-lg shadow-emerald-200">
+                                            <div className="w-1 h-1 rounded-full bg-white animate-bounce" />
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="p-8 space-y-6 relative">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <span className="block text-[9px] font-black text-gray-400 uppercase tracking-widest">ABCD Compliance</span>
+                                            <div className="flex items-end gap-2 text-3xl font-black text-gray-900 leading-none tracking-tighter">
+                                                {report.ai_analysis.abcd_compliance}
+                                                <span className="text-sm text-slate-300">/10</span>
+                                            </div>
+                                            <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100 mt-2">
+                                                <div 
+                                                    className="h-full bg-emerald-500 rounded-full transition-all duration-1000" 
+                                                    style={{ width: `${report.ai_analysis.abcd_compliance * 10}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="block text-[9px] font-black text-gray-400 uppercase tracking-widest">Quality Score</span>
+                                            <div className="flex items-end gap-2 text-3xl font-black text-gray-900 leading-none tracking-tighter">
+                                                {report.ai_analysis.quality_score}
+                                                <span className="text-sm text-slate-300">/10</span>
+                                            </div>
+                                            <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100 mt-2">
+                                                <div 
+                                                    className="h-full bg-emerald-600 rounded-full transition-all duration-1000" 
+                                                    style={{ width: `${report.ai_analysis.quality_score * 10}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <span className="block text-[9px] font-black text-gray-400 uppercase tracking-widest">AI Feedback</span>
+                                        <p className="text-xs font-bold text-gray-600 leading-relaxed italic bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                            "{report.ai_analysis.feedback}"
+                                        </p>
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2">
+                                        {report.ai_analysis.tags.map((tag, idx) => (
+                                            <span key={idx} className="px-2 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase rounded-lg border border-emerald-100 transition-colors hover:bg-emerald-100">
+                                                #{tag}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+                        )}
                         {/* Geotagging Section */}
                         <section className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
                             <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
                                 <Navigation size={16} className="text-emerald-500" />
-                                <h2 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Verifikasi Lokasi</h2>
+                                <h2 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Verifikasi Lokasi</h2>
                             </div>
                             <div className="p-6 space-y-4">
                                 {hasCoordinates ? (
@@ -288,16 +364,16 @@ export default function DplDailyReportShow({ report }: Props) {
                                         <div className="grid grid-cols-2 gap-3">
                                             <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
                                                 <span className="block text-[9px] font-bold text-slate-300 uppercase tracking-widest mb-1">Lat</span>
-                                                <span className="text-xs font-bold text-slate-900 tabular-nums">{Number(report.latitude).toFixed(6)}</span>
+                                                <span className="text-xs font-bold text-gray-900 tabular-nums">{Number(report.latitude).toFixed(6)}</span>
                                             </div>
                                             <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
                                                 <span className="block text-[9px] font-bold text-slate-300 uppercase tracking-widest mb-1">Lng</span>
-                                                <span className="text-xs font-bold text-slate-900 tabular-nums">{Number(report.longitude).toFixed(6)}</span>
+                                                <span className="text-xs font-bold text-gray-900 tabular-nums">{Number(report.longitude).toFixed(6)}</span>
                                             </div>
                                         </div>
                                         {report.gps?.accuracy && (
                                             <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-                                                <span className="text-[9px] font-bold text-slate-400 uppercase">Akurasi GPS</span>
+                                                <span className="text-[9px] font-bold text-gray-400 uppercase">Akurasi GPS</span>
                                                 <span className={clsx(
                                                     "text-xs font-black tabular-nums",
                                                     report.gps.accuracy <= 50 ? "text-emerald-600" : report.gps.accuracy <= 150 ? "text-amber-600" : "text-rose-600"
@@ -314,7 +390,7 @@ export default function DplDailyReportShow({ report }: Props) {
                                                     : "bg-rose-50 border-rose-100"
                                             )}>
                                                 <div>
-                                                    <span className="block text-[9px] font-bold uppercase tracking-widest text-slate-400">Jarak dari {report.gps.reference_label ?? 'Posko'}</span>
+                                                    <span className="block text-[9px] font-bold uppercase tracking-widest text-gray-400">Jarak dari {report.gps.reference_label ?? 'Posko'}</span>
                                                     <span className={clsx(
                                                         "text-lg font-black tabular-nums",
                                                         report.gps.distance_to_reference_meters <= 5000 ? "text-emerald-700" : "text-rose-700"
@@ -335,7 +411,7 @@ export default function DplDailyReportShow({ report }: Props) {
                                             href={`https://www.google.com/maps?q=${report.latitude},${report.longitude}`}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="w-full h-10 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-600 transition-all"
+                                            className="w-full h-10 rounded-xl bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-600 transition-all"
                                         >
                                             Buka di Google Maps <ExternalLink size={12} />
                                         </a>
@@ -359,7 +435,7 @@ export default function DplDailyReportShow({ report }: Props) {
                                 </div>
                             </div>
                             <div className="p-6 space-y-5">
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-xs font-medium text-slate-500 leading-relaxed">
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-xs font-medium text-gray-500 leading-relaxed">
                                     {canReview 
                                         ? "Laporan ini menunggu keputusan Anda. Silahkan periksa narasi, bukti foto, dan lokasi GPS sebelum mengambil tindakan."
                                         : "Laporan ini sudah difinalisasi dan tidak dapat diubah lagi."
@@ -385,7 +461,7 @@ export default function DplDailyReportShow({ report }: Props) {
                                     className="space-y-4"
                                 >
                                     <div>
-                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
                                             Catatan Revisi
                                         </label>
                                         <textarea

@@ -31,12 +31,12 @@ export default function VisualDiff({ oldValues, newValues }: Props) {
  ).filter((key) => key !== 'updated_at' && key !== 'id');
 
  if (keys.length === 0) {
- return <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Tidak ada perubahan yang tercatat.</div>;
+ return <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-gray-500">Tidak ada perubahan yang tercatat.</div>;
  }
 
  return (
  <div className="space-y-3">
- <div className="grid grid-cols-12 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+ <div className="grid grid-cols-12 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
  <div className="col-span-4">Field</div>
  <div className="col-span-4">Sebelum</div>
  <div className="col-span-4">Sesudah</div>
@@ -57,7 +57,7 @@ export default function VisualDiff({ oldValues, newValues }: Props) {
  key={key}
  className="grid grid-cols-12 items-start gap-4 rounded-lg border border-slate-200 bg-white px-4 py-3"
  >
- <div className="col-span-4 text-sm font-medium text-slate-700">{formatLabel(key)}</div>
+ <div className="col-span-4 text-sm font-medium text-gray-700">{formatLabel(key)}</div>
  <div className="col-span-4">
  <span className="inline-flex rounded-md bg-rose-50 px-2 py-1 text-xs text-rose-700">
  {before === undefined ? 'Tidak ada' : formatValue(before)}

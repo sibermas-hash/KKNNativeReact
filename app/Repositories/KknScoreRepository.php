@@ -15,7 +15,7 @@ class KknScoreRepository
      */
     public function getRekapNilai(int $periodeId, array $filters = []): Collection
     {
-        return DB::table('mahasiswa as s')
+        return DB::connection('kkn')->table('mahasiswa as s')
             ->join('users as u', 's.user_id', '=', 'u.id')
             ->join('peserta_kkn as r', 's.id', '=', 'r.mahasiswa_id')
             ->join('kelompok_kkn as g', 'r.kelompok_id', '=', 'g.id')

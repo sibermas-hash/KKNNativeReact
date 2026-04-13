@@ -10,51 +10,31 @@ use Illuminate\Support\Facades\DB;
 class YudisiumService
 {
     /**
-     * Hitung dan proses yudisium untuk semua mahasiswa di periode tertentu
+     * Hitung statistik yudisium untuk semua mahasiswa di periode tertentu.
+     * SURGICAL OPTIMIZATION: Use database aggregation instead of loading objects into memory.
      */
     public function prosesYudisiumPeriode(int $periodeId): array
     {
-        return DB::transaction(function () use ($periodeId) {
-            // FIX C13: Use correct column name 'period_id' via relationship
-            $nilaiFinalized = NilaiKkn::whereHas('kelompok', function ($query) use ($periodeId) {
-                $query->where('period_id', $periodeId);
-            })
-                ->where('is_finalized', true)
-                ->with(['mahasiswa'])
-                ->get();
+        $baseQuery = NilaiKkn::whereHas('kelompok', function ($query) use ($periodeId) {
+            $query->where('period_id', $periodeId);
+        })->where('is_finalized', true);
 
-            $lulus = 0;
-            $tidakLulus = 0;
-            $pending = 0;
-
-            foreach ($nilaiFinalized as $nilai) {
-                $result = $this->tentukanStatusKelulusan($nilai);
-
-                match ($result) {
-                    'lulus' => $lulus++,
-                    'tidak_lulus' => $tidakLulus++,
-                    default => $pending++
-                };
-            }
-
-            return [
-                'total' => $nilaiFinalized->count(),
-                'lulus' => $lulus,
-                'tidak_lulus' => $tidakLulus,
-                'pending' => $pending,
-            ];
-        });
+        return [
+            'total' => (clone $baseQuery)->count(),
+            'lulus' => (clone $baseQuery)->where('total_score', '>=', 56)->count(),
+            'tidak_lulus' => (clone $baseQuery)->where('total_score', '<', 56)->whereNotNull('total_score')->count(),
+            'pending' => (clone $baseQuery)->whereNull('total_score')->count(),
+        ];
     }
 
     /**
-     * Tentukan status kelulusan berdasarkan nilai akhir
+     * Tentukan status kelulusan berdasarkan nilai akhir.
      */
     public function tentukanStatusKelulusan(NilaiKkn $nilai): string
     {
         // Nilai minimum lulus: C (skor >= 56)
         $minSkorLulus = 56;
 
-        // FIX: Use correct column name 'total_score' (not 'final_score')
         if ($nilai->total_score === null) {
             return 'pending';
         }
@@ -67,38 +47,38 @@ class YudisiumService
     }
 
     /**
-     * Generate rekap yudisium untuk sidang
+     * Generate rekap yudisium untuk sidang.
+     * SURGICAL OPTIMIZATION: Use database aggregation for counts and cursor for mapping.
      */
     public function generateRekapYudisium(int $periodeId): array
     {
-        // FIX C13: Use correct column name 'period_id' via relationship
-        $nilaiPerMahasiswa = NilaiKkn::whereHas('kelompok', function ($query) use ($periodeId) {
+        $baseQuery = NilaiKkn::whereHas('kelompok', function ($query) use ($periodeId) {
             $query->where('period_id', $periodeId);
-        })
-            ->where('is_finalized', true)
-            ->with(['mahasiswa.prodi.fakultas', 'kelompok'])
-            ->get()
-            ->map(function ($nilai) {
-                $status = $this->tentukanStatusKelulusan($nilai);
+        })->where('is_finalized', true);
 
+        $stats = $this->prosesYudisiumPeriode($periodeId);
+
+        $mahasiswa = $baseQuery->with(['mahasiswa.prodi.fakultas', 'kelompok'])
+            ->cursor()
+            ->map(function ($nilai) {
                 return [
                     'nim' => $nilai->mahasiswa?->nim,
                     'nama' => $nilai->mahasiswa?->nama,
                     'fakultas' => $nilai->mahasiswa?->prodi?->fakultas?->nama,
                     'prodi' => $nilai->mahasiswa?->prodi?->nama,
                     'kelompok' => $nilai->kelompok?->nama_kelompok,
-                    // FIX: Use correct column name 'total_score' (not 'final_score')
                     'skor_akhir' => $nilai->total_score,
                     'nilai_huruf' => $nilai->letter_grade,
-                    'status' => $status,
+                    'status' => $this->tentukanStatusKelulusan($nilai),
                 ];
-            });
+            })
+            ->toArray();
 
         return [
-            'total' => $nilaiPerMahasiswa->count(),
-            'lulus' => $nilaiPerMahasiswa->where('status', 'lulus')->count(),
-            'tidak_lulus' => $nilaiPerMahasiswa->where('status', 'tidak_lulus')->count(),
-            'mahasiswa' => $nilaiPerMahasiswa->values()->toArray(),
+            'total' => $stats['total'],
+            'lulus' => $stats['lulus'],
+            'tidak_lulus' => $stats['tidak_lulus'],
+            'mahasiswa' => $mahasiswa,
         ];
     }
 }

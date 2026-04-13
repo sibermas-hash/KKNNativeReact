@@ -58,61 +58,106 @@ class RegistrationApprovalService
                 'approved_at' => now(),
                 'approved_by' => $approvedBy,
             ]);
+
+            \App\Services\AuditService::log(
+                'REGISTRATION_APPROVAL',
+                "Pendaftaran disetujui untuk Mahasiswa ID {$registration->mahasiswa_id}",
+                $registration
+            );
         });
     }
 
     /**
-     * Bulk approve registrations.
+     * Bulk approve registrations with batch stability.
      */
     public function bulkApprove(array $ids, int $approvedBy, bool $isFacultyAdmin = false, ?int $facultyId = null): int
     {
-        return DB::transaction(function () use ($ids, $approvedBy, $isFacultyAdmin, $facultyId) {
-            $registrations = PesertaKkn::query()
-                ->with('mahasiswa')
-                ->whereIn('id', $ids)
-                ->where('status', 'pending')
-                ->when($isFacultyAdmin, function ($query) use ($facultyId) {
-                    $query->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
-                })
-                ->lockForUpdate()
-                ->get();
+        $totalCount = 0;
+        $batchSize = 25; // Smaller batches for high-concurrency environments
 
-            foreach ($registrations as $registration) {
-                $this->prepareForApproval($registration);
-            }
+        $idBatches = array_chunk($ids, $batchSize);
 
-            foreach ($registrations as $registration) {
-                $registration->update([
-                    'status' => 'approved',
-                    'approved_at' => now(),
-                    'approved_by' => $approvedBy,
-                ]);
-            }
+        foreach ($idBatches as $batchIds) {
+            $batchCount = DB::transaction(function () use ($batchIds, $approvedBy, $isFacultyAdmin, $facultyId) {
+                $registrations = PesertaKkn::query()
+                    ->with(['mahasiswa', 'periode'])
+                    ->whereIn('id', $batchIds)
+                    ->where('status', 'pending')
+                    ->when($isFacultyAdmin, function ($query) use ($facultyId) {
+                        $query->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
+                    })
+                    ->lockForUpdate()
+                    ->get();
 
-            return $registrations->count();
-        });
+                foreach ($registrations as $registration) {
+                    // This handles auto-placement if enabled
+                    $prepared = $this->prepareForApproval($registration);
+
+                    $prepared->update([
+                        'status' => 'approved',
+                        'approved_at' => now(),
+                        'approved_by' => $approvedBy,
+                    ]);
+
+                    \App\Services\AuditService::log(
+                        'BULK_REGISTRATION_APPROVAL',
+                        "Pendaftaran disetujui secara massal untuk Mahasiswa ID {$registration->mahasiswa_id}",
+                        $registration
+                    );
+                }
+
+                return $registrations->count();
+            });
+
+            $totalCount += $batchCount;
+        }
+
+        return $totalCount;
     }
 
     /**
-     * Bulk reject registrations.
+     * Bulk reject registrations with batch stability.
      */
     public function bulkReject(array $ids, string $reason, int $rejectedBy, bool $isFacultyAdmin = false, ?int $facultyId = null): int
     {
-        return DB::transaction(function () use ($ids, $reason, $rejectedBy, $isFacultyAdmin, $facultyId) {
-            return PesertaKkn::whereIn('id', $ids)
-                ->where('status', 'pending')
-                ->when($isFacultyAdmin, function ($query) use ($facultyId) {
-                    $query->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
-                })
-                ->lockForUpdate()
-                ->update([
-                    'status' => 'rejected',
-                    'rejection_reason' => $reason,
-                    'last_rejected_at' => now(),
-                    'last_rejected_by' => $rejectedBy,
-                    'updated_at' => now(),
-                ]);
-        });
+        $totalCount = 0;
+        $batchSize = 50;
+
+        $idBatches = array_chunk($ids, $batchSize);
+
+        foreach ($idBatches as $batchIds) {
+            $batchCount = DB::transaction(function () use ($batchIds, $reason, $rejectedBy, $isFacultyAdmin, $facultyId) {
+                $registrations = PesertaKkn::query()
+                    ->whereIn('id', $batchIds)
+                    ->where('status', 'pending')
+                    ->when($isFacultyAdmin, function ($query) use ($facultyId) {
+                        $query->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
+                    })
+                    ->lockForUpdate()
+                    ->get();
+
+                foreach ($registrations as $registration) {
+                    $registration->update([
+                        'status' => 'rejected',
+                        'rejection_reason' => $reason,
+                        'last_rejected_at' => now(),
+                        'last_rejected_by' => $rejectedBy,
+                    ]);
+
+                    \App\Services\AuditService::log(
+                        'BULK_REGISTRATION_REJECTION',
+                        "Pendaftaran ditolak secara massal. Alasan: {$reason}",
+                        $registration
+                    );
+                }
+
+                return $registrations->count();
+            });
+
+            $totalCount += $batchCount;
+        }
+
+        return $totalCount;
     }
 
     /**
@@ -165,6 +210,12 @@ class RegistrationApprovalService
             );
 
             $registration->update(['role' => $role]);
+
+            \App\Services\AuditService::log(
+                'GROUP_ASSIGNMENT',
+                "Mahasiswa dipindahkan ke kelompok ID {$kelompokId} sebagai {$role}",
+                $registration
+            );
         });
     }
 
@@ -193,6 +244,12 @@ class RegistrationApprovalService
 
             // Set this student as 'Ketua'
             $registration->update(['role' => 'Ketua']);
+
+            \App\Services\AuditService::log(
+                'GROUP_LEADER_ASSIGN',
+                "Mahasiswa diangkat menjadi Ketua Kelompok",
+                $registration
+            );
         });
     }
 

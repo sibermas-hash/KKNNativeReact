@@ -24,9 +24,9 @@ class GenerateBulkCertificatesJob implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
+        protected string $userId,
         protected int $periodeId,
         protected ?int $facultyId = null,
-        protected string $userId
     ) {}
 
     /**

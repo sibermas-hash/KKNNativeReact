@@ -13,15 +13,18 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class BpjsParticipantExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithTitle, ShouldAutoSize
+class BpjsParticipantExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithTitle, ShouldAutoSize
 {
-    public function __construct(
-        private readonly Collection $rows
-    ) {}
+    private $queryBuilder;
 
-    public function collection(): Collection
+    public function __construct($query)
     {
-        return $this->rows;
+        $this->queryBuilder = $query;
+    }
+
+    public function query()
+    {
+        return $this->queryBuilder;
     }
 
     public function title(): string

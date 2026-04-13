@@ -30,6 +30,11 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
         $mahasiswa = $user->mahasiswa;
+
+        // LARAVEL 13 OPTIMIZATION: Extend hot cache lifetime on access
+        \Illuminate\Support\Facades\Cache::touch('default_period_id', 3600);
+        \Illuminate\Support\Facades\Cache::touch('available_periods', 3600);
+
         $activePeriodId = $periodContextService->getActivePeriodId() ?? $periodContextService->getDefaultPeriodId();
 
         $registrationModel = null;
@@ -54,38 +59,39 @@ class DashboardController extends Controller
 
         $activeGroupId = $registrationModel?->kelompok_id;
 
-        $dailyReportCount = ($mahasiswa && $activeGroupId)
-            ? KegiatanKkn::query()
-                ->where('mahasiswa_id', $mahasiswa->id)
-                ->where('kelompok_id', $activeGroupId)
-                ->count()
-            : 0;
+        $mahasiswaId = $mahasiswa?->id;
 
-        // Track work programs and current stage (ABCD)
-        $workProgram = $registrationModel?->kelompok_id
-            ? ProgramKerja::where('kelompok_id', $registrationModel->kelompok_id)->first()
-            : null;
-
+        // LARAVEL 13 OPTIMIZATION: Concurrency for Dashboard Metrics
+        [$dailyReportCount, $workProgram, $finalReport, $grade] = \Illuminate\Support\Facades\Concurrency::run([
+            fn () => ($mahasiswaId && $activeGroupId)
+                ? KegiatanKkn::query()
+                    ->where('mahasiswa_id', $mahasiswaId)
+                    ->where('kelompok_id', $activeGroupId)
+                    ->count()
+                : 0,
+            fn () => $activeGroupId
+                ? ProgramKerja::where('kelompok_id', $activeGroupId)->first()
+                : null,
+            fn () => ($mahasiswaId && $activeGroupId)
+                ? LaporanAkhir::query()
+                    ->where('mahasiswa_id', $mahasiswaId)
+                    ->where('kelompok_id', $activeGroupId)
+                    ->latest('submitted_at')
+                    ->latest('id')
+                    ->first()
+                : null,
+            fn () => ($user->id && $activeGroupId)
+                ? NilaiKkn::where('user_id', $user->id)
+                    ->where('kelompok_id', $activeGroupId)
+                    ->where('is_finalized', true)
+                    ->latest('admin_graded_at')
+                    ->latest('id')
+                    ->first()
+                : null,
+        ]);
+        
         $workProgramCount = $workProgram ? 1 : 0;
         $abcdStage = $workProgram?->abcd_stage?->value;
-
-        $finalReport = ($mahasiswa && $activeGroupId)
-            ? LaporanAkhir::query()
-                ->where('mahasiswa_id', $mahasiswa->id)
-                ->where('kelompok_id', $activeGroupId)
-                ->latest('submitted_at')
-                ->latest('id')
-                ->first()
-            : null;
-
-        $grade = ($mahasiswa && $activeGroupId)
-            ? NilaiKkn::where('user_id', $user->id)
-                ->where('kelompok_id', $activeGroupId)
-                ->where('is_finalized', true)
-                ->latest('admin_graded_at')
-                ->latest('id')
-                ->first()
-            : null;
 
         return Inertia::render('Student/Dashboard', [
             'student' => $mahasiswa ? [

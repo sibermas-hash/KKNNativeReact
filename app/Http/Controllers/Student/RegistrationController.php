@@ -44,7 +44,6 @@ class RegistrationController extends Controller
             'birth_date' => optional($mahasiswa?->birth_date)?->toDateString(),
             'gender' => $mahasiswa?->gender,
             'shirt_size' => $mahasiswa?->shirt_size,
-            'bpjs_number' => $mahasiswa?->bpjs_number,
             'phone' => $user?->phone,
             'address' => $user?->address,
         ];
@@ -56,7 +55,6 @@ class RegistrationController extends Controller
             'birth_date' => 'Tanggal lahir',
             'gender' => 'Jenis kelamin',
             'shirt_size' => 'Ukuran kaos KKN (M, L, XL, dsb)',
-            'bpjs_number' => 'Nomor kartu BPJS/Asuransi',
             'phone' => 'Nomor WhatsApp',
             'address' => 'Alamat lengkap',
         ];
@@ -256,34 +254,36 @@ class RegistrationController extends Controller
             ]);
         }
 
-        if ($request->hasFile('health_certificate')) {
-            if ($mahasiswa->health_certificate_path) {
-                Storage::disk('local')->delete($mahasiswa->health_certificate_path);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $mahasiswa, $period, $periodId, $registrationService) {
+            if ($request->hasFile('health_certificate')) {
+                if ($mahasiswa->health_certificate_path) {
+                    Storage::disk('local')->delete($mahasiswa->health_certificate_path);
+                }
+
+                // VULN-013 Fix: Store sensitive documents in private storage
+                $path = $request->file('health_certificate')->store('health-certificates', 'local');
+                $mahasiswa->update(['health_certificate_path' => $path]);
             }
 
-            // VULN-013 Fix: Store sensitive documents in private storage
-            $path = $request->file('health_certificate')->store('health-certificates', 'local');
-            $mahasiswa->update(['health_certificate_path' => $path]);
-        }
+            if ($request->hasFile('parent_permission')) {
+                if ($mahasiswa->parent_permission_path) {
+                    Storage::disk('local')->delete($mahasiswa->parent_permission_path);
+                }
 
-        if ($request->hasFile('parent_permission')) {
-            if ($mahasiswa->parent_permission_path) {
-                Storage::disk('local')->delete($mahasiswa->parent_permission_path);
+                // VULN-013 Fix: Store sensitive documents in private storage
+                $path = $request->file('parent_permission')->store('parent-permissions', 'local');
+                $mahasiswa->update(['parent_permission_path' => $path]);
             }
 
-            // VULN-013 Fix: Store sensitive documents in private storage
-            $path = $request->file('parent_permission')->store('parent-permissions', 'local');
-            $mahasiswa->update(['parent_permission_path' => $path]);
-        }
-
-        // FIX C10: Pass authenticated user ID for ownership verification
-        $registrationService->register(
-            $mahasiswa,
-            $periodId,
-            null,
-            $request->input('notes'),
-            auth()->id()
-        );
+            // FIX C10: Pass authenticated user ID for ownership verification
+            $registrationService->register(
+                $mahasiswa,
+                $periodId,
+                null,
+                $request->input('notes'),
+                auth()->id()
+            );
+        });
 
         // Send notification to student
         $latestRegistration = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)

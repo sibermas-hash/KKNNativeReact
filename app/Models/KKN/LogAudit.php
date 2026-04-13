@@ -8,14 +8,16 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class LogAudit extends Model
-{
-    protected $connection = 'kkn';
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $table = 'log_audit';
-
-    protected $fillable = [
-        'user_id',
+#[Connection('kkn')]
+#[Table('log_audit')]
+#[Fillable([
+    'user_id',
         'action',
         'description',
         'model_type',
@@ -25,12 +27,20 @@ class LogAudit extends Model
         'severity',
         'ip_address',
         'user_agent',
-    ];
-
-    protected $casts = [
-        'old_values' => 'json',
+])]
+#[Casts([
+    'old_values' => 'json',
         'new_values' => 'json',
-    ];
+])]
+class LogAudit extends Model
+{
+    
+
+    
+
+    
+
+    
 
     public function user(): BelongsTo
     {

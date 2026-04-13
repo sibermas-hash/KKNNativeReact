@@ -33,7 +33,7 @@ export default function About({ aboutContent }: Props) {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-6xl lg:text-[100px] font-bold tracking-tighter text-slate-900 leading-[0.85] uppercase"
+                            className="text-6xl lg:text-[100px] font-bold tracking-tighter text-gray-900 leading-[0.85] uppercase"
                         >
                             Dedikasi Untuk <br /> 
                             <span className="text-emerald-500   font-medium">negeri.</span>
@@ -43,7 +43,7 @@ export default function About({ aboutContent }: Props) {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="text-xl lg:text-2xl text-slate-500 font-bold max-w-2xl leading-relaxed  border-l-8 border-emerald-500 pl-12"
+                            className="text-xl lg:text-2xl text-gray-500 font-bold max-w-2xl leading-relaxed  border-l-8 border-emerald-500 pl-12"
                         >
                             LPPM UIN SAIZU hadir sebagai pusat inkubasi riset dan orkestrasi pengabdian masyarakat yang berlandaskan nilai-nilai Islam dan kearifan lokal.
                         </motion.p>
@@ -60,10 +60,10 @@ export default function About({ aboutContent }: Props) {
                                 <div className="absolute top-0 right-0 p-10 opacity-[0.03] rotate-12 group-hover:rotate-0 transition-transform duration-700">
                                     <Info size={200} />
                                 </div>
-                                <h2 className="text-3xl font-bold text-slate-900 uppercase tracking-tighter mb-8 flex items-center gap-4  font-medium  ">
+                                <h2 className="text-3xl font-bold text-gray-900 uppercase tracking-tighter mb-8 flex items-center gap-4  font-medium  ">
                                     Tentang <span className="text-emerald-600 font-medium  ">lppm.</span>
                                 </h2>
-                                <p className="text-slate-600 text-lg lg:text-xl font-bold leading-relaxed  opacity-80">
+                                <p className="text-gray-600 text-lg lg:text-xl font-bold leading-relaxed  opacity-80">
                                     "{aboutContent.about}"
                                 </p>
                              </div>
@@ -73,16 +73,16 @@ export default function About({ aboutContent }: Props) {
                                     <div className="p-4 bg-emerald-50 text-emerald-500 rounded-2xl w-fit group-hover:bg-emerald-500 group-hover:text-white transition-all">
                                         <Target size={28} />
                                     </div>
-                                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Visi Utama</h4>
-                                    <p className="text-lg font-bold text-slate-900 leading-tight uppercase  group-hover:text-emerald-600 transition-colors">"{aboutContent.visi}"</p>
+                                    <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Visi Utama</h4>
+                                    <p className="text-lg font-bold text-gray-900 leading-tight uppercase  group-hover:text-emerald-600 transition-colors">"{aboutContent.visi}"</p>
                                 </div>
 
                                 <div className="bg-white p-12 rounded-[3rem] border border-slate-100 shadow-[0_40px_80px_rgba(0,0,0,0.03)] space-y-6 group hover:border-emerald-500 transition-all">
                                     <div className="p-4 bg-emerald-50 text-emerald-500 rounded-2xl w-fit group-hover:bg-emerald-500 group-hover:text-white transition-all">
                                         <Award size={28} />
                                     </div>
-                                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Misi Strategis</h4>
-                                    <p className="text-lg font-bold text-slate-900 leading-tight uppercase  group-hover:text-emerald-600 transition-colors">"{aboutContent.misi}"</p>
+                                    <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Misi Strategis</h4>
+                                    <p className="text-lg font-bold text-gray-900 leading-tight uppercase  group-hover:text-emerald-600 transition-colors">"{aboutContent.misi}"</p>
                                 </div>
                              </div>
                         </motion.div>

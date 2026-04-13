@@ -59,3 +59,9 @@ android/local.properties
 
 # APK distribution
 public/downloads/*.apk
+
+# Additional sensitive files
+*.pem
+*.key
+*.cert
+docker-compose.override.yml

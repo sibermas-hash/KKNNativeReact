@@ -60,6 +60,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
     Route::post('/profil-saya/kata-sandi', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/ai/assistant', [App\Http\Controllers\AiAssistantController::class, 'chat'])->name('ai.assistant');
 
     // Load role-based routes from separate files
     require __DIR__.'/admin.php';

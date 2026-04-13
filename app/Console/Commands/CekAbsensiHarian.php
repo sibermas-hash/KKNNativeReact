@@ -5,12 +5,10 @@ namespace App\Console\Commands;
 use App\Models\KKN\AbsensiHarian;
 use App\Models\KKN\IzinMeninggalkan;
 use App\Models\KKN\KegiatanKkn;
-use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Notifications\KknActivityNotification;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class CekAbsensiHarian extends Command
 {
@@ -23,9 +21,9 @@ class CekAbsensiHarian extends Command
         $this->info("Mengecek absensi untuk tanggal: {$date->format('Y-m-d')}");
 
         // Ambil semua periode yang sedang berjalan
-        $activePeriods = Periode::where('status', 'berjalan')
-            ->where('tanggal_mulai', '<=', $date)
-            ->where('tanggal_selesai', '>=', $date)
+        $activePeriods = Periode::where('is_active', true)
+            ->whereDate('start_date', '<=', $date)
+            ->whereDate('end_date', '>=', $date)
             ->get();
 
         if ($activePeriods->isEmpty()) {
@@ -41,17 +39,19 @@ class CekAbsensiHarian extends Command
             $this->info("\nMemeriksa periode: {$period->name}");
 
             // Ambil semua mahasiswa yang terdaftar aktif di periode ini
-            $mahasiswaIds = \App\Models\KKN\PesertaKkn::where('periode_id', $period->id)
+            $mahasiswaIds = \App\Models\KKN\PesertaKkn::where('period_id', $period->id)
                 ->where('status', 'approved')
                 ->pluck('mahasiswa_id');
 
             foreach ($mahasiswaIds as $mahasiswaId) {
                 $totalChecked++;
                 $mahasiswa = Mahasiswa::find($mahasiswaId);
-                if (!$mahasiswa) continue;
+                if (!$mahasiswa) {
+                    continue;
+                }
 
                 $kelompokId = \App\Models\KKN\PesertaKkn::where('mahasiswa_id', $mahasiswaId)
-                    ->where('periode_id', $period->id)
+                    ->where('period_id', $period->id)
                     ->value('kelompok_id');
 
                 // Cek apakah sudah ada absensi untuk tanggal ini
@@ -66,7 +66,7 @@ class CekAbsensiHarian extends Command
 
                 // Cek apakah ada logbook hari ini
                 $hasLogbook = KegiatanKkn::where('mahasiswa_id', $mahasiswaId)
-                    ->whereDate('tanggal', $date)
+                    ->whereDate('date', $date)
                     ->exists();
 
                 // Cek apakah ada izin yang disetujui untuk hari ini
@@ -77,6 +77,7 @@ class CekAbsensiHarian extends Command
                     ->exists();
 
                 // Tentukan status absensi
+                $izinId = null;
                 if ($hasLogbook) {
                     $status = 'hadir';
                 } elseif ($hasApprovedIzin) {
@@ -97,7 +98,7 @@ class CekAbsensiHarian extends Command
                     'kelompok_id' => $kelompokId,
                     'tanggal' => $date,
                     'status' => $status,
-                    'izin_id' => $status === 'izin' ? ($izinId ?? null) : null,
+                    'izin_id' => $status === 'izin' ? $izinId : null,
                 ]);
 
                 if ($status === 'tanpa_keterangan') {
@@ -112,15 +113,14 @@ class CekAbsensiHarian extends Command
                     if ($daysWithoutInfo >= 3) {
                         $this->error("  ⚠ {$mahasiswa->nama}: {$daysWithoutInfo} hari tanpa keterangan! (Batas: 3 hari)");
 
-                        // Notifikasi ke LPPM/Admin
+                        // Notifikasi ke mahasiswa
                         if ($mahasiswa->user) {
-                            // Notifikasi ke mahasiswa
                             $mahasiswa->user->notify(new KknActivityNotification([
                                 'type' => 'danger',
                                 'title' => 'Peringatan Absensi',
                                 'message' => "Anda telah {$daysWithoutInfo} hari tanpa keterangan. Jika mencapai 3 hari, Anda akan dianggap mengundurkan diri dari KKN.",
                                 'icon' => 'exclamation-triangle',
-                                'url' => route('student.dashboard'),
+                                'action' => route('student.dashboard'),
                             ]));
                         }
                     }

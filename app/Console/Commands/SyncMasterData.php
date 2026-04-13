@@ -11,12 +11,10 @@ use App\Models\Master\Dosen as MasterLecturer;
 use App\Models\Master\Mahasiswa as MasterStudent;
 use App\Models\User;
 use App\Services\MasterApiService;
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Illuminate\Console\View\Components\TwoColumnDetail;
+use Symfony\Component\Console\Attribute\AsCommand;
 
+#[AsCommand(name: 'sync:master-data')]
 class SyncMasterData extends Command
 {
     protected $signature = 'sync:master-data
@@ -54,7 +52,7 @@ class SyncMasterData extends Command
         } else {
             $this->info('Syncing directly from Master Database');
             try {
-                DB::connection('master')->getPdo();
+                \Illuminate\Support\Facades\DB::connection('master')->getPdo();
                 $this->info('Master DB connection is UP');
             } catch (\Exception $e) {
                 $this->error('Master DB connection failed: ' . $e->getMessage());
@@ -62,7 +60,8 @@ class SyncMasterData extends Command
             }
         }
 
-        DB::beginTransaction();
+        // REMOVED: DB::beginTransaction() at global level to prevent long-running mass locks
+        // We will use individual transactions or direct writes per record for stability
 
         try {
             if (in_array($type, ['all', 'fakultas'])) {
@@ -77,14 +76,12 @@ class SyncMasterData extends Command
                 $this->syncStudents();
             }
 
-            DB::commit();
             $this->newLine();
             $this->info('Sync completed successfully.');
             return 0;
         } catch (\Exception $e) {
-            DB::rollBack();
             $this->error('Sync failed: ' . $e->getMessage());
-            Log::error('Master API sync failed', [
+            \Illuminate\Support\Facades\Log::error('Master API sync failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -127,30 +124,20 @@ class SyncMasterData extends Command
     {
         $this->info('Syncing lecturers (DPL)...');
         
-        $employees = [];
-        if ($this->option('source') === 'api') {
-            $employees = $this->masterApi->getSyncDosen();
-            $this->info("  Fetched " . count($employees) . " lecturers from API");
+        $source = $this->option('source');
+        
+        if ($source === 'api') {
+            $employees = $this->masterApi->yieldSyncDosen();
         } else {
             // Direct DB Pull from 'master' connection
-            $masterLecturers = MasterLecturer::all();
-            foreach ($masterLecturers as $ml) {
-                $employees[] = [
-                    'id' => $ml->id,
-                    'nip' => $ml->nip,
-                    'nama' => $ml->nama,
-                    'email' => $ml->email,
-                    'telepon' => $ml->telepon,
-                    'organization' => ['code' => 'FTIK'], 
-                ];
-            }
+            $employees = MasterLecturer::cursor(); // Use cursor for memory efficiency
         }
 
-        if (empty($employees)) {
-            $this->warn('  No lecturers found');
-            return;
-        }
+        $this->processLecturersSync($employees, $source);
+    }
 
+    protected function processLecturersSync(iterable $employees, string $source): void
+    {
         $synced = 0;
         $now = now();
         
@@ -166,7 +153,20 @@ class SyncMasterData extends Command
             $this->info('  Created Default Faculty as fallback');
         }
 
-        foreach ($employees as $empData) {
+        foreach ($employees as $emp) {
+            // Normalizing data between DB and API
+            $empData = ($source === 'db') ? [
+                'id' => $emp->id,
+                'nip' => $emp->nip,
+                'nama' => $emp->nama,
+                'email' => $emp->email,
+                'telepon' => $emp->telepon,
+                'tanggal_lahir' => $emp->tanggal_lahir,
+                'jenis_kelamin' => $emp->jenis_kelamin,
+                'status_pegawai' => $emp->status_pegawai,
+                'status_aktif' => $emp->status_aktif,
+            ] : $emp;
+
             // Use 'nip' as stable identifier
             $nip = $empData['nip'] ?? null;
             if (!$nip) continue;
@@ -176,58 +176,59 @@ class SyncMasterData extends Command
             $incomingEmail = $empData['email'] ?? null;
             $fallbackEmail = $username . '@kkn.local';
 
-            $user = User::on('kkn')->firstOrNew(['username' => $username]);
-            $isNewUser = !$user->exists;
+            \Illuminate\Support\Facades\DB::transaction(function () use ($empData, $nip, $username, $incomingEmail, $fallbackEmail, &$synced, $now, $defaultFaculty) {
+                $user = User::on('kkn')->firstOrNew(['username' => $username]);
+                $isNewUser = !$user->exists;
 
-            if ($isNewUser) {
-                $user->email = !empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
-            } elseif (empty($user->email)) {
-                $user->email = !empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
-            }
+                if ($isNewUser) {
+                    $user->email = !empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
+                } elseif (empty($user->email)) {
+                    $user->email = !empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
+                }
 
-            $user->username = $username;
-            $user->name = $empData['nama'] ?? $empData['name'] ?? 'Unknown';
+                $user->username = $username;
+                $user->name = $empData['nama'] ?? $empData['name'] ?? 'Unknown';
 
-            // Only set password for NEW users — never overwrite existing passwords
-            if ($isNewUser) {
-                $birthDate = $empData['tanggal_lahir'] ?? $empData['birth_date'] ?? null;
-                $user->password = Hash::make(
-                    PasswordHelper::fromBirthDate($birthDate, $username)
+                if ($isNewUser) {
+                    $birthDate = $empData['tanggal_lahir'] ?? $empData['birth_date'] ?? null;
+                    $user->password = \Illuminate\Support\Facades\Hash::make(
+                        PasswordHelper::fromBirthDate($birthDate, $username)
+                    );
+                }
+
+                $user->save();
+                
+                if (!$user->hasRole('dpl')) {
+                    $user->assignRole('dpl');
+                }
+
+                $statusPegawai = strtoupper($empData['status_pegawai'] ?? $empData['employment_status'] ?? '');
+                $isCpns = str_contains($statusPegawai, 'CPNS');
+                
+                $statusAktif = strtoupper($empData['status_aktif'] ?? $empData['active_status'] ?? 'AKTIF');
+                $isTugasBelajar = str_contains($statusAktif, 'TUGAS BELAJAR') || ($empData['is_tugas_belajar'] ?? false);
+
+                Dosen::on('kkn')->updateOrCreate(
+                    ['nip' => $nip],
+                    [
+                        'master_id' => (string) $empData['id'],
+                        'user_id' => $user->id,
+                        'nama' => $empData['nama'] ?? $empData['name'] ?? 'Unknown',
+                        'faculty_id' => $defaultFaculty?->id,
+                        'phone' => $empData['telepon'] ?? $empData['phone'] ?? null,
+                        'gender' => $empData['jenis_kelamin'] ?? $empData['gender'] ?? 'L',
+                        'birth_date' => $empData['tanggal_lahir'] ?? $empData['birth_date'] ?? null,
+                        'is_cpns' => $isCpns,
+                        'is_tugas_belajar' => $isTugasBelajar,
+                        'master_synced_at' => $now,
+                    ]
                 );
+                $synced++;
+            });
+
+            if ($synced % 100 === 0) {
+                $this->info("    Processed {$synced} lecturers...");
             }
-
-            $user->save();
-            
-            // Assign Role
-            if (!$user->hasRole('dpl')) {
-                $user->assignRole('dpl');
-            }
-
-            // 2. Ensure Lecturer record exists (Local KKN)
-            // Note: KKN Dosen table uses 'nama', 'phone'
-            // Qualification Logic: Map CPNS status and Duty Study (Tugas Belajar)
-            $statusPegawai = strtoupper($empData['status_pegawai'] ?? $empData['employment_status'] ?? '');
-            $isCpns = str_contains($statusPegawai, 'CPNS');
-            
-            $statusAktif = strtoupper($empData['status_aktif'] ?? $empData['active_status'] ?? 'AKTIF');
-            $isTugasBelajar = str_contains($statusAktif, 'TUGAS BELAJAR') || ($empData['is_tugas_belajar'] ?? false);
-
-            Dosen::on('kkn')->updateOrCreate(
-                ['nip' => $nip],
-                [
-                    'master_id' => (string) $empData['id'],
-                    'user_id' => $user->id,
-                    'nama' => $empData['nama'] ?? $empData['name'] ?? 'Unknown',
-                    'faculty_id' => $defaultFaculty?->id, // TO DO: logic to map unit_kerja to faculty
-                    'phone' => $empData['telepon'] ?? $empData['phone'] ?? null,
-                    'gender' => $empData['jenis_kelamin'] ?? $empData['gender'] ?? 'L',
-                    'birth_date' => $empData['tanggal_lahir'] ?? $empData['birth_date'] ?? null,
-                    'is_cpns' => $isCpns,
-                    'is_tugas_belajar' => $isTugasBelajar,
-                    'master_synced_at' => $now,
-                ]
-            );
-            $synced++;
         }
 
         $this->info("  {$synced} lecturers synced");
@@ -237,33 +238,19 @@ class SyncMasterData extends Command
     {
         $this->info('Syncing students...');
         
-        $students = [];
-        if ($this->option('source') === 'api') {
-            $students = $this->masterApi->getSyncMahasiswa();
-            $this->info("  Fetched " . count($students) . " students from API");
+        $source = $this->option('source');
+        if ($source === 'api') {
+            $students = $this->masterApi->yieldSyncMahasiswa();
         } else {
             // Direct DB Pull from 'master' connection
-            $masterStudents = MasterStudent::all();
-            foreach ($masterStudents as $ms) {
-                $students[] = [
-                    'id' => $ms->id,
-                    'nim' => $ms->nim,
-                    'nama' => $ms->nama,
-                    'email' => $ms->email,
-                    'prodi' => $ms->prodi,
-                    'angkatan' => $ms->angkatan,
-                    'jenis_kelamin' => $ms->jenis_kelamin,
-                    'tempat_lahir' => $ms->tempat_lahir ?? null,
-                    'tanggal_lahir' => $ms->tanggal_lahir,
-                ];
-            }
+            $students = MasterStudent::cursor();
         }
 
-        if (empty($students)) {
-            $this->warn('  No students found');
-            return;
-        }
+        $this->processStudentsSync($students, $source);
+    }
 
+    protected function processStudentsSync(iterable $students, string $source): void
+    {
         $synced = 0;
         $now = now();
         $defaultFaculty = Fakultas::on('kkn')->first();
@@ -277,78 +264,96 @@ class SyncMasterData extends Command
             $this->info('  Created Default Faculty as fallback');
         }
 
-        foreach ($students as $studData) {
+        foreach ($students as $stud) {
+            // Normalizing data between DB and API
+            $studData = ($source === 'db') ? [
+                'id' => $stud->id,
+                'nim' => $stud->nim,
+                'nama' => $stud->nama,
+                'email' => $stud->email,
+                'prodi' => $stud->prodi,
+                'prodi_id' => $stud->prodi_id ?? null,
+                'angkatan' => $stud->angkatan,
+                'jenis_kelamin' => $stud->jenis_kelamin,
+                'tempat_lahir' => $stud->tempat_lahir,
+                'tanggal_lahir' => $stud->tanggal_lahir,
+                'total_sks' => $stud->total_sks ?? 0,
+                'status_bta_ppi' => $stud->status_bta_ppi ?? 'BELUM_LULUS',
+                'semester' => $stud->semester ?? null,
+            ] : $stud;
+
             $nim = $studData['nim'] ?? null;
             if (!$nim) continue;
 
-            // Map Prodi (Program Studi)
-            // Master API returns 'prodi' as string name usually
-            $prodiName = $studData['prodi'] ?? 'Unknown Program';
-            $programLookup = isset($studData['prodi_id'])
-                ? ['master_id' => (string) $studData['prodi_id']]
-                : ['nama' => $prodiName];
+            \Illuminate\Support\Facades\DB::transaction(function () use ($studData, $nim, $now, $defaultFaculty, &$synced) {
+                // Map Prodi (Program Studi)
+                $prodiName = $studData['prodi'] ?? 'Unknown Program';
+                $programLookup = isset($studData['prodi_id'])
+                    ? ['master_id' => (string) $studData['prodi_id']]
+                    : ['nama' => $prodiName];
 
-            $program = Prodi::on('kkn')->updateOrCreate(
-                $programLookup,
-                [
-                    'code' => strtoupper(substr(Str::slug($prodiName), 0, 10)),
-                    'nama' => $prodiName,
-                    'faculty_id' => $defaultFaculty?->id,
-                    'master_synced_at' => $now,
-                ]
-            );
+                $program = Prodi::on('kkn')->updateOrCreate(
+                    $programLookup,
+                    [
+                        'code' => strtoupper(substr(\Illuminate\Support\Str::slug($prodiName), 0, 10)),
+                        'nama' => $prodiName,
+                        'faculty_id' => $defaultFaculty?->id,
+                        'master_synced_at' => $now,
+                    ]
+                );
 
-            // 1. Ensure User account exists
-            $username = (string) $nim;
-            $incomingEmail = $studData['email'] ?? null;
-            $fallbackEmail = $username . '@kkn.local';
+                // 1. Ensure User account exists
+                $username = (string) $nim;
+                $incomingEmail = $studData['email'] ?? null;
+                $fallbackEmail = $username . '@kkn.local';
 
-            $user = User::on('kkn')->firstOrNew(['username' => $username]);
-            $isNewUser = !$user->exists;
+                $user = User::on('kkn')->firstOrNew(['username' => $username]);
+                $isNewUser = !$user->exists;
 
-            if ($isNewUser) {
-                $user->email = !empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
-            } elseif (empty($user->email)) {
-                $user->email = $fallbackEmail;
+                if ($isNewUser) {
+                    $user->email = !empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
+                } elseif (empty($user->email)) {
+                    $user->email = $fallbackEmail;
+                }
+
+                $user->username = $username;
+                $user->name = $studData['nama'] ?? $studData['name'] ?? 'Unknown';
+
+                if ($isNewUser) {
+                    $user->password = \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::password(12));
+                }
+
+                $user->save();
+                
+                if (!$user->hasRole('student')) {
+                    $user->assignRole('student');
+                }
+
+                // 2. Ensure Student record exists (Local KKN)
+                Mahasiswa::on('kkn')->updateOrCreate(
+                    ['nim' => $nim],
+                    [
+                        'master_id' => (string) $studData['id'],
+                        'user_id' => $user->id,
+                        'nama' => $studData['nama'] ?? $studData['name'] ?? 'Unknown',
+                        'faculty_id' => $defaultFaculty?->id,
+                        'program_id' => $program->id,
+                        'batch_year' => $studData['angkatan'] ?? $studData['batch_year'] ?? date('Y'),
+                        'gender' => $studData['jenis_kelamin'] ?? $studData['gender'] ?? 'L',
+                        'birth_place' => $studData['tempat_lahir'] ?? $studData['birth_place'] ?? null,
+                        'birth_date' => $studData['tanggal_lahir'] ?? $studData['birth_date'] ?? null,
+                        'total_sks' => $studData['total_sks'] ?? 0,
+                        'status_bta_ppi' => $studData['status_bta_ppi'] ?? 'BELUM_LULUS',
+                        'semester' => $studData['semester'] ?? null,
+                        'master_synced_at' => $now,
+                    ]
+                );
+                $synced++;
+            });
+
+            if ($synced % 100 === 0) {
+                $this->info("    Processed {$synced} students...");
             }
-
-            $user->username = $username;
-            $user->name = $studData['nama'] ?? $studData['name'] ?? 'Unknown';
-
-            // Only set password for NEW users — never overwrite existing passwords
-            if ($isNewUser) {
-                $user->password = Hash::make(\Illuminate\Support\Str::password(12));
-            }
-
-            $user->save();
-            
-            // Assign Role
-            if (!$user->hasRole('student')) {
-                $user->assignRole('student');
-            }
-
-            // 2. Ensure Student record exists (Local KKN)
-            // Mapping fields: nama, batch_year (angkatan), gender (jenis_kelamin), birth_date (tanggal_lahir)
-            // Plus requirements: total_sks, status_bta_ppi, semester
-            Mahasiswa::on('kkn')->updateOrCreate(
-                ['nim' => $nim],
-                [
-                    'master_id' => (string) $studData['id'],
-                    'user_id' => $user->id,
-                    'nama' => $studData['nama'] ?? $studData['name'] ?? 'Unknown',
-                    'faculty_id' => $defaultFaculty?->id, // Default for now
-                    'program_id' => $program->id,
-                    'batch_year' => $studData['angkatan'] ?? $studData['batch_year'] ?? date('Y'),
-                    'gender' => $studData['jenis_kelamin'] ?? $studData['gender'] ?? 'L',
-                    'birth_place' => $studData['tempat_lahir'] ?? $studData['birth_place'] ?? null,
-                    'birth_date' => $studData['tanggal_lahir'] ?? $studData['birth_date'] ?? null,
-                    'total_sks' => $studData['total_sks'] ?? 0,
-                    'status_bta_ppi' => $studData['status_bta_ppi'] ?? 'BELUM_LULUS',
-                    'semester' => $studData['semester'] ?? null,
-                    'master_synced_at' => $now,
-                ]
-            );
-            $synced++;
         }
 
         $this->info("  {$synced} students synced");

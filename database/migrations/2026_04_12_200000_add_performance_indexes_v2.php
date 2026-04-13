@@ -1,162 +1,89 @@
 <?php
-
-declare(strict_types=1);
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
-        // activities_kkn indexes
-        Schema::connection('kkn')->table('activities_kkn', function (Blueprint $table) {
-            $table->index('abcd_stage');
-            $table->index('status');
-            $table->index(['abcd_stage', 'status']);
-        });
+        $schema = Schema::connection('kkn');
 
-        // participants (peserta_kkn) indexes
-        Schema::connection('kkn')->table('participants', function (Blueprint $table) {
-            $table->index('period_id');
-            $table->index('group_id');
-            $table->index(['period_id', 'status']);
-            $table->index(['period_id', 'group_id']);
-        });
+        // 1. Mahasiswa: Index for faculty-based filtering and searches
+        $this->addIndexIfMissing($schema, 'mahasiswa', 'mahasiswa_faculty_program_idx', ['faculty_id', 'program_id']);
+        
+        // 2. Lokasi: Index for geographical scoping
+        $this->addIndexIfMissing($schema, 'lokasi', 'lokasi_faculty_district_idx', ['faculty_id', 'district_id']);
 
-        // daily_reports indexes for common queries
-        Schema::connection('kkn')->table('daily_reports', function (Blueprint $table) {
-            $table->index('date');
-            $table->index(['student_id', 'date']);
-            $table->index(['group_id', 'date']);
-        });
+        // 3. Kelompok KKN: Index for location-based grouping
+        $this->addIndexIfMissing($schema, 'kelompok_kkn', 'kelompok_location_status_idx', ['location_id', 'status']);
 
-        // registrations indexes
-        Schema::connection('kkn')->table('registrations', function (Blueprint $table) {
-            $table->index(['period_id', 'status']);
-            $table->index(['student_id', 'period_id']);
-        });
+        // 4. Log Audit: High volume forensic searches
+        $this->addIndexIfMissing($schema, 'log_audit', 'log_audit_user_action_created_idx', ['user_id', 'action', 'created_at']);
 
-        // nilai_kkn indexes
-        Schema::connection('kkn')->table('nilai_kkn', function (Blueprint $table) {
-            $table->index('total_score');
-            $table->index('letter_grade');
-        });
-
-        // groups indexes
-        Schema::connection('kkn')->table('groups', function (Blueprint $table) {
-            $table->index('status');
-            $table->index(['period_id', 'status']);
-        });
-
-        // work_programs indexes
-        Schema::connection('kkn')->table('work_programs', function (Blueprint $table) {
-            $table->index('abcd_stage');
-            $table->index('status');
-            $table->index(['abcd_stage', 'status']);
-        });
-
-        // notifications indexes
-        Schema::connection('kkn')->table('notifications', function (Blueprint $table) {
-            $table->index('read_at');
-            $table->index(['notifiable_type', 'notifiable_id', 'read_at']);
-        });
-
-        // audit_logs indexes for common queries
-        Schema::connection('kkn')->table('audit_logs', function (Blueprint $table) {
-            $table->index('event');
-            $table->index('created_at');
-        });
-
-        // lecturers indexes
-        Schema::connection('kkn')->table('lecturers', function (Blueprint $table) {
-            $table->index('nip');
-            $table->index('faculty_id');
-        });
-
-        // students indexes
-        Schema::connection('kkn')->table('students', function (Blueprint $table) {
-            $table->index('nim');
-            $table->index('faculty_id');
-            $table->index('program_id');
-            $table->index('batch_year');
-        });
-
-        // locations indexes
-        Schema::connection('kkn')->table('locations', function (Blueprint $table) {
-            $table->index('district_id');
-            $table->index('regency_id');
-        });
+        // 5. Nilai KKN: Faster lookup for finalization status
+        $this->addIndexIfMissing($schema, 'nilai_kkn', 'nilai_user_finalized_idx', ['user_id', 'is_finalized']);
     }
 
     public function down(): void
     {
-        Schema::connection('kkn')->table('activities_kkn', function (Blueprint $table) {
-            $table->dropIndex(['abcd_stage']);
-            $table->dropIndex(['status']);
-            $table->dropIndex(['abcd_stage_status']);
-        });
+        $schema = Schema::connection('kkn');
 
-        Schema::connection('kkn')->table('participants', function (Blueprint $table) {
-            $table->dropIndex(['period_id']);
-            $table->dropIndex(['group_id']);
-            $table->dropIndex(['period_id_status']);
-            $table->dropIndex(['period_id_group_id']);
-        });
+        $this->dropIndexIfExists($schema, 'mahasiswa', 'mahasiswa_faculty_program_idx');
+        $this->dropIndexIfExists($schema, 'lokasi', 'lokasi_faculty_district_idx');
+        $this->dropIndexIfExists($schema, 'kelompok_kkn', 'kelompok_location_status_idx');
+        $this->dropIndexIfExists($schema, 'log_audit', 'log_audit_user_action_created_idx');
+        $this->dropIndexIfExists($schema, 'nilai_kkn', 'nilai_user_finalized_idx');
+    }
 
-        Schema::connection('kkn')->table('daily_reports', function (Blueprint $table) {
-            $table->dropIndex(['date']);
-            $table->dropIndex(['student_id_date']);
-            $table->dropIndex(['group_id_date']);
-        });
+    private function addIndexIfMissing(
+        \Illuminate\Database\Schema\Builder $schema,
+        string $table,
+        string $indexName,
+        array $columns
+    ): void {
+        if (! $schema->hasTable($table)) {
+            return;
+        }
 
-        Schema::connection('kkn')->table('registrations', function (Blueprint $table) {
-            $table->dropIndex(['period_id_status']);
-            $table->dropIndex(['student_id_period_id']);
-        });
+        if ($this->hasIndex($schema, $table, $indexName, $columns)) {
+            return;
+        }
 
-        Schema::connection('kkn')->table('nilai_kkn', function (Blueprint $table) {
-            $table->dropIndex(['total_score']);
-            $table->dropIndex(['letter_grade']);
+        $schema->table($table, function (Blueprint $tableObj) use ($columns, $indexName) {
+            $tableObj->index($columns, $indexName);
         });
+    }
 
-        Schema::connection('kkn')->table('groups', function (Blueprint $table) {
-            $table->dropIndex(['status']);
-            $table->dropIndex(['period_id_status']);
-        });
+    private function dropIndexIfExists(
+        \Illuminate\Database\Schema\Builder $schema,
+        string $table,
+        string $indexName
+    ): void {
+        if (! $schema->hasTable($table) || ! $schema->hasIndex($table, $indexName)) {
+            return;
+        }
 
-        Schema::connection('kkn')->table('work_programs', function (Blueprint $table) {
-            $table->dropIndex(['abcd_stage']);
-            $table->dropIndex(['status']);
-            $table->dropIndex(['abcd_stage_status']);
+        $schema->table($table, function (Blueprint $tableObj) use ($indexName) {
+            $tableObj->dropIndex($indexName);
         });
+    }
 
-        Schema::connection('kkn')->table('notifications', function (Blueprint $table) {
-            $table->dropIndex(['read_at']);
-            $table->dropIndex(['notifiable_type_notifiable_id_read_at']);
-        });
+    private function hasIndex(
+        \Illuminate\Database\Schema\Builder $schema,
+        string $table,
+        string $indexName,
+        array $columns
+    ): bool {
+        foreach ($schema->getIndexes($table) as $index) {
+            if (($index['name'] ?? null) === $indexName) {
+                return true;
+            }
 
-        Schema::connection('kkn')->table('audit_logs', function (Blueprint $table) {
-            $table->dropIndex(['event']);
-            $table->dropIndex(['created_at']);
-        });
+            if (($index['columns'] ?? []) === $columns) {
+                return true;
+            }
+        }
 
-        Schema::connection('kkn')->table('lecturers', function (Blueprint $table) {
-            $table->dropIndex(['nip']);
-            $table->dropIndex(['faculty_id']);
-        });
-
-        Schema::connection('kkn')->table('students', function (Blueprint $table) {
-            $table->dropIndex(['nim']);
-            $table->dropIndex(['faculty_id']);
-            $table->dropIndex(['program_id']);
-            $table->dropIndex(['batch_year']);
-        });
-
-        Schema::connection('kkn')->table('locations', function (Blueprint $table) {
-            $table->dropIndex(['district_id']);
-            $table->dropIndex(['regency_id']);
-        });
+        return false;
     }
 };

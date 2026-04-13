@@ -74,7 +74,7 @@ class IzinService
                     'title' => 'Izin Disetujui',
                     'message' => "Permohonan izin Anda tanggal {$izin->tanggal_mulai->format('d/m')} s/d {$izin->tanggal_kembali->format('d/m')} telah disetujui.",
                     'icon' => 'checkmark-circle',
-                    'url' => route('student.izin.index'),
+                    'action' => route('student.izin.index'),
                 ]));
             }
         });
@@ -99,7 +99,7 @@ class IzinService
                 'title' => 'Izin Ditolak',
                 'message' => "Permohonan izin Anda ditolak. Catatan: {$catatan}",
                 'icon' => 'close-circle',
-                'url' => route('student.izin.index'),
+                'action' => route('student.izin.index'),
             ]));
         }
     }

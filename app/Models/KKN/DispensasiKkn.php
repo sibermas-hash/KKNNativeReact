@@ -7,25 +7,35 @@ namespace App\Models\KKN;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DispensasiKkn extends Model
-{
-    protected $connection = 'kkn';
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $table = 'dispensasi_kkn';
-
-    protected $fillable = [
-        'nim',
+#[Connection('kkn')]
+#[Table('dispensasi_kkn')]
+#[Fillable([
+    'nim',
         'period_id',
         'alasan',
         'bypassed_requirements',
         'granted_by',
         'is_active',
-    ];
-
-    protected $casts = [
-        'bypassed_requirements' => 'array',
+])]
+#[Casts([
+    'bypassed_requirements' => 'array',
         'is_active' => 'boolean',
-    ];
+])]
+class DispensasiKkn extends Model
+{
+    
+
+    
+
+    
+
+    
 
     public function periode(): BelongsTo
     {

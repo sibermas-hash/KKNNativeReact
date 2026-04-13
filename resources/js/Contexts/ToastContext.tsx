@@ -91,7 +91,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
  const toast = useCallback(
  (options: Omit<Toast, 'id'>) => {
- const id = Math.random().toString(36).slice(2);
+ const id = globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2);
  const duration = options.duration ?? (options.priority === 'error' ? 8000 : 5000);
 
  setToasts((current) => [{ ...options, id, duration }, ...current].slice(0, 5));

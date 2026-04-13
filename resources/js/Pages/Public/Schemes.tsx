@@ -43,7 +43,7 @@ export default function Schemes({ content }: Props) {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-6xl lg:text-[100px] font-bold tracking-tighter text-slate-900 leading-[0.85] uppercase"
+                            className="text-6xl lg:text-[100px] font-bold tracking-tighter text-gray-900 leading-[0.85] uppercase"
                         >
                             Opsi <br /> 
                             <span className="text-emerald-500   font-medium">intervensi.</span>
@@ -53,7 +53,7 @@ export default function Schemes({ content }: Props) {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="text-xl lg:text-3xl text-slate-400 font-bold max-w-2xl leading-relaxed  border-l-8 border-emerald-500 pl-12"
+                            className="text-xl lg:text-3xl text-gray-400 font-bold max-w-2xl leading-relaxed  border-l-8 border-emerald-500 pl-12"
                         >
                             {content.intro}
                         </motion.p>
@@ -86,10 +86,10 @@ export default function Schemes({ content }: Props) {
                                     </div>
 
                                     <div className="space-y-8 relative z-10">
-                                        <h4 className="text-4xl lg:text-5xl font-bold text-slate-900 uppercase tracking-tighter leading-none  group-hover:text-emerald-600 transition-colors">
+                                        <h4 className="text-4xl lg:text-5xl font-bold text-gray-900 uppercase tracking-tighter leading-none  group-hover:text-emerald-600 transition-colors">
                                             {scheme.title}
                                         </h4>
-                                        <p className="text-slate-500 text-lg lg:text-xl font-bold leading-relaxed  opacity-80 line-clamp-3">
+                                        <p className="text-gray-500 text-lg lg:text-xl font-bold leading-relaxed  opacity-80 line-clamp-3">
                                             {scheme.description}
                                         </p>
                                     </div>
@@ -97,7 +97,7 @@ export default function Schemes({ content }: Props) {
                                     <div className="mt-16 pt-12 border-t border-slate-50 relative z-10 flex items-center justify-between">
                                         <Link
                                             href={route('login')}
-                                            className="px-10 py-5 bg-slate-900 text-white rounded-full text-[11px] font-bold uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-slate-900/10 flex items-center gap-4"
+                                            className="px-10 py-5 bg-emerald-600 text-white rounded-full text-[11px] font-bold uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-xl flex items-center gap-4"
                                         >
                                             Daftar Skema
                                             <ArrowRight size={16} />

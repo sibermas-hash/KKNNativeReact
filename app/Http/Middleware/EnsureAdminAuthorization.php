@@ -109,7 +109,7 @@ class EnsureAdminAuthorization
      * List of controllers that require 'manage-workshops' permission
      */
     protected array $workshopControllers = [
-        \App\Http\Controllers\Admin\WorkshopController::class,
+        \App\Http\Controllers\WorkshopController::class,
     ];
 
     /**

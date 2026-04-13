@@ -36,7 +36,7 @@ interface Props {
         rejected: number;
     };
     registrations: {
-        data: any[];
+        data: Registration[];
         total: number;
     };
     filters: {
@@ -65,18 +65,18 @@ export default function JenisKknShow({ jenisKkn, stats, registrations, filters }
                     <div className="flex items-center gap-4">
                         <Link 
                             href={route('admin.jenis-kkn.index')}
-                            className="h-12 w-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm"
+                            className="h-12 w-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-gray-400 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm"
                         >
                             <ChevronLeft size={24} strokeWidth={2.5} />
                         </Link>
                         <div>
-                            <h1 className="text-3xl font-black text-slate-900 tracking-tight">{jenisKkn.name}</h1>
-                            <p className="text-sm text-slate-500 font-bold uppercase tracking-widest">Master Data <span className="mx-2 text-slate-300">/</span> {jenisKkn.code}</p>
+                            <h1 className="text-3xl font-black text-gray-900 tracking-tight">{jenisKkn.name}</h1>
+                            <p className="text-sm text-gray-500 font-bold uppercase tracking-widest">Master Data <span className="mx-2 text-slate-300">/</span> {jenisKkn.code}</p>
                         </div>
                     </div>
                     <Link 
                         href={route('admin.pendaftaran.index', { search: jenisKkn.name })}
-                        className="h-14 px-8 rounded-2xl bg-slate-900 text-white hover:bg-emerald-600 font-black text-sm transition-all flex items-center gap-3 shadow-xl shadow-slate-200"
+                        className="h-14 px-8 rounded-2xl bg-gray-900 text-white hover:bg-emerald-600 font-black text-sm transition-all flex items-center gap-3 shadow-xl shadow-slate-200"
                     >
                         Verifikasi Masal <ArrowUpRight size={18} strokeWidth={3} />
                     </Link>
@@ -89,8 +89,8 @@ export default function JenisKknShow({ jenisKkn, stats, registrations, filters }
                             <Users size={28} strokeWidth={2.5} />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Total Pendaftar</p>
-                            <p className="text-3xl font-black text-slate-900 leading-none">{stats.total.toLocaleString('id-ID')}</p>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Total Pendaftar</p>
+                            <p className="text-3xl font-black text-gray-900 leading-none">{stats.total.toLocaleString('id-ID')}</p>
                         </div>
                     </div>
                     <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex items-center gap-5">
@@ -98,7 +98,7 @@ export default function JenisKknShow({ jenisKkn, stats, registrations, filters }
                             <CheckCircle2 size={28} strokeWidth={2.5} />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Approved</p>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Approved</p>
                             <p className="text-3xl font-black text-emerald-600 leading-none">{stats.approved.toLocaleString('id-ID')}</p>
                         </div>
                     </div>
@@ -107,7 +107,7 @@ export default function JenisKknShow({ jenisKkn, stats, registrations, filters }
                             <Clock size={28} strokeWidth={2.5} />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Review</p>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Review</p>
                             <p className="text-3xl font-black text-amber-600 leading-none">{stats.pending.toLocaleString('id-ID')}</p>
                         </div>
                     </div>
@@ -116,7 +116,7 @@ export default function JenisKknShow({ jenisKkn, stats, registrations, filters }
                             <XCircle size={28} strokeWidth={2.5} />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Rejected</p>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Rejected</p>
                             <p className="text-3xl font-black text-rose-600 leading-none">{stats.rejected.toLocaleString('id-ID')}</p>
                         </div>
                     </div>
@@ -126,21 +126,21 @@ export default function JenisKknShow({ jenisKkn, stats, registrations, filters }
                 <section className="bg-white rounded-2xl border-2 border-slate-100 p-6 shadow-sm overflow-hidden">
                     <div className="flex flex-col xl:flex-row xl:items-center gap-8 xl:gap-14">
                         <div className="flex items-center gap-3 shrink-0">
-                            <div className="p-2 bg-slate-900 text-white rounded-xl shadow-md shadow-slate-200"><Info size={20} /></div>
-                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Syarat Minimum</h3>
+                            <div className="p-2 bg-gray-900 text-white rounded-xl shadow-md shadow-slate-200"><Info size={20} /></div>
+                            <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Syarat Minimum</h3>
                         </div>
                         
                         <div className="flex flex-wrap items-center gap-x-12 gap-y-4 text-sm font-bold">
                             <div className="flex items-center gap-3">
-                                <span className="text-slate-400 font-medium">Akumulasi SKS:</span>
-                                <span className="px-3 py-1 bg-slate-100 rounded-lg text-slate-800">{jenisKkn.min_sks} SKS</span>
+                                <span className="text-gray-400 font-medium">Akumulasi SKS:</span>
+                                <span className="px-3 py-1 bg-slate-100 rounded-lg text-gray-800">{jenisKkn.min_sks} SKS</span>
                             </div>
                             <div className="flex items-center gap-3">
-                                <span className="text-slate-400 font-medium">Minimum IPK:</span>
-                                <span className="px-3 py-1 bg-slate-100 rounded-lg text-slate-800">{jenisKkn.min_gpa}</span>
+                                <span className="text-gray-400 font-medium">Minimum IPK:</span>
+                                <span className="px-3 py-1 bg-slate-100 rounded-lg text-gray-800">{jenisKkn.min_gpa}</span>
                             </div>
                             <div className="flex items-center gap-3">
-                                <span className="text-slate-400 font-medium">Model:</span>
+                                <span className="text-gray-400 font-medium">Model:</span>
                                 <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg uppercase text-[10px] font-black tracking-widest border border-emerald-100">{jenisKkn.registration_mode_label}</span>
                             </div>
                             <div className="flex items-center gap-3">
@@ -154,8 +154,8 @@ export default function JenisKknShow({ jenisKkn, stats, registrations, filters }
                 <section className="bg-white rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-100/50 overflow-hidden">
                     <div className="px-10 py-8 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div>
-                            <h3 className="text-2xl font-black text-slate-900">Daftar Pendaftar Terbaru</h3>
-                            <p className="text-sm text-slate-400 font-medium mt-1">Audit mendetail log pendaftaran masuk ke sistem.</p>
+                            <h3 className="text-2xl font-black text-gray-900">Daftar Pendaftar Terbaru</h3>
+                            <p className="text-sm text-gray-400 font-medium mt-1">Audit mendetail log pendaftaran masuk ke sistem.</p>
                         </div>
                         <form onSubmit={handleSearch} className="relative group">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
@@ -173,12 +173,12 @@ export default function JenisKknShow({ jenisKkn, stats, registrations, filters }
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50/50 border-b border-slate-100">
-                                    <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Identitas Mahasiswa</th>
-                                    <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Fakultas & Prodi</th>
-                                    <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Edisi KKN</th>
-                                    <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Tgl Daftar</th>
-                                    <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Status</th>
-                                    <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Penempatan</th>
+                                    <th className="px-10 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Identitas Mahasiswa</th>
+                                    <th className="px-10 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Fakultas & Prodi</th>
+                                    <th className="px-10 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Edisi KKN</th>
+                                    <th className="px-10 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Tgl Daftar</th>
+                                    <th className="px-10 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Status</th>
+                                    <th className="px-10 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-right">Penempatan</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
@@ -186,26 +186,26 @@ export default function JenisKknShow({ jenisKkn, stats, registrations, filters }
                                     <tr key={reg.id} className="hover:bg-slate-50/80 transition-all group">
                                         <td className="px-10 py-6">
                                             <div className="flex items-center gap-4">
-                                                <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 font-black text-xs shrink-0">{reg.mahasiswa.nama.charAt(0)}</div>
+                                                <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center text-gray-400 font-black text-xs shrink-0">{reg.mahasiswa.nama.charAt(0)}</div>
                                                 <div>
-                                                    <p className="text-sm font-[900] text-slate-900">{reg.mahasiswa.nama}</p>
-                                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5">{reg.mahasiswa.nim}</p>
+                                                    <p className="text-sm font-[900] text-gray-900">{reg.mahasiswa.nama}</p>
+                                                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter mt-0.5">{reg.mahasiswa.nim}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-10 py-6">
                                             <div className="flex items-center gap-2">
                                                 <GraduationCap size={16} className="text-slate-300" />
-                                                <p className="text-xs font-bold text-slate-600">{reg.mahasiswa.fakultas.nama}</p>
+                                                <p className="text-xs font-bold text-gray-600">{reg.mahasiswa.fakultas.nama}</p>
                                             </div>
                                         </td>
                                         <td className="px-10 py-6 text-center">
-                                            <span className="inline-flex items-center px-3 py-1 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-black uppercase ring-1 ring-slate-200">
+                                            <span className="inline-flex items-center px-3 py-1 rounded-lg bg-slate-100 text-gray-600 text-[10px] font-black uppercase ring-1 ring-slate-200">
                                                 Batch #{reg.periode.periode}
                                             </span>
                                         </td>
                                         <td className="px-10 py-6 text-center">
-                                            <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-slate-400">
+                                            <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-gray-400">
                                                 <Calendar size={14} />
                                                 {new Date(reg.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                                             </div>
@@ -218,7 +218,7 @@ export default function JenisKknShow({ jenisKkn, stats, registrations, filters }
                                         <td className="px-10 py-6 text-right">
                                             {reg.kelompok ? (
                                                 <div className="flex flex-col items-end">
-                                                    <p className="text-xs font-black text-slate-800">{reg.kelompok.nama_kelompok}</p>
+                                                    <p className="text-xs font-black text-gray-800">{reg.kelompok.nama_kelompok}</p>
                                                     <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">{reg.kelompok.code}</p>
                                                 </div>
                                             ) : (

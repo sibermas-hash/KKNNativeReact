@@ -41,7 +41,7 @@ class MasterApiTokenService
 
         $cacheKey = 'master_api_token_'.$this->clientId;
 
-        return Cache::remember($cacheKey, now()->addMinutes($this->cacheMinutes - 5), function () {
+        return Cache::remember($cacheKey, now()->addMinutes($this->cacheMinutes - 5), function () use ($cacheKey) {
             try {
                 $token = $this->fetchToken();
 

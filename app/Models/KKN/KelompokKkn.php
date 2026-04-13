@@ -12,16 +12,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class KelompokKkn extends Model
-{
-    use HasFactory, SoftDeletes;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $connection = 'kkn';
-
-    protected $table = 'kelompok_kkn';
-
-    protected $fillable = [
-        'period_id',
+#[Connection('kkn')]
+#[Table('kelompok_kkn')]
+#[Fillable([
+    'period_id',
         'location_id',
         'dpl_id',
         'dpl_period_id',
@@ -30,11 +30,21 @@ class KelompokKkn extends Model
         'token',
         'capacity',
         'status',
-    ];
+])]
+#[Casts([
+    'capacity' => 'integer',
+])]
+class KelompokKkn extends Model
+{
+    use HasFactory, SoftDeletes;
 
-    protected $casts = [
-        'capacity' => 'integer',
-    ];
+    
+
+    
+
+    
+
+    
 
     public function getKknType(): \App\Enums\KknType
     {

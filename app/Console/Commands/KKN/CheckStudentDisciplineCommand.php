@@ -51,7 +51,7 @@ class CheckStudentDisciplineCommand extends Command
             $this->info("Mengecek periode: {$period->name}");
 
             // 2. Cari mahasiswa yang terdaftar di periode ini (status approved)
-            $participants = PesertaKkn::where('periode_id', $period->id)
+            $participants = PesertaKkn::where('period_id', $period->id)
                 ->where('status', 'approved')
                 ->with(['mahasiswa.user', 'kelompok.dpl.user'])
                 ->get();
@@ -74,7 +74,7 @@ class CheckStudentDisciplineCommand extends Command
                             'title' => 'Peringatan Kedisiplinan',
                             'message' => "Mahasiswa {$participant->mahasiswa->nama} tidak mengisi logbook selama 3 hari berturut-turut.",
                             'icon' => 'exclamation-triangle',
-                            'url' => route('dpl.kelompok.show', $participant->kelompok_id),
+                            'action' => route('dpl.kelompok.show', $participant->kelompok_id),
                         ]));
                     }
 
@@ -85,7 +85,7 @@ class CheckStudentDisciplineCommand extends Command
                             'title' => 'Peringatan Kritis!',
                             'message' => "Anda tidak mengisi logbook selama 3 hari. Sesuai Panduan KKN 56, meninggalkan lokasi > 3 hari tanpa keterangan dianggap mengundurkan diri.",
                             'icon' => 'shield-exclamation',
-                            'url' => route('student.laporan-harian.index'),
+                            'action' => route('student.laporan-harian.index'),
                         ]));
                     }
                 }

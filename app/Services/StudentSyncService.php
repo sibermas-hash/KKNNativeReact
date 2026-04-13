@@ -24,18 +24,19 @@ class StudentSyncService
      */
     public function syncFromApi(array $nimList = []): array
     {
-        $externalStudents = ! empty($nimList)
-            ? $this->masterApi->getStudentsByNimList($nimList)
-            : $this->masterApi->getSyncMahasiswa();
-
         $results = [
-            'total' => count($externalStudents),
+            'total' => 0,
             'synced' => 0,
             'errors' => 0,
             'log' => [],
         ];
 
+        $externalStudents = ! empty($nimList)
+            ? $this->masterApi->getStudentsByNimList($nimList)
+            : $this->masterApi->yieldSyncMahasiswa();
+
         foreach ($externalStudents as $studentData) {
+            $results['total']++;
             try {
                 $status = $this->upsertStudent($studentData);
                 if ($status) {
@@ -45,7 +46,11 @@ class StudentSyncService
                 }
             } catch (\Exception $e) {
                 $results['errors']++;
-                $results['log'][] = "Error syncing NIM {$studentData['nim']}: ".$e->getMessage();
+                $results['log'][] = "Error syncing NIM ".($studentData['nim'] ?? 'UNKNOWN').": ".$e->getMessage();
+                Log::error("Student Sync Error", [
+                    'nim' => $studentData['nim'] ?? 'UNKNOWN',
+                    'error' => $e->getMessage()
+                ]);
             }
         }
 

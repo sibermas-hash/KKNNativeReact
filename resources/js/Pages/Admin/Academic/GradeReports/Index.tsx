@@ -10,59 +10,32 @@ import {
     ShieldCheck,
     Users,
     Activity,
-    Database,
-    Binary,
-    Zap,
-    Cpu,
-    Fingerprint,
     Target,
-    Layers,
-    Globe,
     ChevronRight,
     ArrowRight,
     Filter,
     RefreshCw,
-    AlertTriangle,
-    Archive,
-    CheckCircle2,
-    FileText
+    Building2,
+    Globe,
+    Binary
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { route } from 'ziggy-js';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppLayout from '@/Layouts/AppLayout';
 import { Button, Pagination } from '@/Components/ui';
+import type { LucideIcon } from '@/types';
 
 interface StudentGrade {
-    id: number;
-    score_id: number | null;
-    nim: string;
-    name: string;
-    group_name: string;
-    kelompok_id: number;
-    final_grade_letter: string | null;
-    final_grade_value: number | null;
-    is_locked: boolean;
-    fakultas?: string | null;
-    prodi?: string | null;
-    can_finalize?: boolean;
+    id: number; score_id: number | null; nim: string; name: string;
+    group_name: string; kelompok_id: number; final_grade_letter: string | null;
+    final_grade_value: number | null; is_locked: boolean; fakultas?: string | null;
+    prodi?: string | null; can_finalize?: boolean;
 }
 
 interface Props {
-    scores: StudentGrade[];
-    stats: {
-        total_students: number;
-        graded_count: number;
-        locked_count: number;
-        average_value: number;
-    } | null;
-    filters: {
-        search?: string | null;
-        period_id?: number | string | null;
-        faculty_id?: number | string | null;
-        kelompok_id?: number | string | null;
-        huruf?: string | null;
-    };
+    stats: { total_students: number; graded_count: number; locked_count: number; average_value: number; } | null;
+    filters: { search?: string | null; period_id?: number | string | null; faculty_id?: number | string | null; kelompok_id?: number | string | null; huruf?: string | null; };
     periods: Array<{ id: number; name: string }>;
     faculties: Array<{ id: number; name: string }>;
     lockedFaculty?: { id: number; name: string } | null;
@@ -70,106 +43,39 @@ interface Props {
     canFinalizeMass: boolean;
 }
 
-const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.1 } }
-};
-
-const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }
-};
-
 export default function RekapNilaiIndex({
-    scores,
-    stats,
-    filters,
-    periods,
-    faculties,
-    lockedFaculty,
-    canExport,
-    canFinalizeMass,
+    scores, stats, filters, periods, faculties, lockedFaculty, canExport, canFinalizeMass,
 }: Props) {
     const [search, setSearch] = useState(filters.search ? String(filters.search) : '');
     const [periodId, setPeriodId] = useState(filters.period_id ? String(filters.period_id) : '');
     const [facultyId, setFacultyId] = useState(filters.faculty_id ? String(filters.faculty_id) : '');
     const [huruf, setHuruf] = useState(filters.huruf ? String(filters.huruf) : '');
-    const [certProgress, setCertProgress] = useState<{
-        status: 'idle' | 'processing' | 'completed' | 'failed';
-        progress: number;
-        processed: number;
-        total: number;
-        download_url?: string;
-    }>({ status: 'idle', progress: 0, processed: 0, total: 0 });
+    const [certProgress, setCertProgress] = useState<{ status: 'idle' | 'processing' | 'completed' | 'failed'; progress: number; processed: number; total: number; download_url?: string; }>({ status: 'idle', progress: 0, processed: 0, total: 0 });
 
     useEffect(() => {
-        let interval: any;
+        let interval: NodeJS.Timeout;
         if (certProgress.status === 'processing') {
             interval = setInterval(() => {
                 fetch(route('admin.grade-reports.progres-sertifikat', { period_id: periodId }))
                     .then(res => res.json())
-                    .then(data => {
-                        if (data) {
-                            setCertProgress(prev => ({
-                                ...prev,
-                                status: data.status,
-                                progress: data.progress || 0,
-                                processed: data.processed || 0,
-                                total: data.total || 0,
-                                download_url: data.download_url
-                            }));
-                        }
-                    });
+                    .then(data => { if (data) setCertProgress(prev => ({ ...prev, status: data.status, progress: data.progress || 0, processed: data.processed || 0, total: data.total || 0, download_url: data.download_url })); });
             }, 3000);
         }
         return () => clearInterval(interval);
     }, [certProgress.status, periodId]);
 
-    useEffect(() => {
-        setSearch(filters.search ? String(filters.search) : '');
-        setPeriodId(filters.period_id ? String(filters.period_id) : '');
-        setFacultyId(filters.faculty_id ? String(filters.faculty_id) : '');
-        setHuruf(filters.huruf ? String(filters.huruf) : '');
-    }, [filters.faculty_id, filters.huruf, filters.period_id, filters.search]);
-
     const applyFilters = (event?: FormEvent) => {
         event?.preventDefault();
-        router.get(
-            route('admin.grade-reports.index'),
-            {
-                search: search || undefined,
-                period_id: periodId || undefined,
-                faculty_id: lockedFaculty ? lockedFaculty.id : facultyId || undefined,
-                huruf: huruf || undefined,
-            },
-            { preserveState: true, preserveScroll: true, replace: true },
-        );
-    };
-
-    const resetFilters = () => {
-        setSearch('');
-        setHuruf('');
-        const nextPeriodId = periods[0] ? String(periods[0].id) : '';
-        setPeriodId(nextPeriodId);
-        if (!lockedFaculty) setFacultyId('');
-        router.get(
-            route('admin.grade-reports.index'),
-            { period_id: nextPeriodId || undefined, faculty_id: lockedFaculty ? lockedFaculty.id : undefined },
-            { preserveState: true, preserveScroll: true, replace: true },
-        );
+        router.get(route('admin.grade-reports.index'), { search: search || undefined, period_id: periodId || undefined, faculty_id: lockedFaculty ? lockedFaculty.id : facultyId || undefined, huruf: huruf || undefined }, { preserveState: true, preserveScroll: true, replace: true });
     };
 
     const handleFinalize = (scoreId: number) => {
-        if (confirm('Finalisasi nilai mahasiswa ini?')) {
-            router.patch(route('admin.grade-reports.finalisasi', scoreId), {}, { preserveScroll: true });
-        }
+        if (confirm('Finalisasi nilai mahasiswa ini?')) router.patch(route('admin.grade-reports.finalisasi', scoreId), {}, { preserveScroll: true });
     };
 
     const handleBulkFinalize = () => {
         if (!periodId) return;
-        if (confirm('Finalisasi massal untuk nilai yang sudah lengkap pada periode ini?')) {
-            router.post(route('admin.grade-reports.finalisasi-massal'), { period_id: periodId }, { preserveScroll: true });
-        }
+        if (confirm('Finalisasi massal untuk nilai yang sudah lengkap pada periode ini?')) router.post(route('admin.grade-reports.finalisasi-massal'), { period_id: periodId }, { preserveScroll: true });
     };
 
     const exportWithPath = (path: 'ekspor' | 'ekspor-ledger') => {
@@ -180,12 +86,11 @@ export default function RekapNilaiIndex({
         else if (facultyId) params.set('faculty_id', facultyId);
         if (search) params.set('search', search);
         if (huruf) params.set('huruf', huruf);
-        const exportRoute = path === 'ekspor' ? route('admin.grade-reports.ekspor') : route('admin.grade-reports.ekspor-ledger');
-        window.location.href = `${exportRoute}?${params.toString()}`;
+        window.location.href = `${path === 'ekspor' ? route('admin.grade-reports.ekspor') : route('admin.grade-reports.ekspor-ledger')}?${params.toString()}`;
     };
 
     const handleBulkCertificates = () => {
-        if (!periodId) { alert('Pilih periode terlebih dahulu.'); return; }
+        if (!periodId) return;
         if (confirm('Mulai pembuatan sertifikat massal di latar belakang? Fitur ini akan memproses seluruh mahasiswa yang nilainya sudah difinalisasi.')) {
             setCertProgress({ status: 'processing', progress: 0, processed: 0, total: 0 });
             router.post(route('admin.grade-reports.sertifikat-massal'), { period_id: periodId, faculty_id: facultyId || undefined }, { preserveScroll: true });
@@ -193,432 +98,210 @@ export default function RekapNilaiIndex({
     };
 
     return (
-        <AppLayout title="Evaluation Audit Hub">
-            <Head title="Rekap Nilai | SIKKKN" />
+    <AppLayout title="Rekapitulasi Nilai Mahasiswa">
+      <Head title="Rekapitulasi Nilai" />
 
-            <motion.div 
-                initial="hidden"
-                animate="visible"
-                variants={containerVariants}
-                className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16 font-sans"
-            >
-                {/* --- COMMAND HEADER --- */}
-                <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-4 text-emerald-600">
-                             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                             <span className="text-[10px] font-black uppercase tracking-[0.4em] leading-none">Security Node / Final Grade Evaluation Hub</span>
-                        </div>
-                        <h1 className="text-5xl lg:text-7xl font-black text-slate-900 tracking-tighter uppercase leading-[0.8] flex flex-col">
-                            Evaluation <span>Audit.</span>
-                        </h1>
-                        <p className="text-lg font-bold text-slate-400 tracking-tight leading-relaxed max-w-2xl uppercase italic opacity-80">
-                            Pusat rekapitulasi nilai akhir. <br />
-                            <span className="text-slate-900 not-italic">Oversight terhadap performa akademik mahasiswa, finalisasi ledger nilai, dan pemrosesan sertifikat massal.</span>
-                        </p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-4 shrink-0">
-                         {canExport && (
-                             <div className="flex gap-2">
-                                <Button
-                                    onClick={() => exportWithPath('ekspor')}
-                                    className="h-20 px-8 bg-white border border-slate-100 text-slate-900 font-black rounded-3xl shadow-xl transition-all flex items-center gap-4 text-[11px] uppercase tracking-[0.2em] active:scale-95 group"
-                                >
-                                    <FileSpreadsheet size={18} className="text-emerald-500" />
-                                    Export Ledger
-                                </Button>
-                             </div>
-                         )}
-                         {canFinalizeMass && (
-                            <Button
-                                onClick={handleBulkFinalize}
-                                className="h-20 px-8 bg-slate-900 text-white font-black rounded-3xl shadow-2xl transition-all flex items-center gap-4 text-[11px] uppercase tracking-[0.2em] active:scale-95 group"
-                            >
-                                <ShieldCheck size={18} className="text-emerald-500" />
-                                Bulk Finalize
-                            </Button>
-                         )}
-                         <Button
-                            onClick={handleBulkCertificates}
-                            disabled={certProgress.status === 'processing'}
-                            className="h-20 px-8 bg-emerald-600 text-white font-black rounded-3xl shadow-2xl transition-all flex items-center gap-4 text-[11px] uppercase tracking-[0.2em] active:scale-95 group"
+      <div className="max-w-7xl mx-auto space-y-8 pb-24 text-slate-900 font-sans">
+        {/* --- PREMIUM HEADER --- */}
+        <div className="space-y-4">
+            <div className="flex items-center gap-3 text-emerald-600">
+                <GraduationCap size={18} />
+                <span className="text-xs font-bold uppercase tracking-[0.25em] opacity-80">Akademik & Penilaian</span>
+            </div>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="space-y-1">
+                    <h1 className="text-5xl font-extrabold text-slate-900 tracking-tight">
+                        Rekap <span className="text-emerald-500">Nilai.</span>
+                    </h1>
+                    <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mt-2 leading-relaxed max-w-2xl">
+                        Otoritas Finalisasi Capaian Akademik dan Manajemen Sertifikasi Terpadu Mahasiswa KKN
+                    </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-4">
+                    {canExport && (
+                        <button
+                            onClick={() => exportWithPath('ekspor')}
+                            className="h-14 px-8 rounded-2xl bg-white border border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-200 shadow-sm transition-all flex items-center gap-3 text-xs font-bold active:scale-95 uppercase tracking-widest"
                         >
-                            <AnimatePresence mode="wait">
-                                {certProgress.status === 'processing' ? (
-                                    <RefreshCw size={18} className="animate-spin" />
-                                ) : (
-                                    <GraduationCap size={18} />
-                                )}
-                            </AnimatePresence>
-                            {certProgress.status === 'processing' ? `MEMPROSES...` : 'BUAT SERTIFIKAT'}
-                        </Button>
-                    </div>
-                </motion.div>
+                            <FileSpreadsheet size={18} /> EKSPOR NILAI
+                        </button>
+                    )}
+                    {canFinalizeMass && (
+                        <button
+                            onClick={handleBulkFinalize}
+                            className="h-14 px-8 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-xl shadow-emerald-100 flex items-center gap-3 active:scale-95 text-sm uppercase tracking-wider"
+                        >
+                            <ShieldCheck size={18} className="text-white" /> FINALISASI MASSAL
+                        </button>
+                    )}
+                    <button
+                        onClick={handleBulkCertificates}
+                        disabled={certProgress.status === 'processing'}
+                        className="h-14 px-10 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold transition-all shadow-xl shadow-emerald-100 flex items-center gap-3 active:scale-95 disabled:opacity-50 text-sm uppercase tracking-wider"
+                    >
+                        {certProgress.status === 'processing' ? <RefreshCw size={18} className="animate-spin" /> : <GraduationCap size={18} />}
+                        TERBITKAN SERTIFIKAT
+                    </button>
+                </div>
+            </div>
+        </div>
 
-                {/* --- PROGRESS OVERLAY --- */}
+                {/* --- PROGRESS / DOWNLOAD OVERLAY --- */}
                 <AnimatePresence>
                     {certProgress.status === 'processing' && (
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-slate-900 rounded-[3.5rem] p-12 text-white relative overflow-hidden shadow-2xl"
-                        >
-                            <div className="absolute top-0 right-0 p-12 opacity-5">
-                                <RefreshCw size={150} className="animate-spin duration-slow" />
-                            </div>
-                            <div className="flex flex-col md:flex-row items-center justify-between gap-10 relative z-10">
-                                <div className="space-y-4">
-                                     <div className="flex items-center gap-4 text-emerald-500">
-                                          <Activity size={20} className="animate-pulse" />
-                                          <span className="text-[10px] font-black uppercase tracking-[0.3em]">Pemrosesan Tugas Asinkron</span>
-                                     </div>
-                                     <h3 className="text-3xl font-black uppercase tracking-tighter italic leading-none">Casting Certification Vault</h3>
-                                     <p className="text-slate-400 font-bold uppercase tracking-tight italic opacity-80 leading-relaxed max-w-xl">
-                                         Sistem sedang merangkai file PDF ke dalam arsip ZIP di latar belakang. Tetap berada di halaman ini untuk menerima tautan unduhan.
-                                     </p>
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                            <div className="bg-emerald-600 rounded-xl p-8 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl shadow-emerald-200 border border-white/20">
+                                <div className="absolute top-0 right-0 p-8 opacity-5"><RefreshCw size={120} className="animate-spin duration-slow" /></div>
+                                <div className="space-y-1 relative z-10">
+                                    <h4 className="text-sm font-black uppercase tracking-widest text-white">Processing Certification Vault</h4>
+                                    <p className="text-[10px] font-bold text-emerald-100 uppercase tracking-widest opacity-80 italic">Generating encrypted student certificates in background corridor.</p>
                                 </div>
-                                <div className="flex flex-col items-end gap-6 min-w-[300px]">
-                                     <div className="flex items-center gap-6">
-                                          <span className="text-6xl font-black text-emerald-500 italic tracking-tighter tabular-nums">{certProgress.progress}%</span>
-                                          <div className="flex flex-col items-start leading-none gap-1">
-                                               <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Global Progress</span>
-                                               <span className="text-[12px] font-black text-emerald-400 uppercase tracking-wider tabular-nums font-mono">{certProgress.processed} / {certProgress.total}</span>
-                                          </div>
-                                     </div>
-                                     <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden border border-white/10">
-                                          <motion.div 
-                                              initial={{ width: 0 }}
-                                              animate={{ width: `${certProgress.progress}%` }}
-                                              className="h-full bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.5)]"
-                                          />
-                                     </div>
+                                <div className="flex items-center gap-6 relative z-10">
+                                    <span className="text-4xl font-black text-white italic tabular-nums">{certProgress.progress}%</span>
+                                    <div className="h-2 w-32 bg-white/20 rounded-full overflow-hidden border border-white/10"><motion.div initial={{ width: 0 }} animate={{ width: `${certProgress.progress}%` }} className="h-full bg-white" /></div>
                                 </div>
                             </div>
                         </motion.div>
                     )}
-                </AnimatePresence>
-
-                {/* --- DOWNLOAD VICTORY BAR --- */}
-                <AnimatePresence>
                     {certProgress.status === 'completed' && certProgress.download_url && (
-                        <motion.div 
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="bg-emerald-600 rounded-[3.5rem] p-12 text-white flex flex-col md:flex-row items-center justify-between gap-10 shadow-2xl shadow-emerald-500/20"
-                        >
-                            <div className="flex items-center gap-8">
-                                <div className="h-20 w-20 bg-white/20 rounded-[2rem] flex items-center justify-center backdrop-blur-3xl border border-white/20 shadow-2xl">
-                                    <ShieldCheck size={40} className="text-white" />
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="overflow-hidden">
+                             <div className="bg-emerald-600 rounded-xl p-6 text-white flex items-center justify-between shadow-xl shadow-emerald-100">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-10 w-10 bg-white/20 rounded-lg flex items-center justify-center"><ShieldCheck size={20} /></div>
+                                    <span className="text-sm font-black uppercase italic tracking-tight">Certification Archive Ready.</span>
                                 </div>
-                                <div className="space-y-2">
-                                    <h4 className="text-2xl font-black uppercase tracking-tighter italic leading-none">Protocol Complete: Archive Ready</h4>
-                                    <p className="text-emerald-50 text-[11px] font-black uppercase tracking-widest opacity-80 decoration-white/20 underline underline-offset-4">Vault package successfully generated and encrypted.</p>
-                                </div>
-                            </div>
-                            <a 
-                                href={certProgress.download_url} 
-                                target="_blank" rel="noopener noreferrer" 
-                                className="h-20 px-12 bg-slate-900 text-white rounded-[2rem] font-black text-[11px] flex items-center gap-6 uppercase tracking-[0.3em] hover:bg-white hover:text-emerald-700 transition-all shadow-2xl active:scale-95 group"
-                            >
-                                <Download size={20} className="group-hover:translate-y-1 transition-transform" />
-                                DOWNLOAD ARCHIVE (ZIP)
-                            </a>
+                                <a href={certProgress.download_url} target="_blank" rel="noopener noreferrer" className="h-10 px-6 bg-white text-emerald-600 border border-white/20 rounded-lg font-black text-[9px] flex items-center gap-3 uppercase tracking-widest shadow-lg hover:bg-slate-50 transition-all"><Download size={14} /> DOWNLOAD ARCHIVE (ZIP)</a>
+                             </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
 
-                {/* --- TELEMETRY BENTO MATRIX --- */}
+                {/* --- ANALYTICS --- */}
                 {stats && (
-                    <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                        <MetricCard label="Operation Total" value={stats.total_students.toLocaleString()} icon={Users} color="emerald" desc="Total registered personnel" />
-                        <MetricCard label="Grading Completed" value={stats.graded_count.toLocaleString()} icon={Activity} color="emerald" desc="Evaluated missions recorded" />
-                        <MetricCard label="Locked Vaults" value={stats.locked_count.toLocaleString()} icon={Lock} color="emerald" desc="Finalized ledger entries" />
-                        <MetricCard label="Mean Performance" value={stats.average_value.toFixed(2)} icon={BarChart3} color="emerald" desc="Global average score vector" />
-                    </motion.div>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <MetricStrip label="Total Personnel" value={stats.total_students} icon={Users} />
+                        <MetricStrip label="Graded Missions" value={stats.graded_count} icon={Activity} />
+                        <MetricStrip label="Locked Vaults" value={stats.locked_count} icon={Lock} />
+                        <MetricStrip label="Mean Performance" value={Number(stats.average_value ?? 0).toFixed(2)} icon={BarChart3} />
+                    </div>
                 )}
 
-                {/* --- COMMAND FILTER BOARD --- */}
-                <motion.div variants={itemVariants} className="bg-white border border-slate-100 rounded-[3.5rem] p-6 shadow-sm space-y-6">
-                    <div className="flex flex-col xl:flex-row gap-6">
-                        <div className="flex-1 relative group">
-                            <Search className="absolute left-8 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
-                            <input
-                                type="text"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                placeholder="SEARCH BY NIM / NAME / FACULTY / PROGRAM / GROUP..."
-                                className="w-full h-18 pl-20 pr-8 bg-slate-50 border-none rounded-[1.75rem] text-[11px] font-black text-slate-900 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all placeholder:text-slate-200 uppercase tracking-widest"
-                            />
+                {/* --- FILTERS & LEDGER --- */}
+                <section className="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-sm">
+                    <div className="p-4 bg-slate-50/20 border-b border-slate-50 space-y-4">
+                        <div className="flex flex-col lg:flex-row gap-3">
+                            <div className="flex-1 relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300" />
+                                <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && applyFilters()} placeholder="CARI NIM / NAMA..." className="w-full h-10 pl-10 pr-4 bg-white border border-slate-100 rounded-lg text-sm focus:border-emerald-500 outline-none transition-all placeholder:text-slate-200 uppercase tracking-widest font-bold" />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <select value={periodId} onChange={(e) => { setPeriodId(e.target.value); router.get(route('admin.grade-reports.index', { period_id: e.target.value })); }} className="h-10 bg-white border border-slate-100 rounded-lg px-3 text-[10px] font-bold uppercase tracking-widest outline-none transition focus:border-emerald-500 min-w-[140px]">
+                                    <option value="">SELECT SESSION</option>
+                                    {periods.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                </select>
+                                <select value={facultyId} onChange={(e) => setFacultyId(e.target.value)} disabled={!!lockedFaculty} className="h-10 bg-white border border-slate-100 rounded-lg px-3 text-[10px] font-bold uppercase tracking-widest outline-none transition focus:border-emerald-500 min-w-[140px] disabled:opacity-50">
+                                    <option value="">ALL FACULTIES</option>
+                                    {faculties.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+                                </select>
+                                <select value={huruf} onChange={(e) => setHuruf(e.target.value)} className="h-10 bg-white border border-slate-100 rounded-lg px-3 text-[10px] font-bold uppercase tracking-widest outline-none transition focus:border-emerald-500 min-w-[100px]">
+                                    <option value="">ALL GRADES</option>
+                                    {['A','B','C','D','E'].map(h => <option key={h} value={h}>{h}</option>)}
+                                </select>
+                            </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 shrink-0 xl:w-[800px]">
-                            <FilterSelect 
-                                value={periodId} 
-                                onChange={(e) => setPeriodId(e.target.value)} 
-                                icon={Target} 
-                                label="Session Node"
-                                options={periods.map(p => ({ value: String(p.id), label: p.name }))}
-                                placeholder="SELECT SESSION"
-                            />
-                            {lockedFaculty ? (
-                                <div className="h-18 px-10 bg-slate-900 border border-slate-800 rounded-[1.75rem] flex items-center gap-6 shadow-xl relative overflow-hidden group">
-                                     <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:rotate-12 transition-transform">
-                                          <Building2 size={60} />
-                                     </div>
-                                     <Globe size={16} className="text-emerald-500" />
-                                     <div className="flex flex-col">
-                                          <span className="text-[8px] font-black text-white/30 uppercase tracking-[0.3em] leading-none mb-1">Vector Locked</span>
-                                          <span className="text-[10px] font-black text-white uppercase tracking-wider truncate max-w-[120px]">{lockedFaculty.name}</span>
-                                     </div>
-                                </div>
-                            ) : (
-                                <FilterSelect 
-                                    value={facultyId} 
-                                    onChange={(e) => setFacultyId(e.target.value)} 
-                                    icon={Building2} 
-                                    label="Faculty Origin"
-                                    options={faculties.map(f => ({ value: String(f.id), label: f.name }))}
-                                    placeholder="ALL FACULTIES"
-                                />
-                            )}
-                            <FilterSelect 
-                                value={huruf} 
-                                onChange={(e) => setHuruf(e.target.value)} 
-                                icon={Binary} 
-                                label="Grade Vector"
-                                options={['A','B','C','D','E'].map(h => ({ value: h, label: h }))}
-                                placeholder="ALL GRADES"
-                            />
+                        <div className="flex items-center justify-between gap-3 pt-2">
+                             <Button onClick={() => applyFilters()} className="h-9 px-6 bg-emerald-600 text-white rounded-lg text-[9px] font-black uppercase tracking-widest shadow-lg shadow-emerald-200 active:scale-95">EXECUTE_FILTER</Button>
+                             <div className="hidden sm:flex items-center gap-2 opacity-30 italic">
+                                <Binary size={14} />
+                                <span className="text-[8px] font-bold uppercase tracking-widest">Filter state synced with kernel</span>
+                             </div>
                         </div>
-                    </div>
-                    <div className="flex flex-wrap items-center justify-between gap-6 pt-4 border-t border-slate-50">
-                        <div className="flex gap-4">
-                            <Button 
-                                onClick={applyFilters}
-                                className="h-14 px-10 bg-slate-900 text-white font-black rounded-2xl text-[10px] uppercase tracking-[0.3em] active:scale-95 shadow-xl shadow-slate-200"
-                            >
-                                <Search size={14} className="text-emerald-500" />
-                                EXECUTE FILTER
-                            </Button>
-                            <button 
-                                onClick={resetFilters}
-                                className="h-14 px-10 bg-white border border-slate-100 text-slate-400 font-black rounded-2xl text-[10px] uppercase tracking-[0.3em] hover:text-rose-500 transition-all active:scale-95"
-                            >
-                                RESET PARAMS
-                            </button>
-                        </div>
-                        <div className="hidden lg:flex items-center gap-4 text-slate-300">
-                             <Fingerprint size={16} />
-                             <span className="text-[10px] font-bold uppercase tracking-[0.3em] italic opacity-50">Filter state synchronized with kernel</span>
-                        </div>
-                    </div>
-                </motion.div>
-
-                {/* --- EVALUATION LEDGER --- */}
-                <motion.section variants={itemVariants} className="bg-white border border-slate-100 rounded-[3.5rem] overflow-hidden shadow-2xl shadow-slate-200/50">
-                    <div className="px-12 py-10 bg-slate-950 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                         <div className="flex items-center gap-6">
-                              <div className="h-14 w-14 bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-2xl shadow-emerald-500/20">
-                                   <Layers size={24} />
-                              </div>
-                              <div className="space-y-1">
-                                   <h3 className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">Audit stream</h3>
-                                   <p className="text-2xl font-black text-white uppercase tracking-tighter italic leading-none">Global Performance Ledger</p>
-                              </div>
-                         </div>
-                         <div className="flex items-center gap-4">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-white opacity-40 italic">Buffer Meta</span>
-                              <div className="h-12 w-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-sm font-black text-emerald-500 font-mono italic">
-                                   {scores.length}
-                              </div>
-                         </div>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto min-h-[400px]">
                         <table className="w-full text-left">
-                            <thead className="bg-slate-50 border-b border-slate-100 uppercase tracking-[0.4em] text-[10px] text-slate-400 font-black">
+                            <thead className="bg-slate-50 border-b border-slate-50 text-[9px] font-bold uppercase tracking-widest text-slate-400">
                                 <tr>
-                                    <th className="px-12 py-8">Mahasiswa Node</th>
-                                    <th className="px-12 py-8">Institutional Matrix</th>
-                                    <th className="px-12 py-8">Squad Assignment</th>
-                                    <th className="px-12 py-8 text-center">Score Vector</th>
-                                    <th className="px-12 py-8 text-center">Protocol Status</th>
-                                    <th className="px-12 py-8 text-right">Kernel Control</th>
+                                    <th className="px-6 py-4">Mahasiswa Node</th>
+                                    <th className="px-6 py-4">Institutional Matrix</th>
+                                    <th className="px-6 py-4">Deployment Squad</th>
+                                    <th className="px-6 py-4 text-center">Score Vector</th>
+                                    <th className="px-6 py-4 text-center">Protocol Status</th>
+                                    <th className="px-6 py-4 text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50 font-sans">
-                                {scores.length > 0 ? (
-                                    scores.map((grade) => (
-                                        <tr key={grade.score_id ?? `${grade.kelompok_id}-${grade.id}`} className="group hover:bg-emerald-50/20 transition-all font-sans">
-                                            <td className="px-12 py-10">
-                                                <div className="flex flex-col gap-1.5 leading-none">
-                                                    <span className="text-base font-black text-slate-900 group-hover:text-emerald-700 transition-colors tracking-tight uppercase italic">{grade.name}</span>
-                                                    <div className="flex items-center gap-3">
-                                                         <div className={clsx("h-1.5 w-1.5 rounded-full transition-all", grade.is_locked ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-slate-300")} />
-                                                         <span className="text-[10px] font-black text-slate-400 font-mono tracking-widest uppercase italic">{grade.nim}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-12 py-10">
-                                                <div className="flex flex-col gap-1.5">
-                                                     <div className="flex items-center gap-2">
-                                                          <Globe size={11} className="text-emerald-500/50" />
-                                                          <span className="text-[10px] font-black text-slate-900 uppercase tracking-tight">{grade.fakultas || 'NULL'}</span>
-                                                     </div>
-                                                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] italic ml-4">{grade.prodi || 'UNSPECIFIED'}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-12 py-10">
-                                                <div className="inline-flex items-center gap-3 px-4 py-2 bg-slate-950 text-white rounded-xl text-[9px] font-black tracking-[0.2em] italic shadow-xl shadow-slate-200 group-hover:bg-emerald-600 transition-colors uppercase truncate max-w-[180px]">
-                                                    <Target size={12} className="text-emerald-500" />
-                                                    {grade.group_name}
-                                                </div>
-                                            </td>
-                                            <td className="px-12 py-10 text-center">
-                                                <div className="flex flex-col items-center gap-2">
-                                                    <span className="text-2xl font-black text-slate-900 tracking-tighter font-mono italic">
-                                                        {grade.final_grade_value !== null ? grade.final_grade_value.toFixed(2) : '0.00'}
-                                                    </span>
-                                                    <div className={clsx(
-                                                        "px-3 py-1 rounded-lg text-[10px] font-black tracking-widest transition-all",
-                                                        grade.final_grade_letter === 'A' ? "bg-emerald-600 text-white" :
-                                                        grade.final_grade_letter === 'B' ? "bg-slate-900 text-emerald-500" :
-                                                        grade.final_grade_letter ? "bg-slate-100 text-slate-400" : "bg-slate-50 text-slate-200"
-                                                    )}>
-                                                        {grade.final_grade_letter || 'PENDING'}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-12 py-10 text-center">
-                                                <div className="flex flex-col items-center gap-2">
-                                                    {grade.is_locked ? (
-                                                        <span className="inline-flex h-8 items-center px-6 bg-slate-900 text-emerald-500 rounded-2xl text-[9px] font-black tracking-[0.25em] shadow-xl italic">
-                                                            LOCKED
-                                                        </span>
-                                                    ) : (
-                                                        <span className="inline-flex h-8 items-center px-6 bg-white text-slate-300 rounded-2xl text-[9px] font-black tracking-[0.25em] border border-slate-100 italic">
-                                                            DRAFT
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="px-12 py-10 text-right">
-                                                <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all">
-                                                    {grade.can_finalize && !grade.is_locked && grade.score_id ? (
-                                                        <button
-                                                            onClick={() => handleFinalize(grade.score_id as number)}
-                                                            className="h-12 px-8 bg-slate-900 text-white border border-slate-800 rounded-2xl flex items-center justify-center text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl active:scale-95 gap-3 italic"
-                                                        >
-                                                            <Lock size={14} strokeWidth={2.5} />
-                                                            EXECUTE_LOCK
-                                                        </button>
-                                                    ) : (
-                                                        <div className="h-12 px-8 bg-slate-50 border border-slate-100 text-slate-300 rounded-2xl flex items-center justify-center text-[10px] font-black uppercase tracking-widest italic cursor-default">
-                                                            {grade.is_locked ? 'AUDIT_SECURED' : 'UNSTABLE_STATE'}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={6} className="px-12 py-40 text-center">
-                                            <div className="flex flex-col items-center gap-8 text-slate-200 opacity-50">
-                                                <Archive size={100} strokeWidth={1} />
-                                                <div className="space-y-2">
-                                                    <p className="text-xl font-black uppercase tracking-[0.4em] italic leading-none">Evaluation Ledger Null</p>
-                                                    <p className="text-[10px] font-bold uppercase tracking-widest italic leading-none">NO EVALUATION ENTRIES DETECTED IN MONITORING PIPELINE.</p>
-                                                </div>
+                                {scores?.map((grade) => (
+                                    <tr key={grade.id} className="group hover:bg-slate-50/50 transition-all">
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col">
+                                                <span className="text-[13px] font-bold text-slate-900 uppercase leading-none italic group-hover:text-emerald-700 transition-colors truncate max-w-[180px]">{grade.name}</span>
+                                                <span className="text-[9px] font-bold text-slate-300 uppercase tracking-tighter mt-1 font-mono italic">NIM: {grade.nim}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-bold text-slate-600 uppercase leading-none truncate max-w-[140px]">{grade.fakultas || 'NULL'}</span>
+                                                <span className="text-[8px] font-bold text-slate-300 uppercase italic mt-1 leading-none">{grade.prodi || 'UNSPECIFIED'}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-left">
+                                             <span className="inline-flex h-6 items-center px-3 bg-emerald-600 text-white rounded-md text-[9px] font-black uppercase tracking-widest italic truncate max-w-[150px]">{grade.group_name}</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <div className="flex flex-col items-center">
+                                                <span className="text-xl font-black text-slate-900 font-mono tracking-tighter italic tabular-nums leading-none mb-1 group-hover:text-emerald-600 transition-colors">{grade.final_grade_value !== null ? Number(grade.final_grade_value).toFixed(2) : '0.00'}</span>
+                                                <div className={clsx('h-6 px-3 flex items-center justify-center rounded-md font-black text-[9px] uppercase tracking-widest', grade.final_grade_letter === 'A' ? 'bg-emerald-600 text-white' : grade.final_grade_letter === 'B' ? 'bg-slate-100 text-emerald-600' : 'bg-slate-50 text-slate-200')}>{grade.final_grade_letter || 'NA'}</div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                             <div className={clsx('inline-flex h-7 items-center px-4 rounded-full text-[8px] font-black tracking-widest italic border transition-all', grade.is_locked ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-300 border-slate-100')}>
+                                                {grade.is_locked ? 'AUDIT_SECURED' : 'DRAFT_STATE'}
+                                             </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-all scale-95 group-hover:scale-100">
+                                                {grade.can_finalize && !grade.is_locked ? (
+                                                    <Button onClick={() => handleFinalize(grade.score_id!)} className="h-8 px-4 bg-emerald-600 text-white font-black text-[8px] uppercase tracking-widest rounded-lg flex items-center gap-2 hover:bg-emerald-700 transition-all shadow-sm"><Lock size={12} /> EXECUTE_LOCK</Button>
+                                                ) : <span className="text-[9px] font-bold text-slate-200 uppercase italic">{grade.is_locked ? 'LOCKED_BY_ADMIN' : 'WAITING_DATA'}</span>}
                                             </div>
                                         </td>
                                     </tr>
+                                ))}
+                                {(!scores || scores.length === 0) && (
+                                    <tr><td colSpan={6} className="py-20 text-center text-[10px] font-bold text-slate-300 uppercase italic tracking-widest">Metadata buffer null.</td></tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
+                </section>
 
-                    <div className="px-12 py-10 border-t border-slate-50 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-10">
-                        <div className="flex items-center gap-5">
-                             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Hall HAL. Evaluation Stream Ledger Active</span>
-                        </div>
+                <div className="bg-emerald-600 rounded-xl p-8 text-white relative overflow-hidden shadow-xl shadow-emerald-100">
+                    <div className="absolute top-0 right-0 p-8 opacity-5 rotate-12"><Building2 size={200} /></div>
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
                         <div className="flex items-center gap-6">
-                             <div className="flex items-center gap-2 text-slate-300">
-                                  <Users size={12} />
-                                  <span className="text-[10px] font-black uppercase tracking-widest tabular-nums">{scores.length.toLocaleString()} ENTRIES RECORDED</span>
-                             </div>
+                            <div className="h-14 w-14 bg-white/10 rounded-xl flex items-center justify-center shrink-0"><ShieldCheck size={28} /></div>
+                            <div className="space-y-1">
+                                <h4 className="text-lg font-black uppercase tracking-tight leading-none">Immutable Grade Synchronization</h4>
+                                <p className="text-[10px] font-bold text-emerald-100/60 uppercase tracking-widest leading-relaxed max-w-xl">Rekapitulasi nilai adalah pusat verifikasi akhir keberhasilan KKN. Nilai yang difinalisasi bersifat permanen dan langsung diintegrasikan ke sertifikat akademik.</p>
+                            </div>
                         </div>
+                        <div className="flex items-center gap-2 text-white/40 italic"><Zap size={14} /><span className="text-[9px] font-black uppercase tracking-widest">Integrity Enforced</span></div>
                     </div>
-                </motion.section>
-
-                {/* --- FOOTER GOVERNANCE --- */}
-                <motion.div variants={itemVariants} className="bg-slate-900 rounded-[3.5rem] p-16 text-white relative overflow-hidden group/f shadow-2xl">
-                    <div className="absolute top-0 right-0 p-16 opacity-5 group-hover/f:rotate-12 transition-transform duration-1000">
-                         <ShieldCheck size={300} strokeWidth={1} />
-                    </div>
-                    <div className="flex flex-col lg:flex-row items-center justify-between gap-12 relative z-10">
-                        <div className="space-y-6 flex-1">
-                             <div className="flex items-center gap-5">
-                                  <GraduationCap className="text-emerald-500" size={32} />
-                                  <div className="space-y-1">
-                                       <span className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-500">Graduation Oversight</span>
-                                       <h3 className="text-3xl font-black tracking-tighter uppercase italic leading-none">Immutable Grade Synchronization</h3>
-                                  </div>
-                             </div>
-                             <p className="text-lg font-bold text-slate-400 uppercase tracking-tight leading-relaxed max-w-2xl opacity-80 italic">
-                                Rekapitulasi nilai adalah pusat verifikasi akhir keberhasilan KKN. Nilai yang difinalisasi bersifat permanen dan akan langsung diintegrasikan ke dalam database sertifikat akademik mahasiswa.
-                             </p>
-                        </div>
-                        <div className="px-12 py-6 bg-white/5 border border-white/10 rounded-[2.5rem] backdrop-blur-xl flex flex-col items-center justify-center gap-2">
-                             <ShieldCheck size={28} className="text-emerald-500" />
-                             <span className="text-[9px] font-black text-white/40 uppercase tracking-[0.3em]">Evaluation Integrity Enforced</span>
-                        </div>
-                    </div>
-                </motion.div>
-            </motion.div>
+                </div>
+            </div>
         </AppLayout>
     );
 }
 
-function MetricCard({ label, value, icon: Icon, color, desc }: { label: string, value: string, icon: any, color: 'emerald' | 'amber', desc: string }) {
+function MetricStrip({ label, value, icon: Icon }: { label: string, value: string | number, icon: LucideIcon }) {
     return (
-        <div className="bg-white border border-slate-100 rounded-[3rem] p-10 space-y-10 hover:shadow-2xl hover:shadow-slate-100 transition-all group overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-10 opacity-[0.03] group-hover:scale-110 transition-transform">
-                <Icon size={140} strokeWidth={1} />
+        <div className="bg-white border border-slate-100 rounded-xl p-4 flex items-center gap-4 shadow-sm hover:border-emerald-200 transition-all group overflow-hidden relative">
+            <div className="h-8 w-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center shrink-0 group-hover:rotate-6 transition-transform shadow-sm"><Icon size={16} /></div>
+            <div className="flex flex-col relative z-20">
+                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</span>
+                <span className="text-xl font-black text-slate-900 uppercase italic tracking-tighter tabular-nums leading-none group-hover:text-emerald-600 transition-colors">{value}</span>
             </div>
-            <div className={clsx(
-                "h-16 w-16 rounded-2xl flex items-center justify-center transition-all group-hover:rotate-6",
-                color === 'emerald' ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
-            )}>
-                <Icon size={30} strokeWidth={2.5} />
-            </div>
-            <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2 italic leading-none">{label}</p>
-                <p className="text-3xl font-black tracking-tighter text-slate-900 group-hover:text-emerald-600 transition-colors uppercase italic leading-none">{value}</p>
-                <p className="mt-6 text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] italic">{desc}</p>
-            </div>
-        </div>
-    );
-}
-
-function FilterSelect({ value, onChange, icon: Icon, label, options, placeholder }: { value: string, onChange: (e: any) => void, icon: any, label: string, options: Array<{value: string, label: string}>, placeholder: string }) {
-    return (
-        <div className="h-18 px-10 bg-slate-50 border border-slate-100 rounded-[1.75rem] flex items-center gap-6 shadow-sm relative overflow-hidden group/f hover:border-emerald-500/30 transition-all">
-             <Icon size={16} className="text-emerald-500" />
-             <div className="flex flex-col flex-1">
-                  <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.3em] leading-none mb-1">{label}</span>
-                  <select 
-                    value={value} 
-                    onChange={onChange}
-                    className="w-full bg-transparent border-none p-0 text-[10px] font-black text-slate-700 focus:ring-0 outline-none uppercase tracking-wider appearance-none cursor-pointer"
-                  >
-                        <option value="">{placeholder}</option>
-                        {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                  </select>
-             </div>
-             <ChevronRight size={14} className="text-slate-200 rotate-90" />
         </div>
     );
 }

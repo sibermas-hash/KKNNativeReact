@@ -134,7 +134,7 @@ class FinalReportController extends Controller
                 'title' => 'Laporan Akhir Disetujui',
                 'message' => 'Laporan akhir Anda ('.e($report->title).') telah disetujui oleh DPL.',
                 'icon' => 'check-circle',
-                'url' => route('student.dashboard'),
+                'action' => route('student.dashboard'),
             ]));
         }
 
@@ -168,7 +168,7 @@ class FinalReportController extends Controller
                 'title' => 'Revisi Laporan Akhir',
                 'message' => 'Laporan akhir Anda memerlukan perbaikan. Catatan: '.e($validated['notes']),
                 'icon' => 'exclamation-triangle',
-                'url' => route('student.dashboard'),
+                'action' => route('student.dashboard'),
             ]));
         }
 

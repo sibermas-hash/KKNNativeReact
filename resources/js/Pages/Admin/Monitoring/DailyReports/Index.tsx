@@ -8,12 +8,9 @@ import {
     Search,
     ChevronRight,
     Clock,
-    ClipboardList,
-    FileSearch,
     MapPin,
     ArrowRight,
     Layers,
-    History,
     FileText,
     ShieldCheck,
     Zap,
@@ -21,13 +18,11 @@ import {
     AlertTriangle,
     Eye,
     Target,
-    Database,
-    Fingerprint,
-    Cpu,
-    ArrowLeft
+    ArrowLeft,
+    X,
 } from 'lucide-react';
 import { Head, router, Link } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
@@ -42,211 +37,141 @@ interface ReportData {
 }
 
 interface Props extends PageProps {
-    reports: { 
-        data: ReportData[];
-        meta: PaginationMeta;
-    };
+    reports: { data: ReportData[]; meta: PaginationMeta };
     filters: { status?: string; search?: string };
 }
-
-function statusLabel(status: string): string {
-    const s = status.toLowerCase();
-    if (s === 'disetujui' || s === 'approved') return 'VERIFIED';
-    if (s === 'revisi' || s === 'revision') return 'REVISION REQ';
-    if (s === 'draf' || s === 'draft') return 'DRAFT';
-    return 'SUBMITTED';
-}
-
-const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.1 } }
-};
-
-const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }
-};
 
 export default function AdminDailyReportsIndex({ reports, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (search !== (filters.search || '') || status !== (filters.status || '')) {
-                router.get('/admin/laporan/harian', { search, status }, { preserveState: true, replace: true });
-            }
-        }, 300);
-        return () => clearTimeout(timer);
-    }, [search, status]);
+    const handleApplyFilters = () => {
+        router.get('/admin/laporan/harian', { 
+            search: search || undefined, 
+            status: status || undefined 
+        }, { preserveState: true, replace: true });
+    };
 
     return (
-        <AppLayout title="Operational Surveillance Hub">
-            <Head title="Monitoring Aktivitas | SIKKKN" />
+        <AppLayout title="Logbook Harian Mahasiswa">
+            <Head title="Logbook Harian" />
 
-            <motion.div 
-                initial="hidden"
-                animate="visible"
-                variants={containerVariants}
-                className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16 font-sans"
-            >
-                {/* --- COMMAND HEADER --- */}
-                <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-4 text-emerald-600">
-                             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                             <span className="text-[10px] font-black uppercase tracking-[0.4em] leading-none">Operation Center / Field Intelligence</span>
-                        </div>
-                        <h1 className="text-5xl lg:text-7xl font-black text-slate-900 tracking-tighter uppercase leading-[0.8] flex flex-col">
-                            Tactical <span>Surveillance.</span>
-                        </h1>
-                        <p className="text-lg font-bold text-slate-400 tracking-tight leading-relaxed max-w-2xl uppercase italic opacity-80">
-                            Pengawasan real-time logbook harian. <br />
-                            <span className="text-slate-900 not-italic">Audit terpusat terhadap aktivitas operasional seluruh faksi di wilayah penempatan KKN.</span>
-                        </p>
+            <div className="max-w-7xl mx-auto space-y-8 pb-24 text-slate-900 font-sans">
+                {/* --- PREMIUM HEADER --- */}
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3 text-emerald-600">
+                        <Activity size={18} />
+                        <span className="text-xs font-bold uppercase tracking-[0.25em] opacity-80">Monitoring & Evaluasi Lapangan</span>
                     </div>
-
-                    <div className="flex flex-col items-end gap-3 shrink-0">
-                        <div className="h-24 w-72 bg-slate-900 rounded-[2.5rem] p-8 flex flex-col justify-between shadow-2xl overflow-hidden relative group">
-                            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:rotate-12 transition-transform">
-                                <History size={80} strokeWidth={1} />
-                            </div>
-                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest leading-none relative z-10">Capture Density</span>
-                            <div className="flex items-baseline gap-3 relative z-10">
-                                <span className="text-4xl font-black text-white tracking-tighter">{(reports.meta?.total || 0).toLocaleString()}</span>
-                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Operational Logs</span>
-                            </div>
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div className="space-y-1">
+                            <h1 className="text-5xl font-extrabold text-slate-900 tracking-tight">
+                                Logbook <span className="text-emerald-500">Harian.</span>
+                            </h1>
+                            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mt-2 leading-relaxed max-w-2xl">
+                                Portal Monitoring Aktivitas Lapangan dan Verifikasi Kehadiran Mahasiswa
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                             <div className="h-14 px-8 bg-white border border-slate-200 rounded-2xl flex items-center gap-4 shadow-sm">
+                                <FileText size={20} className="text-emerald-500" />
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Status Data</span>
+                                    <span className="text-sm font-black text-slate-900 uppercase tabular-nums leading-none tracking-tight">{reports.meta.total.toLocaleString()} LAPORAN TERINPUT</span>
+                                </div>
+                             </div>
                         </div>
                     </div>
-                </motion.div>
+                </div>
 
-                {/* --- TELEMETRY BENTO MATRIX --- */}
-                <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <MetricCard label="Active Data Stream" value="REAL-TIME" icon={Zap} color="emerald" desc="Inbound traffic via encryption" />
-                    <MetricCard label="System Integrity" value="VERIFIED" icon={ShieldCheck} color="emerald" desc="Metadata hash authenticated" />
-                    <MetricCard label="Operation Risk" value="MINIMAL" icon={AlertTriangle} color="amber" desc="Stability parameters nominal" />
-                </motion.div>
-
-                {/* --- COMMAND FILTER HUB --- */}
-                <motion.div variants={itemVariants} className="bg-white border border-slate-100 rounded-[3.5rem] p-4 shadow-sm flex flex-col lg:flex-row items-center gap-4">
-                    <div className="flex-1 w-full relative group">
-                        <Search className="absolute left-8 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
-                        <input
-                            type="text"
-                            placeholder="OPERATOR NAME / NIM / LOG IDENTIFIER..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="w-full h-16 pl-20 pr-8 bg-transparent text-sm font-black text-slate-900 border-none focus:ring-0 outline-none placeholder:text-slate-200 uppercase tracking-tight"
-                        />
-                    </div>
-                    <div className="h-10 w-px bg-slate-100 hidden lg:block" />
-                    <div className="relative w-full lg:w-96 group">
-                        <Filter className="absolute left-8 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500" />
-                        <select 
-                            value={status}
-                            onChange={(e) => setStatus(e.target.value)}
-                            className="w-full h-16 pl-20 pr-12 bg-transparent border-none focus:ring-0 outline-none text-[10px] font-black text-slate-700 appearance-none uppercase tracking-[0.3em] group-hover:text-emerald-600 transition-colors"
-                        >
-                            <option value="">ALL PROTOCOLS</option>
-                            <option value="submitted">SUBMITTED</option>
-                            <option value="disetujui">VERIFIED</option>
-                            <option value="revisi">REVISION</option>
-                            <option value="draf">DRAFT</option>
-                        </select>
-                        <ChevronRight className="absolute right-8 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 rotate-90 pointer-events-none" />
-                    </div>
-                </motion.div>
-
-                {/* --- TACTICAL SURVEILLANCE LEDGER --- */}
-                <motion.section variants={itemVariants} className="bg-white border border-slate-100 rounded-[3.5rem] overflow-hidden shadow-2xl shadow-slate-200/50">
-                    <div className="px-10 py-10 bg-slate-950 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                         <div className="flex items-center gap-6">
-                              <div className="h-14 w-14 bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-500/20">
-                                   <Layers3 size={24} />
-                              </div>
-                              <div className="space-y-1">
-                                   <h3 className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">Audit stream</h3>
-                                   <p className="text-2xl font-black text-white uppercase tracking-tighter italic leading-none">Diagnostic Log Inventory</p>
-                              </div>
-                         </div>
-                         <div className="flex items-center gap-4">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-white opacity-40 italic">Buffer Load</span>
-                              <div className="h-12 w-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-sm font-black text-emerald-500">
-                                   {reports.data.length}
-                              </div>
-                         </div>
+                {/* --- FILTER & TABEL --- */}
+                <section className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm shadow-slate-200/50">
+                    <div className="p-8 border-b border-slate-100 flex flex-col lg:flex-row items-center justify-between gap-6 bg-slate-50/20">
+                        <div className="flex-1 relative w-full lg:max-w-xl group">
+                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
+                            <input 
+                                type="text" 
+                                value={search} 
+                                onChange={(e) => setSearch(e.target.value)} 
+                                onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} 
+                                className="w-full h-14 pl-14 pr-6 bg-white border border-slate-200 rounded-2xl text-[13px] font-semibold focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all placeholder:text-slate-300 uppercase tracking-wider" 
+                                placeholder="CARI MAHASISWA, NIM, ATAU JUDUL LAPORAN..." 
+                            />
+                        </div>
+                        <div className="flex items-center gap-4 w-full lg:w-auto">
+                            <div className="relative flex-1 lg:w-64">
+                                <select 
+                                    value={status} 
+                                    onChange={(e) => { setStatus(e.target.value); router.get('/admin/laporan/harian', { search, status: e.target.value }, { preserveState: true }); }} 
+                                    className="w-full h-14 bg-white border border-slate-200 rounded-2xl px-6 text-[11px] font-bold uppercase tracking-widest outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 appearance-none pr-12"
+                                >
+                                    <option value="">SEMUA STATUS</option>
+                                    <option value="submitted">DIKIRIM (PENDING)</option>
+                                    <option value="disetujui">DISETUJUI (VERIFIED)</option>
+                                    <option value="revisi">REVISI (NEED FIX)</option>
+                                    <option value="draf">DRAF (UNSUBMITTED)</option>
+                                </select>
+                                <ChevronRight size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 rotate-90 pointer-events-none" />
+                            </div>
+                            <button 
+                                onClick={handleApplyFilters} 
+                                className="h-14 px-8 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-100 transition-all active:scale-95"
+                            >
+                                <Filter size={20} />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-slate-50 border-b border-slate-100">
+                            <thead className="bg-white border-b border-slate-50 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
                                 <tr>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Node</th>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Activity Identification</th>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Field Personnel</th>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 text-center">Unit Zone</th>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.4em] text-right">Verification Protocol</th>
+                                    <th className="px-10 py-6">Aktivitas Mahasiswa</th>
+                                    <th className="px-10 py-6">Data Personel</th>
+                                    <th className="px-10 py-6">Unit / Kelompok</th>
+                                    <th className="px-10 py-6 text-right">Status Verifikasi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
                                 {reports.data.length > 0 ? (
-                                    reports.data.map((report, idx) => (
-                                        <tr key={report.id} className="group hover:bg-emerald-50/20 transition-all font-sans">
+                                    reports.data.map((r) => (
+                                        <tr key={r.id} className="group hover:bg-slate-50/50 transition-all">
                                             <td className="px-10 py-8">
-                                                <span className="text-[10px] font-black text-slate-200 font-mono tracking-tighter italic group-hover:text-emerald-500 transition-colors">
-                                                    #{idx + 1 + (reports.meta.current_page - 1) * reports.meta.per_page}
-                                                </span>
-                                            </td>
-                                            <td className="px-10 py-8">
-                                                <div className="flex items-center gap-6">
-                                                    <div className="h-16 w-16 bg-white border border-slate-100 text-slate-400 rounded-2xl flex items-center justify-center group-hover:bg-slate-900 group-hover:text-emerald-500 group-hover:border-slate-900 transition-all shadow-sm">
-                                                        <Calendar size={22} strokeWidth={2.5} />
-                                                    </div>
-                                                    <div className="flex flex-col gap-1.5">
-                                                        <span className="text-base font-black text-slate-900 tracking-tight leading-none group-hover:text-emerald-700 transition-colors uppercase italic">{report.title}</span>
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="h-2 w-2 rounded-full bg-emerald-500 group-hover:animate-ping" />
-                                                            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest font-mono italic">{report.date}</span>
-                                                        </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[15px] font-bold text-slate-900 leading-tight group-hover:text-emerald-700 transition-colors uppercase tracking-tight">{r.title}</span>
+                                                    <div className="flex items-center gap-3 mt-2">
+                                                        <Calendar size={14} className="text-emerald-500" />
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest tabular-nums">{r.date}</span>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-10 py-8">
-                                                <div className="flex items-center gap-5">
-                                                    <div className="h-12 w-12 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center font-black text-[13px] border border-slate-100 group-hover:bg-slate-900 group-hover:text-white transition-all italic">
-                                                        {report.student?.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
-                                                    </div>
-                                                    <div className="flex flex-col gap-0.5">
-                                                        <span className="text-[11px] font-black text-slate-900 uppercase tracking-tight italic group-hover:text-emerald-600 transition-colors leading-none">{report.student?.name}</span>
-                                                        <span className="text-[10px] font-black text-slate-300 font-mono uppercase tracking-widest leading-none pt-1">NIM: {report.student?.nim}</span>
-                                                    </div>
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-[12px] font-bold text-slate-700 uppercase leading-none">{r.student.name}</span>
+                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">NIM: {r.student.nim}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-10 py-8 text-center">
-                                                <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl group-hover:bg-slate-900 group-hover:text-emerald-500 transition-all shadow-sm">
-                                                    <MapPin size={12} className="text-rose-500" />
-                                                    <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest truncate max-w-[150px] group-hover:text-emerald-500 transition-colors">{report.group?.name}</span>
+                                            <td className="px-10 py-8">
+                                                <div className="inline-flex items-center gap-3 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 transition-all shadow-sm">
+                                                    <Target size={14} className="text-emerald-500" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest leading-none truncate max-w-[150px]">{r.group.name}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-10 py-8 text-right">
-                                                <div className="flex items-center justify-end gap-6 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all">
-                                                    <span className={clsx(
-                                                        "px-5 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.3em] border transition-all italic shadow-sm",
-                                                        (report.status.toLowerCase() === 'disetujui' || report.status.toLowerCase() === 'approved') 
-                                                            ? "bg-slate-950 text-emerald-500 border-white/10" 
-                                                            : (report.status.toLowerCase() === 'revisi' || report.status.toLowerCase() === 'revision') 
-                                                                ? "bg-amber-50 text-amber-700 border-amber-100" 
-                                                                : (report.status.toLowerCase() === 'draf' || report.status.toLowerCase() === 'draft') 
-                                                                    ? "bg-white text-slate-300 border-slate-100" 
-                                                                    : "bg-emerald-600 text-white border-emerald-600"
-                                                    )}>
-                                                        {statusLabel(report.status)}
+                                            <td className="px-10 py-8">
+                                                <div className="flex items-center justify-end gap-5">
+                                                    <span className={clsx('px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest border transition-all', 
+                                                        r.status.toLowerCase() === 'disetujui' || r.status.toLowerCase() === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
+                                                        r.status.toLowerCase() === 'revisi' ? 'bg-amber-50 text-amber-600 border-amber-100' : 
+                                                        r.status.toLowerCase() === 'submitted' ? 'bg-sky-50 text-sky-600 border-sky-100' :
+                                                        'bg-slate-50 text-slate-400 border-slate-100')}>
+                                                        {r.status === 'disetujui' ? 'VERIFIED' : r.status.toUpperCase()}
                                                     </span>
                                                     <Link 
-                                                        href={`/admin/laporan/harian/${report.id}`}
-                                                        className="h-12 px-6 bg-white border border-slate-100 text-slate-300 hover:text-emerald-600 hover:border-emerald-200 rounded-2xl flex items-center justify-center text-[9px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95"
+                                                        href={`/admin/laporan/harian/${r.id}`} 
+                                                        className="h-10 px-5 bg-white border border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-100 hover:shadow-sm rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all active:scale-95 group/btn"
                                                     >
-                                                        Inspect
+                                                        Lihat Detail
+                                                        <ChevronRight size={14} className="opacity-40 group-hover/btn:translate-x-0.5 transition-transform" />
                                                     </Link>
                                                 </div>
                                             </td>
@@ -254,13 +179,10 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={5} className="px-10 py-40 text-center">
-                                            <div className="flex flex-col items-center gap-8 text-slate-200 opacity-50">
-                                                <History size={100} strokeWidth={1} />
-                                                <div className="space-y-2">
-                                                    <p className="text-xl font-black uppercase tracking-[0.4em] italic leading-none">Diagnostic Stream Idle</p>
-                                                    <p className="text-[10px] font-bold uppercase tracking-widest italic leading-none">NO DATA PACKETS DETECTED IN CURRENT SURVEILLANCE LOOP.</p>
-                                                </div>
+                                        <td colSpan={4} className="py-40 text-center">
+                                            <div className="flex flex-col items-center gap-4 text-slate-200">
+                                                <Clock size={60} strokeWidth={1} />
+                                                <p className="text-xs font-bold uppercase tracking-[0.4em] leading-none">Belum ada transmisi data hari ini</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -269,71 +191,36 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
                         </table>
                     </div>
 
-                    <div className="px-10 py-10 border-t border-slate-50 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-10">
-                        <div className="flex items-center gap-4 text-emerald-600">
-                             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">PAGE {reports.meta?.current_page || 1} / {reports.meta?.last_page || 1} OF TRANSMISSION</span>
-                        </div>
-                        {reports.meta && <Pagination meta={reports.meta} />}
+                    <div className="px-10 py-6 border-t border-slate-50 bg-slate-50/20 flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic leading-none">
+                            Data Hal. {reports.meta.current_page} — {reports.meta.total} entri logbook terdeteksi
+                        </span>
+                        <Pagination meta={reports.meta} />
                     </div>
-                </motion.section>
+                </section>
 
-                {/* --- FOOTER GOVERNANCE --- */}
-                <motion.div variants={itemVariants} className="bg-slate-900 rounded-[3.5rem] p-16 text-white relative overflow-hidden group/f shadow-2xl">
-                    <div className="absolute top-0 right-0 p-16 opacity-5 group-hover/f:rotate-12 transition-transform duration-1000">
-                         <ShieldCheck size={300} strokeWidth={1} />
-                    </div>
-                    <div className="flex flex-col lg:flex-row items-center justify-between gap-12 relative z-10">
-                        <div className="space-y-6 flex-1">
-                             <div className="flex items-center gap-5">
-                                  <Users className="text-emerald-500" size={32} />
-                                  <div className="space-y-1">
-                                       <span className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-500">Personnel Integrity</span>
-                                       <h3 className="text-3xl font-black tracking-tighter uppercase italic leading-none">Authorized Audit Policy</h3>
-                                  </div>
-                             </div>
-                             <p className="text-lg font-bold text-slate-400 uppercase tracking-tight leading-relaxed max-w-2xl opacity-80 italic">
-                                Seluruh logbook harian adalah representasi otoritatif terhadap aktivitas lapangan. Audit ini memantau sinkronisasi antara klaim mahasiswa dan verifikasi pembimbing lapangan.
-                             </p>
+                {/* --- FOOTER GUIDE --- */}
+                <div className="bg-emerald-600 rounded-[2.5rem] p-12 text-white relative overflow-hidden shadow-2xl shadow-emerald-100">
+                    <div className="absolute top-0 right-0 p-12 opacity-10 rotate-12 -mr-16 -mt-16"><ShieldCheck size={350} /></div>
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-12 relative z-10">
+                        <div className="flex items-center gap-10">
+                            <div className="h-24 w-24 bg-white/20 rounded-[2rem] flex items-center justify-center shrink-0 border border-white/20 shadow-sm backdrop-blur-md">
+                                <Activity size={48} className="text-white" />
+                            </div>
+                            <div className="space-y-3">
+                                <h4 className="text-2xl font-bold uppercase tracking-tight">Otoritas Monitoring Harian</h4>
+                                <p className="text-sm font-medium text-emerald-50 max-w-2xl leading-relaxed">
+                                    Log harian mahasiswa adalah parameter utama penilaian disiplin dan progres kegiatan di lapangan. Pastikan tim DPL melakukan validasi berkala untuk menjamin autentisitas aktivitas pengabdian.
+                                </p>
+                            </div>
                         </div>
-                        <div className="flex flex-wrap justify-center gap-6">
-                             <SafetyShield label="GPS" />
-                             <SafetyShield label="HASH" />
-                             <SafetyShield label="VERIFIED" />
+                        <div className="flex flex-col items-center gap-2 opacity-30 text-emerald-400 animate-pulse">
+                            <Activity size={32} />
+                            <span className="text-[8px] font-black uppercase tracking-[0.4em]">Live Stream Active</span>
                         </div>
                     </div>
-                </motion.div>
-            </motion.div>
+                </div>
+            </div>
         </AppLayout>
-    );
-}
-
-function MetricCard({ label, value, icon: Icon, color, desc }: { label: string, value: string, icon: any, color: 'emerald' | 'amber', desc: string }) {
-    return (
-        <div className="bg-white border border-slate-100 rounded-[3rem] p-10 space-y-10 hover:shadow-2xl hover:shadow-slate-100 transition-all group overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-10 opacity-[0.03] group-hover:scale-110 transition-transform">
-                <Icon size={140} strokeWidth={1} />
-            </div>
-            <div className={clsx(
-                "h-16 w-16 rounded-2xl flex items-center justify-center transition-all group-hover:rotate-6",
-                color === 'emerald' ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
-            )}>
-                <Icon size={30} strokeWidth={2.5} />
-            </div>
-            <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2 italic leading-none">{label}</p>
-                <p className="text-4xl font-black tracking-tighter text-slate-900 group-hover:text-emerald-600 transition-colors uppercase italic leading-none">{value}</p>
-                <p className="mt-6 text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] italic">{desc}</p>
-            </div>
-        </div>
-    );
-}
-
-function SafetyShield({ label }: { label: string }) {
-    return (
-        <div className="h-20 w-32 border border-white/10 rounded-[1.5rem] flex flex-col items-center justify-center gap-2 bg-white/5 backdrop-blur-xl group hover:border-emerald-500 transition-all">
-             <ShieldCheck size={20} className="text-emerald-500 group-hover:scale-110 transition-transform" />
-             <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{label}</span>
-        </div>
     );
 }

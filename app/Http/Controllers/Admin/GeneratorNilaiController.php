@@ -288,6 +288,7 @@ class GeneratorNilaiController extends Controller
             abort(400, 'Missing period_id');
         }
 
+        // Use cursor for memory efficiency
         $groups = KelompokKkn::with(['lokasi', 'dosen.user:id,name', 'periode.tahunAkademik'])
             ->where('period_id', $periodId)
             ->whereHas('dosen', function ($q) {
@@ -300,29 +301,11 @@ class GeneratorNilaiController extends Controller
                 }
             })
             ->orderBy('code')
-            ->get();
+            ->cursor();
 
-        $zip = new \ZipArchive;
-        $zipFileName = "Separated_Blanko_Penilaian_Periode_{$periodId}.zip";
-        $zipPath = storage_path("app/private/{$zipFileName}");
-
-        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
-            foreach ($groups as $group) {
-                $students = $this->getStudentsForGroup($group);
-                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.blanko_nilai', [
-                    'group' => $group,
-                    'students' => $students,
-                    'periode' => $group->periode?->name ?? '57',
-                    'tahun' => $group->periode?->tahunAkademik?->year ?? date('Y'),
-                ]);
-
-                $pdfName = "Blanko_Penilaian_Kelompok_{$group->code}.pdf";
-                $zip->addFromString($pdfName, $pdf->output());
-            }
-            $zip->close();
-        }
-
-        return response()->download($zipPath)->deleteFileAfterSend(true);
+        return $this->exportService->exportZip($groups, function (KelompokKkn $group) {
+            return $this->getStudentsForGroup($group);
+        });
     }
 
     private function getStudentsForGroup($group): array
@@ -355,7 +338,7 @@ class GeneratorNilaiController extends Controller
 
     private function getStudentsForPeriod($periodId): array
     {
-        return DB::table('mahasiswa as s')
+        return DB::connection('kkn')->table('mahasiswa as s')
             ->join('users as u', 's.user_id', '=', 'u.id')
             ->join('peserta_kkn as r', 's.id', '=', 'r.mahasiswa_id')
             ->join('kelompok_kkn as g', 'r.kelompok_id', '=', 'g.id')

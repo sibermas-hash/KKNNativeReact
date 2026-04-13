@@ -54,7 +54,7 @@ class DplSyncController extends Controller
         try {
             $externalDosen = count($nipList) > 0
                 ? $this->masterApi->getEmployeesByNipList($nipList)
-                : $this->masterApi->getAllEmployees();
+                : $this->masterApi->yieldSyncDosen();
 
             $results = $this->syncDosenRecords($externalDosen);
 
@@ -69,16 +69,18 @@ class DplSyncController extends Controller
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('DPL sync failed', ['error' => $e->getMessage()]);
 
-            return back()->with('error', 'Gagal melakukan sinkronisasi. Silakan coba lagi atau hubungi administrator.');
+            return back()->with('error', 'Gagal melakukan sinkronisasi: ' . $e->getMessage());
         }
     }
 
-    private function syncDosenRecords(array $externalDosen): array
+    private function syncDosenRecords(iterable $externalDosen): array
     {
         $synced = 0;
         $errors = 0;
+        $total = 0;
 
         foreach ($externalDosen as $dosen) {
+            $total++;
             $nip = trim((string) ($dosen['nip'] ?? ''));
             $name = trim((string) ($dosen['name'] ?? ''));
 
@@ -128,7 +130,7 @@ class DplSyncController extends Controller
         }
 
         return [
-            'total' => count($externalDosen),
+            'total' => $total,
             'synced' => $synced,
             'errors' => $errors,
         ];

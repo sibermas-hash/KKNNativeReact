@@ -14,7 +14,6 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // App is behind reverse proxies (Cloudflare / Nginx), so trust forwarded headers.
-        // Only trust private/loopback ranges and Cloudflare IPs.
         $middleware->trustProxies(at: [
             '127.0.0.1',
             '10.0.0.0/8',
@@ -39,6 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->web(append: [
+            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
             \App\Http\Middleware\HandleActivePeriod::class,
             \App\Http\Middleware\CspHeaders::class,
@@ -66,6 +66,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectUsersTo('/');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        /* AI Self-Healing Disabled
+        $exceptions->report(function (\Throwable $e) {
+            if (app()->environment('local')) {
+                app(\App\Services\AI\SelfHealerService::class)->attemptFix($e);
+            }
+        });
+        */
         // Custom rendering for Inertia requests to show the pretty Error page
         $exceptions->respond(function ($response, $e, $request) {
             $status = $response->getStatusCode();

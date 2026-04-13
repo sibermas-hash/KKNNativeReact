@@ -120,9 +120,9 @@ const itemVariants = {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }
 };
 
-export default function SystemSettings({ settings }: Props) {
+export default function SystemSettings({ settings = {} }: Props) {
     const form = useForm({
-        settings: Object.values(settings)
+        settings: Object.values(settings || {})
             .flat()
             .map((setting) => ({
                 id: setting.id,
@@ -131,7 +131,7 @@ export default function SystemSettings({ settings }: Props) {
     });
 
     const [visiblePasswords, setVisiblePasswords] = useState<Record<number, boolean>>({});
-    const flattened = useMemo(() => Object.values(settings).flat(), [settings]);
+    const flattened = useMemo(() => Object.values(settings || {}).flat(), [settings]);
 
     const updateValue = (id: number, value: string) => {
         form.setData(
@@ -149,10 +149,10 @@ export default function SystemSettings({ settings }: Props) {
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
-        form.post(route('admin.pengaturan.sistem.update'));
+        form.patch(route('admin.pengaturan.sistem.update'));
     };
 
-    const groupCount = Object.keys(settings).length;
+    const groupCount = Object.keys(settings || {}).length;
 
     return (
         <AppLayout title="Global Governance Controller">
@@ -171,17 +171,17 @@ export default function SystemSettings({ settings }: Props) {
                              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
                              <span className="text-[10px] font-black uppercase tracking-[0.4em] leading-none">Security Node / Global Governance Controller</span>
                         </div>
-                        <h1 className="text-5xl lg:text-7xl font-black text-slate-900 tracking-tighter uppercase leading-[0.8] flex flex-col">
+                        <h1 className="text-5xl lg:text-7xl font-black text-gray-900 tracking-tighter uppercase leading-[0.8] flex flex-col">
                             System <span>Kernel.</span>
                         </h1>
-                        <p className="text-lg font-bold text-slate-400 tracking-tight leading-relaxed max-w-2xl uppercase italic opacity-80">
+                        <p className="text-lg font-bold text-gray-400 tracking-tight leading-relaxed max-w-2xl uppercase italic opacity-80">
                             Pusat konfigurasi parameter operasional. <br />
-                            <span className="text-slate-900 not-italic">Penetapan ambang batas teknis, integrasi API, dan kebijakan tata kelola sistem pada level root.</span>
+                            <span className="text-gray-900 not-italic">Penetapan ambang batas teknis, integrasi API, dan kebijakan tata kelola sistem pada level root.</span>
                         </p>
                     </div>
 
                     <div className="flex flex-col items-end gap-3 shrink-0">
-                         <div className="h-24 px-10 bg-slate-900 rounded-[2.5rem] flex items-center gap-10 shadow-2xl relative overflow-hidden group">
+                         <div className="h-24 px-10 bg-gray-900 rounded-[2.5rem] flex items-center gap-10 shadow-2xl relative overflow-hidden group">
                               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:rotate-12 transition-transform">
                                    <Settings size={80} strokeWidth={1} />
                               </div>
@@ -189,7 +189,7 @@ export default function SystemSettings({ settings }: Props) {
                                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest leading-none mb-2">Registry Load</span>
                                    <div className="flex items-baseline gap-3">
                                         <span className="text-5xl font-black text-white tracking-tighter leading-none">{flattened.length}</span>
-                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Params</span>
+                                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Params</span>
                                    </div>
                               </div>
                               <div className="flex flex-col justify-center">
@@ -210,7 +210,7 @@ export default function SystemSettings({ settings }: Props) {
 
                 <form onSubmit={handleSubmit} className="space-y-16">
                     <AnimatePresence>
-                        {Object.entries(settings).map(([group, items]) => {
+                        {Object.entries(settings || {}).map(([group, items]) => {
                             const GroupIcon = GROUP_ICONS[group] || Layers;
                             return (
                                 <motion.section 
@@ -219,7 +219,7 @@ export default function SystemSettings({ settings }: Props) {
                                     className="bg-white border border-slate-100 rounded-[3.5rem] overflow-hidden shadow-2xl shadow-slate-200/50 group/section"
                                 >
                                     {/* Section Header */}
-                                    <div className="px-12 py-12 bg-slate-950 flex flex-col md:flex-row md:items-center justify-between gap-10">
+                                    <div className="px-12 py-12 bg-gray-950 flex flex-col md:flex-row md:items-center justify-between gap-10">
                                          <div className="flex items-center gap-8">
                                               <div className="h-16 w-16 bg-emerald-600 text-white rounded-3xl flex items-center justify-center shadow-2xl shadow-emerald-500/20">
                                                    <GroupIcon size={28} />
@@ -231,7 +231,7 @@ export default function SystemSettings({ settings }: Props) {
                                          </div>
                                          <div className="flex flex-col md:items-end gap-2">
                                               <span className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">Process Scope</span>
-                                              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed max-w-sm italic md:text-right">{GROUP_DESCRIPTIONS[group]}</p>
+                                              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed max-w-sm italic md:text-right">{GROUP_DESCRIPTIONS[group]}</p>
                                          </div>
                                     </div>
 
@@ -244,7 +244,7 @@ export default function SystemSettings({ settings }: Props) {
                                             return (
                                                 <div key={setting.id} className={clsx("space-y-4", isLongText && "md:col-span-2")}>
                                                     <div className="flex items-center justify-between px-2">
-                                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic">
+                                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] italic">
                                                             {LABEL_OVERRIDE[setting.config_key] || setting.label}
                                                         </label>
                                                         <span className="text-[9px] font-mono text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100 italic font-black uppercase tracking-widest leading-none">
@@ -258,7 +258,7 @@ export default function SystemSettings({ settings }: Props) {
                                                                 value={getValue(setting.id)}
                                                                 onChange={(event) => updateValue(setting.id, event.target.value)}
                                                                 rows={4}
-                                                                className="w-full px-10 py-10 rounded-[2rem] bg-slate-50 border-none text-[13px] font-black text-slate-900 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all placeholder:text-slate-200 min-h-[160px] leading-relaxed italic"
+                                                                className="w-full px-10 py-10 rounded-[2rem] bg-slate-50 border-none text-[13px] font-black text-gray-900 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all placeholder:text-slate-200 min-h-[160px] leading-relaxed italic"
                                                             />
                                                         ) : (
                                                             <div className="relative">
@@ -267,7 +267,7 @@ export default function SystemSettings({ settings }: Props) {
                                                                     value={getValue(setting.id)}
                                                                     onChange={(event) => updateValue(setting.id, event.target.value)}
                                                                     className={clsx(
-                                                                        "w-full h-18 px-10 rounded-[1.5rem] bg-slate-50 border-none text-[14px] font-black text-slate-900 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all placeholder:text-slate-200 italic",
+                                                                        "w-full h-18 px-10 rounded-[1.5rem] bg-slate-50 border-none text-[14px] font-black text-gray-900 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all placeholder:text-slate-200 italic",
                                                                         isSecret && "pr-20 font-mono tracking-widest",
                                                                         getError(setting.id) && "ring-4 ring-rose-500/10"
                                                                     )}
@@ -287,9 +287,9 @@ export default function SystemSettings({ settings }: Props) {
 
                                                     <AnimatePresence>
                                                         {SETTING_HELPERS[setting.config_key] && (
-                                                            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="flex gap-4 items-start px-2 text-slate-400">
+                                                            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="flex gap-4 items-start px-2 text-gray-400">
                                                                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
-                                                                <p className="text-[10px] font-bold leading-relaxed text-slate-500 uppercase tracking-tight italic">
+                                                                <p className="text-[10px] font-bold leading-relaxed text-gray-500 uppercase tracking-tight italic">
                                                                     {SETTING_HELPERS[setting.config_key]}
                                                                 </p>
                                                             </motion.div>
@@ -320,12 +320,12 @@ export default function SystemSettings({ settings }: Props) {
                                 <ShieldCheck size={36} strokeWidth={2.5} />
                             </div>
                             <div className="space-y-2 text-center md:text-left">
-                                <h4 className="text-2xl font-black uppercase tracking-tighter italic text-emerald-900">
+                                <h4 className="text-2xl font-black uppercase tracking-tighter italic text-bg-emerald-100">
                                     Commit Configuration Buffer
                                 </h4>
                                 <div className="flex items-center gap-3">
                                      <Fingerprint size={12} className="text-slate-300" />
-                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] leading-none italic">
+                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none italic">
                                          Authorized parameter injection authorized for <span className="text-emerald-600 font-black">{flattened.length} NODES</span>
                                      </p>
                                 </div>
@@ -335,7 +335,7 @@ export default function SystemSettings({ settings }: Props) {
                         <Button 
                             type="submit" 
                             disabled={form.processing} 
-                            className="bg-slate-900 text-white hover:bg-emerald-600 px-16 h-20 rounded-[2.5rem] font-black text-[11px] transition-all shadow-2xl shadow-slate-950/20 flex items-center gap-6 active:scale-95 disabled:opacity-20 group duration-500 uppercase tracking-[0.3em]"
+                            className="bg-gray-900 text-white hover:bg-emerald-600 px-16 h-20 rounded-[2.5rem] font-black text-[11px] transition-all shadow-2xl shadow-slate-950/20 flex items-center gap-6 active:scale-95 disabled:opacity-20 group duration-500 uppercase tracking-[0.3em]"
                         >
                             <AnimatePresence mode="wait">
                                 {form.processing ? (
@@ -350,7 +350,7 @@ export default function SystemSettings({ settings }: Props) {
                 </form>
 
                 {/* --- FOOTER GOVERNANCE --- */}
-                <motion.div variants={itemVariants} className="bg-slate-900 rounded-[3.5rem] p-16 text-white relative overflow-hidden group/f shadow-2xl">
+                <motion.div variants={itemVariants} className="bg-gray-900 rounded-[3.5rem] p-16 text-white relative overflow-hidden group/f shadow-2xl">
                     <div className="absolute top-0 right-0 p-16 opacity-5 group-hover/f:rotate-12 transition-transform duration-1000">
                          <Target size={300} strokeWidth={1} />
                     </div>
@@ -363,7 +363,7 @@ export default function SystemSettings({ settings }: Props) {
                                        <h3 className="text-3xl font-black tracking-tighter uppercase italic leading-none">Global System Parameterization</h3>
                                   </div>
                              </div>
-                             <p className="text-lg font-bold text-slate-400 uppercase tracking-tight leading-relaxed max-w-2xl opacity-80 italic">
+                             <p className="text-lg font-bold text-gray-400 uppercase tracking-tight leading-relaxed max-w-2xl opacity-80 italic">
                                 Pengaturan sistem adalah jantung dari operasional platform. Perubahan pada parameter fundamental ini akan berdampak langsung pada seluruh alur pendaftaran, verifikasi, dan pelaporan KKN di seluruh unit.
                              </p>
                         </div>
@@ -378,7 +378,7 @@ export default function SystemSettings({ settings }: Props) {
     );
 }
 
-function MetricCard({ label, value, icon: Icon, color, desc }: { label: string, value: string, icon: any, color: 'emerald' | 'amber', desc: string }) {
+function MetricCard({ label, value, icon: Icon, color, desc }: { label: string, value: string, icon: LucideIcon, color: 'emerald' | 'amber', desc: string }) {
     return (
         <div className="bg-white border border-slate-100 rounded-[3rem] p-10 space-y-10 hover:shadow-2xl hover:shadow-slate-100 transition-all group overflow-hidden relative">
             <div className="absolute top-0 right-0 p-10 opacity-[0.03] group-hover:scale-110 transition-transform">
@@ -391,8 +391,8 @@ function MetricCard({ label, value, icon: Icon, color, desc }: { label: string, 
                 <Icon size={30} strokeWidth={2.5} />
             </div>
             <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2 italic leading-none">{label}</p>
-                <p className="text-3xl font-black tracking-tighter text-slate-900 group-hover:text-emerald-600 transition-colors uppercase italic leading-none">{value}</p>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-2 italic leading-none">{label}</p>
+                <p className="text-3xl font-black tracking-tighter text-gray-900 group-hover:text-emerald-600 transition-colors uppercase italic leading-none">{value}</p>
                 <p className="mt-6 text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] italic">{desc}</p>
             </div>
         </div>

@@ -27,7 +27,26 @@ class AuditService
             'severity' => self::determineSeverity($action),
         ];
 
-        return \App\Jobs\ProcessAuditLog::dispatch($data);
+        try {
+            \App\Jobs\ProcessAuditLog::dispatch($data);
+            return true;
+        } catch (\Throwable $e) {
+            // Fallback to direct logging to storage if queue is down
+            \Log::warning('Failed to dispatch AuditLog job. Falling back to direct DB record.', [
+                'action' => $action,
+                'error' => $e->getMessage()
+            ]);
+
+            try {
+                \App\Models\KKN\LogAudit::create($data);
+                return true;
+            } catch (\Throwable $dbError) {
+                \Log::error('Critical: Failed to even record AuditLog to DB.', [
+                    'error' => $dbError->getMessage()
+                ]);
+                return false;
+            }
+        }
     }
 
     /**

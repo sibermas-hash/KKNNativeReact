@@ -275,6 +275,11 @@ class DashboardController extends Controller
                     'grading_end' => $now->copy()->addDays(14),
                 ]);
                 break;
+            case 'finished':
+                $updateData = array_merge($updateData, [
+                    'grading_end' => $now,
+                ]);
+                break;
         }
 
         $period->update($updateData);
@@ -320,9 +325,9 @@ class DashboardController extends Controller
 
         $approved = (clone $query)->count();
         $assigned = (clone $query)->whereNotNull('kelompok_id')->count();
-        $unassigned = $approved - $assigned;
-
         $totalGroups = \App\Models\KKN\KelompokKkn::where('period_id', $periodId)->count();
+        
+        $unassigned = $approved - $assigned;
 
         return [
             'hint' => 'Plotting sedang berlangsung. Tugaskan mahasiswa ke kelompok.',
@@ -347,12 +352,11 @@ class DashboardController extends Controller
         if ($facultyId) {
             $queryReports = \App\Services\KKN\FacultyScopeService::apply($queryReports, 'mahasiswa.faculty_id');
         }
-        $todayReports = $queryReports->count();
-
+        $todayReports = (clone $queryReports)->count();
         $totalStudents = \App\Models\KKN\PesertaKkn::where('period_id', $periodId)
-            ->whereIn('status', ['approved', 'active'])
-            ->whereNotNull('kelompok_id')
-            ->count();
+                ->whereIn('status', ['approved', 'active'])
+                ->whereNotNull('kelompok_id')
+                ->count();
 
         return [
             'hint' => 'KKN sedang berlangsung. Pantau aktivitas harian mahasiswa.',

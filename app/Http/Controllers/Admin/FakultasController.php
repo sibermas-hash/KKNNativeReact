@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\Fakultas;
+use App\Traits\HandlesPagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -14,6 +15,8 @@ use Inertia\Response;
 
 class FakultasController extends Controller
 {
+    use HandlesPagination;
+
     public function index(Request $request): Response
     {
         Gate::authorize('manage-master-data');
@@ -44,7 +47,7 @@ class FakultasController extends Controller
             ->first()?->master_synced_at;
 
         return Inertia::render('Admin/MasterData/Faculties/Index', [
-            'faculties' => $faculties,
+            'faculties' => $this->formatPaginator($faculties),
             'filters' => $request->only('search'),
             'syncInfo' => [
                 'mode' => 'sync-only',

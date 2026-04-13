@@ -8,11 +8,13 @@ import {
     Activity,
     ScanLine,
     Database,
-    ShieldCheck
+    ShieldCheck,
+    Search,
+    Filter,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
-
+import { Pagination, Button } from '@/Components/ui';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
 
 interface AuditedReport {
@@ -28,207 +30,147 @@ interface AuditedReport {
 }
 
 interface Props {
-    reports: {
-        data: AuditedReport[];
-        meta: PaginationMeta;
-    };
-    stats: {
-        high_risk_count: number;
-    };
+    reports: { data: AuditedReport[]; meta: PaginationMeta };
+    stats: { high_risk_count: number };
 }
 
 export default function QualityAuditIndex({ reports, stats }: Props) {
     return (
-        <AppLayout title="Audit Aktivitas">
-            <Head title="Audit Intelijen | POS-KKN" />
+    <AppLayout title="Audit Aktivitas Mahasiswa">
+      <Head title="Audit Aktivitas" />
 
-            <div className="space-y-10 font-sans antialiased text-emerald-900">
-                {/* Clean System Header */}
-                <div className="bg-white border border-slate-100 p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
-                    <div className="space-y-2">
+      <div className="max-w-7xl mx-auto space-y-8 pb-24 text-slate-900 font-sans">
+        {/* --- PREMIUM HEADER --- */}
+        <div className="space-y-4">
+            <div className="flex items-center gap-3 text-emerald-600">
+                <ShieldAlert size={18} />
+                <span className="text-xs font-bold uppercase tracking-[0.25em] opacity-80">Monitoring & Penjaminan Mutu</span>
+            </div>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="space-y-1">
+                    <h1 className="text-5xl font-extrabold text-slate-900 tracking-tight">
+                        Audit <span className="text-emerald-500">Aktivitas.</span>
+                    </h1>
+                    <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mt-2 leading-relaxed max-w-2xl">
+                        Protokol Validasi Integritas Pelaporan dan Audit Kualitas Output Mahasiswa KKN Terpadu
+                    </p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <div className="h-14 px-6 bg-white border border-slate-200 rounded-2xl flex items-center gap-4 shadow-sm">
                         <div className="flex items-center gap-2">
-                            <ShieldCheck className="w-6 h-6 text-emerald-600" />
-                            <h1 className="text-xl font-bold text-emerald-900 uppercase tracking-tighter">
-                                AUDIT KUALITAS <span className="text-emerald-600">LAPORAN</span>
-                            </h1>
-                        </div>
-                        <p className="text-[10px] font-bold text-emerald-600/40 uppercase tracking-widest leading-none">
-                            PANTAU KEJUJURAN DAN KUALITAS LAPORAN MAHASISWA SECARA REAL-TIME
-                        </p>
-                    </div>
-
-                    <div className="flex items-center gap-6">
-                        <div className="px-6 py-4 bg-white border border-slate-100 rounded-full flex items-center gap-6 shadow-sm">
-                            <div className="flex flex-col border-r border-slate-100 pr-6">
-                                <span className="text-[9px] font-bold text-emerald-600/40 uppercase tracking-widest leading-none mb-1">MENCURIGAKAN</span>
-                                <div className="flex items-center gap-2">
-                                    <ShieldAlert className="w-4 h-4 text-rose-500" />
-                                    <span className="text-xl font-bold text-emerald-900 tabular-nums">{stats.high_risk_count}</span>
-                                </div>
-                            </div>
+                            <ShieldAlert size={16} className="text-rose-500" />
                             <div className="flex flex-col">
-                                <span className="text-[9px] font-bold text-emerald-600/40 uppercase tracking-widest leading-none mb-1">AUDITOR</span>
-                                <div className="flex items-center gap-2 text-emerald-600">
-                                    <CheckCircle className="w-4 h-4" />
-                                    <span className="text-[10px] font-bold uppercase tracking-widest">AKTIF</span>
-                                </div>
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Mencurigakan</span>
+                                <span className="text-sm font-black text-rose-600 tabular-nums leading-none tracking-tight">{stats.high_risk_count} LAPORAN</span>
+                            </div>
+                        </div>
+                        <div className="w-px h-8 bg-slate-100" />
+                        <div className="flex items-center gap-2">
+                            <CheckCircle size={16} className="text-emerald-500" />
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Status Auditor</span>
+                                <span className="text-sm font-black text-emerald-600 uppercase leading-none tracking-tight">AKTIF</span>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                {/* Audit Grid */}
-                <div className="bg-white border border-slate-100 shadow-sm overflow-hidden">
-                    <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white">
-                        <div className="flex items-center gap-4">
-                            <div className="p-2.5 bg-emerald-600 text-white rounded shadow-sm shadow-emerald-600/20">
-                                <ScanLine className="w-5 h-5 animate-pulse" />
-                            </div>
-                            <div>
-                                <h2 className="text-[10px] font-bold uppercase tracking-widest text-emerald-900">PEMINDAI OTOMATIS</h2>
-                                <p className="text-[9px] font-bold text-emerald-600/40 mt-1 uppercase tracking-widest">CEK KEASLIAN DAN KESESUAIAN KONTEKS LAPORAN</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full border border-slate-200">
-                             <span className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-ping" />
-                             <span className="text-[9px] font-bold uppercase tracking-widest">PANTAUAN LANGSUNG</span>
-                        </div>
+                {/* --- AUDIT LEDGER --- */}
+                <section className="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-sm">
+                    <div className="p-3 bg-slate-50/20 border-b border-slate-50 flex items-center justify-between">
+                         <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 bg-emerald-600 text-white rounded flex items-center justify-center shadow-lg shadow-emerald-100"><ScanLine size={16} className="animate-pulse" /></div>
+                            <span className="text-[11px] font-bold text-slate-800 uppercase tracking-tight">PEMINDAI INTEGRITAS OTOMATIS</span>
+                         </div>
+                         <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100">
+                             <div className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                             <span className="text-[9px] font-bold uppercase tracking-widest">LIVE_MONITORING</span>
+                         </div>
                     </div>
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-white border-b border-slate-100">
-                                    <th className="px-8 py-5 text-[10px] font-bold text-emerald-600/40 uppercase tracking-widest">MAHASISWA & KELOMPOK</th>
-                                    <th className="px-8 py-5 text-[10px] font-bold text-emerald-600/40 uppercase tracking-widest">RINCIAN LAPORAN</th>
-                                    <th className="px-8 py-5 text-center text-[10px] font-bold text-emerald-600/40 uppercase tracking-widest">INDIKASI MASALAH</th>
-                                    <th className="px-8 py-5 text-center text-[10px] font-bold text-emerald-600/40 uppercase tracking-widest">SKOR RISIKO</th>
-                                    <th className="px-8 py-5 text-right text-[10px] font-bold text-emerald-600/40 uppercase tracking-widest pr-10">AKSI</th>
+                    <div className="overflow-x-auto min-h-[400px]">
+                        <table className="w-full text-left">
+                            <thead className="bg-slate-50 border-b border-slate-50 text-[9px] font-bold uppercase tracking-widest text-slate-400">
+                                <tr>
+                                    <th className="px-6 py-4">Faksi & Unit</th>
+                                    <th className="px-6 py-4">Rincian Laporan</th>
+                                    <th className="px-6 py-4 text-center">Indikasi Masalah</th>
+                                    <th className="px-6 py-4 text-center">Risk Score</th>
+                                    <th className="px-6 py-4 text-right">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-emerald-50/30">
-                                {reports.data.length > 0 ? (
-                                    reports.data.map((report, idx) => (
-                                        <motion.tr 
-                                            key={report.id} 
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: idx * 0.01 }}
-                                            className="hover:bg-slate-50/50 transition-all border-b border-slate-100/10 group"
-                                        >
-                                            <td className="px-8 py-5">
-                                                <div className="flex items-center gap-4">
-                                                    <div className={clsx(
-                                                        "h-10 w-10 flex items-center justify-center font-bold text-sm border rounded shadow-sm",
-                                                        report.risk_level === 'HIGH' ? "bg-rose-50 text-rose-600 border-rose-100" : "bg-emerald-50 text-emerald-600 border-slate-200"
-                                                    )}>
-                                                        {report.user_name.charAt(0)}
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-xs font-bold text-emerald-900 uppercase tracking-tight">{report.user_name}</span>
-                                                        <span className="text-[9px] font-bold text-emerald-600/40 mt-0.5 uppercase tracking-widest">{report.group_name}</span>
-                                                    </div>
+                            <tbody className="divide-y divide-slate-50">
+                                {reports.data.map((r) => (
+                                    <tr key={r.id} className="group hover:bg-slate-50/50 transition-all">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className={clsx('h-9 w-9 flex items-center justify-center font-bold text-sm border rounded-lg italic transition-all group-hover:bg-emerald-600 group-hover:text-white', r.risk_level === 'HIGH' ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-slate-50 text-slate-300 border-slate-100')}>{r.user_name.charAt(0)}</div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[13px] font-bold text-slate-900 uppercase leading-tight italic truncate max-w-[150px]">{r.user_name}</span>
+                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{r.group_name}</span>
                                                 </div>
-                                            </td>
-                                            <td className="px-8 py-5">
-                                                <div className="max-w-xs space-y-1">
-                                                    <p className="text-[11px] font-bold text-emerald-800 uppercase tracking-tight line-clamp-1">{report.title}</p>
-                                                    <p className="text-[9px] font-bold text-emerald-600/30 uppercase tabular-nums">TGL: {report.submitted_at}</p>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-5 text-center">
-                                                <div className="flex flex-wrap justify-center gap-1">
-                                                    {report.risk_flags.length > 0 ? report.risk_flags.map((flag, fidx) => {
-                                                        const flagLabels: Record<string, string> = {
-                                                            'CRITICAL_LOW_DETAIL': 'Konten Terlalu Singkat',
-                                                            'MINIMAL_DETAIL': 'Kurang Detail',
-                                                            'PLACEHOLDER_CONTENT': 'Teks Placeholder/Template',
-                                                            'REPETITIVE_STRINGS': 'Karakter Berulang',
-                                                            'EXACT_MATCH': 'Sama Persis dengan Lainnya',
-                                                            'NEAR_DUPLICATE': 'Terindikasi Duplikat',
-                                                        };
-                                                        return (
-                                                            <span key={fidx} className="px-2 py-0.5 bg-rose-50 text-rose-600 text-[8px] font-bold border border-rose-100 rounded uppercase tracking-widest">
-                                                                {flagLabels[flag] || flag}
-                                                            </span>
-                                                        );
-                                                    }) : (
-                                                        <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[8px] font-bold border border-slate-200 rounded uppercase tracking-widest">
-                                                            Normal
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-5 text-center">
-                                                <div className="flex flex-col items-center gap-1">
-                                                    <div className={clsx(
-                                                        "h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold border transition-all shadow-sm",
-                                                        report.risk_score >= 70 ? "bg-rose-600 text-white border-transparent animate-pulse" : 
-                                                        report.risk_score >= 30 ? "bg-amber-50 text-amber-600 border-amber-100" :
-                                                        "bg-emerald-50 text-emerald-600 border-slate-200"
-                                                    )}>
-                                                        {report.risk_score}
-                                                    </div>
-                                                    <span className="text-[7px] font-bold text-emerald-600/30 uppercase">Skor</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-5 text-right pr-10">
-                                                <div className="flex justify-end gap-2">
-                                                    <button className="h-8 w-8 bg-white border border-slate-200 text-emerald-400 hover:text-emerald-700 hover:border-emerald-300 rounded flex items-center justify-center transition-all shadow-sm active:scale-95" title="Verifikasi">
-                                                        <CheckCircle className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </motion.tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={5} className="px-12 py-24 text-center text-slate-300">
-                                            <Database size={48} className="mx-auto mb-4 opacity-10" />
-                                            <p className="text-[10px] font-bold uppercase tracking-widest">Tidak Ada Laporan</p>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col">
+                                                <span className="text-[11px] font-bold text-slate-700 uppercase leading-tight line-clamp-1 italic">{r.title}</span>
+                                                <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest mt-1">TIMESTAMP: {r.submitted_at}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                             <div className="flex flex-wrap justify-center gap-1.5">
+                                                {r.risk_flags.length > 0 ? r.risk_flags.map((flag, idx) => (
+                                                    <span key={idx} className="px-2 py-0.5 bg-rose-50 text-rose-600 text-[8px] font-bold border border-rose-100 rounded uppercase tracking-tighter">
+                                                        {flag.replace(/_/g, ' ')}
+                                                    </span>
+                                                )) : (
+                                                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[8px] font-bold border border-emerald-100 rounded uppercase tracking-widest">NORMAL</span>
+                                                )}
+                                             </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                             <div className={clsx('inline-flex h-9 w-9 items-center justify-center rounded-lg text-xs font-black border transition-all shadow-sm', r.risk_score >= 70 ? 'bg-rose-600 text-white border-transparent' : r.risk_score >= 30 ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100')}>{r.risk_score}</div>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                             <button className="h-8 w-8 hover:bg-emerald-50 text-slate-300 hover:text-emerald-600 border border-transparent hover:border-emerald-100 rounded-lg flex items-center justify-center transition-all opacity-0 group-hover:opacity-100" title="Auto-Verify"><CheckCircle size={14} /></button>
                                         </td>
                                     </tr>
-                                )}
+                                ))}
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </section>
 
-                {/* Analytical Overlays (White/Green Style) */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div className="p-10 bg-emerald-600 text-white rounded shadow-lg shadow-emerald-600/10 flex items-center gap-8 group">
-                        <div className="p-5 bg-white/20 rounded shadow-inner rotate-3 transition-transform group-hover:rotate-0">
-                            <Activity className="h-8 w-8 text-white" />
-                        </div>
-                        <div className="space-y-1">
-                            <h4 className="text-sm font-bold uppercase tracking-widest">SISTEM AUDIT: AKTIF</h4>
-                            <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest leading-relaxed">
-                                PEMINDAIAN KEJUJURAN OTOMATIS BERJALAN PADA SETIAP ENTRI DATA LAPORAN.
-                            </p>
+                {/* --- MONITORING OVERLAY --- */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-emerald-600 p-8 rounded-xl text-white relative overflow-hidden flex items-center gap-6 shadow-xl shadow-emerald-100">
+                        <div className="absolute top-0 right-0 p-8 opacity-10"><Activity size={100} /></div>
+                        <div className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center shrink-0"><ShieldCheck size={24} /></div>
+                        <div className="space-y-1 relative z-10">
+                            <h4 className="text-sm font-black uppercase tracking-widest leading-none">Integrity Guard: ACTIVE</h4>
+                            <p className="text-[10px] font-bold text-emerald-100/60 uppercase tracking-widest leading-relaxed">PEMINDAIAN KEJUJURAN OTOMATIS BERJALAN PADA SETIAP ENTRI DATA LAPORAN SECARA REAL-TIME.</p>
                         </div>
                     </div>
-
-                    <div className="p-10 bg-white border border-slate-100 rounded shadow-sm flex items-center justify-around gap-8 group hover:border-slate-900 transition-all">
-                         <div className="flex flex-col items-center gap-2">
-                             <BarChart3 className="h-8 w-8 text-slate-300 group-hover:text-emerald-600 transition-colors" />
-                             <span className="text-[9px] font-bold text-emerald-600/30 uppercase tracking-widest group-hover:text-emerald-600">GRAFIK</span>
+                    <div className="bg-emerald-600 p-8 rounded-xl text-white flex items-center justify-between relative overflow-hidden group shadow-xl shadow-emerald-100">
+                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.1),transparent)]" />
+                         <div className="space-y-1 relative z-10">
+                            <h4 className="text-[10px] font-black text-emerald-500 uppercase tracking-widest leading-none italic mb-1">Surveillance Metadata</h4>
+                            <p className="text-xl font-black uppercase tracking-tight italic tabular-nums">KERNELS_NOMINAL</p>
                          </div>
-                         <div className="flex flex-col items-center gap-2">
-                             <Database className="w-8 h-8 text-slate-300 group-hover:text-emerald-600 transition-colors" />
-                             <span className="text-[9px] font-bold text-emerald-600/30 uppercase tracking-widest group-hover:text-emerald-600">DATA</span>
-                         </div>
-                         <div className="flex flex-col items-center gap-2">
-                             <ShieldCheck className="w-8 h-8 text-slate-300 group-hover:text-emerald-600 transition-colors" />
-                             <span className="text-[9px] font-bold text-emerald-600/30 uppercase tracking-widest group-hover:text-emerald-600">KEAMANAN</span>
+                         <div className="flex items-center gap-3 relative z-10">
+                            <div className="h-10 w-10 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center"><BarChart3 size={20} className="text-emerald-500" /></div>
+                            <div className="h-10 w-10 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center"><Database size={20} className="text-slate-400 group-hover:text-emerald-500 transition-colors" /></div>
                          </div>
                     </div>
                 </div>
 
-                <div className="text-center pt-8">
-                     <div className="inline-flex items-center justify-center gap-4 text-slate-300 font-bold text-[10px] uppercase tracking-widest">
-                         <Zap className="w-3 h-3 text-emerald-500" />
-                         Sistem Audit Aktif • {new Date().getFullYear()}
-                     </div>
+                <div className="flex justify-center py-6">
+                    <div className="flex items-center gap-3 text-slate-300 font-bold text-[9px] uppercase tracking-[0.4em] italic opacity-50">
+                        <Zap size={12} className="text-emerald-500 animate-pulse" />
+                        Audit Active System • Sentinel Registry Integrity
+                    </div>
                 </div>
             </div>
         </AppLayout>

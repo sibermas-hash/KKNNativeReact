@@ -28,6 +28,14 @@ interface Student {
         grade: string;
         items: Array<{ criterion: string; score: number }>;
     } | null;
+    ai_performance?: {
+        has_data: boolean;
+        avg_compliance: number;
+        avg_quality: number;
+        total_reports: number;
+        suggested_admin_score: number;
+        top_tags: string[];
+    };
 }
 
 interface Group {
@@ -39,7 +47,7 @@ interface Group {
 
 interface Props {
     groups: Group[];
-    evaluations: any[]; // Existing formatted evaluations
+    evaluations: Evaluation[];
     dplWeights: {
         final_report: number;
         execution: number;
@@ -56,7 +64,7 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
     // Form for bulk submission
     const bulkForm = useForm({
         group_id: selectedGroupId,
-        evaluations: [] as any[] // Array of { student_id, items: { criterion, score }[] }
+        evaluations: [] as Array<{ student_id: number; items: Array<{ criterion: string; score: number }> }>
     });
 
     const categories = [
@@ -82,7 +90,7 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
         let newEvals = [...bulkForm.data.evaluations];
 
         if (existingIdx > -1) {
-            const itemIdx = newEvals[existingIdx].items.findIndex((i: any) => i.criterion === criterion);
+            const itemIdx = newEvals[existingIdx].items.findIndex((i: { criterion: string; score: number }) => i.criterion === criterion);
             if (itemIdx > -1) {
                 newEvals[existingIdx].items[itemIdx].score = val;
             } else {
@@ -104,7 +112,7 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
     const getScoreValue = (studentId: number, criterion: string) => {
         const eval_entry = bulkForm.data.evaluations.find(e => e.student_id === studentId);
         if (eval_entry) {
-            const item = eval_entry.items.find((i: any) => i.criterion === criterion);
+            const item = eval_entry.items.find((i: { criterion: string; score: number }) => i.criterion === criterion);
             return item ? item.score : '';
         }
         return '';
@@ -117,11 +125,44 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
         // Manual calculation based on simplified weights for UI feedback
         // In actual controller, it follows central rules
         let dplPart = 0;
-        eval_entry.items.forEach((item: any) => {
+        eval_entry.items.forEach((item: { criterion: string; score: number }) => {
             const cat = categories.find(c => c.criterion === item.criterion);
             if (cat) dplPart += (item.score * (cat.weight / 100));
         });
         return Math.round(dplPart);
+    };
+
+    const autofillAllAi = () => {
+        if (!selectedGroup) return;
+        
+        const newEvals = [...bulkForm.data.evaluations];
+        
+        selectedGroup.students.forEach(student => {
+            if (student.ai_performance?.has_data) {
+                const existingIdx = newEvals.findIndex(e => e.student_id === student.id);
+                const suggestedScore = student.ai_performance.suggested_admin_score;
+                
+                if (existingIdx > -1) {
+                    const itemIdx = newEvals[existingIdx].items.findIndex((i: { criterion: string; score: number }) => i.criterion === 'Laporan Akhir');
+                    if (itemIdx > -1) {
+                        newEvals[existingIdx].items[itemIdx].score = suggestedScore;
+                    } else {
+                        newEvals[existingIdx].items.push({ criterion: 'Laporan Akhir', score: suggestedScore });
+                    }
+                } else {
+                    newEvals.push({
+                        student_id: student.id,
+                        items: categories.map(c => ({ 
+                            criterion: c.criterion, 
+                            score: c.key === 'report' ? suggestedScore : 0 
+                        }))
+                    });
+                }
+            }
+        });
+        
+        bulkForm.setData('evaluations', newEvals);
+        alert('Seluruh kolom Laporan Akhir telah diisi menggunakan saran AI!');
     };
 
     const submitBulk = (e: React.FormEvent) => {
@@ -156,10 +197,10 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                                     AKUNTABILITAS AKADEMIK
                                 </span>
                             </div>
-                            <h1 className="text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-none">
+                            <h1 className="text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-none">
                                 Input Nilai <span className="text-emerald-600">Terintegrasi.</span>
                             </h1>
-                            <p className="max-w-xl text-slate-500 font-medium text-lg leading-relaxed">
+                            <p className="max-w-xl text-gray-500 font-medium text-lg leading-relaxed">
                                 Evaluasi capaian pengabdian mahasiswa berbasis kompetensi. Pastikan seluruh komponen Laporan, Artikel, dan Kinerja Lapangan telah terverifikasi.
                             </p>
                         </div>
@@ -180,8 +221,8 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                     {/* Left Side: Village Selector */}
                     <div className="space-y-6">
                         <div className="flex items-center gap-3 ml-2">
-                            <Users size={16} className="text-slate-400" />
-                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Pilih Kelompok Kerja</h3>
+                            <Users size={16} className="text-gray-400" />
+                            <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Pilih Kelompok Kerja</h3>
                         </div>
                         <div className="grid gap-3">
                             {groups.map((group) => (
@@ -194,8 +235,8 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                                     className={clsx(
                                         "group p-6 rounded-[2rem] border-2 transition-all text-left relative overflow-hidden",
                                         selectedGroupId === String(group.id)
-                                            ? "bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-200"
-                                            : "bg-white border-slate-100 text-slate-600 hover:border-emerald-200"
+                                            ? "bg-gray-900 border-slate-900 text-white shadow-xl shadow-slate-200"
+                                            : "bg-white border-slate-100 text-gray-600 hover:border-emerald-200"
                                     )}
                                 >
                                     <div className="relative z-10 space-y-2">
@@ -205,7 +246,7 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                                     </div>
                                     <MapPin size={48} className={clsx(
                                         "absolute -bottom-4 -right-4 opacity-5 group-hover:opacity-10 transition-opacity",
-                                        selectedGroupId === String(group.id) ? "text-white" : "text-slate-900"
+                                        selectedGroupId === String(group.id) ? "text-white" : "text-gray-900"
                                     )} />
                                 </button>
                             ))}
@@ -242,10 +283,21 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                                                 Status: {bulkForm.data.evaluations.length} dari {selectedGroup?.students.length} Terisi
                                             </p>
                                         </div>
+
+                                        {selectedGroup?.students.some(s => s.ai_performance?.has_data) && (
+                                            <Button 
+                                                type="button"
+                                                variant="outline"
+                                                onClick={autofillAllAi}
+                                                className="h-14 px-6 rounded-2xl border-2 border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-50 font-black text-[10px] uppercase tracking-[0.15em] flex items-center gap-3 transition-all"
+                                            >
+                                                <Star size={16} fill="currentColor" /> Auto-fill Semua (AI)
+                                            </Button>
+                                        )}
                                         <Button 
                                             type="submit" 
                                             loading={bulkForm.processing}
-                                            className="h-14 px-10 rounded-2xl bg-slate-900 text-white hover:bg-emerald-600 font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-xl active:scale-95"
+                                            className="h-14 px-10 rounded-2xl bg-gray-900 text-white hover:bg-emerald-600 font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-xl active:scale-95"
                                         >
                                             <Save size={18} /> Simpan Semua Nilai
                                         </Button>
@@ -256,8 +308,8 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                                 <div className="bg-white rounded-[3rem] border border-slate-200 shadow-xl overflow-hidden overflow-x-auto">
                                     <table className="w-full text-left border-collapse">
                                         <thead>
-                                            <tr className="bg-slate-900 text-white">
-                                                <th className="px-10 py-8 text-[11px] font-black uppercase tracking-widest sticky left-0 z-20 bg-slate-900">Mahasiswa & NIM</th>
+                                            <tr className="bg-gray-900 text-white">
+                                                <th className="px-10 py-8 text-[11px] font-black uppercase tracking-widest sticky left-0 z-20 bg-gray-900">Mahasiswa & NIM</th>
                                                 {categories.map((cat) => (
                                                     <th key={cat.key} className="px-6 py-8 text-center min-w-[120px]">
                                                         <p className="text-[11px] font-black uppercase tracking-widest text-emerald-400 leading-none mb-1">{cat.label}</p>
@@ -279,17 +331,25 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                                                     <tr key={student.id} className="group/row hover:bg-slate-50/50 transition-colors">
                                                         <td className="px-10 py-6 sticky left-0 z-10 bg-white group-hover/row:bg-slate-50/50">
                                                             <div className="flex items-center gap-4">
-                                                                <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 font-black text-xs">
+                                                                <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center text-gray-400 font-black text-xs">
                                                                     {student.name.charAt(0)}
                                                                 </div>
                                                                 <div>
-                                                                    <p className="text-sm font-black text-slate-900 leading-none mb-1">{student.name}</p>
-                                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{student.nim}</p>
+                                                                    <p className="text-sm font-black text-gray-900 leading-none mb-1">{student.name}</p>
+                                                                    <div className="flex items-center gap-3">
+                                                                        <p className="text-[10px] font-bold text-gray-400 font-mono tracking-tighter">{student.nim}</p>
+                                                                        {student.ai_performance?.has_data && (
+                                                                            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-100/50">
+                                                                                <div className="h-1 w-1 rounded-full bg-indigo-400" />
+                                                                                <span className="text-[8px] font-bold text-indigo-600 uppercase">AI Audited • {student.ai_performance.avg_compliance}/10 ABCD</span>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </td>
                                                         {categories.map((cat) => (
-                                                            <td key={cat.key} className="px-6 py-6 text-center">
+                                                            <td key={cat.key} className="px-6 py-6 text-center relative h-full">
                                                                 <input 
                                                                     type="number"
                                                                     min="0"
@@ -304,11 +364,24 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                                                                             : "bg-white border-slate-100 focus:border-emerald-500"
                                                                     )}
                                                                 />
+                                                                {cat.key === 'report' && student.ai_performance?.has_data && (
+                                                                    <button 
+                                                                        type="button"
+                                                                        onClick={() => handleScoreChange(student.id, cat.criterion, String(student.ai_performance?.suggested_admin_score || 0))}
+                                                                        className="absolute -top-3 -right-3 h-8 w-8 bg-emerald-600 rounded-full border-4 border-white shadow-lg flex items-center justify-center text-white hover:scale-110 active:scale-90 transition-all group/ai"
+                                                                        title={`AI Suggested: ${student.ai_performance.suggested_admin_score}`}
+                                                                    >
+                                                                        <Star size={12} fill="currentColor" />
+                                                                        <div className="absolute bottom-full mb-2 left-1/2 -translateX-1/2 opacity-0 group-hover/ai:opacity-100 transition-opacity bg-gray-900 text-[8px] text-white px-2 py-1 rounded whitespace-nowrap z-50 pointer-events-none">
+                                                                            Saran AI: {student.ai_performance.suggested_admin_score}
+                                                                        </div>
+                                                                    </button>
+                                                                )}
                                                             </td>
                                                         ))}
                                                         <td className="px-10 py-6 text-center">
                                                             <div className="flex items-center justify-center gap-4">
-                                                                <span className="text-xl font-black text-slate-900 tracking-tighter leading-none">{total}</span>
+                                                                <span className="text-xl font-black text-gray-900 tracking-tighter leading-none">{total}</span>
                                                                 <div className={clsx(
                                                                     "h-10 w-10 rounded-xl flex items-center justify-center text-[10px] font-black uppercase tracking-widest ring-1 ring-inset transition-all",
                                                                     grade.color
@@ -329,7 +402,7 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                 </div>
 
                 {/* Legend & SOP Notice */}
-                <footer className="bg-slate-900 rounded-[3rem] p-12 text-white/50 text-[10px] font-bold uppercase tracking-[0.2em] flex flex-col md:flex-row md:items-center justify-between gap-10">
+                <footer className="bg-gray-900 rounded-[3rem] p-12 text-white/50 text-[10px] font-bold uppercase tracking-[0.2em] flex flex-col md:flex-row md:items-center justify-between gap-10">
                     <div className="flex items-center gap-8">
                         <div className="flex items-center gap-4">
                             <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_emerald]" />

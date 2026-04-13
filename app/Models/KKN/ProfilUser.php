@@ -10,22 +10,31 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
-class ProfilUser extends Model
-{
-    use HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $connection = 'kkn';
-
-    protected $table = 'profil_user';
-
-    protected $fillable = [
-        'user_id',
+#[Connection('kkn')]
+#[Table('profil_user')]
+#[Fillable([
+    'user_id',
         'profileable_type',
         'profileable_id',
         'phone',
         'address',
         'avatar',
-    ];
+])]
+class ProfilUser extends Model
+{
+    use HasFactory;
+
+    
+
+    
+
+    
 
     public function user(): BelongsTo
     {

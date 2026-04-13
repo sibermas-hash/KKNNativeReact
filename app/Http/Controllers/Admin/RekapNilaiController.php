@@ -165,7 +165,7 @@ class RekapNilaiController extends Controller
                 'title' => 'Nilai KKN Difinalisasi',
                 'message' => 'Nilai KKN Anda telah difinalisasi oleh Admin LPPM. Silakan unduh sertifikat.',
                 'icon' => 'academic-cap',
-                'url' => route('student.dashboard'),
+                'action' => route('student.dashboard'),
             ]));
         }
 

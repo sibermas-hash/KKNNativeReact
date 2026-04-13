@@ -19,6 +19,8 @@ export function useTheme() {
   });
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     const html = document.documentElement;
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 

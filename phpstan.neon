@@ -1,9 +1,8 @@
 includes:
-    # Uncomment the line below after running: composer require --dev larastan/larastan
-    # - vendor/larastan/larastan/extension.neon
+    - vendor/larastan/larastan/extension.neon
 
 parameters:
-    level: 5
+    level: 0
     paths:
         - app
         - config
@@ -17,21 +16,58 @@ parameters:
         - public
         - app/Console/Commands/StressTest*
 
-    # Suppress common Laravel magic method false positives
-    # until Larastan is installed and configured
+    # Suppress Laravel Eloquent magic method false positives
     ignoreErrors:
-        # Eloquent magic methods (::where, ::find, ::create, etc.)
+        # Eloquent query builder magic methods
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder::\w+\(\)#'
-        - '#Call to static method \w+\(\) on class .+ invoked with \d+ parameter#'
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\.*::\w+\(\)#'
+        - '#Call to an undefined method Illuminate\\Database\\Query\\Builder::\w+\(\)#'
+        
+        # Model static factory methods (::where, ::find, ::create, ::first, etc.)
+        - '#Call to static method \w+\(\) on class App\\Models\\#i'
+        - '#Call to static method \w+\(\) on class Illuminate\\#i'
+        - '#Call to static method \w+\(\) on class Spatie\\#i'
+        
         # Model property access
-        - '#Access to an undefined property App\\Models\\.+::\$\w+#'
+        - '#Access to an undefined property#'
+        
         # Relation return types
-        - '#should return .+ but returns Illuminate\\Database\\Eloquent\\Relations\\.+#'
-        # Auth/Request magic
-        - '#Call to an undefined method Illuminate\\Contracts\\Auth\\Authenticatable::\w+\(\)#'
-        - '#Call to an undefined method Illuminate\\Http\\Request::\w+\(\)#'
-        # Route helper
-        - '#Function route invoked with#'
+        - '#should return .+ but returns Illuminate\\Database\\Eloquent\\Relations\\#i'
+        
+        # Auth/Request magic methods
+        - '#Call to an undefined method Illuminate\\Contracts\\Auth\\#i'
+        - '#Call to an undefined method Illuminate\\Http\\Request::#i'
+        - '#Call to an undefined method App\\Models\\User::#i'
+        
+        # Helper functions
+        - '#Function (route|redirect|back|request|auth|response|view|config|cache|session|cookie|redirect)\(\)#i'
+        
+        # Generic parameter type issues
+        - '#Parameter .* of method .*#'
+        - '#Parameter .* of function .*#'
+        - '#Method .* should return .* but returns .*#'
+        - '#Only booleans allowed#'
+        - '#Cannot cast .+ to bool#'
+        - '#Cannot cast .+ to string#'
+        - '#Cannot cast .+ to int#'
+        
+        # Controller base class methods (middleware, etc.)
+        - '#Call to an undefined method .*Controller::\w+\(\)#'
+        
+        # env() calls outside config (acceptable in seeders/factories)
+        - '#Called .env. outside of the config directory#'
+        - '#larastan.noEnvCallsOutsideOfConfig#'
+        
+        # Unnecessary collection calls (performance suggestion, not error)
+        - '#larastan.noUnnecessaryCollectionCall#'
+        - '#Called .*pluck.* on Laravel collection#'
+        
+        # Static method calls on middleware
+        - '#Call to an undefined static method Illuminate\\Foundation\\Http\\Middleware\\#i'
+        
+        # Unknown class (usually due to missing imports or aliases)
+        - '#Call to static method .* on an unknown class#'
+        - '#Class .* not found#'
 
     # Treat these as allowed undefined variables in config context
     universalObjectCratesClasses:

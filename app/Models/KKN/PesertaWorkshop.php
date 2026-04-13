@@ -10,16 +10,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PesertaWorkshop extends Model
-{
-    use HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $connection = 'kkn';
-
-    protected $table = 'peserta_workshop';
-
-    protected $fillable = [
-        'workshop_id',
+#[Connection('kkn')]
+#[Table('peserta_workshop')]
+#[Fillable([
+    'workshop_id',
         'user_id',
         'registered_at',
         'attendance_status',
@@ -27,14 +27,24 @@ class PesertaWorkshop extends Model
         'certificate_generated',
         'certificate_path',
         'certificate_issued_at',
-    ];
-
-    protected $casts = [
-        'registered_at' => 'datetime',
+])]
+#[Casts([
+    'registered_at' => 'datetime',
         'checked_in_at' => 'datetime',
         'certificate_generated' => 'boolean',
         'certificate_issued_at' => 'datetime',
-    ];
+])]
+class PesertaWorkshop extends Model
+{
+    use HasFactory;
+
+    
+
+    
+
+    
+
+    
 
     public function workshop(): BelongsTo
     {

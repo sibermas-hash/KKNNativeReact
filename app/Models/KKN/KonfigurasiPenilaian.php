@@ -8,25 +8,35 @@ use App\Enums\KknType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
-class KonfigurasiPenilaian extends Model
-{
-    protected $connection = 'kkn';
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $table = 'konfigurasi_penilaian';
-
-    protected $fillable = [
-        'kkn_type',
+#[Connection('kkn')]
+#[Table('konfigurasi_penilaian')]
+#[Fillable([
+    'kkn_type',
         'config_key',
         'label',
         'percentage',
         'group',
         'description',
-    ];
-
-    protected $casts = [
-        'kkn_type' => KknType::class,
+])]
+#[Casts([
+    'kkn_type' => KknType::class,
         'percentage' => 'decimal:2',
-    ];
+])]
+class KonfigurasiPenilaian extends Model
+{
+    
+
+    
+
+    
+
+    
 
     protected static function booted()
     {

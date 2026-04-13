@@ -10,18 +10,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Schema;
 
-class Workshop extends Model
-{
-    use HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected static ?bool $supportsPeriodAssignment = null;
-
-    protected $connection = 'kkn';
-
-    protected $table = 'workshop';
-
-    protected $fillable = [
-        'period_id',
+#[Connection('kkn')]
+#[Table('workshop')]
+#[Fillable([
+    'period_id',
         'title',
         'description',
         'methodology',
@@ -35,12 +33,24 @@ class Workshop extends Model
         'radius_meters',
         'active_token',
         'status',
-    ];
-
-    protected $casts = [
-        'period_id' => 'integer',
+])]
+#[Casts([
+    'period_id' => 'integer',
         'workshop_date' => 'date',
-    ];
+])]
+class Workshop extends Model
+{
+    use HasFactory;
+
+    protected static ?bool $supportsPeriodAssignment = null;
+
+    
+
+    
+
+    
+
+    
 
     public static function supportsPeriodAssignment(): bool
     {

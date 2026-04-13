@@ -2,15 +2,24 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 class DummyKKN56Seeder extends Seeder
 {
     public function run(): void
+    {
+        DB::transaction(function () {
+            $this->seedData();
+        });
+    }
+
+    private function seedData(): void
     {
         if (!app()->environment('local', 'testing')) {
             $this->command->error('This seeder can only run in local or testing environment.');
@@ -42,6 +51,24 @@ class DummyKKN56Seeder extends Seeder
         foreach ($fakultasList as $f) {
             DB::table('fakultas')->updateOrInsert(['id' => $f['id']], [
                 'nama' => $f['nama'], 'code' => $f['code'],
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+
+        // ═══════════════════════════════════════════════════
+        // STEP 1.5: PRODI
+        // ═══════════════════════════════════════════════════
+        $prodiList = [
+            ['id' => 1, 'faculty_id' => 1, 'nama' => 'Pendidikan Agama Islam', 'code' => 'PAI'],
+            ['id' => 2, 'faculty_id' => 1, 'nama' => 'Pendidikan Bahasa Arab', 'code' => 'PBA'],
+            ['id' => 3, 'faculty_id' => 2, 'nama' => 'Ekonomi Syariah', 'code' => 'ES'],
+            ['id' => 4, 'faculty_id' => 4, 'nama' => 'Hukum Keluarga Islam', 'code' => 'HKI'],
+            ['id' => 5, 'faculty_id' => 5, 'nama' => 'Komunikasi Penyiaran Islam', 'code' => 'KPI'],
+        ];
+        foreach ($prodiList as $p) {
+            DB::table('prodi')->updateOrInsert(['id' => $p['id']], [
+                'faculty_id' => $p['faculty_id'],
+                'nama' => $p['nama'], 'code' => $p['code'],
                 'created_at' => now(), 'updated_at' => now(),
             ]);
         }
@@ -175,9 +202,9 @@ class DummyKKN56Seeder extends Seeder
                 'faculty_id' => ($i % 5) + 1,
                 'created_at' => now(), 'updated_at' => now(),
             ]);
-            DB::table('model_has_roles')->updateOrInsert(
-                ['model_id' => $userId, 'model_type' => 'App\Models\User'], ['role_id' => 2]
-            );
+            $dplUser = User::find($userId);
+            $dplRole = Role::firstOrCreate(['name' => 'dpl', 'guard_name' => 'web']);
+            $dplUser->assignRole($dplRole);
         }
 
         // ═══════════════════════════════════════════════════
@@ -200,17 +227,43 @@ class DummyKKN56Seeder extends Seeder
             }
             DB::table('mahasiswa')->updateOrInsert(['user_id' => $userId], [
                 'nim' => $nim, 'nama' => "Mahasiswa Dummy $i",
-                'faculty_id' => ($i % 5) + 1, 'batch_year' => 2021,
+                'faculty_id' => ($i % 5) + 1, 
+                'program_id' => ($i % 5) + 1,
+                'batch_year' => 2021,
                 'sks_completed' => rand(100, 140),
                 'gpa' => number_format(rand(300, 400) / 100, 2),
                 'gender' => $i % 2 == 0 ? 'L' : 'P',
                 'university' => 'UIN Prof. K.H. Saifuddin Zuhri Purwokerto',
                 'is_bta_ppi_passed' => true, 'status_bta_ppi' => 'LULUS',
-                'semester' => 7, 'created_at' => now(), 'updated_at' => now(),
+                'semester' => 7,
+                'health_certificate_path' => 'dummy/health_'.$i.'.pdf',
+                'parent_permission_path' => 'dummy/parent_'.$i.'.pdf',
+                'nik' => '330101' . str_pad((string)$i, 10, '0', STR_PAD_LEFT),
+                'mother_name' => 'Ibu Mandatori ' . $i,
+                'birth_place' => 'Purwokerto',
+                'birth_date' => '2003-01-01',
+                'created_at' => now(), 'updated_at' => now(),
             ]);
-            DB::table('model_has_roles')->updateOrInsert(
-                ['model_id' => $userId, 'model_type' => 'App\Models\User'], ['role_id' => 3]
-            );
+            $studentUser = User::find($userId);
+            $studentRole = Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
+            $studentUser->assignRole($studentRole);
+
+            // ═══════════════════════════════════════════════════
+            // STEP 7: PESERTA KKN (REGISTRATIONS)
+            // ═══════════════════════════════════════════════════
+            if ($i <= 40) { // Seed 40 registrations
+                DB::table('peserta_kkn')->insert([
+                    'mahasiswa_id' => $userId, // User ID is used as Mahasiswa ID if using updateOrInsert above incorrectly, wait...
+                    // In this seeder, Mahasiswa table is linked via user_id, but the PK might be different.
+                    // Let's check Mahasiswa table PK.
+                    'mahasiswa_id' => DB::table('mahasiswa')->where('user_id', $userId)->value('id'),
+                    'period_id' => $periods[0]['academic_year_id'], // This is wrong, should be period ID
+                    'period_id' => DB::table('periode')->where('name', $periods[0]['name'])->value('id'),
+                    'registration_date' => now()->subDays(rand(1, 10)),
+                    'status' => $i <= 10 ? 'pending' : ($i <= 30 ? 'approved' : 'rejected'),
+                    'created_at' => now(), 'updated_at' => now(),
+                ]);
+            }
         }
 
         // ═══════════════════════════════════════════════════

@@ -1,5 +1,7 @@
 import { Head, useForm, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import { FormInput } from '@/Components/ui';
+import FormTextarea from '@/Components/ui/FormTextarea';
 import { route } from 'ziggy-js';
 import { ArrowLeft, Send, AlertTriangle } from 'lucide-react';
 
@@ -23,15 +25,15 @@ export default function StudentIzinCreate() {
                 <div className="flex items-center gap-4">
                     <Link
                         href={route('student.izin.index')}
-                        className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700"
+                        className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700"
                     >
                         <ArrowLeft className="h-4 w-4" /> Kembali ke Daftar Izin
                     </Link>
                 </div>
 
                 <section className="rounded-lg border border-slate-200 bg-white p-8">
-                    <h1 className="text-2xl font-semibold text-slate-900 mb-2">Ajukan Permohonan Izin</h1>
-                    <p className="text-sm text-slate-500 mb-8">
+                    <h1 className="text-2xl font-semibold text-gray-900 mb-2">Ajukan Permohonan Izin</h1>
+                    <p className="text-sm text-gray-500 mb-8">
                         Ajukan izin jika Anda perlu meninggalkan lokasi KKN. Permohonan akan diproses oleh DPL Anda.
                     </p>
 
@@ -47,59 +49,38 @@ export default function StudentIzinCreate() {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
-                            <label htmlFor="tanggal_mulai" className="block text-sm font-medium text-slate-700 mb-1">
-                                Tanggal Mulai <span className="text-rose-500">*</span>
-                            </label>
-                            <input
-                                type="date"
-                                id="tanggal_mulai"
-                                value={data.tanggal_mulai}
-                                min={new Date().toISOString().split('T')[0]}
-                                onChange={(e) => setData('tanggal_mulai', e.target.value)}
-                                className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700 focus:border-emerald-500 focus:ring-emerald-500"
-                                required
-                            />
-                            {errors.tanggal_mulai && (
-                                <p className="mt-1 text-xs text-rose-600">{errors.tanggal_mulai}</p>
-                            )}
-                        </div>
+                        <FormInput
+                            type="date"
+                            id="tanggal_mulai"
+                            label="Tanggal Mulai"
+                            value={data.tanggal_mulai}
+                            min={new Date().toISOString().split('T')[0]}
+                            onChange={(e) => setData('tanggal_mulai', e.target.value)}
+                            error={errors.tanggal_mulai}
+                            required
+                        />
 
-                        <div>
-                            <label htmlFor="tanggal_kembali" className="block text-sm font-medium text-slate-700 mb-1">
-                                Tanggal Kembali <span className="text-rose-500">*</span>
-                            </label>
-                            <input
-                                type="date"
-                                id="tanggal_kembali"
-                                value={data.tanggal_kembali}
-                                min={data.tanggal_mulai}
-                                onChange={(e) => setData('tanggal_kembali', e.target.value)}
-                                className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700 focus:border-emerald-500 focus:ring-emerald-500"
-                                required
-                            />
-                            {errors.tanggal_kembali && (
-                                <p className="mt-1 text-xs text-rose-600">{errors.tanggal_kembali}</p>
-                            )}
-                        </div>
+                        <FormInput
+                            type="date"
+                            id="tanggal_kembali"
+                            label="Tanggal Kembali"
+                            value={data.tanggal_kembali}
+                            min={data.tanggal_mulai}
+                            onChange={(e) => setData('tanggal_kembali', e.target.value)}
+                            error={errors.tanggal_kembali}
+                            required
+                        />
 
-                        <div>
-                            <label htmlFor="alasan" className="block text-sm font-medium text-slate-700 mb-1">
-                                Alasan <span className="text-rose-500">*</span>
-                            </label>
-                            <textarea
-                                id="alasan"
-                                rows={5}
-                                value={data.alasan}
-                                onChange={(e) => setData('alasan', e.target.value)}
-                                className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700 focus:border-emerald-500 focus:ring-emerald-500"
-                                placeholder="Jelaskan alasan permohonan izin Anda secara detail..."
-                                required
-                            />
-                            {errors.alasan && (
-                                <p className="mt-1 text-xs text-rose-600">{errors.alasan}</p>
-                            )}
-                        </div>
+                        <FormTextarea
+                            id="alasan"
+                            label="Alasan"
+                            rows={5}
+                            value={data.alasan}
+                            onChange={(e) => setData('alasan', e.target.value)}
+                            placeholder="Jelaskan alasan permohonan izin Anda secara detail..."
+                            error={errors.alasan}
+                            required
+                        />
 
                         <div className="flex items-center gap-4 pt-4 border-t border-slate-100">
                             <button
@@ -112,7 +93,7 @@ export default function StudentIzinCreate() {
                             </button>
                             <Link
                                 href={route('student.izin.index')}
-                                className="text-sm text-slate-500 hover:text-slate-700"
+                                className="text-sm text-gray-500 hover:text-gray-700"
                             >
                                 Batal
                             </Link>

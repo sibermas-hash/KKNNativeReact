@@ -6,20 +6,30 @@ namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Model;
 
-class KonfigurasiSertifikat extends Model
-{
-    protected $connection = 'kkn';
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $table = 'konfigurasi_sertifikat';
-
-    protected $fillable = [
-        'config_key',
+#[Connection('kkn')]
+#[Table('konfigurasi_sertifikat')]
+#[Fillable([
+    'config_key',
         'label',
         'value',
         'type',
-    ];
+])]
+#[Casts([
+    'value' => 'string',
+])]
+class KonfigurasiSertifikat extends Model
+{
+    
 
-    protected $casts = [
-        'value' => 'string',
-    ];
+    
+
+    
+
+    
 }

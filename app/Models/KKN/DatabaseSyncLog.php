@@ -6,12 +6,15 @@ namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Model;
 
-class DatabaseSyncLog extends Model
-{
-    protected $table = 'database_sync_logs';
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $fillable = [
-        'source',
+#[Table('database_sync_logs')]
+#[Fillable([
+    'source',
         'target',
         'entity_type',
         'entity_id',
@@ -22,13 +25,19 @@ class DatabaseSyncLog extends Model
         'error_message',
         'synced_at',
         'synced_by',
-    ];
-
-    protected $casts = [
-        'request_data' => 'array',
+])]
+#[Casts([
+    'request_data' => 'array',
         'response_data' => 'array',
         'synced_at' => 'datetime',
-    ];
+])]
+class DatabaseSyncLog extends Model
+{
+    
+
+    
+
+    
 
     /**
      * Scope untuk sync yang berhasil

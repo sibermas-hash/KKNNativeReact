@@ -45,14 +45,23 @@ class StudentSyncController extends Controller
             ->values()
             ->all();
 
+        $isFullSync = empty($nimList);
+        $isLargeSync = count($nimList) > 50;
+
+        if ($isFullSync || $isLargeSync) {
+            \App\Jobs\SyncAllMahasiswaJob::dispatch($nimList ?: null);
+
+            $message = $isFullSync 
+                ? 'Sinkronisasi seluruh mahasiswa telah dijadwalkan di latar belakang.'
+                : 'Sinkronisasi ' . count($nimList) . ' mahasiswa telah dijadwalkan di latar belakang.';
+
+            return back()->with('success', $message . ' Silakan cek beberapa saat lagi.');
+        }
+
         try {
             $results = $this->syncService->syncFromApi($nimList);
 
-            $modeLabel = count($nimList) > 0
-                ? 'sinkronisasi NIM terpilih'
-                : 'sinkronisasi seluruh mahasiswa';
-
-            return back()->with('success', "Berhasil {$modeLabel}: {$results['synced']} mahasiswa sinkron, {$results['errors']} gagal dari total {$results['total']} data.");
+            return back()->with('success', "Berhasil sinkronisasi NIM terpilih: {$results['synced']} mahasiswa sinkron, {$results['errors']} gagal dari total {$results['total']} data.");
         } catch (\Exception $e) {
             return back()
                 ->with('error', "Gagal sinkronisasi: {$e->getMessage()}")

@@ -56,11 +56,11 @@ export default function DplFinalReportsShow({ report }: Props) {
  <Link href="/dpl/final-reports" className="text-sm font-medium text-primary hover:underline">
  Kembali ke daftar laporan akhir
  </Link>
- <h1 className="mt-3 text-2xl font-semibold text-slate-900">{report.title}</h1>
- <p className="mt-2 text-sm text-slate-500">
+ <h1 className="mt-3 text-2xl font-semibold text-gray-900">{report.title}</h1>
+ <p className="mt-2 text-sm text-gray-500">
  {report.mahasiswa?.nama ?? '-'} ({report.mahasiswa?.nim ?? '-'})
  </p>
- <p className="text-sm text-slate-500">
+ <p className="text-sm text-gray-500">
  {report.kelompok?.nama_kelompok ?? '-'} · {formatLocation(report) || 'Lokasi belum tersedia'}
  </p>
  </div>
@@ -71,14 +71,14 @@ export default function DplFinalReportsShow({ report }: Props) {
  <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
  <section className="space-y-6 rounded-lg border border-slate-200 bg-white p-6">
  <div>
- <h2 className="text-lg font-semibold text-slate-900">Dokumen Laporan</h2>
- <p className="mt-1 text-sm text-slate-500">
+ <h2 className="text-lg font-semibold text-gray-900">Dokumen Laporan</h2>
+ <p className="mt-1 text-sm text-gray-500">
  Dikirim pada {report.submitted_at ?? 'waktu belum tercatat'}.
  </p>
  </div>
 
  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
- <p className="text-sm font-medium text-slate-800">{report.file_name ?? 'Dokumen laporan akhir'}</p>
+ <p className="text-sm font-medium text-gray-800">{report.file_name ?? 'Dokumen laporan akhir'}</p>
  <a
  href={report.download_url}
  className="mt-3 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90"
@@ -88,8 +88,8 @@ export default function DplFinalReportsShow({ report }: Props) {
  </div>
 
  <div>
- <h3 className="text-base font-semibold text-slate-900">Abstrak</h3>
- <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700">
+ <h3 className="text-base font-semibold text-gray-900">Abstrak</h3>
+ <p className="mt-2 whitespace-pre-line text-sm leading-6 text-gray-700">
  {report.abstract || 'Mahasiswa belum mengisi abstrak laporan akhir.'}
  </p>
  </div>
@@ -97,8 +97,8 @@ export default function DplFinalReportsShow({ report }: Props) {
 
  <aside className="space-y-6 rounded-lg border border-slate-200 bg-white p-6">
  <div>
- <h2 className="text-lg font-semibold text-slate-900">Tinjauan DPL</h2>
- <p className="mt-1 text-sm text-slate-500">
+ <h2 className="text-lg font-semibold text-gray-900">Tinjauan DPL</h2>
+ <p className="mt-1 text-sm text-gray-500">
  {canReview
  ? 'Setujui laporan akhir atau kembalikan dengan catatan revisi.'
  : 'Laporan ini sudah selesai ditinjau dan tidak dapat diproses ulang.'}
@@ -121,7 +121,7 @@ export default function DplFinalReportsShow({ report }: Props) {
  }}
  className="space-y-3"
  >
- <label htmlFor="notes" className="block text-sm font-medium text-slate-700">
+ <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
  Catatan revisi
  </label>
  <textarea
@@ -129,7 +129,7 @@ export default function DplFinalReportsShow({ report }: Props) {
  rows={5}
  value={revisionForm.data.notes}
  onChange={(event) => revisionForm.setData('notes', event.target.value)}
- className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+ className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
  placeholder="Tulis arahan revisi untuk mahasiswa."
  />
  {revisionForm.errors.notes ? (

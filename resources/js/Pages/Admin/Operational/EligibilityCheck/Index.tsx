@@ -2,331 +2,345 @@ import { useState } from 'react';
 import { router, Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import {
-    CheckCircle2, XCircle, AlertTriangle, Download, Search,
-    Filter, Users, Target, Eye, Shield, FileCheck,
-    Activity, Zap, Briefcase, Cpu, Layers3, ChevronRight,
-    SearchCheck, Database, Fingerprint, ShieldAlert, ShieldCheck
+  CheckCircle2,
+  XCircle,
+  Download,
+  Filter,
+  Users,
+  Target,
+  Layers3,
+  ChevronRight,
+  Database,
+  ShieldAlert,
+  ShieldCheck,
+  Search,
+  RefreshCw,
+  Info,
+  ChevronDown,
+  AlertTriangle,
+  UserCheck
 } from 'lucide-react';
 import { clsx } from 'clsx';
-import { Pagination } from '@/Components/ui';
+import { Pagination, Button } from '@/Components/ui';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface EligibilityCheck { passed: boolean; key: string; message: string; }
+interface EligibilityCheck {
+  passed: boolean;
+  key: string;
+  message: string;
+}
 interface Student {
-    mahasiswa_id: number; nim: string; nama: string; sks_completed: number;
-    gpa: number | null; is_bta_ppi_passed: boolean;
-    has_health_certificate: boolean; has_parent_permission: boolean;
-    checks: EligibilityCheck[]; is_eligible: boolean;
-    issues: EligibilityCheck[]; issue_count: number;
-    mahasiswa?: { fakultas?: { nama: string }; prodi?: { nama: string }; };
+  mahasiswa_id: number;
+  nim: string;
+  nama: string;
+  sks_completed: number;
+  gpa: number | null;
+  is_bta_ppi_passed: boolean;
+  has_health_certificate: boolean;
+  has_parent_permission: boolean;
+  checks: EligibilityCheck[];
+  is_eligible: boolean;
+  issues: EligibilityCheck[];
+  issue_count: number;
+  mahasiswa?: { fakultas?: { nama: string }; prodi?: { nama: string } };
 }
 interface Props {
-    students: Student[];
-    pagination: { current_page: number; per_page: number; total: number; last_page: number; };
-    stats: { total: number; eligible_count: number; not_eligible_count: number; eligibility_rate: number; };
-    filters: { period_id?: number; faculty_id?: number; show_eligible: boolean; };
-    periods: Array<{ id: number; name: string }>;
-    faculties: Array<{ id: number; name: string }>;
+  students: Student[];
+  pagination: { current_page: number; per_page: number; total: number; last_page: number };
+  stats: {
+    total: number;
+    eligible_count: number;
+    not_eligible_count: number;
+    eligibility_rate: number;
+  };
+  filters: { period_id?: number; faculty_id?: number; show_eligible: boolean };
+  periods: Array<{ id: number; name: string }>;
+  faculties: Array<{ id: number; name: string }>;
 }
 
-const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.1 } }
-};
+export default function EligibilityIndex({
+  students,
+  pagination,
+  stats,
+  filters,
+  periods,
+  faculties,
+}: Props) {
+  const [search, setSearch] = useState('');
+  const [periodId, setPeriodId] = useState(filters.period_id?.toString() || '');
+  const [facultyId, setFacultyId] = useState(filters.faculty_id?.toString() || '');
+  const [showEligible, setShowEligible] = useState(filters.show_eligible);
 
-const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }
-};
+  const handleFilter = () => {
+    router.get(
+      '/admin/cek-kelayakan',
+      {
+        period_id: periodId || undefined,
+        faculty_id: facultyId || undefined,
+        show_eligible: showEligible,
+        search,
+      },
+      { preserveState: true }
+    );
+  };
 
-export default function EligibilityIndex({ students, pagination, stats, filters, periods, faculties }: Props) {
-    const [search, setSearch] = useState('');
-    const [periodId, setPeriodId] = useState(filters.period_id?.toString() || '');
-    const [facultyId, setFacultyId] = useState(filters.faculty_id?.toString() || '');
-    const [showEligible, setShowEligible] = useState(filters.show_eligible);
+  const handleExport = () => {
+    window.location.href = `/admin/cek-kelayakan/ekspor?period_id=${periodId}&faculty_id=${facultyId}`;
+  };
 
-    const handleFilter = () => {
-        router.get('/admin/cek-kelayakan', {
-            period_id: periodId || undefined, faculty_id: facultyId || undefined,
-            show_eligible: showEligible, search,
-        }, { preserveState: true });
-    };
+  return (
+    <AppLayout title="Protokol Kelayakan Peserta">
+      <Head title="Kelayakan Peserta" />
 
-    const handleExport = () => {
-        window.location.href = `/admin/cek-kelayakan/ekspor?period_id=${periodId}&faculty_id=${facultyId}`;
-    };
-
-    return (
-        <AppLayout title="Academic Validation HUB">
-            <Head title="Cek Kelayakan Mahasiswa | SIKKKN" />
-
-            <motion.div 
-                initial="hidden"
-                animate="visible"
-                variants={containerVariants}
-                className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16 font-sans"
-            >
-                {/* --- COMMAND HEADER --- */}
-                <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-4 text-emerald-600">
-                             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                             <span className="text-[10px] font-black uppercase tracking-[0.4em] leading-none">Operation Center / Academic Integrity</span>
+      <div className="max-w-7xl mx-auto space-y-8 pb-24 text-slate-900 font-sans">
+        {/* --- PREMIUM HEADER --- */}
+        <div className="space-y-4">
+            <div className="flex items-center gap-3 text-emerald-600">
+                <ShieldCheck size={18} />
+                <span className="text-xs font-bold uppercase tracking-[0.25em] opacity-80">Validasi Integritas Akademik</span>
+            </div>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="space-y-1">
+                    <h1 className="text-5xl font-extrabold text-slate-900 tracking-tight">
+                        Kelayakan <span className="text-emerald-500">Peserta.</span>
+                    </h1>
+                    <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mt-2 leading-relaxed max-w-2xl">
+                        Protokol Validasi Otomatis Integritas Akademik dan Prasyarat Registrasi KKN
+                    </p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <div className="h-14 px-8 bg-white border border-slate-200 rounded-2xl flex items-center gap-4 shadow-sm">
+                        <Activity size={18} className="text-emerald-500" />
+                        <div className="flex flex-col">
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Rasio Kelayakan</span>
+                            <span className="text-sm font-black text-slate-900 uppercase tabular-nums leading-none tracking-tight">{stats.eligibility_rate}% TERVALIDASI</span>
                         </div>
-                        <h1 className="text-5xl lg:text-7xl font-black text-slate-900 tracking-tighter uppercase leading-[0.8] flex flex-col">
-                            Integrity <span>Scanner.</span>
-                        </h1>
-                        <p className="text-lg font-bold text-slate-400 tracking-tight leading-relaxed max-w-2xl uppercase italic opacity-80">
-                            Validasi kelayakan akademik. <br />
-                            <span className="text-slate-900 not-italic">Evaluasi real-time terhadap parameter SKS, IPK, BTA-PPI, dan kepatuhan administratif pendaftar.</span>
-                        </p>
                     </div>
-
                     <button
                         onClick={handleExport}
-                        className="h-20 px-10 rounded-[2.5rem] bg-emerald-600 text-white hover:bg-slate-900 transition-all flex items-center justify-center gap-4 shadow-xl shadow-emerald-500/10 active:scale-95 group/btn"
+                        className="h-14 px-8 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-xl shadow-emerald-100 flex items-center gap-3 active:scale-95 text-xs uppercase tracking-widest"
                     >
-                        <Download size={22} strokeWidth={3} className="group-hover/btn:translate-y-1 transition-transform" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Execute Data Export</span>
+                        <Download size={18} />
+                        Ekspor Laporan
                     </button>
-                </motion.div>
-
-                {/* --- STRATEGIC METRICS MATRIX --- */}
-                <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <MetricCard label="Identification Load" value={stats.total} icon={Users} color="slate" />
-                    <MetricCard label="Verified Eligible" value={stats.eligible_count} icon={CheckCircle2} color="emerald" />
-                    <MetricCard label="Protocol Failed" value={stats.not_eligible_count} icon={XCircle} color="rose" />
-                    <MetricCard label="Success Ratio" value={`${stats.eligibility_rate}%`} icon={Target} color="amber" />
-                </motion.div>
-
-                {/* --- COMMAND FILTER HUB --- */}
-                <motion.div variants={itemVariants} className="bg-white border border-slate-100 rounded-[3.5rem] p-12 shadow-2xl shadow-slate-200/50">
-                    <div className="grid grid-cols-1 xl:grid-cols-4 gap-10">
-                        <div className="space-y-4">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Temporal Focus</label>
-                            <div className="relative group/sel">
-                                <Briefcase className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within/sel:text-emerald-500 transition-colors" />
-                                <select 
-                                    value={periodId} 
-                                    onChange={(e) => setPeriodId(e.target.value)} 
-                                    className="w-full h-16 pl-16 pr-8 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm font-black text-slate-900 focus:border-emerald-500 focus:ring-0 outline-none transition-all appearance-none uppercase tracking-tight"
-                                >
-                                    <option value="">SELECT PERIOD...</option>
-                                    {periods.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                                </select>
-                                <ChevronRight size={18} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 rotate-90 pointer-events-none" />
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Faculty Cluster</label>
-                            <div className="relative group/sel">
-                                <Database className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within/sel:text-emerald-500 transition-colors" />
-                                <select 
-                                    value={facultyId} 
-                                    onChange={(e) => setFacultyId(e.target.value)} 
-                                    className="w-full h-16 pl-16 pr-8 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm font-black text-slate-900 focus:border-emerald-500 focus:ring-0 outline-none transition-all appearance-none uppercase tracking-tight"
-                                >
-                                    <option value="">ALL FACULTIES...</option>
-                                    {faculties.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
-                                </select>
-                                <ChevronRight size={18} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 rotate-90 pointer-events-none" />
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Integrity Status Filter</label>
-                            <div className="grid grid-cols-2 gap-3 h-16 bg-slate-50 p-2 rounded-[1.5rem] border-2 border-slate-50">
-                                <button 
-                                    onClick={() => setShowEligible(true)} 
-                                    className={clsx(
-                                        "flex items-center justify-center rounded-xl text-[9px] font-black uppercase tracking-widest transition-all italic", 
-                                        showEligible ? "bg-emerald-600 text-white shadow-xl" : "bg-transparent text-slate-400 hover:text-slate-900"
-                                    )}
-                                >
-                                    Eligible Nodes
-                                </button>
-                                <button 
-                                    onClick={() => setShowEligible(false)} 
-                                    className={clsx(
-                                        "flex items-center justify-center rounded-xl text-[9px] font-black uppercase tracking-widest transition-all italic", 
-                                        !showEligible ? "bg-rose-600 text-white shadow-xl" : "bg-transparent text-slate-400 hover:text-slate-900"
-                                    )}
-                                >
-                                    Failed Check
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="flex items-end">
-                            <button 
-                                onClick={handleFilter} 
-                                className="w-full h-16 bg-slate-900 hover:bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-4 active:scale-95 shadow-2xl shadow-slate-200"
-                            >
-                                <Filter size={18} />
-                                Refresh Scanner
-                            </button>
-                        </div>
-                    </div>
-                </motion.div>
-
-                {/* --- TACTICAL VALIDATION LEDGER --- */}
-                <motion.section variants={itemVariants} className="bg-white border border-slate-100 rounded-[3.5rem] overflow-hidden shadow-2xl shadow-slate-200/50">
-                    <div className="px-10 py-10 bg-slate-950 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                         <div className="flex items-center gap-6">
-                              <div className="h-14 w-14 bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-500/20">
-                                   <Layers3 size={24} />
-                              </div>
-                              <div className="space-y-1">
-                                   <h3 className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">Validation Stream</h3>
-                                   <p className="text-2xl font-black text-white uppercase tracking-tighter italic leading-none">Diagnostic Registry</p>
-                              </div>
-                         </div>
-                         <div className="flex items-center gap-4">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-white opacity-40 italic">Buffer Load</span>
-                              <div className="h-12 w-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-sm font-black text-emerald-500 shadow-xl">
-                                   {students.length}
-                              </div>
-                         </div>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-slate-50 border-b border-slate-100">
-                                <tr>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Node / Identify</th>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 text-center">SKS Ledger</th>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 text-center">GPA Index</th>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 text-center">BTA-PPI</th>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 text-center">Compliance Map</th>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 text-center">Final Result</th>
-                                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 text-right">Operations</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-50">
-                                {students.length > 0 ? students.map((s) => (
-                                    <tr key={s.mahasiswa_id} className="group hover:bg-emerald-50/20 transition-all">
-                                        <td className="px-10 py-8">
-                                            <div className="flex items-center gap-6">
-                                                <div className="h-14 w-14 rounded-2xl bg-slate-50 text-slate-900 flex items-center justify-center font-black text-xl italic border border-slate-100 group-hover:bg-slate-900 group-hover:text-emerald-500 transition-all shadow-sm">
-                                                    {s.nama.charAt(0)}
-                                                </div>
-                                                <div className="flex flex-col gap-1.5">
-                                                    <span className="text-base font-black text-slate-900 tracking-tight leading-none group-hover:text-emerald-700 transition-colors uppercase italic">{s.nama}</span>
-                                                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest font-mono italic">IDENTIFIER: {s.nim}</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-10 py-8 text-center">
-                                            <span className={clsx(
-                                                "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest italic border", 
-                                                s.sks_completed >= 100 ? "text-emerald-600 bg-emerald-50 border-emerald-100" : "text-rose-600 bg-rose-50 border-rose-100"
-                                            )}>
-                                                {s.sks_completed} SKS
-                                            </span>
-                                        </td>
-                                        <td className="px-10 py-8 text-center">
-                                            <span className="text-base font-black text-slate-900 italic font-mono">{s.gpa ? s.gpa.toFixed(2) : '0.00'}</span>
-                                        </td>
-                                        <td className="px-10 py-8 text-center">
-                                            <div className={clsx(
-                                                "inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest italic",
-                                                s.is_bta_ppi_passed ? "bg-emerald-950 text-emerald-500 shadow-xl shadow-emerald-500/10" : "bg-slate-100 text-slate-300"
-                                            )}>
-                                                {s.is_bta_ppi_passed ? <Zap size={10} className="fill-current" /> : <Lock size={10} />}
-                                                {s.is_bta_ppi_passed ? 'AUTHORIZED' : 'LOCKED'}
-                                            </div>
-                                        </td>
-                                        <td className="px-10 py-8 text-center">
-                                            <div className="flex items-center justify-center gap-3">
-                                                <DocIcon active={s.has_health_certificate} title="Health Certificate Verified" />
-                                                <DocIcon active={s.has_parent_permission} title="Parental Permission Authenticated" />
-                                            </div>
-                                        </td>
-                                        <td className="px-10 py-8 text-center">
-                                            {s.is_eligible ? (
-                                                <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-emerald-500 text-white shadow-xl shadow-emerald-500/20 text-[10px] font-black uppercase tracking-[0.2em] italic">
-                                                    <ShieldCheck size={16} strokeWidth={3} />
-                                                    PASSED
-                                                </div>
-                                            ) : (
-                                                <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-rose-600 text-white shadow-xl shadow-rose-500/20 text-[10px] font-black uppercase tracking-[0.2em] italic">
-                                                    <ShieldAlert size={16} strokeWidth={3} />
-                                                    FAILED ({s.issue_count})
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td className="px-10 py-8 text-right">
-                                            <Link 
-                                                href={`/admin/mahasiswa/${s.mahasiswa_id}`} 
-                                                className="h-12 px-6 bg-white border border-slate-100 text-slate-400 hover:text-emerald-600 hover:border-emerald-200 rounded-2xl flex items-center justify-center text-[9px] font-black uppercase tracking-widest shadow-sm active:scale-95 transition-all opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0"
-                                            >
-                                                Inspect 
-                                                <ChevronRight size={14} className="ml-2" />
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                )) : (
-                                    <tr>
-                                        <td colSpan={7} className="px-10 py-40 text-center">
-                                            <div className="flex flex-col items-center gap-8 text-slate-200 opacity-50">
-                                                <FileCheck size={80} strokeWidth={1} />
-                                                <div className="space-y-2">
-                                                    <p className="text-xl font-black uppercase tracking-[0.4em] italic leading-none">Scanning Idle</p>
-                                                    <p className="text-[10px] font-bold uppercase tracking-widest italic">AWAITING TEMPORAL CONTEXT AND FACULTY CLUSTER FILTERS.</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div className="px-10 py-10 border-t border-slate-50 bg-slate-50/50 flex flex-col md:flex-row items-center justify-between gap-10">
-                        <div className="flex items-center gap-4 text-emerald-600">
-                             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                             <span className="text-[10px] font-black uppercase tracking-widest">Identifying {students.length} of {pagination.total.toLocaleString()} entities</span>
-                        </div>
-                        <Pagination meta={{ current_page: pagination.current_page, last_page: pagination.last_page, per_page: pagination.per_page, total: pagination.total, from: (pagination.current_page - 1) * pagination.per_page + 1, to: Math.min(pagination.current_page * pagination.per_page, pagination.total), links: [], path: '/admin/cek-kelayakan' }} />
-                    </div>
-                </motion.section>
-            </motion.div>
-        </AppLayout>
-    );
-}
-
-function MetricCard({ label, value, icon: Icon, color }: { label: string; value: string | number; icon: any; color: 'emerald' | 'rose' | 'amber' | 'slate' }) {
-    return (
-        <div className="bg-white border border-slate-100 p-8 rounded-[2.5rem] shadow-sm hover:shadow-2xl hover:shadow-emerald-50 transition-all group relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
-                <Icon size={100} strokeWidth={1} />
-            </div>
-            <div className="flex flex-col gap-6 relative z-10">
-                <div className={clsx(
-                    "h-14 w-14 rounded-2xl flex items-center justify-center transition-all group-hover:rotate-6 shadow-sm group-hover:bg-slate-900 group-hover:text-white",
-                    color === 'emerald' ? "bg-emerald-50 text-emerald-600" :
-                    color === 'rose' ? "bg-rose-50 text-rose-600" :
-                    color === 'amber' ? "bg-amber-50 text-amber-600" : "bg-slate-50 text-slate-600"
-                )}>
-                    <Icon size={24} strokeWidth={2.5} />
-                </div>
-                <div>
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-1 opacity-60 italic leading-none">{label}</p>
-                   <p className="text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none italic">{value.toLocaleString()}</p>
                 </div>
             </div>
         </div>
-    );
+
+        {/* --- STATS GRID --- */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <MetricCard label="Total Evaluasi" value={stats.total} icon={Users} color="slate" desc="Mahasiswa terproses" />
+          <MetricCard label="Layak Daftar" value={stats.eligible_count} icon={CheckCircle2} color="emerald" desc="Memenuhi syarat" />
+          <MetricCard label="Belum Layak" value={stats.not_eligible_count} icon={XCircle} color="rose" desc="Terhambat syarat" />
+          <MetricCard label="Rasio Kelulusan" value={`${stats.eligibility_rate}%`} icon={Target} color="amber" isText desc="Persentase kelayakan" />
+        </div>
+
+        {/* --- FILTER CONTROL --- */}
+        <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase text-slate-500 ml-1">Periode KKN</label>
+              <div className="relative">
+                <select
+                    value={periodId}
+                    onChange={(e) => setPeriodId(e.target.value)}
+                    className="w-full h-11 px-4 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-700 focus:bg-white focus:border-emerald-500 outline-none transition-all appearance-none pr-10"
+                >
+                    <option value="">— Pilih Periode —</option>
+                    {periods.map((p) => <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>)}
+                </select>
+                <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase text-slate-500 ml-1">Filter Fakultas</label>
+              <div className="relative">
+                <select
+                    value={facultyId}
+                    onChange={(e) => setFacultyId(e.target.value)}
+                    className="w-full h-11 px-4 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-700 focus:bg-white focus:border-emerald-500 outline-none transition-all appearance-none pr-10"
+                >
+                    <option value="">— Semua Fakultas —</option>
+                    {faculties.map((f) => <option key={f.id} value={f.id}>{f.name.toUpperCase()}</option>)}
+                </select>
+                <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase text-slate-500 ml-1">Status Kelayakan</label>
+              <div className="flex h-11 bg-slate-100 p-1 rounded-xl">
+                <button
+                  onClick={() => setShowEligible(true)}
+                  className={clsx('flex-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all', showEligible ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600')}
+                >
+                  Layak
+                </button>
+                <button
+                  onClick={() => setShowEligible(false)}
+                  className={clsx('flex-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all', !showEligible ? 'bg-white text-red-600 shadow-sm' : 'text-slate-400 hover:text-slate-600')}
+                >
+                  Gagal
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-end">
+              <button onClick={handleFilter} className="w-full h-11 bg-emerald-600 border border-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold uppercase transition-all flex items-center justify-center gap-2 active:scale-95 shadow-sm shadow-emerald-100">
+                <RefreshCw size={16} /> Perbarui Filter
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* --- MAIN TABLE --- */}
+        <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+          <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/50">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 bg-white border border-slate-200 text-emerald-600 rounded-xl flex items-center justify-center shadow-sm">
+                <Layers3 size={20} />
+              </div>
+              <h3 className="text-sm font-bold text-black uppercase tracking-wider">Daftar Hasil Validasi</h3>
+            </div>
+            <div className="relative w-full md:w-80 group">
+                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
+                <input
+                    type="text"
+                    placeholder="Cari berdasarkan Nama atau NIM..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleFilter()}
+                    className="w-full h-11 pl-11 pr-4 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all placeholder:text-slate-300"
+                />
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-slate-50/50 text-[10px] font-bold uppercase tracking-widest text-slate-500 border-b border-slate-100">
+                  <th className="px-6 py-4">Mahasiswa</th>
+                  <th className="px-6 py-4 text-center">Data Akademik</th>
+                  <th className="px-6 py-4 text-center">BTA-PPI</th>
+                  <th className="px-6 py-4 text-center">Kelengkapan Berkas</th>
+                  <th className="px-6 py-4 text-center">Hasil Validasi</th>
+                  <th className="px-6 py-4 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {(students && students.length > 0) ? (
+                  students.map((s) => (
+                    <tr key={s.mahasiswa_id} className="hover:bg-slate-50/30 transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <div className="h-11 w-11 bg-white border border-slate-200 text-slate-400 flex items-center justify-center font-bold text-sm rounded-xl group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-sm">
+                            {s.nama.charAt(0)}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-extrabold text-black group-hover:text-emerald-700 transition-colors uppercase leading-tight">{s.nama}</span>
+                            <span className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">NIM: {s.nim}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col items-center gap-1.5">
+                            <div className={clsx('px-2.5 py-1 rounded text-[10px] font-bold uppercase border tabular-nums', s.sks_completed >= 100 ? 'text-emerald-700 bg-emerald-50 border-emerald-100' : 'text-red-700 bg-red-50 border-red-100 shadow-sm shadow-red-50')}>
+                              {s.sks_completed} SKS
+                            </div>
+                            <span className="text-[10px] font-bold text-slate-500 tabular-nums">IPK: {s.gpa ? Number(s.gpa).toFixed(2) : '0.00'}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center tabular-nums">
+                          {s.is_bta_ppi_passed ?
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-[9px] font-black italic tracking-widest">
+                                <CheckCircle2 size={10} /> LULUS
+                            </div> :
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-50 text-slate-300 border border-slate-200 rounded-full text-[9px] font-black italic tracking-widest">
+                                <XCircle size={10} /> TIDAK LULUS
+                            </div>
+                          }
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <DocStatus active={s.has_health_certificate} title="Surat Kesehatan" />
+                          <DocStatus active={s.has_parent_permission} title="Izin Orang Tua" />
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {s.is_eligible ? (
+                          <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider italic shadow-lg shadow-emerald-100">
+                             LAYAK DAFTAR
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-red-500 text-white text-[10px] font-black uppercase tracking-wider italic shadow-lg shadow-red-100">
+                             BELUM LAYAK ({s.issue_count})
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Link
+                          href={`/admin/mahasiswa/${s.mahasiswa_id}`}
+                          className="h-9 px-5 bg-emerald-500 text-white hover:bg-emerald-600 shadow-md shadow-emerald-100 rounded-xl flex items-center justify-center text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95"
+                        >
+                          Detail
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-20 text-center">
+                        <div className="flex flex-col items-center gap-3 text-slate-300">
+                            <Info size={40} className="mb-2" />
+                            <p className="text-sm font-bold uppercase tracking-[0.2em]">Data validasi tidak ditemukan</p>
+                        </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              Halaman {pagination.current_page} dari {pagination.last_page} | Total {pagination.total.toLocaleString()} Mahasiswa
+            </span>
+            <Pagination meta={{ current_page: pagination.current_page, last_page: pagination.last_page, per_page: pagination.per_page, total: pagination.total, links: [], from: (pagination.current_page - 1) * pagination.per_page + 1, to: Math.min(pagination.current_page * pagination.per_page, pagination.total), path: '/admin/cek-kelayakan' }} />
+          </div>
+        </div>
+      </div>
+    </AppLayout>
+  );
 }
 
-function DocIcon({ active, title }: { active: boolean; title: string }) {
-    return (
-        <div title={title} className={clsx(
-            "h-10 w-10 rounded-xl border flex items-center justify-center transition-all shadow-sm", 
-            active ? 'bg-emerald-950 text-emerald-500 border-emerald-950/20' : 'bg-slate-50 text-slate-200 border-slate-100'
-        )}>
-            <ShieldCheck size={18} strokeWidth={2} />
+function MetricCard({ label, value, icon: Icon, color, isText = false, desc }: { label: string; value: string | number; icon: LucideIcon; color: 'emerald' | 'rose' | 'amber' | 'slate'; isText?: boolean, desc: string }) {
+  const colorMap = {
+    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+    rose: 'bg-red-50 text-red-600 border-red-100',
+    amber: 'bg-amber-50 text-amber-600 border-amber-100',
+    slate: 'bg-slate-50 text-slate-400 border-slate-100'
+  };
+  return (
+    <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all group overflow-hidden relative">
+      <div className="flex items-center justify-between relative z-10">
+        <div className={clsx('h-12 w-12 rounded-xl flex items-center justify-center border transition-all duration-500 group-hover:scale-110 shadow-sm', colorMap[color])}>
+          <Icon size={20} />
         </div>
-    );
+        <div className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.2em]">{desc}</div>
+      </div>
+      <div className="mt-6 space-y-1 relative z-10">
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</p>
+        <p className={clsx('font-black text-black tracking-tighter tabular-nums leading-none', isText ? 'text-lg' : 'text-3xl')}>{value.toLocaleString()}</p>
+      </div>
+    </div>
+  );
+}
+
+function DocStatus({ active, title }: { active: boolean; title: string }) {
+  return (
+    <div title={title} className={clsx('h-9 w-9 rounded-xl border flex items-center justify-center transition-all', active ? 'bg-emerald-50 text-emerald-500 border-emerald-100 shadow-sm' : 'bg-slate-50 text-slate-200 border-slate-100')}>
+      <ShieldCheck size={16} />
+    </div>
+  );
 }

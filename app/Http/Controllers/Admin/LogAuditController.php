@@ -43,10 +43,7 @@ class LogAuditController extends Controller
         // Stats untuk header & cards
         $stats = [
             'total' => LogAudit::count(),
-            'high_risk' => LogAudit::where(function ($q) {
-                $q->where('action', 'like', 'GATE_BYPASS%')
-                    ->orWhere('action', 'DELETE');
-            })->count(),
+            'high_risk' => LogAudit::where('severity', 'high')->count(),
             'unique_users' => LogAudit::distinct('user_id')->count('user_id'),
             'today_logs' => LogAudit::whereDate('created_at', today())->count(),
         ];

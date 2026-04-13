@@ -7,7 +7,7 @@ namespace App\Services\MasterApi;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\Mahasiswa;
-use App\Models\KKN\Program;
+use App\Models\KKN\Prodi;
 
 class EntityMapperService
 {
@@ -87,7 +87,7 @@ class EntityMapperService
                 ->map(fn ($f) => $this->formatFaculty($f))
                 ->toArray(),
 
-            'program' => Program::with('faculty')
+            'program' => Prodi::with('faculty')
                 ->get()
                 ->map(fn ($p) => $this->formatProgram($p))
                 ->toArray(),

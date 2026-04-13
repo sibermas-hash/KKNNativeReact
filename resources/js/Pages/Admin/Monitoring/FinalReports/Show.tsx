@@ -82,7 +82,7 @@ export default function AdminFinalReportShow({ report }: Props) {
         <AppLayout title={`Audit Laporan: ${report.mahasiswa?.nama}`}>
             <Head title="Detail Audit Laporan | POS-KKN" />
 
-            <div className="min-h-screen bg-white  font-bold text-slate-900 pb-24">
+            <div className="min-h-screen bg-white  font-bold text-gray-900 pb-24">
                 {/* HEADER TACTICAL */}
                 <div className="bg-white border-b border-slate-100 px-12 py-12 flex flex-col xl:flex-row xl:items-center justify-between gap-8 sticky top-0 z-20 shadow-sm overflow-hidden relative">
                     <div className="absolute right-0 top-0 h-full w-1/3 bg-emerald-50/5 -skew-x-12 translate-x-20 pointer-events-none" />
@@ -98,7 +98,7 @@ export default function AdminFinalReportShow({ report }: Props) {
                             AUDIT <span className="text-emerald-500">DOKUMEN AKHIR</span>
                         </h1>
                         <div className="flex items-center gap-4 mt-2">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
                                 <Fingerprint size={12} /> ARCHIVE_STAMP: #{report.id}
                             </span>
                             <div className="h-1.5 w-1.5 rounded-full bg-emerald-200" />
@@ -133,14 +133,14 @@ export default function AdminFinalReportShow({ report }: Props) {
                         <section className="bg-slate-50/50 border border-slate-200 p-12 space-y-8">
                             <div className="space-y-4">
                                 <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest ">Judul Publikasi</span>
-                                <h2 className="text-2xl font-bold uppercase tracking-tight leading-tight text-slate-900 ">
+                                <h2 className="text-2xl font-bold uppercase tracking-tight leading-tight text-gray-900 ">
                                     {report.title}
                                 </h2>
                             </div>
                             {report.abstract && (
                                 <div className="space-y-4 pt-8 border-t border-slate-200/50">
                                     <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest ">Abstrak Operasional</span>
-                                    <p className="text-sm font-bold text-emerald-900 leading-relaxed uppercase tracking-tight  opacity-70">
+                                    <p className="text-sm font-bold text-bg-emerald-100 leading-relaxed uppercase tracking-tight  opacity-70">
                                         {report.abstract}
                                     </p>
                                 </div>
@@ -218,7 +218,7 @@ export default function AdminFinalReportShow({ report }: Props) {
                                             <a 
                                                 href={`/storage/${item.path}`} 
                                                 target="_blank" 
-                                                className="mt-2 h-10 w-full bg-slate-900 text-white flex items-center justify-center gap-2 text-[9px] font-bold uppercase tracking-widest hover:bg-emerald-600 transition-colors" rel="noreferrer"
+                                                className="mt-2 h-10 w-full bg-gray-900 text-white flex items-center justify-center gap-2 text-[9px] font-bold uppercase tracking-widest hover:bg-emerald-600 transition-colors" rel="noreferrer"
                                             >
                                                 LIHAT BERKAS <ArrowRight size={12} />
                                             </a>
@@ -239,7 +239,7 @@ export default function AdminFinalReportShow({ report }: Props) {
                         <motion.section 
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="bg-slate-900 p-10 text-white shadow-soft relative overflow-hidden"
+                            className="bg-gray-900 p-10 text-white shadow-soft relative overflow-hidden"
                         >
                             <div className="absolute inset-0 bg-emerald-500/5 -skew-x-12 translate-x-1/2 pointer-events-none" />
                             <div className="relative z-10 space-y-8">
@@ -249,8 +249,9 @@ export default function AdminFinalReportShow({ report }: Props) {
                                 </div>
                                 
                                 <div className="space-y-4">
-                                    <label className="text-[9px] font-bold uppercase tracking-widest text-emerald-400 ">Catatan Pemeriksa (Reviewer Notes)</label>
+                                    <label htmlFor="review-notes" className="text-[9px] font-bold uppercase tracking-widest text-emerald-400 ">Catatan Pemeriksa (Reviewer Notes)</label>
                                     <textarea
+                                        id="review-notes"
                                         value={data.review_notes}
                                         onChange={(e) => setData('review_notes', e.target.value)}
                                         className="w-full h-40 bg-white/5 border border-white/10 p-6 text-sm font-bold text-white uppercase tracking-tight  placeholder:text-white/20 focus:border-slate-900 focus:ring-0 transition-all"
@@ -272,7 +273,7 @@ export default function AdminFinalReportShow({ report }: Props) {
 
                         {/* TELEMETRY DATA */}
                         <div className="bg-white border border-slate-200 p-10 shadow-sm space-y-8">
-                            <div className="flex items-center gap-4 text-slate-900 font-bold text-[10px] uppercase tracking-widest  border-b border-slate-100 pb-6">
+                            <div className="flex items-center gap-4 text-gray-900 font-bold text-[10px] uppercase tracking-widest  border-b border-slate-100 pb-6">
                                 <Activity className="text-emerald-500" size={16} />
                                 AUDIT TELEMETRY
                             </div>
@@ -288,9 +289,9 @@ export default function AdminFinalReportShow({ report }: Props) {
                                     <div key={i} className="flex items-center justify-between group">
                                         <div className="flex items-center gap-3">
                                             <item.icon size={12} className="text-emerald-200 group-hover:text-emerald-500 transition-colors" />
-                                            <span className="text-[9px] font-bold text-emerald-200 uppercase  tracking-widest group-hover:text-slate-900 transition-colors">{item.label}</span>
+                                            <span className="text-[9px] font-bold text-emerald-200 uppercase  tracking-widest group-hover:text-gray-900 transition-colors">{item.label}</span>
                                         </div>
-                                        <span className="text-[10px] font-bold text-slate-900 uppercase  tracking-tighter truncate max-w-[150px]">{item.value || '-'}</span>
+                                        <span className="text-[10px] font-bold text-gray-900 uppercase  tracking-tighter truncate max-w-[150px]">{item.value || '-'}</span>
                                     </div>
                                 ))}
                             </div>

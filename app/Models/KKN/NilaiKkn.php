@@ -9,17 +9,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class NilaiKkn extends Model
-{
-    use HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $connection = 'kkn';
-
-    protected $table = 'nilai_kkn';
-
-    // FIXED: Remove confusing mahasiswa_id - only use user_id
-    protected $fillable = [
-        'user_id',
+#[Connection('kkn')]
+#[Table('nilai_kkn')]
+#[Fillable([
+    'user_id',
         'kelompok_id',
         // Aspek Desa (Hal 41)
         'desa_interaksi_score',
@@ -55,10 +54,9 @@ class NilaiKkn extends Model
         'evidence_file',
         'verification_token',
         'is_finalized',
-    ];
-
-    protected $casts = [
-        'dpl_graded_at' => 'datetime',
+])]
+#[Casts([
+    'dpl_graded_at' => 'datetime',
         'village_graded_at' => 'datetime',
         'admin_graded_at' => 'datetime',
         'is_finalized' => 'boolean',
@@ -81,7 +79,19 @@ class NilaiKkn extends Model
         'village_weighted_score' => 'decimal:2',
         'lppm_weighted_score' => 'decimal:2',
         'total_score' => 'decimal:2',
-    ];
+])]
+class NilaiKkn extends Model
+{
+    use HasFactory;
+
+    
+
+    
+
+    // FIXED: Remove confusing mahasiswa_id - only use user_id
+    
+
+    
 
     /**
      * Calculate Village Subtotal (Hal 41)
@@ -128,11 +138,23 @@ class NilaiKkn extends Model
     }
 
     /**
-     * Get mahasiswa_id for compatibility
+     * Get mahasiswa_id with safe relationship access
      */
     public function getMahasiswaIdAttribute(): ?int
     {
-        return $this->user?->mahasiswa?->id;
+        if ($this->relationLoaded('mahasiswa') && $this->mahasiswa) {
+            return $this->mahasiswa->id;
+        }
+
+        if ($this->relationLoaded('user') && $this->user) {
+            if ($this->user->relationLoaded('mahasiswa') && $this->user->mahasiswa) {
+                return $this->user->mahasiswa->id;
+            }
+
+            return \App\Models\KKN\Mahasiswa::where('user_id', $this->user->id)->value('id');
+        }
+
+        return null;
     }
 
     public function kelompok(): BelongsTo

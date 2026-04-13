@@ -7,14 +7,16 @@ namespace App\Models\KKN;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class IzinMeninggalkan extends Model
-{
-    protected $connection = 'kkn';
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $table = 'izin_meninggalkan';
-
-    protected $fillable = [
-        'mahasiswa_id',
+#[Connection('kkn')]
+#[Table('izin_meninggalkan')]
+#[Fillable([
+    'mahasiswa_id',
         'kelompok_id',
         'tanggal_mulai',
         'tanggal_kembali',
@@ -24,13 +26,21 @@ class IzinMeninggalkan extends Model
         'diproses_oleh',
         'diproses_pada',
         'catatan_dpl',
-    ];
-
-    protected $casts = [
-        'tanggal_mulai' => 'date',
+])]
+#[Casts([
+    'tanggal_mulai' => 'date',
         'tanggal_kembali' => 'date',
         'diproses_pada' => 'datetime',
-    ];
+])]
+class IzinMeninggalkan extends Model
+{
+    
+
+    
+
+    
+
+    
 
     public function mahasiswa(): BelongsTo
     {

@@ -28,11 +28,11 @@ export default function Pagination({ meta }: PaginationProps) {
 
     const getButtonClass = (active: boolean, disabled: boolean) => {
         return clsx(
-            'inline-flex items-center justify-center h-10 px-4 text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 border',
-            active 
-                ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm' 
-                : 'bg-white border-emerald-50 text-emerald-600 hover:bg-emerald-50',
-            disabled && 'opacity-30 cursor-not-allowed pointer-events-none'
+            'inline-flex items-center justify-center h-9 px-3 text-xs font-medium transition-all border rounded-lg',
+            active
+                ? 'bg-primary-500 border-primary-500 text-white shadow-sm'
+                : 'bg-white border-slate-200 text-slate-700 hover:bg-primary-50 hover:border-primary-300',
+            disabled && 'opacity-40 cursor-not-allowed pointer-events-none'
         );
     };
 
@@ -84,8 +84,8 @@ export default function Pagination({ meta }: PaginationProps) {
 
 export function PageInfo({ meta }: { meta: PaginationMeta }) {
     return (
-        <div className="text-[10px] font-bold text-emerald-600/40 uppercase tracking-widest">
-            {meta.from || 0} - {meta.to || 0} DARI {meta.total} DATA
+        <div className="text-xs font-medium text-slate-500">
+            Menampilkan {meta.from || 0} - {meta.to || 0} dari {meta.total} data
         </div>
     );
 }

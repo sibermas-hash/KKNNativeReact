@@ -27,7 +27,7 @@ class AdminUserSeeder extends Seeder
         $user->is_active = true;
 
         if ($wasRecentlyCreated || $forcedPassword) {
-            $user->password = $plainPassword;
+            $user->password = Hash::make($plainPassword);
         }
 
         $user->save();

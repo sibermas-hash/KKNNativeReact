@@ -32,11 +32,11 @@ class SendLogbookReminders extends Command
 
         foreach ($activePeriods as $period) {
             // Get approved participants who have NOT submitted a logbook today
-            $lazyParticipants = PesertaKkn::where('periode_id', $period->id)
+            $lazyParticipants = PesertaKkn::where('period_id', $period->id)
                 ->where('status', 'approved')
                 ->whereHas('mahasiswa.user')
-                ->whereDoesntHave('mahasiswa.kegiatanKkn', function ($query) {
-                    $query->whereDate('tanggal', today());
+                ->whereDoesntHave('mahasiswa.kegiatan', function ($query) {
+                    $query->whereDate('date', today());
                 })
                 ->with(['mahasiswa.user'])
                 ->lazy(100);
@@ -51,8 +51,7 @@ class SendLogbookReminders extends Command
                 $lastActivity = DB::connection('kkn')
                     ->table('kegiatan_kkn')
                     ->where('mahasiswa_id', $peserta->mahasiswa_id)
-                    ->where('periode_id', $period->id)
-                    ->max('tanggal');
+                    ->max('date');
 
                 $missedDays = $lastActivity
                     ? max(1, (int) now()->diffInDays($lastActivity))

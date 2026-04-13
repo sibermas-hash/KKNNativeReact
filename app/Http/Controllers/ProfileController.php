@@ -61,7 +61,6 @@ class ProfileController extends Controller
             'birth_date' => optional($student?->birth_date)?->toDateString(),
             'gender' => $student?->gender,
             'shirt_size' => $student?->shirt_size,
-            'bpjs_number' => $student?->bpjs_number,
             'phone' => $user->phone,
             'address' => $user->address,
         ];
@@ -109,7 +108,6 @@ class ProfileController extends Controller
                 'batch_year' => $student->batch_year,
                 'gender' => $student->gender,
                 'shirt_size' => $student->shirt_size,
-                'bpjs_number' => $student->bpjs_number,
                 'birth_place' => $student->birth_place,
                 'birth_date' => optional($student->birth_date)?->toDateString(),
                 'semester' => $student->semester,
@@ -142,7 +140,6 @@ class ProfileController extends Controller
             'mother_name' => ['nullable', 'string', 'max:150'],
             'gender' => ['nullable', 'in:L,P'],
             'shirt_size' => ['nullable', 'string', 'max:10'],
-            'bpjs_number' => ['nullable', 'string', 'max:50'],
             'birth_place' => ['nullable', 'string', 'max:100'],
             'birth_date' => ['nullable', 'date'],
         ]);
@@ -195,7 +192,6 @@ class ProfileController extends Controller
                         'mother_name' => $validated['mother_name'] ?? null,
                         'gender' => $validated['gender'] ?? $mahasiswa->gender,
                         'shirt_size' => $validated['shirt_size'] ?? null,
-                        'bpjs_number' => $validated['bpjs_number'] ?? null,
                         'birth_place' => $validated['birth_place'] ?? null,
                         'birth_date' => $validated['birth_date'] ?? null,
                     ]);

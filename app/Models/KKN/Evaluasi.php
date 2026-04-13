@@ -10,16 +10,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Evaluasi extends Model
-{
-    use HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $connection = 'kkn';
-
-    protected $table = 'evaluasi';
-
-    protected $fillable = [
-        'mahasiswa_id',
+#[Connection('kkn')]
+#[Table('evaluasi')]
+#[Fillable([
+    'mahasiswa_id',
         'kelompok_id',
         'evaluator_type',
         'evaluator_id',
@@ -27,12 +27,22 @@ class Evaluasi extends Model
         'grade',
         'notes',
         'evaluated_at',
-    ];
-
-    protected $casts = [
-        'total_score' => 'decimal:2',
+])]
+#[Casts([
+    'total_score' => 'decimal:2',
         'evaluated_at' => 'datetime',
-    ];
+])]
+class Evaluasi extends Model
+{
+    use HasFactory;
+
+    
+
+    
+
+    
+
+    
 
     public function mahasiswa(): BelongsTo
     {

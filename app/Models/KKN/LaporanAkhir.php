@@ -10,16 +10,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class LaporanAkhir extends Model
-{
-    use HasFactory, SoftDeletes;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $connection = 'kkn';
-
-    protected $table = 'laporan_akhir';
-
-    protected $fillable = [
-        'mahasiswa_id',
+#[Connection('kkn')]
+#[Table('laporan_akhir')]
+#[Fillable([
+    'mahasiswa_id',
         'kelompok_id',
         'title',
         'abstract',
@@ -38,13 +38,23 @@ class LaporanAkhir extends Model
         'reviewed_by',
         'review_notes',
         'score',
-    ];
-
-    protected $casts = [
-        'submitted_at' => 'datetime',
+])]
+#[Casts([
+    'submitted_at' => 'datetime',
         'reviewed_at' => 'datetime',
         'score' => 'decimal:2',
-    ];
+])]
+class LaporanAkhir extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    
+
+    
+
+    
+
+    
 
     public function mahasiswa(): BelongsTo
     {

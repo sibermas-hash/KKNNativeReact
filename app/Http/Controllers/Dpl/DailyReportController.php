@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Dpl;
 
+use App\Constants\AppConstants;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\FileKegiatanKkn;
 use App\Models\KKN\KegiatanKkn;
@@ -94,6 +95,8 @@ class DailyReportController extends Controller
                     'id' => $report->kelompok_id,
                     'name' => $report->kelompok?->nama_kelompok ?? $report->kelompok?->code ?? '-',
                 ],
+                'ai_summary' => $report->ai_summary,
+                'ai_analysis' => $report->ai_analysis,
             ])
             ->withQueryString();
 
@@ -167,6 +170,8 @@ class DailyReportController extends Controller
                         ['jpg', 'jpeg', 'png', 'webp', 'gif']
                     ),
                 ])->values(),
+                'ai_summary' => $dailyReport->ai_summary,
+                'ai_analysis' => $dailyReport->ai_analysis,
             ],
         ]);
     }
@@ -249,7 +254,7 @@ class DailyReportController extends Controller
                 'title' => 'Laporan Harian Disetujui',
                 'message' => 'Laporan harian Anda tanggal '.$dailyReport->date->format('d/m/Y').' telah disetujui.',
                 'icon' => 'check-circle',
-                'url' => route('student.laporan-harian.index'),
+                'action' => route('student.laporan-harian.index'),
             ]));
         }
 
@@ -283,7 +288,7 @@ class DailyReportController extends Controller
                 'title' => 'Revisi Laporan Harian',
                 'message' => 'Laporan harian Anda tanggal '.$dailyReport->date->format('d/m/Y').' memerlukan revisi.',
                 'icon' => 'exclamation-circle',
-                'url' => route('student.laporan-harian.index'),
+                'action' => route('student.laporan-harian.index'),
             ]));
         }
 
@@ -293,7 +298,7 @@ class DailyReportController extends Controller
     public function batchApprove(Request $request): RedirectResponse
     {
         // SECURITY: Limit batch approve to prevent abuse
-        $maxBatchLimit = 50;
+        $maxBatchLimit = AppConstants::MAX_BATCH_LIMIT;
 
         // ADDED: Proper validation
         $validated = $request->validate([

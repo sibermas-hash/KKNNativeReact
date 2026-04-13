@@ -8,27 +8,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
 
+#[Connection('kkn')]
+#[Table('prodi')]
+#[Fillable(['faculty_id', 'nama', 'kode', 'jenjang', 'master_id'])]
+#[Casts(['faculty_id' => 'integer'])]
 class Prodi extends Model
 {
     use HasFactory;
-
-    protected $connection = 'kkn';
-
-    protected $table = 'prodi';
-
-    protected $fillable = [
-        'faculty_id',
-        'code',
-        'nama',
-        'master_id',
-        'master_synced_at',
-    ];
-
-    protected $casts = [
-        'faculty_id' => 'integer',
-        'master_synced_at' => 'datetime',
-    ];
 
     public function fakultas(): BelongsTo
     {

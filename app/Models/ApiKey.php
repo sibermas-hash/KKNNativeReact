@@ -8,28 +8,37 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
+
+#[Table('_api_keys')]
+#[Fillable([
+    'key',
+    'name',
+    'permissions',
+    'email',
+    'is_active',
+    'last_used_at',
+])]
+#[Casts([
+    'permissions' => 'array',
+    'is_active' => 'boolean',
+    'last_used_at' => 'datetime',
+])]
+#[Hidden([
+    'key',
+])]
 class ApiKey extends Model
 {
-    protected $table = '_api_keys';
-
-    protected $fillable = [
-        'key',
-        'name',
-        'permissions',
-        'email',
-        'is_active',
-        'last_used_at',
-    ];
-
-    protected $casts = [
-        'permissions' => 'array',
-        'is_active' => 'boolean',
-        'last_used_at' => 'datetime',
-    ];
-
-    protected $hidden = [
-        'key',
-    ];
+    public string $key {
+        set(string $value) {
+            $this->attributes['key'] = $this->looksHashed($value)
+                ? $value
+                : Hash::make($value);
+        }
+    }
 
     protected static function booted()
     {
@@ -43,13 +52,6 @@ class ApiKey extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
-    }
-
-    public function setKeyAttribute(string $value): void
-    {
-        $this->attributes['key'] = $this->looksHashed($value)
-            ? $value
-            : Hash::make($value);
     }
 
     /**

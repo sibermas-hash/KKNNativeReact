@@ -40,32 +40,31 @@ class AutomaticGroupPlacementService
             ])
             ->where('period_id', $periodId)
             ->where('status', 'active')
-            ->whereHas('lokasi', fn ($query) => $query->whereNotNull('regency_name'))
+            ->whereHas('lokasi', function ($query) use ($domicileRegency) {
+                $query->whereNotNull('regency_name')
+                    // PRE-FILTER: Avoid home regency at database level for significantly better performance
+                    // Use ILIKE with wildcards to handle "Kabupaten X" vs "X" at least partially
+                    ->where('regency_name', 'not ilike', "%{$domicileRegency}%");
+            })
+            ->havingRaw('active_participants_count < capacity')
             ->orderBy('active_participants_count')
             ->orderByDesc('capacity')
-            ->orderBy('id')
-            ->get();
+            ->orderBy('id');
 
-        if ($candidates->isEmpty()) {
-            throw ValidationException::withMessages([
-                'period_id' => 'Belum ada kelompok aktif yang siap dipakai pada periode ini.',
-            ]);
+        // Use cursor for memory stability across thousands of iterations
+        foreach ($candidates->cursor() as $group) {
+            try {
+                $this->groupSelectionService->validateGroupAcceptance($group, $mahasiswa);
+                
+                return $group;
+            } catch (ValidationException) {
+                continue;
+            }
         }
 
-        $outsideHomeRegency = $candidates->filter(function (KelompokKkn $group) use ($domicileRegency) {
-            return $this->normalizeAdministrativeName($group->lokasi?->regency_name) !== $domicileRegency;
-        })->values();
-
-        if ($outsideHomeRegency->isEmpty()) {
-            throw ValidationException::withMessages([
-                'period_id' => 'Sistem belum menemukan kelompok di luar kabupaten asal Anda. Hubungi admin LPPM untuk penempatan manual.',
-            ]);
-        }
-
-        $selected = $this->pickFirstAcceptableGroup($outsideHomeRegency, $mahasiswa);
-        if ($selected) {
-            return $selected;
-        }
+        throw ValidationException::withMessages([
+            'period_id' => 'Sistem belum menemukan kelompok yang tersedia di luar kabupaten asal Anda. Hubungi admin LPPM untuk penempatan manual.',
+        ]);
 
         throw ValidationException::withMessages([
             'period_id' => 'Seluruh kelompok di luar kabupaten asal Anda saat ini belum bisa menerima penempatan baru. Silakan coba lagi atau hubungi admin LPPM.',

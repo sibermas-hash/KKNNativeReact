@@ -13,6 +13,43 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Cache;
 
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
+
+#[Connection('kkn')]
+#[Table('periode')]
+#[Fillable([
+    'academic_year_id',
+        'jenis_kkn_id',
+        'periode',
+        'jenis',
+        'program_type',
+        'program_subtype',
+        'registration_mode',
+        'placement_mode',
+        'name',
+        'start_date',
+        'end_date',
+        'registration_start',
+        'registration_end',
+        'kuota',
+        'is_active',
+        'grading_start',
+        'grading_end',
+        'current_phase',
+])]
+#[Casts([
+    'start_date' => 'date',
+        'end_date' => 'date',
+        'registration_start' => 'date',
+        'registration_end' => 'date',
+        'grading_start' => 'date',
+        'grading_end' => 'date',
+        'is_active' => 'boolean',
+])]
 class Periode extends Model
 {
     use HasFactory, SoftDeletes;
@@ -51,40 +88,13 @@ class Periode extends Model
         'available_periods',
     ];
 
-    protected $connection = 'kkn';
+    
 
-    protected $table = 'periode';
+    
 
-    protected $fillable = [
-        'academic_year_id',
-        'jenis_kkn_id',
-        'periode',
-        'jenis',
-        'program_type',
-        'program_subtype',
-        'registration_mode',
-        'placement_mode',
-        'name',
-        'start_date',
-        'end_date',
-        'registration_start',
-        'registration_end',
-        'kuota',
-        'is_active',
-        'grading_start',
-        'grading_end',
-        'current_phase',
-    ];
+    
 
-    protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
-        'registration_start' => 'date',
-        'registration_end' => 'date',
-        'grading_start' => 'date',
-        'grading_end' => 'date',
-        'is_active' => 'boolean',
-    ];
+    
 
     public static function programTypeOptions(): array
     {

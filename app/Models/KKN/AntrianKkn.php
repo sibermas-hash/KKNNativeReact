@@ -8,16 +8,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class AntrianKkn extends Model
-{
-    use HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $connection = 'kkn';
-
-    protected $table = 'antrian_kkn';
-
-    protected $fillable = [
-        'mahasiswa_id',
+#[Connection('kkn')]
+#[Table('antrian_kkn')]
+#[Fillable([
+    'mahasiswa_id',
         'period_id',
         'posisi_antrian',
         'status',
@@ -25,12 +25,22 @@ class AntrianKkn extends Model
         'pindah_count',
         'joined_at',
         'last_left_group_at',
-    ];
-
-    protected $casts = [
-        'joined_at' => 'datetime',
+])]
+#[Casts([
+    'joined_at' => 'datetime',
         'last_left_group_at' => 'datetime',
-    ];
+])]
+class AntrianKkn extends Model
+{
+    use HasFactory;
+
+    
+
+    
+
+    
+
+    
 
     public function mahasiswa(): BelongsTo
     {

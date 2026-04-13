@@ -7,25 +7,33 @@ namespace App\Models\KKN;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Download extends Model
-{
-    use HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $connection = 'kkn';
-
-    protected $fillable = [
-
-        'title',
+#[Connection('kkn')]
+#[Fillable([
+    'title',
         'file_name',
         'file_path',
         'external_url',
         'file_type',
         'is_active',
-    ];
+])]
+#[Casts([
+    'is_active' => 'boolean',
+])]
+class Download extends Model
+{
+    use HasFactory;
 
-    protected $casts = [
-        'is_active' => 'boolean',
-    ];
+    
+
+    
+
+    
 
     public function scopeActive($query)
     {

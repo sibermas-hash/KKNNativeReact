@@ -8,26 +8,36 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class AbsensiHarian extends Model
-{
-    use HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $connection = 'kkn';
-
-    protected $table = 'absensi_harian';
-
-    protected $fillable = [
-        'mahasiswa_id',
+#[Connection('kkn')]
+#[Table('absensi_harian')]
+#[Fillable([
+    'mahasiswa_id',
         'kelompok_id',
         'tanggal',
         'status',
         'izin_id',
-    ];
-
-    protected $casts = [
-        'tanggal' => 'date',
+])]
+#[Casts([
+    'tanggal' => 'date',
         'status' => 'string',
-    ];
+])]
+class AbsensiHarian extends Model
+{
+    use HasFactory;
+
+    
+
+    
+
+    
+
+    
 
     public function mahasiswa(): BelongsTo
     {

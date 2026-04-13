@@ -53,14 +53,14 @@ export default function UserForm({ faculties, programs }: Props) {
                             <UserPlus size={32} />
                         </div>
                         <div className="space-y-1">
-                            <h1 className="text-3xl font-bold text-slate-900 tracking-tight  uppercase">Tambah <span className="text-emerald-600">Pengguna</span></h1>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Registrasi Akun Baru Sistem KKN</p>
+                            <h1 className="text-3xl font-bold text-gray-900 tracking-tight  uppercase">Tambah <span className="text-emerald-600">Pengguna</span></h1>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Registrasi Akun Baru Sistem KKN</p>
                         </div>
                     </div>
 
                     <Link
                         href="/admin/pengguna"
-                        className="relative z-10 inline-flex items-center gap-3 px-8 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:bg-white hover:border-slate-900 hover:text-emerald-600 transition-all shadow-sm group/btn"
+                        className="relative z-10 inline-flex items-center gap-3 px-8 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-bold text-gray-500 uppercase tracking-widest hover:bg-white hover:border-slate-900 hover:text-emerald-600 transition-all shadow-sm group/btn"
                     >
                         <ArrowLeft size={14} className="group-hover/btn:-translate-x-2 transition-transform" />
                         Kembali
@@ -75,8 +75,8 @@ export default function UserForm({ faculties, programs }: Props) {
                                 <ShieldCheck size={20} />
                             </div>
                             <div>
-                                <h2 className="text-xs font-bold text-slate-900 uppercase tracking-widest ">Kredensial Utama</h2>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Identitas autentikasi pengguna</p>
+                                <h2 className="text-xs font-bold text-gray-900 uppercase tracking-widest ">Data Akun</h2>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Username dan email untuk login.</p>
                             </div>
                         </div>
 
@@ -88,7 +88,7 @@ export default function UserForm({ faculties, programs }: Props) {
                                 value={form.data.role}
                                 onChange={(event) => form.setData('role', event.target.value)}
                                 error={form.errors.role}
-                                placeholder="Pilih Hirarki"
+                                placeholder="Pilih Peran"
                                 options={[
                                     { value: 'superadmin', label: 'Superadmin' },
                                     { value: 'faculty_admin', label: 'Admin Fakultas' },
@@ -114,7 +114,7 @@ export default function UserForm({ faculties, programs }: Props) {
                                 value={form.data.username}
                                 onChange={(event) => form.setData('username', event.target.value)}
                                 error={form.errors.username}
-                                placeholder="Unique identifier"
+                                placeholder="Gunakan NIM atau NIP"
                             />
                             <FormInput
                                 id="email"
@@ -143,12 +143,12 @@ export default function UserForm({ faculties, programs }: Props) {
                     {(isStudent || isDpl || isFacultyAdmin) && (
                         <section className="bg-white rounded-[2.5rem] border border-slate-100 p-10 lg:p-12 shadow-sm relative group">
                             <div className="flex items-center gap-4 mb-10 border-b border-slate-50 pb-8">
-                                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-slate-400">
+                                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-gray-400">
                                     <HelpCircle size={20} />
                                 </div>
                                 <div>
-                                    <h2 className="text-xs font-bold text-slate-900 uppercase tracking-widest ">Relasi Institusi</h2>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Data afiliasi akademik</p>
+                                    <h2 className="text-xs font-bold text-gray-900 uppercase tracking-widest ">Data Fakultas</h2>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Fakultas asal pengguna.</p>
                                 </div>
                             </div>
 
@@ -178,7 +178,7 @@ export default function UserForm({ faculties, programs }: Props) {
                                     <GraduationCap size={20} />
                                 </div>
                                 <div>
-                                    <h2 className="text-xs font-bold text-slate-900 uppercase tracking-widest ">Data Mahasiswa</h2>
+                                    <h2 className="text-xs font-bold text-gray-900 uppercase tracking-widest ">Data Mahasiswa</h2>
                                     <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1 ">Kewajiban Pengisian Data Pokok</p>
                                 </div>
                             </div>
@@ -205,7 +205,7 @@ export default function UserForm({ faculties, programs }: Props) {
                                 />
                                 <FormSelect
                                     id="gender"
-                                    label="Identitas Gender"
+                                    label="Jenis Kelamin"
                                     required
                                     value={form.data.gender}
                                     onChange={(event) => form.setData('gender', event.target.value)}
@@ -233,7 +233,7 @@ export default function UserForm({ faculties, programs }: Props) {
                     {/* --- DPL DATA --- */}
                     {isDpl && (
                         <section className="bg-white rounded-[2.5rem] border border-slate-100 p-10 lg:p-12 shadow-sm">
-                            <h2 className="text-xs font-bold text-slate-900 uppercase tracking-widest mb-10  border-b border-slate-50 pb-8">Validasi Data DPL</h2>
+                            <h2 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-10  border-b border-slate-50 pb-8">Validasi Data DPL</h2>
                             <div className="grid gap-10 md:grid-cols-2">
                                 <FormInput
                                     id="nip"
@@ -257,16 +257,16 @@ export default function UserForm({ faculties, programs }: Props) {
                         <div className="flex items-center gap-6">
                             <Link
                                 href="/admin/pengguna"
-                                className="px-8 py-5 text-[11px] font-bold uppercase text-slate-400 hover:text-rose-500 transition-all flex items-center gap-3 tracking-widest "
+                                className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 hover:text-rose-500 transition-all flex items-center gap-3 tracking-widest "
                             >
                                 <X size={16} /> Batal
                             </Link>
                             <button
                                 type="submit"
                                 disabled={form.processing}
-                                className="group inline-flex items-center gap-6 px-12 py-5 bg-slate-900 text-white rounded-[1.5rem] font-bold text-[11px] tracking-widest hover:bg-emerald-600 shadow-xl shadow-slate-900/10 transition-all active:scale-95 uppercase "
+                                className="group inline-flex items-center gap-6 px-12 py-5 bg-gray-900 text-white rounded-[1.5rem] font-bold text-[11px] tracking-widest hover:bg-emerald-600 shadow-xl shadow-slate-900/10 transition-all active:scale-95 uppercase "
                             >
-                                {form.processing ? 'SINKRONISASI...' : 'SIMPAN AKUN'}
+                                {form.processing ? 'MENYIMPAN...' : 'SIMPAN AKUN'}
                                 <Save size={18} className="group-hover:translate-y-1 transition-transform" />
                             </button>
                         </div>
@@ -275,7 +275,7 @@ export default function UserForm({ faculties, programs }: Props) {
 
                 <footer className="text-center pt-20 border-t border-slate-100 ">
                     <p className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">
-                         PUSAT DATA &bull; UIN SAIFUDDIN ZUHRI &copy; 2026
+                         SIM-KKN &bull; UIN SAIFUDDIN ZUHRI &copy; 2026
                     </p>
                 </footer>
             </div>

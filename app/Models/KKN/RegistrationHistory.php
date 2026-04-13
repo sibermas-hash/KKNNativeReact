@@ -9,16 +9,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class RegistrationHistory extends Model
-{
-    use HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Connection;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Casts;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 
-    protected $connection = 'kkn';
-
-    protected $table = 'registration_histories';
-
-    protected $fillable = [
-        'peserta_kkn_id',
+#[Connection('kkn')]
+#[Table('registration_histories')]
+#[Fillable([
+    'peserta_kkn_id',
         'from_period_id',
         'to_period_id',
         'from_group_id',
@@ -26,11 +26,21 @@ class RegistrationHistory extends Model
         'reason',
         'processed_by',
         'processed_at',
-    ];
+])]
+#[Casts([
+    'processed_at' => 'datetime',
+])]
+class RegistrationHistory extends Model
+{
+    use HasFactory;
 
-    protected $casts = [
-        'processed_at' => 'datetime',
-    ];
+    
+
+    
+
+    
+
+    
 
     public function pesertaKkn(): BelongsTo
     {

@@ -55,14 +55,14 @@ export default function ImportPreview({ preview, group, dplWeights }: Props) {
 
  <div className="space-y-8">
  <section className="rounded-lg border border-slate-200 bg-white p-8">
- <h1 className="text-2xl font-semibold text-slate-900">Pratinjau Impor Evaluasi</h1>
- <p className="mt-2 text-sm text-slate-500">
+ <h1 className="text-2xl font-semibold text-gray-900">Pratinjau Impor Evaluasi</h1>
+ <p className="mt-2 text-sm text-gray-500">
  Kelompok: {group.name} · {group.period_name}
  </p>
- <p className="mt-1 text-sm text-slate-500">
+ <p className="mt-1 text-sm text-gray-500">
  {readyCount} dari {preview.length} baris siap diimpor.
  </p>
- <p className="mt-1 text-sm text-slate-500">
+ <p className="mt-1 text-sm text-gray-500">
  Bobot aktif: Laporan Akhir {dplWeights.final_report}%, Pelaksanaan {dplWeights.execution}%, Artikel {dplWeights.article}%.
  </p>
  </section>
@@ -71,7 +71,7 @@ export default function ImportPreview({ preview, group, dplWeights }: Props) {
  <button
  type="button"
  onClick={() => window.history.back()}
- className="rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+ className="rounded-lg border border-gray-300 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-slate-50"
  >
  Kembali
  </button>
@@ -94,23 +94,23 @@ export default function ImportPreview({ preview, group, dplWeights }: Props) {
  <table className="min-w-full divide-y divide-slate-200">
  <thead className="bg-slate-50">
  <tr>
- <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Mahasiswa</th>
- <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Laporan Akhir</th>
- <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Pelaksanaan</th>
- <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Artikel</th>
- <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500">Status</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">Mahasiswa</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">Laporan Akhir</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">Pelaksanaan</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">Artikel</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">Status</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-slate-100">
  {preview.map((item, index) => (
  <tr key={`${item.nim}-${index}`}>
  <td className="px-6 py-4">
- <p className="text-sm font-medium text-slate-900">{item.name}</p>
- <p className="text-xs text-slate-500">{item.nim}</p>
+ <p className="text-sm font-medium text-gray-900">{item.name}</p>
+ <p className="text-xs text-gray-500">{item.nim}</p>
  </td>
- <td className="px-6 py-4 text-sm text-slate-600">{item.final_report_score}</td>
- <td className="px-6 py-4 text-sm text-slate-600">{item.execution_score}</td>
- <td className="px-6 py-4 text-sm text-slate-600">{item.article_score}</td>
+ <td className="px-6 py-4 text-sm text-gray-600">{item.final_report_score}</td>
+ <td className="px-6 py-4 text-sm text-gray-600">{item.execution_score}</td>
+ <td className="px-6 py-4 text-sm text-gray-600">{item.article_score}</td>
  <td className="px-6 py-4">
  <span
  className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${

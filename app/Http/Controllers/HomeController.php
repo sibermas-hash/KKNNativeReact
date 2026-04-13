@@ -130,14 +130,14 @@ class HomeController extends Controller
     {
         $search = $request->input('search');
 
-        $locations = Lokasi::withCount('groups')
+        $locations = Lokasi::withCount('kelompok')
             ->when($search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
+                $query->where('village_name', 'like', "%{$search}%")
                     ->orWhere('address', 'like', "%{$search}%")
-                    ->orWhere('district', 'like', "%{$search}%")
-                    ->orWhere('city', 'like', "%{$search}%");
+                    ->orWhere('district_name', 'like', "%{$search}%")
+                    ->orWhere('regency_name', 'like', "%{$search}%");
             })
-            ->orderBy('name')
+            ->orderBy('village_name')
             ->paginate(12)
             ->withQueryString();
 

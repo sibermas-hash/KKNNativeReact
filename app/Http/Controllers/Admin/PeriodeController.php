@@ -7,17 +7,15 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\KknType;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\JenisKkn;
-use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Periode;
 use App\Models\KKN\TahunAkademik;
-use App\Services\RedisCacheService;
+use App\Services\Admin\PeriodeService;
 use App\Traits\HandlesPagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -28,16 +26,20 @@ class PeriodeController extends Controller
 {
     use HandlesPagination;
 
+    public function __construct(
+        protected PeriodeService $periodeService
+    ) {}
+
     private function validatedPayload(Request $request): array
     {
-        $validated = $request->validate([
+        return $request->validate([
             'academic_year_id' => ['required', 'exists:App\Models\KKN\TahunAkademik,id'],
             'jenis_kkn_id' => ['nullable', 'exists:App\Models\KKN\JenisKkn,id'],
             'periode' => ['required', 'integer'],
             'jenis' => ['nullable', 'string', 'max:100'],
             'program_type' => ['nullable', 'string', 'max:100'],
             'program_subtype' => ['nullable', 'string', 'max:100'],
-            'name' => ['required', 'string', 'max:100'],
+            'name' => ['nullable', 'string', 'max:100'],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after:start_date'],
             'registration_start' => ['required', 'date'],
@@ -48,111 +50,100 @@ class PeriodeController extends Controller
             'is_active' => ['boolean'],
             'current_phase' => ['nullable', 'string', 'in:upcoming,registration,placement,execution,grading,finished'],
         ]);
-
-        $jenisKkn = ! empty($validated['jenis_kkn_id'])
-            ? JenisKkn::query()->find($validated['jenis_kkn_id'])
-            : null;
-
-        $governance = \App\Services\KKN\PeriodeGovernanceService::blueprint(
-            $validated['program_type'] ?? $jenisKkn?->code,
-            $validated['program_subtype'] ?? null,
-            $validated['jenis'] ?? $jenisKkn?->code,
-            $jenisKkn,
-        );
-
-        $validated['jenis'] = $governance['jenis_value'];
-        $validated['program_type'] = $governance['program_type'];
-        $validated['program_subtype'] = $governance['program_subtype'];
-        $validated['registration_mode'] = $governance['registration_mode'];
-        $validated['placement_mode'] = $governance['placement_mode'];
-
-        return $validated;
     }
 
     public function index(Request $request): Response
     {
         Gate::authorize('manage-master-data');
 
-        $periods = RedisCacheService::getPeriods(function () use ($request) {
-            return Periode::with('tahunAkademik', 'jenisKkn')
-                ->withCount(['kelompok', 'peserta', 'dplPeriods'])
-                ->when($request->search, function ($query, $search) {
-                    $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
-                    $query->where('periode', 'like', "%{$s}%")
-                        ->orWhere('jenis', 'like', "%{$s}%")
-                        ->orWhere('name', 'like', "%{$s}%")
-                        ->orWhereHas('jenisKkn', function ($q) use ($s) {
-                            $q->where('name', 'ilike', "%{$s}%")
-                                ->orWhere('code', 'ilike', "%{$s}%");
-                        });
-                })
-                ->orderByDesc('periode')
-                ->get();
-        });
-
-        $page = $request->input('page', 1);
-        $perPage = 10;
-        $periodsCollection = collect($periods);
-        $periods = new LengthAwarePaginator(
-            $periodsCollection->forPage($page, $perPage)->values(),
-            $periodsCollection->count(),
-            $perPage,
-            $page,
-            ['path' => route('admin.periode.index'), 'query' => $request->query()]
-        );
-
-        $periods->getCollection()->transform(function ($p) {
-            $governance = $p->governance();
-
-            return [
-                'id' => $p->id,
-                'jenis_kkn_id' => $p->jenis_kkn_id,
-                'periode' => $p->periode,
-                'jenis' => $p->jenis instanceof KknType ? $p->jenis->label() : $p->jenis,
-                'program_type' => $governance['program_type'],
-                'program_subtype' => $governance['program_subtype'],
-                'registration_mode' => $governance['registration_mode'],
-                'placement_mode' => $governance['placement_mode'],
-                'program_type_label' => $governance['program_type_label'],
-                'program_subtype_label' => $governance['program_subtype_label'],
-                'registration_mode_label' => $governance['registration_mode_label'],
-                'placement_mode_label' => $governance['placement_mode_label'],
-                'self_service_enabled' => $p->usesSelfServiceRegistration(),
-                'name' => $p->name,
-                'start_date' => $p->start_date?->format('Y-m-d'),
-                'end_date' => $p->end_date?->format('Y-m-d'),
-                'registration_start' => $p->registration_start?->format('Y-m-d'),
-                'registration_end' => $p->registration_end?->format('Y-m-d'),
-                'grading_start' => $p->grading_start?->format('Y-m-d'),
-                'grading_end' => $p->grading_end?->format('Y-m-d'),
-                'kuota' => $p->kuota,
-                'is_active' => $p->is_active,
-                'current_phase' => $p->current_phase,
-                'academic_year' => $p->tahunAkademik ? ['id' => $p->tahunAkademik->id, 'year' => $p->tahunAkademik->year] : null,
-                'groups_count' => $p->kelompok_count,
-                'participants_count' => $p->peserta_count,
-                'dpl_periods_count' => $p->dpl_periods_count,
-                'can_delete' => $this->canDeletePeriod($p),
-                'delete_blocker' => $this->getDeleteBlockerReason($p),
-                'duration_days' => $p->start_date && $p->end_date ? $p->start_date->diffInDays($p->end_date) : 0,
-                'registration_duration_days' => $p->registration_start && $p->registration_end ? $p->registration_start->diffInDays($p->registration_end) : 0,
-                'capacity_percentage' => $p->kuota > 0 ? round(($p->peserta_count / $p->kuota) * 100, 1) : 0,
-            ];
-        });
-
-        $academicYears = TahunAkademik::orderByDesc('year')->get()
-            ->map(fn ($ay) => ['id' => $ay->id, 'year' => $ay->year]);
+        $search = $request->search;
 
         return Inertia::render('Admin/MasterData/Periods/Index', [
-            'periods' => $this->formatPaginator($periods),
-            'academicYears' => $academicYears,
-            'filters' => $request->only('search'),
-            'programOptions' => [
-                'types' => JenisKkn::query()
-                    ->active()
-                    ->ordered()
-                    ->get()
-                    ->map(function (JenisKkn $jenisKkn) {
+            'periods' => Inertia::defer(function () use ($request, $search) {
+                $query = Periode::with(['tahunAkademik', 'jenisKkn'])
+                    ->withCount(['kelompok', 'peserta', 'dplPeriods'])
+                    ->when($search, function ($query, $search) {
+                        $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+                        $query->where('periode', 'like', "%{$s}%")
+                            ->orWhere('jenis', 'like', "%{$s}%")
+                            ->orWhere('name', 'like', "%{$s}%")
+                            ->orWhereHas('jenisKkn', function ($q) use ($s) {
+                                $q->where('name', 'ilike', "%{$s}%")
+                                    ->orWhere('code', 'ilike', "%{$s}%");
+                            });
+                    })
+                    ->when($request->jenis_kkn_id, function ($query, $jenisKknId) {
+                        $query->where('jenis_kkn_id', $jenisKknId);
+                    })
+                    ->orderByDesc('periode');
+
+                $paginator = $query->paginate(10);
+
+                $paginator->getCollection()->transform(function ($p) {
+                    $governance = $p->governance() ?: [];
+
+                    return [
+                        'id' => $p->id,
+                        'jenis_kkn_id' => $p->jenis_kkn_id,
+                        'periode' => $p->periode,
+                        'jenis' => $p->jenis instanceof KknType ? $p->jenis->label() : $p->jenis,
+                        'program_type' => $governance['program_type'] ?? 'reguler',
+                        'program_subtype' => $governance['program_subtype'] ?? null,
+                        'registration_mode' => $governance['registration_mode'] ?? 'open',
+                        'placement_mode' => $governance['placement_mode'] ?? 'manual_admin',
+                        'program_type_label' => $governance['program_type_label'] ?? 'Reguler',
+                        'program_subtype_label' => $governance['program_subtype_label'] ?? '-',
+                        'registration_mode_label' => $governance['registration_mode_label'] ?? 'Terbuka',
+                        'placement_mode_label' => $governance['placement_mode_label'] ?? 'Manual',
+                        'self_service_enabled' => $p->usesSelfServiceRegistration(),
+                        'name' => $p->name,
+                        'start_date' => $p->start_date?->format('Y-m-d'),
+                        'end_date' => $p->end_date?->format('Y-m-d'),
+                        'registration_start' => $p->registration_start?->format('Y-m-d'),
+                        'registration_end' => $p->registration_end?->format('Y-m-d'),
+                        'grading_start' => $p->grading_start?->format('Y-m-d'),
+                        'grading_end' => $p->grading_end?->format('Y-m-d'),
+                        'kuota' => $p->kuota,
+                        'is_active' => $p->is_active,
+                        'current_phase' => $p->current_phase,
+                        'academic_year' => $p->tahunAkademik ? ['id' => $p->tahunAkademik->id, 'year' => $p->tahunAkademik->year] : null,
+                        'groups_count' => $p->kelompok_count,
+                        'participants_count' => $p->peserta_count,
+                        'dpl_periods_count' => $p->dpl_periods_count,
+                        'can_delete' => $this->periodeService->canDelete($p),
+                        'delete_blocker' => $this->periodeService->getDeleteBlockerReason($p),
+                        'duration_days' => $p->start_date && $p->end_date ? $p->start_date->diffInDays($p->end_date) : 0,
+                        'registration_duration_days' => $p->registration_start && $p->registration_end ? $p->registration_start->diffInDays($p->registration_end) : 0,
+                        'capacity_percentage' => $p->kuota > 0 ? round(($p->peserta_count / $p->kuota) * 100, 1) : 0,
+                    ];
+                });
+
+                return $this->formatPaginator($paginator);
+            }),
+            'academicYears' => Inertia::defer(function () {
+                $academicYearsQuery = TahunAkademik::where('is_active', true)->orderByDesc('year');
+                if ($academicYearsQuery->count() === 0) {
+                    $academicYearsQuery = TahunAkademik::orderByDesc('year');
+                }
+                return $academicYearsQuery->get()->map(fn ($ay) => ['id' => $ay->id, 'year' => $ay->year]);
+            }),
+            'jenisKkn' => Inertia::defer(function () {
+                return JenisKkn::where('is_active', true)->get()
+                    ->map(fn ($j) => ['id' => $j->id, 'name' => $j->name, 'code' => $j->code]);
+            }),
+            'filters' => $request->only(['search', 'jenis_kkn_id']),
+            'programOptions' => Inertia::defer(function () {
+                $cacheKey = 'periode_program_options';
+                
+                if (Cache::has($cacheKey)) {
+                    Cache::touch($cacheKey, 3600);
+                    return Cache::get($cacheKey);
+                }
+
+                $jenisKkns = JenisKkn::query()->active()->ordered()->get();
+                
+                $options = [
+                    'types' => $jenisKkns->map(function (JenisKkn $jenisKkn) {
                         $governance = \App\Services\KKN\PeriodeGovernanceService::blueprint(
                             $jenisKkn->code,
                             null,
@@ -171,196 +162,131 @@ class PeriodeController extends Controller
                             'program_subtype' => $governance['program_subtype'],
                             'code' => $jenisKkn->code,
                         ];
-                    })
-                    ->values(),
-                'subtypes' => collect(Periode::programSubtypeOptions())
-                    ->map(fn (string $label, string $value) => [
-                        'value' => $value,
-                        'label' => $label,
-                        'description' => Periode::programSubtypeDescriptions()[$value] ?? null,
-                    ])
-                    ->values(),
+                    })->values(),
+                    'subtypes' => collect(Periode::programSubtypeOptions())
+                        ->map(fn (string $label, string $value) => [
+                            'value' => $value,
+                            'label' => $label,
+                            'description' => Periode::programSubtypeDescriptions()[$value] ?? null,
+                        ])->values(),
+                ];
+
+                Cache::put($cacheKey, $options, 3600);
+                return $options;
+            }),
+            'aiInsights' => Inertia::defer(function () {
+                try {
+                    if (class_exists(\Laravel\Ai\AnonymousAgent::class)) {
+                        return \Laravel\Ai\AnonymousAgent::make(
+                            instructions: 'Anda adalah asisten admin KKN yang ahli dalam manajemen akademik.'
+                        )->prompt('Berikan ringkasan singkat strategi manajemen untuk KKN periode 2026/2027 berdasarkan meta-data sistem.')
+                         ->content();
+                    }
+                } catch (\Exception $e) {
+                    return 'AI Insight sedang tidak tersedia.';
+                }
+                return null;
+            }),
+        ]);
+    }
+
+    public function show(Periode $periode): Response
+    {
+        Gate::authorize('manage-master-data');
+
+        $periode->load(['tahunAkademik']);
+        
+        $stats = [
+            'total_students' => DB::connection('kkn')->table('peserta_kkn')->where('period_id', $periode->id)->count(),
+            'total_groups' => DB::connection('kkn')->table('kelompok_kkn')->where('period_id', $periode->id)->count(),
+            'total_locations' => DB::connection('kkn')->table('kelompok_kkn')
+                ->where('period_id', $periode->id)
+                ->whereNotNull('location_id')
+                ->distinct('location_id')
+                ->count('location_id'),
+        ];
+
+        return Inertia::render('Admin/MasterData/Periods/Show', [
+            'period' => [
+                'id' => $periode->id,
+                'name' => $periode->name,
+                'academic_year' => $periode->tahunAkademik ? [
+                    'id' => $periode->tahunAkademik->id, 
+                    'name' => $periode->tahunAkademik->year
+                ] : ['name' => '—'],
+                'registration_start' => $periode->registration_start?->format('Y-m-d'),
+                'registration_end' => $periode->registration_end?->format('Y-m-d'),
+                'execution_start' => $periode->start_date?->format('Y-m-d'),
+                'execution_end' => $periode->end_date?->format('Y-m-d'),
+                'grading_start' => $periode->grading_start?->format('Y-m-d'),
+                'grading_end' => $periode->grading_end?->format('Y-m-d'),
+                'status_kkn' => $periode->current_phase ?: 'pelaksanaan',
+                'description' => $periode->jenis_kkn?->description,
+                'is_active' => $periode->is_active,
+                'stats' => $stats,
             ],
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $this->validatedPayload($request);
+        try {
+            $validated = $this->validatedPayload($request);
+            $this->periodeService->store($validated);
 
-        $overlap = $this->checkDateOverlap(
-            $validated['start_date'],
-            $validated['end_date'],
-            $validated['jenis_kkn_id'] ?? null
-        );
-
-        if ($overlap) {
-            return redirect()->back()->withErrors([
-                'start_date' => "Tanggal overlap dengan periode '{$overlap->name}' ({$overlap->start_date->format('d M Y')} - {$overlap->end_date->format('d M Y')})",
+            return redirect()->route('admin.periode.index')->with('success', 'Periode KKN berhasil ditambahkan.');
+        } catch (\DomainException $e) {
+            return redirect()->back()->withErrors(['start_date' => $e->getMessage()])->withInput();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Periode Store Error: ' . $e->getMessage(), [
+                'payload' => $request->except(['_token']),
+                'trace' => $e->getTraceAsString()
             ]);
+            
+            return redirect()->back()->withErrors(['name' => 'Gagal menyimpan data: ' . $e->getMessage()])->withInput();
         }
-
-        if (! empty($validated['is_active'])) {
-            Periode::where('is_active', true)->update(['is_active' => false]);
-        }
-
-        Periode::create($validated);
-        RedisCacheService::invalidateMasterData();
-
-        return redirect()->route('admin.periode.index')->with('success', 'Periode KKN berhasil ditambahkan.');
     }
 
     public function update(Request $request, Periode $periode): RedirectResponse
     {
-        $validated = $this->validatedPayload($request);
+        try {
+            $validated = $this->validatedPayload($request);
+            $this->periodeService->update($periode, $validated);
 
-        $overlap = $this->checkDateOverlap(
-            $validated['start_date'],
-            $validated['end_date'],
-            $validated['jenis_kkn_id'] ?? null,
-            $periode->id
-        );
-
-        if ($overlap) {
-            return redirect()->back()->withErrors([
-                'start_date' => "Tanggal overlap dengan periode '{$overlap->name}' ({$overlap->start_date->format('d M Y')} - {$overlap->end_date->format('d M Y')})",
+            return redirect()->route('admin.periode.index')->with('success', 'Periode KKN berhasil diperbarui.');
+        } catch (\DomainException $e) {
+            return redirect()->back()->withErrors(['start_date' => $e->getMessage()])->withInput();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Periode Update Error: ' . $e->getMessage(), [
+                'id' => $periode->id,
+                'payload' => $request->except(['_token']),
+                'trace' => $e->getTraceAsString()
             ]);
+            
+            return redirect()->back()->withErrors(['name' => 'Gagal memperbarui data: ' . $e->getMessage()])->withInput();
         }
-
-        if (! empty($validated['is_active'])) {
-            Periode::where('id', '!=', $periode->id)
-                ->where('is_active', true)
-                ->update(['is_active' => false]);
-        }
-
-        $periode->update($validated);
-        RedisCacheService::invalidateMasterData();
-
-        return redirect()->route('admin.periode.index')->with('success', 'Periode KKN berhasil diperbarui.');
     }
 
     public function duplicate(Periode $periode): RedirectResponse
     {
-        DB::transaction(function () use ($periode) {
-            $periode->loadMissing('kelompok');
-
-            $newPeriod = $periode->replicate();
-            $newPeriod->name = $this->generateCopyName($periode->name);
-            $newPeriod->is_active = false;
-            $newPeriod->save();
-
-            foreach ($periode->kelompok as $group) {
-                $newGroup = $group->replicate();
-                $newGroup->period_id = $newPeriod->id;
-                $newGroup->dpl_id = null;
-                $newGroup->dpl_period_id = null;
-                $newGroup->status = 'draft';
-                $newGroup->code = $this->generateUniqueGroupCode();
-                $newGroup->token = $this->generateUniqueGroupToken();
-                $newGroup->save();
-
-                foreach ($group->slotTerkunci as $slot) {
-                    $newSlot = $slot->replicate();
-                    $newSlot->kelompok_id = $newGroup->id;
-                    $newSlot->save();
-                }
-            }
-        });
-
-        return redirect()->route('admin.periode.index')->with('success', 'Struktur periode dan kelompok berhasil diduplikasi.');
+        try {
+            $this->periodeService->duplicate($periode);
+            return redirect()->route('admin.periode.index')->with('success', 'Struktur periode dan kelompok berhasil diduplikasi.');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.periode.index')->with('error', 'Gagal menduplikasi periode: ' . $e->getMessage());
+        }
     }
 
     public function destroy(Periode $periode): RedirectResponse
     {
-        $periode->loadCount(['kelompok', 'peserta', 'dplPeriods']);
-
-        if (! $this->canDeletePeriod($periode)) {
-            return redirect()->route('admin.periode.index')->with('error', $this->getDeleteBlockerReason($periode));
+        try {
+            $this->periodeService->delete($periode);
+            return redirect()->route('admin.periode.index')->with('success', 'Periode KKN berhasil dihapus.');
+        } catch (\DomainException $e) {
+            return redirect()->route('admin.periode.index')->with('error', $e->getMessage());
+        } catch (\Exception $e) {
+            return redirect()->route('admin.periode.index')->with('error', 'Gagal menghapus periode: ' . $e->getMessage());
         }
-
-        $periode->delete();
-        RedisCacheService::invalidateMasterData();
-
-        return redirect()->route('admin.periode.index')->with('success', 'Periode KKN berhasil dihapus.');
-    }
-
-    private function canDeletePeriod(Periode $period): bool
-    {
-        return ! $period->is_active
-            && (int) ($period->kelompok_count ?? 0) === 0
-            && (int) ($period->peserta_count ?? 0) === 0
-            && (int) ($period->dpl_periods_count ?? 0) === 0;
-    }
-
-    private function getDeleteBlockerReason(Periode $period): ?string
-    {
-        if ($period->is_active) {
-            return 'Periode aktif tidak dapat dihapus. Nonaktifkan atau aktifkan periode lain terlebih dahulu.';
-        }
-
-        if (
-            (int) ($period->kelompok_count ?? 0) > 0 ||
-            (int) ($period->peserta_count ?? 0) > 0 ||
-            (int) ($period->dpl_periods_count ?? 0) > 0
-        ) {
-            return 'Periode tidak dapat dihapus karena masih memiliki kelompok, peserta, atau penugasan DPL.';
-        }
-
-        return null;
-    }
-
-    private function generateCopyName(string $name): string
-    {
-        $baseName = preg_replace('/\s+\(Copy(?: \d+)?\)$/', '', $name) ?: $name;
-        $candidate = $baseName.' (Copy)';
-        $suffix = 2;
-
-        while (Periode::withTrashed()->where('name', $candidate)->exists()) {
-            $candidate = sprintf('%s (Copy %d)', $baseName, $suffix);
-            $suffix++;
-        }
-
-        return $candidate;
-    }
-
-    private function generateUniqueGroupCode(): string
-    {
-        do {
-            $code = 'KKN-'.strtoupper(Str::random(6));
-        } while (KelompokKkn::withTrashed()->where('code', $code)->exists());
-
-        return $code;
-    }
-
-    private function generateUniqueGroupToken(): string
-    {
-        do {
-            $token = strtoupper(Str::random(8));
-        } while (KelompokKkn::withTrashed()->where('token', $token)->exists());
-
-        return $token;
-    }
-
-    private function checkDateOverlap(string $startDate, string $endDate, ?int $jenisKknId = null, ?int $excludeId = null): ?Periode
-    {
-        $query = Periode::where(function ($q) use ($startDate, $endDate) {
-            $q->whereBetween('start_date', [$startDate, $endDate])
-                ->orWhereBetween('end_date', [$startDate, $endDate])
-                ->orWhere(function ($q2) use ($startDate, $endDate) {
-                    $q2->where('start_date', '<=', $startDate)
-                        ->where('end_date', '>=', $endDate);
-                });
-        });
-
-        if ($excludeId) {
-            $query->where('id', '!=', $excludeId);
-        }
-
-        if ($jenisKknId) {
-            $query->where('jenis_kkn_id', $jenisKknId);
-        }
-
-        return $query->first();
     }
 
     public function export(): BinaryFileResponse

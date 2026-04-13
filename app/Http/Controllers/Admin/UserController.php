@@ -173,7 +173,7 @@ class UserController extends Controller
                 'batch_year' => $mahasiswa->batch_year,
                 'gender' => $mahasiswa->gender,
                 'sks_completed' => $mahasiswa->sks_completed,
-                'gpa' => $mahasiswa->gpa,
+                'gpa' => (float) $mahasiswa->gpa,
                 'is_bta_ppi_passed' => $mahasiswa->is_bta_ppi_passed,
                 'master_id' => $mahasiswa->master_id,
                 'master_synced_at' => $mahasiswa->master_synced_at?->toIso8601String(),

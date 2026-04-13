@@ -28,6 +28,19 @@ class DplAssignmentImport implements ToCollection, WithHeadingRow
 
     public function collection(Collection $rows): void
     {
+        // 1. Pre-fetch NIPs to bulk load Dosen to avoid O(N) queries
+        $nips = $rows->pluck('nip')->filter()->unique()->toArray();
+        $lecturers = \App\Models\KKN\Dosen::whereIn('nip', $nips)->get()->keyBy('nip');
+
+        // 2. Pre-fetch Periods that might be needed
+        $periodIds = $rows->pluck('period_id')->filter()->unique()->toArray();
+        $periodsById = \App\Models\KKN\Periode::whereIn('id', $periodIds)->get()->keyBy('id');
+        
+        $periodNames = $rows->pluck('periode')->filter()->unique()->toArray();
+        $periodsByName = \App\Models\KKN\Periode::whereIn('name', $periodNames)
+            ->orWhereIn('periode', $periodNames)
+            ->get();
+
         foreach ($rows as $index => $row) {
             $rowNumber = $index + 2;
             $nip = $this->value($row, ['nip']);
@@ -37,13 +50,15 @@ class DplAssignmentImport implements ToCollection, WithHeadingRow
                 continue;
             }
 
-            $dosen = Dosen::query()->where('nip', $nip)->first();
+            // Use pre-fetched lecturer
+            $dosen = $lecturers->get($nip);
             if (!$dosen) {
                 $this->errors[] = "Baris {$rowNumber}: NIP {$nip} tidak ditemukan pada master dosen lokal.";
                 continue;
             }
 
-            $period = $this->resolvePeriod($row);
+            // Resolve period using pre-fetched data where possible
+            $period = $this->resolvePeriodFromFetched($row, $periodsById, $periodsByName);
             if (!$period) {
                 $this->errors[] = "Baris {$rowNumber}: periode tidak dikenali.";
                 continue;
@@ -53,6 +68,7 @@ class DplAssignmentImport implements ToCollection, WithHeadingRow
             $maxGroups = max(1, min($maxGroups, 20));
 
             try {
+                // Service operations are already transactional-safe
                 $activation = $this->assignmentService->activateForPeriod($dosen, $period, $maxGroups);
                 $dplPeriod = $activation['assignment'];
 
@@ -64,7 +80,7 @@ class DplAssignmentImport implements ToCollection, WithHeadingRow
 
                 $groupCode = $this->value($row, ['kode_kelompok', 'group_code']);
                 if (filled($groupCode)) {
-                    $group = KelompokKkn::query()
+                    $group = \App\Models\KKN\KelompokKkn::query()
                         ->where('period_id', $period->id)
                         ->where('code', $groupCode)
                         ->first();
@@ -90,8 +106,24 @@ class DplAssignmentImport implements ToCollection, WithHeadingRow
                 }
             } catch (\Throwable $exception) {
                 $this->errors[] = "Baris {$rowNumber}: {$exception->getMessage()}";
+                \Log::error("Import Error at row {$rowNumber}", ['error' => $exception->getMessage()]);
             }
         }
+    }
+
+    private function resolvePeriodFromFetched(Collection $row, Collection $byId, Collection $byName): ?\App\Models\KKN\Periode
+    {
+        $periodId = $this->value($row, ['period_id', 'periode_id']);
+        if (filled($periodId) && is_numeric($periodId)) {
+            return $byId->get((int) $periodId);
+        }
+
+        $periodName = $this->value($row, ['periode', 'period_name', 'nama_periode']);
+        if (filled($periodName)) {
+            return $byName->first(fn($p) => $p->name === $periodName || $p->periode === $periodName);
+        }
+
+        return null;
     }
 
     private function resolvePeriod(Collection $row): ?Periode

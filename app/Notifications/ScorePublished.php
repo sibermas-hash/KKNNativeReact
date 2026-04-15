@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications;
 
 use App\Models\KKN\NilaiKkn;
@@ -34,7 +36,7 @@ class ScorePublished extends Notification implements ShouldQueue
 
         return (new MailMessage)
             ->subject('Nilai KKN Telah Dirilis - SIM-KKN UIN SAIZU')
-            ->greeting("Assalamu'alaikum " . $notifiable->name)
+            ->greeting("Assalamu'alaikum ".$notifiable->name)
             ->line('Nilai KKN Anda telah dirilis dan difinalisasi.')
             ->line('Silakan login untuk melihat detail nilai Anda.')
             ->action('Lihat Nilai', url('/student/evaluations'))
@@ -49,9 +51,9 @@ class ScorePublished extends Notification implements ShouldQueue
     {
         return [
             'title' => 'Nilai KKN Dirilis',
-            'message' => 'Nilai KKN Anda telah difinalisasi. Nilai akhir: ' .
-                ($this->score->total_score ?? 0) .
-                ' (' . ($this->score->letter_grade ?? '-') . ')',
+            'message' => 'Nilai KKN Anda telah difinalisasi. Nilai akhir: '.
+                ($this->score->total_score ?? 0).
+                ' ('.($this->score->letter_grade ?? '-').')',
             'url' => '/student/evaluations',
             'icon' => 'academic-cap',
             'type' => 'success',

@@ -11,17 +11,28 @@ interface FormSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
     error?: string;
     options?: Option[];
     placeholder?: string;
+    layout?: 'vertical' | 'horizontal';
 }
 
 const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
-    ({ label, error, options = [], placeholder, id, className, children, ...rest }, ref) => {
+    ({ label, error, options = [], placeholder, id, className, children, layout = 'vertical', ...rest }, ref) => {
         const errorId = error && id ? `${id}-error` : undefined;
         const describedBy = errorId || undefined;
 
+        const isHorizontal = layout === 'horizontal';
+
         return (
-            <div className="flex flex-col space-y-2">
+            <div className={clsx(
+                isHorizontal ? 'flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6' : 'flex flex-col space-y-2'
+            )}>
                 {label && (
-                    <label htmlFor={id} className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">
+                    <label 
+                        htmlFor={id} 
+                        className={clsx(
+                            "text-[12px] font-bold text-emerald-950 uppercase tracking-widest pl-1",
+                            isHorizontal && "sm:min-w-[180px] sm:text-right"
+                        )}
+                    >
                         {label}
                         {rest.required && <span className="ml-1 text-red-500" aria-hidden="true">*</span>}
                     </label>
@@ -34,12 +45,12 @@ const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
                             aria-invalid={!!error}
                             aria-describedby={describedBy}
                             className={clsx(
-                                'w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 transition-all appearance-none cursor-pointer',
-                                'focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500',
+                                'w-full rounded-xl border border-emerald-100/60 bg-white px-4 py-2.5 text-sm text-black transition-all appearance-none cursor-pointer',
+                                'focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20',
                                 error
-                                    ? 'border-red-500 focus:ring-red-500'
+                                    ? 'border-rose-500 focus:ring-rose-500/20'
                                     : 'hover:border-slate-400',
-                                rest.disabled && 'bg-slate-50 text-slate-500 cursor-not-allowed border-slate-200',
+                                rest.disabled && 'bg-emerald-50/30 text-emerald-950 cursor-not-allowed border-emerald-100/60',
                                 'pr-10',
                                 className,
                             )}
@@ -53,11 +64,11 @@ const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
                             ))}
                             {children}
                         </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400" aria-hidden="true">
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-emerald-950" aria-hidden="true">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                         </div>
                     </div>
-                    {error && <p id={errorId} role="alert" className="mt-1 text-xs font-medium text-red-600">{error}</p>}
+                    {error && <p id={errorId} role="alert" className="mt-1.5 text-xs font-medium text-rose-600">{error}</p>}
                 </div>
             </div>
         );

@@ -8,24 +8,24 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::connection('kkn')->hasTable('workshop')) {
+        if (! Schema::connection('kkn')->hasTable('workshop')) {
             return;
         }
 
         Schema::connection('kkn')->table('workshop', function (Blueprint $table) {
-            if (!Schema::connection('kkn')->hasColumn('workshop', 'latitude')) {
+            if (! Schema::connection('kkn')->hasColumn('workshop', 'latitude')) {
                 $table->decimal('latitude', 10, 8)->nullable();
             }
 
-            if (!Schema::connection('kkn')->hasColumn('workshop', 'longitude')) {
+            if (! Schema::connection('kkn')->hasColumn('workshop', 'longitude')) {
                 $table->decimal('longitude', 11, 8)->nullable();
             }
 
-            if (!Schema::connection('kkn')->hasColumn('workshop', 'radius_meters')) {
+            if (! Schema::connection('kkn')->hasColumn('workshop', 'radius_meters')) {
                 $table->integer('radius_meters')->default(100);
             }
 
-            if (!Schema::connection('kkn')->hasColumn('workshop', 'active_token')) {
+            if (! Schema::connection('kkn')->hasColumn('workshop', 'active_token')) {
                 $table->string('active_token', 10)->nullable();
             }
         });
@@ -33,7 +33,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (!Schema::connection('kkn')->hasTable('workshop')) {
+        if (! Schema::connection('kkn')->hasTable('workshop')) {
             return;
         }
 

@@ -18,7 +18,7 @@ class KelompokKknFactory extends Factory
             'period_id' => Periode::factory(),
             'location_id' => Lokasi::factory(),
             'code' => strtoupper($this->faker->unique()->bothify('KKN-####')),
-            'nama_kelompok' => 'Kelompok ' . $this->faker->numberBetween(1, 100),
+            'nama_kelompok' => 'Kelompok '.$this->faker->numberBetween(1, 100),
             'token' => Str::random(10),
             'capacity' => 10,
             'status' => 'active',

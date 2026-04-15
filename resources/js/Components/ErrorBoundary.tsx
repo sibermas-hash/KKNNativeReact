@@ -65,8 +65,8 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+        <div className="min-h-screen bg-emerald-50/30 flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-emerald-100/60">
             <div className="bg-rose-600 p-6 text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-full mb-4">
                 <svg
@@ -87,14 +87,14 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             <div className="p-8">
-              <p className="text-sm text-gray-600 text-center mb-6">
+              <p className="text-sm text-emerald-950 text-center mb-6">
                 Maaf, terjadi kesalahan yang tidak terduga. Silakan refresh halaman atau hubungi
                 administrator.
               </p>
 
               {isDevelopment() && this.state.error && (
-                <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                  <p className="text-xs font-mono text-gray-700 break-all">
+                <div className="mb-6 p-4 bg-emerald-50/30 rounded-lg border border-emerald-100/60">
+                  <p className="text-xs font-mono text-emerald-700 break-all">
                     {this.state.error.message}
                   </p>
                 </div>
@@ -109,7 +109,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 </button>
                 <button
                   onClick={() => (window.location.href = '/')}
-                  className="flex-1 bg-white border-2 border-slate-200 hover:border-gray-300 text-gray-700 font-semibold py-3 rounded-xl transition-all"
+                  className="flex-1 bg-white border-2 border-emerald-100/60 hover:border-emerald-100/60 text-emerald-700 font-semibold py-3 rounded-xl transition-all"
                 >
                   Kembali ke Beranda
                 </button>

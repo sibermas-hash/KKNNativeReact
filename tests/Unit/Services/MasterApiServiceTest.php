@@ -34,7 +34,7 @@ class MasterApiServiceTest extends TestCase
 
         Http::fake();
 
-        $service = new MasterApiService();
+        $service = new MasterApiService;
 
         $this->assertSame('static-token-123', $service->getToken());
         Http::assertNothingSent();
@@ -58,7 +58,7 @@ class MasterApiServiceTest extends TestCase
             ], 200),
         ]);
 
-        $service = new MasterApiService();
+        $service = new MasterApiService;
         $students = $service->getStudentsByNimList(['24010001', '24010002']);
 
         $this->assertCount(2, $students);

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Log;
-use Throwable;
-
 use const DIRECTORY_SEPARATOR;
 use const LOCK_EX;
 use const LOCK_NB;
 use const LOCK_UN;
+
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class MasterWebhookSync extends Command
 {
@@ -26,12 +26,12 @@ class MasterWebhookSync extends Command
         $triggerPath = $dir.DIRECTORY_SEPARATOR.'trigger.json';
         $lockPath = $dir.DIRECTORY_SEPARATOR.'sync.lock';
 
-        if (!is_file($triggerPath)) {
+        if (! is_file($triggerPath)) {
             return 0;
         }
 
-        if (!is_dir($dir)) {
-            if (!mkdir($dir, 0775, true)) {
+        if (! is_dir($dir)) {
+            if (! mkdir($dir, 0775, true)) {
                 $this->warn('Cannot create directory for Master webhook sync');
 
                 return 0;
@@ -39,14 +39,14 @@ class MasterWebhookSync extends Command
         }
 
         $fp = fopen($lockPath, 'c');
-        if (!\is_resource($fp)) {
+        if (! \is_resource($fp)) {
             $this->warn('Cannot open lock file for Master webhook sync');
 
             return 0;
         }
 
         try {
-            if (!flock($fp, LOCK_EX | LOCK_NB)) {
+            if (! flock($fp, LOCK_EX | LOCK_NB)) {
                 // Another sync is running.
                 return 0;
             }
@@ -85,7 +85,7 @@ class MasterWebhookSync extends Command
                 return $exit;
             }
 
-            if (!unlink($triggerPath)) {
+            if (! unlink($triggerPath)) {
                 Log::warning('Failed to delete trigger file', ['path' => $triggerPath]);
             }
 

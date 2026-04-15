@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -12,7 +14,7 @@ class EnsurePasswordChanged
     {
         $user = $request->user();
 
-        if (!$user || !$user->must_change_password) {
+        if (! $user || ! $user->must_change_password) {
             return $next($request);
         }
 

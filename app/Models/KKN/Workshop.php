@@ -4,72 +4,44 @@ declare(strict_types=1);
 
 namespace App\Models\KKN;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Carbon;
 
-use Illuminate\Database\Eloquent\Attributes\Connection;
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Casts;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-
-#[Connection('kkn')]
-#[Table('workshop')]
-#[Fillable([
-    'period_id',
-        'title',
-        'description',
-        'methodology',
-        'workshop_date',
-        'start_time',
-        'end_time',
-        'location',
-        'max_participants',
-        'latitude',
-        'longitude',
-        'radius_meters',
-        'active_token',
-        'status',
-])]
-#[Casts([
-    'period_id' => 'integer',
-        'workshop_date' => 'date',
-])]
 class Workshop extends Model
 {
     use HasFactory;
 
-    protected static ?bool $supportsPeriodAssignment = null;
+    protected $connection = 'kkn';
 
-    
+    protected $table = 'workshops';
 
-    
+    protected $fillable = [
+        'periode_id',
+        'title',
+        'description',
+        'location',
+        'speaker',
+        'date',
+        'start_time',
+        'end_time',
+        'capacity',
+        'is_published',
+    ];
 
-    
+    protected $casts = [
+        'periode_id' => 'integer',
+        'date' => 'date',
+        'capacity' => 'integer',
+        'is_published' => 'boolean',
+    ];
 
-    
-
-    public static function supportsPeriodAssignment(): bool
+    public function periode(): BelongsTo
     {
-        if (static::$supportsPeriodAssignment !== null) {
-            return static::$supportsPeriodAssignment;
-        }
-
-        return static::$supportsPeriodAssignment = Schema::connection(config('database.kkn_connection', 'kkn'))
-            ->hasColumn((new static)->getTable(), 'period_id');
-    }
-
-    public function getStartTimeAttribute($value): ?string
-    {
-        return $value ? substr((string) $value, 0, 5) : null;
-    }
-
-    public function getEndTimeAttribute($value): ?string
-    {
-        return $value ? substr((string) $value, 0, 5) : null;
+        return $this->belongsTo(Periode::class, 'periode_id');
     }
 
     public function peserta(): HasMany
@@ -77,13 +49,19 @@ class Workshop extends Model
         return $this->hasMany(PesertaWorkshop::class, 'workshop_id');
     }
 
-    public function participants(): HasMany
+    /**
+     * Format start time.
+     */
+    public function getFormattedStartTimeAttribute(): string
     {
-        return $this->peserta();
+        return Carbon::parse($this->attributes['start_time'] ?? '00:00')->format('H:i');
     }
 
-    public function periode(): BelongsTo
+    /**
+     * Format end time.
+     */
+    public function getFormattedEndTimeAttribute(): string
     {
-        return $this->belongsTo(Periode::class, 'period_id');
+        return Carbon::parse($this->attributes['end_time'] ?? '00:00')->format('H:i');
     }
 }

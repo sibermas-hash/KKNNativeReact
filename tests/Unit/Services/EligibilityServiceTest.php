@@ -16,7 +16,7 @@ class EligibilityServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new EligibilityService();
+        $this->service = new EligibilityService;
     }
 
     public function test_check_eligibility_returns_correct_structure(): void

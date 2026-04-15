@@ -1,8 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Student;
 
+use App\Enums\AbcdStage;
+use App\Enums\LogbookCategory;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class StoreDailyReportRequest extends FormRequest
 {
@@ -15,9 +20,9 @@ class StoreDailyReportRequest extends FormRequest
     {
         $rules = [
             'date' => ['required', 'date', 'before_or_equal:today'],
-            'category' => ['required', new \Illuminate\Validation\Rules\Enum(\App\Enums\LogbookCategory::class)],
+            'category' => ['required', new Enum(LogbookCategory::class)],
             'title' => ['required', 'string', 'max:200'],
-            'abcd_stage' => ['required', new \Illuminate\Validation\Rules\Enum(\App\Enums\AbcdStage::class)],
+            'abcd_stage' => ['required', new Enum(AbcdStage::class)],
             'activity' => ['required', 'string'],
             'reflection' => ['nullable', 'string'],
             'social_media_link' => ['nullable', 'url', 'max:255'],

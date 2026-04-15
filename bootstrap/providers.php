@@ -1,7 +1,13 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\MasterApiServiceProvider;
+use App\Providers\TelescopeServiceProvider;
+use Laravel\Ai\AiServiceProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\MasterApiServiceProvider::class,
-    App\Providers\TelescopeServiceProvider::class,
+    AppServiceProvider::class,
+    MasterApiServiceProvider::class,
+    TelescopeServiceProvider::class,
+    AiServiceProvider::class,
 ];

@@ -105,11 +105,11 @@ class FacultyAdminRekapNilaiTest extends TestCase
         $facultyAdmin->assignRole('faculty_admin');
 
         $this->actingAs($facultyAdmin)
-            ->get('/admin/rekap-nilai/ekspor?period_id=' . $period->id)
+            ->get('/admin/rekap-nilai/ekspor?period_id='.$period->id)
             ->assertForbidden();
 
         $this->actingAs($facultyAdmin)
-            ->patch('/admin/rekap-nilai/' . $score->id . '/finalisasi')
+            ->patch('/admin/rekap-nilai/'.$score->id.'/finalisasi')
             ->assertForbidden();
     }
 
@@ -165,7 +165,7 @@ class FacultyAdminRekapNilaiTest extends TestCase
     ): NilaiKkn {
         $studentUser = User::factory()->create([
             'name' => $studentName,
-            'email' => strtolower(str_replace(' ', '.', $studentName)) . '@example.test',
+            'email' => strtolower(str_replace(' ', '.', $studentName)).'@example.test',
         ]);
         $studentUser->assignRole('student');
 

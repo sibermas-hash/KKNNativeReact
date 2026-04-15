@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\KKN\Fakultas;
+use App\Models\KKN\Lokasi;
+use App\Models\KKN\Periode;
 use Illuminate\Cache\TaggableStore;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
@@ -396,21 +399,21 @@ class RedisCacheService
 
         try {
             // Warm up master data
-            if (class_exists(\App\Models\KKN\Periode::class)) {
-                self::getPeriods(fn () => \App\Models\KKN\Periode::with('tahunAkademik')
+            if (class_exists(Periode::class)) {
+                self::getPeriods(fn () => Periode::with('tahunAkademik')
                     ->withCount(['kelompok', 'peserta'])
                     ->get()
                 );
                 $warmed[] = 'periods';
             }
 
-            if (class_exists(\App\Models\KKN\Lokasi::class)) {
-                self::getLocations(fn () => \App\Models\KKN\Lokasi::withCount('kelompok')->get());
+            if (class_exists(Lokasi::class)) {
+                self::getLocations(fn () => Lokasi::withCount('kelompok')->get());
                 $warmed[] = 'locations';
             }
 
-            if (class_exists(\App\Models\KKN\Fakultas::class)) {
-                self::getFaculties(fn () => \App\Models\KKN\Fakultas::all());
+            if (class_exists(Fakultas::class)) {
+                self::getFaculties(fn () => Fakultas::all());
                 $warmed[] = 'faculties';
             }
 

@@ -7,15 +7,16 @@ namespace App\Models\KKN;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Attributes\Connection;
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 
-#[Connection('kkn')]
-#[Table('fakultas')]
-#[Fillable(['nama', 'kode', 'master_id'])]
 class Fakultas extends Model
 {
+
+    protected $table = 'fakultas';
+
+    protected $connection = 'kkn';
+
+    protected $fillable = ['nama', 'kode', 'master_id'];
+
     use HasFactory;
 
     public function prodi(): HasMany

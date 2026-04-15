@@ -14,8 +14,8 @@ use App\Models\KKN\Periode;
 use App\Notifications\KKN\DplAssignedToGroupNotification;
 use App\Notifications\KKN\DplRemovedFromPeriodNotification;
 use App\Services\DplAssignmentService as BaseDplAssignmentService;
-use Illuminate\Support\Facades\DB;
 use DomainException;
+use Illuminate\Support\Facades\DB;
 
 class DplAssignmentService
 {

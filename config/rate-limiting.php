@@ -16,26 +16,26 @@ return [
         'login' => [
             'attempts' => 5,
             'decay' => 15,  // minutes
-            'message' => 'Terlalu banyak percobaan login. Coba lagi dalam :seconds detik.'
+            'message' => 'Terlalu banyak percobaan login. Coba lagi dalam :seconds detik.',
         ],
-        
+
         'password_reset' => [
             'attempts' => 3,
             'decay' => 1440,  // 24 hours
-            'message' => 'Terlalu banyak permintaan reset password. Coba lagi besok.'
+            'message' => 'Terlalu banyak permintaan reset password. Coba lagi besok.',
         ],
-        
+
         'password_email' => [
             'attempts' => 3,
             'decay' => 1440,  // 24 hours
-            'message' => 'Terlalu banyak permintaan email. Coba lagi besok.'
+            'message' => 'Terlalu banyak permintaan email. Coba lagi besok.',
         ],
 
         // Registration endpoints - MODERATE
         'registration' => [
             'attempts' => 10,
             'decay' => 60,  // 1 hour
-            'message' => 'Terlalu banyak pendaftaran dari IP Anda. Coba lagi nanti.'
+            'message' => 'Terlalu banyak pendaftaran dari IP Anda. Coba lagi nanti.',
         ],
 
         // API endpoints - MODERATE
@@ -47,7 +47,7 @@ return [
             'guest' => [
                 'attempts' => 30,
                 'decay' => 1,  // 1 minute
-            ]
+            ],
         ],
 
         // Public endpoints - RELAXED

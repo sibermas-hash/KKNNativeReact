@@ -22,7 +22,7 @@ class CertificateServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new CertificateService();
+        $this->service = new CertificateService;
     }
 
     private function seedCertificateConfig(array $overrides = []): void

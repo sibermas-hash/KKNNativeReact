@@ -1,12 +1,14 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\NotificationController;
-use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\Api\AdminKeyController;
-use App\Http\Controllers\Api\RegistrationController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PublicDataController;
+use App\Http\Controllers\Api\RegistrationController;
+use App\Http\Controllers\Api\WebhookController;
+use App\Http\Middleware\VerifyWebhookSignature;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
 
 /*
  |--------------------------------------------------------------------------
@@ -26,11 +28,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // Notifications & Devices
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->name('api.')->group(function () {
     Route::prefix('notifications')->name('notifications.')->group(function () {
-        Route::get('/unread', [NotificationController::class , 'unread'])->name('unread');
-        Route::post('/{id}/read', [NotificationController::class , 'markRead'])->name('mark-read');
-        Route::post('/read-all', [NotificationController::class , 'markAllRead'])->name('mark-all-read');
+        Route::get('/unread', [NotificationController::class, 'unread'])->name('unread');
+        Route::post('/{id}/read', [NotificationController::class, 'markRead'])->name('mark-read');
+        Route::post('/read-all', [NotificationController::class, 'markAllRead'])->name('mark-all-read');
     });
-    
+
     // Fix Poin 4: Device Tokens for Push Notifications
     Route::post('/device-tokens', [NotificationController::class, 'storeDeviceToken'])->name('device-tokens.store');
 });
@@ -42,21 +44,22 @@ Route::post('log-error', function (Request $request) {
         'url' => 'nullable|string|max:2048',
         'stack' => 'nullable|string|max:10000',
     ]);
-    \Illuminate\Support\Facades\Log::channel('frontend')->error('Frontend Error: ' . $validated['message'], $validated);
+    Log::channel('frontend')->error('Frontend Error: '.$validated['message'], $validated);
+
     return response()->json(['status' => 'logged']);
 })->middleware('throttle:10,1')->name('api.log-error');
 
 // Webhooks from Master Data - signature verification FIRST, then rate limit
 Route::prefix('webhooks')->group(function () {
-    Route::post('/master-data', [WebhookController::class , 'handle'])
-        ->middleware([\App\Http\Middleware\VerifyWebhookSignature::class, 'throttle:10,1'])
+    Route::post('/master-data', [WebhookController::class, 'handle'])
+        ->middleware([VerifyWebhookSignature::class, 'throttle:10,1'])
         ->name('webhooks.master-data');
 });
 
 // ── API Key Distribution System ──────────────────────────────────────────
 
 // Admin: Generate API key (protected by admin secret header)
-Route::post('/admin/keys', [AdminKeyController::class , 'store'])
+Route::post('/admin/keys', [AdminKeyController::class, 'store'])
     ->middleware('throttle:10,1')
     ->name('api.admin.keys.store');
 Route::post('/admin/keys/{apiKey}/revoke', [AdminKeyController::class, 'revoke'])
@@ -64,14 +67,14 @@ Route::post('/admin/keys/{apiKey}/revoke', [AdminKeyController::class, 'revoke']
     ->name('api.admin.keys.revoke');
 
 // Self-service: Client registers and receives API key
-Route::post('/register', [RegistrationController::class , 'register'])
+Route::post('/register', [RegistrationController::class, 'register'])
     ->middleware('throttle:5,1')
     ->name('api.register');
 
 // Public Data API (protected by API key middleware)
 Route::middleware(['api.key', 'throttle:60,1'])->prefix('v1')->name('api.v1.')->group(function () {
-    Route::get('/{table}', [PublicDataController::class , 'index'])->name('index');
-    Route::post('/{table}', [PublicDataController::class , 'store'])->name('store');
-    Route::patch('/{table}/{id}', [PublicDataController::class , 'update'])->name('update');
-    Route::delete('/{table}/{id}', [PublicDataController::class , 'destroy'])->name('destroy');
+    Route::get('/{table}', [PublicDataController::class, 'index'])->name('index');
+    Route::post('/{table}', [PublicDataController::class, 'store'])->name('store');
+    Route::patch('/{table}/{id}', [PublicDataController::class, 'update'])->name('update');
+    Route::delete('/{table}/{id}', [PublicDataController::class, 'destroy'])->name('destroy');
 });

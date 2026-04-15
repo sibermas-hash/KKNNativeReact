@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\StoreRegistrationRequest;
 use App\Models\KKN\AntrianKkn;
+use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\User;
@@ -17,13 +18,15 @@ use App\Services\RegistrationPortalService;
 use App\Services\RegistrationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class RegistrationController extends Controller
 {
-    private function hasPassedBtaPpi(?\App\Models\KKN\Mahasiswa $mahasiswa): bool
+    private function hasPassedBtaPpi(?Mahasiswa $mahasiswa): bool
     {
         if (! $mahasiswa) {
             return false;
@@ -35,7 +38,7 @@ class RegistrationController extends Controller
             || in_array($legacyStatus, ['LULUS', 'PASSED', 'SUCCESS'], true);
     }
 
-    private function bpjsProfileSummary(?\App\Models\KKN\Mahasiswa $mahasiswa, ?\App\Models\User $user): array
+    private function bpjsProfileSummary(?Mahasiswa $mahasiswa, ?User $user): array
     {
         $required = [
             'nik' => $mahasiswa?->nik,
@@ -77,7 +80,7 @@ class RegistrationController extends Controller
         ];
     }
 
-    private function domicileProfileSummary(?\App\Models\User $user): array
+    private function domicileProfileSummary(?User $user): array
     {
         $required = [
             'address' => $user?->address,
@@ -120,7 +123,7 @@ class RegistrationController extends Controller
         ];
     }
 
-    private function hasLockedRegistration(?\App\Models\KKN\Mahasiswa $mahasiswa): bool
+    private function hasLockedRegistration(?Mahasiswa $mahasiswa): bool
     {
         if (! $mahasiswa) {
             return false;
@@ -254,7 +257,7 @@ class RegistrationController extends Controller
             ]);
         }
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $mahasiswa, $period, $periodId, $registrationService) {
+        DB::transaction(function () use ($request, $mahasiswa, $periodId, $registrationService) {
             if ($request->hasFile('health_certificate')) {
                 if ($mahasiswa->health_certificate_path) {
                     Storage::disk('local')->delete($mahasiswa->health_certificate_path);
@@ -297,13 +300,24 @@ class RegistrationController extends Controller
                 $period->name,
             ));
 
-            // Notify all superadmin users
-            User::role('superadmin')->each(function (User $admin) use ($latestRegistration, $mahasiswa, $period) {
-                $admin->notify(new NewRegistrationForAdminNotification(
-                    $latestRegistration,
-                    $mahasiswa->nama ?? 'Mahasiswa',
-                    $period->name,
-                ));
+            // Notify all superadmin users - use chunk to avoid N+1 and reduce memory
+            $studentName = $mahasiswa->nama ?? 'Mahasiswa';
+            $periodName = $period->name;
+            $notification = new NewRegistrationForAdminNotification(
+                $latestRegistration,
+                $studentName,
+                $periodName,
+            );
+
+            User::role('superadmin')->select('users.id')->chunk(50, function ($admins) use ($notification) {
+                foreach ($admins as $admin) {
+                    try {
+                        $admin->notify($notification);
+                    } catch (\Throwable $e) {
+                        // Log but don't break the flow if one notification fails
+                        Log::warning('Failed to notify superadmin: '.$e->getMessage());
+                    }
+                }
             });
         }
 

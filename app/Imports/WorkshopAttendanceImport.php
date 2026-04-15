@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Imports;
 
-use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\PesertaWorkshop;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Illuminate\Support\Collection;
 
 class WorkshopAttendanceImport implements ToCollection, WithHeadingRow
 {
     private int $workshopId;
+
     public int $processedCount = 0;
 
     public function __construct(int $workshopId)
@@ -18,9 +21,6 @@ class WorkshopAttendanceImport implements ToCollection, WithHeadingRow
         $this->workshopId = $workshopId;
     }
 
-    /**
-    * @param Collection $rows
-    */
     public function collection(Collection $rows)
     {
         foreach ($rows as $row) {

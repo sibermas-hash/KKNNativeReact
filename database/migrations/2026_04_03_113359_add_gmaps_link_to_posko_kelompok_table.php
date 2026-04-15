@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::connection('kkn')->hasTable('posko_kelompok')) {
+        if (! Schema::connection('kkn')->hasTable('posko_kelompok')) {
             return;
         }
 
@@ -23,11 +23,11 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (!Schema::connection('kkn')->hasTable('posko_kelompok')) {
+        if (! Schema::connection('kkn')->hasTable('posko_kelompok')) {
             return;
         }
 
-        if (!Schema::connection('kkn')->hasColumn('posko_kelompok', 'gmaps_link')) {
+        if (! Schema::connection('kkn')->hasColumn('posko_kelompok', 'gmaps_link')) {
             return;
         }
 

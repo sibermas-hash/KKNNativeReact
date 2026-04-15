@@ -6,14 +6,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\ProgramKerja;
+use App\Traits\HandlesPagination;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use Laravel\Ai\Ai;
 
 class ProgramKerjaController extends Controller
 {
-    use \App\Traits\HandlesPagination;
+    use HandlesPagination;
 
     public function index(Request $request): Response
     {
@@ -39,7 +41,7 @@ class ProgramKerjaController extends Controller
             'workPrograms' => Inertia::defer(fn () => $this->formatPaginator($workPrograms)),
             'sdg_distribution' => Inertia::defer(function () use ($query) {
                 $sdgCounts = array_fill(1, 17, 0);
-                
+
                 // Optimized for memory stability using chunking
                 (clone $query)->select('sdg_goals')->chunk(200, function ($programs) use (&$sdgCounts) {
                     foreach ($programs as $item) {
@@ -58,8 +60,8 @@ class ProgramKerjaController extends Controller
                 ])->values();
             }),
             'filters' => $request->only('status', 'semantic_search'),
-            'semantic_results' => $request->filled('semantic_search') 
-                ? Inertia::defer(fn () => \App\Models\KKN\ProgramKerja::whereVector('title', \Laravel\Ai\Ai::embeddings([$request->input('semantic_search')])[0])->take(5)->get())
+            'semantic_results' => $request->filled('semantic_search')
+                ? Inertia::defer(fn () => ProgramKerja::whereVector('title', Ai::embeddings([$request->input('semantic_search')])[0])->take(5)->get())
                 : null,
         ]);
     }

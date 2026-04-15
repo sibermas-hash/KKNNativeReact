@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -50,14 +49,14 @@ class SmokeTest extends TestCase
             'is_active' => true,
             'must_change_password' => false,
         ]);
-        
+
         Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
         $user->assignRole('student');
 
         $response = $this->actingAs($user)->get(route('dashboard'));
 
         $response->assertRedirect(route('student.dashboard'));
-        
+
         // Follow the redirect
         $this->get(route('student.dashboard'))->assertStatus(200);
     }

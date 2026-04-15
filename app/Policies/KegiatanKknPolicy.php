@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
-use App\Models\User;
-use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\Dosen;
+use App\Models\KKN\KegiatanKkn;
+use App\Models\User;
 
 class KegiatanKknPolicy extends BasePolicy
 {
@@ -14,7 +16,7 @@ class KegiatanKknPolicy extends BasePolicy
     private function isDplOfReport(User $user, KegiatanKkn $report): bool
     {
         $dosen = Dosen::where('user_id', $user->id)->first();
-        if (!$dosen || !$report->kelompok_id) {
+        if (! $dosen || ! $report->kelompok_id) {
             return false;
         }
 
@@ -23,13 +25,15 @@ class KegiatanKknPolicy extends BasePolicy
 
     public function viewAny(User $user): bool
     {
-        return $this->superAdminBypass($user, 'viewAny') ?? 
+        return $this->superAdminBypass($user, 'viewAny') ??
                $user->hasAnyRole(['superadmin', 'dpl', 'student', 'faculty_admin']);
     }
 
     public function view(User $user, KegiatanKkn $report): bool
     {
-        if ($this->superAdminBypass($user, 'view')) return true;
+        if ($this->superAdminBypass($user, 'view')) {
+            return true;
+        }
 
         if ($user->hasRole('student')) {
             return $report->mahasiswa_id === $user->mahasiswa?->id;
@@ -53,7 +57,9 @@ class KegiatanKknPolicy extends BasePolicy
 
     public function update(User $user, KegiatanKkn $report): bool
     {
-        if ($this->superAdminBypass($user, 'update')) return true;
+        if ($this->superAdminBypass($user, 'update')) {
+            return true;
+        }
 
         // Only the owner can update, and only if NOT approved yet
         if ($user->hasRole('student')) {
@@ -65,7 +71,9 @@ class KegiatanKknPolicy extends BasePolicy
 
     public function delete(User $user, KegiatanKkn $report): bool
     {
-        if ($this->superAdminBypass($user, 'delete')) return true;
+        if ($this->superAdminBypass($user, 'delete')) {
+            return true;
+        }
 
         // Only the owner can delete, and only if NOT approved yet
         if ($user->hasRole('student')) {
@@ -77,7 +85,9 @@ class KegiatanKknPolicy extends BasePolicy
 
     public function review(User $user, KegiatanKkn $report): bool
     {
-        if ($this->superAdminBypass($user, 'review')) return true;
+        if ($this->superAdminBypass($user, 'review')) {
+            return true;
+        }
 
         if ($user->hasRole('dpl')) {
             return $this->isDplOfReport($user, $report);

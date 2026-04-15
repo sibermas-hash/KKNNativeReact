@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -20,8 +22,8 @@ class RestrictDebugbarAccess
 
         // In production/staging, only superadmin can access
         $user = $request->user();
-        
-        if (!$user || !$user->hasRole('superadmin')) {
+
+        if (! $user || ! $user->hasRole('superadmin')) {
             abort(403, 'Access denied. Debug tools are restricted to administrators only.');
         }
 

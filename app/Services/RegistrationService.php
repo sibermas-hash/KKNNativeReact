@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\KKN\AntrianKkn;
+use App\Models\KKN\Fakultas;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
+use App\Models\KKN\SystemSetting;
 use App\Repositories\Contracts\RegistrationRepositoryInterface;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -38,21 +42,21 @@ class RegistrationService
      * The unique constraint on (mahasiswa_id, period_id) added in C14 provides
      * a final safety net against race conditions.
      *
-     * @param  \App\Models\KKN\Mahasiswa  $mahasiswa  The student registering.
+     * @param  Mahasiswa  $mahasiswa  The student registering.
      * @param  int  $periodeId  The KKN period ID.
      * @param  int|null  $kelompokId  The group to join, or null for queue-only.
      * @param  string|null  $notes  Optional registration notes.
      * @param  int|null  $userId  The authenticated user ID (for ownership verification).
-     * @return \App\Models\KKN\PesertaKkn  The created or updated registration record.
+     * @return PesertaKkn The created or updated registration record.
      *
-     * @throws \Illuminate\Auth\Access\AuthorizationException  If the user does not own this mahasiswa record.
-     * @throws \Illuminate\Validation\ValidationException  If validation or eligibility fails.
+     * @throws AuthorizationException If the user does not own this mahasiswa record.
+     * @throws ValidationException If validation or eligibility fails.
      */
     public function register(Mahasiswa $mahasiswa, int $periodeId, ?int $kelompokId, ?string $notes, ?int $userId = null): PesertaKkn
     {
         // FIX C10: Verify ownership - the authenticated user must own this mahasiswa record
         if ($userId && $mahasiswa->user_id !== $userId) {
-            throw new \Illuminate\Auth\Access\AuthorizationException('Anda tidak memiliki hak untuk mendaftarkan mahasiswa ini.');
+            throw new AuthorizationException('Anda tidak memiliki hak untuk mendaftarkan mahasiswa ini.');
         }
 
         $registration = $this->withRegistrationLocks($mahasiswa, $periodeId, $kelompokId, function () use ($mahasiswa, $periodeId, $kelompokId, $notes) {
@@ -85,7 +89,7 @@ class RegistrationService
                 }
 
                 // 2. DYNAMIC ELIGIBILITY FILTER: Check SKS, GPA, and program-specific rules
-                $eligibility = app(\App\Services\EligibilityService::class)->checkEligibility($mahasiswa, $periodeId);
+                $eligibility = app(EligibilityService::class)->checkEligibility($mahasiswa, $periodeId);
                 if (! $eligibility['is_eligible']) {
                     throw ValidationException::withMessages([
                         'period_id' => $eligibility['reason'] ?? 'Anda belum memenuhi syarat akademik untuk mengikuti periode KKN ini.',
@@ -103,7 +107,7 @@ class RegistrationService
                 if ($kelompokId) {
                     $kelompok = KelompokKkn::query()->with('lokasi')->findOrFail($kelompokId);
                     if ($kelompok->lokasi?->faculty_id && $mahasiswa->faculty_id && $kelompok->lokasi->faculty_id !== $mahasiswa->faculty_id) {
-                        $facultyName = \App\Models\KKN\Fakultas::find($kelompok->lokasi->faculty_id)?->nama ?? 'Fakultas Lain';
+                        $facultyName = Fakultas::find($kelompok->lokasi->faculty_id)?->nama ?? 'Fakultas Lain';
                         throw ValidationException::withMessages([
                             'kelompok_id' => "Kelompok ini khusus untuk mahasiswa {$facultyName}. Anda berasal dari fakultas yang berbeda.",
                         ]);
@@ -151,7 +155,7 @@ class RegistrationService
                             'status' => 'pending',
                             'registration_date' => now(),
                         ]);
-                    } catch (\Illuminate\Database\QueryException $e) {
+                    } catch (QueryException $e) {
                         // Handle unique constraint violation (race condition edge case)
                         if ($this->isUniqueConstraintViolation($e)) {
                             // Re-query to get the existing registration
@@ -311,8 +315,8 @@ class RegistrationService
 
     private function withRegistrationLocks(Mahasiswa $mahasiswa, int $periodeId, ?int $kelompokId, callable $callback): mixed
     {
-        $ttl = max(3, (int) \App\Models\KKN\SystemSetting::get('registration_lock_ttl_seconds', 8));
-        $wait = max(1, (int) \App\Models\KKN\SystemSetting::get('registration_lock_wait_seconds', 6));
+        $ttl = max(3, (int) SystemSetting::get('registration_lock_ttl_seconds', 8));
+        $wait = max(1, (int) SystemSetting::get('registration_lock_wait_seconds', 6));
         $store = Cache::store($this->lockStore());
 
         try {
@@ -379,7 +383,7 @@ class RegistrationService
      * Check if a QueryException is a unique constraint violation.
      * FIX C12 & C14: Used to handle race condition edge cases gracefully.
      */
-    private function isUniqueConstraintViolation(\Illuminate\Database\QueryException $e): bool
+    private function isUniqueConstraintViolation(QueryException $e): bool
     {
         $errorCode = $e->errorInfo[1] ?? null;
 

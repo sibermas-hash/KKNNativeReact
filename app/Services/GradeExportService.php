@@ -7,18 +7,21 @@ namespace App\Services;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Periode;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Response;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class GradeExportService
 {
     /**
      * Generate Excel for a single group or all groups in a period.
      */
-    public function exportExcel($kelompokKkn, array $students, ?int $periodId = null): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function exportExcel($kelompokKkn, array $students, ?int $periodId = null): StreamedResponse
     {
         $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
@@ -45,7 +48,7 @@ class GradeExportService
     /**
      * Generate PDF for a group or bulk period.
      */
-    public function exportPdf($kelompokKkn, array $students, ?int $periodId = null): \Illuminate\Http\Response
+    public function exportPdf($kelompokKkn, array $students, ?int $periodId = null): Response
     {
         if ($kelompokKkn === 'all') {
             $period = Periode::with('tahunAkademik')->findOrFail($periodId);
@@ -196,7 +199,7 @@ class GradeExportService
      * Memory-efficient ZIP export for multiple group PDFs.
      * Uses temporary files and row-level cursor to prevent memory exhaustion.
      */
-    public function exportZip(iterable $groups, callable $studentResolver): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    public function exportZip(iterable $groups, callable $studentResolver): BinaryFileResponse
     {
         // Increase execution time for potentially massive exports
         set_time_limit(600);
@@ -209,7 +212,7 @@ class GradeExportService
 
         // Ensure temporary directory exists
         $tempDir = storage_path('app/temp/exports_'.$timestamp);
-        if (!file_exists($tempDir)) {
+        if (! file_exists($tempDir)) {
             mkdir($tempDir, 0755, true);
         }
 
@@ -218,7 +221,7 @@ class GradeExportService
         if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
             foreach ($groups as $group) {
                 $students = $studentResolver($group);
-                
+
                 $pdf = Pdf::loadView('admin.exports.blanko_nilai', [
                     'group' => $group,
                     'students' => $students,
@@ -227,12 +230,12 @@ class GradeExportService
                 ]);
 
                 $pdfName = "Blanko_Penilaian_Kelompok_{$group->code}.pdf";
-                $tempPdfPath = $tempDir . '/' . $pdfName;
-                
+                $tempPdfPath = $tempDir.'/'.$pdfName;
+
                 // Save to disk instead of injecting large strings into ZipArchive memory
                 $pdf->save($tempPdfPath);
                 $zip->addFile($tempPdfPath, $pdfName);
-                
+
                 $filesToCleanup[] = $tempPdfPath;
 
                 // SURGICAL MEMORY MANAGEMENT: Clear DOMPDF objects and trigger GC
@@ -246,9 +249,13 @@ class GradeExportService
 
         // Cleanup temporary files after ZIP is closed (important!)
         foreach ($filesToCleanup as $file) {
-            if (file_exists($file)) unlink($file);
+            if (file_exists($file)) {
+                unlink($file);
+            }
         }
-        if (file_exists($tempDir)) rmdir($tempDir);
+        if (file_exists($tempDir)) {
+            rmdir($tempDir);
+        }
 
         return response()->download($zipPath)->deleteFileAfterSend(true);
     }

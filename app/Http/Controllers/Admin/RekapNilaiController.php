@@ -6,18 +6,26 @@ namespace App\Http\Controllers\Admin;
 
 use App\Exports\RekapNilaiExport;
 use App\Http\Controllers\Controller;
+use App\Jobs\GenerateMassCertificatesJob;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\Periode;
+use App\Notifications\KknActivityNotification;
 use App\Repositories\KknScoreRepository;
 use App\Services\CertificateService;
 use App\Services\GradingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class RekapNilaiController extends Controller
 {
@@ -160,7 +168,7 @@ class RekapNilaiController extends Controller
         $score->update(['is_finalized' => true]);
 
         if ($score->mahasiswa?->user) {
-            $score->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
+            $score->mahasiswa->user->notify(new KknActivityNotification([
                 'type' => 'success',
                 'title' => 'Nilai KKN Difinalisasi',
                 'message' => 'Nilai KKN Anda telah difinalisasi oleh Admin LPPM. Silakan unduh sertifikat.',
@@ -177,7 +185,7 @@ class RekapNilaiController extends Controller
         $this->authorize('bulkFinalize', NilaiKkn::class);
         $periodId = $request->integer('period_id');
 
-        $progress = \Illuminate\Support\Facades\Cache::get("finalize_progress_{$periodId}");
+        $progress = Cache::get("finalize_progress_{$periodId}");
 
         return response()->json($progress);
     }
@@ -204,7 +212,7 @@ class RekapNilaiController extends Controller
         $periodeId = $request->integer('period_id');
         $filters = $request->only(['faculty_id', 'kelompok_id']);
 
-        \App\Jobs\GenerateMassCertificatesJob::dispatch(
+        GenerateMassCertificatesJob::dispatch(
             $periodeId,
             $filters,
             auth()->id()
@@ -220,7 +228,7 @@ class RekapNilaiController extends Controller
         $adminId = auth()->id();
 
         $cacheKey = "cert_progress_{$periodId}_{$adminId}";
-        $progress = \Illuminate\Support\Facades\Cache::get($cacheKey);
+        $progress = Cache::get($cacheKey);
 
         return response()->json($progress);
     }
@@ -384,7 +392,7 @@ class RekapNilaiController extends Controller
         if (! $periode) {
             return back()->with('error', 'Periode rekap nilai tidak ditemukan.');
         }
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
+        $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
         // Headers
@@ -398,7 +406,7 @@ class RekapNilaiController extends Controller
         // Styling header
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => '1E40AF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => '1E40AF']],
         ];
         $sheet->getStyle('A1:L1')->applyFromArray($headerStyle);
 
@@ -444,7 +452,7 @@ class RekapNilaiController extends Controller
         $facultyId = $validated['faculty_id'] ?? null;
         $facultyName = $facultyId ? Fakultas::find($facultyId)?->nama : 'Semua';
         $filename = "Ledger_Nilai_KKN_{$periode->name}_{$facultyName}_".date('Y-m-d_His').'.xlsx';
-        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $writer = new Xlsx($spreadsheet);
 
         // SECURITY: Use Laravel's storage path instead of system temp directory
         $exportDir = storage_path('framework/cache/exports');
@@ -452,7 +460,7 @@ class RekapNilaiController extends Controller
             mkdir($exportDir, 0750, true);
         }
 
-        $tempFile = $exportDir.'/'.\Illuminate\Support\Str::uuid().'.xlsx';
+        $tempFile = $exportDir.'/'.Str::uuid().'.xlsx';
         try {
             $writer->save($tempFile);
 
@@ -461,7 +469,7 @@ class RekapNilaiController extends Controller
             if (file_exists($tempFile)) {
                 unlink($tempFile);
             }
-            \Illuminate\Support\Facades\Log::error('Ledger export failed', ['exception' => $e]);
+            Log::error('Ledger export failed', ['exception' => $e]);
             abort(500, 'Gagal mengekspor ledger nilai.');
         }
     }

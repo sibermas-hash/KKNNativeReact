@@ -4,9 +4,9 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
@@ -21,8 +21,9 @@ class DummyKKN56Seeder extends Seeder
 
     private function seedData(): void
     {
-        if (!app()->environment('local', 'testing')) {
+        if (! app()->environment('local', 'testing')) {
             $this->command->error('This seeder can only run in local or testing environment.');
+
             return;
         }
 
@@ -187,7 +188,7 @@ class DummyKKN56Seeder extends Seeder
             $nip = "19800101202501100$i";
             $email = "dpl$i@uinsaizu.ac.id";
             $existing = DB::table('users')->where('username', $nip)->orWhere('email', $email)->first();
-            if (!$existing) {
+            if (! $existing) {
                 $userId = DB::table('users')->insertGetId([
                     'username' => $nip, 'name' => "Dr. DPL Simulator $i, M.Ag",
                     'email' => $email, 'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', Str::random(32))),
@@ -211,10 +212,10 @@ class DummyKKN56Seeder extends Seeder
         // STEP 6: MAHASISWA (50 orang)
         // ═══════════════════════════════════════════════════
         for ($i = 1; $i <= 50; $i++) {
-            $nim = '21' . '174090' . str_pad($i, 3, '0', STR_PAD_LEFT);
+            $nim = '21'.'174090'.str_pad($i, 3, '0', STR_PAD_LEFT);
             $email = "student$i@mhs.uinsaizu.ac.id";
             $existing = DB::table('users')->where('username', $nim)->orWhere('email', $email)->first();
-            if (!$existing) {
+            if (! $existing) {
                 $userId = DB::table('users')->insertGetId([
                     'username' => $nim, 'name' => "Mahasiswa Dummy $i",
                     'email' => $email,
@@ -227,7 +228,7 @@ class DummyKKN56Seeder extends Seeder
             }
             DB::table('mahasiswa')->updateOrInsert(['user_id' => $userId], [
                 'nim' => $nim, 'nama' => "Mahasiswa Dummy $i",
-                'faculty_id' => ($i % 5) + 1, 
+                'faculty_id' => ($i % 5) + 1,
                 'program_id' => ($i % 5) + 1,
                 'batch_year' => 2021,
                 'sks_completed' => rand(100, 140),
@@ -238,8 +239,8 @@ class DummyKKN56Seeder extends Seeder
                 'semester' => 7,
                 'health_certificate_path' => 'dummy/health_'.$i.'.pdf',
                 'parent_permission_path' => 'dummy/parent_'.$i.'.pdf',
-                'nik' => '330101' . str_pad((string)$i, 10, '0', STR_PAD_LEFT),
-                'mother_name' => 'Ibu Mandatori ' . $i,
+                'nik' => '330101'.str_pad((string) $i, 10, '0', STR_PAD_LEFT),
+                'mother_name' => 'Ibu Mandatori '.$i,
                 'birth_place' => 'Purwokerto',
                 'birth_date' => '2003-01-01',
                 'created_at' => now(), 'updated_at' => now(),

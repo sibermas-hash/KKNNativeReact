@@ -36,7 +36,7 @@ return new class extends Migration
 
     private function convertMasterIdToString(string $table): void
     {
-        if (!Schema::hasTable($table) || !Schema::hasColumn($table, 'master_id')) {
+        if (! Schema::hasTable($table) || ! Schema::hasColumn($table, 'master_id')) {
             return;
         }
 
@@ -45,7 +45,7 @@ return new class extends Migration
 
     private function convertMasterIdToBigInt(string $table): void
     {
-        if (!Schema::hasTable($table) || !Schema::hasColumn($table, 'master_id')) {
+        if (! Schema::hasTable($table) || ! Schema::hasColumn($table, 'master_id')) {
             return;
         }
 

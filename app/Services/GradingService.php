@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\KknType;
+use App\Jobs\FinalizeMassScoresJob;
+use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\KonfigurasiPenilaian;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\NilaiKkn;
+use App\Services\KKN\GradeConversionService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -80,15 +84,19 @@ class GradingService
         $period = $score->kelompok?->periode;
 
         // Resolve KKN Type for config lookup
-        $kknType = $period?->jenis instanceof \App\Enums\KknType
+        $kknType = $period?->jenis instanceof KknType
             ? $period->jenis
-            : \App\Enums\KknType::tryFrom($period?->jenis) ?? \App\Enums\KknType::REGULER;
+            : KknType::tryFrom($period?->jenis) ?? KknType::REGULER;
 
-        // Load configs from DB (cached)
+        // Load configs from DB (cached) with fallback
         $cacheKey = 'grading_configs_'.$kknType->value;
-        $configs = Cache::remember($cacheKey, 3600, function () use ($kknType) {
-            return KonfigurasiPenilaian::getForType($kknType)->pluck('percentage', 'config_key');
-        });
+        try {
+            $configs = Cache::remember($cacheKey, 3600, function () use ($kknType) {
+                return KonfigurasiPenilaian::getForType($kknType)->pluck('percentage', 'config_key');
+            });
+        } catch (\Throwable $e) {
+            $configs = [];
+        }
 
         // 1. Calculate Component A (DPL)
         $aRaw = (
@@ -109,15 +117,19 @@ class GradingService
         // SURGICAL CLEANUP: LPPM component is now 100% based on Administration Score
         $cRaw = floatval($score->administration_score ?? 0);
 
-        // 4. Apply Main Weights
-        $aWeighted = $aRaw * (floatval($configs['weight_main_dpl'] ?? 40) / 100);
-        $bWeighted = $bRaw * (floatval($configs['weight_main_village'] ?? 20) / 100);
-        $cWeighted = $cRaw * (floatval($configs['weight_main_lppm'] ?? 40) / 100);
+        // 4. Apply Main Weights with defensive division by zero check
+        $dplWeight = floatval($configs['weight_main_dpl'] ?? 40);
+        $villageWeight = floatval($configs['weight_main_village'] ?? 20);
+        $lppmWeight = floatval($configs['weight_main_lppm'] ?? 40);
+
+        $aWeighted = $aRaw * ($dplWeight > 0 ? $dplWeight / 100 : 0);
+        $bWeighted = $bRaw * ($villageWeight > 0 ? $villageWeight / 100 : 0);
+        $cWeighted = $cRaw * ($lppmWeight > 0 ? $lppmWeight / 100 : 0);
 
         $totalScore = $aWeighted + $bWeighted + $cWeighted;
 
         // Determine letter grade from centralized service
-        $gradeData = \App\Services\KKN\GradeConversionService::convert($totalScore);
+        $gradeData = GradeConversionService::convert($totalScore);
 
         // Update score record
         NilaiKkn::where('id', $score->id)->update([
@@ -140,7 +152,7 @@ class GradingService
      */
     public static function determineLetterGrade(float $totalScore): string
     {
-        return \App\Services\KKN\GradeConversionService::convert($totalScore)['grade'];
+        return GradeConversionService::convert($totalScore)['grade'];
     }
 
     /**
@@ -202,7 +214,7 @@ class GradingService
 
             $this->calculateFinalGrade($score);
 
-            \App\Services\AuditService::log(
+            AuditService::log(
                 'UPDATE_SCORE_ADMIN',
                 'Admin mengupdate komponen nilai secara manual: '.json_encode($components),
                 $score,
@@ -231,7 +243,7 @@ class GradingService
             'started_at' => now(),
         ], 3600);
 
-        \App\Jobs\FinalizeMassScoresJob::dispatch($periodId, auth()->id());
+        FinalizeMassScoresJob::dispatch($periodId, auth()->id());
     }
 
     /**
@@ -240,7 +252,7 @@ class GradingService
     public function getAiPerformanceSummary(int $studentId): array
     {
         return Cache::remember("ai_performance_v3_{$studentId}", 3600, function () use ($studentId) {
-            $activities = \App\Models\KKN\KegiatanKkn::where('mahasiswa_id', $studentId)
+            $activities = KegiatanKkn::where('mahasiswa_id', $studentId)
                 ->where('status', 'approved')
                 ->whereNotNull('ai_analysis')
                 ->get();
@@ -256,10 +268,10 @@ class GradingService
                 ];
             }
 
-            $avgCompliance = $activities->avg(fn($a) => ($a->ai_analysis['abcd_compliance'] ?? 0));
-            $avgQuality = $activities->avg(fn($a) => ($a->ai_analysis['quality_score'] ?? 0));
-            
-            $tags = $activities->flatMap(fn($a) => $a->ai_analysis['tags'] ?? [])
+            $avgCompliance = $activities->avg(fn ($a) => ($a->ai_analysis['abcd_compliance'] ?? 0));
+            $avgQuality = $activities->avg(fn ($a) => ($a->ai_analysis['quality_score'] ?? 0));
+
+            $tags = $activities->flatMap(fn ($a) => $a->ai_analysis['tags'] ?? [])
                 ->countBy()
                 ->sortDesc()
                 ->take(3)
@@ -267,7 +279,7 @@ class GradingService
                 ->toArray();
 
             $rawScore = ($avgCompliance * 7) + ($avgQuality * 3);
-            
+
             return [
                 'has_data' => true,
                 'avg_compliance' => round($avgCompliance, 1),

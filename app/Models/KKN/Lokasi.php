@@ -6,16 +6,16 @@ namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-use Illuminate\Database\Eloquent\Attributes\Connection;
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Casts;
+class Lokasi extends Model
+{
+    protected $connection = 'kkn';
 
-#[Connection('kkn')]
-#[Table('lokasi')]
-#[Fillable([
+    protected $table = 'lokasi';
+
+    protected $fillable = [
     'province_id',
     'regency_id',
     'district_id',
@@ -28,19 +28,19 @@ use Illuminate\Database\Eloquent\Attributes\Casts;
     'longitude',
     'capacity',
     'faculty_id',
-])]
-#[Casts([
+];
+
+    protected $casts = [
     'latitude' => 'decimal:8',
     'longitude' => 'decimal:8',
     'capacity' => 'integer',
-])]
-class Lokasi extends Model
-{
+];
+
     use HasFactory;
 
-    protected $appends = ['full_name'];
+    protected $appends = [];
 
-    public function fakultas(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function fakultas(): BelongsTo
     {
         return $this->belongsTo(Fakultas::class, 'faculty_id');
     }
@@ -50,8 +50,9 @@ class Lokasi extends Model
         return $this->hasMany(KelompokKkn::class, 'location_id');
     }
 
-    public string $full_name {
-        get => collect([
+    public function getFullNameAttribute(): string
+    {
+        return collect([
             $this->village_name,
             $this->district_name,
             $this->regency_name,

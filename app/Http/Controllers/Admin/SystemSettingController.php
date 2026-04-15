@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\SystemSetting;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -38,15 +39,19 @@ class SystemSettingController extends Controller
         $settings = SystemSetting::query()->whereIn('group', ['master_api', 'general', 'ai_settings', 'storage_settings', 'registration_rules', 'content_settings'])->get();
 
         // Mask secret values for display (only show last 4 chars)
+        // But keep original value for editing - FE will handle masking on input focus
         $settings->transform(function ($setting) {
             if (in_array($setting->config_key, self::SECRET_KEYS) && $setting->value) {
                 try {
                     $decrypted = Crypt::decryptString($setting->value);
-                    $setting->value = str_repeat('*', max(0, strlen($decrypted) - 4)).substr($decrypted, -4);
+                    $setting->masked_value = str_repeat('*', max(0, strlen($decrypted) - 4)).substr($decrypted, -4);
                     $setting->is_secret = true;
-                } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
-                    $setting->value = '********';
+                    // Keep original decrypted value for form editing
+                    $setting->value = $decrypted;
+                } catch (DecryptException $e) {
+                    $setting->masked_value = '********';
                     $setting->is_secret = true;
+                    $setting->value = '';
                 }
             }
 

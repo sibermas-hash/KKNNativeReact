@@ -9,9 +9,11 @@ use App\Http\Controllers\Controller;
 use App\Models\KKN\FileKegiatanKkn;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\KelompokKkn;
+use App\Notifications\KknActivityNotification;
 use App\Services\GeoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -44,7 +46,7 @@ class DailyReportController extends Controller
         return null;
     }
 
-    private function assignedGroupIds(): \Illuminate\Support\Collection
+    private function assignedGroupIds(): Collection
     {
         $dosen = auth()->user()->dosen;
         abort_if(! $dosen, 403, 'Data dosen tidak ditemukan.');
@@ -249,7 +251,7 @@ class DailyReportController extends Controller
 
         // Notify student
         if ($dailyReport->mahasiswa?->user) {
-            $dailyReport->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
+            $dailyReport->mahasiswa->user->notify(new KknActivityNotification([
                 'type' => 'success',
                 'title' => 'Laporan Harian Disetujui',
                 'message' => 'Laporan harian Anda tanggal '.$dailyReport->date->format('d/m/Y').' telah disetujui.',
@@ -283,7 +285,7 @@ class DailyReportController extends Controller
 
         // Notify student
         if ($dailyReport->mahasiswa?->user) {
-            $dailyReport->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
+            $dailyReport->mahasiswa->user->notify(new KknActivityNotification([
                 'type' => 'warning',
                 'title' => 'Revisi Laporan Harian',
                 'message' => 'Laporan harian Anda tanggal '.$dailyReport->date->format('d/m/Y').' memerlukan revisi.',

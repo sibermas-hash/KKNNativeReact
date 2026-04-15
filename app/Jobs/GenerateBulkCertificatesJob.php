@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs;
 
 use App\Models\KKN\NilaiKkn;
@@ -11,7 +13,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 
 class GenerateBulkCertificatesJob implements ShouldQueue
@@ -48,24 +49,25 @@ class GenerateBulkCertificatesJob implements ShouldQueue
 
             if ($nilaiRecords->isEmpty()) {
                 Log::warning("GenerateBulkCertificatesJob: No records found for period {$this->periodeId}");
+
                 return;
             }
 
-            $zipName = "Sertifikat_Massal_KKN_Periode_{$this->periodeId}_" . now()->timestamp . ".zip";
+            $zipName = "Sertifikat_Massal_KKN_Periode_{$this->periodeId}_".now()->timestamp.'.zip';
             $zipPath = storage_path("app/tmp/{$zipName}");
-            
-            if (!is_dir(storage_path('app/tmp'))) {
+
+            if (! is_dir(storage_path('app/tmp'))) {
                 mkdir(storage_path('app/tmp'), 0755, true);
             }
 
-            $zip = new ZipArchive();
+            $zip = new ZipArchive;
             if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
                 throw new \Exception("Cannot create ZIP file at {$zipPath}");
             }
 
             foreach ($nilaiRecords as $nilai) {
                 $pdf = $service->generateCertificatePdf($nilai);
-                $fileName = "Sertifikat_" . str_replace(' ', '_', $nilai->mahasiswa->nama) . "_{$nilai->mahasiswa->nim}.pdf";
+                $fileName = 'Sertifikat_'.str_replace(' ', '_', $nilai->mahasiswa->nama)."_{$nilai->mahasiswa->nim}.pdf";
                 $zip->addFromString($fileName, $pdf->output());
             }
 
@@ -73,12 +75,12 @@ class GenerateBulkCertificatesJob implements ShouldQueue
 
             // Notify user or store in a downloads table
             Log::info("GenerateBulkCertificatesJob: ZIP created successfully at {$zipPath}");
-            
+
             // Note: In a real system, you'd store this in a 'downloads' table for the user to pick up later.
             // For now, we've successfully moved the heavy logic out of the web request.
 
         } catch (\Exception $e) {
-            Log::error("GenerateBulkCertificatesJob failed: " . $e->getMessage());
+            Log::error('GenerateBulkCertificatesJob failed: '.$e->getMessage());
             throw $e;
         }
     }

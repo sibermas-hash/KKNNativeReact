@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\KKN\Mahasiswa;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +17,7 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
-    private function domicileSummary(\App\Models\User $user): array
+    private function domicileSummary(User $user): array
     {
         $required = [
             'address' => $user->address,
@@ -74,7 +76,7 @@ class ProfileController extends Controller
             'address' => 'Alamat lengkap',
         ];
 
-        $missingBpjsFields = collect($requiredBpjsFields)
+        $missingBiodataFields = collect($requiredBpjsFields)
             ->filter(fn ($value) => blank($value))
             ->keys()
             ->map(fn (string $key) => $labels[$key] ?? $key)
@@ -113,8 +115,8 @@ class ProfileController extends Controller
                 'semester' => $student->semester,
                 'gpa' => $student->gpa,
                 'sks_completed' => $student->sks_completed,
-                'bpjs_complete' => $missingBpjsFields === [],
-                'missing_bpjs_fields' => $missingBpjsFields,
+                'biodata_complete' => $missingBiodataFields === [],
+                'missing_biodata_fields' => $missingBiodataFields,
                 'domicile_complete' => $domicileSummary['is_complete'],
                 'domicile_verified' => $domicileSummary['is_verified'],
                 'domicile_verified_at' => $domicileSummary['verified_at'],
@@ -184,7 +186,7 @@ class ProfileController extends Controller
             $user->save();
 
             if ($user->mahasiswa) {
-                $mahasiswa = \App\Models\KKN\Mahasiswa::where('user_id', $user->id)->lockForUpdate()->first();
+                $mahasiswa = Mahasiswa::where('user_id', $user->id)->lockForUpdate()->first();
                 if ($mahasiswa) {
                     $mahasiswa->fill([
                         'nama' => $validated['name'],

@@ -6,13 +6,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\KegiatanKkn;
+use App\Services\KKN\FacultyScopeService;
+use App\Traits\HandlesPagination;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class KegiatanKknController extends Controller
 {
-    use \App\Traits\HandlesPagination;
+    use HandlesPagination;
 
     public function index(Request $request): Response
     {
@@ -29,7 +31,7 @@ class KegiatanKknController extends Controller
             ->when($status, fn ($q) => $q->where('status', $status));
 
         // Centralized faculty scoping
-        $paginator = \App\Services\KKN\FacultyScopeService::apply($query, 'mahasiswa.faculty_id')
+        $paginator = FacultyScopeService::apply($query, 'mahasiswa.faculty_id')
             ->orderByDesc('date')
             ->paginate(15)
             ->withQueryString();

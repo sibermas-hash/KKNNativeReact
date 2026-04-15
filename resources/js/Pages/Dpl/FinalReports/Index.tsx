@@ -31,37 +31,37 @@ export default function DplFinalReportsIndex({ reports }: Props) {
  <Head title="Laporan Akhir Mahasiswa" />
 
  <div className="space-y-8">
- <section className="rounded-lg border border-slate-200 bg-white p-8">
- <h1 className="text-2xl font-semibold text-gray-900">Laporan Akhir Mahasiswa</h1>
- <p className="mt-2 text-sm text-gray-500">
+ <section className="rounded-lg border border-emerald-100/60 bg-white p-8">
+ <h1 className="text-2xl font-semibold text-black">Laporan Akhir Mahasiswa</h1>
+ <p className="mt-2 text-sm text-emerald-950">
  Dokumen laporan akhir dari kelompok yang Anda dampingi.
  </p>
  </section>
 
- <section className="overflow-hidden rounded-lg border border-slate-200 bg-white">
- <table className="min-w-full divide-y divide-slate-200">
- <thead className="bg-slate-50">
+ <section className="overflow-hidden rounded-lg border border-emerald-100/60 bg-white">
+ <table className="min-w-full divide-y divide-emerald-100/60">
+ <thead className="bg-emerald-50/30">
  <tr>
- <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">Laporan</th>
- <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">Mahasiswa</th>
- <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">Kelompok</th>
- <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">Status</th>
- <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500">Aksi</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-emerald-950">Laporan</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-emerald-950">Mahasiswa</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-emerald-950">Kelompok</th>
+ <th className="px-6 py-3 text-left text-xs font-semibold text-emerald-950">Status</th>
+ <th className="px-6 py-3 text-right text-xs font-semibold text-emerald-950">Aksi</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-slate-100">
+ <tbody className="divide-y divide-emerald-100/60">
  {rows.length > 0 ? (
  rows.map((report) => (
  <tr key={report.id}>
  <td className="px-6 py-4">
- <p className="text-sm font-medium text-gray-900">{report.title}</p>
- <p className="text-xs text-gray-500">{report.submitted_at ?? 'Belum tercatat'}</p>
+ <p className="text-sm font-medium text-black">{report.title}</p>
+ <p className="text-xs text-emerald-950">{report.submitted_at ?? 'Belum tercatat'}</p>
  </td>
  <td className="px-6 py-4">
- <p className="text-sm text-gray-800">{report.mahasiswa?.nama ?? '-'}</p>
- <p className="text-xs text-gray-500">{report.mahasiswa?.nim ?? '-'}</p>
+ <p className="text-sm text-black">{report.mahasiswa?.nama ?? '-'}</p>
+ <p className="text-xs text-emerald-950">{report.mahasiswa?.nim ?? '-'}</p>
  </td>
- <td className="px-6 py-4 text-sm text-gray-600">{report.kelompok?.nama_kelompok ?? '-'}</td>
+ <td className="px-6 py-4 text-sm text-emerald-950">{report.kelompok?.nama_kelompok ?? '-'}</td>
  <td className="px-6 py-4">
  <StatusBadge status={report.status} />
  </td>
@@ -72,7 +72,7 @@ export default function DplFinalReportsIndex({ reports }: Props) {
  ))
  ) : (
  <tr>
- <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-500">
+ <td colSpan={5} className="px-6 py-6 text-center text-sm text-emerald-950">
  Belum ada laporan akhir yang masuk.
  </td>
  </tr>

@@ -3,8 +3,8 @@
 namespace Tests\Feature\DailyReports;
 
 use App\Models\KelompokKkn;
-use App\Models\User;
 use App\Models\PesertaKkn;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,7 +17,7 @@ class DailyReportAuthorizationTest extends TestCase
     {
         $user = User::factory()->create();
         $user->assignRole('mahasiswa');
-        
+
         $group = KelompokKkn::factory()->create();
         $peserta = PesertaKkn::factory()->create([
             'user_id' => $user->id,
@@ -35,7 +35,7 @@ class DailyReportAuthorizationTest extends TestCase
     {
         $student = User::factory()->create();
         $student->assignRole('mahasiswa');
-        
+
         $group = KelompokKkn::factory()->create();
         // Don't add student to group
 
@@ -49,12 +49,12 @@ class DailyReportAuthorizationTest extends TestCase
     {
         $student1 = User::factory()->create();
         $student1->assignRole('mahasiswa');
-        
+
         $student2 = User::factory()->create();
         $student2->assignRole('mahasiswa');
 
         $group = KelompokKkn::factory()->create();
-        
+
         PesertaKkn::factory()->create([
             'user_id' => $student1->id,
             'kelompok_id' => $group->id,

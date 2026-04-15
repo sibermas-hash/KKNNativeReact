@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\KKN\Lokasi;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\PoskoKelompok;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -332,7 +334,7 @@ class PoskoController extends Controller
         });
     }
 
-    private function matchesAssignedLocation(\App\Models\KKN\Lokasi $location, array $resolvedAddress): bool
+    private function matchesAssignedLocation(Lokasi $location, array $resolvedAddress): bool
     {
         $resolvedTokens = collect($resolvedAddress['raw'] ?? [])
             ->map(fn ($value) => $this->normalizeAdministrativeName($value))
@@ -348,7 +350,7 @@ class PoskoController extends Controller
             && $this->tokenMatches($resolvedTokens, $expectedRegency);
     }
 
-    private function tokenMatches(\Illuminate\Support\Collection $tokens, ?string $expected): bool
+    private function tokenMatches(Collection $tokens, ?string $expected): bool
     {
         if (! $expected) {
             return true;

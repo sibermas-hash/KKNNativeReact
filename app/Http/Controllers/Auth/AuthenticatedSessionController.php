@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -63,6 +64,8 @@ class AuthenticatedSessionController extends Controller
 
     public function store(LoginRequest $request): RedirectResponse
     {
+        \Log::info('Login Attempt Started', ['login' => $request->input('login')]);
+        
         // Ensure session is started and regenerate token for security
         if (! $request->session()->isStarted()) {
             $request->session()->start();
@@ -77,10 +80,8 @@ class AuthenticatedSessionController extends Controller
 
         // Verify captcha hash existence and strict TTL enforcement
         if (! $captchaHash || $this->captchaExpired($request) || ! $this->verifyCaptchaAnswer($userAnswer, $captchaHash)) {
+            \Log::warning('Login Captcha Failed', ['userAnswer' => $userAnswer, 'hash_exists' => (bool)$captchaHash]);
             $this->refreshCaptcha($request);
-
-            // Regenerate CSRF token to prevent "page expired" loop
-            $request->session()->regenerateToken();
 
             return back()->withErrors([
                 'captcha_answer' => 'Verifikasi keamanan kedaluwarsa atau salah.',
@@ -88,38 +89,53 @@ class AuthenticatedSessionController extends Controller
         }
 
         try {
+            \Log::info('Authenticating user...');
             $request->authenticate();
+            \Log::info('Authentication passed.');
         } catch (ValidationException $e) {
+            \Log::warning('Validation Exception during auth', ['errors' => $e->errors()]);
             $this->refreshCaptcha($request);
-
-            // Regenerate CSRF token on auth failure
             $request->session()->regenerateToken();
-
             throw $e;
         } catch (\Throwable $e) {
             \Log::error('Authentication error during login attempt', [
                 'login_identifier' => $request->input('login'),
-                'ip' => $request->ip(),
                 'error' => $e->getMessage(),
                 'trace' => config('app.debug') ? $e->getTraceAsString() : null,
             ]);
 
             $this->refreshCaptcha($request);
-
-            // Regenerate CSRF token on unexpected error
             $request->session()->regenerateToken();
 
             return back()->withErrors([
-                'login' => 'Gagal masuk ke sistem. Silakan coba lagi.',
+                'login' => 'Gagal masuk ke sistem. Silakan coba lagi. ' . $e->getMessage(),
             ])->withInput($request->except('password', 'captcha_answer'));
         }
 
         $request->session()->regenerate();
-
-        // Clean up captcha from session
         $request->session()->forget(['captcha_hash', 'captcha_question', 'captcha_generated_at']);
 
-        return redirect()->intended(route('dashboard'));
+        /** @var User $user */
+        $user = auth()->user();
+        \Log::info('User authenticated successfully', ['user_id' => $user->id, 'roles' => $user->getRoleNames()]);
+
+        if ($user->hasRole(['superadmin', 'admin', 'faculty_admin'])) {
+            \Log::info('Redirecting to admin dashboard');
+            return redirect()->intended(route('admin.dashboard'));
+        }
+
+        if ($user->hasRole('dpl')) {
+            \Log::info('Redirecting to DPL dashboard');
+            return redirect()->intended(route('dpl.dashboard', absolute: false));
+        }
+
+        if ($user->hasRole('student')) {
+            \Log::info('Redirecting to student dashboard');
+            return redirect()->intended(route('student.dashboard', absolute: false));
+        }
+
+        \Log::warning('User has no matching roles, redirecting to home', ['user_id' => $user->id]);
+        return redirect()->intended('/');
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -129,7 +145,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login');
+        return redirect()->route('home');
     }
 
     /**

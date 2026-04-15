@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Observers;
 
 use App\Models\KKN\LogAudit;
@@ -24,7 +26,7 @@ class AuditObserver
 
     private function log(string $action, Model $model): void
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return;
         }
 

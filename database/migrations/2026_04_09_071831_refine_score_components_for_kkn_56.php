@@ -40,7 +40,7 @@ return new class extends Migration
                 'dpl_ketercapaian_score',
                 'dpl_inovasi_score',
                 'dpl_administrasi_score',
-                'dpl_artikel_score'
+                'dpl_artikel_score',
             ]);
         });
     }

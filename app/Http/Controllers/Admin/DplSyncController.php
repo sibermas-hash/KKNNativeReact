@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\PasswordHelper;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\Fakultas;
+use App\Models\User;
 use App\Services\MasterApiService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,6 +34,7 @@ class DplSyncController extends Controller
             'summary' => [
                 'local_lecturers' => Dosen::count(),
                 'with_master_link' => Dosen::whereNotNull('master_id')->count(),
+                'with_user_account' => Dosen::whereNotNull('user_id')->count(),
                 'last_synced_at' => Dosen::query()
                     ->whereNotNull('master_synced_at')
                     ->max('master_synced_at'),
@@ -64,12 +70,12 @@ class DplSyncController extends Controller
 
             return back()->with(
                 'success',
-                "Berhasil {$modeLabel}: {$results['synced']} dosen sinkron, {$results['errors']} gagal dari total {$results['total']} data. Akun login tidak dibuat otomatis."
+                "Berhasil {$modeLabel}: {$results['synced']} dosen sinkron, {$results['errors']} gagal dari total {$results['total']} data. Akun login dibuat otomatis."
             );
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('DPL sync failed', ['error' => $e->getMessage()]);
+            Log::error('DPL sync failed', ['error' => $e->getMessage()]);
 
-            return back()->with('error', 'Gagal melakukan sinkronisasi: ' . $e->getMessage());
+            return back()->with('error', 'Gagal melakukan sinkronisasi: '.$e->getMessage());
         }
     }
 
@@ -79,10 +85,13 @@ class DplSyncController extends Controller
         $errors = 0;
         $total = 0;
 
+        $facultyMap = Fakultas::query()->pluck('id', 'master_id');
+        $defaultFacultyId = Fakultas::query()->orderBy('id')->value('id');
+
         foreach ($externalDosen as $dosen) {
             $total++;
             $nip = trim((string) ($dosen['nip'] ?? ''));
-            $name = trim((string) ($dosen['name'] ?? ''));
+            $name = trim((string) ($dosen['name'] ?? $dosen['nama'] ?? ''));
 
             if ($nip === '' || $name === '') {
                 $errors++;
@@ -91,38 +100,65 @@ class DplSyncController extends Controller
             }
 
             try {
-                $facultyId = null;
-                $organizationMasterId = $this->normalizeMasterId($dosen['organization_id'] ?? null);
+                DB::transaction(function () use ($dosen, $nip, $name, $facultyMap, $defaultFacultyId, &$synced) {
+                    $organizationMasterId = $this->normalizeMasterId($dosen['organization_id'] ?? null);
+                    $facultyId = $organizationMasterId !== null ? ($facultyMap[$organizationMasterId] ?? null) : null;
 
-                if ($organizationMasterId !== null) {
-                    $facultyId = Fakultas::where('master_id', $organizationMasterId)->value('id');
-                }
+                    if (! $facultyId) {
+                        $facultyId = $defaultFacultyId;
+                    }
 
-                if (! $facultyId) {
-                    $facultyId = Fakultas::query()->value('id');
-                }
+                    if (! $facultyId) {
+                        throw new \RuntimeException('Master fakultas belum tersedia untuk pemetaan dosen.');
+                    }
 
-                if (! $facultyId) {
-                    throw new \RuntimeException('Master fakultas belum tersedia untuk pemetaan dosen.');
-                }
+                    $username = (string) $nip;
+                    $incomingEmail = $dosen['email'] ?? null;
+                    $fallbackEmail = $username.'@kkn.local';
 
-                Dosen::updateOrCreate(
-                    ['nip' => $nip],
-                    [
-                        'nama' => $name,
-                        'birth_date' => $dosen['birth_date'] ?? null,
-                        'gender' => $dosen['gender'] ?? null,
-                        'faculty_id' => $facultyId,
-                        'master_id' => $this->normalizeMasterId($dosen['id'] ?? $dosen['master_id'] ?? null),
-                        'master_synced_at' => now(),
-                    ]
-                );
+                    $user = User::firstOrNew(['username' => $username]);
+                    $isNewUser = ! $user->exists;
 
-                $synced++;
+                    if ($isNewUser) {
+                        $user->email = ! empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
+                        $birthDate = $dosen['birth_date'] ?? $dosen['tanggal_lahir'] ?? null;
+                        $user->password = Hash::make(
+                            PasswordHelper::fromBirthDate($birthDate, $username)
+                        );
+                    } elseif (empty($user->email)) {
+                        $user->email = ! empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
+                    }
+
+                    $user->username = $username;
+                    $user->name = $name;
+                    $user->save();
+
+                    if (! $user->hasRole('dpl')) {
+                        $user->assignRole('dpl');
+                    }
+
+                    Dosen::updateOrCreate(
+                        ['nip' => $nip],
+                        [
+                            'user_id' => $user->id,
+                            'nama' => $name,
+                            'birth_date' => $dosen['birth_date'] ?? $dosen['tanggal_lahir'] ?? null,
+                            'gender' => $dosen['gender'] ?? $dosen['jenis_kelamin'] ?? null,
+                            'faculty_id' => $facultyId,
+                            'phone' => $dosen['phone'] ?? $dosen['telepon'] ?? $dosen['no_hp'] ?? null,
+                            'is_cpns' => str_contains(strtoupper($dosen['status_pegawai'] ?? $dosen['employment_status'] ?? ''), 'CPNS'),
+                            'is_tugas_belajar' => str_contains(strtoupper($dosen['status_aktif'] ?? $dosen['active_status'] ?? 'AKTIF'), 'TUGAS BELAJAR'),
+                            'master_id' => $this->normalizeMasterId($dosen['id'] ?? $dosen['master_id'] ?? null),
+                            'master_synced_at' => now(),
+                        ]
+                    );
+
+                    $synced++;
+                });
             } catch (\Throwable $exception) {
                 $errors++;
 
-                \Illuminate\Support\Facades\Log::warning('DPL master record sync skipped', [
+                Log::warning('DPL master record sync skipped', [
                     'nip' => $nip,
                     'error' => $exception->getMessage(),
                 ]);

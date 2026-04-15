@@ -10,41 +10,31 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-use Illuminate\Database\Eloquent\Attributes\Connection;
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Casts;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-
-#[Connection('kkn')]
-#[Table('peserta_workshop')]
-#[Fillable([
-    'workshop_id',
-        'user_id',
-        'registered_at',
-        'attendance_status',
-        'checked_in_at',
-        'certificate_generated',
-        'certificate_path',
-        'certificate_issued_at',
-])]
-#[Casts([
-    'registered_at' => 'datetime',
-        'checked_in_at' => 'datetime',
-        'certificate_generated' => 'boolean',
-        'certificate_issued_at' => 'datetime',
-])]
 class PesertaWorkshop extends Model
 {
+    protected $connection = 'kkn';
+
+    protected $table = 'peserta_workshop';
+
+    protected $fillable = [
+    'workshop_id',
+    'user_id',
+    'registered_at',
+    'attendance_status',
+    'checked_in_at',
+    'certificate_generated',
+    'certificate_path',
+    'certificate_issued_at',
+];
+
+    protected $casts = [
+    'registered_at' => 'datetime',
+    'checked_in_at' => 'datetime',
+    'certificate_generated' => 'boolean',
+    'certificate_issued_at' => 'datetime',
+];
+
     use HasFactory;
-
-    
-
-    
-
-    
-
-    
 
     public function workshop(): BelongsTo
     {

@@ -1,9 +1,13 @@
 <?php
 
+use App\Http\Controllers\AiAssistantController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\PasswordResetController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CertificateController;
+use App\Http\Controllers\HealthController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -33,34 +37,36 @@ Route::middleware(['guest', 'kkn.throttle', 'disable.debugbar'])->group(function
 });
 
 // Home / Landing Page
-Route::get('/', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
-Route::get('/profil', [\App\Http\Controllers\HomeController::class, 'about'])->name('public.about');
-Route::get('/skema-kkn', [\App\Http\Controllers\HomeController::class, 'schemes'])->name('public.schemes');
-Route::get('/warta', [\App\Http\Controllers\HomeController::class, 'announcements'])->name('public.announcements');
-Route::get('/repositori', [\App\Http\Controllers\HomeController::class, 'downloads'])->name('public.downloads');
-Route::get('/cari-lokasi', [\App\Http\Controllers\HomeController::class, 'locations'])->name('public.locations');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/profil-lppm', [HomeController::class, 'about'])->name('public.about');
+Route::get('/skema-kkn', [HomeController::class, 'schemes'])->name('public.schemes');
+Route::get('/warta', [HomeController::class, 'announcements'])->name('public.announcements');
+Route::get('/repositori', [HomeController::class, 'downloads'])->name('public.downloads');
+Route::get('/cari-lokasi', [HomeController::class, 'locations'])->name('public.locations');
 
 // Health Check Endpoint
-Route::get('/health', [\App\Http\Controllers\HealthController::class, 'check'])->name('health');
-Route::get('/health/detailed', [\App\Http\Controllers\HealthController::class, 'detailed'])->name('health.detailed');
+Route::get('/health', [HealthController::class, 'check'])->name('health');
+Route::get('/health/detailed', [HealthController::class, 'detailed'])->name('health.detailed');
 
 // Public certificate verification
-Route::get('/certificates/verify/{token}', [\App\Http\Controllers\CertificateController::class, 'verify'])
+Route::get('/certificates/verify/{token}', [CertificateController::class, 'verify'])
     ->name('public.certificate.verify')
     ->middleware('throttle:20,1');
 
 // Authenticated routes
 Route::middleware(['auth', 'kkn.throttle'])->group(function () {
+    // Logout
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-    // Profil Saya
-    Route::get('/profil-saya', [ProfileController::class, 'show'])->name('profile.show');
-    Route::put('/profil-saya', [ProfileController::class, 'update'])->name('profile.update');
-    Route::post('/profil-saya/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
-    Route::post('/profil-saya/kata-sandi', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::get('/ai/history', [AiAssistantController::class, 'history'])->name('ai.history');
+    Route::post('/ai/clear', [AiAssistantController::class, 'clear'])->name('ai.clear');
+    Route::post('/ai/assistant', [AiAssistantController::class, 'chat'])->name('ai.assistant');
 
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::post('/ai/assistant', [App\Http\Controllers\AiAssistantController::class, 'chat'])->name('ai.assistant');
+    // User Profile Management
+    Route::get('/profil', [ProfileController::class, 'show'])->name('profile.show');
+    Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profil/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
+    Route::patch('/profil/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
     // Load role-based routes from separate files
     require __DIR__.'/admin.php';
@@ -68,7 +74,7 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
     require __DIR__.'/student.php';
 
     // Shared global routes (with role-based access)
-    Route::get('/reports/{report}/download', [App\Http\Controllers\ReportController::class, 'download'])
+    Route::get('/reports/{report}/download', [ReportController::class, 'download'])
         ->name('reports.download')
         ->middleware('role:superadmin|dpl|student');
 });

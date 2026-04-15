@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * Bug #5 Fix: Rename mahasiswa_id to user_id to reflect actual data stored.
      * The column was confusing because it stores users.id, not mahasiswa.id.
      */

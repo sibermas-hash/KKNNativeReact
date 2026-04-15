@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\AI;
 
-use Laravel\Ai\Ai;
 use Illuminate\Support\Facades\File;
+
 use function Laravel\Ai\agent;
 
 class CodeGuardianService
@@ -16,7 +16,7 @@ class CodeGuardianService
     public function scan(string $filePath): array
     {
         $content = File::get($filePath);
-        
+
         $response = agent(
             instructions: "Anda adalah pakar audit Laravel 13. Tugas Anda adalah mendeteksi: 
             1. Penggunaan properti lama (fillable, hidden, casts) yang seharusnya menggunakan Native Attributes.
@@ -24,7 +24,7 @@ class CodeGuardianService
             3. Potensi N+1 Query.
             Berikan RESPON HANYA DALAM JSON: {'issue_found': boolean, 'severity': 'low/high', 'description': '...', 'suggestion': 'kode baru'}"
         )->prompt(
-            prompt: "Analisis file ini: {$content}", 
+            prompt: "Analisis file ini: {$content}",
             provider: 'alibaba'
         );
 
@@ -37,10 +37,11 @@ class CodeGuardianService
     public function heal(string $filePath, string $newCode): bool
     {
         // Backup original file first
-        File::copy($filePath, $filePath . '.bak');
-        
+        File::copy($filePath, $filePath.'.bak');
+
         try {
             File::put($filePath, $newCode);
+
             return true;
         } catch (\Exception $e) {
             return false;

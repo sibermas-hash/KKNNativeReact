@@ -46,27 +46,27 @@ return new class extends Migration
             $table->id();
             $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('group_id')->constrained()->onDelete('cascade');
-            
+
             // DPL Scores (70% total weight usually)
             $table->decimal('execution_score', 5, 2)->nullable(); // 40%
             $table->decimal('article_score', 5, 2)->nullable();   // 30%
-            
+
             // Village Head Scores (30% total weight usually)
             $table->decimal('discipline_score', 5, 2)->nullable(); // 15%
             $table->decimal('attitude_score', 5, 2)->nullable();   // 15%
-            
+
             // Calculated Fields
             $table->decimal('dpl_weighted_score', 5, 2)->nullable();
             $table->decimal('village_weighted_score', 5, 2)->nullable();
             $table->decimal('total_score', 5, 2)->nullable();
             $table->char('letter_grade', 2)->nullable();
-            
+
             // Metadata
             $table->foreignId('dpl_graded_by')->nullable()->constrained('users');
             $table->foreignId('village_graded_by')->nullable()->constrained('users');
             $table->timestamp('dpl_graded_at')->nullable();
             $table->timestamp('village_graded_at')->nullable();
-            
+
             $table->timestamps();
             $table->unique(['student_id', 'group_id']);
         });

@@ -14,8 +14,8 @@ class FakultasFactory extends Factory
         $sequence = (string) $this->faker->unique()->numberBetween(1, 99);
 
         return [
-            'code' => 'F' . str_pad($sequence, 2, '0', STR_PAD_LEFT),
-            'nama' => 'Fakultas ' . $this->faker->unique()->word(),
+            'code' => 'F'.str_pad($sequence, 2, '0', STR_PAD_LEFT),
+            'nama' => 'Fakultas '.$this->faker->unique()->word(),
         ];
     }
 }

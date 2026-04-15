@@ -6,34 +6,46 @@ namespace App\Models\Master;
 
 use App\Models\KKN\Dosen as KknDosen;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Attributes\Cast;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Table('dosen')]
 class Dosen extends Model
 {
-    #[Fillable]
+    protected $table = 'dosen';
+
+    protected $fillable = [
+        'nip',
+        'nama',
+        'email',
+        'telepon',
+        'gelar_depan',
+        'gelar_belakang',
+        'jabatan',
+        'prodi',
+        'status',
+    ];
+
+    protected $casts = [
+        'status' => 'string',
+    ];
+
     public string $nip;
-    #[Fillable]
+
     public string $nama;
-    #[Fillable]
+
     public string $email;
-    #[Fillable]
+
     public ?string $telepon = null;
-    #[Fillable]
+
     public ?string $gelar_depan = null;
-    #[Fillable]
+
     public ?string $gelar_belakang = null;
-    #[Fillable]
+
     public ?string $jabatan = null;
-    #[Fillable]
+
     public ?string $prodi = null;
-    #[Fillable]
-    #[Cast('string')]
+
     public string $status;
 
     public function user(): BelongsTo

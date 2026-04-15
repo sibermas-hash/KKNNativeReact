@@ -7,37 +7,26 @@ namespace App\Models\KKN;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-use Illuminate\Database\Eloquent\Attributes\Connection;
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Casts;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-
-#[Connection('kkn')]
-#[Table('kkn_requirements')]
-#[Fillable([
-    'name',
-        'column_name',
-        'operator',
-        'expected_value',
-        'error_message',
-        'is_active',
-])]
-#[Casts([
-    'is_active' => 'boolean',
-])]
 class KknRequirement extends Model
 {
+    protected $connection = 'kkn';
+
+    protected $table = 'kkn_requirements';
+
+    protected $fillable = [
+    'name',
+    'column_name',
+    'operator',
+    'expected_value',
+    'error_message',
+    'is_active',
+];
+
+    protected $casts = ['is_active' => 'boolean'];
+
     use HasFactory;
 
-    
-
     // Explicitly define the connection if needed (as per KKN architecture)
-    
-
-    
-
-    
 
     /**
      * Evaluates this requirement against a Mahasiswa instance.

@@ -135,13 +135,13 @@ export default function Login() {
               <img src="/images/logo_kkn.png" alt="Logo KKN" className="h-full w-full object-contain" />
             </div>
             <div className="text-center">
-              <p className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em] mb-1">LPPM UIN SAIZU</p>
-              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+              <p className="text-[12px] font-bold text-primary-600 uppercase tracking-[0.2em] mb-1">LPPM UIN SAIZU</p>
+              <h1 className="text-2xl font-bold text-black tracking-tight">
                 Masuk ke Sistem
               </h1>
             </div>
           </div>
-          <p className="text-xs font-medium text-slate-400 leading-relaxed text-center w-full">
+          <p className="text-xs font-medium text-emerald-950 leading-relaxed text-center w-full">
             Silakan masukkan NIM / Username / NIP dan kata sandi Anda untuk mengakses portal.
           </p>
         </motion.div>
@@ -157,8 +157,8 @@ export default function Login() {
             >
               <AlertCircle className="text-rose-500 shrink-0" size={18} />
               <div className="space-y-1">
-                <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider">Akses Gagal</p>
-                <div className="text-[10px] font-semibold text-slate-600 space-y-0.5">
+                <p className="text-[12px] font-bold text-rose-600 uppercase tracking-wider">Akses Gagal</p>
+                <div className="text-[12px] font-semibold text-emerald-950 space-y-0.5">
                   {getErrorMessages(errors).map((err, i) => (
                     <p key={i}>{err}</p>
                   ))}
@@ -173,7 +173,7 @@ export default function Login() {
           <div className="space-y-4">
             {/* Username/NIM/Email */}
             <motion.div variants={itemVariants} className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">
+              <label className="text-[12px] font-bold text-emerald-950 uppercase tracking-wider ml-1">
                 Username / NIM / NIP
               </label>
               <div className="relative group">
@@ -185,7 +185,7 @@ export default function Login() {
                   value={data.login}
                   onChange={(e) => setData('login', e.target.value)}
                   style={{ paddingLeft: '3.5rem' }}
-                  className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl pr-4 text-xs font-bold text-black placeholder:text-slate-300 focus:ring-4 focus:ring-primary-600/10 focus:border-primary-600 transition-all placeholder:normal-case"
+                  className="w-full h-12 bg-emerald-50/30 border border-emerald-100/60 rounded-xl pr-4 text-xs font-bold text-black placeholder:text-slate-300 focus:ring-4 focus:ring-primary-600/10 focus:border-primary-600 transition-all placeholder:normal-case"
                   placeholder="NIM / Username"
                   required
                   autoFocus
@@ -195,7 +195,7 @@ export default function Login() {
 
             {/* Password */}
             <motion.div variants={itemVariants} className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">
+              <label className="text-[12px] font-bold text-emerald-950 uppercase tracking-wider ml-1">
                 Kata Sandi
               </label>
               <div className="relative group">
@@ -207,7 +207,7 @@ export default function Login() {
                   value={data.password}
                   onChange={(e) => setData('password', e.target.value)}
                   style={{ paddingLeft: '3.5rem' }}
-                  className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl pr-11 text-xs font-bold text-black placeholder:text-slate-300 focus:ring-4 focus:ring-primary-600/10 focus:border-primary-600 transition-all"
+                  className="w-full h-12 bg-emerald-50/30 border border-emerald-100/60 rounded-xl pr-11 text-xs font-bold text-black placeholder:text-slate-300 focus:ring-4 focus:ring-primary-600/10 focus:border-primary-600 transition-all"
                   placeholder="••••••••"
                   required
                 />
@@ -223,12 +223,12 @@ export default function Login() {
 
             {/* Captcha */}
             <motion.div variants={itemVariants} className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">
+              <label className="text-[12px] font-bold text-emerald-950 uppercase tracking-wider ml-1">
                 Verifikasi
               </label>
               <div className="flex gap-2">
-                <div className="flex-1 h-12 bg-white border border-slate-100 rounded-xl px-4 flex items-center justify-between">
-                  <span className="text-xs font-black text-slate-600 tabular-nums uppercase">
+                <div className="flex-1 h-12 bg-white border border-emerald-100/60 rounded-xl px-4 flex items-center justify-between">
+                  <span className="text-xs font-bold text-emerald-950 tabular-nums uppercase">
                     {activeCaptchaQuestion}{' '}
                     <span className="text-primary-600 font-bold ml-1">=</span>
                   </span>
@@ -236,7 +236,7 @@ export default function Login() {
                     type="button"
                     onClick={refreshCaptcha}
                     disabled={isRefreshing}
-                    className="p-1.5 text-slate-400 hover:text-green-800 hover:bg-green-50 rounded-lg transition-all"
+                    className="p-1.5 text-emerald-950 hover:text-green-800 hover:bg-green-50 rounded-lg transition-all"
                     title="Refresh Verifikasi"
                   >
                     <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
@@ -247,7 +247,7 @@ export default function Login() {
                   inputMode="numeric"
                   value={data.captcha_answer}
                   onChange={(e) => setData('captcha_answer', e.target.value.replace(/[^0-9]/g, ''))}
-                  className="w-24 h-12 bg-slate-50 border-2 border-slate-100 rounded-xl text-center text-md font-black text-slate-900 focus:border-primary-600 focus:ring-4 focus:ring-primary-600/10 transition-all placeholder:text-slate-300"
+                  className="w-24 h-12 bg-emerald-50/30 border-2 border-emerald-100/60 rounded-xl text-center text-md font-bold text-black focus:border-primary-600 focus:ring-4 focus:ring-primary-600/10 transition-all placeholder:text-slate-300"
                   placeholder="???"
                   required
                 />
@@ -262,11 +262,11 @@ export default function Login() {
                 type="checkbox"
                 checked={data.remember}
                 onChange={(e) => setData('remember', e.target.checked)}
-                className="w-3.5 h-3.5 rounded border-slate-300 text-primary-600 focus:ring-green-600"
+                className="w-3.5 h-3.5 rounded border-emerald-100/60 text-primary-600 focus:ring-green-600"
               />
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-slate-600 transition-colors">Ingat Saya</span>
+              <span className="text-xs font-bold text-emerald-950 uppercase tracking-wider group-hover:text-emerald-950 transition-colors">Ingat Saya</span>
             </label>
-            <Link href="/lupa-kata-sandi" className="text-[9px] font-bold text-primary-600 hover:text-green-800 uppercase tracking-wider">Lupa Sandi?</Link>
+            <Link href="/lupa-kata-sandi" className="text-xs font-bold text-primary-600 hover:text-green-800 uppercase tracking-wider">Lupa Sandi?</Link>
           </motion.div>
 
           {/* Submit */}
@@ -280,7 +280,7 @@ export default function Login() {
                 <RefreshCw size={18} className="animate-spin" />
               ) : (
                 <>
-                  <span className="text-[11px] font-bold uppercase tracking-[0.2em]">Masuk Sekarang</span>
+                  <span className="text-xs font-bold uppercase tracking-[0.2em]">Masuk Sekarang</span>
                   <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </>
               )}

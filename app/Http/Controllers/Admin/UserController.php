@@ -6,11 +6,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\Dosen;
+use App\Models\KKN\DispensasiKkn;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Prodi;
 use App\Models\User;
 use App\Notifications\KKN\AccountActivatedNotification;
+use App\Traits\HandlesPagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -21,7 +23,7 @@ use Inertia\Response;
 
 class UserController extends Controller
 {
-    use \App\Traits\HandlesPagination;
+    use HandlesPagination;
 
     public function index(Request $request): Response
     {
@@ -209,6 +211,14 @@ class UserController extends Controller
             ->pluck('batch_year')
             ->values();
 
+        $stats = $statsQuery->selectRaw('
+            count(*) as total,
+            count(case when exists (select 1 from users where users.id = mahasiswa.user_id) then 1 end) as with_account,
+            count(case when exists (select 1 from users where users.id = mahasiswa.user_id and users.is_active = true) then 1 end) as active_accounts,
+            count(case when is_bta_ppi_passed = true then 1 end) as bta_passed,
+            count(case when master_synced_at is not null then 1 end) as synced
+        ')->first();
+
         return Inertia::render('Admin/System/Users/MahasiswaIndex', [
             'students' => $this->formatPaginator($students),
             'filters' => $filters,
@@ -226,11 +236,11 @@ class UserController extends Controller
                 ]),
             'batchYears' => $batchYears,
             'stats' => [
-                'total' => (clone $statsQuery)->count(),
-                'with_account' => (clone $statsQuery)->whereHas('user')->count(),
-                'active_accounts' => (clone $statsQuery)->whereHas('user', fn ($query) => $query->where('is_active', true))->count(),
-                'bta_passed' => (clone $statsQuery)->where('is_bta_ppi_passed', true)->count(),
-                'synced' => (clone $statsQuery)->whereNotNull('master_synced_at')->count(),
+                'total' => (int) ($stats->total ?? 0),
+                'with_account' => (int) ($stats->with_account ?? 0),
+                'active_accounts' => (int) ($stats->active_accounts ?? 0),
+                'bta_passed' => (int) ($stats->bta_passed ?? 0),
+                'synced' => (int) ($stats->synced ?? 0),
             ],
             'syncInfo' => [
                 'mode' => 'sync-only',
@@ -238,6 +248,85 @@ class UserController extends Controller
                 'last_synced_at' => optional($lastSyncedAt)->format('d M Y H:i'),
             ],
             'title' => 'Registry Mahasiswa Master',
+        ]);
+    }
+
+    public function mahasiswaShow(Mahasiswa $mahasiswa): Response
+    {
+        $mahasiswa->load([
+            'fakultas',
+            'prodi',
+            'user.roles',
+            'peserta.periode',
+            'peserta.kelompok.location',
+        ]);
+
+        $account = $mahasiswa->user;
+        // Use the most recent peserta record (latest registered)
+        $peserta = $mahasiswa->peserta->sortByDesc('id')->first();
+        $kelompok = $peserta?->kelompok;
+
+        // Dispensasi is keyed by NIM, not by mahasiswa_id
+        $dispensasiList = DispensasiKkn::where('nim', $mahasiswa->nim)
+            ->with(['periode', 'grantedByUser'])
+            ->orderByDesc('created_at')
+            ->get();
+
+        return Inertia::render('Admin/System/Users/MahasiswaShow', [
+            'mahasiswa' => [
+                'id' => $mahasiswa->id,
+                'nim' => $mahasiswa->nim,
+                'nik' => $mahasiswa->nik,
+                'nama' => $mahasiswa->nama,
+                'gender' => $mahasiswa->gender,
+                'batch_year' => $mahasiswa->batch_year,
+                'sks_completed' => $mahasiswa->sks_completed,
+                'gpa' => $mahasiswa->gpa,
+                'is_bta_ppi_passed' => (bool) $mahasiswa->is_bta_ppi_passed,
+                'mother_name' => $mahasiswa->mother_name,
+                'address' => $mahasiswa->address ?? null,
+                'master_synced_at' => $mahasiswa->master_synced_at?->toIso8601String(),
+                'fakultas' => $mahasiswa->fakultas ? ['id' => $mahasiswa->fakultas->id, 'nama' => $mahasiswa->fakultas->nama] : null,
+                'prodi' => $mahasiswa->prodi ? ['id' => $mahasiswa->prodi->id, 'nama' => $mahasiswa->prodi->nama] : null,
+            ],
+            'account' => $account ? [
+                'id' => $account->id,
+                'username' => $account->username,
+                'name' => $account->name,
+                'email' => $account->email,
+                'is_active' => (bool) $account->is_active,
+                'must_change_password' => (bool) $account->must_change_password,
+                'roles' => $account->roles->pluck('name')->toArray(),
+                'created_at' => $account->created_at?->format('d M Y H:i'),
+            ] : null,
+            'registration' => $peserta ? [
+                'id' => $peserta->id,
+                'status' => $peserta->status,
+                'registration_date' => $peserta->created_at?->format('d M Y H:i'),
+                'period' => $peserta->periode ? ['id' => $peserta->periode->id, 'name' => $peserta->periode->name] : null,
+                'rejection_reason' => $peserta->rejection_reason ?? null,
+                'notes' => $peserta->notes ?? null,
+            ] : null,
+            'group' => $kelompok ? [
+                'id' => $kelompok->id,
+                'name' => $kelompok->name,
+                'location' => $kelompok->location ? [
+                    'village_name' => $kelompok->location->village_name,
+                    'district_name' => $kelompok->location->district_name,
+                    'regency_name' => $kelompok->location->regency_name,
+                ] : null,
+                'period' => $peserta?->periode ? ['name' => $peserta->periode->name] : null,
+            ] : null,
+            'dispensasi' => $dispensasiList->map(fn ($d) => [
+                'id' => $d->id,
+                'alasan' => $d->alasan,
+                'bypassed_requirements' => $d->bypassed_requirements,
+                'is_active' => (bool) $d->is_active,
+                'periode' => $d->periode ? ['name' => $d->periode->name] : null,
+                'granted_by' => $d->grantedByUser ? $d->grantedByUser->name : 'System',
+                'created_at' => $d->created_at?->format('d M Y'),
+            ])->values()->all(),
+            'title' => "Detail Mahasiswa: {$mahasiswa->nama}",
         ]);
     }
 

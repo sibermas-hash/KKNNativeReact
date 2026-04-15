@@ -10,16 +10,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-use Illuminate\Database\Eloquent\Attributes\Connection;
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Casts;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
+class Laporan extends Model
+{
 
-#[Connection('kkn')]
-#[Table('laporan')]
-#[Fillable([
-    'user_id',
+    protected $table = 'laporan';
+
+    protected $connection = 'kkn';
+
+    protected $fillable = [
+        'user_id',
         'kelompok_id',
         'type',
         'title',
@@ -33,22 +32,14 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
         'reviewed_by',
         'submitted_at',
         'reviewed_at',
-])]
-#[Casts([
-    'submitted_at' => 'datetime',
+    ];
+
+    protected $casts = [
+        'submitted_at' => 'datetime',
         'reviewed_at' => 'datetime',
-])]
-class Laporan extends Model
-{
+    ];
+
     use HasFactory, SoftDeletes;
-
-    
-
-    
-
-    
-
-    
 
     public function user(): BelongsTo
     {

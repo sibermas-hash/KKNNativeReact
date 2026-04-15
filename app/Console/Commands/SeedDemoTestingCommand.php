@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Enums\KknType;
 use App\Models\KKN\Announcement;
 use App\Models\KKN\Dosen;
-use App\Models\KKN\DplPeriod;
 use App\Models\KKN\Download;
+use App\Models\KKN\DplPeriod;
 use App\Models\KKN\Evaluasi;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\ItemEvaluasi;
@@ -20,13 +22,11 @@ use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
-use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\PoskoKelompok;
 use App\Models\KKN\Prodi;
 use App\Models\KKN\ProgramKerja;
 use App\Models\KKN\SystemSetting;
 use App\Models\KKN\TahunAkademik;
-use App\Models\KKN\Workshop;
 use App\Models\User;
 use App\Services\GradingService;
 use App\Services\WorkshopService;
@@ -966,7 +966,6 @@ PDF;
 
         return $score->fresh();
     }
-
 
     private function seedAuditLogs(User $admin, User $facultyAdmin, User $dpl): void
     {

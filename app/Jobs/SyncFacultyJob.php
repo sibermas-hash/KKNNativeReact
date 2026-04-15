@@ -14,11 +14,10 @@ class SyncFacultyJob implements ShouldQueue
     use Queueable;
 
     public int $tries = 3;
+
     public int $backoff = 30;
 
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     public function handle(): void
     {
@@ -32,7 +31,7 @@ class SyncFacultyJob implements ShouldQueue
 
         if ($exitCode !== 0) {
             Log::error('SyncFacultyJob: sync failed', ['exit' => $exitCode]);
-            $this->fail(new \RuntimeException('sync:master-data exited with code ' . $exitCode));
+            $this->fail(new \RuntimeException('sync:master-data exited with code '.$exitCode));
         }
 
         Log::info('SyncFacultyJob: sync completed', ['exit' => $exitCode]);

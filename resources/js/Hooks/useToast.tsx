@@ -89,7 +89,7 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
         success: {
             bg: 'bg-emerald-50 border-emerald-200',
             icon: <CheckCircle className="w-5 h-5 text-emerald-600" />,
-            text: 'text-emerald-900',
+            text: 'text-black',
             progress: 'bg-emerald-500',
         },
         error: {
@@ -128,7 +128,7 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
             </div>
             <button
                 onClick={() => onRemove(toast.id)}
-                className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+                className="flex-shrink-0 text-emerald-900 hover:text-gray-600 transition-colors"
                 aria-label="Tutup notifikasi"
             >
                 <X className="w-4 h-4" />

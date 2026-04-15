@@ -8,35 +8,23 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-use Illuminate\Database\Eloquent\Attributes\Connection;
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Casts;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-
-#[Connection('kkn')]
-#[Table('slot_terkunci')]
-#[Fillable([
-    'kelompok_id',
-        'tipe_slot',
-        'fakultas_id',
-        'prodi_id',
-        'kuota_slot',
-])]
-#[Casts([
-    'kuota_slot' => 'integer',
-])]
 class SlotTerkunci extends Model
 {
+    protected $connection = 'kkn';
+
+    protected $table = 'slot_terkunci';
+
+    protected $fillable = [
+    'kelompok_id',
+    'tipe_slot',
+    'fakultas_id',
+    'prodi_id',
+    'kuota_slot',
+];
+
+    protected $casts = ['kuota_slot' => 'integer'];
+
     use HasFactory;
-
-    
-
-    
-
-    
-
-    
 
     public function kelompok(): BelongsTo
     {

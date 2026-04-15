@@ -22,8 +22,9 @@ class DplTestSeeder extends Seeder
      */
     public function run(): void
     {
-        if (!app()->environment('local', 'testing')) {
+        if (! app()->environment('local', 'testing')) {
             $this->command->error('This seeder can only run in local or testing environment.');
+
             return;
         }
 
@@ -133,7 +134,7 @@ class DplTestSeeder extends Seeder
                 ['username' => $username],
                 [
                     'name' => $dData['nama'],
-                    'email' => Str::slug($dData['nama']) . '@uinsaizu.ac.id',
+                    'email' => Str::slug($dData['nama']).'@uinsaizu.ac.id',
                     'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', Str::random(32))),
                     'is_active' => true,
                     'faculty_id' => $dData['faculty_id'],
@@ -176,12 +177,12 @@ class DplTestSeeder extends Seeder
         $this->command->info('');
         $this->command->info('📊 Summary:');
         $this->command->info('   📅 Tahun Akademik: 2025/2026');
-        $this->command->info('   🏛️  Fakultas: ' . count($fakultasData));
-        $this->command->info('   📚 Program Studi: ' . count($prodiData));
-        $this->command->info('   📍 Lokasi: ' . count($lokasiData));
-        $this->command->info('   📋 Periode: ' . $periode->name . ' (Aktif)');
-        $this->command->info('   👨‍🏫 Dosen: ' . count($dosenData));
-        $this->command->info('   👥 Kelompok: ' . count($kelompokData));
+        $this->command->info('   🏛️  Fakultas: '.count($fakultasData));
+        $this->command->info('   📚 Program Studi: '.count($prodiData));
+        $this->command->info('   📍 Lokasi: '.count($lokasiData));
+        $this->command->info('   📋 Periode: '.$periode->name.' (Aktif)');
+        $this->command->info('   👨‍🏫 Dosen: '.count($dosenData));
+        $this->command->info('   👥 Kelompok: '.count($kelompokData));
         $this->command->info('');
         $this->command->info('🔐 Dosen Login Info:');
         $this->command->info('   Username: [NIP dosen]');

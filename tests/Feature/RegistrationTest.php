@@ -2,8 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\Lokasi;
+use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\User;
@@ -79,7 +80,7 @@ class RegistrationTest extends TestCase
         $group = KelompokKkn::factory()->create([
             'period_id' => $period->id,
             'status' => 'active',
-            'location_id' => \App\Models\KKN\Lokasi::factory()->create([
+            'location_id' => Lokasi::factory()->create([
                 'village_name' => 'Desa Penempatan',
                 'district_name' => 'Kecamatan Penempatan',
                 'regency_name' => 'Kabupaten Penempatan',
@@ -129,7 +130,7 @@ class RegistrationTest extends TestCase
         $group = KelompokKkn::factory()->create([
             'period_id' => $period->id,
             'status' => 'active',
-            'location_id' => \App\Models\KKN\Lokasi::factory()->create([
+            'location_id' => Lokasi::factory()->create([
                 'village_name' => 'Desa Penempatan',
                 'district_name' => 'Kecamatan Penempatan',
                 'regency_name' => 'Kabupaten Penempatan',
@@ -225,7 +226,7 @@ class RegistrationTest extends TestCase
         KelompokKkn::factory()->create([
             'period_id' => $period->id,
             'status' => 'active',
-            'location_id' => \App\Models\KKN\Lokasi::factory()->create([
+            'location_id' => Lokasi::factory()->create([
                 'village_name' => 'Desa Penempatan',
                 'district_name' => 'Kecamatan Penempatan',
                 'regency_name' => 'Kabupaten Penempatan',

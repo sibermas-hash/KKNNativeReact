@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Jobs\SyncDosenJob;
+use App\Jobs\SyncMahasiswaJob;
 use App\Models\KKN\DatabaseSyncLog;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -249,7 +252,7 @@ class DatabaseSyncMonitoringService
     /**
      * Calculate today's success rate
      */
-    protected function calculateTodaySuccessRate(\Carbon\Carbon $date): float
+    protected function calculateTodaySuccessRate(Carbon $date): float
     {
         $total = DatabaseSyncLog::whereDate('created_at', '>=', $date)->count();
 
@@ -307,8 +310,8 @@ class DatabaseSyncMonitoringService
 
         // Dispatch job based on entity type
         match ($failedSync->entity_type) {
-            'mahasiswa' => \App\Jobs\SyncMahasiswaJob::dispatch($failedSync->entity_id),
-            'dosen' => \App\Jobs\SyncDosenJob::dispatch($failedSync->entity_id),
+            'mahasiswa' => SyncMahasiswaJob::dispatch($failedSync->entity_id),
+            'dosen' => SyncDosenJob::dispatch($failedSync->entity_id),
             default => throw new \InvalidArgumentException("Unknown entity type: {$failedSync->entity_type}"),
         };
     }

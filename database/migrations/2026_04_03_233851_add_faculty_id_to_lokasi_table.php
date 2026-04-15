@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::connection('kkn')->table('lokasi', function (Blueprint $table) {
-            if (!Schema::connection('kkn')->hasColumn('lokasi', 'faculty_id')) {
+            if (! Schema::connection('kkn')->hasColumn('lokasi', 'faculty_id')) {
                 $table->foreignId('faculty_id')
                     ->nullable()
                     ->constrained('fakultas')

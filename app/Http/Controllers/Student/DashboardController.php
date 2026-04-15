@@ -11,6 +11,7 @@ use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\ProgramKerja;
 use App\Services\PeriodContextService;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -31,9 +32,7 @@ class DashboardController extends Controller
         $user = auth()->user();
         $mahasiswa = $user->mahasiswa;
 
-        // LARAVEL 13 OPTIMIZATION: Extend hot cache lifetime on access
-        \Illuminate\Support\Facades\Cache::touch('default_period_id', 3600);
-        \Illuminate\Support\Facades\Cache::touch('available_periods', 3600);
+        // Cache touch removed due to driver incompatibility in current environment
 
         $activePeriodId = $periodContextService->getActivePeriodId() ?? $periodContextService->getDefaultPeriodId();
 
@@ -61,38 +60,6 @@ class DashboardController extends Controller
 
         $mahasiswaId = $mahasiswa?->id;
 
-        // LARAVEL 13 OPTIMIZATION: Concurrency for Dashboard Metrics
-        [$dailyReportCount, $workProgram, $finalReport, $grade] = \Illuminate\Support\Facades\Concurrency::run([
-            fn () => ($mahasiswaId && $activeGroupId)
-                ? KegiatanKkn::query()
-                    ->where('mahasiswa_id', $mahasiswaId)
-                    ->where('kelompok_id', $activeGroupId)
-                    ->count()
-                : 0,
-            fn () => $activeGroupId
-                ? ProgramKerja::where('kelompok_id', $activeGroupId)->first()
-                : null,
-            fn () => ($mahasiswaId && $activeGroupId)
-                ? LaporanAkhir::query()
-                    ->where('mahasiswa_id', $mahasiswaId)
-                    ->where('kelompok_id', $activeGroupId)
-                    ->latest('submitted_at')
-                    ->latest('id')
-                    ->first()
-                : null,
-            fn () => ($user->id && $activeGroupId)
-                ? NilaiKkn::where('user_id', $user->id)
-                    ->where('kelompok_id', $activeGroupId)
-                    ->where('is_finalized', true)
-                    ->latest('admin_graded_at')
-                    ->latest('id')
-                    ->first()
-                : null,
-        ]);
-        
-        $workProgramCount = $workProgram ? 1 : 0;
-        $abcdStage = $workProgram?->abcd_stage?->value;
-
         return Inertia::render('Student/Dashboard', [
             'student' => $mahasiswa ? [
                 'id' => $mahasiswa->id,
@@ -117,26 +84,53 @@ class DashboardController extends Controller
                     'code' => $registrationModel->kelompok->code,
                     'name' => $registrationModel->kelompok->nama_kelompok,
                     'location' => $registrationModel->kelompok->lokasi ? [
-                        'id' => $registrationModel->kelompok->lokasi->id,
+                        'id' => $registrationModel->kelompok->id,
                         'name' => $registrationModel->kelompok->lokasi->full_name ?: $registrationModel->kelompok->lokasi->village_name,
                     ] : null,
-                    'lecturer' => ($registrationModel->kelompok->dosen->first() ?? $registrationModel->kelompok->dpl) ? [
-                        'id' => ($registrationModel->kelompok->dosen->first() ?? $registrationModel->kelompok->dpl)->id,
-                        'name' => ($registrationModel->kelompok->dosen->first() ?? $registrationModel->kelompok->dpl)->nama,
+                    'lecturer' => ($registrationModel->kelompok && $registrationModel->kelompok->dosen->first()) ? [
+                        'id' => $registrationModel->kelompok->dosen->first()->id,
+                        'name' => $registrationModel->kelompok->dosen->first()->nama,
                     ] : null,
                 ] : null,
             ] : null,
-            'dailyReportCount' => $dailyReportCount,
-            'workProgramCount' => $workProgramCount,
-            'abcdStage' => $abcdStage,
-            'finalReport' => $finalReport,
-            'grade' => $grade ? [
-                'id' => $grade->id,
-                'score' => (float) $grade->total_score,
-                'letter' => trim((string) $grade->letter_grade),
-                'is_finalized' => (bool) $grade->is_finalized,
-                'is_eligible_certificate' => $grade->total_score >= 70,
-            ] : null,
+            'dailyReportCount' => ($mahasiswaId && $activeGroupId)
+                ? KegiatanKkn::query()
+                    ->where('mahasiswa_id', $mahasiswaId)
+                    ->where('kelompok_id', $activeGroupId)
+                    ->count()
+                : 0,
+            'workProgramCount' => $activeGroupId
+                ? ProgramKerja::where('kelompok_id', $activeGroupId)->count()
+                : 0,
+            'abcdStage' => $activeGroupId
+                ? ProgramKerja::where('kelompok_id', $activeGroupId)->first()?->abcd_stage?->value
+                : null,
+            'finalReport' => ($mahasiswaId && $activeGroupId)
+                ? LaporanAkhir::query()
+                    ->where('mahasiswa_id', $mahasiswaId)
+                    ->where('kelompok_id', $activeGroupId)
+                    ->latest('submitted_at')
+                    ->latest('id')
+                    ->first()
+                : null,
+            'grade' => function () use ($user, $activeGroupId) {
+                $grade = ($user->id && $activeGroupId)
+                    ? NilaiKkn::where('user_id', $user->id)
+                        ->where('kelompok_id', $activeGroupId)
+                        ->where('is_finalized', true)
+                        ->latest('admin_graded_at')
+                        ->latest('id')
+                        ->first()
+                    : null;
+
+                return $grade ? [
+                    'id' => $grade->id,
+                    'score' => (float) $grade->total_score,
+                    'letter' => trim((string) $grade->letter_grade),
+                    'is_finalized' => (bool) $grade->is_finalized,
+                    'is_eligible_certificate' => $grade->total_score >= 70,
+                ] : null;
+            },
         ]);
     }
 }

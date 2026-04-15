@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\KKN\JenisKkn;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\PesertaKkn;
+use App\Services\AuditService;
 use App\Services\GradingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +42,7 @@ class GradeController extends Controller
             ->orderBy('code')
             ->get(['id', 'code', 'nama_kelompok', 'dpl_id', 'period_id']);
 
-        $jenisKknOptions = \App\Models\KKN\JenisKkn::dropdownOptions();
+        $jenisKknOptions = JenisKkn::dropdownOptions();
 
         return Inertia::render('Admin/Academic/Grades/Index', [
             'groups' => $groups,
@@ -138,7 +140,7 @@ class GradeController extends Controller
 
                 $this->gradingService->calculateFinalGrade($score);
 
-                \App\Services\AuditService::log(
+                AuditService::log(
                     'UPDATE_SCORE_ADMIN',
                     "Admin mengupdate nilai mahasiswa ID {$row['student_id']}",
                     $score,

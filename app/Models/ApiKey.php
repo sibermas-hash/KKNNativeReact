@@ -6,32 +6,32 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Casts;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
+class ApiKey extends Model
+{
+    protected $table = '_api_keys';
 
-#[Table('_api_keys')]
-#[Fillable([
+    protected $fillable = [
     'key',
     'name',
     'permissions',
     'email',
     'is_active',
     'last_used_at',
-])]
-#[Casts([
+];
+
+    protected $hidden = [
+    'key',
+];
+
+    protected $casts = [
     'permissions' => 'array',
     'is_active' => 'boolean',
     'last_used_at' => 'datetime',
-])]
-#[Hidden([
-    'key',
-])]
-class ApiKey extends Model
-{
+];
+
     public string $key {
         set(string $value) {
             $this->attributes['key'] = $this->looksHashed($value)
@@ -88,7 +88,7 @@ class ApiKey extends Model
     public static function findByPlaintext(string $candidate): ?self
     {
         // Cache all keys so middleware can distinguish invalid vs inactive keys.
-        $keys = \Illuminate\Support\Facades\Cache::remember(
+        $keys = Cache::remember(
             'api_keys_all',
             3600, // 1 hour cache
             function () {
@@ -110,8 +110,8 @@ class ApiKey extends Model
      */
     public static function clearCache(): void
     {
-        \Illuminate\Support\Facades\Cache::forget('api_keys_active');
-        \Illuminate\Support\Facades\Cache::forget('api_keys_all');
+        Cache::forget('api_keys_active');
+        Cache::forget('api_keys_all');
     }
 
     private function looksHashed(string $value): bool

@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs;
 
+use App\Models\KKN\LogAudit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -24,6 +27,6 @@ class ProcessAuditLog implements ShouldQueue
      */
     public function handle(): void
     {
-        \App\Models\KKN\LogAudit::create($this->data);
+        LogAudit::create($this->data);
     }
 }

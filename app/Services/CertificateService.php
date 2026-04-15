@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\KKN\KonfigurasiSertifikat;
 use App\Models\KKN\NilaiKkn;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Collection;
 use RuntimeException;
 
 class CertificateService
@@ -25,32 +27,30 @@ class CertificateService
         $mahasiswaModel = $score->mahasiswa;
 
         if (! $mahasiswaModel) {
-            throw new RuntimeException('Data mahasiswa untuk nilai ini tidak ditemukan.');
+            throw new RuntimeException('Data mahasiswa untuk nilai ini tidak ditemukan');
         }
 
-        // Logic Anti-Halu
-        $laporanAkhir = \App\Models\KKN\LaporanAkhir::where('mahasiswa_id', $mahasiswaModel->id)
-            ->where('kelompok_id', $score->kelompok_id)
-            ->first();
-
-        if (! $laporanAkhir || $laporanAkhir->status !== 'approved') {
-            throw new RuntimeException('Sertifikat belum tersedia. Laporan akhir belum disetujui DPL.');
+        $kelompok = $score->kelompok;
+        if (! $kelompok) {
+            throw new RuntimeException('Data kelompok untuk nilai ini tidak ditemukan');
         }
-        if ($score->total_score < 70) {
-            throw new RuntimeException('Sertifikat hanya diberikan kepada mahasiswa dengan nilai minimal B.');
+
+        $periode = $kelompok->periode;
+        if (! $periode) {
+            throw new RuntimeException('Data periode untuk kelompok ini tidak ditemukan');
         }
 
         // Load Dynamic Configs
-        $configs = \App\Models\KKN\KonfigurasiSertifikat::all()->pluck('value', 'config_key');
+        $configs = KonfigurasiSertifikat::all()->pluck('value', 'config_key');
 
-        $lokasi = $score->kelompok->lokasi;
-        $locationStr = trim(implode(', ', array_filter([
+        $lokasi = $kelompok->lokasi;
+        $locationStr = $lokasi ? trim(implode(', ', array_filter([
             $lokasi->village_name ?? null,
             $lokasi->district_name ?? null,
             $lokasi->regency_name ?? null,
-        ])));
-        $name = $score->mahasiswa->nama ?? $score->mahasiswa->user->name;
-        $periodName = $score->kelompok->periode->name;
+        ]))) : '-';
+        $name = $mahasiswaModel->nama ?? $mahasiswaModel->user?->name ?? '-';
+        $periodName = $periode->name ?? '-';
 
         // Process Body Text Placeholders
         $body = $configs['cert_body'] ?? '';
@@ -72,7 +72,7 @@ class CertificateService
             'score' => $score->total_score,
             'grade' => $score->letter_grade,
             'date' => now()->translatedFormat('d F Y'),
-            'certificate_no' => 'KKN/'.$score->kelompok->periode->id.'/'.$verificationToken,
+            'certificate_no' => 'KKN/'.($periode->id ?? 0).'/'.$verificationToken,
             'signer1_name' => $configs['cert_signer_left_name'] ?? '-',
             'signer1_title' => $configs['cert_signer_left_title'] ?? '-',
             'signer2_name' => $configs['cert_signer_right_name'] ?? '-',
@@ -88,7 +88,7 @@ class CertificateService
     /**
      * Generate a ZIP of certificates for a collection of scores
      */
-    public function generateZip(\Illuminate\Support\Collection $scores)
+    public function generateZip(Collection $scores)
     {
         $zip = new \ZipArchive;
         $zipFileName = 'Sertifikat_KKN_Massal_'.now()->format('Ymd_His').'.zip';

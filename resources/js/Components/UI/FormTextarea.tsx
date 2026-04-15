@@ -4,37 +4,50 @@ import { clsx } from 'clsx';
 interface FormTextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
     label?: string;
     error?: string;
+    layout?: 'vertical' | 'horizontal';
 }
 
 const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
-    ({ label, error, id, className, ...rest }, ref) => (
-        <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6">
-            {label && (
-                <label htmlFor={id} className="text-xs sm:text-sm font-semibold text-slate-700 sm:w-[150px] sm:min-w-[150px] sm:flex-shrink-0 sm:mt-2.5 whitespace-nowrap">
-                    {label}
-                    {rest.required && <span className="ml-0.5 text-red-500">*</span>}
-                </label>
-            )}
-            <div className="flex-1 w-full">
-                <textarea
-                    ref={ref}
-                    id={id}
-                    rows={rest.rows ?? 4}
-                    className={clsx(
-                        'w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 transition-all placeholder:text-slate-400 resize-none',
-                        'focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500',
-                        error
-                            ? 'border-red-500 focus:ring-red-500'
-                            : 'hover:border-slate-400',
-                        rest.disabled && 'bg-slate-50 text-slate-500 cursor-not-allowed border-slate-200',
-                        className,
-                    )}
-                    {...rest}
-                />
-                {error && <p className="mt-1 text-xs font-medium text-red-600">{error}</p>}
+    ({ label, error, id, className, layout = 'vertical', ...rest }, ref) => {
+        const isHorizontal = layout === 'horizontal';
+
+        return (
+            <div className={clsx(
+                isHorizontal ? 'flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-6' : 'flex flex-col space-y-2'
+            )}>
+                {label && (
+                    <label 
+                        htmlFor={id} 
+                        className={clsx(
+                            "text-[12px] font-bold text-emerald-950 uppercase tracking-widest pl-1",
+                            isHorizontal && "sm:min-w-[180px] sm:text-right sm:mt-3"
+                        )}
+                    >
+                        {label}
+                        {rest.required && <span className="ml-1 text-red-500" aria-hidden="true">*</span>}
+                    </label>
+                )}
+                <div className="flex-1 w-full">
+                    <textarea
+                        ref={ref}
+                        id={id}
+                        rows={rest.rows ?? 4}
+                        className={clsx(
+                            'w-full rounded-xl border border-emerald-100/60 bg-white px-4 py-2.5 text-sm text-black transition-all placeholder:text-emerald-950 resize-none',
+                            'focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20',
+                            error
+                                ? 'border-rose-500 focus:ring-rose-500/20'
+                                : 'hover:border-slate-400',
+                            rest.disabled && 'bg-emerald-50/30 text-emerald-950 cursor-not-allowed border-emerald-100/60',
+                            className,
+                        )}
+                        {...rest}
+                    />
+                    {error && <p role="alert" className="mt-1.5 text-xs font-medium text-rose-600">{error}</p>}
+                </div>
             </div>
-        </div>
-    ),
+        );
+    },
 );
 
 FormTextarea.displayName = 'FormTextarea';

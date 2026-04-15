@@ -92,7 +92,7 @@ test('calculateFinalGrade saves lppm_weighted_score', function () {
         ]);
     }
 
-    $service = new GradingService();
+    $service = new GradingService;
     $service->calculateFinalGrade($score);
 
     $score->refresh();

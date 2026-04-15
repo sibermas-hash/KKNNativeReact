@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -12,17 +14,17 @@ class EnsureUserIsActive
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::user();
 
-        if ($user && !$user->is_active) {
+        if ($user && ! $user->is_active) {
             // For API requests, return JSON response
             if ($request->expectsJson() || $request->is('api/*')) {
                 Auth::guard('sanctum')->logout();
-                
+
                 return response()->json([
                     'message' => 'Akun Anda telah dinonaktifkan. Silakan hubungi administrator.',
                 ], 403);

@@ -9,35 +9,25 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-use Illuminate\Database\Eloquent\Attributes\Connection;
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Casts;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-
-#[Connection('kkn')]
-#[Table('dpl_periods')]
-#[Fillable([
-    'dosen_id',
-        'period_id',
-        'max_groups',
-        'is_active',
-])]
-#[Casts([
-    'max_groups' => 'integer',
-        'is_active' => 'boolean',
-])]
 class DplPeriod extends Model
 {
+    protected $connection = 'kkn';
+
+    protected $table = 'dpl_periods';
+
+    protected $fillable = [
+    'dosen_id',
+    'period_id',
+    'max_groups',
+    'is_active',
+];
+
+    protected $casts = [
+    'max_groups' => 'integer',
+    'is_active' => 'boolean',
+];
+
     use HasFactory;
-
-    
-
-    
-
-    
-
-    
 
     public function dosen(): BelongsTo
     {

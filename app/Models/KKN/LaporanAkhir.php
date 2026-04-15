@@ -10,51 +10,41 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-use Illuminate\Database\Eloquent\Attributes\Connection;
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Casts;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-
-#[Connection('kkn')]
-#[Table('laporan_akhir')]
-#[Fillable([
-    'mahasiswa_id',
-        'kelompok_id',
-        'title',
-        'abstract',
-        'file_path',
-        'file_name',
-        'video_link',
-        'news_link',
-        'article_1_path',
-        'article_2_path',
-        'poster_1_path',
-        'poster_2_path',
-        'poster_3_path',
-        'status',
-        'submitted_at',
-        'reviewed_at',
-        'reviewed_by',
-        'review_notes',
-        'score',
-])]
-#[Casts([
-    'submitted_at' => 'datetime',
-        'reviewed_at' => 'datetime',
-        'score' => 'decimal:2',
-])]
 class LaporanAkhir extends Model
 {
+    protected $connection = 'kkn';
+
+    protected $table = 'laporan_akhir';
+
+    protected $fillable = [
+    'mahasiswa_id',
+    'kelompok_id',
+    'title',
+    'abstract',
+    'file_path',
+    'file_name',
+    'video_link',
+    'news_link',
+    'article_1_path',
+    'article_2_path',
+    'poster_1_path',
+    'poster_2_path',
+    'poster_3_path',
+    'status',
+    'submitted_at',
+    'reviewed_at',
+    'reviewed_by',
+    'review_notes',
+    'score',
+];
+
+    protected $casts = [
+    'submitted_at' => 'datetime',
+    'reviewed_at' => 'datetime',
+    'score' => 'decimal:2',
+];
+
     use HasFactory, SoftDeletes;
-
-    
-
-    
-
-    
-
-    
 
     public function mahasiswa(): BelongsTo
     {

@@ -1,19 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Constants;
 
 /**
  * Role constants for use in middleware and authorization.
  * ISSUE-RBAC-001 Fix: Prevent typos in role names that could cause authorization bypass.
- * 
+ *
  * Usage:
  * Route::middleware(['role:' . Roles::SUPERADMIN . '|' . Roles::FACULTY_ADMIN])->group(...);
  */
 class Roles
 {
     public const SUPERADMIN = 'superadmin';
+
     public const FACULTY_ADMIN = 'faculty_admin';
+
     public const DPL = 'dpl';
+
     public const STUDENT = 'student';
 
     /**

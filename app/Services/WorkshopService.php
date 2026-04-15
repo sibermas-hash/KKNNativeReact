@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\KKN\KonfigurasiPenilaian;
 use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\Workshop;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -206,13 +208,13 @@ class WorkshopService
         $groupId = $user->getActiveGroupId();
 
         if ($groupId) {
-            $configuredScore = \App\Models\KKN\KonfigurasiPenilaian::where('config_key', 'workshop_attendance_score')
+            $configuredScore = KonfigurasiPenilaian::where('config_key', 'workshop_attendance_score')
                 ->first()?->percentage ?? 100;
             $workshopScore = $participant->attendance_status === 'attended'
                 ? (float) $configuredScore
                 : 0.0;
             $adminId = auth()->id()
-                ?? \App\Models\User::role('superadmin')->value('id');
+                ?? User::role('superadmin')->value('id');
 
             $this->gradingService->updateUnifiedScore(
                 $user->id,

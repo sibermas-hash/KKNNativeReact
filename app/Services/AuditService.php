@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Jobs\ProcessAuditLog;
+use App\Models\KKN\LogAudit;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 
@@ -28,22 +31,25 @@ class AuditService
         ];
 
         try {
-            \App\Jobs\ProcessAuditLog::dispatch($data);
+            ProcessAuditLog::dispatch($data);
+
             return true;
         } catch (\Throwable $e) {
             // Fallback to direct logging to storage if queue is down
             \Log::warning('Failed to dispatch AuditLog job. Falling back to direct DB record.', [
                 'action' => $action,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             try {
-                \App\Models\KKN\LogAudit::create($data);
+                LogAudit::create($data);
+
                 return true;
             } catch (\Throwable $dbError) {
                 \Log::error('Critical: Failed to even record AuditLog to DB.', [
-                    'error' => $dbError->getMessage()
+                    'error' => $dbError->getMessage(),
                 ]);
+
                 return false;
             }
         }
@@ -52,7 +58,7 @@ class AuditService
     /**
      * Specialized log for Superadmin/God Mode bypass detections
      */
-    public static function logGodModeAccess(\App\Models\User $user, string $target)
+    public static function logGodModeAccess(User $user, string $target)
     {
         return self::log(
             'GATE_BYPASS_GOD_MODE',

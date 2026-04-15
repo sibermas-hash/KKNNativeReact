@@ -4,47 +4,38 @@ declare(strict_types=1);
 
 namespace App\Models\KKN;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-use Illuminate\Database\Eloquent\Attributes\Connection;
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Casts;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-
-#[Connection('kkn')]
-#[Table('dispensasi_kkn')]
-#[Fillable([
-    'nim',
-        'period_id',
-        'alasan',
-        'bypassed_requirements',
-        'granted_by',
-        'is_active',
-])]
-#[Casts([
-    'bypassed_requirements' => 'array',
-        'is_active' => 'boolean',
-])]
 class DispensasiKkn extends Model
 {
-    
+    protected $connection = 'kkn';
 
-    
+    protected $table = 'dispensasi_kkn';
 
-    
+    protected $fillable = [
+    'nim',
+    'period_id',
+    'alasan',
+    'bypassed_requirements',
+    'granted_by',
+    'is_active',
+];
 
-    
+    protected $casts = [
+    'bypassed_requirements' => 'array',
+    'is_active' => 'boolean',
+];
 
-    public function periode(): BelongsTo
+public function periode(): BelongsTo
     {
         return $this->belongsTo(Periode::class, 'period_id');
     }
 
     public function grantedByUser(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'granted_by');
+        return $this->belongsTo(User::class, 'granted_by');
     }
 
     /**
@@ -76,8 +67,12 @@ class DispensasiKkn extends Model
             });
         }
 
-        $dispensasi = $query->first();
+        $dispensations = $query->get();
 
-        return $dispensasi?->bypassed_requirements ?? [];
+        return $dispensations->flatMap(fn($item) => $item->bypassed_requirements ?? [])
+            ->filter()
+            ->unique()
+            ->values()
+            ->toArray();
     }
 }

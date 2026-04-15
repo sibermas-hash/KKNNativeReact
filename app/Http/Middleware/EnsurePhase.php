@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use App\Models\KKN\Periode;
@@ -40,20 +42,21 @@ class EnsurePhase
         $periodId = $this->contextService->getActivePeriodId()
             ?? $this->contextService->getDefaultPeriodId();
 
-        if (!$periodId) {
+        if (! $periodId) {
             return $this->blocked($request, 'Tidak ada periode KKN yang aktif saat ini.', 'inactive');
         }
 
         $period = Periode::find($periodId);
-        if (!$period) {
+        if (! $period) {
             return $this->blocked($request, 'Periode KKN tidak ditemukan.', 'inactive');
         }
 
         $currentPhase = $period->current_phase ?? 'upcoming';
 
         // Cek apakah fase saat ini termasuk dalam daftar yang diizinkan
-        if (!in_array($currentPhase, $allowedPhases, true)) {
+        if (! in_array($currentPhase, $allowedPhases, true)) {
             $message = $this->getBlockedMessage($currentPhase, $allowedPhases);
+
             return $this->blocked($request, $message, $currentPhase);
         }
 
@@ -75,6 +78,7 @@ class EnsurePhase
 
         // Untuk request biasa, redirect kembali dengan flash message
         $backUrl = $request->headers->get('referer', '/dashboard');
+
         return redirect($backUrl)->with('error', $message);
     }
 
@@ -97,23 +101,26 @@ class EnsurePhase
         // Tentukan pesan berdasarkan fitur yang ingin diakses
         if (in_array('registration', $allowedPhases)) {
             if ($currentPhase === 'upcoming') {
-                return 'Pendaftaran KKN belum dibuka. Fase saat ini: ' . $currentLabel . '. Silakan tunggu pengumuman dari LPPM.';
+                return 'Pendaftaran KKN belum dibuka. Fase saat ini: '.$currentLabel.'. Silakan tunggu pengumuman dari LPPM.';
             }
-            return 'Pendaftaran KKN sudah ditutup. Fase saat ini: ' . $currentLabel . '.';
+
+            return 'Pendaftaran KKN sudah ditutup. Fase saat ini: '.$currentLabel.'.';
         }
 
         if (in_array('execution', $allowedPhases)) {
             if (in_array($currentPhase, ['upcoming', 'registration', 'placement'])) {
-                return 'Fitur laporan harian belum tersedia. Fase pelaksanaan KKN belum dimulai. Fase saat ini: ' . $currentLabel . '.';
+                return 'Fitur laporan harian belum tersedia. Fase pelaksanaan KKN belum dimulai. Fase saat ini: '.$currentLabel.'.';
             }
-            return 'Fitur laporan harian sudah ditutup. Fase saat ini: ' . $currentLabel . '.';
+
+            return 'Fitur laporan harian sudah ditutup. Fase saat ini: '.$currentLabel.'.';
         }
 
         if (in_array('grading', $allowedPhases)) {
-            return 'Fitur penilaian belum tersedia. Fase saat ini: ' . $currentLabel . '.';
+            return 'Fitur penilaian belum tersedia. Fase saat ini: '.$currentLabel.'.';
         }
 
-        $allowed = array_map(fn($p) => $phaseLabels[$p] ?? $p, $allowedPhases);
-        return 'Fitur ini hanya tersedia pada fase: ' . implode(', ', $allowed) . '. Fase saat ini: ' . $currentLabel . '.';
+        $allowed = array_map(fn ($p) => $phaseLabels[$p] ?? $p, $allowedPhases);
+
+        return 'Fitur ini hanya tersedia pada fase: '.implode(', ', $allowed).'. Fase saat ini: '.$currentLabel.'.';
     }
 }

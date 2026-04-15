@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Imports;
 
 use App\Models\KKN\Evaluasi;
 use App\Models\KKN\ItemEvaluasi;
 use App\Models\KKN\Mahasiswa;
-use App\Models\KKN\KelompokKkn;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -13,6 +14,7 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 class EvaluationImport implements ToCollection
 {
     protected $kelompokId;
+
     protected $lecturerId;
 
     public function __construct($kelompokId, $lecturerId)
@@ -31,10 +33,14 @@ class EvaluationImport implements ToCollection
             $scoreDiscipline = $row[5] ?? null; // Column F: Nilai Kedisiplinan
             $scoreAttitude = $row[6] ?? null; // Column G: Nilai Sikap
 
-            if (!$nim) continue;
+            if (! $nim) {
+                continue;
+            }
 
             $mahasiswa = Mahasiswa::where('nim', $nim)->first();
-            if (!$mahasiswa) continue;
+            if (! $mahasiswa) {
+                continue;
+            }
 
             DB::transaction(function () use ($mahasiswa, $scoreDiscipline, $scoreAttitude) {
                 // Delete existing evaluation for this student/group/evaluator if exists
@@ -42,7 +48,7 @@ class EvaluationImport implements ToCollection
                     'mahasiswa_id' => $mahasiswa->id,
                     'kelompok_id' => $this->kelompokId,
                     'evaluator_id' => $this->lecturerId,
-                    'evaluator_type' => 'dpl'
+                    'evaluator_type' => 'dpl',
                 ])->delete();
 
                 $evaluasi = Evaluasi::create([
@@ -89,10 +95,19 @@ class EvaluationImport implements ToCollection
 
     private function calculateGrade($score)
     {
-        if ($score >= 85) return 'A';
-        if ($score >= 75) return 'B';
-        if ($score >= 65) return 'C';
-        if ($score >= 55) return 'D';
+        if ($score >= 85) {
+            return 'A';
+        }
+        if ($score >= 75) {
+            return 'B';
+        }
+        if ($score >= 65) {
+            return 'C';
+        }
+        if ($score >= 55) {
+            return 'D';
+        }
+
         return 'E';
     }
 }

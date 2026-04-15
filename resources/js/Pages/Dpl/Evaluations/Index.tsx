@@ -187,27 +187,27 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
 
             <div className="mx-auto max-w-[1600px] space-y-10 pb-20 font-sans">
                 {/* Academic Header */}
-                <header className="relative overflow-hidden rounded-[3rem] border border-emerald-100 bg-white p-12 md:p-16 shadow-sm">
+                <header className="relative overflow-hidden rounded-xl border border-emerald-100 bg-white p-12 md:p-16 shadow-sm">
                     <div className="absolute top-0 right-0 h-64 w-64 translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-50 opacity-20 blur-3xl" />
                     <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8 text-left">
                         <div className="space-y-4">
                             <div className="flex items-center gap-3">
                                 <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] leading-none">
+                                <span className="text-sm font-bold text-emerald-600 uppercase tracking-wider text-xs font-semibold leading-none">
                                     AKUNTABILITAS AKADEMIK
                                 </span>
                             </div>
-                            <h1 className="text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-none">
+                            <h1 className="text-2xl font-bold text-black tracking-tight leading-none">
                                 Input Nilai <span className="text-emerald-600">Terintegrasi.</span>
                             </h1>
-                            <p className="max-w-xl text-gray-500 font-medium text-lg leading-relaxed">
+                            <p className="max-w-xl text-emerald-950 font-medium text-lg leading-relaxed">
                                 Evaluasi capaian pengabdian mahasiswa berbasis kompetensi. Pastikan seluruh komponen Laporan, Artikel, dan Kinerja Lapangan telah terverifikasi.
                             </p>
                         </div>
                         <div className="flex gap-4">
                             <Button
                                 variant="outline"
-                                className="h-14 px-8 rounded-2xl border-2 border-slate-100 font-black text-xs uppercase tracking-widest gap-3"
+                                className="h-14 px-8 rounded-2xl border-2 border-emerald-100/60 font-bold text-xs font-semibold uppercase text-xs gap-3"
                                 onClick={() => router.get(route('dpl.evaluations.index'))}
                             >
                                 <FileSpreadsheet className="w-5 h-5 text-emerald-600" /> Unduh Template
@@ -221,8 +221,8 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                     {/* Left Side: Village Selector */}
                     <div className="space-y-6">
                         <div className="flex items-center gap-3 ml-2">
-                            <Users size={16} className="text-gray-400" />
-                            <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Pilih Kelompok Kerja</h3>
+                            <Users size={16} className="text-emerald-950" />
+                            <h3 className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs leading-none">Pilih Kelompok Kerja</h3>
                         </div>
                         <div className="grid gap-3">
                             {groups.map((group) => (
@@ -233,20 +233,20 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                                         bulkForm.setData('group_id', String(group.id));
                                     }}
                                     className={clsx(
-                                        "group p-6 rounded-[2rem] border-2 transition-all text-left relative overflow-hidden",
+                                        "group p-6 rounded-xl border-2 transition-all text-left relative overflow-hidden",
                                         selectedGroupId === String(group.id)
-                                            ? "bg-gray-900 border-slate-900 text-white shadow-xl shadow-slate-200"
-                                            : "bg-white border-slate-100 text-gray-600 hover:border-emerald-200"
+                                            ? "bg-emerald-900 border-emerald-900 text-white shadow-xl shadow-slate-200"
+                                            : "bg-white border-emerald-100/60 text-emerald-950 hover:border-emerald-200"
                                     )}
                                 >
                                     <div className="relative z-10 space-y-2">
-                                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60">#{group.id}</p>
-                                        <p className="text-lg font-black tracking-tight leading-none">{group.name}</p>
-                                        <p className="text-[11px] font-bold opacity-40">{group.period_name}</p>
+                                        <p className="text-sm font-bold font-semibold uppercase text-xs opacity-60">#{group.id}</p>
+                                        <p className="text-lg font-bold tracking-tight leading-none">{group.name}</p>
+                                        <p className="text-sm font-bold opacity-40">{group.period_name}</p>
                                     </div>
                                     <MapPin size={48} className={clsx(
                                         "absolute -bottom-4 -right-4 opacity-5 group-hover:opacity-10 transition-opacity",
-                                        selectedGroupId === String(group.id) ? "text-white" : "text-gray-900"
+                                        selectedGroupId === String(group.id) ? "text-white" : "text-black"
                                     )} />
                                 </button>
                             ))}
@@ -256,16 +256,16 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                     {/* Right Side: Bulk Spreadsheet */}
                     <div className="space-y-6">
                         {!selectedGroupId ? (
-                            <div className="rounded-[3rem] border-2 border-dashed border-slate-200 bg-slate-50/30 p-20 text-center">
+                            <div className="rounded-xl border-2 border-dashed border-emerald-100/60 bg-emerald-50/30/30 p-20 text-center">
                                 <Search className="mx-auto h-16 w-16 text-slate-200" strokeWidth={1} />
-                                <h3 className="mt-8 text-xl font-black text-slate-300 uppercase tracking-widest leading-none">Menunggu Pilihan</h3>
+                                <h3 className="mt-8 text-xl font-bold text-slate-300 font-semibold uppercase text-xs leading-none">Menunggu Pilihan</h3>
                                 <p className="mt-2 text-sm font-bold text-slate-300">Silahkan pilih kelompok di samping untuk memulai penilaian massa.</p>
                             </div>
                         ) : (
                             <form onSubmit={submitBulk} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                 {/* Search & Meta */}
-                                <div className="bg-white rounded-[2.5rem] border border-slate-200 p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
-                                    <div className="flex items-center gap-4 bg-slate-50 p-1 rounded-2xl border border-slate-100 w-full md:w-96">
+                                <div className="bg-white rounded-[2.5rem] border border-emerald-100/60 p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
+                                    <div className="flex items-center gap-4 bg-emerald-50/30 p-1 rounded-2xl border border-emerald-100/60 w-full md:w-96">
                                         <div className="pl-4 text-slate-300"><Search size={18} /></div>
                                         <input 
                                             type="text" 
@@ -279,7 +279,7 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                                     <div className="flex items-center gap-3">
                                         <div className="h-14 px-6 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-4">
                                             <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                                            <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">
+                                            <p className="text-sm font-bold text-emerald-700 font-semibold uppercase text-xs">
                                                 Status: {bulkForm.data.evaluations.length} dari {selectedGroup?.students.length} Terisi
                                             </p>
                                         </div>
@@ -289,7 +289,7 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                                                 type="button"
                                                 variant="outline"
                                                 onClick={autofillAllAi}
-                                                className="h-14 px-6 rounded-2xl border-2 border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-50 font-black text-[10px] uppercase tracking-[0.15em] flex items-center gap-3 transition-all"
+                                                className="h-14 px-6 rounded-2xl border-2 border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-50 font-bold text-sm uppercase tracking-[0.15em] flex items-center gap-3 transition-all"
                                             >
                                                 <Star size={16} fill="currentColor" /> Auto-fill Semua (AI)
                                             </Button>
@@ -297,7 +297,7 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                                         <Button 
                                             type="submit" 
                                             loading={bulkForm.processing}
-                                            className="h-14 px-10 rounded-2xl bg-gray-900 text-white hover:bg-emerald-600 font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-xl active:scale-95"
+                                            className="h-14 px-6 rounded-2xl bg-emerald-900 text-white hover:bg-emerald-600 font-bold text-xs font-semibold uppercase text-xs flex items-center gap-3 shadow-xl active:scale-95"
                                         >
                                             <Save size={18} /> Simpan Semua Nilai
                                         </Button>
@@ -305,43 +305,43 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                                 </div>
 
                                 {/* Spreadsheet Table */}
-                                <div className="bg-white rounded-[3rem] border border-slate-200 shadow-xl overflow-hidden overflow-x-auto">
+                                <div className="bg-white rounded-xl border border-emerald-100/60 shadow-xl overflow-hidden overflow-x-auto">
                                     <table className="w-full text-left border-collapse">
                                         <thead>
-                                            <tr className="bg-gray-900 text-white">
-                                                <th className="px-10 py-8 text-[11px] font-black uppercase tracking-widest sticky left-0 z-20 bg-gray-900">Mahasiswa & NIM</th>
+                                            <tr className="bg-emerald-900 text-white">
+                                                <th className="px-6 py-8 text-sm font-bold font-semibold uppercase text-xs sticky left-0 z-20 bg-emerald-900">Mahasiswa & NIM</th>
                                                 {categories.map((cat) => (
                                                     <th key={cat.key} className="px-6 py-8 text-center min-w-[120px]">
-                                                        <p className="text-[11px] font-black uppercase tracking-widest text-emerald-400 leading-none mb-1">{cat.label}</p>
-                                                        <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest">{cat.weight}%</p>
+                                                        <p className="text-sm font-bold font-semibold uppercase text-xs text-emerald-400 leading-none mb-1">{cat.label}</p>
+                                                        <p className="text-sm font-bold opacity-40 font-semibold uppercase text-xs">{cat.weight}%</p>
                                                     </th>
                                                 ))}
-                                                <th className="px-10 py-8 text-center min-w-[140px]">
-                                                    <p className="text-[11px] font-black uppercase tracking-widest text-white leading-none mb-1">Total Score</p>
-                                                    <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest">BOBOT AKHIR</p>
+                                                <th className="px-6 py-8 text-center min-w-[140px]">
+                                                    <p className="text-sm font-bold font-semibold uppercase text-xs text-white leading-none mb-1">Total Score</p>
+                                                    <p className="text-sm font-bold opacity-40 font-semibold uppercase text-xs">BOBOT AKHIR</p>
                                                 </th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-slate-100">
+                                        <tbody className="divide-y divide-emerald-100/60">
                                             {filteredStudents.map((student) => {
                                                 const total = calculateTotal(student.id);
                                                 const grade = getGrade(total);
                                                 
                                                 return (
-                                                    <tr key={student.id} className="group/row hover:bg-slate-50/50 transition-colors">
-                                                        <td className="px-10 py-6 sticky left-0 z-10 bg-white group-hover/row:bg-slate-50/50">
+                                                    <tr key={student.id} className="group/row hover:bg-emerald-50/30/50 transition-colors">
+                                                        <td className="px-6 py-6 sticky left-0 z-10 bg-white group-hover/row:bg-emerald-50/30/50">
                                                             <div className="flex items-center gap-4">
-                                                                <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center text-gray-400 font-black text-xs">
+                                                                <div className="h-10 w-10 rounded-xl bg-emerald-50/60 flex items-center justify-center text-emerald-950 font-bold text-xs">
                                                                     {student.name.charAt(0)}
                                                                 </div>
                                                                 <div>
-                                                                    <p className="text-sm font-black text-gray-900 leading-none mb-1">{student.name}</p>
+                                                                    <p className="text-sm font-bold text-black leading-none mb-1">{student.name}</p>
                                                                     <div className="flex items-center gap-3">
-                                                                        <p className="text-[10px] font-bold text-gray-400 font-mono tracking-tighter">{student.nim}</p>
+                                                                        <p className="text-sm font-bold text-emerald-950 font-mono tracking-tighter">{student.nim}</p>
                                                                         {student.ai_performance?.has_data && (
                                                                             <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-100/50">
                                                                                 <div className="h-1 w-1 rounded-full bg-indigo-400" />
-                                                                                <span className="text-[8px] font-bold text-indigo-600 uppercase">AI Audited • {student.ai_performance.avg_compliance}/10 ABCD</span>
+                                                                                <span className="text-sm font-bold text-indigo-600 uppercase">AI Audited • {student.ai_performance.avg_compliance}/10 ABCD</span>
                                                                             </div>
                                                                         )}
                                                                     </div>
@@ -358,10 +358,10 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                                                                     value={getScoreValue(student.id, cat.criterion)}
                                                                     onChange={(e) => handleScoreChange(student.id, cat.criterion, e.target.value)}
                                                                     className={clsx(
-                                                                        "h-12 w-20 text-center rounded-xl font-black text-sm border-2 transition-all p-0 focus:ring-0",
+                                                                        "h-12 w-20 text-center rounded-xl font-bold text-sm border-2 transition-all p-0 focus:ring-0",
                                                                         cat.is_extra 
-                                                                            ? "bg-slate-50 border-slate-100 focus:border-slate-400 focus:bg-white" 
-                                                                            : "bg-white border-slate-100 focus:border-emerald-500"
+                                                                            ? "bg-emerald-50/30 border-emerald-100/60 focus:border-slate-400 focus:bg-white" 
+                                                                            : "bg-white border-emerald-100/60 focus:border-emerald-500"
                                                                     )}
                                                                 />
                                                                 {cat.key === 'report' && student.ai_performance?.has_data && (
@@ -372,18 +372,18 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                                                                         title={`AI Suggested: ${student.ai_performance.suggested_admin_score}`}
                                                                     >
                                                                         <Star size={12} fill="currentColor" />
-                                                                        <div className="absolute bottom-full mb-2 left-1/2 -translateX-1/2 opacity-0 group-hover/ai:opacity-100 transition-opacity bg-gray-900 text-[8px] text-white px-2 py-1 rounded whitespace-nowrap z-50 pointer-events-none">
+                                                                        <div className="absolute bottom-full mb-2 left-1/2 -translateX-1/2 opacity-0 group-hover/ai:opacity-100 transition-opacity bg-emerald-900 text-sm text-white px-2 py-1 rounded whitespace-nowrap z-50 pointer-events-none">
                                                                             Saran AI: {student.ai_performance.suggested_admin_score}
                                                                         </div>
                                                                     </button>
                                                                 )}
                                                             </td>
                                                         ))}
-                                                        <td className="px-10 py-6 text-center">
+                                                        <td className="px-6 py-6 text-center">
                                                             <div className="flex items-center justify-center gap-4">
-                                                                <span className="text-xl font-black text-gray-900 tracking-tighter leading-none">{total}</span>
+                                                                <span className="text-xl font-bold text-black tracking-tighter leading-none">{total}</span>
                                                                 <div className={clsx(
-                                                                    "h-10 w-10 rounded-xl flex items-center justify-center text-[10px] font-black uppercase tracking-widest ring-1 ring-inset transition-all",
+                                                                    "h-10 w-10 rounded-xl flex items-center justify-center text-sm font-bold font-semibold uppercase text-xs ring-1 ring-inset transition-all",
                                                                     grade.color
                                                                 )}>
                                                                     {grade.label}
@@ -402,14 +402,14 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                 </div>
 
                 {/* Legend & SOP Notice */}
-                <footer className="bg-gray-900 rounded-[3rem] p-12 text-white/50 text-[10px] font-bold uppercase tracking-[0.2em] flex flex-col md:flex-row md:items-center justify-between gap-10">
+                <footer className="bg-emerald-900 rounded-xl p-12 text-white/50 text-sm font-bold uppercase tracking-wider text-xs font-semibold flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex items-center gap-8">
                         <div className="flex items-center gap-4">
                             <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_emerald]" />
                             <span>DPL Mandatory Components</span>
                         </div>
                         <div className="flex items-center gap-4">
-                            <div className="h-2 w-2 rounded-full bg-slate-600" />
+                            <div className="h-2 w-2 rounded-full bg-emerald-500 hover:bg-emerald-400" />
                             <span>Village Head Components</span>
                         </div>
                     </div>

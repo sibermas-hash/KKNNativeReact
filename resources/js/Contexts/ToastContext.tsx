@@ -155,7 +155,7 @@ function ToastContainer({
  <button
  type="button"
  onClick={() => onDismiss(toast.id)}
- className="rounded-lg p-1 text-slate-500 transition hover:bg-white/10 hover:text-white"
+ className="rounded-lg p-1 text-emerald-900 transition hover:bg-white/10 hover:text-white"
  >
  <XMarkIcon className="h-4 w-4" />
  </button>

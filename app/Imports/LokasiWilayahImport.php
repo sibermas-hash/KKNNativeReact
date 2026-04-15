@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Imports;
 
 use App\Models\KKN\Lokasi;
@@ -11,7 +13,9 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 class LokasiWilayahImport implements ToCollection, WithHeadingRow
 {
     public int $createdCount = 0;
+
     public int $updatedCount = 0;
+
     public int $skippedCount = 0;
 
     public function collection(Collection $rows): void

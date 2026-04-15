@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use const DIRECTORY_SEPARATOR;
+
 use App\Jobs\SyncMasterDataJob;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-use const DIRECTORY_SEPARATOR;
-
+/**
+ * @deprecated This controller is not used in routes.
+ *             Use WebhookController instead which is registered at /api/webhooks/master-data.
+ *             This file is kept for reference only and may be removed in future cleanup.
+ */
 class MasterWebhookController
 {
     public function handle(Request $request): JsonResponse
@@ -30,7 +35,7 @@ class MasterWebhookController
             return response()->json(['ok' => false, 'error' => 'Missing signature headers'], 401);
         }
 
-        if (!ctype_digit($timestamp)) {
+        if (! ctype_digit($timestamp)) {
             return response()->json(['ok' => false, 'error' => 'Invalid timestamp'], 401);
         }
 
@@ -48,12 +53,12 @@ class MasterWebhookController
             $sig = substr($sig, 7);
         }
 
-        if (!hash_equals($expected, (string) $sig)) {
+        if (! hash_equals($expected, (string) $sig)) {
             return response()->json(['ok' => false, 'error' => 'Invalid signature'], 401);
         }
 
         $payload = json_decode($rawBody, true);
-        if (!\is_array($payload)) {
+        if (! \is_array($payload)) {
             return response()->json(['ok' => false, 'error' => 'Invalid JSON'], 400);
         }
 
@@ -89,14 +94,14 @@ class MasterWebhookController
 
         $daily = $dir.DIRECTORY_SEPARATOR."laravel-{$today}.log";
         if (is_file($daily)) {
-            if (!chmod($daily, 0664)) {
+            if (! chmod($daily, 0664)) {
                 Log::warning('Failed to change log file permissions', ['file' => $daily]);
             }
         }
 
         $single = $dir.DIRECTORY_SEPARATOR.'laravel.log';
         if (is_file($single)) {
-            if (!chmod($single, 0664)) {
+            if (! chmod($single, 0664)) {
                 Log::warning('Failed to change log file permissions', ['file' => $single]);
             }
         }

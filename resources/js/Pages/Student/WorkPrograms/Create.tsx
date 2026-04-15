@@ -25,7 +25,7 @@ export default function StudentWorkProgramCreate() {
 
       <div className="mx-auto max-w-4xl space-y-10 pb-20">
         {/* --- HEADER --- */}
-        <section className="rounded-[2.5rem] border border-slate-100 bg-white p-10 lg:p-12 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-8 relative overflow-hidden group">
+        <section className="rounded-[2.5rem] border border-emerald-100/60 bg-white p-10 lg:p-12 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-8 relative overflow-hidden group">
           <div className="relative z-10 space-y-2">
             <div className="flex items-center gap-4 text-emerald-600 mb-2">
               <Link
@@ -34,34 +34,34 @@ export default function StudentWorkProgramCreate() {
               >
                 <ChevronLeft size={20} strokeWidth={2.5} />
               </Link>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
+              <span className="text-sm font-bold uppercase tracking-wider text-xs font-semibold opacity-60">
                 Kembali ke Daftar
               </span>
             </div>
-            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tighter uppercase leading-none">
+            <h1 className="text-3xl font-extrabold text-black tracking-tighter uppercase leading-none">
               Ajukan Proker
             </h1>
-            <p className="text-sm font-medium text-gray-400 italic">
+            <p className="text-sm font-medium text-emerald-950">
               "Membangun masyarakat dengan strategi ABCD yang terukur."
             </p>
           </div>
 
-          <div className="h-16 w-16 rounded-[1.5rem] bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm shrink-0">
+          <div className="h-16 w-16 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm shrink-0">
             <FolderPlus size={32} />
           </div>
         </section>
 
         <form onSubmit={handleSubmit} className="space-y-10">
-          <div className="rounded-[2.5rem] border border-slate-100 bg-white p-10 lg:p-12 shadow-sm space-y-8">
+          <div className="rounded-[2.5rem] border border-emerald-100/60 bg-white p-10 lg:p-12 shadow-sm space-y-8">
             <div className="flex items-center gap-4 border-b border-slate-50 pb-6 mb-4">
-              <div className="h-10 w-10 rounded-xl bg-slate-50 text-gray-400 flex items-center justify-center shadow-sm">
+              <div className="h-10 w-10 rounded-xl bg-emerald-50/30 text-emerald-950 flex items-center justify-center shadow-sm">
                 <Info size={20} />
               </div>
               <div>
-                <h2 className="text-lg font-black text-gray-900 uppercase tracking-tighter leading-none">
+                <h2 className="text-lg font-bold text-black font-bold text-center leading-none">
                   Klasifikasi & Inti
                 </h2>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1.5">
+                <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs mt-1.5">
                   Tentukan prioritas program Anda
                 </p>
               </div>
@@ -73,7 +73,7 @@ export default function StudentWorkProgramCreate() {
               value={data.kategori}
               onChange={(event) => setData('kategori', event.target.value)}
               error={errors.kategori}
-              className="rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white py-4 font-bold text-gray-700"
+              className="rounded-2xl bg-emerald-50/30/50 border-emerald-100/60 focus:bg-white py-4 font-bold text-emerald-700"
             >
               <option value="unggulan">PROGRAM UNGGULAN (Utama)</option>
               <option value="pendukung">PROGRAM PENDUKUNG (Rutin)</option>
@@ -86,7 +86,7 @@ export default function StudentWorkProgramCreate() {
               value={data.title}
               onChange={(event) => setData('title', event.target.value)}
               error={errors.title}
-              className="rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white py-4 font-bold text-gray-700"
+              className="rounded-2xl bg-emerald-50/30/50 border-emerald-100/60 focus:bg-white py-4 font-bold text-emerald-700"
             />
 
             <FormTextarea
@@ -95,20 +95,20 @@ export default function StudentWorkProgramCreate() {
               value={data.description}
               onChange={(event) => setData('description', event.target.value)}
               error={errors.description}
-              className="rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white py-4 font-medium min-h-[120px]"
+              className="rounded-2xl bg-emerald-50/30/50 border-emerald-100/60 focus:bg-white py-4 font-medium min-h-[120px]"
             />
           </div>
 
-          <div className="rounded-[2.5rem] border border-slate-100 bg-white p-10 lg:p-12 shadow-sm space-y-8">
+          <div className="rounded-[2.5rem] border border-emerald-100/60 bg-white p-10 lg:p-12 shadow-sm space-y-8">
             <div className="flex items-center gap-4 border-b border-slate-50 pb-6 mb-4">
               <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-400 flex items-center justify-center shadow-sm">
                 <Target size={20} />
               </div>
               <div>
-                <h2 className="text-lg font-black text-gray-900 uppercase tracking-tighter leading-none">
+                <h2 className="text-lg font-bold text-black font-bold text-center leading-none">
                   Target & Budgeting
                 </h2>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1.5">
+                <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs mt-1.5">
                   Estimasi kebutuhan dan tujuan akhir
                 </p>
               </div>
@@ -120,12 +120,12 @@ export default function StudentWorkProgramCreate() {
               value={data.objectives}
               onChange={(event) => setData('objectives', event.target.value)}
               error={errors.objectives}
-              className="rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white py-4 font-medium"
+              className="rounded-2xl bg-emerald-50/30/50 border-emerald-100/60 focus:bg-white py-4 font-medium"
             />
 
             <div className="grid gap-8 md:grid-cols-2">
               <div className="space-y-1">
-                <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                <label className="flex items-center gap-2 text-sm font-bold text-emerald-950 font-semibold uppercase text-xs ml-1">
                   <Users size={14} className="text-blue-500" /> Estimasi Peserta
                 </label>
                 <input
@@ -133,16 +133,16 @@ export default function StudentWorkProgramCreate() {
                   placeholder="0"
                   value={data.target_participants}
                   onChange={(event) => setData('target_participants', event.target.value)}
-                  className="w-full rounded-2xl bg-slate-50/50 border-slate-100 px-5 py-4 text-sm font-bold text-gray-600 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full rounded-2xl bg-emerald-50/30/50 border-emerald-100/60 px-5 py-4 text-sm font-bold text-emerald-950 focus:ring-emerald-500 focus:border-emerald-500"
                 />
                 {errors.target_participants && (
-                  <p className="text-[10px] font-bold text-rose-500 uppercase px-1">
+                  <p className="text-sm font-bold text-rose-500 uppercase px-1">
                     {errors.target_participants}
                   </p>
                 )}
               </div>
               <div className="space-y-1">
-                <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                <label className="flex items-center gap-2 text-sm font-bold text-emerald-950 font-semibold uppercase text-xs ml-1">
                   <Wallet size={14} className="text-amber-500" /> Anggaran (Rp)
                 </label>
                 <input
@@ -151,10 +151,10 @@ export default function StudentWorkProgramCreate() {
                   placeholder="0"
                   value={data.budget}
                   onChange={(event) => setData('budget', event.target.value)}
-                  className="w-full rounded-2xl bg-slate-50/50 border-slate-100 px-5 py-4 text-sm font-bold text-gray-600 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full rounded-2xl bg-emerald-50/30/50 border-emerald-100/60 px-5 py-4 text-sm font-bold text-emerald-950 focus:ring-emerald-500 focus:border-emerald-500"
                 />
                 {errors.budget && (
-                  <p className="text-[10px] font-bold text-rose-500 uppercase px-1">
+                  <p className="text-sm font-bold text-rose-500 uppercase px-1">
                     {errors.budget}
                   </p>
                 )}
@@ -165,14 +165,14 @@ export default function StudentWorkProgramCreate() {
           <div className="flex justify-end items-center gap-6">
             <Link
               href={route('student.program-kerja.index')}
-              className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] hover:text-gray-600 transition-colors"
+              className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold hover:text-emerald-950 transition-colors"
             >
               Batalkan Pengajuan
             </Link>
             <button
               type="submit"
               disabled={processing}
-              className="h-16 px-12 rounded-2xl bg-emerald-600 text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-emerald-200 transition-all hover:bg-emerald-700 active:scale-95 disabled:opacity-50 flex items-center gap-4"
+              className="h-16 px-6 rounded-2xl bg-emerald-600 text-white font-bold text-sm uppercase tracking-wider text-xs font-semibold shadow-xl shadow-emerald-200 transition-all hover:bg-emerald-700 active:scale-95 disabled:opacity-50 flex items-center gap-4"
             >
               {processing ? 'Transmitting...' : 'Ajukan Program Ke DPL'}
               <CheckCircle2 size={18} strokeWidth={3} />

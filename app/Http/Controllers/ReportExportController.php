@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\KKN\Dosen;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\PesertaKkn;
 use App\Services\DailyReportCompilationService;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -45,10 +47,10 @@ class ReportExportController extends Controller
 
         // DPL can only download reports for students in their groups
         if ($user->hasRole('dpl') && ! $user->hasRole('superadmin')) {
-            $dosen = \App\Models\KKN\Dosen::where('user_id', $user->id)->first();
+            $dosen = Dosen::where('user_id', $user->id)->first();
             abort_unless($dosen, 403);
             $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
-            $inGroup = \App\Models\KKN\PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
+            $inGroup = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
                 ->whereIn('kelompok_id', $groupIds)->exists();
             abort_unless($inGroup, 403, 'Mahasiswa bukan anggota kelompok Anda.');
         }
@@ -75,7 +77,7 @@ class ReportExportController extends Controller
 
         // DPL can only download reports for their own groups
         if ($user->hasRole('dpl') && ! $user->hasRole('superadmin')) {
-            $dosen = \App\Models\KKN\Dosen::where('user_id', $user->id)->first();
+            $dosen = Dosen::where('user_id', $user->id)->first();
             abort_unless($dosen, 403);
             $isAssigned = $dosen->kelompokKkn()->where('kelompok_kkn.id', $groupId)->exists();
             abort_unless($isAssigned, 403, 'Anda tidak memiliki akses ke kelompok ini.');

@@ -2,42 +2,47 @@
 
 namespace Database\Seeders;
 
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class FullLifecycleSimulationSeeder extends Seeder
 {
     public function run(): void
     {
-        if (!app()->environment('local', 'testing')) {
+        if (! app()->environment('local', 'testing')) {
             $this->command->error('This seeder can only run in local or testing environment.');
+
             return;
         }
 
         // 1. Ambil Periode 56 & Lokasi & DPL
         $periode = DB::table('periode')->where('periode', 56)->where('jenis', 'KKN Reguler')->first();
-        if (!$periode) return;
+        if (! $periode) {
+            return;
+        }
 
         $locations = DB::table('lokasi')->limit(3)->get();
         $dosens = DB::table('dosen')->limit(3)->get();
         $mahasiswas = DB::table('mahasiswa')->limit(30)->get();
 
-        if ($locations->count() < 3 || $dosens->count() < 3 || $mahasiswas->count() < 30) return;
+        if ($locations->count() < 3 || $dosens->count() < 3 || $mahasiswas->count() < 30) {
+            return;
+        }
 
         // Cleanup previous simulation data to avoid unique violations
-        DB::table('nilai_kkn')->whereIn('kelompok_id', function($query) use ($periode) {
+        DB::table('nilai_kkn')->whereIn('kelompok_id', function ($query) use ($periode) {
             $query->select('id')->from('kelompok_kkn')->where('period_id', $periode->id)->where('code', 'like', 'K56-%');
         })->delete();
-        
-        DB::table('kegiatan_kkn')->whereIn('kelompok_id', function($query) use ($periode) {
+
+        DB::table('kegiatan_kkn')->whereIn('kelompok_id', function ($query) use ($periode) {
             $query->select('id')->from('kelompok_kkn')->where('period_id', $periode->id)->where('code', 'like', 'K56-%');
         })->delete();
-        
-        DB::table('program_kerja')->whereIn('kelompok_id', function($query) use ($periode) {
+
+        DB::table('program_kerja')->whereIn('kelompok_id', function ($query) use ($periode) {
             $query->select('id')->from('kelompok_kkn')->where('period_id', $periode->id)->where('code', 'like', 'K56-%');
         })->delete();
-        
+
         DB::table('peserta_kkn')->where('period_id', $periode->id)->delete();
         DB::table('kelompok_kkn')->where('period_id', $periode->id)->where('code', 'like', 'K56-%')->delete();
 
@@ -48,10 +53,10 @@ class FullLifecycleSimulationSeeder extends Seeder
                 'period_id' => $periode->id,
                 'location_id' => $loc->id,
                 'dpl_id' => $dosens[$index]->id,
-                'code' => 'K56-0' . ($index + 1),
-                'nama_kelompok' => 'Kelompok 0' . ($index + 1) . ' - ' . $loc->village_name,
+                'code' => 'K56-0'.($index + 1),
+                'nama_kelompok' => 'Kelompok 0'.($index + 1).' - '.$loc->village_name,
                 'capacity' => 10,
-                'status' => 'active', 
+                'status' => 'active',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -66,7 +71,7 @@ class FullLifecycleSimulationSeeder extends Seeder
                 'mahasiswa_id' => $mhs->id,
                 'period_id' => $periode->id,
                 'kelompok_id' => $kelompokId,
-                'status' => 'approved', 
+                'status' => 'approved',
                 'registration_date' => Carbon::now()->subDays(10),
                 'approved_at' => Carbon::now()->subDays(9),
                 'joined_group_at' => Carbon::now()->subDays(9),
@@ -80,9 +85,9 @@ class FullLifecycleSimulationSeeder extends Seeder
                     'mahasiswa_id' => $mhs->id,
                     'kelompok_id' => $kelompokId,
                     'date' => Carbon::now()->subDays(4 - $days)->toDateString(),
-                    'title' => "Kegiatan Hari ke-$days di " . $locations[$kelompokIndex]->village_name,
-                    'activity' => "Melakukan observasi dan koordinasi dengan perangkat desa terkait program " . ($days == 1 ? 'Pendidikan' : 'Kesehatan'),
-                    'status' => $days == 1 ? 'approved' : 'submitted', 
+                    'title' => "Kegiatan Hari ke-$days di ".$locations[$kelompokIndex]->village_name,
+                    'activity' => 'Melakukan observasi dan koordinasi dengan perangkat desa terkait program '.($days == 1 ? 'Pendidikan' : 'Kesehatan'),
+                    'status' => $days == 1 ? 'approved' : 'submitted',
                     'abcd_stage' => 'discovery',
                     'location_name' => $locations[$kelompokIndex]->village_name,
                     'created_at' => now(),
@@ -114,19 +119,19 @@ class FullLifecycleSimulationSeeder extends Seeder
                 'kelompok_id' => $kId,
                 'title' => 'Digitalisasi Administrasi Desa',
                 'description' => 'Membantu perangkat desa dalam mengelola data penduduk secara digital.',
-                'status' => 'approved', 
+                'status' => 'approved',
                 'abcd_stage' => 'design',
                 'sdg_goals' => json_encode([4, 9]),
                 'kategori' => 'Pendidikan/Teknologi',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            
+
             DB::table('program_kerja')->insert([
                 'kelompok_id' => $kId,
                 'title' => 'Edukasi Stunting & Sanitasi',
                 'description' => 'Sosialisasi pencegahan stunting bagi ibu hamil dan balita.',
-                'status' => 'submitted', 
+                'status' => 'submitted',
                 'abcd_stage' => 'discovery',
                 'sdg_goals' => json_encode([3]),
                 'kategori' => 'Kesehatan',

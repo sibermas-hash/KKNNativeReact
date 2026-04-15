@@ -55,7 +55,7 @@ class EntityMapperService
         ];
     }
 
-    public function formatProgram(Program $program): array
+    public function formatProgram(Prodi $program): array
     {
         return [
             'code' => $program->code,
@@ -83,7 +83,7 @@ class EntityMapperService
                 ->map(fn ($m) => $this->formatMahasiswa($m))
                 ->toArray(),
 
-            'faculty' => Fakultas::all()
+            'faculty', 'organizations' => Fakultas::all()
                 ->map(fn ($f) => $this->formatFaculty($f))
                 ->toArray(),
 

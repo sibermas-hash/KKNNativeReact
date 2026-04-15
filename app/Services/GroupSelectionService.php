@@ -121,11 +121,14 @@ class GroupSelectionService
         }
 
         $period = $registration->periode()->lockForUpdate()->firstOrFail();
+        
+        // Pindahkan pengecekan ke sini agar dilakukan saat row Periode terkunci (Atomicity)
+        $this->assertCanLeaveCurrentGroup($registration, $period);
+
         KelompokKkn::query()
             ->whereKey($registration->kelompok_id)
             ->lockForUpdate()
             ->first();
-        $this->assertCanLeaveCurrentGroup($registration, $period);
 
         $queue = $this->ensureQueue($mahasiswa, $registration->period_id, true);
 

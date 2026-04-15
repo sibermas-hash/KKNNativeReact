@@ -4,33 +4,28 @@ declare(strict_types=1);
 
 namespace App\Models\KKN;
 
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Schema;
 
-use Illuminate\Database\Eloquent\Attributes\Connection;
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Casts;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-
-#[Connection('kkn')]
-#[Table('system_settings')]
-#[Fillable([
-    'config_key',
-        'label',
-        'value',
-        'type',
-        'group',
-])]
 class SystemSetting extends Model
 {
+    protected $connection = 'kkn';
+
+    protected $table = 'system_settings';
+
+    protected $fillable = [
+    'config_key',
+    'label',
+    'value',
+    'type',
+    'group',
+];
+
     use HasFactory;
-
-    
-
-    
 
     /**
      * Config keys that contain sensitive values and are encrypted in DB.
@@ -42,8 +37,6 @@ class SystemSetting extends Model
         'storage_secret',
     ];
 
-    
-
     /**
      * Get a setting value by key with caching. Decrypts secret values automatically.
      */
@@ -51,7 +44,7 @@ class SystemSetting extends Model
     {
         return Cache::remember("system_setting_{$key}", now()->addHours(24), function () use ($key, $default) {
             try {
-                if (! \Illuminate\Support\Facades\Schema::connection('kkn')->hasTable('system_settings')) {
+                if (! Schema::connection('kkn')->hasTable('system_settings')) {
                     return $default;
                 }
                 $setting = self::where('config_key', $key)->first();
@@ -63,7 +56,7 @@ class SystemSetting extends Model
                 if (in_array($key, self::SECRET_KEYS) && $value) {
                     try {
                         $value = Crypt::decryptString($value);
-                    } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                    } catch (DecryptException $e) {
                         // Value stored before encryption was added; return as-is
                     }
                 }

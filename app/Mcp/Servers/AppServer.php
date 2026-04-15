@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Mcp\Servers;
 
-use Laravel\Mcp\Server;
 use App\Mcp\Tools\GetStudentStats;
+use App\Models\KKN\Periode;
+use Laravel\Mcp\Server;
 
 class AppServer extends Server
 {
@@ -22,7 +23,7 @@ class AppServer extends Server
     public function resources(): array
     {
         return [
-            'kkn://active-period' => fn() => \App\Models\KKN\Periode::where('is_active', true)->first(),
+            'kkn://active-period' => fn () => Periode::where('is_active', true)->first(),
         ];
     }
 }

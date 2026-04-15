@@ -511,7 +511,7 @@ literasi digital dan harmonisasi sosial kemasyarakatan.
 Selaras dengan program Penguatan Ekoteologi,
 KKN Nusantara diharapkan menjadi bagian dari kegiatan
 keberlanjutan lingkungan, seperti gerakan penghijauan,
-pengelolaan sampah berbasis prinsip syariah, dan
+pengelolaan lingkungan berkelanjutan, dan
 konservasi sumber daya alam. Pendekatan ini bertujuan
 
 menanam kesadaran bahwa pelestarian lingkungan
@@ -555,7 +555,7 @@ identifikasi hoaks layanan keagamaan, dan
 pendampingan akun digital lembaga keagamaan untuk
 kampanye anti-hoaks.
 Ekoteologi
-Mahasiswa memfasilitasi penghijauan, bank sampah
+Mahasiswa memfasilitasi penghijauan, konservasi alam
 syariah, dan pembuatan kompos, disertai edukasi nilai
 agama tentang lingkungan.
 Pendidikan Unggul, Ramah, dan Terintegrasi
@@ -1154,7 +1154,7 @@ pada beberapa link berikut:
 
 https://bit.ly/Pendampingan_Budaya_Baca
 https://bit.ly/Pendampingan_Budaya_Literasi
-https://bit.ly/PengelolaanSampah_ABCD
+
 B. Laporan Akhir
 Laporan akhir KKN adalah rekaman pelaksanaan
 seluruh program atau kegiatan KKN yang bersifat

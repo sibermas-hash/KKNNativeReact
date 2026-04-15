@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Imports;
 
 use App\Models\KKN\Dosen;
@@ -14,9 +16,13 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 class DplAssignmentImport implements ToCollection, WithHeadingRow
 {
     public int $activatedCount = 0;
+
     public int $groupAssignmentCount = 0;
+
     public int $districtCoordinatorCount = 0;
+
     public int $provisionedAccountCount = 0;
+
     public int $skippedCount = 0;
 
     /** @var array<int, string> */
@@ -30,14 +36,14 @@ class DplAssignmentImport implements ToCollection, WithHeadingRow
     {
         // 1. Pre-fetch NIPs to bulk load Dosen to avoid O(N) queries
         $nips = $rows->pluck('nip')->filter()->unique()->toArray();
-        $lecturers = \App\Models\KKN\Dosen::whereIn('nip', $nips)->get()->keyBy('nip');
+        $lecturers = Dosen::whereIn('nip', $nips)->get()->keyBy('nip');
 
         // 2. Pre-fetch Periods that might be needed
         $periodIds = $rows->pluck('period_id')->filter()->unique()->toArray();
-        $periodsById = \App\Models\KKN\Periode::whereIn('id', $periodIds)->get()->keyBy('id');
-        
+        $periodsById = Periode::whereIn('id', $periodIds)->get()->keyBy('id');
+
         $periodNames = $rows->pluck('periode')->filter()->unique()->toArray();
-        $periodsByName = \App\Models\KKN\Periode::whereIn('name', $periodNames)
+        $periodsByName = Periode::whereIn('name', $periodNames)
             ->orWhereIn('periode', $periodNames)
             ->get();
 
@@ -45,22 +51,25 @@ class DplAssignmentImport implements ToCollection, WithHeadingRow
             $rowNumber = $index + 2;
             $nip = $this->value($row, ['nip']);
 
-            if (!filled($nip)) {
+            if (! filled($nip)) {
                 $this->skippedCount++;
+
                 continue;
             }
 
             // Use pre-fetched lecturer
             $dosen = $lecturers->get($nip);
-            if (!$dosen) {
+            if (! $dosen) {
                 $this->errors[] = "Baris {$rowNumber}: NIP {$nip} tidak ditemukan pada master dosen lokal.";
+
                 continue;
             }
 
             // Resolve period using pre-fetched data where possible
             $period = $this->resolvePeriodFromFetched($row, $periodsById, $periodsByName);
-            if (!$period) {
+            if (! $period) {
                 $this->errors[] = "Baris {$rowNumber}: periode tidak dikenali.";
+
                 continue;
             }
 
@@ -80,12 +89,12 @@ class DplAssignmentImport implements ToCollection, WithHeadingRow
 
                 $groupCode = $this->value($row, ['kode_kelompok', 'group_code']);
                 if (filled($groupCode)) {
-                    $group = \App\Models\KKN\KelompokKkn::query()
+                    $group = KelompokKkn::query()
                         ->where('period_id', $period->id)
                         ->where('code', $groupCode)
                         ->first();
 
-                    if (!$group) {
+                    if (! $group) {
                         $this->errors[] = "Baris {$rowNumber}: kelompok {$groupCode} tidak ditemukan pada periode terkait.";
                     } else {
                         $this->assignmentService->assignPrimaryGroup($dplPeriod, $group);
@@ -111,7 +120,7 @@ class DplAssignmentImport implements ToCollection, WithHeadingRow
         }
     }
 
-    private function resolvePeriodFromFetched(Collection $row, Collection $byId, Collection $byName): ?\App\Models\KKN\Periode
+    private function resolvePeriodFromFetched(Collection $row, Collection $byId, Collection $byName): ?Periode
     {
         $periodId = $this->value($row, ['period_id', 'periode_id']);
         if (filled($periodId) && is_numeric($periodId)) {
@@ -120,7 +129,7 @@ class DplAssignmentImport implements ToCollection, WithHeadingRow
 
         $periodName = $this->value($row, ['periode', 'period_name', 'nama_periode']);
         if (filled($periodName)) {
-            return $byName->first(fn($p) => $p->name === $periodName || $p->periode === $periodName);
+            return $byName->first(fn ($p) => $p->name === $periodName || $p->periode === $periodName);
         }
 
         return null;
@@ -164,7 +173,7 @@ class DplAssignmentImport implements ToCollection, WithHeadingRow
         }
 
         $districtName = $this->value($row, ['district_name', 'kecamatan']);
-        if (!filled($districtName)) {
+        if (! filled($districtName)) {
             return [null, null, null];
         }
 

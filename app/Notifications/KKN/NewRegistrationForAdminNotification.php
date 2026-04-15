@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications\KKN;
 
 use App\Models\KKN\PesertaKkn;
@@ -28,7 +30,7 @@ class NewRegistrationForAdminNotification extends Notification implements Should
         return (new MailMessage)
             ->subject("Pendaftaran Baru: {$this->studentName} — SIM-KKN UIN SAIZU")
             ->greeting("Halo, {$notifiable->name}")
-            ->line("Ada pendaftaran KKN baru yang menunggu verifikasi Anda.")
+            ->line('Ada pendaftaran KKN baru yang menunggu verifikasi Anda.')
             ->line("**Mahasiswa:** {$this->studentName}")
             ->line("**Periode:** {$this->periodName}")
             ->action('Review Pendaftaran', url('/admin/peserta-kkn'))

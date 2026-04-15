@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
 use App\Models\KKN\Periode;
@@ -61,13 +63,13 @@ class PeriodPolicy extends BasePolicy
             return $bypassResult;
         }
 
-        if (!$user->hasRole('dpl')) {
+        if (! $user->hasRole('dpl')) {
             return false;
         }
 
         // DPL can only view their assigned periods
         $dosen = $user->dosen;
-        if (!$dosen) {
+        if (! $dosen) {
             return false;
         }
 

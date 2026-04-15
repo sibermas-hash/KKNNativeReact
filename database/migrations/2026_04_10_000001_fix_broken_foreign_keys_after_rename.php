@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * Fix broken foreign key constraints after table renames.
      * When tables were renamed, FK constraints still reference old table names.
      */
@@ -25,7 +25,7 @@ return new class extends Migration
                         $table->dropForeign($fk['name']);
                     }
                 }
-                
+
                 // Add correct FK
                 $table->foreignId('program_kerja_id')
                     ->constrained('program_kerja')
@@ -34,25 +34,25 @@ return new class extends Migration
         }
 
         // Add missing indexes for performance
-        if (Schema::hasTable('laporan_akhir') && !Schema::hasIndex('laporan_akhir', 'idx_laporan_mahasiswa')) {
+        if (Schema::hasTable('laporan_akhir') && ! Schema::hasIndex('laporan_akhir', 'idx_laporan_mahasiswa')) {
             Schema::table('laporan_akhir', function (Blueprint $table) {
                 $table->index('mahasiswa_id', 'idx_laporan_mahasiswa');
             });
         }
 
-        if (Schema::hasTable('monitoring_dpl') && !Schema::hasIndex('monitoring_dpl', 'idx_monitoring_periode')) {
+        if (Schema::hasTable('monitoring_dpl') && ! Schema::hasIndex('monitoring_dpl', 'idx_monitoring_periode')) {
             Schema::table('monitoring_dpl', function (Blueprint $table) {
                 $table->index('periode_id', 'idx_monitoring_periode');
             });
         }
 
-        if (Schema::hasTable('slot_terkunci') && !Schema::hasIndex('slot_terkunci', 'idx_slot_fakultas')) {
+        if (Schema::hasTable('slot_terkunci') && ! Schema::hasIndex('slot_terkunci', 'idx_slot_fakultas')) {
             Schema::table('slot_terkunci', function (Blueprint $table) {
                 $table->index('fakultas_id', 'idx_slot_fakultas');
             });
         }
 
-        if (Schema::hasTable('slot_terkunci') && !Schema::hasIndex('slot_terkunci', 'idx_slot_prodi')) {
+        if (Schema::hasTable('slot_terkunci') && ! Schema::hasIndex('slot_terkunci', 'idx_slot_prodi')) {
             Schema::table('slot_terkunci', function (Blueprint $table) {
                 $table->index('prodi_id', 'idx_slot_prodi');
             });
@@ -90,8 +90,8 @@ return new class extends Migration
 
         if (Schema::hasTable('slot_terkunci')) {
             try {
-                DB::statement("ALTER TABLE slot_terkunci DROP CONSTRAINT chk_slot_terkunci_type_consistency");
-            } catch (\Exception $e) {
+                DB::statement('ALTER TABLE slot_terkunci DROP CONSTRAINT chk_slot_terkunci_type_consistency');
+            } catch (Exception $e) {
                 // Constraint might not exist, ignore
             }
         }

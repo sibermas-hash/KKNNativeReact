@@ -1,14 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands\KKN;
 
 use App\Models\KKN\KegiatanKkn;
-use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Periode;
+use App\Models\KKN\PesertaKkn;
 use App\Notifications\KknActivityNotification;
-use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Notification;
 
 class CheckStudentDisciplineCommand extends Command
 {
@@ -41,6 +41,7 @@ class CheckStudentDisciplineCommand extends Command
 
         if ($activePeriods->isEmpty()) {
             $this->warn('Tidak ada periode KKN yang aktif berjalan hari ini.');
+
             return;
         }
 
@@ -62,7 +63,7 @@ class CheckStudentDisciplineCommand extends Command
                     ->whereDate('date', '>=', $thresholdDate)
                     ->exists();
 
-                if (!$hasRecentLog) {
+                if (! $hasRecentLog) {
                     $this->warn("Mahasiswa bolos: {$participant->mahasiswa->nama} ({$participant->mahasiswa->nim})");
                     $foundCount++;
 
@@ -83,7 +84,7 @@ class CheckStudentDisciplineCommand extends Command
                         $participant->mahasiswa->user->notify(new KknActivityNotification([
                             'type' => 'danger',
                             'title' => 'Peringatan Kritis!',
-                            'message' => "Anda tidak mengisi logbook selama 3 hari. Sesuai Panduan KKN 56, meninggalkan lokasi > 3 hari tanpa keterangan dianggap mengundurkan diri.",
+                            'message' => 'Anda tidak mengisi logbook selama 3 hari. Sesuai Panduan KKN 56, meninggalkan lokasi > 3 hari tanpa keterangan dianggap mengundurkan diri.',
                             'icon' => 'shield-exclamation',
                             'action' => route('student.laporan-harian.index'),
                         ]));

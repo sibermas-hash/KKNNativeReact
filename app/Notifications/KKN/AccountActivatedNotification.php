@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications\KKN;
 
 use Illuminate\Bus\Queueable;
@@ -29,15 +31,15 @@ class AccountActivatedNotification extends Notification implements ShouldQueue
             ->subject('Akses SIM-KKN UIN SAIZU Anda Telah Aktif')
             ->greeting("Assalamu'alaikum, {$this->name}")
             ->line("Akun Anda sebagai **{$this->roleLabel}** pada portal SIM-KKN UIN SAIZU telah diaktifkan oleh Administrator.")
-            ->line("Berikut adalah detail login Anda:")
+            ->line('Berikut adalah detail login Anda:')
             ->line("- **Username:** {$this->username}")
-            ->line("- **URL Login:** " . url('/login'));
+            ->line('- **URL Login:** '.url('/login'));
 
         if ($this->tempPassword) {
             $mail->line("- **Password Sementara:** {$this->tempPassword}")
-                 ->line("Segera ganti kata sandi Anda setelah berhasil login untuk keamanan akun.");
+                ->line('Segera ganti kata sandi Anda setelah berhasil login untuk keamanan akun.');
         } else {
-            $mail->line("Silakan gunakan kata sandi yang telah ditentukan atau yang disinkronkan dari database pusat.");
+            $mail->line('Silakan gunakan kata sandi yang telah ditentukan atau yang disinkronkan dari database pusat.');
         }
 
         return $mail

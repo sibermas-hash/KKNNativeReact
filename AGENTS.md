@@ -110,3 +110,14 @@ docker-compose exec app php artisan migrate
 - Saat perubahan menyentuh alur role tertentu, cek rute + middleware phase di file route role terkait terlebih dahulu.
 - Untuk isu data/aturan bisnis, prioritaskan pembacaan service di `app/Services/**` sebelum controller.
 - Untuk bug UI, mulai dari page Inertia di `resources/js/Pages/**`, lalu telusuri ke komponen reusable di `resources/js/Components/**`.
+
+## Standarisasi UI/UX
+- **Desain Utama**: "Full Clean Emerald" (Latar belakang putih bersih dengan aksen Hijau Emerald).
+- **Tipografi & Warna**:
+  - Gunakan warna teks yang **gelap dan kontras tinggi** (contoh: `text-emerald-950`).
+  - **Dilarang** menggunakan warna font yang pudar/light (seperti `emerald-300` atau opacity `/50`) untuk konten utama/label penting.
+  - **Dilarang keras** menggunakan warna hitam murni (#000000) atau token `black`.
+  - Gunakan `emerald-600` untuk penekanan (high contrast accent).
+- **Bahasa**: Gunakan Bahasa Indonesia yang profesional, santun, dan **mudah dimengerti khalayak umum** (hindari jargon teknis database/sistem).
+- **Komponen**: Gunakan komponen dari `resources/js/Components/Premium/` untuk elemen konsistensi tinggi.
+

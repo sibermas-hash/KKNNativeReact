@@ -1,9 +1,25 @@
 <?php
 
+use App\Http\Middleware\CspHeaders;
+use App\Http\Middleware\DisableDebugbar;
+use App\Http\Middleware\EnsurePasswordChanged;
+use App\Http\Middleware\EnsurePhase;
+use App\Http\Middleware\EnsureUserIsActive;
+use App\Http\Middleware\HandleActivePeriod;
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\KknThrottleMiddleware;
+use App\Http\Middleware\RestrictDebugbarAccess;
+use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\ValidateApiKey;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+use Inertia\Inertia;
+use Spatie\Permission\Middleware\PermissionMiddleware;
+use Spatie\Permission\Middleware\RoleMiddleware;
+use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -38,28 +54,28 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->web(append: [
-            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
-            \App\Http\Middleware\HandleInertiaRequests::class,
-            \App\Http\Middleware\HandleActivePeriod::class,
-            \App\Http\Middleware\CspHeaders::class,
-            \App\Http\Middleware\SecurityHeaders::class,
-            \App\Http\Middleware\EnsurePasswordChanged::class,
-            \App\Http\Middleware\EnsureUserIsActive::class,
+            ValidateCsrfToken::class,
+            HandleInertiaRequests::class,
+            HandleActivePeriod::class,
+            CspHeaders::class,
+            SecurityHeaders::class,
+            EnsurePasswordChanged::class,
+            EnsureUserIsActive::class,
         ]);
 
         $middleware->api(append: [
-            \App\Http\Middleware\EnsureUserIsActive::class,
+            EnsureUserIsActive::class,
         ]);
 
         $middleware->alias([
-            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
-            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
-            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
-            'kkn.throttle' => \App\Http\Middleware\KknThrottleMiddleware::class,
-            'api.key' => \App\Http\Middleware\ValidateApiKey::class,
-            'disable.debugbar' => \App\Http\Middleware\DisableDebugbar::class,
-            'restrict.debugbar' => \App\Http\Middleware\RestrictDebugbarAccess::class,
-            'phase' => \App\Http\Middleware\EnsurePhase::class,
+            'role' => RoleMiddleware::class,
+            'permission' => PermissionMiddleware::class,
+            'role_or_permission' => RoleOrPermissionMiddleware::class,
+            'kkn.throttle' => KknThrottleMiddleware::class,
+            'api.key' => ValidateApiKey::class,
+            'disable.debugbar' => DisableDebugbar::class,
+            'restrict.debugbar' => RestrictDebugbarAccess::class,
+            'phase' => EnsurePhase::class,
         ]);
 
         $middleware->redirectGuestsTo('/login');
@@ -80,18 +96,18 @@ return Application::configure(basePath: dirname(__DIR__))
             if (in_array($status, [500, 503, 404, 403])) {
                 // If it's an Inertia request or we want to force Inertia error page
                 if ($request->header('X-Inertia') || $request->expectsJson()) {
-                    return \Inertia\Inertia::render('Error', [
+                    return Inertia::render('Error', [
                         'status' => $status,
                         'message' => $status === 403 ? $e->getMessage() : null,
                     ])
-                    ->toResponse($request)
-                    ->setStatusCode($status);
+                        ->toResponse($request)
+                        ->setStatusCode($status);
                 }
             }
 
             if ($status === 419) {
                 if ($request->isMethod('GET')) {
-                    return \Inertia\Inertia::location($request->fullUrl());
+                    return Inertia::location($request->fullUrl());
                 }
 
                 return back()->with([

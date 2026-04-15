@@ -6,8 +6,18 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ApiKey;
+use App\Models\KKN\Fakultas;
+use App\Models\KKN\Lokasi;
+use App\Models\KKN\Periode;
+use App\Models\KKN\Prodi;
+use App\Models\KKN\TahunAkademik;
+use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\Dosen;
+use App\Models\KKN\KelompokKkn;
+use App\Models\Project;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PublicDataController extends Controller
 {
@@ -15,20 +25,26 @@ class PublicDataController extends Controller
      * Map table names to their respective Eloquent Models for integrity enforcement.
      */
     private const MODEL_MAP = [
-        'fakultas' => \App\Models\KKN\Fakultas::class,
-        'prodi' => \App\Models\KKN\Prodi::class,
-        'lokasi' => \App\Models\KKN\Lokasi::class,
-        'periode' => \App\Models\KKN\Periode::class,
-        'tahun_akademik' => \App\Models\KKN\TahunAkademik::class,
-        '_projects' => \App\Models\Project::class,
+        'mahasiswa' => Mahasiswa::class,
+        'dosen' => Dosen::class,
+        'fakultas' => Fakultas::class,
+        'prodi' => Prodi::class,
+        'kelompok_kkn' => KelompokKkn::class,
+        'lokasi' => Lokasi::class,
+        'periode' => Periode::class,
+        'tahun_akademik' => TahunAkademik::class,
+        '_projects' => Project::class,
     ];
 
     /**
      * Strict allowlist of writable columns per table via public API.
      */
     private const WRITABLE_COLUMNS = [
+        'mahasiswa' => [],
+        'dosen' => [],
         'fakultas' => [],
         'prodi' => [],
+        'kelompok_kkn' => [],
         'lokasi' => [],
         'periode' => [],
         'tahun_akademik' => [],
@@ -155,7 +171,7 @@ class PublicDataController extends Controller
 
             return $this->apiResponse(true, 'Data berhasil ditambahkan.', $record, 201);
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('PublicData API error', ['exception' => $e]);
+            Log::error('PublicData API error', ['exception' => $e]);
 
             return $this->apiResponse(false, 'Terjadi kesalahan pada server.', null, 500);
         }
@@ -187,7 +203,7 @@ class PublicDataController extends Controller
 
             return $this->apiResponse(true, 'Data berhasil diupdate dan disinkronkan.', $record->fresh());
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('PublicData API error', ['exception' => $e]);
+            Log::error('PublicData API error', ['exception' => $e]);
 
             return $this->apiResponse(false, 'Terjadi kesalahan pada server.', null, 500);
         }
@@ -238,7 +254,7 @@ class PublicDataController extends Controller
 
         // Ensure model has explicitly defined fillable columns
         if (empty($fillable)) {
-            \Illuminate\Support\Facades\Log::warning('API Security: Model has no fillable columns', [
+            Log::warning('API Security: Model has no fillable columns', [
                 'table' => $table,
                 'model' => get_class($model),
             ]);

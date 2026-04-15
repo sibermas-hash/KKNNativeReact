@@ -19,7 +19,7 @@ const variantStyles: Record<Variant, string> = {
     ghost: 'text-primary-700 hover:bg-primary-50 active:bg-primary-100',
     outline: 'border border-primary-200 bg-white text-primary-700 hover:bg-primary-50 hover:border-primary-400 active:bg-primary-100',
     link: 'text-primary-600 underline-offset-4 hover:underline',
-    clean: 'border border-slate-200 bg-white text-xs font-semibold text-slate-500 hover:border-primary-400 hover:text-primary-600 shadow-sm transition-all active:scale-95'
+    clean: 'border border-emerald-100/60 bg-white text-xs font-semibold text-emerald-950 hover:border-primary-400 hover:text-primary-600 shadow-sm transition-all active:scale-95'
 };
 
 const sizeStyles: Record<Size, string> = {

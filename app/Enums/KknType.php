@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enums;
 
 enum KknType: string
@@ -15,7 +17,7 @@ enum KknType: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::REGULER => __('KKN Reguler'),
             self::NUSANTARA => __('KKN Nusantara'),
             self::INTERNASIONAL => __('KKN Terpadu Internasional Mandiri'),
@@ -27,10 +29,10 @@ enum KknType: string
             self::DESA_KATANA => __('KKN Tematik Desa Katana'),
         };
     }
-    
+
     public function description(): string
     {
-        return match($this) {
+        return match ($this) {
             self::REGULER => __('KKN wajib (Gasal/Genap, minimal 100 SKS, durasi 40 hari).'),
             self::NUSANTARA => __('KKN tingkat nasional berbasis Asta Protas Kemenag RI (Min 85 SKS, IPK 3.25).'),
             self::INTERNASIONAL => __('KKN di wilayah Asia Tenggara dengan masa tinggal minimal 1 bulan (Min 100 SKS, IPK 3.25).'),
@@ -44,7 +46,7 @@ enum KknType: string
 
     public function registrationMode(): string
     {
-        return match($this) {
+        return match ($this) {
             self::REGULER => 'open', // Pendaftaran mandiri
             self::TEMATIK, self::RESPONSIF, self::KAMPUNG_ZAKAT, self::DESA_KATANA => 'proposal_based', // Berbasis program dosen
             default => 'selective', // Seleksi khusus panitia
@@ -53,7 +55,7 @@ enum KknType: string
 
     public function placementMode(): string
     {
-        return match($this) {
+        return match ($this) {
             self::REGULER => 'automatic_after_approval', // Sistem yang menempatkan
             self::TEMATIK, self::RESPONSIF, self::KAMPUNG_ZAKAT, self::DESA_KATANA => 'proposal_defined', // Mengikuti proposal
             self::INTERNASIONAL, self::KOLABORASI_PTKIN => 'host_defined', // Ditentukan mitra/host
@@ -69,7 +71,7 @@ enum KknType: string
     // Helper untuk mapping ke kolom database lama (legacy compatibility)
     public function getProgramType(): string
     {
-        return match($this) {
+        return match ($this) {
             self::REGULER => 'reguler',
             self::NUSANTARA => 'nusantara',
             self::INTERNASIONAL => 'internasional_mandiri',
@@ -80,7 +82,7 @@ enum KknType: string
 
     public function getProgramSubtype(): ?string
     {
-        return match($this) {
+        return match ($this) {
             self::KAMPUNG_ZAKAT => 'kampung_zakat',
             self::DESA_KATANA => 'desa_katana',
             default => null,

@@ -31,6 +31,6 @@ return [
     ],
 
     // Rate limit: max requests per minute per API key.
-    'rate_limit' => (int)env('API_KEY_RATE_LIMIT', 60),
+    'rate_limit' => (int) env('API_KEY_RATE_LIMIT', 60),
 
 ];

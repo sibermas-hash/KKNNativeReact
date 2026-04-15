@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\KKN\DispensasiKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
@@ -14,24 +15,26 @@ class EligibilityService
     /**
      * Check if a student is eligible to register for KKN
      */
-    public function checkEligibility(Mahasiswa $mahasiswa, ?int $periodeId = null): array
+    public function checkEligibility(Mahasiswa $mahasiswa, ?int $periodeId = null, array $preloadedData = []): array
     {
-        $periode = Periode::find($periodeId) ?? Periode::getActivePeriod();
+        $periode = $preloadedData['periode'] ?? Periode::find($periodeId) ?? Periode::getActivePeriod();
 
         $checks = [
             'registration_window' => $this->checkRegistrationWindow($periode),
-            'no_prior_completion' => $this->checkNoPriorCompletion($mahasiswa),
-            'min_sks' => $this->checkMinimumSKS($mahasiswa, $periode),
-            'min_gpa' => $this->checkMinimumGPA($mahasiswa, $periode),
+            'no_prior_completion' => $this->checkNoPriorCompletion($mahasiswa, $preloadedData['completed_ids'] ?? null),
+            'min_sks' => $this->checkMinimumSKS($mahasiswa, $periode, $preloadedData['settings'] ?? []),
+            'min_gpa' => $this->checkMinimumGPA($mahasiswa, $periode, $preloadedData['settings'] ?? []),
             'bta_ppi' => $this->checkBtaPpi($mahasiswa),
             'program_prodi' => $this->checkProgramProdiRestriction($mahasiswa, $periode),
             'personal_status' => $this->checkPersonalStatusMandate($mahasiswa, $periode),
             'documents' => $this->checkDocuments($mahasiswa),
-            'no_active_registration' => $this->checkNoActiveRegistration($mahasiswa, $periodeId),
+            'no_active_registration' => $this->checkNoActiveRegistration($mahasiswa, $periodeId, $preloadedData['active_reg_ids'] ?? null),
         ];
 
         // Apply dispensasi bypass — override failed checks if student has active dispensasi
-        $bypassed = \App\Models\KKN\DispensasiKkn::getBypassedRequirements($mahasiswa->nim, $periodeId);
+        $bypassed = $preloadedData['dispensations'][$mahasiswa->nim]
+            ?? DispensasiKkn::getBypassedRequirements($mahasiswa->nim, $periodeId);
+
         $hasDispensasi = ! empty($bypassed);
 
         if ($hasDispensasi) {
@@ -89,11 +92,13 @@ class EligibilityService
     /**
      * Check no prior KKN completion
      */
-    private function checkNoPriorCompletion(Mahasiswa $mahasiswa): array
+    private function checkNoPriorCompletion(Mahasiswa $mahasiswa, ?array $preloadedIds = null): array
     {
-        $hasCompleted = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
-            ->where('status', 'completed')
-            ->exists();
+        $hasCompleted = $preloadedIds 
+            ? isset($preloadedIds[$mahasiswa->id])
+            : PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
+                ->where('status', 'completed')
+                ->exists();
 
         return [
             'passed' => ! $hasCompleted,
@@ -260,17 +265,14 @@ class EligibilityService
     /**
      * Check no active registration in other periods
      */
-    private function checkNoActiveRegistration(Mahasiswa $mahasiswa, ?int $currentPeriodeId = null): array
+    private function checkNoActiveRegistration(Mahasiswa $mahasiswa, ?int $currentPeriodeId = null, ?array $preloadedIds = null): array
     {
-        $query = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
-            ->whereIn('status', ['pending', 'approved']);
-
-        // FIX C3: Exclude current period to avoid false positives
-        if ($currentPeriodeId) {
-            $query->where('period_id', '!=', $currentPeriodeId);
-        }
-
-        $hasActive = $query->exists();
+        $hasActive = $preloadedIds 
+            ? isset($preloadedIds[$mahasiswa->id])
+            : PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
+                ->whereIn('status', ['pending', 'approved'])
+                ->when($currentPeriodeId, fn($q) => $q->where('period_id', '!=', $currentPeriodeId))
+                ->exists();
 
         return [
             'passed' => ! $hasActive,
@@ -286,6 +288,8 @@ class EligibilityService
      */
     public function getEligibleStudents(?int $periodeId = null, ?int $facultyId = null)
     {
+        $periode = $periodeId ? Periode::with('jenisKkn')->find($periodeId) : Periode::getActivePeriod();
+        
         $query = Mahasiswa::with(['user', 'prodi.fakultas', 'fakultas']);
 
         if ($facultyId) {
@@ -293,12 +297,45 @@ class EligibilityService
         }
 
         $students = $query->get();
+        $studentIds = $students->pluck('id')->toArray();
+        $studentNims = $students->pluck('nim')->toArray();
+
+        // BATCH PRE-LOADING: Avoid N+1 queries in loop
+        $completedIds = PesertaKkn::whereIn('mahasiswa_id', $studentIds)
+            ->where('status', 'completed')
+            ->pluck('mahasiswa_id')
+            ->toArray();
+
+        $activeRegIds = PesertaKkn::whereIn('mahasiswa_id', $studentIds)
+            ->whereIn('status', ['pending', 'approved'])
+            ->when($periodeId, fn($q) => $q->where('period_id', '!=', $periodeId))
+            ->pluck('mahasiswa_id')
+            ->toArray();
+
+        $dispensations = DispensasiKkn::whereIn('nim', $studentNims)
+            ->where(function($q) use ($periodeId) {
+                $q->whereNull('period_id')->orWhere('period_id', $periodeId);
+            })
+            ->get()
+            ->groupBy('nim')
+            ->map(fn($items) => $items->flatMap(fn($i) => $i->bypassed_requirements ?? [])->filter()->unique()->values()->toArray())
+            ->toArray();
+
+        $settings = SystemSetting::pluck('value', 'config_key')->toArray();
+
+        $preloadedData = [
+            'periode' => $periode,
+            'completed_ids' => array_flip($completedIds),
+            'active_reg_ids' => array_flip($activeRegIds),
+            'dispensations' => $dispensations,
+            'settings' => $settings,
+        ];
 
         $eligible = [];
         $notEligible = [];
 
         foreach ($students as $student) {
-            $result = $this->checkEligibility($student, $periodeId);
+            $result = $this->checkEligibility($student, $periodeId, $preloadedData);
             if ($result['is_eligible']) {
                 $eligible[] = $result;
             } else {

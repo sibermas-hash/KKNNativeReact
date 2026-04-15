@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
+use App\Models\KKN\LogAudit;
 use Illuminate\Console\Command;
 
 class PruneAuditLogs extends Command
@@ -22,7 +25,7 @@ class PruneAuditLogs extends Command
 
         $this->info("Menghapus log audit yang lebih lama dari {$date->toDateTimeString()}...");
 
-        $count = \App\Models\KKN\LogAudit::where('created_at', '<', $date)->delete();
+        $count = LogAudit::where('created_at', '<', $date)->delete();
 
         $this->info("Berhasil di-prune: {$count} record.");
     }

@@ -7,16 +7,15 @@ namespace App\Models\KKN;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-use Illuminate\Database\Eloquent\Attributes\Connection;
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Casts;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
+class JenisKkn extends Model
+{
 
-#[Connection('kkn')]
-#[Table('jenis_kkn')]
-#[Fillable([
-    'code',
+    protected $table = 'jenis_kkn';
+
+    protected $connection = 'kkn';
+
+    protected $fillable = [
+        'code',
         'name',
         'description',
         'registration_mode',
@@ -26,20 +25,12 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
         'color',
         'is_active',
         'sort_order',
-])]
-#[Casts([
-    'is_active' => 'boolean',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
         'min_gpa' => 'decimal:2',
-])]
-class JenisKkn extends Model
-{
-    
-
-    
-
-    
-
-    
+    ];
 
     // ─── Label helpers ─────────────────────────────────
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
@@ -41,15 +43,18 @@ class DatabaseBackup extends Command
         try {
             if ($driver !== 'pgsql') {
                 $this->warn("Driver {$driver} tidak didukung. Proyek ini sekarang hanya mendukung backup PostgreSQL.");
+
                 return 1;
             }
 
             $this->warn('Backup otomatis PostgreSQL belum diimplementasikan tanpa utilitas pg_dump.');
             $this->warn('Gunakan backup operasional PostgreSQL dari server atau pipeline infrastruktur.');
+
             return 1;
 
         } catch (\Exception $e) {
-            $this->error("Backup failed: " . $e->getMessage());
+            $this->error('Backup failed: '.$e->getMessage());
+
             return 1;
         }
     }

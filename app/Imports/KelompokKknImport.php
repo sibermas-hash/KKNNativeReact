@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Imports;
 
 use App\Models\KKN\KelompokKkn;
@@ -13,7 +15,9 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 class KelompokKknImport implements ToCollection, WithHeadingRow
 {
     public int $createdCount = 0;
+
     public int $updatedCount = 0;
+
     public int $skippedCount = 0;
 
     /** @var array<int, string> */

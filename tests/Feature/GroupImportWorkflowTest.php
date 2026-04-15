@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\Periode;
 use App\Models\User;

@@ -11,16 +11,23 @@ use App\Http\Requests\Dpl\ValidateEvaluationImportRequest;
 use App\Models\KKN\Evaluasi;
 use App\Models\KKN\ItemEvaluasi;
 use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\KonfigurasiPenilaian;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use App\Services\GradingService;
+use App\Services\KKN\GradeConversionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Concurrency;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Facades\Excel;
 
 class EvaluationController extends Controller
@@ -45,7 +52,7 @@ class EvaluationController extends Controller
     private function calculateWeightedDplScore(float $reportScore, float $executionScore, float $articleScore, KelompokKkn $group): float
     {
         $kknType = $group->getKknType();
-        $configs = \App\Models\KKN\KonfigurasiPenilaian::getForType($kknType)->pluck('percentage', 'config_key');
+        $configs = KonfigurasiPenilaian::getForType($kknType)->pluck('percentage', 'config_key');
 
         return round(
             ($reportScore * (floatval($configs['weight_dpl_report'] ?? 30) / 100)) +
@@ -101,12 +108,12 @@ class EvaluationController extends Controller
             ->get();
 
         // LARAVEL 13 OPTIMIZATION: Concurrency for Parallel AI Data Fetching
-        $studentIds = $groups->flatMap(fn($g) => $g->peserta->pluck('mahasiswa_id'))->filter()->unique()->values();
-        
-        $aiPerformanceData = \Illuminate\Support\Facades\Concurrency::run(
-            $studentIds->map(fn($id) => fn() => [
+        $studentIds = $groups->flatMap(fn ($g) => $g->peserta->pluck('mahasiswa_id'))->filter()->unique()->values();
+
+        $aiPerformanceData = Concurrency::run(
+            $studentIds->map(fn ($id) => fn () => [
                 'id' => $id,
-                'data' => $this->gradingService->getAiPerformanceSummary((int) $id)
+                'data' => $this->gradingService->getAiPerformanceSummary((int) $id),
             ])->toArray()
         );
         $aiLookup = collect($aiPerformanceData)->pluck('data', 'id');
@@ -146,15 +153,15 @@ class EvaluationController extends Controller
     public function validateImport(ValidateEvaluationImportRequest $request): Response|RedirectResponse
     {
         $group = KelompokKkn::with(['peserta.mahasiswa', 'periode'])->findOrFail($request->group_id);
-        \Illuminate\Support\Facades\Gate::authorize('update', [Evaluasi::class, $group]);
+        Gate::authorize('update', [Evaluasi::class, $group]);
 
         if (! $this->checkGradingPeriod($group)) {
             return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
         }
 
-        $rows = Excel::toCollection(new class implements \Maatwebsite\Excel\Concerns\ToCollection
+        $rows = Excel::toCollection(new class implements ToCollection
         {
-            public function collection(\Illuminate\Support\Collection $rows) {}
+            public function collection(Collection $rows) {}
         }, $request->file('file'))->first();
 
         // --- SMART COLUMN DETECTION ---
@@ -247,7 +254,7 @@ class EvaluationController extends Controller
     public function import(ImportEvaluationRequest $request): RedirectResponse
     {
         $group = KelompokKkn::with('periode')->findOrFail($request->group_id);
-        \Illuminate\Support\Facades\Gate::authorize('update', [Evaluasi::class, $group]);
+        Gate::authorize('update', [Evaluasi::class, $group]);
 
         if (! $this->checkGradingPeriod($group)) {
             return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
@@ -275,7 +282,7 @@ class EvaluationController extends Controller
                 $isMember = $this->studentBelongsToGroup((int) $item['id'], (int) $groupId);
 
                 if (! $isMember) {
-                    \Illuminate\Support\Facades\Log::warning('DPL attempted to grade non-member student', [
+                    Log::warning('DPL attempted to grade non-member student', [
                         'student_id' => $item['id'],
                         'group_id' => $groupId,
                         'dpl_id' => $lecturerId,
@@ -328,7 +335,7 @@ class EvaluationController extends Controller
                     (float) $item['article_score'],
                     $group
                 );
-                $eval->update(['total_score' => $total, 'grade' => \App\Services\KKN\GradeConversionService::convert($total)['grade']]);
+                $eval->update(['total_score' => $total, 'grade' => GradeConversionService::convert($total)['grade']]);
 
                 // Sync to NilaiKkn (Centralized)
                 $mahasiswa = $students->get($item['id']);
@@ -377,7 +384,7 @@ class EvaluationController extends Controller
     {
         $validated = $request->validated();
         $group = KelompokKkn::with('periode')->findOrFail($validated['group_id']);
-        \Illuminate\Support\Facades\Gate::authorize('create', [Evaluasi::class, $group]);
+        Gate::authorize('create', [Evaluasi::class, $group]);
 
         if (! $this->checkGradingPeriod($group)) {
             return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
@@ -421,7 +428,7 @@ class EvaluationController extends Controller
 
             // Recalculate based on central config for precision
             $finalScore = $this->calculateWeightedDplScore($reportScore, $executionScore, $articleScore, $group);
-            $grade = \App\Services\KKN\GradeConversionService::convert($finalScore)['grade'];
+            $grade = GradeConversionService::convert($finalScore)['grade'];
 
             $evaluation->update([
                 'total_score' => $finalScore,

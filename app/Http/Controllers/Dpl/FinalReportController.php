@@ -6,8 +6,10 @@ namespace App\Http\Controllers\Dpl;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\LaporanAkhir;
+use App\Notifications\KknActivityNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -15,7 +17,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FinalReportController extends Controller
 {
-    private function assignedGroupIds(): \Illuminate\Support\Collection
+    private function assignedGroupIds(): Collection
     {
         $dosen = auth()->user()->dosen;
         abort_if(! $dosen, 403, 'Data dosen tidak ditemukan.');
@@ -129,7 +131,7 @@ class FinalReportController extends Controller
 
         // Notify student
         if ($report->mahasiswa?->user) {
-            $report->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
+            $report->mahasiswa->user->notify(new KknActivityNotification([
                 'type' => 'success',
                 'title' => 'Laporan Akhir Disetujui',
                 'message' => 'Laporan akhir Anda ('.e($report->title).') telah disetujui oleh DPL.',
@@ -163,7 +165,7 @@ class FinalReportController extends Controller
 
         // Notify student
         if ($report->mahasiswa?->user) {
-            $report->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
+            $report->mahasiswa->user->notify(new KknActivityNotification([
                 'type' => 'warning',
                 'title' => 'Revisi Laporan Akhir',
                 'message' => 'Laporan akhir Anda memerlukan perbaikan. Catatan: '.e($validated['notes']),

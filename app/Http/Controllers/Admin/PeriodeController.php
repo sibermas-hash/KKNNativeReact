@@ -10,15 +10,20 @@ use App\Models\KKN\JenisKkn;
 use App\Models\KKN\Periode;
 use App\Models\KKN\TahunAkademik;
 use App\Services\Admin\PeriodeService;
+use App\Services\KKN\PeriodeGovernanceService;
 use App\Traits\HandlesPagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use Laravel\Ai\AnonymousAgent;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -64,13 +69,15 @@ class PeriodeController extends Controller
                     ->withCount(['kelompok', 'peserta', 'dplPeriods'])
                     ->when($search, function ($query, $search) {
                         $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
-                        $query->where('periode', 'like', "%{$s}%")
-                            ->orWhere('jenis', 'like', "%{$s}%")
-                            ->orWhere('name', 'like', "%{$s}%")
-                            ->orWhereHas('jenisKkn', function ($q) use ($s) {
-                                $q->where('name', 'ilike', "%{$s}%")
-                                    ->orWhere('code', 'ilike', "%{$s}%");
-                            });
+                        $query->where(function ($q) use ($s) {
+                            $q->where(DB::raw('CAST(periode AS TEXT)'), 'like', "%{$s}%")
+                                ->orWhere('jenis', 'like', "%{$s}%")
+                                ->orWhere('name', 'like', "%{$s}%")
+                                ->orWhereHas('jenisKkn', function ($q) use ($s) {
+                                    $q->where('name', 'ilike', "%{$s}%")
+                                        ->orWhere('code', 'ilike', "%{$s}%");
+                                });
+                        });
                     })
                     ->when($request->jenis_kkn_id, function ($query, $jenisKknId) {
                         $query->where('jenis_kkn_id', $jenisKknId);
@@ -125,6 +132,7 @@ class PeriodeController extends Controller
                 if ($academicYearsQuery->count() === 0) {
                     $academicYearsQuery = TahunAkademik::orderByDesc('year');
                 }
+
                 return $academicYearsQuery->get()->map(fn ($ay) => ['id' => $ay->id, 'year' => $ay->year]);
             }),
             'jenisKkn' => Inertia::defer(function () {
@@ -132,19 +140,26 @@ class PeriodeController extends Controller
                     ->map(fn ($j) => ['id' => $j->id, 'name' => $j->name, 'code' => $j->code]);
             }),
             'filters' => $request->only(['search', 'jenis_kkn_id']),
+            'totalStats' => Inertia::defer(function () {
+                return [
+                    'active_count' => Periode::where('is_active', true)->count(),
+                    'total_groups' => DB::connection('kkn')->table('kelompok_kkn')->count(),
+                    'total_participants' => DB::connection('kkn')->table('peserta_kkn')->count(),
+                    'upcoming_registrations' => Periode::where('current_phase', 'registration')->count(),
+                ];
+            }),
             'programOptions' => Inertia::defer(function () {
                 $cacheKey = 'periode_program_options';
-                
+
                 if (Cache::has($cacheKey)) {
-                    Cache::touch($cacheKey, 3600);
                     return Cache::get($cacheKey);
                 }
 
                 $jenisKkns = JenisKkn::query()->active()->ordered()->get();
-                
+
                 $options = [
                     'types' => $jenisKkns->map(function (JenisKkn $jenisKkn) {
-                        $governance = \App\Services\KKN\PeriodeGovernanceService::blueprint(
+                        $governance = PeriodeGovernanceService::blueprint(
                             $jenisKkn->code,
                             null,
                             $jenisKkn->code,
@@ -172,19 +187,21 @@ class PeriodeController extends Controller
                 ];
 
                 Cache::put($cacheKey, $options, 3600);
+
                 return $options;
             }),
             'aiInsights' => Inertia::defer(function () {
                 try {
-                    if (class_exists(\Laravel\Ai\AnonymousAgent::class)) {
-                        return \Laravel\Ai\AnonymousAgent::make(
-                            instructions: 'Anda adalah asisten admin KKN yang ahli dalam manajemen akademik.'
-                        )->prompt('Berikan ringkasan singkat strategi manajemen untuk KKN periode 2026/2027 berdasarkan meta-data sistem.')
-                         ->content();
+                    if (class_exists(AnonymousAgent::class)) {
+                        return AnonymousAgent::make(
+                            instructions: 'Anda adalah asisten admin KKN yang ahli dalam manajemen akademik namun komunikatif kepada publik.'
+                        )->prompt('Berikan ringkasan singkat strategi manajemen untuk KKN periode 2026/2027 berdasarkan meta-data sistem. Gunakan bahasa Indonesia yang santun, jelas, dan mudah dimengerti oleh khalayak umum tanpa istilah teknis database.')
+                            ->content();
                     }
                 } catch (\Exception $e) {
                     return 'AI Insight sedang tidak tersedia.';
                 }
+
                 return null;
             }),
         ]);
@@ -195,7 +212,7 @@ class PeriodeController extends Controller
         Gate::authorize('manage-master-data');
 
         $periode->load(['tahunAkademik']);
-        
+
         $stats = [
             'total_students' => DB::connection('kkn')->table('peserta_kkn')->where('period_id', $periode->id)->count(),
             'total_groups' => DB::connection('kkn')->table('kelompok_kkn')->where('period_id', $periode->id)->count(),
@@ -211,8 +228,8 @@ class PeriodeController extends Controller
                 'id' => $periode->id,
                 'name' => $periode->name,
                 'academic_year' => $periode->tahunAkademik ? [
-                    'id' => $periode->tahunAkademik->id, 
-                    'name' => $periode->tahunAkademik->year
+                    'id' => $periode->tahunAkademik->id,
+                    'name' => $periode->tahunAkademik->year,
                 ] : ['name' => '—'],
                 'registration_start' => $periode->registration_start?->format('Y-m-d'),
                 'registration_end' => $periode->registration_end?->format('Y-m-d'),
@@ -238,12 +255,12 @@ class PeriodeController extends Controller
         } catch (\DomainException $e) {
             return redirect()->back()->withErrors(['start_date' => $e->getMessage()])->withInput();
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Periode Store Error: ' . $e->getMessage(), [
+            Log::error('Periode Store Error: '.$e->getMessage(), [
                 'payload' => $request->except(['_token']),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
-            return redirect()->back()->withErrors(['name' => 'Gagal menyimpan data: ' . $e->getMessage()])->withInput();
+
+            return redirect()->back()->withErrors(['name' => 'Gagal menyimpan data: '.$e->getMessage()])->withInput();
         }
     }
 
@@ -257,13 +274,13 @@ class PeriodeController extends Controller
         } catch (\DomainException $e) {
             return redirect()->back()->withErrors(['start_date' => $e->getMessage()])->withInput();
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Periode Update Error: ' . $e->getMessage(), [
+            Log::error('Periode Update Error: '.$e->getMessage(), [
                 'id' => $periode->id,
                 'payload' => $request->except(['_token']),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
-            return redirect()->back()->withErrors(['name' => 'Gagal memperbarui data: ' . $e->getMessage()])->withInput();
+
+            return redirect()->back()->withErrors(['name' => 'Gagal memperbarui data: '.$e->getMessage()])->withInput();
         }
     }
 
@@ -271,9 +288,10 @@ class PeriodeController extends Controller
     {
         try {
             $this->periodeService->duplicate($periode);
+
             return redirect()->route('admin.periode.index')->with('success', 'Struktur periode dan kelompok berhasil diduplikasi.');
         } catch (\Exception $e) {
-            return redirect()->route('admin.periode.index')->with('error', 'Gagal menduplikasi periode: ' . $e->getMessage());
+            return redirect()->route('admin.periode.index')->with('error', 'Gagal menduplikasi periode: '.$e->getMessage());
         }
     }
 
@@ -281,11 +299,12 @@ class PeriodeController extends Controller
     {
         try {
             $this->periodeService->delete($periode);
+
             return redirect()->route('admin.periode.index')->with('success', 'Periode KKN berhasil dihapus.');
         } catch (\DomainException $e) {
             return redirect()->route('admin.periode.index')->with('error', $e->getMessage());
         } catch (\Exception $e) {
-            return redirect()->route('admin.periode.index')->with('error', 'Gagal menghapus periode: ' . $e->getMessage());
+            return redirect()->route('admin.periode.index')->with('error', 'Gagal menghapus periode: '.$e->getMessage());
         }
     }
 
@@ -317,7 +336,7 @@ class PeriodeController extends Controller
 
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => '2563EB']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => '2563EB']],
         ];
         $sheet->getStyle('A1:O1')->applyFromArray($headerStyle);
 
@@ -358,7 +377,7 @@ class PeriodeController extends Controller
             mkdir($exportDir, 0750, true);
         }
 
-        $tempFile = $exportDir.'/'.\Illuminate\Support\Str::uuid().'.xlsx';
+        $tempFile = $exportDir.'/'.Str::uuid().'.xlsx';
         try {
             $writer->save($tempFile);
 
@@ -367,7 +386,7 @@ class PeriodeController extends Controller
             if (file_exists($tempFile)) {
                 unlink($tempFile);
             }
-            \Illuminate\Support\Facades\Log::error('Periode export failed', ['exception' => $e]);
+            Log::error('Periode export failed', ['exception' => $e]);
             abort(500, 'Gagal mengekspor data periode.');
         }
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Auth;
 
 use Illuminate\Auth\Events\Lockout;
@@ -35,7 +37,7 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (!Auth::attempt($this->credentials(), $this->boolean('remember'))) {
+        if (! Auth::attempt($this->credentials(), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -49,7 +51,7 @@ class LoginRequest extends FormRequest
     protected function credentials(): array
     {
         $loginValue = $this->loginIdentifier();
-        
+
         // Determine if the input is an email or username
         $field = filter_var($loginValue, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
@@ -62,7 +64,7 @@ class LoginRequest extends FormRequest
 
     protected function ensureIsNotRateLimited(): void
     {
-        if (!RateLimiter::tooManyAttempts($this->throttleKey(), 3)) {
+        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 3)) {
             return;
         }
 
@@ -80,6 +82,6 @@ class LoginRequest extends FormRequest
 
     protected function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->loginIdentifier()) . '|' . $this->ip());
+        return Str::transliterate(Str::lower($this->loginIdentifier()).'|'.$this->ip());
     }
 }

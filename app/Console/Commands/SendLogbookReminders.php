@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
-use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Periode;
+use App\Models\KKN\PesertaKkn;
 use App\Notifications\KKN\DailyLogbookReminderNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -25,6 +27,7 @@ class SendLogbookReminders extends Command
 
         if ($activePeriods->isEmpty()) {
             $this->info('No active KKN periods in execution phase. Skipping.');
+
             return self::SUCCESS;
         }
 
@@ -43,7 +46,7 @@ class SendLogbookReminders extends Command
 
             foreach ($lazyParticipants as $peserta) {
                 $user = $peserta->mahasiswa?->user;
-                if (!$user) {
+                if (! $user) {
                     continue;
                 }
 

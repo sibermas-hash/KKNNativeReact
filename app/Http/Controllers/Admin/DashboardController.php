@@ -6,11 +6,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\KegiatanKkn;
+use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Periode;
+use App\Models\KKN\PesertaKkn;
 use App\Services\DashboardStatisticsService;
 use App\Services\GroupSelectionService;
+use App\Services\KKN\FacultyScopeService;
 use App\Services\KKN\IntelligenceService;
 use App\Services\PeriodContextService;
+use App\Services\RedisCacheService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -94,10 +98,10 @@ class DashboardController extends Controller
                 if (! $periodId) {
                     return [];
                 }
-                $query = \App\Models\KKN\PesertaKkn::with(['mahasiswa.user', 'periode'])
+                $query = PesertaKkn::with(['mahasiswa.user', 'periode'])
                     ->where('period_id', $periodId);
 
-                return \App\Services\KKN\FacultyScopeService::apply($query, 'mahasiswa.faculty_id')
+                return FacultyScopeService::apply($query, 'mahasiswa.faculty_id')
                     ->latest('registration_date')
                     ->take(5)
                     ->get();
@@ -107,7 +111,7 @@ class DashboardController extends Controller
                     return [];
                 }
 
-                $query = \App\Models\KKN\KelompokKkn::query()
+                $query = KelompokKkn::query()
                     ->where('period_id', $periodId)
                     ->with('lokasi')
                     ->withCount([
@@ -116,7 +120,7 @@ class DashboardController extends Controller
                     ])
                     ->whereHas('lokasi', fn ($q) => $q->whereNotNull('latitude')->whereNotNull('longitude'));
 
-                return \App\Services\KKN\FacultyScopeService::apply($query, 'peserta.mahasiswa.faculty_id')
+                return FacultyScopeService::apply($query, 'peserta.mahasiswa.faculty_id')
                     ->get()
                     ->map(fn ($group) => [
                         'id' => $group->id,
@@ -137,7 +141,7 @@ class DashboardController extends Controller
                 $query = KegiatanKkn::query()
                     ->where('date', '>=', now()->subDays(14));
 
-                $trends = \App\Services\KKN\FacultyScopeService::apply($query, 'mahasiswa.faculty_id')
+                $trends = FacultyScopeService::apply($query, 'mahasiswa.faculty_id')
                     ->select(DB::raw('date as date'), DB::raw('count(*) as count'))
                     ->groupBy('date')
                     ->get()
@@ -148,6 +152,7 @@ class DashboardController extends Controller
                     'count' => $trends->get($date, 0),
                 ])->values();
             }),
+            /* 
             'intelligence' => Inertia::defer(function () use ($user) {
                 $facultyId = $user?->hasRole('faculty_admin') ? $user?->faculty_id : null;
                 $anomalies = $this->intelligenceService->getHighRiskAnomalies($facultyId);
@@ -157,6 +162,7 @@ class DashboardController extends Controller
                     'anomalies' => $anomalies->take(5),
                 ];
             }),
+            */
             'current_phase' => $currentPhase,
             'active_period_id' => (int) $periodId,
             'active_period_name' => $periodData instanceof Periode ? ($periodData->name ?? $periodData->periode ?? '-') : ($periodData['name'] ?? $periodData['periode'] ?? '-'),
@@ -236,54 +242,12 @@ class DashboardController extends Controller
         ]);
 
         $period = Periode::findOrFail($request->period_id);
-        $now = now()->startOfDay();
 
+        // OPSI B: Mutasi State Otorisasi murni, tanpa merusak atau menyentuh jadwal riil.
         $updateData = ['current_phase' => $request->target];
 
-        switch ($request->target) {
-            case 'upcoming':
-                $updateData = array_merge($updateData, [
-                    'registration_start' => $now->copy()->addDays(7),
-                    'registration_end' => $now->copy()->addDays(14),
-                    'start_date' => $now->copy()->addDays(21),
-                    'end_date' => $now->copy()->addDays(61),
-                ]);
-                break;
-            case 'registration':
-                $updateData = array_merge($updateData, [
-                    'registration_start' => $now,
-                    'registration_end' => $now->copy()->addDays(7),
-                ]);
-                break;
-            case 'placement':
-                $updateData = array_merge($updateData, [
-                    'registration_end' => $now->copy()->subDay(),
-                    'start_date' => $now->copy()->addDays(3),
-                ]);
-                break;
-            case 'execution':
-                $updateData = array_merge($updateData, [
-                    'registration_end' => $now->copy()->subDays(7),
-                    'start_date' => $now,
-                    'end_date' => $now->copy()->addDays(40),
-                ]);
-                break;
-            case 'grading':
-                $updateData = array_merge($updateData, [
-                    'end_date' => $now->copy()->subDay(),
-                    'grading_start' => $now,
-                    'grading_end' => $now->copy()->addDays(14),
-                ]);
-                break;
-            case 'finished':
-                $updateData = array_merge($updateData, [
-                    'grading_end' => $now,
-                ]);
-                break;
-        }
-
         $period->update($updateData);
-        \App\Services\RedisCacheService::invalidateMasterData();
+        RedisCacheService::invalidateMasterData();
 
         return back()->with('success', 'Fase berhasil dipindahkan ke: '.$request->target);
     }
@@ -292,7 +256,7 @@ class DashboardController extends Controller
 
     private function registrationContext(int $periodId, ?int $facultyId): array
     {
-        $query = \App\Models\KKN\PesertaKkn::where('period_id', $periodId);
+        $query = PesertaKkn::where('period_id', $periodId);
         if ($facultyId) {
             $query->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
         }
@@ -317,7 +281,7 @@ class DashboardController extends Controller
 
     private function placementContext(int $periodId, ?int $facultyId): array
     {
-        $query = \App\Models\KKN\PesertaKkn::where('period_id', $periodId)
+        $query = PesertaKkn::where('period_id', $periodId)
             ->where('status', 'approved');
         if ($facultyId) {
             $query->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
@@ -325,8 +289,8 @@ class DashboardController extends Controller
 
         $approved = (clone $query)->count();
         $assigned = (clone $query)->whereNotNull('kelompok_id')->count();
-        $totalGroups = \App\Models\KKN\KelompokKkn::where('period_id', $periodId)->count();
-        
+        $totalGroups = KelompokKkn::where('period_id', $periodId)->count();
+
         $unassigned = $approved - $assigned;
 
         return [
@@ -350,13 +314,13 @@ class DashboardController extends Controller
 
         $queryReports = KegiatanKkn::where('date', $today);
         if ($facultyId) {
-            $queryReports = \App\Services\KKN\FacultyScopeService::apply($queryReports, 'mahasiswa.faculty_id');
+            $queryReports = FacultyScopeService::apply($queryReports, 'mahasiswa.faculty_id');
         }
         $todayReports = (clone $queryReports)->count();
-        $totalStudents = \App\Models\KKN\PesertaKkn::where('period_id', $periodId)
-                ->whereIn('status', ['approved', 'active'])
-                ->whereNotNull('kelompok_id')
-                ->count();
+        $totalStudents = PesertaKkn::where('period_id', $periodId)
+            ->whereIn('status', ['approved', 'active'])
+            ->whereNotNull('kelompok_id')
+            ->count();
 
         return [
             'hint' => 'KKN sedang berlangsung. Pantau aktivitas harian mahasiswa.',
@@ -373,7 +337,7 @@ class DashboardController extends Controller
 
     private function gradingContext(int $periodId, ?int $facultyId): array
     {
-        $totalStudents = \App\Models\KKN\PesertaKkn::where('period_id', $periodId)
+        $totalStudents = PesertaKkn::where('period_id', $periodId)
             ->whereIn('status', ['approved', 'active'])
             ->whereNotNull('kelompok_id')
             ->count();
@@ -381,7 +345,7 @@ class DashboardController extends Controller
         // Count students who have been graded via nilai_kkn (joined through kelompok_id)
         $gradedStudents = 0;
         try {
-            $groupIds = \App\Models\KKN\KelompokKkn::where('period_id', $periodId)
+            $groupIds = KelompokKkn::where('period_id', $periodId)
                 ->pluck('id');
             $gradedStudents = DB::connection('kkn')
                 ->table('nilai_kkn')

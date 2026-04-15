@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications\KKN;
 
 use App\Models\KKN\IzinMeninggalkan;
@@ -29,7 +31,7 @@ class StudentLeaveRequestedNotification extends Notification implements ShouldQu
 
         return (new MailMessage)
             ->subject("Permohonan Izin Meninggalkan Lokasi KKN: {$mhsName}")
-            ->greeting("Halo, Bapak/Ibu DPL")
+            ->greeting('Halo, Bapak/Ibu DPL')
             ->line("Mahasiswa bimbingan Anda, **{$mhsName}**, mengajukan izin untuk meninggalkan lokasi KKN.")
             ->line("- **Mulai:** {$mulai}")
             ->line("- **Kembali:** {$kembali}")

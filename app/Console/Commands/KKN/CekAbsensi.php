@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands\KKN;
 
 use App\Models\KKN\AbsensiHarian;
@@ -8,7 +10,6 @@ use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\PesertaKkn;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class CekAbsensi extends Command
 {
@@ -35,14 +36,16 @@ class CekAbsensi extends Command
         $this->info("Processing attendance for: {$date}");
 
         $activeParticipants = PesertaKkn::where('status', 'approved')
-            ->whereHas('periode', fn($q) => $q->where('is_active', true))
+            ->whereHas('periode', fn ($q) => $q->where('is_active', true))
             ->with(['mahasiswa', 'kelompok'])
             ->get();
 
         $count = 0;
 
         foreach ($activeParticipants as $peserta) {
-            if (!$peserta->mahasiswa_id || !$peserta->kelompok_id) continue;
+            if (! $peserta->mahasiswa_id || ! $peserta->kelompok_id) {
+                continue;
+            }
 
             $status = 'tanpa_keterangan';
             $izinId = null;
@@ -72,12 +75,12 @@ class CekAbsensi extends Command
             AbsensiHarian::updateOrCreate(
                 [
                     'mahasiswa_id' => $peserta->mahasiswa_id,
-                    'tanggal' => $date
+                    'tanggal' => $date,
                 ],
                 [
                     'kelompok_id' => $peserta->kelompok_id,
                     'status' => $status,
-                    'izin_id' => $izinId
+                    'izin_id' => $izinId,
                 ]
             );
             $count++;

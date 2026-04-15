@@ -17,7 +17,7 @@ class KegiatanKknFactory extends Factory
             'mahasiswa_id' => Mahasiswa::factory(),
             'kelompok_id' => KelompokKkn::factory(),
             'date' => $this->faker->date(),
-            'title' => 'Kegiatan ' . $this->faker->words(3, true),
+            'title' => 'Kegiatan '.$this->faker->words(3, true),
             'activity' => $this->faker->paragraph(),
             'reflection' => $this->faker->sentence(),
             'output' => $this->faker->sentence(),

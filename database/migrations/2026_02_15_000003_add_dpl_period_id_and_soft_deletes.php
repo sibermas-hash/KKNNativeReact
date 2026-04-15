@@ -15,7 +15,7 @@ return new class extends Migration
         // 1. Add dpl_period_id to kelompok_kkn (alongside existing dpl_id)
         Schema::table('kelompok_kkn', function (Blueprint $table) {
             $table->foreignId('dpl_period_id')->nullable()->after('dpl_id')
-                  ->constrained('dpl_periods')->nullOnDelete();
+                ->constrained('dpl_periods')->nullOnDelete();
             $table->softDeletes();
         });
 

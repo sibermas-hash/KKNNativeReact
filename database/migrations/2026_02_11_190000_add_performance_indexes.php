@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Performance optimization: Add critical indexes for frequently queried columns.
- * 
+ *
  * These indexes target:
  * - Dashboard aggregate queries (student/report counts by status)
  * - Grading lookups (student + group composite)
@@ -30,7 +30,7 @@ return new class extends Migration
             $table->index('date', 'idx_daily_reports_date');
         });
 
-        // Registrations - student period lookups  
+        // Registrations - student period lookups
         Schema::table('registrations', function (Blueprint $table) {
             $table->index(['student_id', 'period_id'], 'idx_registrations_student_period');
             $table->index('status', 'idx_registrations_status');

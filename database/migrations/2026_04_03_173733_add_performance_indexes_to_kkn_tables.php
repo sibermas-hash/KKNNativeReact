@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\Builder;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -47,7 +48,7 @@ return new class extends Migration
     }
 
     private function addIndexIfMissing(
-        \Illuminate\Database\Schema\Builder $schema,
+        Builder $schema,
         string $table,
         string $indexName,
         array $columns
@@ -72,7 +73,7 @@ return new class extends Migration
     }
 
     private function dropIndexIfExists(
-        \Illuminate\Database\Schema\Builder $schema,
+        Builder $schema,
         string $table,
         string $indexName
     ): void {
@@ -86,7 +87,7 @@ return new class extends Migration
     }
 
     private function hasIndex(
-        \Illuminate\Database\Schema\Builder $schema,
+        Builder $schema,
         string $table,
         string $indexName,
         array $columns

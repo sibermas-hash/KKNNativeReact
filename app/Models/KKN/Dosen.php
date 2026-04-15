@@ -11,16 +11,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-use Illuminate\Database\Eloquent\Attributes\Connection;
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Casts;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
+class Dosen extends Model
+{
 
-#[Connection('kkn')]
-#[Table('dosen')]
-#[Fillable([
-    'user_id',
+    protected $table = 'dosen';
+
+    protected $connection = 'kkn';
+
+    protected $fillable = [
+        'user_id',
         'nip',
         'nama',
         'birth_date',
@@ -31,23 +30,15 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
         'phone',
         'master_id',
         'master_synced_at',
-])]
-#[Casts([
-    'birth_date' => 'date',
+    ];
+
+    protected $casts = [
+        'birth_date' => 'date',
         'is_cpns' => 'boolean',
         'is_tugas_belajar' => 'boolean',
-])]
-class Dosen extends Model
-{
+    ];
+
     use HasFactory;
-
-    
-
-    
-
-    
-
-    
 
     public function user(): BelongsTo
     {

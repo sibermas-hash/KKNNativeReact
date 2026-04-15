@@ -30,7 +30,7 @@ class LogAuditController extends Controller
                     ->orWhere('ip_address', 'like', "%{$escaped}%");
 
                 // VULN-014 Fix: Cross-database search for user name
-                $userIds = \App\Models\User::where('name', 'like', "%{$escaped}%")->pluck('id');
+                $userIds = User::where('name', 'like', "%{$escaped}%")->pluck('id');
                 if ($userIds->isNotEmpty()) {
                     $q->orWhereIn('user_id', $userIds);
                 }

@@ -32,7 +32,7 @@ export default function Modal({ children, show, maxWidth = 'md', onClose, title 
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-black/25" />
+                    <div className="fixed inset-0 bg-emerald-950/25" />
                 </Transition.Child>
 
                 <div className="fixed inset-0 overflow-y-auto">
@@ -54,13 +54,13 @@ export default function Modal({ children, show, maxWidth = 'md', onClose, title 
                             >
                                 <div className="flex items-center justify-between mb-4">
                                     {title && (
-                                        <Dialog.Title className="text-lg font-semibold text-gray-900">
+                                        <Dialog.Title className="text-lg font-semibold text-black">
                                             {title}
                                         </Dialog.Title>
                                     )}
                                     <button
                                         onClick={onClose}
-                                        className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
+                                        className="p-1 text-emerald-950 hover:text-emerald-950 hover:bg-emerald-50/60 rounded"
                                     >
                                         <X className="h-5 w-5" />
                                     </button>

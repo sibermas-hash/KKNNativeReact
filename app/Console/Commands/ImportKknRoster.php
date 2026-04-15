@@ -1,18 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
-use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Dosen;
+use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\Mahasiswa;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Spatie\Permission\Models\Role;
-use Illuminate\Support\Facades\Schema;
 
 class ImportKknRoster extends Command
 {
@@ -30,6 +32,7 @@ class ImportKknRoster extends Command
         $path = $this->argument('file');
         if (! file_exists($path)) {
             $this->error("File not found: {$path}");
+
             return self::FAILURE;
         }
 
@@ -42,6 +45,7 @@ class ImportKknRoster extends Command
         $header = array_map('strtoupper', $rows[1] ?? []);
         if (! in_array('NIM', $header)) {
             $this->error('Header tidak sesuai, pastikan kolom NIM ada.');
+
             return self::FAILURE;
         }
 
@@ -157,10 +161,12 @@ class ImportKknRoster extends Command
 
             DB::commit();
             $this->info('Import roster selesai. Password default: '.$defaultPassword);
+
             return self::SUCCESS;
         } catch (\Throwable $e) {
             DB::rollBack();
             $this->error($e->getMessage());
+
             return self::FAILURE;
         }
     }

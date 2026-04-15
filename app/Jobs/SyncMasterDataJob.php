@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -12,6 +14,7 @@ class SyncMasterDataJob implements ShouldQueue
     use Queueable;
 
     public int $tries = 3;
+
     public int $backoff = 30;
 
     public function __construct(
@@ -38,7 +41,8 @@ class SyncMasterDataJob implements ShouldQueue
                 'exit' => $exit,
                 'output' => Artisan::output(),
             ]);
-            $this->fail(new \RuntimeException('sync:master-data exited with code ' . $exit));
+            $this->fail(new \RuntimeException('sync:master-data exited with code '.$exit));
+
             return;
         }
 

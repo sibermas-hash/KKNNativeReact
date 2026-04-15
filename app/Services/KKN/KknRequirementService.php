@@ -7,6 +7,7 @@ namespace App\Services\KKN;
 use App\Enums\KknType;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
+use App\Services\EligibilityService;
 
 class KknRequirementService
 {
@@ -39,7 +40,7 @@ class KknRequirementService
      */
     public function validate(Mahasiswa $mahasiswa, Periode $periode): array
     {
-        $eligibility = app(\App\Services\EligibilityService::class)->checkEligibility($mahasiswa, $periode->id);
+        $eligibility = app(EligibilityService::class)->checkEligibility($mahasiswa, $periode->id);
 
         return array_map(function ($issue) {
             return $issue['message'].(! empty($issue['reason']) ? " ({$issue['reason']})" : '');

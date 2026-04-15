@@ -8,13 +8,19 @@
  * kategori temuan audit.
  */
 
-use App\Models\KKN\SystemSetting;
 use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\SystemSetting;
+use App\Models\Master\Dosen;
+use App\Models\Master\Mahasiswa;
 use App\Models\User;
 use App\Policies\KknScorePolicy;
 use App\Services\AuditService;
 use App\Services\GradingService;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
@@ -24,7 +30,7 @@ beforeEach(function () {
     Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
 
     // Clean up KKN connection tables (RefreshDatabase only handles default connection)
-    \Illuminate\Support\Facades\DB::connection('kkn')->table('system_settings')
+    DB::connection('kkn')->table('system_settings')
         ->whereIn('config_key', [
             'gemini_api_key', 'master_api_base_url', 'master_api_client_secret',
             'master_api_token', 'storage_secret',
@@ -46,7 +52,7 @@ test('[AUDIT 1.1] SystemSetting::set() mengenkripsi secret keys', function () {
 
     // Tapi saat dibaca via get(), harus ter-decrypt kembali
     // Clear cache dulu agar get() membaca dari DB
-    \Illuminate\Support\Facades\Cache::forget('system_setting_gemini_api_key');
+    Cache::forget('system_setting_gemini_api_key');
     $decrypted = SystemSetting::get('gemini_api_key');
     expect($decrypted)->toBe('sk-test-secret-123');
 });
@@ -62,7 +68,7 @@ test('[AUDIT 1.1] SystemSetting::set() TIDAK mengenkripsi non-secret keys', func
 
 test('[AUDIT 1.1] SystemSetting::get() backward compatible dengan data lama (unencrypted)', function () {
     // Simulasi data lama yang belum terenkripsi — insert langsung via DB (bypass model set())
-    \Illuminate\Support\Facades\DB::connection('kkn')->table('system_settings')->updateOrInsert(
+    DB::connection('kkn')->table('system_settings')->updateOrInsert(
         ['config_key' => 'storage_secret'],
         [
             'label' => 'Storage Secret',
@@ -72,7 +78,7 @@ test('[AUDIT 1.1] SystemSetting::get() backward compatible dengan data lama (une
         ]
     );
 
-    \Illuminate\Support\Facades\Cache::forget('system_setting_storage_secret');
+    Cache::forget('system_setting_storage_secret');
     $value = SystemSetting::get('storage_secret');
 
     // Harus tetap bisa dibaca (tidak error DecryptException) — backward compatible
@@ -110,7 +116,7 @@ test('[AUDIT 1.2] Superadmin bisa bypass semua policy', function () {
     $superadmin = User::factory()->create();
     $superadmin->assignRole('superadmin');
 
-    $policy = new KknScorePolicy();
+    $policy = new KknScorePolicy;
     $score = new NilaiKkn(['is_finalized' => true]);
 
     // Superadmin bisa finalize
@@ -127,7 +133,7 @@ test('[AUDIT 1.2] Student TIDAK bisa akses fitur admin', function () {
     $student = User::factory()->create();
     $student->assignRole('student');
 
-    $policy = new KknScorePolicy();
+    $policy = new KknScorePolicy;
 
     expect($policy->create($student))->toBeFalse();
     expect($policy->finalize($student, new NilaiKkn(['is_finalized' => false])))->toBeFalse();
@@ -136,11 +142,11 @@ test('[AUDIT 1.2] Student TIDAK bisa akses fitur admin', function () {
 
 test('[AUDIT 1.2] Admin tidak bisa update score yang sudah finalized', function () {
     $admin = User::factory()->create();
-        $admin->assignRole('superadmin');
-    $policy = new KknScorePolicy();
-    $finalizedScore = new NilaiKkn();
+    $admin->assignRole('superadmin');
+    $policy = new KknScorePolicy;
+    $finalizedScore = new NilaiKkn;
     $finalizedScore->is_finalized = true;
-    $nonFinalizedScore = new NilaiKkn();
+    $nonFinalizedScore = new NilaiKkn;
     $nonFinalizedScore->is_finalized = false;
 
     expect($policy->update($admin, $finalizedScore))->toBeFalse();
@@ -221,17 +227,17 @@ test('[AUDIT FIX] AuditService severity classification benar', function () {
 // =====================================================================
 
 test('[AUDIT 2.6] Master\Dosen::kknLecturer() adalah proper HasOne relationship', function () {
-    $dosen = new \App\Models\Master\Dosen();
+    $dosen = new Dosen;
     $relation = $dosen->kknLecturer();
 
-    expect($relation)->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\HasOne::class);
+    expect($relation)->toBeInstanceOf(HasOne::class);
 });
 
 test('[AUDIT 2.6] Master\Mahasiswa::kknStudent() adalah proper HasOne relationship', function () {
-    $mahasiswa = new \App\Models\Master\Mahasiswa();
+    $mahasiswa = new Mahasiswa;
     $relation = $mahasiswa->kknStudent();
 
-    expect($relation)->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\HasOne::class);
+    expect($relation)->toBeInstanceOf(HasOne::class);
 });
 
 // =====================================================================
@@ -268,7 +274,7 @@ test('[AUDIT 1.4] Multiple wildcards di-escape semua', function () {
 // =====================================================================
 
 test('[AUDIT 2.1] Tidak ada duplikasi route forgot-password', function () {
-    $routes = collect(\Illuminate\Support\Facades\Route::getRoutes()->getRoutes());
+    $routes = collect(Route::getRoutes()->getRoutes());
 
     $forgotPasswordGET = $routes->filter(function ($route) {
         return $route->uri() === 'forgot-password' && in_array('GET', $route->methods());

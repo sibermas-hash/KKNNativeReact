@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Models\KKN\AntrianKkn;
@@ -13,9 +15,9 @@ use App\Models\KKN\Prodi;
 use App\Models\KKN\SystemSetting;
 use App\Models\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Collection;
 use Spatie\Permission\Models\Role;
 use Symfony\Component\Process\Process;
 
@@ -55,7 +57,7 @@ class StressTestRegistrationCommand extends Command
         SystemSetting::set('group_male_min_ratio', (string) $maleRatio);
         SystemSetting::set('group_male_target_ratio', (string) $maleTarget);
 
-        $runToken = now()->format('Ymd_His') . '_' . str()->lower(str()->random(6));
+        $runToken = now()->format('Ymd_His').'_'.str()->lower(str()->random(6));
 
         $faculty = Fakultas::factory()->create([
             'nama' => "Fakultas Stress {$runToken}",
@@ -130,10 +132,10 @@ class StressTestRegistrationCommand extends Command
         $this->components->twoColumnDetail('Mentok lock timeout', (string) $lockTimeoutCount);
         $this->components->twoColumnDetail('Mentok kelompok penuh', (string) $fullGroupCount);
         $this->components->twoColumnDetail('Isi kelompok akhir', "{$registeredCount} / {$capacity}");
-        $this->components->twoColumnDetail('Durasi total', round($elapsed, 2) . ' detik');
-        $this->components->twoColumnDetail('Rata-rata per worker', $avgDuration . ' ms');
-        $this->components->twoColumnDetail('Puncak durasi worker', round($maxDuration, 2) . ' ms');
-        $this->components->twoColumnDetail('Throughput kasar', round($studentsCount / max($elapsed, 0.001), 2) . ' req/detik');
+        $this->components->twoColumnDetail('Durasi total', round($elapsed, 2).' detik');
+        $this->components->twoColumnDetail('Rata-rata per worker', $avgDuration.' ms');
+        $this->components->twoColumnDetail('Puncak durasi worker', round($maxDuration, 2).' ms');
+        $this->components->twoColumnDetail('Throughput kasar', round($studentsCount / max($elapsed, 0.001), 2).' req/detik');
 
         if ($registeredCount > $capacity) {
             $this->components->error("Oversubscribe terdeteksi: {$registeredCount} melebihi kapasitas {$capacity}.");

@@ -46,12 +46,12 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
             <AppLayout title="Laporan Akhir">
                 <Head title="Laporan Akhir" />
                 <div className="mx-auto max-w-4xl py-20 text-center space-y-6">
-                    <div className="mx-auto h-24 w-24 bg-slate-50 rounded-full flex items-center justify-center text-slate-200">
+                    <div className="mx-auto h-12 w-24 bg-emerald-50/30 rounded-full flex items-center justify-center text-slate-200">
                         <ShieldAlert size={48} strokeWidth={1} />
                     </div>
                     <div className="space-y-2">
-                        <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tighter">Akses Terbatas</h2>
-                        <p className="text-sm font-bold text-gray-400 uppercase tracking-widest max-w-md mx-auto">
+                        <h2 className="text-2xl font-bold text-black font-bold text-center">Akses Terbatas</h2>
+                        <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs max-w-md mx-auto">
                             Anda belum terdaftar dalam unit kelompok manapun untuk periode ini.
                         </p>
                     </div>
@@ -66,7 +66,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
 
             <div className="mx-auto max-w-5xl space-y-10 pb-24">
                 {/* --- HEADER --- */}
-                <section className="rounded-[2.5rem] border border-slate-100 bg-white p-10 lg:p-12 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-8 relative overflow-hidden group">
+                <section className="rounded-[2.5rem] border border-emerald-100/60 bg-white p-10 lg:p-12 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-8 relative overflow-hidden group">
                     <div className="relative z-10 space-y-3">
                          <div className="flex items-center gap-4 text-emerald-600 mb-2">
                             <Link
@@ -75,19 +75,19 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
                             >
                                 <ChevronLeft size={20} strokeWidth={2.5} />
                             </Link>
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Terminal Penutup KKN</span>
+                            <span className="text-sm font-bold uppercase tracking-wider text-xs font-semibold opacity-60">Terminal Penutup KKN</span>
                         </div>
-                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight uppercase leading-none">Final Report & Luaran</h1>
-                        <p className="text-sm font-medium text-gray-400">Puncak dari perjalanan pengabdian unit <span className="text-emerald-600 font-black">{group.name}</span>.</p>
+                        <h1 className="text-3xl font-extrabold text-black tracking-tight uppercase leading-none">Final Report & Luaran</h1>
+                        <p className="text-sm font-medium text-emerald-950">Puncak dari perjalanan pengabdian unit <span className="text-emerald-600 font-bold">{group.name}</span>.</p>
                     </div>
                     
                     {existingReport && (
-                        <div className="relative z-10 flex items-center gap-6 bg-slate-50 px-8 py-6 rounded-[2rem] border border-slate-100">
+                        <div className="relative z-10 flex items-center gap-6 bg-emerald-50/30 px-8 py-6 rounded-xl border border-emerald-100/60">
                             <div className="space-y-1">
-                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none">Status Terkini</p>
-                                <p className="text-sm font-black text-gray-900 truncate max-w-[150px] tracking-tight">{existingReport.title}</p>
+                                <p className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold leading-none">Status Terkini</p>
+                                <p className="text-sm font-bold text-black truncate max-w-[150px] tracking-tight">{existingReport.title}</p>
                             </div>
-                            <StatusBadge status={existingReport.status} className="rounded-xl px-4 py-2 text-[10px] font-extrabold" />
+                            <StatusBadge status={existingReport.status} className="rounded-xl px-4 py-2 text-sm font-extrabold" />
                         </div>
                     )}
                 </section>
@@ -96,14 +96,14 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
                 {isLeader ? (
                     <form onSubmit={handleSubmit} className="space-y-10">
                         {/* 1. DATA IDENTITAS LAPORAN */}
-                        <div className="rounded-[2.5rem] border border-slate-100 bg-white p-10 lg:p-12 shadow-sm space-y-8">
+                        <div className="rounded-[2.5rem] border border-emerald-100/60 bg-white p-10 lg:p-12 shadow-sm space-y-8">
                             <div className="flex items-center gap-4 border-b border-slate-50 pb-6">
                                 <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
                                     <ScrollText size={24} />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-black text-gray-900 uppercase tracking-tighter leading-none">Identitas Laporan</h2>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2 leading-none">Informasi inti dan abstraksi kegiatan</p>
+                                    <h2 className="text-xl font-bold text-black font-bold text-center leading-none">Identitas Laporan</h2>
+                                    <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs mt-2 leading-none">Informasi inti dan abstraksi kegiatan</p>
                                 </div>
                             </div>
                             
@@ -114,7 +114,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
                                     value={form.data.title}
                                     onChange={(event) => form.setData('title', event.target.value)}
                                     error={form.errors.title}
-                                    className="rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white transition-all text-sm font-bold uppercase tracking-tight py-4"
+                                    className="rounded-2xl bg-emerald-50/30/50 border-emerald-100/60 focus:bg-white transition-all text-sm font-bold uppercase tracking-tight py-4"
                                 />
                                 <FormTextarea
                                     label="Abstraksi Ringkas"
@@ -122,26 +122,26 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
                                     value={form.data.abstract}
                                     onChange={(event) => form.setData('abstract', event.target.value)}
                                     error={form.errors.abstract}
-                                    className="rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white transition-all text-sm font-medium py-4 min-h-[150px]"
+                                    className="rounded-2xl bg-emerald-50/30/50 border-emerald-100/60 focus:bg-white transition-all text-sm font-medium py-4 min-h-[150px]"
                                 />
                             </div>
                         </div>
 
                         {/* 2. TAUTAN MULTIMEDIA & PUBLIKASI */}
-                        <div className="rounded-[2.5rem] border border-slate-100 bg-white p-10 lg:p-12 shadow-sm space-y-8">
+                        <div className="rounded-[2.5rem] border border-emerald-100/60 bg-white p-10 lg:p-12 shadow-sm space-y-8">
                             <div className="flex items-center gap-4 border-b border-slate-50 pb-6">
                                 <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
                                     <Layers size={24} />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-black text-gray-900 uppercase tracking-tighter leading-none">Publikasi Digital</h2>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2 leading-none">Link jejak digital pengabdian masyarakat</p>
+                                    <h2 className="text-xl font-bold text-black font-bold text-center leading-none">Publikasi Digital</h2>
+                                    <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs mt-2 leading-none">Link jejak digital pengabdian masyarakat</p>
                                 </div>
                             </div>
                             
                             <div className="grid gap-8 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                                    <label className="flex items-center gap-2 text-sm font-bold text-emerald-950 font-semibold uppercase text-xs ml-1">
                                         <Video size={14} className="text-rose-500" /> Video Dokumentasi (5-7 Menit)
                                     </label>
                                     <input
@@ -149,12 +149,12 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
                                         placeholder="https://youtube.com/watch?v=..."
                                         value={form.data.video_link}
                                         onChange={(event) => form.setData('video_link', event.target.value)}
-                                        className="w-full rounded-2xl bg-slate-50/50 border-slate-100 px-5 py-4 text-sm font-bold text-gray-600 focus:ring-emerald-500 focus:border-emerald-500"
+                                        className="w-full rounded-2xl bg-emerald-50/30/50 border-emerald-100/60 px-5 py-4 text-sm font-bold text-emerald-950 focus:ring-emerald-500 focus:border-emerald-500"
                                     />
-                                    {form.errors.video_link && <p className="text-[10px] font-bold text-rose-500 uppercase px-1">{form.errors.video_link}</p>}
+                                    {form.errors.video_link && <p className="text-sm font-bold text-rose-500 uppercase px-1">{form.errors.video_link}</p>}
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                                    <label className="flex items-center gap-2 text-sm font-bold text-emerald-950 font-semibold uppercase text-xs ml-1">
                                         <Newspaper size={14} className="text-blue-500" /> Link Berita / Press Release
                                     </label>
                                     <input
@@ -162,29 +162,29 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
                                         placeholder="https://media-online.com/kkn-uin-saizu"
                                         value={form.data.news_link}
                                         onChange={(event) => form.setData('news_link', event.target.value)}
-                                        className="w-full rounded-2xl bg-slate-50/50 border-slate-100 px-5 py-4 text-sm font-bold text-gray-600 focus:ring-emerald-500 focus:border-emerald-500"
+                                        className="w-full rounded-2xl bg-emerald-50/30/50 border-emerald-100/60 px-5 py-4 text-sm font-bold text-emerald-950 focus:ring-emerald-500 focus:border-emerald-500"
                                     />
-                                    {form.errors.news_link && <p className="text-[10px] font-bold text-rose-500 uppercase px-1">{form.errors.news_link}</p>}
+                                    {form.errors.news_link && <p className="text-sm font-bold text-rose-500 uppercase px-1">{form.errors.news_link}</p>}
                                 </div>
                             </div>
                         </div>
 
                         {/* 3. DOKUMEN & ARSIP FISIK */}
-                        <div className="rounded-[2.5rem] border border-slate-100 bg-white p-10 lg:p-12 shadow-sm space-y-10">
+                        <div className="rounded-[2.5rem] border border-emerald-100/60 bg-white p-10 lg:p-12 shadow-sm space-y-10">
                              <div className="flex items-center gap-4 border-b border-slate-50 pb-6">
                                 <div className="h-12 w-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-sm">
                                     <UploadCloud size={24} />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-black text-gray-900 uppercase tracking-tighter leading-none">Arsip Dokumen</h2>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2 leading-none">Berkas ilmiah, poster peta, dan laporan utama</p>
+                                    <h2 className="text-xl font-bold text-black font-bold text-center leading-none">Arsip Dokumen</h2>
+                                    <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs mt-2 leading-none">Berkas ilmiah, poster peta, dan laporan utama</p>
                                 </div>
                             </div>
 
-                            <div className="grid gap-10">
+                            <div className="grid gap-6">
                                 {/* Artikel Section */}
                                 <div className="space-y-6">
-                                    <h3 className="text-xs font-black text-gray-900 uppercase tracking-widest flex items-center gap-3">
+                                    <h3 className="text-xs font-bold text-black font-semibold uppercase text-xs flex items-center gap-3">
                                         <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                                         Artikel Ilmiah (Min. 2 Berkas)
                                     </h3>
@@ -196,7 +196,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
 
                                 {/* Poster Section */}
                                 <div className="space-y-6">
-                                    <h3 className="text-xs font-black text-gray-900 uppercase tracking-widest flex items-center gap-3">
+                                    <h3 className="text-xs font-bold text-black font-semibold uppercase text-xs flex items-center gap-3">
                                         <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                                         Poster Peta Potensi (Min. 3 Berkas)
                                     </h3>
@@ -209,7 +209,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
 
                                 {/* Main Report Section */}
                                 <div className="space-y-6 pt-6 border-t border-slate-50">
-                                    <h3 className="text-xs font-black text-gray-900 uppercase tracking-widest flex items-center gap-3">
+                                    <h3 className="text-xs font-bold text-black font-semibold uppercase text-xs flex items-center gap-3">
                                         <div className="h-1.5 w-1.5 rounded-full bg-rose-500" />
                                         Main Final Report (Wajib PDF)
                                     </h3>
@@ -221,31 +221,31 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
                                             onChange={(e) => form.setData('file', e.target.files?.[0] ?? null)}
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                         />
-                                        <div className="bg-rose-50/30 border-2 border-dashed border-rose-100 rounded-[2rem] p-12 text-center group-hover/main:bg-rose-50 transition-all">
+                                        <div className="bg-rose-50/30 border-2 border-dashed border-rose-100 rounded-xl p-12 text-center group-hover/main:bg-rose-50 transition-all">
                                             <div className="mx-auto h-16 w-16 bg-white rounded-2xl flex items-center justify-center text-rose-500 shadow-sm mb-4">
                                                 <UploadCloud size={32} />
                                             </div>
-                                            <p className="text-sm font-black text-gray-900 uppercase tracking-tight">
+                                            <p className="text-sm font-bold text-black uppercase tracking-tight">
                                                 {form.data.file ? form.data.file.name : 'Upload Laporan Akhir Utama'}
                                             </p>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2 leading-none">Sesuai Format Baku LPPM UIN SAIZU</p>
+                                            <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs mt-2 leading-none">Sesuai Format Baku LPPM UIN SAIZU</p>
                                         </div>
                                     </div>
-                                    {form.errors.file && <p className="text-[10px] font-bold text-rose-500 uppercase px-1">{form.errors.file}</p>}
+                                    {form.errors.file && <p className="text-sm font-bold text-rose-500 uppercase px-1">{form.errors.file}</p>}
                                 </div>
                             </div>
 
                             <div className="flex justify-end gap-4 pt-10 border-t border-slate-50">
                                 <Link
                                     href={route('student.dashboard')}
-                                    className="px-10 py-5 rounded-2xl bg-white border border-slate-200 text-[10px] font-black text-gray-400 hover:text-gray-600 transition-all uppercase tracking-[0.2em]"
+                                    className="px-6 py-5 rounded-2xl bg-white border border-emerald-100/60 text-sm font-bold text-emerald-950 hover:text-emerald-950 transition-all uppercase tracking-wider text-xs font-semibold"
                                 >
                                     Batalkan
                                 </Link>
                                 <button
                                     type="submit"
                                     disabled={form.processing}
-                                    className="px-12 py-5 rounded-2xl bg-emerald-600 text-white font-black text-[10px] shadow-xl shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-95 uppercase tracking-[0.2em] flex items-center gap-4"
+                                    className="px-6 py-5 rounded-2xl bg-emerald-600 text-white font-bold text-sm shadow-xl shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-95 uppercase tracking-wider text-xs font-semibold flex items-center gap-4"
                                 >
                                     {form.processing ? 'Transmitting Data...' : 'Kirim Laporan Akhir'}
                                     <CheckCircle2 size={16} strokeWidth={3} />
@@ -255,12 +255,12 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
                     </form>
                 ) : (
                     <section className="rounded-[2.5rem] border border-amber-100 bg-amber-50 p-12 lg:p-16 text-center space-y-6">
-                        <div className="mx-auto h-20 w-20 rounded-[1.5rem] bg-white flex items-center justify-center text-amber-500 shadow-sm">
+                        <div className="mx-auto h-10 w-20 rounded-xl bg-white flex items-center justify-center text-amber-500 shadow-sm">
                             <ShieldAlert size={40} />
                         </div>
                         <div className="space-y-2">
-                            <h2 className="text-xl font-black text-amber-900 uppercase tracking-tighter">Hanya Ketua Unit</h2>
-                            <p className="text-xs font-bold text-amber-700/70 uppercase tracking-[0.2em] leading-relaxed max-w-sm mx-auto">
+                            <h2 className="text-xl font-bold text-amber-900 font-bold text-center">Hanya Ketua Unit</h2>
+                            <p className="text-xs font-bold text-amber-700/70 uppercase tracking-wider text-xs font-semibold leading-relaxed max-w-sm mx-auto">
                                 Sesuai protokol pimpinan, unggahan laporan kolektif didelegasikan penuh kepada <span className="text-amber-900">Ketua Kelompok</span>.
                             </p>
                         </div>
@@ -286,13 +286,13 @@ function FileInput({ label, icon, accept, onChange }: { label: string, icon: Rea
                 }} 
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
             />
-            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5 flex items-center gap-4 group-hover/file:bg-white group-hover/file:border-emerald-200 transition-all">
-                <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-gray-400 group-hover/file:text-emerald-500 shadow-sm shrink-0 transition-colors">
+            <div className="bg-emerald-50/30 border border-emerald-100/60 rounded-2xl p-5 flex items-center gap-4 group-hover/file:bg-white group-hover/file:border-emerald-200 transition-all">
+                <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-emerald-950 group-hover/file:text-emerald-500 shadow-sm shrink-0 transition-colors">
                     {icon}
                 </div>
                 <div className="overflow-hidden">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1.5">{label}</p>
-                    <p className="text-[11px] font-bold text-gray-900 truncate uppercase tracking-tight leading-none group-hover/file:text-emerald-600">
+                    <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs leading-none mb-1.5">{label}</p>
+                    <p className="text-sm font-bold text-black truncate uppercase tracking-tight leading-none group-hover/file:text-emerald-600">
                         {fileName || 'Pilih File...'}
                     </p>
                 </div>

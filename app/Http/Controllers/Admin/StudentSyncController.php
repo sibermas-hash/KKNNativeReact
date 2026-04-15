@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SyncAllMahasiswaJob;
 use App\Models\KKN\Mahasiswa;
 use App\Services\StudentSyncService;
 use Illuminate\Http\RedirectResponse;
@@ -49,13 +50,13 @@ class StudentSyncController extends Controller
         $isLargeSync = count($nimList) > 50;
 
         if ($isFullSync || $isLargeSync) {
-            \App\Jobs\SyncAllMahasiswaJob::dispatch($nimList ?: null);
+            SyncAllMahasiswaJob::dispatch($nimList ?: null);
 
-            $message = $isFullSync 
+            $message = $isFullSync
                 ? 'Sinkronisasi seluruh mahasiswa telah dijadwalkan di latar belakang.'
-                : 'Sinkronisasi ' . count($nimList) . ' mahasiswa telah dijadwalkan di latar belakang.';
+                : 'Sinkronisasi '.count($nimList).' mahasiswa telah dijadwalkan di latar belakang.';
 
-            return back()->with('success', $message . ' Silakan cek beberapa saat lagi.');
+            return back()->with('success', $message.' Silakan cek beberapa saat lagi.');
         }
 
         try {

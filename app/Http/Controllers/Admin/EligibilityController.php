@@ -12,9 +12,12 @@ use App\Services\EligibilityService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -107,7 +110,7 @@ class EligibilityController extends Controller
 
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => '22C55E']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => '22C55E']],
         ];
         $sheet1->getStyle('A1:J1')->applyFromArray($headerStyle);
 
@@ -139,7 +142,7 @@ class EligibilityController extends Controller
 
         $headerStyle2 = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'EF4444']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'EF4444']],
         ];
         $sheet2->getStyle('A1:I1')->applyFromArray($headerStyle2);
 
@@ -172,7 +175,7 @@ class EligibilityController extends Controller
             mkdir($exportDir, 0750, true);
         }
 
-        $tempFile = $exportDir.'/'.\Illuminate\Support\Str::uuid().'.xlsx';
+        $tempFile = $exportDir.'/'.Str::uuid().'.xlsx';
         try {
             $writer->save($tempFile);
 
@@ -181,7 +184,7 @@ class EligibilityController extends Controller
             if (file_exists($tempFile)) {
                 unlink($tempFile);
             }
-            \Illuminate\Support\Facades\Log::error('Eligibility export failed', ['exception' => $e]);
+            Log::error('Eligibility export failed', ['exception' => $e]);
             abort(500, 'Gagal mengekspor data kelayakan.');
         }
     }

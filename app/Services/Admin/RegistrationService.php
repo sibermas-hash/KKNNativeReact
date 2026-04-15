@@ -26,6 +26,7 @@ class RegistrationService
                     ]);
                     $count++;
                 });
+
             return $count;
         });
     }

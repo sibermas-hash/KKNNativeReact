@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('group_id')->constrained()->onDelete('cascade');
-            
+
             $table->string('title');
             $table->string('program_title');
             $table->string('program_department'); // Program Studi/Fakultas
@@ -23,21 +23,21 @@ return new class extends Migration
             $table->json('team_members'); // Array of member details
             $table->decimal('budget', 15, 2)->nullable();
             $table->text('objectives')->nullable();
-            
+
             $table->enum('status', [
                 'draft',
                 'submitted',
                 'under_review',
                 'approved',
                 'rejected',
-                'revision_required'
+                'revision_required',
             ])->default('draft');
-            
+
             $table->text('feedback')->nullable();
             $table->foreignId('reviewed_by')->nullable()->constrained('users');
             $table->timestamp('submitted_at')->nullable();
             $table->timestamp('reviewed_at')->nullable();
-            
+
             $table->timestamps();
             $table->softDeletes();
         });

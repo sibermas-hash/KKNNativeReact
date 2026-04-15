@@ -64,7 +64,7 @@ class JenisKknSeeder extends Seeder
                 'min_gpa' => 0.00,
                 'color' => 'indigo',
                 'sort_order' => 5,
-            ]
+            ],
         ];
 
         foreach ($types as $type) {

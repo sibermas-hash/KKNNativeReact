@@ -9,6 +9,7 @@ use App\Models\ApiKey;
 use App\Models\Project;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class AdminKeyController extends Controller
@@ -19,7 +20,7 @@ class AdminKeyController extends Controller
 
         // SECURITY: If admin_secret is not configured, reject all requests
         if (! $adminSecret || trim($adminSecret) === '') {
-            \Illuminate\Support\Facades\Log::warning('Admin secret not configured', [
+            Log::warning('Admin secret not configured', [
                 'ip' => $request->ip(),
             ]);
 

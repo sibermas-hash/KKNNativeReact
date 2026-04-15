@@ -23,26 +23,26 @@ export const AcademicForm: React.FC<AcademicFormProps> = ({
     <div className="space-y-10">
       <div className="flex items-center gap-6">
         <div className="h-1 w-24 bg-emerald-600 rounded-full" />
-        <h3 className="text-xs font-black text-gray-900 uppercase tracking-[0.4em]">
+        <h3 className="text-xs font-bold text-black uppercase tracking-[0.4em]">
           Academic & Religious Standing
         </h3>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="p-10 rounded-[3rem] bg-white border border-slate-100 shadow-sm space-y-8">
+        <div className="p-10 rounded-[3rem] bg-white border border-emerald-100/60 shadow-sm space-y-8">
           <div className="flex items-center gap-4 text-emerald-600">
             <GraduationCap size={24} />
-            <span className="text-xs font-black uppercase tracking-widest">Status Akademik</span>
+            <span className="text-xs font-bold uppercase tracking-widest">Status Akademik</span>
           </div>
           
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-1">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Semester</p>
-              <p className="text-2xl font-black text-gray-900">{student_academic?.semester || '—'}</p>
+              <p className="text-[12px] font-bold text-emerald-950 uppercase tracking-wider">Semester</p>
+              <p className="text-2xl font-bold text-black">{student_academic?.semester || '—'}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total SKS</p>
-              <p className="text-2xl font-black text-gray-900">{student_academic?.sks_completed || 0}</p>
+              <p className="text-[12px] font-bold text-emerald-950 uppercase tracking-wider">Total SKS</p>
+              <p className="text-2xl font-bold text-black">{student_academic?.sks_completed || 0}</p>
             </div>
           </div>
           
@@ -56,15 +56,15 @@ export const AcademicForm: React.FC<AcademicFormProps> = ({
           </div>
         </div>
 
-        <div className="p-10 rounded-[3rem] bg-white border border-slate-100 shadow-sm space-y-8">
+        <div className="p-10 rounded-[3rem] bg-white border border-emerald-100/60 shadow-sm space-y-8">
           <div className="flex items-center gap-4 text-emerald-600">
             <UserCheck size={24} />
-            <span className="text-xs font-black uppercase tracking-widest">Status Religius</span>
+            <span className="text-xs font-bold uppercase tracking-widest">Status Religius</span>
           </div>
 
           <div className="space-y-2">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status BTA-PPI</p>
-            <p className="text-xl font-black text-gray-900 uppercase">
+            <p className="text-[12px] font-bold text-emerald-950 uppercase tracking-wider">Status BTA-PPI</p>
+            <p className="text-xl font-bold text-black uppercase">
               {student_academic?.bta_ppi_status || (student_academic?.is_bta_ppi_passed ? 'LULUS' : 'BELUM LULUS')}
             </p>
           </div>

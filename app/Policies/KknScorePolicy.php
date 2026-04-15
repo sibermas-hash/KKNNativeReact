@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
-use App\Models\User;
-use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\Dosen;
 use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\NilaiKkn;
+use App\Models\User;
 
 class KknScorePolicy extends BasePolicy
 {
@@ -13,12 +16,12 @@ class KknScorePolicy extends BasePolicy
      */
     private function isDplOfGroup(User $user, ?KelompokKkn $kelompok): bool
     {
-        if (!$kelompok) {
+        if (! $kelompok) {
             return false;
         }
 
-        $dosen = \App\Models\KKN\Dosen::where('user_id', $user->id)->first();
-        if (!$dosen) {
+        $dosen = Dosen::where('user_id', $user->id)->first();
+        if (! $dosen) {
             return false;
         }
 
@@ -27,13 +30,15 @@ class KknScorePolicy extends BasePolicy
 
     public function viewAny(User $user): bool
     {
-        return $this->superAdminBypass($user, 'viewAny') ?? 
+        return $this->superAdminBypass($user, 'viewAny') ??
                $user->hasAnyRole(['superadmin', 'admin', 'dpl', 'faculty_admin']);
     }
 
     public function view(User $user, NilaiKkn $score): bool
     {
-        if ($bypass = $this->superAdminBypass($user, 'view')) return true;
+        if ($bypass = $this->superAdminBypass($user, 'view')) {
+            return true;
+        }
 
         // DPL only views scores of their assigned group (multi-DPL via pivot)
         if ($user->hasRole('dpl')) {
@@ -54,7 +59,7 @@ class KknScorePolicy extends BasePolicy
 
     public function create(User $user): bool
     {
-        return $this->superAdminBypass($user, 'create') ?? 
+        return $this->superAdminBypass($user, 'create') ??
                $user->hasAnyRole(['superadmin', 'admin', 'dpl']);
     }
 
@@ -65,7 +70,9 @@ class KknScorePolicy extends BasePolicy
             return false;
         }
 
-        if ($this->superAdminBypass($user, 'update')) return true;
+        if ($this->superAdminBypass($user, 'update')) {
+            return true;
+        }
 
         // Superadmin can update any non-finalized score
         if ($user->hasRole('superadmin')) {
@@ -75,7 +82,7 @@ class KknScorePolicy extends BasePolicy
         if ($user->hasRole('admin')) {
             return true;
         }
-        
+
         // DPL can update scores for their group (multi-DPL via pivot)
         if ($user->hasRole('dpl')) {
             return $this->isDplOfGroup($user, $score->kelompok);
@@ -86,25 +93,25 @@ class KknScorePolicy extends BasePolicy
 
     public function delete(User $user, NilaiKkn $score): bool
     {
-        return $this->superAdminBypass($user, 'delete') ?? 
-               ($user->hasRole('superadmin') && !$score->is_finalized);
+        return $this->superAdminBypass($user, 'delete') ??
+               ($user->hasRole('superadmin') && ! $score->is_finalized);
     }
 
     public function finalize(User $user, NilaiKkn $score): bool
     {
-        return $this->superAdminBypass($user, 'finalize') ?? 
+        return $this->superAdminBypass($user, 'finalize') ??
                $user->hasRole('superadmin');
     }
 
     public function bulkFinalize(User $user): bool
     {
-        return $this->superAdminBypass($user, 'bulkFinalize') ?? 
+        return $this->superAdminBypass($user, 'bulkFinalize') ??
                $user->hasRole('superadmin');
     }
 
     public function export(User $user): bool
     {
-        return $this->superAdminBypass($user, 'export') ?? 
+        return $this->superAdminBypass($user, 'export') ??
                $user->hasRole('superadmin');
     }
 }

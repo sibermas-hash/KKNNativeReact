@@ -10,13 +10,15 @@ use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Services\PeriodContextService;
 use App\Services\StudentTransferService;
+use App\Traits\HandlesPagination;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class StudentTransferController extends Controller
 {
-    use \App\Traits\HandlesPagination;
+    use HandlesPagination;
 
     public function __construct(
         private StudentTransferService $transferService,
@@ -87,7 +89,7 @@ class StudentTransferController extends Controller
 
             return back()->with('success', 'Peserta berhasil dipindahkan.');
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Student transfer failed', ['error' => $e->getMessage()]);
+            Log::error('Student transfer failed', ['error' => $e->getMessage()]);
 
             return back()->with('error', 'Transfer peserta gagal. Silakan coba lagi.');
         }

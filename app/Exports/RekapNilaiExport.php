@@ -1,19 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\{FromCollection, WithHeadings, WithStyles, WithTitle, ShouldAutoSize, WithMapping};
-use PhpOffice\PhpSpreadsheet\Style\{Fill, Alignment};
+use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithTitle;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class RekapNilaiExport implements FromCollection, WithHeadings, WithStyles, WithMapping, WithTitle, ShouldAutoSize
+class RekapNilaiExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     public function __construct(
         private $rows,
         private $periode,
     ) {}
 
-    public function collection(): \Illuminate\Support\Collection
+    public function collection(): Collection
     {
         return $this->rows;
     }
@@ -43,6 +52,7 @@ class RekapNilaiExport implements FromCollection, WithHeadings, WithStyles, With
     {
         static $no = 0;
         $no++;
+
         return [
             $no,
             $row->nim,

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\NilaiKkn;
+use App\Services\CertificateService;
 use Inertia\Inertia;
 
 class CertificateController extends Controller
@@ -28,7 +30,7 @@ class CertificateController extends Controller
             ->first();
 
         // Ambil Status Laporan Akhir
-        $laporanAkhir = \App\Models\KKN\LaporanAkhir::where('mahasiswa_id', $mahasiswa->id)->first();
+        $laporanAkhir = LaporanAkhir::where('mahasiswa_id', $mahasiswa->id)->first();
 
         $checks = [
             'has_score' => $score !== null,
@@ -48,7 +50,7 @@ class CertificateController extends Controller
         ]);
     }
 
-    public function download($id, \App\Services\CertificateService $certificateService)
+    public function download($id, CertificateService $certificateService)
     {
         $user = auth()->user();
 

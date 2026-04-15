@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -16,6 +16,7 @@ return new class extends Migration
             DB::statement('CREATE INDEX IF NOT EXISTS audit_logs_action_created_at_index ON audit_logs (action, created_at)');
             DB::statement('CREATE INDEX IF NOT EXISTS audit_logs_user_id_created_at_index ON audit_logs (user_id, created_at)');
             DB::statement('CREATE INDEX IF NOT EXISTS audit_logs_ip_address_index ON audit_logs (ip_address)');
+
             return;
         }
 
@@ -35,6 +36,7 @@ return new class extends Migration
             DB::statement('DROP INDEX IF EXISTS audit_logs_action_created_at_index');
             DB::statement('DROP INDEX IF EXISTS audit_logs_user_id_created_at_index');
             DB::statement('DROP INDEX IF EXISTS audit_logs_ip_address_index');
+
             return;
         }
 

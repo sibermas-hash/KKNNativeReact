@@ -96,7 +96,7 @@ class MasterApiClient
                 }
 
                 $consecutiveFailures = 0;
-                
+
                 foreach ($payload['data'] as $item) {
                     yield $item;
                 }

@@ -1,7 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { useLayoutEffect, useRef } from 'react';
 import type { PageProps } from '@/types';
-import { route } from 'ziggy-js';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -23,12 +21,16 @@ import {
   Inbox,
   UserCircle,
   BookOpen,
-  Settings,
+  Activity,
+  Building2,
   History,
   CheckCircle2,
-  AlertCircle,
-  Activity,
-  Building2
+  Cpu,
+  UserCheck,
+  FileCheck,
+  GraduationCap,
+  Shield,
+  Settings,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -45,7 +47,7 @@ interface NavGroup {
 
 const safeRoute = (name: string, params?: Record<string, unknown>) => {
   try {
-    return route(name, params);
+    return (window as any).route ? (window as any).route(name, params) : '#';
   } catch (_e) {
     return '#';
   }
@@ -53,92 +55,86 @@ const safeRoute = (name: string, params?: Record<string, unknown>) => {
 
 const getAdminNav = (): NavGroup[] => [
   {
-    title: 'Menu Utama',
-    items: [
-      { label: 'Beranda Utama', href: safeRoute('admin.dashboard'), icon: LayoutDashboard },
-    ],
+    title: 'DASHBOARD',
+    items: [{ label: 'Beranda', href: safeRoute('admin.dashboard'), icon: LayoutDashboard }],
   },
   {
-    title: 'Data Master',
+    title: 'DATA MASTER',
     items: [
       { label: 'Tahun Akademik', href: safeRoute('admin.tahun-akademik.index'), icon: Calendar },
       { label: 'Periode Program', href: safeRoute('admin.periode.index'), icon: History },
-      { label: 'Kategori KKN', href: safeRoute('admin.jenis-kkn.index'), icon: Layers },
-      { label: 'Daftar Fakultas', href: safeRoute('admin.fakultas.index'), icon: Building2 },
-      { label: 'Program Studi', href: safeRoute('admin.prodi.index'), icon: BookOpen },
-      { label: 'Wilayah Penugasan', href: safeRoute('admin.lokasi.index'), icon: MapPin },
-      { label: 'Direktori Mahasiswa', href: safeRoute('admin.mahasiswa.index'), icon: Users },
-      { label: 'Syarat Pendaftaran', href: safeRoute('admin.kkn-requirements.index'), icon: ClipboardList },
-      { label: 'Kelayakan Peserta', href: safeRoute('admin.cek-kelayakan.index'), icon: CheckCircle2 },
-      { label: 'Dispensasi KKN', href: safeRoute('admin.dispensasi.index'), icon: AlertCircle },
+      { label: 'Jenis KKN', href: safeRoute('admin.jenis-kkn.index'), icon: Layers },
+      { label: 'Wilayah Penugasan', href: safeRoute('admin.locations.index'), icon: MapPin },
+      { label: 'Mahasiswa', href: safeRoute('admin.mahasiswa.index'), icon: Users },
+      { label: 'Dosen', href: safeRoute('admin.dpl.index'), icon: UserCheck },
     ],
   },
   {
-    title: 'Operasional',
+    title: 'PENDAFTARAN & PESERTA',
     items: [
-      { label: 'Pendaftaran Peserta', href: safeRoute('admin.pendaftaran.index'), icon: ClipboardList },
+      {
+        label: 'Pendaftaran Peserta',
+        href: safeRoute('admin.pendaftaran.index'),
+        icon: ClipboardList,
+      },
+      { label: 'Cek Kelayakan', href: safeRoute('admin.cek-kelayakan.index'), icon: CheckCircle2 },
+      { label: 'Dispensasi', href: safeRoute('admin.dispensasi.index'), icon: ShieldCheck },
+    ],
+  },
+  {
+    title: 'KELOMPOK & PENUGASAN',
+    items: [
       { label: 'Kelompok KKN', href: safeRoute('admin.kelompok.index'), icon: Users },
-      { label: 'Penugasan DPL', href: safeRoute('admin.dpl.penugasan'), icon: Hammer },
-      { label: 'Mutasi Peserta', href: safeRoute('admin.peserta.pindah.index'), icon: Shuffle },
-      { label: 'Kontrol Pengguna', href: safeRoute('admin.pengguna.index'), icon: ShieldCheck },
-      { label: 'Sinkronisasi DPL', href: safeRoute('admin.dpl.sync'), icon: RefreshCw },
+      { label: 'Penugasan DPL', href: safeRoute('admin.dpl.penugasan'), icon: UserCheck },
+      { label: 'Transfer Peserta', href: safeRoute('admin.peserta.pindah.index'), icon: Shuffle },
     ],
   },
   {
-    title: 'Monitoring & Nilai',
+    title: 'PENILAIAN',
     items: [
-      { label: 'Logbook Mahasiswa', href: safeRoute('admin.laporan.harian.index'), icon: FileText },
-      { label: 'Program Kerja', href: safeRoute('admin.laporan.program-kerja.index'), icon: BookOpen },
-      { label: 'Evaluasi & Nilai', href: safeRoute('admin.evaluasi.index'), icon: BarChart3 },
-      { label: 'Rekapitulasi Nilai', href: safeRoute('admin.grade-reports.index'), icon: Award },
+      { label: 'Nilai Peserta', href: safeRoute('admin.nilai.index'), icon: FileText },
+      { label: 'Grade Reports', href: safeRoute('admin.grade-reports.index'), icon: BarChart3 },
+      { label: 'Evaluasi', href: safeRoute('admin.evaluasi.index'), icon: Star },
+      { label: 'Yudisium', href: safeRoute('admin.yudisium.index'), icon: GraduationCap },
     ],
   },
   {
-    title: 'Konten & Portal',
+    title: 'LAPORAN',
     items: [
-      { label: 'Profil LPPM', href: safeRoute('admin.konten.profil.index'), icon: Globe },
-      { label: 'Warta Utama', href: safeRoute('admin.warta-utama.index'), icon: Megaphone },
-      { label: 'Repositori Berkas', href: safeRoute('admin.unduhan.index'), icon: Inbox },
+      { label: 'Laporan Harian', href: safeRoute('admin.laporan.harian.index'), icon: Calendar },
+      {
+        label: 'Program Kerja',
+        href: safeRoute('admin.laporan.program-kerja.index'),
+        icon: BookOpen,
+      },
+      { label: 'Laporan Akhir', href: safeRoute('admin.laporan.akhir.index'), icon: FileCheck },
+      { label: 'Rekapitulasi', href: safeRoute('admin.rekapitulasi.index'), icon: BarChart3 },
     ],
   },
   {
-    title: 'Pengaturan',
+    title: 'PENGATURAN & SINKRONISASI',
     items: [
-      { label: 'Konfigurasi Sistem', href: safeRoute('admin.pengaturan.sistem'), icon: Settings },
+      { label: 'Dashboard AI', href: safeRoute('admin.ai.monitor'), icon: Cpu },
+      { label: 'Pengguna', href: safeRoute('admin.pengguna.index'), icon: Shield },
+      {
+        label: 'Konfigurasi Nilai',
+        href: safeRoute('admin.konfigurasi-penilaian.index'),
+        icon: Settings,
+      },
+      { label: 'Sinkronisasi Data', href: safeRoute('admin.database-sync.index'), icon: RefreshCw },
+      { label: 'Pengaturan Sistem', href: safeRoute('admin.pengaturan.sistem'), icon: Settings },
     ],
   },
 ];
 
 const getDplNav = (): NavGroup[] => [
   {
-    title: 'DPL Dashboard',
+    title: 'DPL ACCESS',
     items: [
       { label: 'Beranda DPL', href: safeRoute('dpl.dashboard'), icon: LayoutDashboard },
-      { label: 'Daftar Kelompok', href: safeRoute('dpl.kelompok.index'), icon: Users },
-    ],
-  },
-  {
-    title: 'Bimbingan Lapangan',
-    items: [
-      { label: 'Laporan Harian', href: safeRoute('dpl.daily-reports.index'), icon: FileText },
-      { label: 'Monitoring Status', href: safeRoute('dpl.monitoring.index'), icon: Activity },
-    ],
-  },
-  {
-    title: 'Penilaian',
-    items: [
-      { label: 'Laporan Akhir', href: safeRoute('dpl.final-reports.index'), icon: FileText },
-      { label: 'Input Evaluasi', href: safeRoute('dpl.evaluations.index'), icon: Star },
-    ],
-  },
-];
-
-const getFacultyAdminNav = (): NavGroup[] => [
-  {
-    title: 'Fakultas',
-    items: [
-      { label: 'Beranda Utama', href: safeRoute('admin.dashboard'), icon: LayoutDashboard },
-      { label: 'Rekapitulasi Nilai', href: safeRoute('admin.grade-reports.index'), icon: Award },
+      { label: 'Data Kelompok', href: safeRoute('dpl.kelompok.index'), icon: Users },
+      { label: 'Monitoring Mahasiswa', href: safeRoute('dpl.monitoring.index'), icon: Activity },
+      { label: 'Penilaian Akhir', href: safeRoute('dpl.evaluations.index'), icon: Star },
     ],
   },
 ];
@@ -150,9 +146,9 @@ function buildStudentNav(currentPhase: string): NavGroup[] {
 
   return [
     {
-      title: 'Menu Mahasiswa',
+      title: 'SENTRAL MAHASISWA',
       items: [
-        { label: 'Beranda Utama', href: safeRoute('student.dashboard'), icon: LayoutDashboard },
+        { label: 'Beranda Mahasiswa', href: safeRoute('student.dashboard'), icon: LayoutDashboard },
         ...(isRegistration
           ? [
               {
@@ -162,39 +158,38 @@ function buildStudentNav(currentPhase: string): NavGroup[] {
               },
             ]
           : []),
+        ...(isExecutionOrLater
+          ? [
+              {
+                label: 'Logbook Masuk',
+                href: safeRoute('student.laporan-harian.index'),
+                icon: FileText,
+              },
+              {
+                label: 'Target Proker',
+                href: safeRoute('student.program-kerja.index'),
+                icon: BookOpen,
+              },
+            ]
+          : []),
+        ...(isGradingOrLater
+          ? [
+              {
+                label: 'Unduh Sertifikat',
+                href: safeRoute('student.certificate.index'),
+                icon: Award,
+              },
+            ]
+          : []),
       ],
     },
-    ...(isExecutionOrLater
-      ? [
-          {
-            title: 'Kegiatan Lapangan',
-            items: [
-              { label: 'Data Posko', href: safeRoute('student.posko.index'), icon: MapPin },
-              { label: 'Logbook Harian', href: safeRoute('student.laporan-harian.index'), icon: FileText },
-              { label: 'Program Kerja', href: safeRoute('student.program-kerja.index'), icon: BookOpen },
-            ],
-          },
-        ]
-      : []),
-    ...(isGradingOrLater
-      ? [
-          {
-            title: 'Hasil Akhir',
-            items: [
-              { label: 'Laporan Akhir', href: safeRoute('student.laporan-akhir.index'), icon: FileText },
-              { label: 'Sertifikat KKN', href: safeRoute('student.certificate.index'), icon: Award },
-            ],
-          },
-        ]
-      : []),
   ];
 }
 
 function getNavForRole(roles: string[], currentPhase: string): NavGroup[] {
   const norm = roles.map((r) => r.toLowerCase());
   if (norm.includes('admin') || norm.includes('superadmin')) return getAdminNav();
-  if (norm.includes('faculty_admin')) return getFacultyAdminNav();
-  if (norm.includes('dpl') || norm.includes('dosen')) return getDplNav();
+  if (norm.includes('dpl')) return getDplNav();
   return buildStudentNav(currentPhase);
 }
 
@@ -203,39 +198,23 @@ interface SidebarProps {
   onClose: () => void;
 }
 
-const SIDEBAR_SCROLL_KEY = 'kkn-saizu-sidebar-scroll';
-
 export default function Sidebar({ open, onClose }: SidebarProps) {
   const { auth, url } = usePage<PageProps & { url: string }>().props;
-
-  const rawRoles = auth.user?.roles ?? [];
-  const roles = Array.isArray(rawRoles)
-    ? rawRoles.map((r) =>
-        typeof r === 'object' && r !== null ? (r as { name: string }).name : String(r),
-      )
-    : [];
-  const currentPhase = (usePage<PageProps>().props.auth as Record<string, unknown>)?.active_phase ?? 'upcoming';
-
+  const roles =
+    (auth.user?.roles as any[])?.map((r) => (typeof r === 'string' ? r : (r as any).name)) || [];
+  const currentPhase = (auth as any)?.active_phase ?? 'upcoming';
   const navGroups = getNavForRole(roles, currentPhase);
   const currentPath = typeof url === 'string' ? url : window.location.pathname;
-  const navRef = useRef<HTMLElement | null>(null);
-
-  useLayoutEffect(() => {
-    const nav = navRef.current;
-    if (!nav) return;
-    const savedScrollTop = window.sessionStorage.getItem(SIDEBAR_SCROLL_KEY);
-    nav.scrollTop = savedScrollTop ? Number(savedScrollTop) : 0;
-  }, [currentPath]);
 
   return (
     <>
       <AnimatePresence>
         {open && (
-          <motion.button
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-emerald-950/10 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 bg-emerald-950/20 backdrop-blur-md lg:hidden"
             onClick={onClose}
           />
         )}
@@ -243,51 +222,78 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
       <aside
         className={clsx(
-          'fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-white border-r border-slate-200 transition-all duration-300 lg:translate-x-0',
-          open ? 'translate-x-0' : '-translate-x-full',
+          'fixed inset-y-0 left-0 z-50 w-[270px] bg-white/80 backdrop-blur-2xl border-r border-emerald-100/50 flex flex-col transition-transform duration-500 lg:translate-x-0',
+          open ? 'translate-x-0 shadow-2xl' : '-translate-x-full',
         )}
       >
-        {/* --- BRANDING --- */}
-        <Link href={safeRoute('admin.dashboard')} className="h-20 px-6 flex items-center gap-3 border-b border-slate-50 bg-white group">
-          <div className="h-10 w-10 flex items-center justify-center p-1 bg-white group-hover:scale-110 transition-transform">
-            <img src="/images/logo_kkn.png" alt="Logo KKN" className="h-8 w-8 object-contain" />
+        {/* BRANDING PREMIUM */}
+        <div className="h-20 px-8 flex items-center gap-4 border-b border-emerald-100/50 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-100/30 blur-2xl -mr-10 -mt-10" />
+          <div className="h-9 w-9 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-xl flex items-center justify-center border border-emerald-100/80 shadow-sm relative z-10">
+            <img src="/images/logo_kkn.png" alt="Logo" className="h-5 w-5 object-contain" />
           </div>
-          <div className="flex flex-col">
-            <span className="text-[15px] font-bold text-emerald-700 leading-none group-hover:text-emerald-800 transition-colors">KKN UIN SAIZU</span>
-            <span className="text-[11px] font-medium text-emerald-400 mt-1">Panel Kontrol</span>
+          <div className="relative z-10">
+            <h1 className="text-sm font-semibold text-black  tracking-tight">KKN UIN SAIZU</h1>
+            <p className="text-xs font-bold text-emerald-600  tracking-normal mt-0.5">
+              Portal Administrasi
+            </p>
           </div>
-        </Link>
+        </div>
 
-        {/* --- NAVIGATION --- */}
-        <nav
-          ref={navRef}
-          className="flex-1 overflow-y-auto py-5 px-4 space-y-6 scrollbar-hide"
-        >
+        {/* NAVIGATION LAYER */}
+        <nav className="flex-1 overflow-y-auto px-5 py-8 space-y-8 scrollbar-hide relative z-10">
           {navGroups.map((group) => (
-            <div key={group.title} className="space-y-1">
-              <h3 className="px-3 pb-1 text-[11px] font-semibold text-emerald-500 uppercase tracking-wider">
+            <div key={group.title}>
+              <h3 className="px-3 mb-3 text-[12px] font-semibold text-emerald-950  tracking-normal">
                 {group.title}
               </h3>
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 {group.items.map((item) => {
-                  const isActive = currentPath === item.href || (item.href !== safeRoute('admin.dashboard') && currentPath.startsWith(item.href));
+                  const isActive =
+                    currentPath === item.href ||
+                    (item.href !== safeRoute('admin.dashboard') &&
+                      currentPath.startsWith(item.href));
+                  const isValidHref = item.href && item.href !== '#';
                   return (
                     <Link
                       key={item.href}
-                      href={item.href}
-                      onClick={() => window.innerWidth < 1024 && onClose()}
+                      href={isValidHref ? item.href : '#'}
+                      method={isValidHref ? 'get' : undefined}
+                      onClick={(e) => {
+                        if (!isValidHref) {
+                          e.preventDefault();
+                        }
+                        if (isValidHref && window.innerWidth < 1024) {
+                          onClose();
+                        }
+                      }}
                       className={clsx(
-                        'flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-semibold transition-all group relative',
+                        'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-300 relative overflow-hidden group',
                         isActive
-                          ? 'bg-primary-50 text-primary-700'
-                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50',
+                          ? 'bg-gradient-to-r from-emerald-50/80 to-transparent shadow-[inset_3px_0_0_0_rgba(16,185,129,1)] font-bold'
+                          : 'text-black hover:bg-emerald-50/50 font-medium',
                       )}
                     >
+                      <item.icon
+                        className={clsx(
+                          'h-[18px] w-[18px] transition-transform duration-300 group-hover:scale-110',
+                          isActive
+                            ? 'text-emerald-600'
+                            : 'text-emerald-950 group-hover:text-emerald-600',
+                        )}
+                        strokeWidth={isActive ? 2.5 : 2}
+                      />
+                      <span
+                        className={clsx(
+                          'transition-colors',
+                          isActive ? 'text-emerald-950' : 'text-black group-hover:text-emerald-900',
+                        )}
+                      >
+                        {item.label}
+                      </span>
                       {isActive && (
-                          <motion.div layoutId="sidebar-active" className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary-500 rounded-r-full" />
+                        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]" />
                       )}
-                      <item.icon className={clsx('w-[18px] h-[18px] transition-colors', isActive ? 'text-primary-600' : 'text-slate-400 group-hover:text-slate-600')} />
-                      <span>{item.label}</span>
                     </Link>
                   );
                 })}
@@ -296,17 +302,22 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           ))}
         </nav>
 
-        {/* --- PROFILE FOOTER --- */}
-        <div className="p-4 border-t border-slate-50 bg-slate-50/30">
+        {/* USER PROFILE SECTION LUXURY */}
+        <div className="p-5 border-t border-emerald-100/50 bg-gradient-to-t from-white to-transparent relative z-10">
           <Link
             href={safeRoute('profile.show')}
-            className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-white transition-all group"
+            className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white border border-emerald-100/60 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-900/5 transition-all duration-300 group"
           >
-            <div className="h-7 w-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-400 group-hover:text-emerald-600">
-              <UserCircle size={18} />
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform duration-300 border border-emerald-100/50">
+              <UserCircle size={20} strokeWidth={2.5} />
             </div>
             <div className="flex flex-col">
-              <span className="text-[9px] font-bold text-slate-900 uppercase">Profil Saya</span>
+              <span className="text-xs font-semibold text-black tracking-tight">
+                Pengaturan Profil
+              </span>
+              <span className="text-[12px] font-bold text-emerald-950  tracking-wider mt-0.5">
+                Akun & Sistem
+              </span>
             </div>
           </Link>
         </div>

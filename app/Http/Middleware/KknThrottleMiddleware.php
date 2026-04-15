@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
@@ -18,8 +20,8 @@ class KknThrottleMiddleware extends ThrottleRequests
         $routeName = $request->route()?->getName();
 
         $guestIdentifier = $request->ip();
-        if (!$request->user() && $routeName === 'login.store' && $request->filled('login')) {
-            $guestIdentifier = Str::transliterate(Str::lower((string) $request->input('login'))) . '|' . $request->ip();
+        if (! $request->user() && $routeName === 'login.store' && $request->filled('login')) {
+            $guestIdentifier = Str::transliterate(Str::lower((string) $request->input('login'))).'|'.$request->ip();
         }
 
         return hash('xxh128', implode('|', [
@@ -46,12 +48,12 @@ class KknThrottleMiddleware extends ThrottleRequests
         ];
 
         $routeName = $request->route()?->getName();
-        
+
         // If no route name (e.g., static file or 404), use path
-        if (!$routeName) {
+        if (! $routeName) {
             $routeName = $request->path();
         }
-        
+
         // Halaman login harus longgar agar mahasiswa dari IP yang sama tidak
         // saling menahan hanya untuk membuka form autentikasi.
         if ($routeName === 'login') {

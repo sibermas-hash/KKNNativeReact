@@ -6,7 +6,6 @@ namespace App\Services;
 
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Mahasiswa;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -46,7 +45,12 @@ class AutomaticGroupPlacementService
                     // Use ILIKE with wildcards to handle "Kabupaten X" vs "X" at least partially
                     ->where('regency_name', 'not ilike', "%{$domicileRegency}%");
             })
-            ->havingRaw('active_participants_count < capacity')
+            ->where(function ($query) {
+                 $query->selectRaw('count(*)')
+                       ->from('peserta_kkn')
+                       ->whereColumn('peserta_kkn.kelompok_id', 'kelompok_kkn.id')
+                       ->whereIn('status', GroupSelectionService::activeRegistrationStatuses());
+            }, '<', \Illuminate\Support\Facades\DB::raw('kelompok_kkn.capacity'))
             ->orderBy('active_participants_count')
             ->orderByDesc('capacity')
             ->orderBy('id');
@@ -55,7 +59,7 @@ class AutomaticGroupPlacementService
         foreach ($candidates->cursor() as $group) {
             try {
                 $this->groupSelectionService->validateGroupAcceptance($group, $mahasiswa);
-                
+
                 return $group;
             } catch (ValidationException) {
                 continue;
@@ -65,28 +69,6 @@ class AutomaticGroupPlacementService
         throw ValidationException::withMessages([
             'period_id' => 'Sistem belum menemukan kelompok yang tersedia di luar kabupaten asal Anda. Hubungi admin LPPM untuk penempatan manual.',
         ]);
-
-        throw ValidationException::withMessages([
-            'period_id' => 'Seluruh kelompok di luar kabupaten asal Anda saat ini belum bisa menerima penempatan baru. Silakan coba lagi atau hubungi admin LPPM.',
-        ]);
-    }
-
-    /**
-     * @param  Collection<int, KelompokKkn>  $groups
-     */
-    private function pickFirstAcceptableGroup(Collection $groups, Mahasiswa $mahasiswa): ?KelompokKkn
-    {
-        foreach ($groups as $group) {
-            try {
-                $this->groupSelectionService->validateGroupAcceptance($group, $mahasiswa);
-
-                return $group;
-            } catch (ValidationException) {
-                continue;
-            }
-        }
-
-        return null;
     }
 
     private function normalizeAdministrativeName(?string $value): string

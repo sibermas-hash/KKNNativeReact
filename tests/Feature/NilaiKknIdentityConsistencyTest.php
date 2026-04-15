@@ -139,7 +139,7 @@ class NilaiKknIdentityConsistencyTest extends TestCase
 
         $studentUser = User::factory()->create([
             'name' => $name,
-            'email' => strtolower(str_replace(' ', '.', $name)) . '@example.test',
+            'email' => strtolower(str_replace(' ', '.', $name)).'@example.test',
         ]);
         $studentUser->assignRole('student');
 

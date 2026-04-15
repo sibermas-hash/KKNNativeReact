@@ -2,7 +2,6 @@
 
 namespace Tests\Unit\Services;
 
-use App\Helpers\PasswordHelper;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Prodi;
@@ -16,6 +15,7 @@ use Tests\TestCase;
 class StudentSyncServiceTest extends TestCase
 {
     private MasterApiService $masterApiMock;
+
     private StudentSyncService $service;
 
     protected function setUp(): void
@@ -205,7 +205,7 @@ class StudentSyncServiceTest extends TestCase
     {
         Log::shouldReceive('warning')
             ->once()
-            ->with(Mockery::on(fn($msg) => str_contains($msg, 'unmapped organization_id')));
+            ->with(Mockery::on(fn ($msg) => str_contains($msg, 'unmapped organization_id')));
 
         $data = [
             'nim' => '5555555555',
@@ -229,7 +229,7 @@ class StudentSyncServiceTest extends TestCase
     {
         Log::shouldReceive('warning')
             ->once()
-            ->with(Mockery::on(fn($msg) => str_contains($msg, 'unmapped prodi_id')));
+            ->with(Mockery::on(fn ($msg) => str_contains($msg, 'unmapped prodi_id')));
 
         $data = [
             'nim' => '4444444444',

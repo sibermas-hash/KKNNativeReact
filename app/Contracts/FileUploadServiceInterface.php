@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Contracts;
+declare(strict_types=1);
 
-use Illuminate\Database\Eloquent\Model;
+namespace App\Contracts;
 
 /**
  * Interface for File Upload Service

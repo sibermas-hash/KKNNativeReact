@@ -68,7 +68,7 @@ return new class extends Migration
             Schema::table($table, function (Blueprint $blueprint) {
                 $blueprint->dropForeign(['user_id']);
             });
-        } catch (\Throwable) {
+        } catch (Throwable) {
             // Ignore when SQLite/local schema has no named FK to drop.
         }
     }

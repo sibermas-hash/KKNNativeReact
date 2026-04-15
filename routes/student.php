@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Student;
+use App\Http\Middleware\EnsurePasswordChanged;
+use App\Http\Middleware\EnsureProfileCompleted;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,13 +20,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware([
     'role:student',
-    \App\Http\Middleware\EnsurePasswordChanged::class,
-    \App\Http\Middleware\EnsureProfileCompleted::class,
+    EnsurePasswordChanged::class,
+    EnsureProfileCompleted::class,
 ])->prefix('mahasiswa')->name('student.')->group(function () {
 
     // ─── SELALU TERSEDIA ──────────────────────────────────────────────
     // Dashboard & info posko bisa diakses di semua fase
-    Route::get('/', [Student\DashboardController::class , 'index'])->name('dashboard');
+    Route::get('/', [Student\DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('posko', [Student\PoskoController::class, 'edit'])->name('posko.index');
     Route::post('posko', [Student\PoskoController::class, 'store'])->name('posko.store');
@@ -42,8 +44,8 @@ Route::middleware([
     // ─── FASE: PENDAFTARAN ────────────────────────────────────────────
     // Hanya terbuka saat admin klik "Buka Pendaftaran"
     Route::middleware(['phase:registration'])->group(function () {
-        Route::get('pendaftaran', [Student\RegistrationController::class , 'create'])->name('registration.create');
-        Route::post('pendaftaran', [Student\RegistrationController::class , 'store'])
+        Route::get('pendaftaran', [Student\RegistrationController::class, 'create'])->name('registration.create');
+        Route::post('pendaftaran', [Student\RegistrationController::class, 'store'])
             ->middleware('throttle:5,1')
             ->name('registration.store');
     });
@@ -58,19 +60,19 @@ Route::middleware([
     Route::middleware(['phase:execution,grading'])->group(function () {
         // Laporan Harian
         Route::prefix('laporan-harian')->name('laporan-harian.')->group(function () {
-            Route::get('/', [Student\DailyReportController::class , 'index'])->name('index');
-            Route::get('buat', [Student\DailyReportController::class , 'create'])->name('create');
-            Route::post('/', [Student\DailyReportController::class , 'store'])->name('store');
-            Route::get('{dailyReport}/edit', [Student\DailyReportController::class , 'edit'])->name('edit');
-            Route::match(['put', 'patch'], '{dailyReport}', [Student\DailyReportController::class , 'update'])->name('update');
-            Route::delete('{dailyReport}', [Student\DailyReportController::class , 'destroy'])->name('destroy');
+            Route::get('/', [Student\DailyReportController::class, 'index'])->name('index');
+            Route::get('buat', [Student\DailyReportController::class, 'create'])->name('create');
+            Route::post('/', [Student\DailyReportController::class, 'store'])->name('store');
+            Route::get('{dailyReport}/edit', [Student\DailyReportController::class, 'edit'])->name('edit');
+            Route::match(['put', 'patch'], '{dailyReport}', [Student\DailyReportController::class, 'update'])->name('update');
+            Route::delete('{dailyReport}', [Student\DailyReportController::class, 'destroy'])->name('destroy');
         });
 
         // Program Kerja
         Route::prefix('program-kerja')->name('program-kerja.')->group(function () {
-            Route::get('/', [Student\WorkProgramController::class , 'index'])->name('index');
-            Route::get('buat', [Student\WorkProgramController::class , 'create'])->name('create');
-            Route::post('/', [Student\WorkProgramController::class , 'store'])->name('store');
+            Route::get('/', [Student\WorkProgramController::class, 'index'])->name('index');
+            Route::get('buat', [Student\WorkProgramController::class, 'create'])->name('create');
+            Route::post('/', [Student\WorkProgramController::class, 'store'])->name('store');
         });
 
         // Poster Potensi Desa
@@ -88,9 +90,9 @@ Route::middleware([
     Route::middleware(['phase:grading,finished'])->group(function () {
         // Laporan Akhir
         Route::prefix('laporan-akhir')->name('laporan-akhir.')->group(function () {
-            Route::get('/', [Student\FinalReportController::class , 'create'])->name('index');
-            Route::get('buat', [Student\FinalReportController::class , 'create'])->name('create');
-            Route::post('/', [Student\FinalReportController::class , 'store'])->name('store');
+            Route::get('/', [Student\FinalReportController::class, 'create'])->name('index');
+            Route::get('buat', [Student\FinalReportController::class, 'create'])->name('create');
+            Route::post('/', [Student\FinalReportController::class, 'store'])->name('store');
         });
 
         // Evaluasi (Pending Implementation)

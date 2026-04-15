@@ -19,11 +19,11 @@ export default function GuestLayout({ children, title }: GuestLayoutProps) {
                 <div className="mt-8 text-center">
                     <Link
                         href={route('home')}
-                        className="text-sm font-medium text-slate-400 hover:text-green-700 transition-colors flex items-center justify-center gap-2"
+                        className="text-sm font-medium text-emerald-900 hover:text-green-700 transition-colors flex items-center justify-center gap-2"
                     >
                         &larr; Kembali ke Beranda
                     </Link>
-                    <p className="mt-4 text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+                    <p className="mt-4 text-sm font-bold text-slate-300 font-semibold uppercase text-xs">
                         &copy; {new Date().getFullYear()} LPPM UIN Saizu
                     </p>
                 </div>

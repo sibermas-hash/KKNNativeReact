@@ -9,6 +9,7 @@ use App\Imports\LokasiWilayahImport;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\PoskoKelompok;
+use App\Traits\HandlesPagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -18,7 +19,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class LokasiController extends Controller
 {
-    use \App\Traits\HandlesPagination;
+    use HandlesPagination;
 
     public function index(Request $request): Response
     {

@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
  *
  * Note: Most security headers are now handled by CspHeaders middleware.
  * This middleware provides additional headers that are not CSP-specific.
- * 
+ *
  * @see CspHeaders For primary security headers (X-Frame-Options, CSP, HSTS, etc.)
  */
 class SecurityHeaders

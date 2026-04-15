@@ -16,21 +16,32 @@ class DispensasiController extends Controller
 {
     public function index(Request $request): Response
     {
-        $dispensasi = DispensasiKkn::with(['periode:id,name,periode', 'grantedByUser:id,name'])
-            ->when($request->input('search'), fn ($q, $search) => $q->where('nim', 'ilike', "%{$search}%")
-                ->orWhere('alasan', 'ilike', "%{$search}%")
-            )
-            ->latest()
-            ->paginate(15)
-            ->withQueryString();
+        try {
+            $dispensasi = DispensasiKkn::with(['periode:id,name,periode', 'grantedByUser:id,name'])
+                ->when($request->input('search'), fn ($q, $search) => $q->where('nim', 'ilike', "%{$search}%")
+                    ->orWhere('alasan', 'ilike', "%{$search}%")
+                )
+                ->latest()
+                ->paginate(15)
+                ->withQueryString();
 
-        $periods = Periode::orderByDesc('periode')->get(['id', 'name', 'periode']);
+            $periods = Periode::orderByDesc('periode')->get(['id', 'name', 'periode']);
 
-        return Inertia::render('Admin/Operational/Dispensasi/Index', [
-            'dispensasi' => $dispensasi,
-            'periods' => $periods,
-            'filters' => $request->only('search'),
-        ]);
+            return Inertia::render('Admin/Operational/Dispensasi/Index', [
+                'dispensasi' => $dispensasi,
+                'periods' => $periods,
+                'filters' => $request->only('search'),
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return Inertia::render('Admin/Operational/Dispensasi/Index', [
+                'dispensasi' => ['data' => [], 'meta' => ['total' => 0, 'per_page' => 15, 'current_page' => 1]],
+                'periods' => [],
+                'filters' => [],
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function store(Request $request): RedirectResponse
@@ -40,7 +51,7 @@ class DispensasiController extends Controller
             'period_id' => ['nullable', 'exists:App\Models\KKN\Periode,id'],
             'alasan' => ['required', 'string', 'max:500'],
             'bypassed_requirements' => ['nullable', 'array'],
-            'bypassed_requirements.*' => ['string', 'in:sks,gpa,bta_ppi,semester,health_certificate,parent_permission'],
+            'bypassed_requirements.*' => ['string', 'in:min_sks,min_gpa,bta_ppi,documents,personal_status,program_prodi'],
         ]);
 
         $validated['granted_by'] = auth()->id();

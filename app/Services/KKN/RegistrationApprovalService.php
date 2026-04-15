@@ -6,6 +6,7 @@ namespace App\Services\KKN;
 
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\PesertaKkn;
+use App\Services\AuditService;
 use App\Services\AutomaticGroupPlacementService;
 use App\Services\GroupSelectionService;
 use Illuminate\Support\Facades\DB;
@@ -59,7 +60,7 @@ class RegistrationApprovalService
                 'approved_by' => $approvedBy,
             ]);
 
-            \App\Services\AuditService::log(
+            AuditService::log(
                 'REGISTRATION_APPROVAL',
                 "Pendaftaran disetujui untuk Mahasiswa ID {$registration->mahasiswa_id}",
                 $registration
@@ -99,7 +100,7 @@ class RegistrationApprovalService
                         'approved_by' => $approvedBy,
                     ]);
 
-                    \App\Services\AuditService::log(
+                    AuditService::log(
                         'BULK_REGISTRATION_APPROVAL',
                         "Pendaftaran disetujui secara massal untuk Mahasiswa ID {$registration->mahasiswa_id}",
                         $registration
@@ -144,7 +145,7 @@ class RegistrationApprovalService
                         'last_rejected_by' => $rejectedBy,
                     ]);
 
-                    \App\Services\AuditService::log(
+                    AuditService::log(
                         'BULK_REGISTRATION_REJECTION',
                         "Pendaftaran ditolak secara massal. Alasan: {$reason}",
                         $registration
@@ -211,7 +212,7 @@ class RegistrationApprovalService
 
             $registration->update(['role' => $role]);
 
-            \App\Services\AuditService::log(
+            AuditService::log(
                 'GROUP_ASSIGNMENT',
                 "Mahasiswa dipindahkan ke kelompok ID {$kelompokId} sebagai {$role}",
                 $registration
@@ -245,9 +246,9 @@ class RegistrationApprovalService
             // Set this student as 'Ketua'
             $registration->update(['role' => 'Ketua']);
 
-            \App\Services\AuditService::log(
+            AuditService::log(
                 'GROUP_LEADER_ASSIGN',
-                "Mahasiswa diangkat menjadi Ketua Kelompok",
+                'Mahasiswa diangkat menjadi Ketua Kelompok',
                 $registration
             );
         });

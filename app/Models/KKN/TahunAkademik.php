@@ -9,32 +9,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
 
-use Illuminate\Database\Eloquent\Attributes\Connection;
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Casts;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-
-#[Connection('kkn')]
-#[Table('tahun_akademik')]
-#[Fillable([
-    'year',
-        'is_active',
-])]
-#[Casts([
-    'is_active' => 'boolean',
-])]
 class TahunAkademik extends Model
 {
+
+    protected $table = 'tahun_akademik';
+
+    protected $connection = 'kkn';
+
+    protected $fillable = ['year', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
     use HasFactory;
-
-    
-
-    
-
-    
-
-    
 
     public static function getActiveYear(): ?self
     {

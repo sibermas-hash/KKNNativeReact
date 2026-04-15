@@ -2,7 +2,8 @@ import Modal from './Modal';
 import Button from './Button';
 
 interface ConfirmDialogProps {
-    open: boolean;
+    open?: boolean;
+    show?: boolean;
     onClose: () => void;
     onConfirm: () => void;
     title?: string;
@@ -14,6 +15,7 @@ interface ConfirmDialogProps {
 
 export default function ConfirmDialog({
     open,
+    show,
     onClose,
     onConfirm,
     title = 'Konfirmasi Tindakan',
@@ -22,16 +24,18 @@ export default function ConfirmDialog({
     confirmVariant = 'danger',
     processing = false,
 }: ConfirmDialogProps) {
+    const isVisible = open !== undefined ? open : (show !== undefined ? show : false);
+
     return (
-        <Modal show={open} onClose={onClose} title={title} maxWidth="sm">
-                <p className="text-[11px] font-bold uppercase tracking-tight text-slate-600 leading-relaxed italic">
+        <Modal show={isVisible} onClose={onClose} title={title} maxWidth="sm">
+                <p className="text-sm font-medium text-black">
                     {message}
                 </p>
-                <div className="flex justify-end gap-3 pt-2">
-                    <Button variant="secondary" onClick={onClose} disabled={processing} className="h-9 px-4">
+                <div className="flex justify-end gap-3 mt-6">
+                    <Button variant="secondary" onClick={onClose} disabled={processing}>
                         Batal
                     </Button>
-                    <Button variant={confirmVariant} onClick={onConfirm} loading={processing} className="h-9 px-6">
+                    <Button variant={confirmVariant} onClick={onConfirm} loading={processing}>
                         {confirmLabel}
                     </Button>
                 </div>

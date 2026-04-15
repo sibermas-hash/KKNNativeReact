@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\KKN;
 
 use App\Enums\KknType;
+use App\Models\KKN\JenisKkn;
 use App\Models\KKN\Periode;
 
 /**
@@ -20,7 +21,7 @@ class PeriodeGovernanceService
         ?string $programType = null,
         ?string $programSubtype = null,
         KknType|string|null $legacyJenis = null,
-        ?\App\Models\KKN\JenisKkn $jenisKkn = null
+        ?JenisKkn $jenisKkn = null
     ): array {
         $resolvedProgramType = self::normalizeProgramType($programType, $legacyJenis);
         $resolvedProgramSubtype = self::normalizeProgramSubtype($resolvedProgramType, $programSubtype, $legacyJenis);

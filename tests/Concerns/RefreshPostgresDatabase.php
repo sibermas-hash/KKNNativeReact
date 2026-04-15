@@ -2,8 +2,8 @@
 
 namespace Tests\Concerns;
 
-use Illuminate\Database\QueryException;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase as LaravelRefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
@@ -24,7 +24,7 @@ trait RefreshPostgresDatabase
             }
 
             // Robustly wipe the PostgreSQL schema to avoid dependency issues (views, types, etc.)
-            DB::connection($connectionName)->getPdo()->exec("DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;");
+            DB::connection($connectionName)->getPdo()->exec('DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;');
 
             $this->app[Kernel::class]->setArtisan(null);
 

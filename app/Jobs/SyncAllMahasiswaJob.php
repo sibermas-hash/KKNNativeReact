@@ -14,6 +14,7 @@ class SyncAllMahasiswaJob implements ShouldQueue
     use Queueable;
 
     public int $tries = 3;
+
     public int $backoff = 30;
 
     /**
@@ -30,7 +31,7 @@ class SyncAllMahasiswaJob implements ShouldQueue
     {
         Log::info('SyncAllMahasiswaJob: starting mahasiswa sync', [
             'type' => $this->nimList ? 'targeted' : 'full',
-            'count' => $this->nimList ? count($this->nimList) : 'all'
+            'count' => $this->nimList ? count($this->nimList) : 'all',
         ]);
 
         $params = [
@@ -47,7 +48,7 @@ class SyncAllMahasiswaJob implements ShouldQueue
 
         if ($exitCode !== 0) {
             Log::error('SyncAllMahasiswaJob: sync failed', ['exit' => $exitCode]);
-            $this->fail(new \RuntimeException('sync:master-data exited with code ' . $exitCode));
+            $this->fail(new \RuntimeException('sync:master-data exited with code '.$exitCode));
         }
 
         Log::info('SyncAllMahasiswaJob: sync completed', ['exit' => $exitCode]);

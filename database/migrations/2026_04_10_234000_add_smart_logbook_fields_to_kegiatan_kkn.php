@@ -12,17 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('kegiatan_kkn', function (Blueprint $table) {
-            if (!Schema::hasColumn('kegiatan_kkn', 'category')) {
+            if (! Schema::hasColumn('kegiatan_kkn', 'category')) {
                 $table->string('category')->nullable()->after('date');
             }
-            if (!Schema::hasColumn('kegiatan_kkn', 'latitude')) {
+            if (! Schema::hasColumn('kegiatan_kkn', 'latitude')) {
                 $table->decimal('latitude', 10, 8)->nullable();
                 $table->decimal('longitude', 11, 8)->nullable();
             }
-            if (!Schema::hasColumn('kegiatan_kkn', 'gps_accuracy')) {
+            if (! Schema::hasColumn('kegiatan_kkn', 'gps_accuracy')) {
                 $table->integer('gps_accuracy')->nullable();
             }
-            if (!Schema::hasColumn('kegiatan_kkn', 'captured_at')) {
+            if (! Schema::hasColumn('kegiatan_kkn', 'captured_at')) {
                 $table->timestamp('captured_at')->nullable();
             }
         });

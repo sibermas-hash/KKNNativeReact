@@ -1,6 +1,6 @@
 import { Head, useForm, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { FormInput } from '@/Components/ui';
+import { FormInput, Button } from '@/Components/ui';
 import FormTextarea from '@/Components/ui/FormTextarea';
 import { route } from 'ziggy-js';
 import { ArrowLeft, Send, AlertTriangle } from 'lucide-react';
@@ -21,38 +21,43 @@ export default function StudentIzinCreate() {
         <AppLayout title="Ajukan Izin">
             <Head title="Ajukan Izin" />
 
-            <div className="space-y-8">
+            <div className="max-w-4xl mx-auto space-y-10 py-6 px-4">
                 <div className="flex items-center gap-4">
                     <Link
                         href={route('student.izin.index')}
-                        className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700"
+                        className="inline-flex items-center gap-2.5 px-4 py-2 bg-white border border-emerald-100/60 rounded-xl text-xs font-bold text-emerald-950 hover:border-emerald-500 hover:text-emerald-600 transition-all shadow-sm"
                     >
-                        <ArrowLeft className="h-4 w-4" /> Kembali ke Daftar Izin
+                        <ArrowLeft className="h-3.5 w-3.5" /> KEMBALI KE DAFTAR IZIN
                     </Link>
                 </div>
 
-                <section className="rounded-lg border border-slate-200 bg-white p-8">
-                    <h1 className="text-2xl font-semibold text-gray-900 mb-2">Ajukan Permohonan Izin</h1>
-                    <p className="text-sm text-gray-500 mb-8">
-                        Ajukan izin jika Anda perlu meninggalkan lokasi KKN. Permohonan akan diproses oleh DPL Anda.
-                    </p>
+                <section className="rounded-[2.5rem] border border-emerald-100/60 bg-white p-12 shadow-sm">
+                    <div className="space-y-2 mb-12">
+                        <h1 className="text-3xl font-bold text-black tracking-tight uppercase">Ajukan Izin <span className="text-emerald-500">Meninggalkan.</span></h1>
+                        <p className="text-xs font-bold text-emerald-950 font-semibold uppercase text-xs">
+                            Permohonan izin akan diverifikasi oleh Dosen Pembimbing Lapangan.
+                        </p>
+                    </div>
 
-                    <div className="mb-8 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-3">
-                        <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                        <div className="text-sm text-amber-800">
-                            <p className="font-semibold">Perhatian</p>
-                            <p className="mt-1 text-xs text-amber-700">
-                                Izin hanya dapat diajukan untuk tanggal hari ini atau setelahnya.
-                                Akumulasi 3 hari tanpa keterangan akan mengakibatkan pembatalan KKN.
+                    <div className="mb-12 rounded-3xl border border-amber-100 bg-amber-50/50 p-6 flex items-start gap-4">
+                        <div className="h-10 w-10 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600 flex-shrink-0">
+                            <AlertTriangle size={20} />
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-xs font-bold text-amber-900 uppercase tracking-tight">Aturan Izin Penting</p>
+                            <p className="text-sm font-bold text-amber-700/70 leading-relaxed uppercase tracking-wide">
+                                Izin hanya dapat diajukan untuk hari ini atau setelahnya.
+                                <br />Akumulasi 3 hari tanpa keterangan mengakibatkan pembatalan KKN.
                             </p>
                         </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-8">
                         <FormInput
                             type="date"
                             id="tanggal_mulai"
                             label="Tanggal Mulai"
+                            layout="horizontal"
                             value={data.tanggal_mulai}
                             min={new Date().toISOString().split('T')[0]}
                             onChange={(e) => setData('tanggal_mulai', e.target.value)}
@@ -64,6 +69,7 @@ export default function StudentIzinCreate() {
                             type="date"
                             id="tanggal_kembali"
                             label="Tanggal Kembali"
+                            layout="horizontal"
                             value={data.tanggal_kembali}
                             min={data.tanggal_mulai}
                             onChange={(e) => setData('tanggal_kembali', e.target.value)}
@@ -73,29 +79,32 @@ export default function StudentIzinCreate() {
 
                         <FormTextarea
                             id="alasan"
-                            label="Alasan"
+                            label="Alasan Izin"
+                            layout="horizontal"
                             rows={5}
                             value={data.alasan}
                             onChange={(e) => setData('alasan', e.target.value)}
-                            placeholder="Jelaskan alasan permohonan izin Anda secara detail..."
+                            placeholder="Tuliskan alasan detail mengapa Anda meninggalkan lokasi..."
                             error={errors.alasan}
                             required
                         />
 
-                        <div className="flex items-center gap-4 pt-4 border-t border-slate-100">
-                            <button
+                        <div className="flex flex-col sm:flex-row items-center gap-4 pt-10 border-t border-slate-50">
+                            <div className="sm:min-w-[180px]" /> {/* Spacer for horizontal alignment */}
+                            <Button
                                 type="submit"
-                                disabled={processing}
-                                className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+                                size="lg"
+                                loading={processing}
+                                icon={<Send className="h-4 w-4" />}
+                                className="w-full sm:w-auto px-6 rounded-2xl uppercase text-sm font-bold tracking-widest h-14"
                             >
-                                <Send className="h-4 w-4" />
-                                {processing ? 'Mengajukan...' : 'Ajukan Izin'}
-                            </button>
+                                KIRIM PERMOHONAN
+                            </Button>
                             <Link
                                 href={route('student.izin.index')}
-                                className="text-sm text-gray-500 hover:text-gray-700"
+                                className="text-sm font-bold text-emerald-950 hover:text-emerald-950 transition-colors font-semibold uppercase text-xs px-6"
                             >
-                                Batal
+                                Batalkan
                             </Link>
                         </div>
                     </form>

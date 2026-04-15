@@ -15,10 +15,10 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $seeders = [
-            RoleSeeder::class ,
-            MasterDataSeeder::class ,
-            KonfigurasiPenilaianSeeder::class ,
-            KonfigurasiSertifikatSeeder::class ,
+            RoleSeeder::class,
+            MasterDataSeeder::class,
+            KonfigurasiPenilaianSeeder::class,
+            KonfigurasiSertifikatSeeder::class,
         ];
 
         if (app()->environment('local')) {

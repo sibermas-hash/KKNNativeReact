@@ -8,9 +8,9 @@ use App\Models\KKN\Fakultas;
 use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\Periode;
+use App\Notifications\KknActivityNotification;
 use App\Repositories\KknScoreRepository;
 use App\Services\GradingService as BaseGradingService;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -56,7 +56,7 @@ class GradingService
         $score->update(['is_finalized' => true]);
 
         if ($score->mahasiswa?->user) {
-            $score->mahasiswa->user->notify(new \App\Notifications\KknActivityNotification([
+            $score->mahasiswa->user->notify(new KknActivityNotification([
                 'type' => 'success',
                 'title' => 'Nilai KKN Difinalisasi',
                 'message' => 'Nilai KKN Anda telah difinalisasi oleh Admin LPPM. Silakan unduh sertifikat.',
@@ -92,7 +92,7 @@ class GradingService
             throw new \Exception('Periode rekap nilai tidak ditemukan.');
         }
 
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
         // Headers
@@ -161,6 +161,7 @@ class GradingService
         $tempFile = $exportDir.'/'.Str::uuid().'.xlsx';
         try {
             $writer->save($tempFile);
+
             return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
         } catch (\Throwable $e) {
             if (file_exists($tempFile)) {

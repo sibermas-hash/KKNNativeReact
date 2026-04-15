@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enums;
 
 enum LogbookCategory: string
@@ -11,7 +13,7 @@ enum LogbookCategory: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::SHILATURRAHMI => 'Shilaturrahmi / Koordinasi',
             self::PROGRAM_UNGGULAN => 'Program Unggulan',
             self::PROGRAM_PENDUKUNG => 'Program Pendukung',

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use App\Models\ApiKey;
@@ -17,7 +19,7 @@ class ValidateApiKey
     {
         $key = $request->header('x-api-key');
 
-        if (!$key) {
+        if (! $key) {
             return response()->json([
                 'error' => 'API key diperlukan. Kirim via header x-api-key.',
             ], 401);
@@ -25,13 +27,13 @@ class ValidateApiKey
 
         $apiKey = ApiKey::findByPlaintext($key);
 
-        if (!$apiKey) {
+        if (! $apiKey) {
             return response()->json([
                 'error' => 'API key tidak valid.',
             ], 401);
         }
 
-        if (!$apiKey->is_active) {
+        if (! $apiKey->is_active) {
             return response()->json([
                 'error' => 'API key sudah dinonaktifkan. Hubungi admin.',
             ], 403);

@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::connection('kkn')->table('periode', function (Blueprint $table) {
             // Tambah kolom periode (angka periode KKN: 78, 79, 80, dst)
             $table->integer('periode')->nullable()->after('academic_year_id');
-            
+
             // Ubah kolom angkatan menjadi jenis (KKN REGULER, KKN INTERNASIONAL, dll)
             $table->string('jenis', 100)->nullable()->change();
-            
+
             // Tambah index untuk periode
             $table->index('periode');
         });

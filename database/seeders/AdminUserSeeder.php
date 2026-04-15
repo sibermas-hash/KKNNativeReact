@@ -13,6 +13,7 @@ class AdminUserSeeder extends Seeder
     {
         if (! app()->environment('local')) {
             $this->command?->warn('AdminUserSeeder dilewati karena hanya diizinkan pada environment local.');
+
             return;
         }
 
@@ -35,7 +36,7 @@ class AdminUserSeeder extends Seeder
         if ($wasRecentlyCreated) {
             $this->command?->warn("Akun superadmin lokal dibuat. Password awal: {$plainPassword}");
         } elseif ($forcedPassword) {
-            $this->command?->warn("Password akun superadmin lokal diperbarui ke nilai dari KKN_LOCAL_SEED_PASSWORD.");
+            $this->command?->warn('Password akun superadmin lokal diperbarui ke nilai dari KKN_LOCAL_SEED_PASSWORD.');
         }
 
         if (! $user->hasRole('superadmin')) {

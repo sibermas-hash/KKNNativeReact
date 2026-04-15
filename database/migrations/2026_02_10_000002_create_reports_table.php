@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('group_id')->constrained()->onDelete('cascade');
-            
+
             $table->enum('type', [
                 'final_report',
                 'village_map',
@@ -23,33 +23,33 @@ return new class extends Migration
                 'photo_documentation',
                 'attendance_sheet',
                 'activity_proposal',
-                'evaluation_report'
+                'evaluation_report',
             ]);
-            
+
             $table->string('title');
             $table->text('description')->nullable();
             $table->string('file_path');
             $table->string('file_name');
             $table->string('mime_type');
             $table->unsignedBigInteger('file_size'); // in bytes
-            
+
             $table->enum('status', [
                 'draft',
                 'submitted',
                 'under_review',
                 'revision_required',
                 'approved',
-                'rejected'
+                'rejected',
             ])->default('draft');
-            
+
             $table->text('feedback')->nullable();
             $table->foreignId('reviewed_by')->nullable()->constrained('users');
             $table->timestamp('submitted_at')->nullable();
             $table->timestamp('reviewed_at')->nullable();
-            
+
             $table->timestamps();
             $table->softDeletes();
-            
+
             $table->index(['user_id', 'type']);
             $table->index(['group_id', 'status']);
         });

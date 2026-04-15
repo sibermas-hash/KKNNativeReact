@@ -12,9 +12,9 @@ return [
 
     'asset_url' => env('ASSET_URL'),
 
-    'timezone' => 'UTC',
+    'timezone' => 'Asia/Jakarta',
 
-    'locale' => 'en',
+    'locale' => 'id',
 
     'fallback_locale' => 'en',
 

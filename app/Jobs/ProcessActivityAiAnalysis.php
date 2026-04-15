@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs;
 
-use App\Models\KKN\KegiatanKkn;
 use App\Ai\Agents\ActivityReviewerAgent;
+use App\Models\KKN\KegiatanKkn;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
 
 class ProcessActivityAiAnalysis implements ShouldQueue
@@ -26,7 +29,7 @@ class ProcessActivityAiAnalysis implements ShouldQueue
     public function handle(ActivityReviewerAgent $agent): void
     {
         // LARAVEL 13 OPTIMIZATION: Use Context to track activity in logs across the lifecycle
-        \Illuminate\Support\Facades\Context::add('activity_id', $this->activity->id);
+        Context::add('activity_id', $this->activity->id);
 
         try {
             $prompt = sprintf(
@@ -47,7 +50,7 @@ class ProcessActivityAiAnalysis implements ShouldQueue
 
             Log::info("AI Analysis completed for Activity ID: {$this->activity->id}");
         } catch (\Exception $e) {
-            Log::error("AI Analysis failed for Activity ID: {$this->activity->id}. Error: " . $e->getMessage());
+            Log::error("AI Analysis failed for Activity ID: {$this->activity->id}. Error: ".$e->getMessage());
             throw $e;
         }
     }

@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications\KKN;
 
-use App\Models\KKN\PesertaKkn;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -47,7 +48,7 @@ class GroupPlacementConfirmedNotification extends Notification implements Should
             'group_name' => $this->groupName,
             'period_name' => $this->periodName,
             'location_name' => $this->locationName,
-            'message' => "Anda ditempatkan di kelompok {$this->groupName}" . ($this->locationName ? " di {$this->locationName}" : '') . ".",
+            'message' => "Anda ditempatkan di kelompok {$this->groupName}".($this->locationName ? " di {$this->locationName}" : '').'.',
         ];
     }
 }

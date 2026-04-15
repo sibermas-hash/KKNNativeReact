@@ -17,7 +17,8 @@ import {
     Camera,
     X,
     ZoomIn,
-    ExternalLink
+    ExternalLink,
+    LayoutGrid
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useState } from 'react';
@@ -94,7 +95,7 @@ export default function DplDailyReportShow({ report }: Props) {
             {/* Lightbox Modal */}
             {lightboxUrl && (
                 <div 
-                    className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 cursor-zoom-out"
+                    className="fixed inset-0 z-[100] bg-emerald-950/90 flex items-center justify-center p-4 cursor-zoom-out"
                     onClick={() => setLightboxUrl(null)}
                 >
                     <button 
@@ -103,12 +104,17 @@ export default function DplDailyReportShow({ report }: Props) {
                     >
                         <X size={24} />
                     </button>
-                    <img 
-                        src={lightboxUrl} 
-                        alt="Bukti Kegiatan" 
-                        className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl"
+                    <div
+                        role="presentation"
                         onClick={(e) => e.stopPropagation()}
-                    />
+                        className="max-w-full max-h-[90vh] flex items-center justify-center"
+                    >
+                        <img 
+                            src={lightboxUrl} 
+                            alt="Bukti kegiatan mahasiswa" 
+                            className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl"
+                        />
+                    </div>
                 </div>
             )}
 
@@ -118,13 +124,13 @@ export default function DplDailyReportShow({ report }: Props) {
                     <div className="flex items-center gap-6">
                         <Link 
                             href="/dpl/laporan-harian" 
-                            className="h-12 w-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-gray-400 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm"
+                            className="h-12 w-12 rounded-2xl bg-white border border-emerald-100/60 flex items-center justify-center text-emerald-950 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm"
                         >
                             <ArrowLeft size={22} strokeWidth={2.5} />
                         </Link>
                         <div>
-                            <h1 className="text-3xl font-black text-gray-900 tracking-tight">{report.title}</h1>
-                            <p className="text-sm text-gray-400 font-bold mt-1">
+                            <h1 className="text-3xl font-bold text-black tracking-tight">{report.title}</h1>
+                            <p className="text-sm text-emerald-950 font-bold mt-1">
                                 <span className="text-slate-300">#{String(report.id).padStart(4, '0')}</span>
                                 <span className="mx-3 text-slate-200">•</span>
                                 {report.date}
@@ -136,20 +142,20 @@ export default function DplDailyReportShow({ report }: Props) {
                 </div>
 
                 {/* Profil Mahasiswa - Compact Bar */}
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="bg-white rounded-2xl border border-emerald-100/60 shadow-sm p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex items-center gap-5">
-                        <div className="h-14 w-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl font-black shrink-0 border border-emerald-100">
+                        <div className="h-14 w-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl font-bold shrink-0 border border-emerald-100">
                             {report.student.name.charAt(0)}
                         </div>
                         <div>
-                            <p className="text-lg font-black text-gray-900">{report.student.name}</p>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{report.student.nim}</p>
+                            <p className="text-lg font-bold text-black">{report.student.name}</p>
+                            <p className="text-xs font-bold text-emerald-950 font-semibold uppercase text-xs">{report.student.nim}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100">
-                            <MapPin size={14} className="text-gray-400" />
-                            <span className="text-xs font-bold text-gray-600">{report.group.name}</span>
+                        <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50/30 rounded-xl border border-emerald-100/60">
+                            <MapPin size={14} className="text-emerald-950" />
+                            <span className="text-xs font-bold text-emerald-950">{report.group.name}</span>
                         </div>
                         {report.group.location?.village_name && (
                             <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-xl border border-emerald-100">
@@ -164,22 +170,22 @@ export default function DplDailyReportShow({ report }: Props) {
                     {/* Main Content Column */}
                     <div className="space-y-8">
                         {/* Narasi Kegiatan */}
-                        <section className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
-                            <div className="px-8 py-5 border-b border-slate-100 flex items-center gap-3">
+                        <section className="bg-white rounded-xl border border-emerald-100/60 shadow-sm overflow-hidden">
+                            <div className="px-8 py-5 border-b border-emerald-100/60 flex items-center gap-3">
                                 <FileText size={18} className="text-emerald-500" />
-                                <h2 className="text-sm font-black text-gray-900 uppercase tracking-widest">Deskripsi Kegiatan</h2>
+                                <h2 className="text-sm font-bold text-black font-semibold uppercase text-xs">Deskripsi Kegiatan</h2>
                             </div>
                             <div className="p-8">
-                                <p className="text-base text-gray-700 leading-[1.9] whitespace-pre-line font-medium">
+                                <p className="text-base text-emerald-700 leading-[1.9] whitespace-pre-line font-medium">
                                     {report.activity}
                                 </p>
                                 {report.output && (
-                                    <div className="mt-8 pt-6 border-t border-slate-100">
+                                    <div className="mt-8 pt-6 border-t border-emerald-100/60">
                                         <div className="flex items-center gap-2 mb-3">
                                             <Target size={14} className="text-emerald-500" />
-                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Target & Output</span>
+                                            <span className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs">Target & Output</span>
                                         </div>
-                                        <p className="text-sm text-gray-500 leading-relaxed bg-slate-50 p-6 rounded-2xl border border-slate-100 whitespace-pre-line">
+                                        <p className="text-sm text-emerald-950 leading-relaxed bg-emerald-50/30 p-6 rounded-2xl border border-emerald-100/60 whitespace-pre-line">
                                             {report.output}
                                         </p>
                                     </div>
@@ -188,13 +194,13 @@ export default function DplDailyReportShow({ report }: Props) {
                         </section>
 
                         {/* Galeri Foto Bukti - INLINE PREVIEW */}
-                        <section className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
-                            <div className="px-8 py-5 border-b border-slate-100 flex items-center justify-between">
+                        <section className="bg-white rounded-xl border border-emerald-100/60 shadow-sm overflow-hidden">
+                            <div className="px-8 py-5 border-b border-emerald-100/60 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <Camera size={18} className="text-emerald-500" />
-                                    <h2 className="text-sm font-black text-gray-900 uppercase tracking-widest">Bukti Dokumentasi</h2>
+                                    <h2 className="text-sm font-bold text-black font-semibold uppercase text-xs">Bukti Dokumentasi</h2>
                                 </div>
-                                <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
+                                <span className="text-sm font-bold text-slate-300 font-semibold uppercase text-xs bg-emerald-50/30 px-3 py-1 rounded-full border border-emerald-100/60">
                                     {report.file_kegiatan.length} Lampiran
                                 </span>
                             </div>
@@ -202,7 +208,7 @@ export default function DplDailyReportShow({ report }: Props) {
                                 {imageFiles.length > 0 ? (
                                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                                         {imageFiles.map((file) => (
-                                            <div key={file.id} className="group relative rounded-2xl overflow-hidden border-2 border-slate-100 hover:border-emerald-300 transition-all shadow-sm aspect-[4/3] bg-slate-50">
+                                            <div key={file.id} className="group relative rounded-2xl overflow-hidden border-2 border-emerald-100/60 hover:border-emerald-300 transition-all shadow-sm aspect-[4/3] bg-emerald-50/30">
                                                 <img 
                                                     src={file.preview_url} 
                                                     alt={file.file_name}
@@ -210,11 +216,11 @@ export default function DplDailyReportShow({ report }: Props) {
                                                     loading="lazy"
                                                 />
                                                 {/* Overlay Controls */}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end p-4">
+                                                <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end p-4">
                                                     <div className="flex items-center gap-2 w-full">
                                                         <button
                                                             onClick={() => setLightboxUrl(file.preview_url)}
-                                                            className="h-10 px-4 rounded-xl bg-white/20 backdrop-blur-sm text-white text-[10px] font-black uppercase flex items-center gap-2 hover:bg-white/30 transition-all flex-1 justify-center"
+                                                            className="h-10 px-4 rounded-xl bg-white/20 backdrop-blur-sm text-white text-sm font-bold uppercase flex items-center gap-2 hover:bg-white/30 transition-all flex-1 justify-center"
                                                         >
                                                             <ZoomIn size={14} /> Perbesar
                                                         </button>
@@ -227,14 +233,14 @@ export default function DplDailyReportShow({ report }: Props) {
                                                     </div>
                                                 </div>
                                                 {/* File Name Tag */}
-                                                <div className="absolute top-3 left-3 px-2 py-1 rounded-lg bg-black/40 backdrop-blur-sm text-[9px] font-bold text-white/80 truncate max-w-[80%]">
+                                                <div className="absolute top-3 left-3 px-2 py-1 rounded-lg bg-emerald-950/40 backdrop-blur-sm text-sm font-bold text-white/80 truncate max-w-[80%]">
                                                     {file.file_name}
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="py-16 text-center border-2 border-dashed border-slate-100 rounded-2xl">
+                                    <div className="py-16 text-center border-2 border-dashed border-emerald-100/60 rounded-2xl">
                                         <Camera size={32} className="mx-auto text-slate-200 mb-3" />
                                         <p className="text-xs font-bold text-slate-300">Tidak ada foto yang diunggah</p>
                                     </div>
@@ -243,16 +249,16 @@ export default function DplDailyReportShow({ report }: Props) {
                                 {/* Non-Image Files */}
                                 {otherFiles.length > 0 && (
                                     <div className="mt-6 space-y-3">
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Berkas Lainnya</p>
+                                        <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs mb-3">Berkas Lainnya</p>
                                         {otherFiles.map((file) => (
                                             <a
                                                 key={file.id}
                                                 href={file.download_url}
-                                                className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50 transition-all group"
+                                                className="flex items-center justify-between p-4 bg-emerald-50/30 rounded-xl border border-emerald-100/60 hover:border-emerald-200 hover:bg-emerald-50 transition-all group"
                                             >
                                                 <div className="flex items-center gap-3">
-                                                    <FileText size={18} className="text-gray-400 group-hover:text-emerald-500" />
-                                                    <span className="text-xs font-bold text-gray-700 truncate max-w-[200px]">{file.file_name}</span>
+                                                    <FileText size={18} className="text-emerald-950 group-hover:text-emerald-500" />
+                                                    <span className="text-xs font-bold text-emerald-700 truncate max-w-[200px]">{file.file_name}</span>
                                                 </div>
                                                 <Download size={14} className="text-slate-300 group-hover:text-emerald-500" />
                                             </a>
@@ -267,9 +273,9 @@ export default function DplDailyReportShow({ report }: Props) {
                             <section className="bg-amber-50 rounded-2xl border border-amber-200 p-6">
                                 <div className="flex items-center gap-3 mb-4">
                                     <Clock size={16} className="text-amber-500" />
-                                    <h3 className="text-[10px] font-black text-amber-800 uppercase tracking-widest">Catatan Revisi Sebelumnya</h3>
+                                    <h3 className="text-sm font-bold text-amber-800 font-semibold uppercase text-xs">Catatan Revisi Sebelumnya</h3>
                                 </div>
-                                <p className="text-sm font-medium text-amber-700 leading-relaxed italic">
+                                <p className="text-sm font-medium text-amber-700 leading-relaxed">
                                     "{report.review_notes}"
                                 </p>
                             </section>
@@ -280,7 +286,7 @@ export default function DplDailyReportShow({ report }: Props) {
                     <div className="space-y-8">
                         {/* AI Intelligence Audit Panel */}
                         {report.ai_analysis && (
-                            <section className="bg-white rounded-[2rem] border-2 border-emerald-100 shadow-xl shadow-emerald-500/5 overflow-hidden relative group">
+                            <section className="bg-white rounded-xl border-2 border-emerald-100 shadow-xl shadow-emerald-500/5 overflow-hidden relative group">
                                 <div className="absolute top-0 right-0 p-8 opacity-5 -mr-10 -mt-10 group-hover:scale-110 transition-transform duration-700">
                                     <ShieldCheck size={160} />
                                 </div>
@@ -289,8 +295,8 @@ export default function DplDailyReportShow({ report }: Props) {
                                         <LayoutGrid size={20} strokeWidth={3} />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-emerald-800">Automated Audit</p>
-                                        <p className="text-sm font-black text-emerald-900 uppercase tracking-tighter italic">AI Assistant Review</p>
+                                        <p className="text-sm font-bold font-semibold uppercase text-xs text-black">Automated Audit</p>
+                                        <p className="text-sm font-bold text-black font-bold text-center">AI Assistant Review</p>
                                     </div>
                                     <div className="ml-auto">
                                         <div className="h-8 w-8 rounded-full bg-emerald-600 text-white flex items-center justify-center animate-pulse shadow-lg shadow-emerald-200">
@@ -302,12 +308,12 @@ export default function DplDailyReportShow({ report }: Props) {
                                 <div className="p-8 space-y-6 relative">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1">
-                                            <span className="block text-[9px] font-black text-gray-400 uppercase tracking-widest">ABCD Compliance</span>
-                                            <div className="flex items-end gap-2 text-3xl font-black text-gray-900 leading-none tracking-tighter">
+                                            <span className="block text-sm font-bold text-emerald-950 font-semibold uppercase text-xs">ABCD Compliance</span>
+                                            <div className="flex items-end gap-2 text-3xl font-bold text-black leading-none tracking-tighter">
                                                 {report.ai_analysis.abcd_compliance}
                                                 <span className="text-sm text-slate-300">/10</span>
                                             </div>
-                                            <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100 mt-2">
+                                            <div className="h-1.5 w-full bg-emerald-50/30 rounded-full overflow-hidden border border-emerald-100/60 mt-2">
                                                 <div 
                                                     className="h-full bg-emerald-500 rounded-full transition-all duration-1000" 
                                                     style={{ width: `${report.ai_analysis.abcd_compliance * 10}%` }}
@@ -315,12 +321,12 @@ export default function DplDailyReportShow({ report }: Props) {
                                             </div>
                                         </div>
                                         <div className="space-y-1">
-                                            <span className="block text-[9px] font-black text-gray-400 uppercase tracking-widest">Quality Score</span>
-                                            <div className="flex items-end gap-2 text-3xl font-black text-gray-900 leading-none tracking-tighter">
+                                            <span className="block text-sm font-bold text-emerald-950 font-semibold uppercase text-xs">Quality Score</span>
+                                            <div className="flex items-end gap-2 text-3xl font-bold text-black leading-none tracking-tighter">
                                                 {report.ai_analysis.quality_score}
                                                 <span className="text-sm text-slate-300">/10</span>
                                             </div>
-                                            <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100 mt-2">
+                                            <div className="h-1.5 w-full bg-emerald-50/30 rounded-full overflow-hidden border border-emerald-100/60 mt-2">
                                                 <div 
                                                     className="h-full bg-emerald-600 rounded-full transition-all duration-1000" 
                                                     style={{ width: `${report.ai_analysis.quality_score * 10}%` }}
@@ -330,15 +336,15 @@ export default function DplDailyReportShow({ report }: Props) {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <span className="block text-[9px] font-black text-gray-400 uppercase tracking-widest">AI Feedback</span>
-                                        <p className="text-xs font-bold text-gray-600 leading-relaxed italic bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                        <span className="block text-sm font-bold text-emerald-950 font-semibold uppercase text-xs">AI Feedback</span>
+                                        <p className="text-xs font-bold text-emerald-950 leading-relaxed bg-emerald-50/30 p-4 rounded-xl border border-emerald-100/60">
                                             "{report.ai_analysis.feedback}"
                                         </p>
                                     </div>
 
                                     <div className="flex flex-wrap gap-2">
                                         {report.ai_analysis.tags.map((tag, idx) => (
-                                            <span key={idx} className="px-2 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase rounded-lg border border-emerald-100 transition-colors hover:bg-emerald-100">
+                                            <span key={idx} className="px-2 py-1 bg-emerald-50 text-emerald-600 text-sm font-bold uppercase rounded-lg border border-emerald-100 transition-colors hover:bg-emerald-100">
                                                 #{tag}
                                             </span>
                                         ))}
@@ -347,10 +353,10 @@ export default function DplDailyReportShow({ report }: Props) {
                             </section>
                         )}
                         {/* Geotagging Section */}
-                        <section className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
-                            <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                        <section className="bg-white rounded-xl border border-emerald-100/60 shadow-sm overflow-hidden">
+                            <div className="px-6 py-4 border-b border-emerald-100/60 flex items-center gap-3">
                                 <Navigation size={16} className="text-emerald-500" />
-                                <h2 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Verifikasi Lokasi</h2>
+                                <h2 className="text-sm font-bold text-black font-semibold uppercase text-xs">Verifikasi Lokasi</h2>
                             </div>
                             <div className="p-6 space-y-4">
                                 {hasCoordinates ? (
@@ -362,20 +368,20 @@ export default function DplDailyReportShow({ report }: Props) {
                                             height="200px" 
                                         />
                                         <div className="grid grid-cols-2 gap-3">
-                                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                                <span className="block text-[9px] font-bold text-slate-300 uppercase tracking-widest mb-1">Lat</span>
-                                                <span className="text-xs font-bold text-gray-900 tabular-nums">{Number(report.latitude).toFixed(6)}</span>
+                                            <div className="p-3 bg-emerald-50/30 rounded-xl border border-emerald-100/60">
+                                                <span className="block text-sm font-bold text-slate-300 font-semibold uppercase text-xs mb-1">Lat</span>
+                                                <span className="text-xs font-bold text-black tabular-nums">{Number(report.latitude).toFixed(6)}</span>
                                             </div>
-                                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                                <span className="block text-[9px] font-bold text-slate-300 uppercase tracking-widest mb-1">Lng</span>
-                                                <span className="text-xs font-bold text-gray-900 tabular-nums">{Number(report.longitude).toFixed(6)}</span>
+                                            <div className="p-3 bg-emerald-50/30 rounded-xl border border-emerald-100/60">
+                                                <span className="block text-sm font-bold text-slate-300 font-semibold uppercase text-xs mb-1">Lng</span>
+                                                <span className="text-xs font-bold text-black tabular-nums">{Number(report.longitude).toFixed(6)}</span>
                                             </div>
                                         </div>
                                         {report.gps?.accuracy && (
-                                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase">Akurasi GPS</span>
+                                            <div className="p-3 bg-emerald-50/30 rounded-xl border border-emerald-100/60 flex items-center justify-between">
+                                                <span className="text-sm font-bold text-emerald-950 uppercase">Akurasi GPS</span>
                                                 <span className={clsx(
-                                                    "text-xs font-black tabular-nums",
+                                                    "text-xs font-bold tabular-nums",
                                                     report.gps.accuracy <= 50 ? "text-emerald-600" : report.gps.accuracy <= 150 ? "text-amber-600" : "text-rose-600"
                                                 )}>
                                                     ±{Math.round(report.gps.accuracy)}m
@@ -390,9 +396,9 @@ export default function DplDailyReportShow({ report }: Props) {
                                                     : "bg-rose-50 border-rose-100"
                                             )}>
                                                 <div>
-                                                    <span className="block text-[9px] font-bold uppercase tracking-widest text-gray-400">Jarak dari {report.gps.reference_label ?? 'Posko'}</span>
+                                                    <span className="block text-sm font-bold font-semibold uppercase text-xs text-emerald-950">Jarak dari {report.gps.reference_label ?? 'Posko'}</span>
                                                     <span className={clsx(
-                                                        "text-lg font-black tabular-nums",
+                                                        "text-lg font-bold tabular-nums",
                                                         report.gps.distance_to_reference_meters <= 5000 ? "text-emerald-700" : "text-rose-700"
                                                     )}>
                                                         {report.gps.distance_to_reference_meters >= 1000 
@@ -411,13 +417,13 @@ export default function DplDailyReportShow({ report }: Props) {
                                             href={`https://www.google.com/maps?q=${report.latitude},${report.longitude}`}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="w-full h-10 rounded-xl bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-600 transition-all"
+                                            className="w-full h-10 rounded-xl bg-emerald-900 text-white text-sm font-bold font-semibold uppercase text-xs flex items-center justify-center gap-2 hover:bg-emerald-600 transition-all"
                                         >
                                             Buka di Google Maps <ExternalLink size={12} />
                                         </a>
                                     </>
                                 ) : (
-                                    <div className="py-12 text-center">
+                                    <div className="py-6 text-center">
                                         <AlertCircle size={32} className="mx-auto text-slate-200 mb-3" />
                                         <p className="text-xs font-bold text-slate-300">Koordinat tidak tersedia</p>
                                     </div>
@@ -426,16 +432,16 @@ export default function DplDailyReportShow({ report }: Props) {
                         </section>
 
                         {/* Panel Verifikasi DPL */}
-                        <section className="bg-white rounded-[2rem] border-2 border-emerald-500 shadow-lg shadow-emerald-100/50 overflow-hidden">
+                        <section className="bg-white rounded-xl border-2 border-emerald-500 shadow-lg shadow-emerald-100/50 overflow-hidden">
                             <div className="bg-emerald-600 px-6 py-5 flex items-center gap-4 text-white">
                                 <ShieldCheck size={22} />
                                 <div>
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-200">Panel Verifikasi</p>
-                                    <p className="text-sm font-black">Keputusan DPL</p>
+                                    <p className="text-sm font-bold font-semibold uppercase text-xs text-emerald-200">Panel Verifikasi</p>
+                                    <p className="text-sm font-bold">Keputusan DPL</p>
                                 </div>
                             </div>
                             <div className="p-6 space-y-5">
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-xs font-medium text-gray-500 leading-relaxed">
+                                <div className="p-4 bg-emerald-50/30 rounded-xl border border-emerald-100/60 text-xs font-medium text-emerald-950 leading-relaxed">
                                     {canReview 
                                         ? "Laporan ini menunggu keputusan Anda. Silahkan periksa narasi, bukti foto, dan lokasi GPS sebelum mengambil tindakan."
                                         : "Laporan ini sudah difinalisasi dan tidak dapat diubah lagi."
@@ -447,7 +453,7 @@ export default function DplDailyReportShow({ report }: Props) {
                                     type="button"
                                     disabled={!canReview || approveForm.processing}
                                     onClick={() => approveForm.patch(`/dpl/laporan-harian/${report.id}/setujui`)}
-                                    className="w-full h-14 bg-emerald-600 text-white font-black text-sm uppercase tracking-widest rounded-2xl hover:bg-emerald-700 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg shadow-emerald-200"
+                                    className="w-full h-14 bg-emerald-600 text-white font-bold text-sm font-semibold uppercase text-xs rounded-2xl hover:bg-emerald-700 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg shadow-emerald-200"
                                 >
                                     <CheckCircle2 size={20} /> Setujui Logbook
                                 </button>
@@ -461,7 +467,7 @@ export default function DplDailyReportShow({ report }: Props) {
                                     className="space-y-4"
                                 >
                                     <div>
-                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                                        <label className="block text-sm font-bold text-emerald-950 font-semibold uppercase text-xs mb-2">
                                             Catatan Revisi
                                         </label>
                                         <textarea
@@ -469,14 +475,14 @@ export default function DplDailyReportShow({ report }: Props) {
                                             onChange={(e) => revisionForm.setData('revision_notes', e.target.value)}
                                             rows={3}
                                             disabled={!canReview}
-                                            className="w-full rounded-xl border border-slate-200 p-4 text-sm font-medium outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition disabled:opacity-50 placeholder:text-slate-300 resize-none"
+                                            className="w-full rounded-xl border border-emerald-100/60 p-4 text-sm font-medium outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition disabled:opacity-50 placeholder:text-slate-300 resize-none"
                                             placeholder="Tulis arahan perbaikan untuk mahasiswa..."
                                         />
                                     </div>
                                     <button
                                         type="submit"
                                         disabled={!canReview || revisionForm.processing || !revisionForm.data.revision_notes.trim()}
-                                        className="w-full h-12 bg-white border-2 border-amber-400 text-amber-600 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-amber-400 hover:text-white transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+                                        className="w-full h-12 bg-white border-2 border-amber-400 text-amber-600 font-bold text-xs font-semibold uppercase text-xs rounded-2xl hover:bg-amber-400 hover:text-white transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
                                     >
                                         Kembalikan untuk Revisi
                                     </button>

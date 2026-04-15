@@ -8,6 +8,7 @@ use App\Models\KKN\Workshop;
 use App\Services\PeriodContextService;
 use App\Services\WorkshopService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class WorkshopController extends Controller
@@ -145,7 +146,7 @@ class WorkshopController extends Controller
 
             return back()->with('success', 'Pendaftaran pembekalan berhasil.');
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Workshop registration failed', ['error' => $e->getMessage()]);
+            Log::error('Workshop registration failed', ['error' => $e->getMessage()]);
 
             return back()->with('error', 'Pendaftaran pembekalan gagal. Silakan coba lagi.');
         }

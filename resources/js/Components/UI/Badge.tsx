@@ -13,8 +13,8 @@ const variants: Record<Variant, string> = {
     warning: 'bg-accent-amber-100 text-accent-amber-600 border border-accent-amber-200',
     danger: 'bg-rose-100 text-rose-700 border border-rose-200',
     info: 'bg-accent-sky-100 text-accent-sky-600 border border-accent-sky-200',
-    default: 'bg-slate-100 text-slate-700 border border-slate-200',
-    gray: 'bg-slate-100 text-slate-600 border border-slate-200',
+    default: 'bg-emerald-50/60 text-emerald-700 border border-emerald-100/60',
+    gray: 'bg-emerald-50/60 text-emerald-950 border border-emerald-100/60',
 };
 
 export default function Badge({ variant = 'default', children, className }: BadgeProps) {

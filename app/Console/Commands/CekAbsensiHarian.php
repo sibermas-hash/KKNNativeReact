@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Models\KKN\AbsensiHarian;
@@ -7,12 +9,14 @@ use App\Models\KKN\IzinMeninggalkan;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
+use App\Models\KKN\PesertaKkn;
 use App\Notifications\KknActivityNotification;
 use Illuminate\Console\Command;
 
 class CekAbsensiHarian extends Command
 {
     protected $signature = 'kkn:cek-absensi {--date= : Tanggal yang dicek (default: kemarin)}';
+
     protected $description = 'Cek absensi harian mahasiswa KKN dan catat yang tidak mengisi logbook atau izin';
 
     public function handle(): int
@@ -28,6 +32,7 @@ class CekAbsensiHarian extends Command
 
         if ($activePeriods->isEmpty()) {
             $this->warn('Tidak ada periode KKN yang berjalan pada tanggal ini.');
+
             return self::SUCCESS;
         }
 
@@ -39,18 +44,18 @@ class CekAbsensiHarian extends Command
             $this->info("\nMemeriksa periode: {$period->name}");
 
             // Ambil semua mahasiswa yang terdaftar aktif di periode ini
-            $mahasiswaIds = \App\Models\KKN\PesertaKkn::where('period_id', $period->id)
+            $mahasiswaIds = PesertaKkn::where('period_id', $period->id)
                 ->where('status', 'approved')
                 ->pluck('mahasiswa_id');
 
             foreach ($mahasiswaIds as $mahasiswaId) {
                 $totalChecked++;
                 $mahasiswa = Mahasiswa::find($mahasiswaId);
-                if (!$mahasiswa) {
+                if (! $mahasiswa) {
                     continue;
                 }
 
-                $kelompokId = \App\Models\KKN\PesertaKkn::where('mahasiswa_id', $mahasiswaId)
+                $kelompokId = PesertaKkn::where('mahasiswa_id', $mahasiswaId)
                     ->where('period_id', $period->id)
                     ->value('kelompok_id');
 
@@ -61,6 +66,7 @@ class CekAbsensiHarian extends Command
 
                 if ($existingAbsensi) {
                     $this->line("  ✓ {$mahasiswa->nama}: Sudah tercatat ({$existingAbsensi->status})");
+
                     continue;
                 }
 
@@ -129,12 +135,12 @@ class CekAbsensiHarian extends Command
         }
 
         $this->newLine();
-        $this->info("═══════════════════════════════════════");
-        $this->info("REKAP ABSENSI HARIAN");
-        $this->info("═══════════════════════════════════════");
+        $this->info('═══════════════════════════════════════');
+        $this->info('REKAP ABSENSI HARIAN');
+        $this->info('═══════════════════════════════════════');
         $this->line("Total dicek: {$totalChecked}");
         $this->line("Tanpa keterangan: {$totalWithoutInfo}");
-        $this->info("═══════════════════════════════════════");
+        $this->info('═══════════════════════════════════════');
 
         return self::SUCCESS;
     }

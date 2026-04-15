@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\Periode;
 use App\Services\YudisiumService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -35,7 +36,7 @@ class YudisiumController extends Controller
         ]);
     }
 
-    public function proses(Request $request): \Illuminate\Http\RedirectResponse
+    public function proses(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'periode_id' => ['required', 'exists:periode,id'],

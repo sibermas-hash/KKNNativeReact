@@ -4,8 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\ApiKey;
 use App\Models\Project;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
@@ -161,7 +159,7 @@ class ApiFullWorkflowTest extends TestCase
 
         $apiKey = ApiKey::where('email', 'revoke@test.com')->firstOrFail();
 
-        $response = $this->postJson('/api/admin/keys/' . $apiKey->id . '/revoke', [], [
+        $response = $this->postJson('/api/admin/keys/'.$apiKey->id.'/revoke', [], [
             'x-admin-secret' => 'test_admin_secret',
         ]);
 
@@ -281,7 +279,7 @@ class ApiFullWorkflowTest extends TestCase
         // 4. Revoke the key
         $apiKey = ApiKey::where('email', 'lifecycle@test.com')->firstOrFail();
 
-        $revokeResponse = $this->postJson('/api/admin/keys/' . $apiKey->id . '/revoke', [], [
+        $revokeResponse = $this->postJson('/api/admin/keys/'.$apiKey->id.'/revoke', [], [
             'x-admin-secret' => 'test_admin_secret',
         ]);
         $revokeResponse->assertOk();
@@ -305,7 +303,7 @@ class ApiFullWorkflowTest extends TestCase
 
     private function createTestKey(array $permissions, bool $active = true): string
     {
-        $key = 'sk_test_' . uniqid();
+        $key = 'sk_test_'.uniqid();
 
         ApiKey::create([
             'key' => $key,

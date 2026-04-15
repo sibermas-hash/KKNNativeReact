@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use App\Services\PeriodContextService;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 class HandleActivePeriod
@@ -20,7 +24,7 @@ class HandleActivePeriod
     public function handle(Request $request, Closure $next): Response
     {
         // Only for authenticated users
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return $next($request);
         }
 
@@ -28,7 +32,7 @@ class HandleActivePeriod
         if ($request->has('period_id')) {
             $periodId = (int) $request->input('period_id');
             $user = auth()->user();
-            
+
             try {
                 // Only superadmin can freely switch periods; students/DPL stay on their enrolled period
                 if ($user->hasRole('superadmin')) {
@@ -36,7 +40,7 @@ class HandleActivePeriod
                 }
             } catch (\Throwable $e) {
                 // ISSUE-MIDDLEWARE-002 Fix: Log failure instead of silent fail
-                \Illuminate\Support\Facades\Log::warning('Period switch failed', [
+                Log::warning('Period switch failed', [
                     'user_id' => $user->id ?? null,
                     'period_id' => $periodId,
                     'error' => $e->getMessage(),
@@ -45,7 +49,7 @@ class HandleActivePeriod
         }
 
         // If no active period in session, set the default
-        if (!$this->contextService->getActivePeriodId()) {
+        if (! $this->contextService->getActivePeriodId()) {
             $defaultId = $this->contextService->getDefaultPeriodId();
             if ($defaultId) {
                 $this->contextService->setActivePeriod($defaultId);
@@ -53,9 +57,9 @@ class HandleActivePeriod
         }
 
         // Share active period data with all Inertia responses
-        if (class_exists(\Inertia\Inertia::class)) {
-            \Inertia\Inertia::share('activePeriod', fn() => $this->contextService->getActivePeriodData());
-            \Inertia\Inertia::share('availablePeriods', fn() => $this->contextService->getAvailablePeriods());
+        if (class_exists(Inertia::class)) {
+            Inertia::share('activePeriod', fn () => $this->contextService->getActivePeriodData());
+            Inertia::share('availablePeriods', fn () => $this->contextService->getAvailablePeriods());
         }
 
         return $next($request);

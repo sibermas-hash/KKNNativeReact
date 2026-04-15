@@ -66,7 +66,7 @@ class MasterApiService
     {
         $params = $since ? ['since' => $since] : [];
         $this->client->setToken($this->tokenService->getToken() ?? '');
-        
+
         return $this->client->yieldAllPages('/sync/mahasiswa', $params);
     }
 
@@ -74,7 +74,7 @@ class MasterApiService
     {
         $params = $since ? ['since' => $since] : [];
         $this->client->setToken($this->tokenService->getToken() ?? '');
-        
+
         return $this->client->yieldAllPages('/sync/dosen', $params);
     }
 
@@ -94,6 +94,21 @@ class MasterApiService
         }
 
         return $this->get('/sync/dosen', ['nips' => $nipList]);
+    }
+
+    public function getAllOrganizations(?string $since = null): array
+    {
+        $params = $since ? ['since' => $since] : [];
+
+        return $this->getAllPagesWithFallback('/sync/organizations', $params, 'organizations');
+    }
+
+    public function yieldAllOrganizations(?string $since = null): \Generator
+    {
+        $params = $since ? ['since' => $since] : [];
+        $this->client->setToken($this->tokenService->getToken() ?? '');
+
+        return $this->client->yieldAllPages('/sync/organizations', $params);
     }
 
     public function getWithDatabaseFallback(string $entityType, array $params = []): array

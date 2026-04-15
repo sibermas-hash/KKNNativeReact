@@ -13,9 +13,11 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\SystemSetting;
 use App\Services\GeoService;
 use App\Services\PeriodContextService;
+use App\Services\PhotoWatermarkService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -173,7 +175,7 @@ class DailyReportController extends Controller
                 $path = $file->storeAs('daily-reports', $safeFilename, 'local');
 
                 if (in_array($extension, ['jpg', 'jpeg', 'png', 'webp'])) {
-                    app(\App\Services\PhotoWatermarkService::class)->apply($path, [
+                    app(PhotoWatermarkService::class)->apply($path, [
                         'nim' => $mahasiswa->nim,
                         'captured_at' => $validated['captured_at'],
                         'latitude' => $validated['latitude'],
@@ -202,7 +204,7 @@ class DailyReportController extends Controller
 
     public function edit(KegiatanKkn $dailyReport): Response
     {
-        \Illuminate\Support\Facades\Gate::authorize('view', $dailyReport);
+        Gate::authorize('view', $dailyReport);
         $dailyReport->load(['fileKegiatan', 'kelompok.lokasi', 'kelompok.posko']);
 
         return Inertia::render('Student/DailyReports/Edit', [
@@ -213,7 +215,7 @@ class DailyReportController extends Controller
 
     public function update(StoreDailyReportRequest $request, KegiatanKkn $dailyReport): RedirectResponse|JsonResponse
     {
-        \Illuminate\Support\Facades\Gate::authorize('update', $dailyReport);
+        Gate::authorize('update', $dailyReport);
         $dailyReport->loadMissing(['kelompok.lokasi', 'kelompok.posko']);
 
         $validated = $request->validated();
@@ -249,7 +251,7 @@ class DailyReportController extends Controller
 
     public function destroy(KegiatanKkn $dailyReport): RedirectResponse
     {
-        \Illuminate\Support\Facades\Gate::authorize('delete', $dailyReport);
+        Gate::authorize('delete', $dailyReport);
 
         foreach ($dailyReport->fileKegiatan as $file) {
             Storage::disk('local')->delete($file->file_path);

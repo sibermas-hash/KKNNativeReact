@@ -12,6 +12,7 @@ use App\Models\KKN\PesertaKkn;
 use App\Models\User;
 use App\Services\DailyReportCompilationService;
 use Barryvdh\DomPDF\PDF;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -22,7 +23,7 @@ class DailyReportCompilationServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new DailyReportCompilationService();
+        $this->service = new DailyReportCompilationService;
     }
 
     public function test_generate_for_student_returns_pdf_instance(): void
@@ -55,7 +56,7 @@ class DailyReportCompilationServiceTest extends TestCase
 
     public function test_generate_for_student_throws_when_user_not_found(): void
     {
-        $this->expectException(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+        $this->expectException(ModelNotFoundException::class);
 
         $this->service->generateForStudent(999999);
     }
@@ -167,7 +168,7 @@ class DailyReportCompilationServiceTest extends TestCase
 
     public function test_generate_for_group_throws_when_group_not_found(): void
     {
-        $this->expectException(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+        $this->expectException(ModelNotFoundException::class);
 
         $this->service->generateForGroup(999999);
     }

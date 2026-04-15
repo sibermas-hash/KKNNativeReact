@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use App\Models\User;
@@ -8,12 +10,14 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
 // Safe guard: when Telescope package not installed (production without dev deps), provide no-op provider.
-if (! class_exists(\Laravel\Telescope\TelescopeApplicationServiceProvider::class)) {
+if (! class_exists(TelescopeApplicationServiceProvider::class)) {
     class TelescopeServiceProvider extends ServiceProvider
     {
         public function register(): void {}
+
         public function boot(): void {}
     }
+
     return;
 }
 

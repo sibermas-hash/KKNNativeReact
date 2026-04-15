@@ -2,11 +2,12 @@
 
 namespace Tests\Unit\Services;
 
-use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\AntrianKkn;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\KknRequirement;
 use App\Models\KKN\Lokasi;
+use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Prodi;
@@ -15,7 +16,6 @@ use App\Repositories\Contracts\RegistrationRepositoryInterface;
 use App\Services\GroupSelectionService;
 use App\Services\RegistrationPortalService;
 use App\Services\RegistrationService;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Mockery;
 use Tests\TestCase;
@@ -23,8 +23,11 @@ use Tests\TestCase;
 class RegistrationServiceTest extends TestCase
 {
     private RegistrationRepositoryInterface $repositoryMock;
+
     private GroupSelectionService $groupSelectionService;
+
     private RegistrationPortalService $portalServiceMock;
+
     private RegistrationService $service;
 
     protected function setUp(): void
@@ -337,7 +340,7 @@ class RegistrationServiceTest extends TestCase
         $mahasiswaId = 42;
         $periodeId = 10;
         $mahasiswa = Mahasiswa::factory()->make(['id' => $mahasiswaId]);
-        
+
         // Expected key format: registration:student:{id}:period:{period_id}
         $expectedKey = "registration:student:{$mahasiswaId}:period:{$periodeId}";
 
@@ -369,7 +372,7 @@ class RegistrationServiceTest extends TestCase
             'notes' => 'Test notes',
         ]);
 
-        $queue = \App\Models\KKN\AntrianKkn::factory()->create([
+        $queue = AntrianKkn::factory()->create([
             'period_id' => $periode->id,
             'mahasiswa_id' => $registration->mahasiswa_id,
             'status' => 'dalam_kelompok',

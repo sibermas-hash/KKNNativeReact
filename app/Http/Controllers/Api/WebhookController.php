@@ -6,7 +6,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\Dosen;
+use App\Models\KKN\Fakultas;
 use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\Prodi;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -52,13 +55,24 @@ class WebhookController extends Controller
         }
 
         if (str_ends_with($event, '.deleted')) {
-            Mahasiswa::where('nim', $data['nim'])->delete();
+            $mahasiswa = Mahasiswa::where('nim', $data['nim'])->first();
+            if ($mahasiswa) {
+                $mahasiswa->update(['master_synced_at' => null]);
+
+                if ($mahasiswa->user_id) {
+                    $user = User::find($mahasiswa->user_id);
+                    if ($user) {
+                        $user->update(['is_active' => false]);
+                    }
+                }
+
+                Log::info('Mahasiswa soft-deactivated via webhook', ['nim' => $data['nim']]);
+            }
 
             return;
         }
 
-        // Map Master Data to Local Data
-        Mahasiswa::updateOrCreate(
+        $mahasiswa = Mahasiswa::updateOrCreate(
             ['nim' => $data['nim']],
             [
                 'nama' => $data['nama'] ?? null,
@@ -67,8 +81,16 @@ class WebhookController extends Controller
                 'angkatan' => $data['angkatan'] ?? date('Y'),
                 'jenis_kelamin' => $data['jenis_kelamin'] ?? 'L',
                 'no_hp' => $data['no_hp'] ?? null,
+                'master_synced_at' => now(),
             ]
         );
+
+        if ($mahasiswa->user_id) {
+            $user = User::find($mahasiswa->user_id);
+            if ($user && ! $user->is_active) {
+                $user->update(['is_active' => true]);
+            }
+        }
     }
 
     protected function syncDosen(string $event, array $data): void
@@ -78,13 +100,24 @@ class WebhookController extends Controller
         }
 
         if (str_ends_with($event, '.deleted')) {
-            Dosen::where('nip', $data['nip'])->delete();
+            $dosen = Dosen::where('nip', $data['nip'])->first();
+            if ($dosen) {
+                $dosen->update(['master_synced_at' => null]);
+
+                if ($dosen->user_id) {
+                    $user = User::find($dosen->user_id);
+                    if ($user) {
+                        $user->update(['is_active' => false]);
+                    }
+                }
+
+                Log::info('Dosen soft-deactivated via webhook', ['nip' => $data['nip']]);
+            }
 
             return;
         }
 
-        // Map Master Data to Local Data
-        Dosen::updateOrCreate(
+        $dosen = Dosen::updateOrCreate(
             ['nip' => $data['nip']],
             [
                 'nama' => $data['nama'] ?? null,
@@ -92,8 +125,16 @@ class WebhookController extends Controller
                 'jenis_kelamin' => $data['jenis_kelamin'] ?? 'L',
                 'no_hp' => $data['no_hp'] ?? null,
                 'is_active' => ($data['is_active'] ?? true) ? 1 : 0,
+                'master_synced_at' => now(),
             ]
         );
+
+        if ($dosen->user_id) {
+            $user = User::find($dosen->user_id);
+            if ($user && ! $user->is_active) {
+                $user->update(['is_active' => true]);
+            }
+        }
     }
 
     // Helper to map IDs if master uses different IDs than local
@@ -104,7 +145,7 @@ class WebhookController extends Controller
             return null;
         }
 
-        return \App\Models\KKN\Prodi::where('master_id', (string) $masterId)->value('id');
+        return Prodi::where('master_id', (string) $masterId)->value('id');
     }
 
     protected function resolveFakultas($masterId)
@@ -113,6 +154,6 @@ class WebhookController extends Controller
             return null;
         }
 
-        return \App\Models\KKN\Fakultas::where('master_id', (string) $masterId)->value('id');
+        return Fakultas::where('master_id', (string) $masterId)->value('id');
     }
 }

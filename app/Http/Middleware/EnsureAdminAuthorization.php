@@ -1,7 +1,42 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
+use App\Http\Controllers\Admin\ActivityAuditController;
+use App\Http\Controllers\Admin\AnnouncementController;
+use App\Http\Controllers\Admin\CertificateConfigController;
+use App\Http\Controllers\Admin\DatabaseSyncController;
+use App\Http\Controllers\Admin\DownloadController;
+use App\Http\Controllers\Admin\DplAssignmentController;
+use App\Http\Controllers\Admin\DplSyncController;
+use App\Http\Controllers\Admin\EligibilityController;
+use App\Http\Controllers\Admin\EvaluasiController;
+use App\Http\Controllers\Admin\FakultasController;
+use App\Http\Controllers\Admin\GeneratorNilaiController;
+use App\Http\Controllers\Admin\GradeController;
+use App\Http\Controllers\Admin\KegiatanKknController;
+use App\Http\Controllers\Admin\KelompokKknController;
+use App\Http\Controllers\Admin\KknRequirementController;
+use App\Http\Controllers\Admin\KonfigurasiPenilaianController;
+use App\Http\Controllers\Admin\LaporanAkhirController;
+use App\Http\Controllers\Admin\LogAuditController;
+use App\Http\Controllers\Admin\LokasiController;
+use App\Http\Controllers\Admin\PeriodeController;
+use App\Http\Controllers\Admin\PesertaKknController;
+use App\Http\Controllers\Admin\ProdiController;
+use App\Http\Controllers\Admin\ProgramKerjaController;
+use App\Http\Controllers\Admin\PublicContentController;
+use App\Http\Controllers\Admin\RekapitulasiController;
+use App\Http\Controllers\Admin\RekapNilaiController;
+use App\Http\Controllers\Admin\StudentSyncController;
+use App\Http\Controllers\Admin\StudentTransferController;
+use App\Http\Controllers\Admin\SystemSettingController;
+use App\Http\Controllers\Admin\TahunAkademikController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\YudisiumController;
+use App\Http\Controllers\WorkshopController;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -17,124 +52,124 @@ class EnsureAdminAuthorization
      * List of controllers that require 'manage-master-data' permission
      */
     protected array $masterDataControllers = [
-        \App\Http\Controllers\Admin\TahunAkademikController::class,
-        \App\Http\Controllers\Admin\PeriodeController::class,
-        \App\Http\Controllers\Admin\FakultasController::class,
-        \App\Http\Controllers\Admin\ProdiController::class,
-        \App\Http\Controllers\Admin\LokasiController::class,
+        TahunAkademikController::class,
+        PeriodeController::class,
+        FakultasController::class,
+        ProdiController::class,
+        LokasiController::class,
     ];
 
     /**
      * List of controllers that require 'manage-users' permission
      */
     protected array $userManagementControllers = [
-        \App\Http\Controllers\Admin\UserController::class,
-        \App\Http\Controllers\Admin\StudentSyncController::class,
-        \App\Http\Controllers\Admin\DplSyncController::class,
+        UserController::class,
+        StudentSyncController::class,
+        DplSyncController::class,
     ];
 
     /**
      * List of controllers that require 'manage-grades' permission
      */
     protected array $gradeManagementControllers = [
-        \App\Http\Controllers\Admin\GradeController::class,
-        \App\Http\Controllers\Admin\GeneratorNilaiController::class,
-        \App\Http\Controllers\Admin\KonfigurasiPenilaianController::class,
+        GradeController::class,
+        GeneratorNilaiController::class,
+        KonfigurasiPenilaianController::class,
     ];
 
     /**
      * List of controllers that require 'manage-participants' permission
      */
     protected array $participantControllers = [
-        \App\Http\Controllers\Admin\PesertaKknController::class,
-        \App\Http\Controllers\Admin\StudentTransferController::class,
+        PesertaKknController::class,
+        StudentTransferController::class,
     ];
 
     /**
      * List of controllers that require 'manage-groups' permission
      */
     protected array $groupControllers = [
-        \App\Http\Controllers\Admin\KelompokKknController::class,
+        KelompokKknController::class,
     ];
 
     /**
      * List of controllers that require 'manage-dpl' permission
      */
     protected array $dplControllers = [
-        \App\Http\Controllers\Admin\DplAssignmentController::class,
+        DplAssignmentController::class,
     ];
 
     /**
      * List of controllers that require 'manage-content' permission
      */
     protected array $contentControllers = [
-        \App\Http\Controllers\Admin\AnnouncementController::class,
-        \App\Http\Controllers\Admin\DownloadController::class,
-        \App\Http\Controllers\Admin\PublicContentController::class,
+        AnnouncementController::class,
+        DownloadController::class,
+        PublicContentController::class,
     ];
 
     /**
      * List of controllers that require 'view-audit-logs' permission
      */
     protected array $auditControllers = [
-        \App\Http\Controllers\Admin\LogAuditController::class,
-        \App\Http\Controllers\Admin\ActivityAuditController::class,
+        LogAuditController::class,
+        ActivityAuditController::class,
     ];
 
     /**
      * List of controllers that require 'manage-reports' permission
      */
     protected array $reportControllers = [
-        \App\Http\Controllers\Admin\RekapNilaiController::class,
-        \App\Http\Controllers\Admin\RekapitulasiController::class,
+        RekapNilaiController::class,
+        RekapitulasiController::class,
     ];
 
     /**
      * List of controllers that require 'manage-settings' permission
      */
     protected array $settingControllers = [
-        \App\Http\Controllers\Admin\CertificateConfigController::class,
-        \App\Http\Controllers\Admin\SystemSettingController::class,
-        \App\Http\Controllers\Admin\KonfigurasiPenilaianController::class,
+        CertificateConfigController::class,
+        SystemSettingController::class,
+        KonfigurasiPenilaianController::class,
     ];
 
     /**
      * List of controllers that require 'manage-database-sync' permission
      */
     protected array $databaseSyncControllers = [
-        \App\Http\Controllers\Admin\DatabaseSyncController::class,
+        DatabaseSyncController::class,
     ];
 
     /**
      * List of controllers that require 'manage-workshops' permission
      */
     protected array $workshopControllers = [
-        \App\Http\Controllers\WorkshopController::class,
+        WorkshopController::class,
     ];
 
     /**
      * List of controllers that require 'manage-kkn-operations' permission
      */
     protected array $kknOperationsControllers = [
-        \App\Http\Controllers\Admin\EvaluasiController::class,
-        \App\Http\Controllers\Admin\KegiatanKknController::class,
-        \App\Http\Controllers\Admin\ProgramKerjaController::class,
-        \App\Http\Controllers\Admin\LaporanAkhirController::class,
-        \App\Http\Controllers\Admin\YudisiumController::class,
+        EvaluasiController::class,
+        KegiatanKknController::class,
+        ProgramKerjaController::class,
+        LaporanAkhirController::class,
+        YudisiumController::class,
     ];
 
     /**
      * List of controllers that require 'manage-eligibility' permission
      */
     protected array $eligibilityControllers = [
-        \App\Http\Controllers\Admin\EligibilityController::class,
+        EligibilityController::class,
     ];
 
     /**
      * List of controllers that require 'manage-requirements' permission
      */
     protected array $requirementControllers = [
-        \App\Http\Controllers\Admin\KknRequirementController::class,
+        KknRequirementController::class,
     ];
 
     /**
@@ -212,30 +247,30 @@ class EnsureAdminAuthorization
     {
         $route = $request->route();
 
-        if (!$route) {
+        if (! $route) {
             return $next($request);
         }
 
         $controller = $route->getController();
-        if (!$controller) {
+        if (! $controller) {
             return $next($request);
         }
         $controllerClass = get_class($controller);
 
         // Only apply to admin controllers
-        if (!str_starts_with($controllerClass, 'App\\Http\\Controllers\\Admin\\')) {
+        if (! str_starts_with($controllerClass, 'App\\Http\\Controllers\\Admin\\')) {
             return $next($request);
         }
 
         $user = $request->user();
 
         // Ensure user is authenticated
-        if (!$user) {
+        if (! $user) {
             return redirect()->guest(route('login'));
         }
 
         // Check if user has any admin role
-        if (!$user->hasAnyRole(['superadmin', 'faculty_admin', 'admin'])) {
+        if (! $user->hasAnyRole(['superadmin', 'faculty_admin', 'admin'])) {
             abort(403, 'Unauthorized access to admin area.');
         }
 
@@ -244,7 +279,7 @@ class EnsureAdminAuthorization
 
         if ($requiredPermission) {
             // Superadmin bypasses all permission checks
-            if (!$user->hasRole('superadmin')) {
+            if (! $user->hasRole('superadmin')) {
                 Gate::authorize($requiredPermission);
             }
         }

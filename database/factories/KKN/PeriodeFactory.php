@@ -27,7 +27,7 @@ class PeriodeFactory extends Factory
             'registration_mode' => Periode::REGISTRATION_MODE_OPEN,
             'placement_mode' => Periode::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL,
             'kuota' => 2000,
-            'name' => 'Periode ' . $this->faker->unique()->word(),
+            'name' => 'Periode '.$this->faker->unique()->word(),
             'start_date' => $start->toDateString(),
             'end_date' => $end->toDateString(),
             'registration_start' => $registrationStart->toDateString(),

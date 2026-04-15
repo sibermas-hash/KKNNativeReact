@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * Bug #7 Fix: Add verification_token column for O(1) certificate lookup.
      * Previously, verification required loading ALL finalized scores and iterating.
      * Now we can do direct indexed lookup.
@@ -20,7 +20,7 @@ return new class extends Migration
                 ->nullable()
                 ->after('evidence_file')
                 ->comment('HMAC token for public certificate verification');
-            
+
             $table->index('verification_token');
         });
     }

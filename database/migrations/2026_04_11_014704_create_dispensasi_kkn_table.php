@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('granted_by')->nullable()->comment('User ID admin yang memberikan dispensasi');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            
+
             $table->unique(['nim', 'period_id'], 'dispensasi_nim_period_unique');
         });
     }

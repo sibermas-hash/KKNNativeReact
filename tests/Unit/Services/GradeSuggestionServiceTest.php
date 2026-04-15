@@ -3,7 +3,6 @@
 namespace Tests\Unit\Services;
 
 use App\Models\KKN\KegiatanKkn;
-use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use App\Services\GradeSuggestionService;
 use Tests\TestCase;
@@ -15,7 +14,7 @@ class GradeSuggestionServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new GradeSuggestionService();
+        $this->service = new GradeSuggestionService;
     }
 
     public function test_returns_zero_score_when_no_reports(): void

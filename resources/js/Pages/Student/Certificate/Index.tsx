@@ -54,27 +54,27 @@ export default function CertificateIndex({
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="relative overflow-hidden rounded-[3rem] bg-emerald-600 p-12 lg:p-16 text-white shadow-2xl shadow-emerald-500/20"
+          className="relative overflow-hidden rounded-xl bg-emerald-600 p-12 lg:p-16 text-white shadow-2xl shadow-emerald-500/20"
         >
           <div className="absolute top-0 right-0 h-full w-1/2 bg-emerald-500 opacity-5 -skew-x-12 translate-x-1/3" />
           <div className="absolute -bottom-24 -right-24 h-96 w-96 bg-emerald-500/10 rounded-full blur-[120px]" />
 
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-12">
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-8 max-w-xl">
               <div className="flex items-center gap-4">
-                <div className="h-10 w-10 rounded-xl bg-emerald-500 flex items-center justify-center text-gray-900">
+                <div className="h-10 w-10 rounded-xl bg-emerald-500 flex items-center justify-center text-black">
                   <Award size={20} strokeWidth={3} />
                 </div>
                 <div className="h-px w-12 bg-emerald-500/30" />
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500">
+                <span className="text-sm font-bold uppercase tracking-wider text-xs font-semibold text-emerald-500">
                   Official Accreditation
                 </span>
               </div>
               <div className="space-y-4">
-                <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase leading-[0.9]">
+                <h1 className="text-2xl md:text-2xl font-bold tracking-tighter uppercase leading-[0.9]">
                   E-Sertifikat <span className="text-emerald-500">Pengabdian.</span>
                 </h1>
-                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest leading-relaxed opacity-80">
+                <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs leading-relaxed opacity-80">
                   Dokumen resmi tanda kelulusan dan kontribusi nyata Anda dalam program KKN UIN
                   Saizu.
                 </p>
@@ -85,23 +85,23 @@ export default function CertificateIndex({
               <div className="group relative">
                 <div className="absolute inset-0 bg-emerald-500 blur-3xl opacity-20 scale-150 group-hover:opacity-40 transition-opacity duration-1000" />
                 <div className="relative rounded-[2.5rem] bg-white/5 p-10 backdrop-blur-3xl border border-white/10 shadow-2xl ring-1 ring-white/10">
-                  <FileCheck className="h-24 w-24 text-emerald-400 opacity-80" strokeWidth={1.5} />
+                  <FileCheck className="h-12 w-24 text-emerald-400 opacity-80" strokeWidth={1.5} />
                 </div>
               </div>
             </div>
           </div>
         </motion.div>
 
-        <div className="grid gap-12 lg:grid-cols-5">
+        <div className="grid gap-6 lg:grid-cols-5">
           {/* --- VERIFICATION MATRIX --- */}
           <div className="lg:col-span-3 space-y-10">
             <motion.div
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className="rounded-[3rem] bg-white border border-slate-100 p-12 shadow-sm"
+              className="rounded-xl bg-white border border-emerald-100/60 p-12 shadow-sm"
             >
-              <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.5em] mb-12 flex items-center gap-3">
+              <h2 className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold mb-12 flex items-center gap-3">
                 <Fingerprint size={16} /> Clearance Protocol
               </h2>
 
@@ -143,10 +143,10 @@ export default function CertificateIndex({
                   <AlertCircle size={24} strokeWidth={2.5} />
                 </div>
                 <div className="space-y-2">
-                  <p className="text-xs font-black text-amber-900 uppercase tracking-widest">
+                  <p className="text-xs font-bold text-amber-900 font-semibold uppercase text-xs">
                     Protocol Warning
                   </p>
-                  <p className="text-[11px] text-amber-900/60 font-bold leading-relaxed uppercase tracking-tight">
+                  <p className="text-sm text-amber-900/60 font-bold leading-relaxed uppercase tracking-tight">
                     Status eligibilitas saat ini: <span className="text-amber-600">Terhenti</span>.
                     Lengkapi seluruh prasyarat atau hubungi Operator LPPM jika terjadi anomali data.
                   </p>
@@ -157,9 +157,9 @@ export default function CertificateIndex({
 
           {/* --- ACTION CONSULE --- */}
           <div className="lg:col-span-2">
-            <div className="sticky top-10 rounded-[3rem] bg-white border border-slate-100 overflow-hidden shadow-2xl shadow-slate-200/50">
+            <div className="sticky top-10 rounded-xl bg-white border border-emerald-100/60 overflow-hidden shadow-2xl shadow-slate-200/50">
               <div className="p-12 text-center space-y-10">
-                <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">
+                <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider text-xs font-semibold">
                   System Outcome
                 </h3>
 
@@ -167,43 +167,43 @@ export default function CertificateIndex({
                   <div className="space-y-10">
                     <div className="relative mx-auto h-32 w-32 flex items-center justify-center">
                       <div className="absolute inset-0 bg-emerald-500 rounded-full blur-[40px] opacity-20 animate-pulse" />
-                      <div className="h-28 w-28 items-center justify-center rounded-full bg-emerald-500 text-gray-900 ring-8 ring-emerald-500/5 z-10 flex">
+                      <div className="h-28 w-28 items-center justify-center rounded-full bg-emerald-500 text-black ring-8 ring-emerald-500/5 z-10 flex">
                         <Verified size={48} strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <p className="text-3xl font-black text-gray-900 uppercase tracking-tighter">
+                      <p className="text-3xl font-bold text-black font-bold text-center">
                         Approved.
                       </p>
-                      <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em]">
+                      <p className="text-sm font-bold text-emerald-500 uppercase tracking-wider text-xs font-semibold">
                         Access Granted for Download
                       </p>
                     </div>
                     <a
                       href={certificate_url ?? '#'}
-                      className="inline-flex w-full h-20 items-center justify-center gap-4 rounded-[2rem] bg-emerald-600 text-white hover:bg-emerald-700 transition-all duration-500 shadow-2xl shadow-emerald-200 active:scale-95 group/dl"
+                      className="inline-flex w-full h-10 items-center justify-center gap-4 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition-all duration-500 shadow-2xl shadow-emerald-200 active:scale-95 group/dl"
                     >
                       <Download className="h-6 w-6 group-hover:-translate-y-1 transition-transform" />
-                      <span className="text-xs font-black uppercase tracking-widest">
+                      <span className="text-xs font-bold font-semibold uppercase text-xs">
                         Generate Certificate
                       </span>
                     </a>
                   </div>
                 ) : (
                   <div className="space-y-10">
-                    <div className="mx-auto flex h-32 w-32 items-center justify-center rounded-full bg-slate-50 text-slate-200 ring-8 ring-slate-100">
+                    <div className="mx-auto flex h-32 w-32 items-center justify-center rounded-full bg-emerald-50/30 text-slate-200 ring-8 ring-slate-100">
                       <Clock size={48} strokeWidth={1.5} className="animate-pulse" />
                     </div>
                     <div className="space-y-2">
-                      <p className="text-3xl font-black text-slate-300 uppercase tracking-tighter">
+                      <p className="text-3xl font-bold text-slate-300 font-bold text-center">
                         Pending.
                       </p>
-                      <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">
+                      <p className="text-sm font-bold text-slate-300 uppercase tracking-wider text-xs font-semibold">
                         Awaiting Authorization
                       </p>
                     </div>
-                    <div className="h-20 w-full flex items-center justify-center gap-4 rounded-[2rem] bg-slate-50 text-slate-300 border border-slate-100">
-                      <span className="text-xs font-black uppercase tracking-widest">
+                    <div className="h-10 w-full flex items-center justify-center gap-4 rounded-xl bg-emerald-50/30 text-slate-300 border border-emerald-100/60">
+                      <span className="text-xs font-bold font-semibold uppercase text-xs">
                         Locked Area
                       </span>
                     </div>
@@ -211,28 +211,28 @@ export default function CertificateIndex({
                 )}
 
                 <div className="pt-6 border-t border-slate-50">
-                  <p className="text-[9px] font-bold text-slate-300 uppercase tracking-widest px-8 leading-relaxed italic">
+                  <p className="text-sm font-bold text-slate-300 font-semibold uppercase text-xs px-8 leading-relaxed">
                     Blockchain-ready verification. Digitally signed by LPPM SAIZU.
                   </p>
                 </div>
               </div>
 
               {eligible && score && (
-                <div className="bg-emerald-700 px-12 py-10 space-y-6">
+                <div className="bg-emerald-700 px-6 py-6 space-y-6">
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">
+                    <span className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold">
                       Score Matrix
                     </span>
-                    <span className="text-2xl font-black text-white tracking-tighter">
+                    <span className="text-2xl font-bold text-white tracking-tighter">
                       {score.total_score}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">
+                    <span className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold">
                       Final Grade
                     </span>
                     <div className="px-5 py-2 bg-emerald-500 rounded-[1rem] shadow-lg shadow-emerald-500/20">
-                      <span className="text-sm font-black text-gray-900">{score.letter_grade}</span>
+                      <span className="text-sm font-bold text-black">{score.letter_grade}</span>
                     </div>
                   </div>
                 </div>
@@ -257,18 +257,18 @@ function CheckItem({
   variants: Record<string, any>;
 }) {
   return (
-    <motion.div variants={variants} className="flex gap-10 group">
+    <motion.div variants={variants} className="flex gap-6 group">
       <div className="shrink-0 mt-1">
         {status === 'success' ? (
           <div className="h-10 w-10 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-xl shadow-emerald-500/20">
-            <ShieldCheck className="h-6 w-6 text-gray-900" strokeWidth={3} />
+            <ShieldCheck className="h-6 w-6 text-black" strokeWidth={3} />
           </div>
         ) : status === 'failed' ? (
           <div className="h-10 w-10 rounded-2xl bg-rose-500 flex items-center justify-center shadow-xl shadow-rose-500/20">
             <XCircle className="h-6 w-6 text-white" strokeWidth={3} />
           </div>
         ) : (
-          <div className="h-10 w-10 rounded-2xl bg-slate-50 flex items-center justify-center border-2 border-slate-100">
+          <div className="h-10 w-10 rounded-2xl bg-emerald-50/30 flex items-center justify-center border-2 border-emerald-100/60">
             <Clock className="h-6 w-6 text-slate-300" strokeWidth={3} />
           </div>
         )}
@@ -276,13 +276,13 @@ function CheckItem({
       <div className="space-y-2">
         <p
           className={clsx(
-            'text-sm font-black uppercase tracking-widest transition-colors',
-            status === 'success' ? 'text-gray-900' : 'text-gray-400',
+            'text-sm font-bold font-semibold uppercase text-xs transition-colors',
+            status === 'success' ? 'text-black' : 'text-emerald-950',
           )}
         >
           {label}
         </p>
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed opacity-60 group-hover:opacity-100 transition-opacity">
+        <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs leading-relaxed opacity-60 group-hover:opacity-100 transition-opacity">
           {desc}
         </p>
       </div>

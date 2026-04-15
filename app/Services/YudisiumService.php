@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\KKN\NilaiKkn;
-use Illuminate\Support\Facades\DB;
 
 class YudisiumService
 {

@@ -12,16 +12,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-use Illuminate\Database\Eloquent\Attributes\Connection;
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Casts;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
+class PesertaKkn extends Model
+{
+    use HasFactory, SoftDeletes;
 
-#[Connection('kkn')]
-#[Table('peserta_kkn')]
-#[Fillable([
-    'mahasiswa_id',
+    protected $table = 'peserta_kkn';
+
+    protected $connection = 'kkn';
+
+    protected $fillable = [
+        'mahasiswa_id',
         'period_id',
         'kelompok_id',
         'status',
@@ -29,6 +29,9 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
         'notes',
         'rejection_reason',
         'registration_date',
+    ];
+
+    protected $guarded = [
         'approved_at',
         'approved_by',
         'last_rejected_at',
@@ -37,27 +40,20 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
         'revision_count',
         'joined_group_at',
         'group_locked_until',
-])]
-#[Casts([
-    'registration_date' => 'datetime',
-        'approved_at' => 'datetime',
-        'last_rejected_at' => 'datetime',
-        'resubmitted_at' => 'datetime',
-        'revision_count' => 'integer',
-        'joined_group_at' => 'datetime',
-        'group_locked_until' => 'datetime',
-])]
-class PesertaKkn extends Model
-{
-    use HasFactory, SoftDeletes;
+    ];
 
-    
-
-    
-
-    
-
-    
+    protected function casts(): array
+    {
+        return [
+            'registration_date' => 'datetime',
+            'approved_at' => 'datetime',
+            'last_rejected_at' => 'datetime',
+            'resubmitted_at' => 'datetime',
+            'revision_count' => 'integer',
+            'joined_group_at' => 'datetime',
+            'group_locked_until' => 'datetime',
+        ];
+    }
 
     public function mahasiswa(): BelongsTo
     {

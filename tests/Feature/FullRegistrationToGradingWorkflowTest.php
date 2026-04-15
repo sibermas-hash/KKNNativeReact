@@ -15,8 +15,8 @@ use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\PoskoKelompok;
 use App\Models\KKN\Prodi;
-use App\Models\KKN\ProgramKerja;
 use App\Models\KKN\SystemSetting;
+use App\Models\KKN\TahunAkademik;
 use App\Models\KKN\Workshop;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
@@ -35,6 +35,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
     {
         $admin = User::factory()->create();
         $admin->assignRole('superadmin');
+
         return $admin;
     }
 
@@ -113,7 +114,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('admin.periode.store'), [
-                'academic_year_id' => \App\Models\KKN\TahunAkademik::factory()->create(['year' => '2026/2027'])->id,
+                'academic_year_id' => TahunAkademik::factory()->create(['year' => '2026/2027'])->id,
                 'periode' => 57,
                 'program_type' => Periode::PROGRAM_TYPE_REGULER,
                 'program_subtype' => null,

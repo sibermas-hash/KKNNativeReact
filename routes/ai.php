@@ -1,8 +1,8 @@
 <?php
 
 use App\Mcp\Servers\AppServer;
-use Laravel\Mcp\Facades\Mcp;
 use Illuminate\Support\Facades\Route;
+use Laravel\Mcp\Facades\Mcp;
 
 /**
  * AI & MCP Routes (Laravel 13 Native)

@@ -10,50 +10,45 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\SystemSetting;
-use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 
+/**
+ * REFACTORED HOME CONTROLLER - Standard Standar 2026
+ * Force Sync to resolve Blank Page issues.
+ */
 class HomeController extends Controller
 {
     public function index()
     {
+        // FORCE SYNC DATA - No Defer/Concurrency for stability
+        $stats = [
+            'students' => PesertaKkn::whereIn('status', ['approved', 'completed'])->count(),
+            'groups' => KelompokKkn::count(),
+            'locations' => Lokasi::count(),
+            'academic_years' => 1,
+        ];
+
+        $announcements = Announcement::active()->orderBy('published_at', 'desc')->take(3)->get();
+        $downloads = Download::active()->orderBy('created_at', 'desc')->take(3)->get();
+
         return Inertia::render('Home', [
-            'stats' => Inertia::defer(function () {
-                try {
-                    return [
-                        'students' => PesertaKkn::whereIn('status', ['approved', 'verifikasi_pusat', 'completed'])->count(),
-                        'groups' => KelompokKkn::count(),
-                        'locations' => Lokasi::count(),
-                    ];
-                } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::warning('Home statistics error: '.$e->getMessage());
-
-                    return [
-                        'students' => 0,
-                        'groups' => 0,
-                        'locations' => 0,
-                    ];
-                }
-            }),
-            'featuredAnnouncements' => (function () {
-                $announcements = Announcement::active()->orderBy('published_at', 'desc')->take(3)->get();
-
-                return $announcements->isNotEmpty()
-                    ? $this->transformAnnouncements($announcements, false)
-                    : $this->fallbackAnnouncements();
-            })(),
-            'featuredDownloads' => (function () {
-                $downloads = Download::active()->orderBy('created_at', 'desc')->take(3)->get();
-
-                return $downloads->isNotEmpty()
-                    ? $this->transformDownloads($downloads, false)
-                    : $this->fallbackDownloads();
-            })(),
+            'stats' => $stats,
+            'featuredAnnouncements' => $announcements->map(fn($a) => [
+                'id' => $a->id,
+                'title' => $a->title,
+                'category' => $a->category,
+                'published_at' => $a->published_at?->toIso8601String(),
+            ]),
+            'featuredDownloads' => $downloads->map(fn($d) => [
+                'id' => $d->id,
+                'title' => $d->title,
+                'file_type' => $d->file_type,
+            ]),
             'aboutContent' => [
-                'about' => SystemSetting::get('site_about', 'Lembaga Penelitian dan Pengabdian kepada Masyarakat (LPPM) UIN Profesor Kiai Haji Saifuddin Zuhri Purwokerto.'),
-                'visi' => SystemSetting::get('site_visi', 'Menjadi pusat unggulan penelitian dan pengabdian masyarakat.'),
-                'misi' => SystemSetting::get('site_misi', 'Mengembangkan riset aplikatif.'),
+                'about' => SystemSetting::get('site_about', 'LPPM UIN Prof. K.H. Saifuddin Zuhri Purwokerto'),
+                'visi' => SystemSetting::get('site_visi', 'Menjadi pusat keunggulan dalam riset dan pengabdian masyarakat yang inovatif.'),
+                'misi' => SystemSetting::get('site_misi', 'Mengembangkan pengabdian masyarakat berbasis kearifan lokal dan teknologi inovatif.'),
             ],
             'canLogin' => true,
             'canRegister' => true,
@@ -64,9 +59,9 @@ class HomeController extends Controller
     {
         return Inertia::render('Public/About', [
             'aboutContent' => [
-                'about' => SystemSetting::get('site_about', 'Lembaga Penelitian dan Pengabdian kepada Masyarakat (LPPM) UIN Profesor Kiai Haji Saifuddin Zuhri Purwokerto.'),
-                'visi' => SystemSetting::get('site_visi', 'Menjadi pusat unggulan penelitian dan pengabdian masyarakat.'),
-                'misi' => SystemSetting::get('site_misi', 'Mengembangkan riset aplikatif.'),
+                'about' => SystemSetting::get('site_about', 'LPPM UIN Saizu merupakan lembaga yang mengoordinasikan kegiatan penelitian dan pengabdian masyarakat.'),
+                'visi' => SystemSetting::get('site_visi', 'Menjadi pusat unggulan riset dan pengabdian masyarakat yang inovatif dan transformatif.'),
+                'misi' => SystemSetting::get('site_misi', 'Menyelenggarakan pengabdian masyarakat berbasis riset untuk pemberdayaan masyarakat desa.'),
             ],
         ]);
     }
@@ -75,38 +70,29 @@ class HomeController extends Controller
     {
         return Inertia::render('Public/Schemes', [
             'content' => [
-                'title' => SystemSetting::get('site_schemes_title', 'Skema Operasional Terintegrasi.'),
-                'intro' => SystemSetting::get('site_schemes_intro', 'Beragam pilihan skema pengabdian yang dirancang untuk menjawab tantangan spesifik di berbagai level masyarakat.'),
-                'items' => $this->resolveSchemeItems(),
+                'title' => 'Skema Pelaksanaan KKN UIN Saizu',
+                'intro' => 'Sistem Informasi Manajemen memberikan fleksibilitas untuk berbagai jenis pengabdian masyarakat.',
+                'items' => [
+                    [
+                        'id' => 1,
+                        'name' => 'KKN Reguler',
+                        'description' => 'Program pengabdian masyarakat yang dilakukan secara berkala sesuai kalender akademik.',
+                        'is_active' => true,
+                    ],
+                    [
+                        'id' => 2,
+                        'name' => 'KKN Tematik',
+                        'description' => 'Program KKN yang berfokus pada tema tertentu sesuai dengan kebutuhan masyarakat atau instansi.',
+                        'is_active' => true,
+                    ],
+                ]
             ],
         ]);
     }
 
     public function announcements()
     {
-        $announcements = Announcement::active()->orderBy('published_at', 'desc')->paginate(10);
-
-        if ($announcements->isEmpty()) {
-            return Inertia::render('Public/Announcements', [
-                'announcements' => [
-                    'data' => $this->fallbackAnnouncements(),
-                    'links' => [],
-                    'meta' => ['is_demo' => true],
-                ],
-            ]);
-        }
-
-        $announcements->setCollection(
-            collect($announcements->items())->map(fn (Announcement $announcement) => [
-                'id' => $announcement->id,
-                'title' => $announcement->title,
-                'content' => $announcement->content,
-                'category' => $announcement->category,
-                'published_at' => optional($announcement->published_at)->toIso8601String() ?? now()->toIso8601String(),
-                'is_demo' => false,
-            ])
-        );
-
+        $announcements = Announcement::active()->orderBy('published_at', 'desc')->paginate(12);
         return Inertia::render('Public/Announcements', [
             'announcements' => $announcements,
         ]);
@@ -114,203 +100,56 @@ class HomeController extends Controller
 
     public function downloads()
     {
-        $downloads = Download::active()
-            ->orderBy('created_at', 'desc')
-            ->limit(1000)
-            ->get();
-
+        $downloads = Download::active()->orderBy('created_at', 'desc')->get();
         return Inertia::render('Public/Downloads', [
-            'downloads' => $downloads->isNotEmpty()
-                ? $this->transformDownloads($downloads, false)
-                : $this->fallbackDownloads(),
+            'downloads' => $downloads->map(fn($d) => [
+                'id' => $d->id,
+                'title' => $d->title,
+                'file_type' => $d->file_type,
+                'file_path' => $d->file_path,
+                'external_url' => $d->external_url,
+            ]),
         ]);
     }
 
-    public function locations(Request $request)
+    public function locations()
     {
-        $search = $request->input('search');
+        $query = Lokasi::orderBy('village_name', 'asc');
 
-        $locations = Lokasi::withCount('kelompok')
-            ->when($search, function ($query, $search) {
-                $query->where('village_name', 'like', "%{$search}%")
-                    ->orWhere('address', 'like', "%{$search}%")
-                    ->orWhere('district_name', 'like', "%{$search}%")
-                    ->orWhere('regency_name', 'like', "%{$search}%");
-            })
-            ->orderBy('village_name')
-            ->paginate(12)
-            ->withQueryString();
+        if (request('search')) {
+            $search = request('search');
+            $query->where(function($q) use ($search) {
+                $q->where('village_name', 'like', "%{$search}%")
+                  ->orWhere('district_name', 'like', "%{$search}%")
+                  ->orWhere('regency_name', 'like', "%{$search}%");
+            });
+        }
 
+        $locations = $query->withCount('kelompok')->paginate(12);
+        
         return Inertia::render('Public/Locations', [
-            'locations' => $locations,
-            'filters' => $request->only(['search']),
+            'locations' => [
+                'data' => $locations->map(fn($loc) => [
+                    'id' => $loc->id,
+                    'name' => $loc->village_name,
+                    'address' => $loc->address,
+                    'district' => $loc->district_name,
+                    'city' => $loc->regency_name,
+                    'groups_count' => $loc->kelompok_count,
+                ]),
+                'links' => $locations->toArray()['links'],
+                'meta' => [
+                    'current_page' => $locations->currentPage(),
+                    'from' => $locations->firstItem(),
+                    'last_page' => $locations->lastPage(),
+                    'path' => $locations->path(),
+                    'per_page' => $locations->perPage(),
+                    'to' => $locations->lastItem(),
+                    'total' => $locations->total(),
+                    'links' => $locations->toArray()['links'],
+                ],
+            ],
+            'filters' => request()->all('search'),
         ]);
-    }
-
-    /**
-     * @return array<int, array{title:string,description:string,color:string}>
-     */
-    private function resolveSchemeItems(): array
-    {
-        $defaultItems = [
-            [
-                'title' => 'KKN Reguler',
-                'description' => 'Penempatan wilayah regional dengan fokus pemberdayaan masyarakat lokal berbasis kearifan setempat.',
-                'color' => 'emerald',
-            ],
-            [
-                'title' => 'KKN Tematik',
-                'description' => 'Pengabdian berbasis tema atau proposal dosen, termasuk varian Kampung Zakat dan Desa Katana.',
-                'color' => 'blue',
-            ],
-            [
-                'title' => 'KKN Nusantara',
-                'description' => 'Program khusus lintas wilayah yang mengikuti seleksi dan tata kelola nasional/mitra.',
-                'color' => 'amber',
-            ],
-            [
-                'title' => 'KKN Kolaborasi PTKIN',
-                'description' => 'Program kemitraan antar-PTKIN dengan penempatan dan tata kelola yang mengikuti host program.',
-                'color' => 'slate',
-            ],
-            [
-                'title' => 'KKN Internasional',
-                'description' => 'Program luar negeri berbasis mitra yang dikelola melalui seleksi khusus dan penempatan host.',
-                'color' => 'rose',
-            ],
-        ];
-
-        $stored = SystemSetting::get('site_schemes_items');
-
-        if (! is_string($stored) || $stored === '') {
-            return $defaultItems;
-        }
-
-        $decoded = json_decode($stored, true);
-
-        if (! is_array($decoded)) {
-            return $defaultItems;
-        }
-
-        $items = collect($decoded)
-            ->filter(fn ($item) => is_array($item))
-            ->map(function (array $item) {
-                $color = in_array($item['color'] ?? '', ['emerald', 'blue', 'amber', 'slate'], true)
-                    ? $item['color']
-                    : 'emerald';
-
-                return [
-                    'title' => (string) ($item['title'] ?? ''),
-                    'description' => (string) ($item['description'] ?? ''),
-                    'color' => $color,
-                ];
-            })
-            ->filter(fn (array $item) => $item['title'] !== '' && $item['description'] !== '')
-            ->values()
-            ->all();
-
-        return $items !== [] ? $items : $defaultItems;
-    }
-
-    /**
-     * @return array<int, array{id:int,title:string,category:string,content:string,published_at:string,is_demo:bool}>
-     */
-    private function transformAnnouncements(Collection $announcements, bool $isDemo): array
-    {
-        return $announcements
-            ->map(fn (Announcement $announcement) => [
-                'id' => $announcement->id,
-                'title' => $announcement->title,
-                'category' => $announcement->category,
-                'content' => $announcement->content,
-                'published_at' => optional($announcement->published_at)->toIso8601String() ?? now()->toIso8601String(),
-                'is_demo' => $isDemo,
-            ])
-            ->values()
-            ->all();
-    }
-
-    /**
-     * @return array<int, array{id:int,title:string,file_type:string|null,external_url:string|null,file_path:string|null,is_demo:bool}>
-     */
-    private function transformDownloads(Collection $downloads, bool $isDemo): array
-    {
-        return $downloads
-            ->map(fn (Download $download) => [
-                'id' => $download->id,
-                'title' => $download->title,
-                'file_type' => $download->file_type,
-                'external_url' => $download->external_url,
-                'file_path' => $download->file_path,
-                'is_demo' => $isDemo,
-            ])
-            ->values()
-            ->all();
-    }
-
-    /**
-     * @return array<int, array{id:int,title:string,category:string,content:string,published_at:string,is_demo:bool}>
-     */
-    private function fallbackAnnouncements(): array
-    {
-        return [
-            [
-                'id' => 0,
-                'title' => 'Pembukaan Pendaftaran KKN Gelombang 2026',
-                'category' => 'PENDAFTARAN',
-                'content' => 'Contoh pengumuman untuk menampilkan posisi banner, ringkasan informasi, dan struktur warta publik ketika data operasional belum tersedia.',
-                'published_at' => now()->subDays(2)->toIso8601String(),
-                'is_demo' => true,
-            ],
-            [
-                'id' => 0,
-                'title' => 'Sosialisasi Teknis Kelompok dan Penugasan DPL',
-                'category' => 'PENGUMUMAN',
-                'content' => 'Contoh informasi umum yang biasanya berisi jadwal, tahapan verifikasi, dan arahan teknis sebelum pelaksanaan KKN dimulai.',
-                'published_at' => now()->subDays(5)->toIso8601String(),
-                'is_demo' => true,
-            ],
-            [
-                'id' => 0,
-                'title' => 'Rilis Pedoman Pelaporan Harian Mahasiswa',
-                'category' => 'PEDOMAN',
-                'content' => 'Contoh pengumuman pedoman yang menjelaskan standar laporan harian, laporan akhir, dan unggahan dokumen pendukung.',
-                'published_at' => now()->subDays(7)->toIso8601String(),
-                'is_demo' => true,
-            ],
-        ];
-    }
-
-    /**
-     * @return array<int, array{id:int,title:string,file_type:string|null,external_url:string|null,file_path:string|null,is_demo:bool}>
-     */
-    private function fallbackDownloads(): array
-    {
-        return [
-            [
-                'id' => 0,
-                'title' => 'Panduan Operasional KKN 2026',
-                'file_type' => 'PDF',
-                'external_url' => null,
-                'file_path' => null,
-                'is_demo' => true,
-            ],
-            [
-                'id' => 0,
-                'title' => 'Template Laporan Harian Kelompok',
-                'file_type' => 'DOCX',
-                'external_url' => null,
-                'file_path' => null,
-                'is_demo' => true,
-            ],
-            [
-                'id' => 0,
-                'title' => 'Format Administrasi dan Surat Tugas',
-                'file_type' => 'XLSX',
-                'external_url' => null,
-                'file_path' => null,
-                'is_demo' => true,
-            ],
-        ];
     }
 }

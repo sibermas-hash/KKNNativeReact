@@ -24,8 +24,8 @@ export const RequirementNode = ({
     variants={itemVariants}
     whileHover={{ y: -5 }}
     className={clsx(
-      'p-6 rounded-[2rem] border-2 transition-all relative overflow-hidden group',
-      ok ? 'bg-white border-slate-100 shadow-sm' : 'bg-rose-50/50 border-rose-100/50',
+      'p-6 rounded-xl border-2 transition-all relative overflow-hidden group',
+      ok ? 'bg-white border-emerald-100/60 shadow-sm' : 'bg-rose-50/50 border-rose-100/50',
     )}
   >
     <div className="flex items-center gap-4 mb-4">
@@ -40,13 +40,13 @@ export const RequirementNode = ({
         <Icon size={22} strokeWidth={2.5} />
       </div>
       <div className="space-y-0.5">
-        <span className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+        <span className="block text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold">
           {label}
         </span>
         <span
           className={clsx(
-            'block text-sm font-black tracking-tight',
-            ok ? 'text-gray-900' : 'text-rose-950',
+            'block text-sm font-bold tracking-tight',
+            ok ? 'text-black' : 'text-rose-950',
           )}
         >
           {value}
@@ -63,7 +63,7 @@ export const RequirementNode = ({
       </div>
       <span
         className={clsx(
-          'text-[9px] font-black uppercase tracking-widest',
+          'text-sm font-bold font-semibold uppercase text-xs',
           ok ? 'text-emerald-600' : 'text-rose-600',
         )}
       >

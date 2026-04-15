@@ -6,8 +6,6 @@ namespace App\Services;
 
 use App\Models\KKN\PesertaKkn;
 use App\Services\KKN\GradeConversionService;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class GradeSuggestionService
 {
@@ -17,11 +15,11 @@ class GradeSuggestionService
     public function suggestGrade(int $pesertaKknId): array
     {
         $peserta = PesertaKkn::findOrFail($pesertaKknId);
-        
+
         // Use the new Modern Grading Service (AI Powered)
         $aiSummary = app(GradingService::class)->getAiPerformanceSummary($peserta->mahasiswa_id);
 
-        if (!$aiSummary['has_data']) {
+        if (! $aiSummary['has_data']) {
             return [
                 'score' => 0,
                 'label' => 'E',

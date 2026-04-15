@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\KKN;
 
+use App\Enums\KknType;
 use App\Models\KKN\KonfigurasiPenilaian;
+use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\NilaiKkn;
 use App\Services\AuditService;
 use Carbon\Carbon;
@@ -30,7 +32,7 @@ class NilaiAkhirService
             // Guard: Laporan Akhir must be approved before finalization
             $mahasiswaId = $nilai->mahasiswa?->id;
             if ($mahasiswaId) {
-                $reportApproved = \App\Models\KKN\LaporanAkhir::where('mahasiswa_id', $mahasiswaId)
+                $reportApproved = LaporanAkhir::where('mahasiswa_id', $mahasiswaId)
                     ->where('kelompok_id', $nilai->kelompok_id)
                     ->where('status', 'approved')
                     ->exists();
@@ -42,8 +44,8 @@ class NilaiAkhirService
 
             // Get KKN type and load grading configuration (aligned with GradingService)
             $kknType = $nilai->kelompok?->periode?->jenis;
-            if (! $kknType instanceof \App\Enums\KknType) {
-                $kknType = \App\Enums\KknType::tryFrom($kknType) ?? \App\Enums\KknType::REGULER;
+            if (! $kknType instanceof KknType) {
+                $kknType = KknType::tryFrom($kknType) ?? KknType::REGULER;
             }
 
             $cacheKey = 'grading_configs_'.$kknType->value;
@@ -68,11 +70,15 @@ class NilaiAkhirService
             // SURGICAL CLEANUP: LPPM component is now 100% based on Administration Score
             $lppmWeighted = floatval($nilai->administration_score ?? 0);
 
-            // 4. Apply main weights: DPL 40%, Village 20%, LPPM 40%
+            // 4. Apply main weights: DPL 40%, Village 20%, LPPM 40% (with defensive zero check)
+            $dplWeight = floatval($configs['weight_main_dpl'] ?? 40);
+            $villageWeight = floatval($configs['weight_main_village'] ?? 20);
+            $lppmWeight = floatval($configs['weight_main_lppm'] ?? 40);
+
             $totalScore = (
-                ($dplWeighted * (floatval($configs['weight_main_dpl'] ?? 40) / 100)) +
-                ($villageWeighted * (floatval($configs['weight_main_village'] ?? 20) / 100)) +
-                ($lppmWeighted * (floatval($configs['weight_main_lppm'] ?? 40) / 100))
+                ($dplWeighted * ($dplWeight > 0 ? $dplWeight / 100 : 0)) +
+                ($villageWeighted * ($villageWeight > 0 ? $villageWeight / 100 : 0)) +
+                ($lppmWeighted * ($lppmWeight > 0 ? $lppmWeight / 100 : 0))
             );
 
             // 5. Map to Grade & Index

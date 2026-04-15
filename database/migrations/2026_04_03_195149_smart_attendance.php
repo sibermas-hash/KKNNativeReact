@@ -14,16 +14,16 @@ return new class extends Migration
 
         if ($workshopTable) {
             Schema::connection('kkn')->table($workshopTable, function (Blueprint $table) use ($workshopTable) {
-                if (!Schema::connection('kkn')->hasColumn($workshopTable, 'latitude')) {
+                if (! Schema::connection('kkn')->hasColumn($workshopTable, 'latitude')) {
                     $table->decimal('latitude', 10, 8)->nullable();
                 }
-                if (!Schema::connection('kkn')->hasColumn($workshopTable, 'longitude')) {
+                if (! Schema::connection('kkn')->hasColumn($workshopTable, 'longitude')) {
                     $table->decimal('longitude', 11, 8)->nullable();
                 }
-                if (!Schema::connection('kkn')->hasColumn($workshopTable, 'radius_meters')) {
+                if (! Schema::connection('kkn')->hasColumn($workshopTable, 'radius_meters')) {
                     $table->integer('radius_meters')->default(100);
                 }
-                if (!Schema::connection('kkn')->hasColumn($workshopTable, 'active_token')) {
+                if (! Schema::connection('kkn')->hasColumn($workshopTable, 'active_token')) {
                     $table->string('active_token', 10)->nullable();
                 }
             });
@@ -31,10 +31,10 @@ return new class extends Migration
 
         if (Schema::connection('kkn')->hasTable('peserta_workshop')) {
             Schema::connection('kkn')->table('peserta_workshop', function (Blueprint $table) {
-                if (!Schema::connection('kkn')->hasColumn('peserta_workshop', 'device_signature')) {
+                if (! Schema::connection('kkn')->hasColumn('peserta_workshop', 'device_signature')) {
                     $table->string('device_signature')->nullable();
                 }
-                if (!Schema::connection('kkn')->hasColumn('peserta_workshop', 'ip_address')) {
+                if (! Schema::connection('kkn')->hasColumn('peserta_workshop', 'ip_address')) {
                     $table->string('ip_address')->nullable();
                 }
             });

@@ -59,15 +59,20 @@ class DashboardController extends Controller
 
         // Smart Flagging: Students in assigned groups who haven't posted in 3 days
         $atRiskStudents = $totalStudents > 0
-            ? Mahasiswa::whereHas('peserta', function ($q) use ($groupIds) {
-                $q->whereIn('kelompok_id', $groupIds)->where('status', 'approved');
-            })
-                ->whereDoesntHave('kegiatan', function ($q) {
-                    $q->where('date', '>=', now()->subDays(3));
+            ? Mahasiswa::query()
+                ->select(['id', 'user_id', 'nama', 'nim'])
+                ->whereHas('peserta', function ($q) use ($groupIds) {
+                    $q->whereIn('kelompok_id', $groupIds)->where('status', 'approved');
                 })
-                ->with(['user', 'peserta' => function ($q) use ($groupIds) {
-                    $q->whereIn('kelompok_id', $groupIds);
-                }, 'peserta.kelompok'])
+                ->whereNotExists(function ($q) {
+                    $q->select(DB::raw(1))
+                        ->from('kegiatan_kkn')
+                        ->whereColumn('kegiatan_kkn.mahasiswa_id', 'mahasiswa.id')
+                        ->where('kegiatan_kkn.date', '>=', now()->subDays(3)->format('Y-m-d'));
+                })
+                ->with(['user:id,name', 'peserta' => function ($q) use ($groupIds) {
+                    $q->whereIn('kelompok_id', $groupIds)->select(['id', 'mahasiswa_id', 'kelompok_id']);
+                }, 'peserta.kelompok:id,code'])
                 ->get()
             : collect();
 

@@ -6,39 +6,30 @@ namespace App\Models\KKN;
 
 use App\Enums\KknType;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
-use Illuminate\Database\Eloquent\Attributes\Connection;
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Casts;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-
-#[Connection('kkn')]
-#[Table('konfigurasi_penilaian')]
-#[Fillable([
-    'kkn_type',
-        'config_key',
-        'label',
-        'percentage',
-        'group',
-        'description',
-])]
-#[Casts([
-    'kkn_type' => KknType::class,
-        'percentage' => 'decimal:2',
-])]
 class KonfigurasiPenilaian extends Model
 {
-    
+    protected $connection = 'kkn';
 
-    
+    protected $table = 'konfigurasi_penilaian';
 
-    
+    protected $fillable = [
+    'kkn_type',
+    'config_key',
+    'label',
+    'percentage',
+    'group',
+    'description',
+];
 
-    
+    protected $casts = [
+    'kkn_type' => KknType::class,
+    'percentage' => 'decimal:2',
+];
 
-    protected static function booted()
+protected static function booted()
     {
         static::saved(fn (self $model) => Cache::forget('grading_configs_'.($model->kkn_type?->value ?? 'REGULER')));
         static::deleted(fn (self $model) => Cache::forget('grading_configs_'.($model->kkn_type?->value ?? 'REGULER')));
@@ -132,7 +123,7 @@ class KonfigurasiPenilaian extends Model
      * Mengambil semua konfigurasi untuk tipe KKN tertentu.
      * Jika belum ada, akan mengambil default (Reguler).
      */
-    public static function getForType(KknType $type): \Illuminate\Support\Collection
+    public static function getForType(KknType $type): Collection
     {
         $configs = self::where('kkn_type', $type)->get();
 

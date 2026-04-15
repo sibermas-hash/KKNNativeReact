@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\KKN;
 
+use App\Enums\KknType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,55 +13,61 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-use Illuminate\Database\Eloquent\Attributes\Connection;
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Casts;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-
-#[Connection('kkn')]
-#[Table('kelompok_kkn')]
-#[Fillable([
-    'period_id',
-        'location_id',
-        'dpl_id',
-        'dpl_period_id',
-        'code',
-        'nama_kelompok',
-        'token',
-        'capacity',
-        'status',
-])]
-#[Casts([
-    'capacity' => 'integer',
-])]
 class KelompokKkn extends Model
 {
     use HasFactory, SoftDeletes;
 
-    
+    protected $table = 'kelompok_kkn';
 
-    
+    protected $connection = 'kkn';
 
-    
+    protected $fillable = [
+        'period_id',
+        'location_id',
+        'nama_kelompok',
+        'code',
+        'token',
+        'capacity',
+        'status',
+        'dpl_id',
+        'dpl_period_id',
+        'poster_potensi_desa_path',
+        'poster_potensi_desa_name',
+        'poster_potensi_desa_type',
+    ];
 
-    
+    protected $casts = [
+        'period_id' => 'integer',
+        'location_id' => 'integer',
+        'dpl_id' => 'integer',
+        'dpl_period_id' => 'integer',
+        'capacity' => 'integer',
+    ];
 
-    public function getKknType(): \App\Enums\KknType
+    // Legacy Aliases using traditional accessors for codebase compatibility
+    public function getLokasiIdAttribute(): ?int
     {
-        $period = $this->periode;
-        if (! $period) {
-            return \App\Enums\KknType::REGULER;
-        }
-
-        return $period->jenis instanceof \App\Enums\KknType
-            ? $period->jenis
-            : \App\Enums\KknType::tryFrom($period->jenis) ?? \App\Enums\KknType::REGULER;
+        return $this->location_id;
     }
 
-    public function adminGradedBy(): BelongsTo
+    public function setLokasiIdAttribute(?int $value): void
     {
-        return $this->belongsTo(\App\Models\User::class, 'admin_graded_by');
+        $this->location_id = $value;
+    }
+    
+    public function getPeriodeIdAttribute(): ?int
+    {
+        return $this->period_id;
+    }
+
+    public function setPeriodeIdAttribute(?int $value): void
+    {
+        $this->period_id = $value;
+    }
+    
+    public function getKetuaMahasiswaIdAttribute(): ?int
+    {
+        return null;
     }
 
     public function periode(): BelongsTo
@@ -73,24 +80,21 @@ class KelompokKkn extends Model
         return $this->belongsTo(Lokasi::class, 'location_id');
     }
 
-    public function dpl(): BelongsTo
+    public function peserta(): HasMany
     {
-        return $this->belongsTo(Dosen::class, 'dpl_id');
+        return $this->hasMany(PesertaKkn::class, 'kelompok_id');
+    }
+
+    public function dosen(): BelongsToMany
+    {
+        return $this->belongsToMany(Dosen::class, 'dpl_kelompok', 'kelompok_kkn_id', 'dosen_id')
+            ->withPivot('role')
+            ->withTimestamps();
     }
 
     public function posko(): HasOne
     {
         return $this->hasOne(PoskoKelompok::class, 'kelompok_id');
-    }
-
-    public function slotTerkunci(): HasMany
-    {
-        return $this->hasMany(SlotTerkunci::class, 'kelompok_id');
-    }
-
-    public function peserta(): HasMany
-    {
-        return $this->hasMany(PesertaKkn::class, 'kelompok_id');
     }
 
     public function kegiatan(): HasMany
@@ -103,51 +107,61 @@ class KelompokKkn extends Model
         return $this->hasMany(ProgramKerja::class, 'kelompok_id');
     }
 
-    public function laporanAkhir(): HasMany
-    {
-        return $this->hasMany(LaporanAkhir::class, 'kelompok_id');
-    }
-
-    public function rekapitulasiKegiatan(): HasMany
-    {
-        return $this->hasMany(RekapitulasiKegiatan::class, 'kelompok_id');
-    }
-
-    // Relationship: A group can have multiple DPLs (Many-to-Many)
-    public function dosen(): BelongsToMany
-    {
-        return $this->belongsToMany(Dosen::class, 'dpl_kelompok', 'kelompok_kkn_id', 'dosen_id')
-            ->withPivot('role')
-            ->withTimestamps();
-    }
-
     /**
-     * Get the main DPL (Ketua) record.
+     * Get main DPL (Lecturer).
      */
     public function getKetuaDplAttribute(): ?Dosen
     {
+        if ($this->relationLoaded('dosen')) {
+            return $this->dosen->first(fn($d) => $d->pivot->role === 'Ketua');
+        }
         return $this->dosen()->wherePivot('role', 'Ketua')->first();
     }
 
     /**
-     * Synchronize flat DPL columns based on the pivot 'Ketua'.
-     * This is crucial for backward compatibility and simpler reporting queries.
+     * Get KKN Type from Period.
+     */
+    public function getKknTypeAttribute(): KknType
+    {
+        $jenis = $this->periode?->jenis;
+        if ($jenis instanceof KknType) {
+            return $jenis;
+        }
+        if (is_string($jenis) && $jenis !== '') {
+            return KknType::tryFrom($jenis) ?? KknType::REGULER;
+        }
+        return KknType::REGULER;
+    }
+
+    /**
+     * Get the KKN type for this group (method wrapper for attribute).
+     */
+    public function getKknType(): KknType
+    {
+        return $this->kkn_type;
+    }
+
+    /**
+     * Sync flat dpl_id and dpl_period_id columns from pivot table data.
+     * These legacy columns are kept for backward compatibility with queries
+     * that filter via kelompok_kkn.dpl_id directly.
      */
     public function syncKetuaFlatColumns(): void
     {
-        $ketua = $this->dosen()->wherePivot('role', 'Ketua')->first();
+        $ketuaDpl = $this->dosen()->wherePivot('role', 'Ketua')->first();
 
-        if ($ketua) {
-            $dplPeriod = DplPeriod::where('dosen_id', $ketua->id)
+        if ($ketuaDpl) {
+            $dplPeriod = DplPeriod::where('dosen_id', $ketuaDpl->id)
                 ->where('period_id', $this->period_id)
+                ->where('is_active', true)
                 ->first();
 
-            $this->updateQuietly([
-                'dpl_id' => $ketua->id,
+            $this->update([
+                'dpl_id' => $ketuaDpl->id,
                 'dpl_period_id' => $dplPeriod?->id,
             ]);
         } else {
-            $this->updateQuietly([
+            $this->update([
                 'dpl_id' => null,
                 'dpl_period_id' => null,
             ]);

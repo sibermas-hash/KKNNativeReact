@@ -5,18 +5,17 @@ declare(strict_types=1);
 namespace App\Mcp\Tools;
 
 use App\Models\KKN\PesertaKkn;
-use Laravel\Mcp\Attributes\AsMcpTool;
 use Illuminate\Support\Facades\DB;
+use Laravel\Mcp\Attributes\AsMcpTool;
 
 class GetStudentStats
 {
     /**
      * Get real-time KKN registration statistics for AI analysis.
-     * 
-     * @param int $periodId ID of the period to analyze.
-     * @return array
+     *
+     * @param  int  $periodId  ID of the period to analyze.
      */
-    #[AsMcpTool(description: "Fetch registration statistics for a specific KKN period.")]
+    #[AsMcpTool(description: 'Fetch registration statistics for a specific KKN period.')]
     public function handle(int $periodId): array
     {
         return [

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -44,7 +46,7 @@ class CspHeaders
                 "frame-ancestors 'none'",
                 "base-uri 'self'",
                 "form-action 'self'",
-                "upgrade-insecure-requests",
+                'upgrade-insecure-requests',
             ]);
 
             $response->headers->set('Content-Security-Policy', $csp);

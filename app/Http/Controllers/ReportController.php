@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\KKN\Laporan;
+use App\Models\KKN\NilaiKkn;
 use App\Services\ReportManagementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -183,7 +184,7 @@ class ReportController extends Controller
         );
     }
 
-    public function showEvidence(\App\Models\KKN\NilaiKkn $score)
+    public function showEvidence(NilaiKkn $score)
     {
         $user = auth()->user();
 
@@ -214,11 +215,11 @@ class ReportController extends Controller
             abort(403, 'Path file tidak valid.');
         }
 
-        if (! \Illuminate\Support\Facades\Storage::exists($score->evidence_file)) {
+        if (! Storage::exists($score->evidence_file)) {
             abort(404, 'File bukti tidak ditemukan.');
         }
 
-        return \Illuminate\Support\Facades\Storage::download($score->evidence_file);
+        return Storage::download($score->evidence_file);
     }
 
     private function resolveReportStorage(?string $path): array

@@ -5,6 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SyncAllDosenJob;
+use App\Jobs\SyncAllMahasiswaJob;
+use App\Jobs\SyncDosenJob;
+use App\Jobs\SyncFacultyJob;
+use App\Jobs\SyncMahasiswaJob;
+use App\Jobs\SyncProgramJob;
 use App\Models\KKN\DatabaseSyncLog;
 use App\Services\DatabaseSyncMonitoringService;
 use Illuminate\Http\Request;
@@ -210,13 +216,13 @@ class DatabaseSyncController extends Controller
         // Dispatch sync job
         match ($entityType) {
             'mahasiswa' => $syncMode === 'full'
-                ? \App\Jobs\SyncAllMahasiswaJob::dispatch()
-                : \App\Jobs\SyncMahasiswaJob::dispatch($entityId),
+                ? SyncAllMahasiswaJob::dispatch()
+                : SyncMahasiswaJob::dispatch($entityId),
             'dosen' => $syncMode === 'full'
-                ? \App\Jobs\SyncAllDosenJob::dispatch()
-                : \App\Jobs\SyncDosenJob::dispatch($entityId),
-            'faculty' => \App\Jobs\SyncFacultyJob::dispatch(),
-            'program' => \App\Jobs\SyncProgramJob::dispatch(),
+                ? SyncAllDosenJob::dispatch()
+                : SyncDosenJob::dispatch($entityId),
+            'faculty' => SyncFacultyJob::dispatch(),
+            'program' => SyncProgramJob::dispatch(),
         };
 
         $log->update([

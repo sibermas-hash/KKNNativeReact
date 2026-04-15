@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\KKN;
 
-use App\Exports\BpjsParticipantExport;
-use Illuminate\Database\Eloquent\Collection;
+use App\Exports\BiodataPesertaExport;
+use App\Exports\PesertaKknExport;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -26,19 +27,19 @@ class RegistrationExportService
     public function exportToExcel($query): BinaryFileResponse
     {
         return Excel::download(
-            new \App\Exports\PesertaKknExport($query),
+            new PesertaKknExport($query),
             'data-pendaftaran-kkn-'.date('Y-m-d-His').'.xlsx'
         );
     }
 
     /**
-     * Export BPJS participant data to Excel.
+     * Ekspor biodata lengkap peserta KKN untuk kebutuhan pendaftaran BPJS Ketenagakerjaan.
      */
-    public function exportBpjs($query): BinaryFileResponse
+    public function exportBiodata($query): BinaryFileResponse
     {
         return Excel::download(
-            new BpjsParticipantExport($query),
-            'peserta-bpjs-kkn-'.date('Y-m-d-His').'.xlsx'
+            new BiodataPesertaExport($query),
+            'biodata-peserta-kkn-'.date('Y-m-d-His').'.xlsx'
         );
     }
 
@@ -102,7 +103,7 @@ class RegistrationExportService
                 unlink($tempFile);
             }
             DB::connection()->getPdo(); // Test DB connection exists for logging
-            \Illuminate\Support\Facades\Log::error('Export failed', ['exception' => $e]);
+            Log::error('Export failed', ['exception' => $e]);
             abort(500, 'Gagal mengekspor data.');
         }
     }

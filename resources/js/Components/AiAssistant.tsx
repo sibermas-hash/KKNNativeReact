@@ -35,7 +35,7 @@ export default function AiAssistant() {
               <span>Saizu AI</span>
               <X className="cursor-pointer" onClick={() => setIsOpen(false)} />
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-emerald-50/30">
               {messages.map((m, i) => (
                 <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`p-2 rounded-lg text-xs max-w-[80%] ${m.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-white border'}`}>

@@ -5,14 +5,21 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
-use App\Notifications\KKN\GroupPlacementConfirmedNotification;
-use App\Notifications\KKN\RegistrationApprovedNotification;
-use App\Notifications\KKN\RegistrationRejectedNotification;
 use App\Services\Admin\RegistrationService;
+use App\Services\KKN\FacultyScopeService;
 use App\Services\KKN\KknRequirementService;
 use App\Services\KKN\RegistrationApprovalService;
+use App\Services\KKN\RegistrationExportService;
 use App\Traits\HandlesPagination;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+use Inertia\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PesertaKknController extends Controller
 {
@@ -54,7 +61,7 @@ class PesertaKknController extends Controller
             ->when($request->input('period_id'), fn ($query, $periodId) => $query->where('period_id', $periodId));
 
         // Use centralized Faculty Scoping service
-        return \App\Services\KKN\FacultyScopeService::apply($query, 'mahasiswa.faculty_id');
+        return FacultyScopeService::apply($query, 'mahasiswa.faculty_id');
     }
 
     /**
@@ -63,7 +70,7 @@ class PesertaKknController extends Controller
     public function downloadDocument(
         Request $request,
         RegistrationApprovalService $approvalService
-    ): \Symfony\Component\HttpFoundation\BinaryFileResponse {
+    ): BinaryFileResponse {
         $path = $request->input('path');
         $user = auth()->user();
 
@@ -71,7 +78,7 @@ class PesertaKknController extends Controller
 
         // Ownership check for non-admin users
         if (! $user->hasAnyRole(['superadmin', 'faculty_admin'])) {
-            $mahasiswa = \App\Models\KKN\Mahasiswa::where('user_id', $user->id)->first();
+            $mahasiswa = Mahasiswa::where('user_id', $user->id)->first();
 
             if (! $mahasiswa) {
                 abort(403, 'Akses identitas ditolak.');
@@ -94,61 +101,6 @@ class PesertaKknController extends Controller
             ->orderByDesc('created_at')
             ->paginate(15)
             ->withQueryString();
-
-        $statsQuery = PesertaKkn::query()
-            ->selectRaw('mahasiswa.faculty_id, COUNT(*) as count')
-            ->join('mahasiswa', 'peserta_kkn.mahasiswa_id', '=', 'mahasiswa.id')
-            ->leftJoin('fakultas', 'mahasiswa.faculty_id', '=', 'fakultas.id')
-            ->selectRaw('COALESCE(fakultas.nama, \'Tidak Diketahui\') as faculty_name')
-            ->groupBy('mahasiswa.faculty_id', 'fakultas.nama')
-            ->orderByDesc('count');
-
-        // Apply centralized scoping to stats query
-        $statsQuery = \App\Services\KKN\FacultyScopeService::apply($statsQuery, 'mahasiswa.faculty_id');
-
-        $scopedTotalQuery = \App\Services\KKN\FacultyScopeService::apply(PesertaKkn::query(), 'mahasiswa.faculty_id');
-        $scopedPendingQuery = \App\Services\KKN\FacultyScopeService::apply(PesertaKkn::query()->where('status', 'pending'), 'mahasiswa.faculty_id');
-        $scopedApprovedQuery = \App\Services\KKN\FacultyScopeService::apply(PesertaKkn::query()->where('status', 'approved'), 'mahasiswa.faculty_id');
-        $scopedRejectedQuery = \App\Services\KKN\FacultyScopeService::apply(PesertaKkn::query()->where('status', 'rejected'), 'mahasiswa.faculty_id');
-
-        $stats = [
-            'total' => $scopedTotalQuery->count(),
-            'pending' => $scopedPendingQuery->count(),
-            'approved' => $scopedApprovedQuery->count(),
-            'rejected' => $scopedRejectedQuery->count(),
-            'by_faculty' => $statsQuery
-                ->get()
-                ->map(function ($row) {
-                    return [
-                        'faculty_name' => $row->faculty_name,
-                        'count' => $row->count,
-                    ];
-                }),
-        ];
-
-        // Registration summary per KKN type (mirrors Kampelmas "Detail Pendaftaran KKN")
-        $byTypeStats = PesertaKkn::query()
-            ->join('periode', 'peserta_kkn.period_id', '=', 'periode.id')
-            ->selectRaw('periode.id as period_id, periode.name as period_name, periode.program_type, periode.kuota')
-            ->selectRaw('COUNT(*) as total_pendaftar')
-            ->selectRaw("SUM(CASE WHEN peserta_kkn.status = 'pending' THEN 1 ELSE 0 END) as pending")
-            ->selectRaw("SUM(CASE WHEN peserta_kkn.status = 'approved' THEN 1 ELSE 0 END) as approved")
-            ->selectRaw("SUM(CASE WHEN peserta_kkn.status = 'rejected' THEN 1 ELSE 0 END) as rejected")
-            ->groupBy('periode.id', 'periode.name', 'periode.program_type', 'periode.kuota')
-            ->orderBy('periode.id')
-            ->get()
-            ->map(fn ($row) => [
-                'period_id' => $row->period_id,
-                'jenis' => $row->period_name,
-                'program_type' => $row->program_type,
-                'kuota' => (int) $row->kuota,
-                'pendaftar' => (int) $row->total_pendaftar,
-                'pending' => (int) $row->pending,
-                'setuju' => (int) $row->approved,
-                'tolak' => (int) $row->rejected,
-            ]);
-
-        $periods = \App\Models\KKN\Periode::orderByDesc('is_active')->orderByDesc('periode')->get(['id', 'name', 'periode']);
 
         return Inertia::render('Admin/Operational/Registrations/Index', [
             'registrations' => Inertia::defer(function () use ($registrations, $kknRequirementService) {
@@ -195,27 +147,27 @@ class PesertaKknController extends Controller
                 'status' => $this->normalizeStatus($request->input('status')),
                 'period_id' => $request->input('period_id'),
             ],
-            'stats' => Inertia::defer(function () use ($statsQuery) {
-                // We re-apply scoping inside the closure to ensure fresh state if needed, 
-                // but since variables are captured, we just run the counts.
-                $scopedTotalQuery = \App\Services\KKN\FacultyScopeService::apply(PesertaKkn::query(), 'mahasiswa.faculty_id');
-                $scopedPendingQuery = \App\Services\KKN\FacultyScopeService::apply(PesertaKkn::query()->where('status', 'pending'), 'mahasiswa.faculty_id');
-                $scopedApprovedQuery = \App\Services\KKN\FacultyScopeService::apply(PesertaKkn::query()->where('status', 'approved'), 'mahasiswa.faculty_id');
-                $scopedRejectedQuery = \App\Services\KKN\FacultyScopeService::apply(PesertaKkn::query()->where('status', 'rejected'), 'mahasiswa.faculty_id');
-                
+            'stats' => Inertia::defer(function () {
+                $statsQuery = FacultyScopeService::apply(
+                    PesertaKkn::query()
+                        ->selectRaw('mahasiswa.faculty_id, COUNT(*) as count')
+                        ->join('mahasiswa', 'peserta_kkn.mahasiswa_id', '=', 'mahasiswa.id')
+                        ->leftJoin('fakultas', 'mahasiswa.faculty_id', '=', 'fakultas.id')
+                        ->selectRaw('COALESCE(fakultas.nama, \'Tidak Diketahui\') as faculty_name')
+                        ->groupBy('mahasiswa.faculty_id', 'fakultas.nama')
+                        ->orderByDesc('count'),
+                    'mahasiswa.faculty_id'
+                );
+
                 return [
-                    'total' => $scopedTotalQuery->count(),
-                    'pending' => $scopedPendingQuery->count(),
-                    'approved' => $scopedApprovedQuery->count(),
-                    'rejected' => $scopedRejectedQuery->count(),
-                    'by_faculty' => $statsQuery
-                        ->get()
-                        ->map(function ($row) {
-                            return [
-                                'faculty_name' => $row->faculty_name,
-                                'count' => $row->count,
-                            ];
-                        }),
+                    'total' => FacultyScopeService::apply(PesertaKkn::query(), 'mahasiswa.faculty_id')->count(),
+                    'pending' => FacultyScopeService::apply(PesertaKkn::query()->where('status', 'pending'), 'mahasiswa.faculty_id')->count(),
+                    'approved' => FacultyScopeService::apply(PesertaKkn::query()->where('status', 'approved'), 'mahasiswa.faculty_id')->count(),
+                    'rejected' => FacultyScopeService::apply(PesertaKkn::query()->where('status', 'rejected'), 'mahasiswa.faculty_id')->count(),
+                    'by_faculty' => $statsQuery->get()->map(fn ($row) => [
+                        'faculty_name' => $row->faculty_name,
+                        'count' => $row->count,
+                    ]),
                 ];
             }),
             'byTypeStats' => Inertia::defer(fn () => PesertaKkn::query()
@@ -239,7 +191,7 @@ class PesertaKknController extends Controller
                     'tolak' => (int) $row->rejected,
                 ])
             ),
-            'periods' => Inertia::defer(fn () => \App\Models\KKN\Periode::orderByDesc('is_active')->orderByDesc('periode')->get(['id', 'name', 'periode'])),
+            'periods' => Inertia::defer(fn () => Periode::orderByDesc('is_active')->orderByDesc('periode')->get(['id', 'name', 'periode'])),
         ]);
     }
 
@@ -293,22 +245,62 @@ class PesertaKknController extends Controller
     public function export(
         Request $request,
         RegistrationExportService $exportService
-    ): \Symfony\Component\HttpFoundation\BinaryFileResponse {
+    ): BinaryFileResponse {
         $query = $this->registrationQuery($request)
             ->orderByDesc('created_at');
 
         return $exportService->exportToExcel($query);
     }
 
-    public function exportBpjs(
+    /**
+     * Ekspor biodata lengkap peserta KKN yang sudah disetujui
+     * untuk keperluan pendaftaran BPJS Ketenagakerjaan oleh admin LPPM.
+     */
+    public function exportBiodata(
         Request $request,
         RegistrationExportService $exportService
-    ): \Symfony\Component\HttpFoundation\BinaryFileResponse {
+    ): BinaryFileResponse {
         $query = $this->registrationQuery($request, approvedOnly: true)
             ->orderBy('approved_at')
             ->orderBy('created_at');
 
-        return $exportService->exportBpjs($query);
+        return $exportService->exportBiodata($query);
+    }
+
+    private function registrationDocuments(PesertaKkn $pesertaKkn): array
+    {
+        $documents = [];
+
+        // Include uploaded documents from dokumen relation
+        foreach ($pesertaKkn->dokumen as $doc) {
+            $documents[] = [
+                'type' => $doc->document_type,
+                'file_name' => $doc->file_name,
+                'file_path' => $doc->file_path,
+                'status' => $doc->status,
+            ];
+        }
+
+        // Include health certificate and parent permission from mahasiswa
+        $mahasiswa = $pesertaKkn->mahasiswa;
+        if ($mahasiswa?->health_certificate_path) {
+            $documents[] = [
+                'type' => 'health_certificate',
+                'file_name' => basename($mahasiswa->health_certificate_path),
+                'file_path' => $mahasiswa->health_certificate_path,
+                'status' => 'uploaded',
+            ];
+        }
+        if ($mahasiswa?->parent_permission_path) {
+            $documents[] = [
+                'type' => 'parent_permission',
+                'file_name' => basename($mahasiswa->parent_permission_path),
+                'file_path' => $mahasiswa->parent_permission_path,
+                'status' => 'uploaded',
+            ];
+        }
+
+        return $documents;
     }
 
     public function show(PesertaKkn $pesertaKkn, KknRequirementService $kknRequirementService): Response
@@ -380,7 +372,7 @@ class PesertaKknController extends Controller
 
         try {
             $this->registrationService->makeLeader($registration);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
 

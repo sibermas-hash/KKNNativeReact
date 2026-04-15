@@ -82,9 +82,9 @@ class ApiKeySystemTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonStructure(['message', 'api_key', 'project_name', 'permissions'])
             ->assertJson([
-            'project_name' => 'Client App',
-            'permissions' => ['read'],
-        ]);
+                'project_name' => 'Client App',
+                'permissions' => ['read'],
+            ]);
 
         $this->assertDatabaseHas('_projects', [
             'email' => 'client@example.com',
@@ -203,7 +203,7 @@ class ApiKeySystemTest extends TestCase
 
     private function createTestKey(array $permissions, bool $active = true): string
     {
-        $key = 'sk_test_' . uniqid();
+        $key = 'sk_test_'.uniqid();
 
         ApiKey::create([
             'key' => $key,

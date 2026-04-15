@@ -16,7 +16,7 @@ class LaporanAkhirFactory extends Factory
         return [
             'mahasiswa_id' => Mahasiswa::factory(),
             'kelompok_id' => KelompokKkn::factory(),
-            'title' => 'Laporan Akhir ' . $this->faker->words(2, true),
+            'title' => 'Laporan Akhir '.$this->faker->words(2, true),
             'abstract' => $this->faker->paragraph(),
             'file_path' => null,
             'file_name' => null,

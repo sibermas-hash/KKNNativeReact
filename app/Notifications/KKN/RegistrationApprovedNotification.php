@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications\KKN;
 
 use App\Models\KKN\PesertaKkn;
@@ -48,7 +50,7 @@ class RegistrationApprovedNotification extends Notification implements ShouldQue
             'registration_id' => $this->registration->id,
             'period_name' => $this->periodName,
             'group_name' => $this->groupName,
-            'message' => "Pendaftaran {$this->periodName} telah disetujui." . ($this->groupName ? " Kelompok: {$this->groupName}" : ''),
+            'message' => "Pendaftaran {$this->periodName} telah disetujui.".($this->groupName ? " Kelompok: {$this->groupName}" : ''),
         ];
     }
 }

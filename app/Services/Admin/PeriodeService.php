@@ -9,10 +9,10 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Periode;
 use App\Services\KKN\PeriodeGovernanceService;
 use App\Services\RedisCacheService;
+use DomainException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use DomainException;
 
 class PeriodeService
 {
@@ -48,7 +48,7 @@ class PeriodeService
         // Generate name if empty
         if (empty($data['name'])) {
             $programLabel = $jenisKkn?->name ?? $data['jenis'] ?? $data['program_type'] ?? 'KKN';
-            $data['name'] = "Periode {$data['periode']} - " . strtoupper((string) $programLabel);
+            $data['name'] = "Periode {$data['periode']} - ".strtoupper((string) $programLabel);
         }
 
         // Overlap Check
@@ -79,7 +79,7 @@ class PeriodeService
 
             $periode = Periode::create($preparedData);
             $this->afterChange();
-            
+
             return $periode;
         });
     }
@@ -97,7 +97,7 @@ class PeriodeService
 
             $success = $periode->update($preparedData);
             $this->afterChange();
-            
+
             return $success;
         });
     }
@@ -110,6 +110,7 @@ class PeriodeService
             $newPeriod->name = $this->generateCopyName($periode->name);
             $newPeriod->is_active = false;
             $newPeriod->save();
+
             return $newPeriod;
         });
 
@@ -137,6 +138,7 @@ class PeriodeService
         });
 
         $this->afterChange();
+
         return $newPeriod;
     }
 
@@ -150,7 +152,7 @@ class PeriodeService
 
         $success = $periode->delete();
         $this->afterChange();
-        
+
         return $success;
     }
 

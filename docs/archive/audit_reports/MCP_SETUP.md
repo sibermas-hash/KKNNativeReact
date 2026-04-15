@@ -12,16 +12,16 @@
 ```json
 {
   "mcpServers": {
-    "postgresql-kkn": {
-      "command": "npx",
+    "kkn-database": {
+      "command": "/Users/macm4/.nvm/versions/node/v24.14.0/bin/npx",
       "args": [
         "-y",
         "@modelcontextprotocol/server-postgres",
-        "postgresql://kknuinsaizu:kknuinsaizu2026@127.0.0.1:5433/kkn"
+        "postgresql://kknuinsaizu:kknuinsaizu2026@127.0.0.1:5435/kkn"
       ]
     },
-    "filesystem-kkn": {
-      "command": "npx",
+    "kkn-filesystem": {
+      "command": "/Users/macm4/.nvm/versions/node/v24.14.0/bin/npx",
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",

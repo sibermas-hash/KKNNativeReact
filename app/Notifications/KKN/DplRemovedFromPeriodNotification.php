@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications\KKN;
 
 use Illuminate\Bus\Queueable;
@@ -24,7 +26,7 @@ class DplRemovedFromPeriodNotification extends Notification implements ShouldQue
     public function toMail(object $notifiable): MailMessage
     {
         $mail = (new MailMessage)
-            ->subject("Pencabutan Penugasan DPL — SIM-KKN UIN SAIZU")
+            ->subject('Pencabutan Penugasan DPL — SIM-KKN UIN SAIZU')
             ->greeting("Assalamu'alaikum, {$notifiable->name}")
             ->line("Penugasan Anda sebagai Dosen Pembimbing Lapangan (DPL) pada periode **{$this->periodName}** telah dicabut.");
 

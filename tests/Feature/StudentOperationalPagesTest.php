@@ -7,7 +7,6 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Laporan;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
-use App\Models\KKN\Workshop;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\UploadedFile;
@@ -147,7 +146,7 @@ class StudentOperationalPagesTest extends TestCase
     private function createStudentWithApprovedGroup(): array
     {
         $user = User::factory()->create([
-            'username' => 'student_ops_' . fake()->unique()->numerify('####'),
+            'username' => 'student_ops_'.fake()->unique()->numerify('####'),
             'email' => fake()->unique()->safeEmail(),
         ]);
         $user->assignRole('student');

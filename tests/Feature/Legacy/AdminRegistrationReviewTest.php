@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\KknType;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\Lokasi;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
@@ -182,7 +183,7 @@ class AdminRegistrationReviewTest extends TestCase
         KelompokKkn::factory()->create([
             'period_id' => $period->id,
             'status' => 'active',
-            'location_id' => \App\Models\KKN\Lokasi::factory()->create([
+            'location_id' => Lokasi::factory()->create([
                 'village_name' => 'Desa Asal',
                 'district_name' => 'Kecamatan Asal',
                 'regency_name' => 'Kabupaten Asal',
@@ -192,7 +193,7 @@ class AdminRegistrationReviewTest extends TestCase
         $eligibleGroup = KelompokKkn::factory()->create([
             'period_id' => $period->id,
             'status' => 'active',
-            'location_id' => \App\Models\KKN\Lokasi::factory()->create([
+            'location_id' => Lokasi::factory()->create([
                 'village_name' => 'Desa Penempatan',
                 'district_name' => 'Kecamatan Penempatan',
                 'regency_name' => 'Kabupaten Lain',

@@ -14,7 +14,7 @@ class ProgramKerjaFactory extends Factory
     {
         return [
             'kelompok_id' => KelompokKkn::factory(),
-            'title' => 'Program ' . $this->faker->words(3, true),
+            'title' => 'Program '.$this->faker->words(3, true),
             'description' => $this->faker->paragraph(),
             'sdg_goals' => null,
             'objectives' => $this->faker->sentence(),

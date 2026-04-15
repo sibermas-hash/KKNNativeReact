@@ -56,7 +56,7 @@ class KonfigurasiSertifikatSeeder extends Seeder
 
         foreach ($configs as $config) {
             DB::connection('kkn')->table('konfigurasi_sertifikat')->updateOrInsert(
-            ['config_key' => $config['config_key']],
+                ['config_key' => $config['config_key']],
                 $config
             );
         }

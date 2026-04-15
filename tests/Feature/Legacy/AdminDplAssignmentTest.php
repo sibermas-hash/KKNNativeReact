@@ -2,12 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\KknThrottleMiddleware;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\DplPeriod;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
-use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\Periode;
+use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\Workshop;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -52,7 +53,7 @@ class AdminDplAssignmentTest extends TestCase
 
     public function test_superadmin_can_activate_dpl_for_period_and_create_login_account(): void
     {
-        $this->withoutMiddleware(\App\Http\Middleware\KknThrottleMiddleware::class);
+        $this->withoutMiddleware(KknThrottleMiddleware::class);
         $admin = User::factory()->create();
         $admin->assignRole('superadmin');
 
@@ -99,7 +100,7 @@ class AdminDplAssignmentTest extends TestCase
 
     public function test_superadmin_can_assign_dpl_to_group_and_district_after_activation(): void
     {
-        $this->withoutMiddleware(\App\Http\Middleware\KknThrottleMiddleware::class);
+        $this->withoutMiddleware(KknThrottleMiddleware::class);
         $admin = User::factory()->create();
         $admin->assignRole('superadmin');
 

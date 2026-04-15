@@ -9,6 +9,7 @@ use App\Models\KKN\IzinMeninggalkan;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use App\Models\User;
+use App\Notifications\KKN\StudentLeaveRequestedNotification;
 use App\Notifications\KknActivityNotification;
 use Illuminate\Support\Facades\DB;
 
@@ -45,7 +46,7 @@ class IzinService
             // Notifikasi ke DPL
             $kelompok = $peserta->kelompok()->with('dpl.user')->first();
             if ($kelompok?->dpl?->user) {
-                $kelompok->dpl->user->notify(new \App\Notifications\KKN\StudentLeaveRequestedNotification($izin));
+                $kelompok->dpl->user->notify(new StudentLeaveRequestedNotification($izin));
             }
 
             return $izin;

@@ -67,13 +67,13 @@ export default function DplDashboard({
         {/* --- HEADER --- */}
         <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <h1 className="text-lg font-bold text-slate-900 tracking-tight">Portal <span className="text-emerald-600 italic">Bimbingan DPL</span></h1>
-            <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Monitoring progres pengabdian & validasi logbook.</p>
+            <h1 className="text-lg font-bold text-black tracking-tight">Portal <span className="text-emerald-600">Bimbingan DPL</span></h1>
+            <p className="text-emerald-900 font-bold uppercase text-sm tracking-widest">Monitoring progres pengabdian & validasi logbook.</p>
           </div>
           <div className="flex items-center gap-3 bg-white border border-slate-100 p-3 rounded-xl shadow-sm">
              <div className="text-right">
-                <p className="text-[9px] font-bold text-slate-400 uppercase leading-none mb-1">Status Akses</p>
-                <p className="text-[10px] font-bold text-slate-900 uppercase">Dosen Pembimbing</p>
+                <p className="text-sm font-bold text-emerald-900 uppercase leading-none mb-1">Status Akses</p>
+                <p className="text-sm font-bold text-black uppercase">Dosen Pembimbing</p>
             </div>
             <div className="h-8 w-8 bg-emerald-600 text-white rounded-lg flex items-center justify-center shadow-lg shadow-emerald-100">
                <ShieldCheck size={16} />
@@ -96,13 +96,13 @@ export default function DplDashboard({
             <div className="p-5 border-b border-slate-50 flex items-center justify-between">
                <div className="flex items-center gap-2">
                 <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg"><LayoutGrid size={16} /></div>
-                <h2 className="text-xs font-bold text-slate-800 uppercase tracking-tight">Kelompok Bimbingan</h2>
+                <h2 className="text-xs font-bold text-black uppercase tracking-tight">Kelompok Bimbingan</h2>
               </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-slate-50/50">
-                  <tr className="text-[9px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-50">
+                  <tr className="text-sm font-bold text-emerald-900 font-semibold uppercase text-xs border-b border-slate-50">
                     <th className="px-6 py-3">Kode Unit</th>
                     <th className="px-6 py-3">Identitas Kelompok</th>
                     <th className="px-6 py-3">Lokasi Desa</th>
@@ -114,16 +114,16 @@ export default function DplDashboard({
                     groups.map((group) => (
                       <tr key={group.id} className="hover:bg-slate-50/50 transition-colors group">
                         <td className="px-6 py-3">
-                          <span className="px-2 py-0.5 bg-slate-900 text-white text-[9px] font-bold rounded-lg uppercase tracking-wider">
+                          <span className="px-2 py-0.5 bg-emerald-900 text-white text-sm font-bold rounded-lg uppercase tracking-wider">
                             #{group.code}
                           </span>
                         </td>
                         <td className="px-6 py-3">
-                          <div className="text-xs font-bold text-slate-900">{group.name}</div>
-                          <div className="text-[9px] font-semibold text-slate-400 uppercase tracking-tight">{group.period_name}</div>
+                          <div className="text-xs font-bold text-black">{group.name}</div>
+                          <div className="text-sm font-semibold text-emerald-900 uppercase tracking-tight">{group.period_name}</div>
                         </td>
                         <td className="px-6 py-3">
-                          <div className="flex items-center gap-2 text-[11px] font-bold text-slate-600">
+                          <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
                             <MapPin size={12} className="text-rose-500" />
                             {group.village_name}
                           </div>
@@ -131,7 +131,7 @@ export default function DplDashboard({
                         <td className="px-6 py-3 text-right">
                           <Link
                             href={`/dpl/kelompok/${group.id}`}
-                            className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 hover:text-emerald-700 transition-colors uppercase tracking-wider"
+                            className="inline-flex items-center gap-1 text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors uppercase tracking-wider"
                           >
                             Buka Panel
                             <ChevronRight size={12} />
@@ -142,7 +142,7 @@ export default function DplDashboard({
                   ) : (
                     <tr>
                       <td colSpan={4} className="px-8 py-16 text-center">
-                        <p className="text-sm font-bold text-slate-400 uppercase">Belum ada kelompok bimbingan</p>
+                        <p className="text-sm font-bold text-emerald-900 uppercase">Belum ada kelompok bimbingan</p>
                       </td>
                     </tr>
                   )}
@@ -158,8 +158,8 @@ export default function DplDashboard({
                <div className="flex items-center gap-2 mb-4">
                 <div className="p-1.5 bg-rose-50 text-rose-500 rounded-lg"><AlertTriangle size={16} /></div>
                 <div>
-                  <h2 className="text-[11px] font-bold text-slate-800 uppercase tracking-tight">Atensi Khusus</h2>
-                  <p className="text-[9px] font-semibold text-slate-400 uppercase leading-none mt-1">Inaktif {'>'} 72 Jam</p>
+                  <h2 className="text-sm font-bold text-black uppercase tracking-tight">Atensi Khusus</h2>
+                  <p className="text-sm font-semibold text-emerald-900 uppercase leading-none mt-1">Inaktif {'>'} 72 Jam</p>
                 </div>
               </div>
               <div className="space-y-3">
@@ -170,14 +170,14 @@ export default function DplDashboard({
                         {student.name.charAt(0)}
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-slate-900 truncate max-w-[120px]">{student.name}</p>
-                        <p className="text-[10px] font-semibold text-slate-400 uppercase">{student.nim}</p>
+                        <p className="text-xs font-bold text-black truncate max-w-[120px]">{student.name}</p>
+                        <p className="text-sm font-semibold text-emerald-900 uppercase">{student.nim}</p>
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="text-center py-6">
-                    <p className="text-[10px] font-bold text-slate-300 uppercase italic">Semua mahasiswa terpantau aktif</p>
+                    <p className="text-sm font-bold text-slate-300 uppercase">Semua mahasiswa terpantau aktif</p>
                   </div>
                 )}
               </div>
@@ -187,18 +187,18 @@ export default function DplDashboard({
             <motion.div variants={itemVariants} className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
                <div className="flex items-center gap-2 mb-4">
                 <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg"><Activity size={16} /></div>
-                <h2 className="text-[11px] font-bold text-slate-800 uppercase tracking-tight">Tren Aktivitas</h2>
+                <h2 className="text-sm font-bold text-black uppercase tracking-tight">Tren Aktivitas</h2>
               </div>
               <div className="space-y-3">
                 {activityTrend.length > 0 ? (
                   activityTrend.slice(0, 5).map((item: { date: string; count: number }) => (
                     <div key={item.date} className="flex items-center justify-between py-1.5 border-b border-slate-50 last:border-0 hover:px-1 transition-all">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase">{item.date}</span>
-                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-lg">{item.count} Entri</span>
+                      <span className="text-sm font-bold text-emerald-900 uppercase">{item.date}</span>
+                      <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-lg">{item.count} Entri</span>
                     </div>
                   ))
                 ) : (
-                  <p className="text-[9px] font-bold text-slate-300 uppercase italic text-center py-4">Belum ada statistik entri</p>
+                  <p className="text-sm font-bold text-slate-300 uppercase text-center py-4">Belum ada statistik entri</p>
                 )}
               </div>
             </motion.div>
@@ -222,8 +222,8 @@ function StatBox({ title, value, icon: Icon, color = 'emerald' }: DashboardMetri
         <Icon size={16} />
       </div>
       <div>
-        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">{title || value}</p>
-        <p className="text-lg font-bold text-slate-900 leading-none">{value}</p>
+        <p className="text-sm font-bold text-emerald-900 uppercase tracking-wider mb-1">{title || value}</p>
+        <p className="text-lg font-bold text-black leading-none">{value}</p>
       </div>
     </div>
   );

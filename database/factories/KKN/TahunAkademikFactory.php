@@ -14,7 +14,7 @@ class TahunAkademikFactory extends Factory
         $startYear = $this->faker->numberBetween(2020, 2030);
 
         return [
-            'year' => $startYear . '/' . ($startYear + 1),
+            'year' => $startYear.'/'.($startYear + 1),
             'is_active' => false,
         ];
     }

@@ -50,7 +50,7 @@ export default function Locations({ locations, filters }: Props) {
 
             {/* --- MAJESTIC HERO HEADER --- */}
             <div className="relative pt-40 pb-24 overflow-hidden">
-                <div className="absolute inset-0 bg-slate-50 pointer-events-none -z-10" />
+                <div className="absolute inset-0 bg-emerald-50/30 pointer-events-none -z-10" />
                 <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-emerald-500/5 rounded-full blur-[120px] -mr-40 -mt-40" />
                 
                 <div className="container mx-auto px-6 lg:px-12 text-center">
@@ -59,14 +59,14 @@ export default function Locations({ locations, filters }: Props) {
                         animate={{ opacity: 1, y: 0 }}
                         className="space-y-6 max-w-4xl mx-auto"
                     >
-                         <span className="inline-flex rounded-full border border-emerald-500/20 bg-emerald-50 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-emerald-700 shadow-sm">
+                         <span className="inline-flex rounded-full border border-emerald-500/20 bg-emerald-50 px-6 py-2.5 text-[12px] font-bold uppercase tracking-widest text-emerald-700 shadow-sm">
                             Peta lokasi penempatan
                         </span>
-                        <h1 className="text-5xl lg:text-7xl font-bold tracking-tighter text-gray-900 leading-[1.1]">
+                        <h1 className="text-5xl lg:text-7xl font-bold tracking-tighter text-black leading-[1.1]">
                             <span className="font-serif  font-normal text-emerald-600 block mb-2">Cari Lokasi</span>
-                            Penempatan KKN <span className="text-gray-400">&</span> Pengabdian.
+                            Penempatan KKN <span className="text-emerald-950">&</span> Pengabdian.
                         </h1>
-                        <p className="text-xl text-gray-500 font-medium leading-relaxed max-w-2xl mx-auto">
+                        <p className="text-xl text-emerald-950 font-medium leading-relaxed max-w-2xl mx-auto">
                             Temukan wilayah mitra pengabdian masyarakat UIN SAIZU di berbagai daerah dengan data unit terintegrasi.
                         </p>
                     </motion.div>
@@ -80,14 +80,14 @@ export default function Locations({ locations, filters }: Props) {
                     >
                         <form onSubmit={handleSearch} className="relative group">
                             <div className="absolute inset-0 bg-emerald-600/5 blur-2xl group-focus-within:bg-emerald-600/10 transition-all rounded-3xl" />
-                            <div className="relative bg-white border border-slate-200 p-2 rounded-[2rem] shadow-xl shadow-slate-200/50 flex items-center transition-all focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/5">
-                                <Search className="ml-6 text-gray-400 group-focus-within:text-emerald-500 transition-colors" size={24} />
+                            <div className="relative bg-white border border-emerald-100/60 p-2 rounded-[2rem] shadow-xl shadow-slate-200/50 flex items-center transition-all focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/5">
+                                <Search className="ml-6 text-emerald-950 group-focus-within:text-emerald-500 transition-colors" size={24} />
                                 <input 
                                     type="text"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     placeholder="Cari desa, kecamatan, atau kabupaten..."
-                                    className="flex-1 bg-transparent border-none focus:ring-0 text-lg font-medium text-gray-900 placeholder:text-gray-400 px-6"
+                                    className="flex-1 bg-transparent border-none focus:ring-0 text-lg font-medium text-black placeholder:text-emerald-950 px-6"
                                 />
                                 <button 
                                     type="submit"
@@ -102,7 +102,7 @@ export default function Locations({ locations, filters }: Props) {
             </div>
 
             {/* --- GRID LOCATIONS --- */}
-            <div className="bg-white min-h-[600px] border-t border-slate-100">
+            <div className="bg-white min-h-[600px] border-t border-emerald-100/60">
                 <section className="container mx-auto px-6 lg:px-12 py-24">
                     <AnimatePresence mode="wait">
                         {locations.data.length > 0 ? (
@@ -116,7 +116,7 @@ export default function Locations({ locations, filters }: Props) {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: i * 0.05 }}
-                                        className="group relative bg-white border border-slate-100 rounded-[2.5rem] p-10 hover:border-emerald-500/20 hover:shadow-soft hover:shadow-emerald-600/5 transition-all hover:-translate-y-2 overflow-hidden"
+                                        className="group relative bg-white border border-emerald-100/60 rounded-[2.5rem] p-10 hover:border-emerald-500/20 hover:shadow-soft hover:shadow-emerald-600/5 transition-all hover:-translate-y-2 overflow-hidden"
                                     >
                                         <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-all rotate-12 group-hover:rotate-0">
                                             <LocateFixed size={120} />
@@ -124,31 +124,31 @@ export default function Locations({ locations, filters }: Props) {
                                         
                                         <div className="relative z-10 space-y-8">
                                             <div className="flex items-center justify-between">
-                                                <div className="h-14 w-14 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-sm">
+                                                <div className="h-14 w-14 bg-emerald-50/30 border border-emerald-100/60 rounded-2xl flex items-center justify-center text-emerald-950 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-sm">
                                                     <MapPin size={24} />
                                                 </div>
                                                 <div className="px-5 py-2 bg-emerald-50 rounded-full border border-emerald-500/10 flex items-center gap-3">
                                                     <Users size={14} className="text-emerald-600" />
-                                                    <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">{loc.groups_count} Kelompok</span>
+                                                    <span className="text-[12px] font-bold text-emerald-700 uppercase tracking-widest">{loc.groups_count} Kelompok</span>
                                                 </div>
                                             </div>
 
                                             <div className="space-y-3">
-                                                <h3 className="text-2xl font-bold text-gray-900 tracking-tight leading-tight uppercase ">{loc.name}</h3>
-                                                <div className="space-y-2 text-gray-500">
+                                                <h3 className="text-2xl font-bold text-black tracking-tight leading-tight uppercase ">{loc.name}</h3>
+                                                <div className="space-y-2 text-emerald-950">
                                                     <div className="flex items-center gap-3 text-xs font-bold leading-relaxed">
                                                         <Navigation size={14} className="text-emerald-500" />
                                                         <span className="uppercase tracking-widest">{loc.district}, {loc.city}</span>
                                                     </div>
-                                                    <p className="text-[11px] font-medium leading-relaxed opacity-70 flex items-start gap-3 ">
+                                                    <p className="text-xs font-medium leading-relaxed opacity-70 flex items-start gap-3 ">
                                                         <Building2 size={14} className="shrink-0 mt-0.5" />
                                                         {loc.address || 'Alamat lengkap belum terdefinisi secara geospasial.'}
                                                     </p>
                                                 </div>
                                             </div>
 
-                                            <button className="w-full h-14 border border-slate-100 group-hover:border-emerald-500/20 group-hover:bg-slate-50 rounded-2xl p-4 flex items-center justify-between transition-all">
-                                                <span className="text-[10px] font-bold text-gray-400 group-hover:text-emerald-700 uppercase tracking-[0.2em] ">Lihat ringkasan</span>
+                                            <button className="w-full h-14 border border-emerald-100/60 group-hover:border-emerald-500/20 group-hover:bg-emerald-50/30 rounded-2xl p-4 flex items-center justify-between transition-all">
+                                                <span className="text-[12px] font-bold text-emerald-950 group-hover:text-emerald-700 uppercase tracking-[0.2em] ">Lihat ringkasan</span>
                                                 <ChevronRight size={16} className="text-slate-300 group-hover:text-emerald-600 transition-transform group-hover:translate-x-1" />
                                             </button>
                                         </div>
@@ -162,12 +162,12 @@ export default function Locations({ locations, filters }: Props) {
                                 animate={{ opacity: 1 }}
                                 className="flex flex-col items-center justify-center py-40 space-y-8"
                             >
-                                <div className="h-32 w-32 bg-slate-50 rounded-[3rem] flex items-center justify-center text-slate-200">
+                                <div className="h-32 w-32 bg-emerald-50/30 rounded-[3rem] flex items-center justify-center text-slate-200">
                                     <Map size={60} strokeWidth={1} />
                                 </div>
                                 <div className="text-center space-y-2">
-                                    <h3 className="text-2xl font-bold text-gray-900 uppercase ">Lokasi Tidak Ditemukan</h3>
-                                    <p className="text-gray-400 font-medium max-w-xs mx-auto">Kami tidak dapat menemukan wilayah yang sesuai dengan kata kunci Anda.</p>
+                                    <h3 className="text-2xl font-bold text-black uppercase ">Lokasi Tidak Ditemukan</h3>
+                                    <p className="text-emerald-950 font-medium max-w-xs mx-auto">Kami tidak dapat menemukan wilayah yang sesuai dengan kata kunci Anda.</p>
                                 </div>
                                 <button 
                                     onClick={() => { setSearch(''); router.get('/cari-lokasi'); }}
@@ -184,7 +184,7 @@ export default function Locations({ locations, filters }: Props) {
                         <div className="mt-24 border-t border-slate-50 pt-16 flex flex-col items-center gap-8">
                              <Pagination meta={locations.meta} />
                              <PageInfo meta={locations.meta} />
-                             <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Sistem Verifikasi Geospasial v4.0.1</p>
+                             <p className="text-[12px] font-bold text-slate-300 uppercase tracking-widest">Sistem Verifikasi Geospasial v4.0.1</p>
                         </div>
                     )}
                 </section>

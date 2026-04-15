@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
 use App\Models\KKN\IzinMeninggalkan;
@@ -16,12 +18,12 @@ class IzinPolicy
             return true;
         }
 
-        if (!$user->hasRole('dpl')) {
+        if (! $user->hasRole('dpl')) {
             return false;
         }
 
         $dosen = $user->dosen;
-        if (!$dosen) {
+        if (! $dosen) {
             return false;
         }
 

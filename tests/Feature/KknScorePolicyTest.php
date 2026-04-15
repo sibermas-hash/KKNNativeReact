@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
 use App\Models\KKN\NilaiKkn;
+use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;
@@ -60,7 +60,7 @@ class KknScorePolicyTest extends TestCase
         $admin = User::factory()->create();
         $admin->assignRole('superadmin');
 
-        $score = new NilaiKkn();
+        $score = new NilaiKkn;
         $score->is_finalized = true;
 
         $this->actingAs($admin);

@@ -12,8 +12,8 @@ use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
-use App\Models\KKN\ProgramKerja;
 use App\Models\KKN\Prodi;
+use App\Models\KKN\ProgramKerja;
 use App\Services\DashboardStatisticsService;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
@@ -25,7 +25,7 @@ class DashboardStatisticsServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new DashboardStatisticsService();
+        $this->service = new DashboardStatisticsService;
     }
 
     public function test_get_period_statistics_returns_structure(): void

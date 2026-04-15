@@ -18,10 +18,9 @@ import {
   Info,
   LayoutGrid,
 } from 'lucide-react';
-import type { PageProps } from '@/types';
+import type { PageProps, LucideIcon } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
-import type { LucideIcon } from '@/types';
 
 interface RekapRow {
   id?: number;
@@ -132,28 +131,28 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
     <AppLayout title="Financial Ledger">
       <Head title="Rekapitulasi Kegiatan | SIM-KKN" />
 
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16 font-sans">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-16 font-sans">
         {/* --- STRATEGIC HEADER --- */}
         <div className="relative group">
-          <div className="absolute -inset-8 bg-gradient-to-r from-emerald-50/50 to-slate-50/50 rounded-[4rem] -z-10 group-hover:scale-[1.01] transition-transform duration-700" />
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
+          <div className="absolute -inset-8 bg-gradient-to-r from-emerald-50/50 to-slate-50/50 rounded-xl -z-10 group-hover:scale-[1.01] transition-transform duration-700" />
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div className="space-y-8 max-w-2xl">
               <div className="flex items-center gap-4">
-                <div className="h-16 w-16 bg-emerald-600 rounded-[1.5rem] flex items-center justify-center text-white shadow-2xl shadow-emerald-200">
+                <div className="h-16 w-16 bg-emerald-600 rounded-xl flex items-center justify-center text-white shadow-2xl shadow-emerald-200">
                   <Calculator size={32} strokeWidth={2.5} />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.4em]">
+                  <h4 className="text-sm font-bold text-emerald-600 uppercase tracking-wider text-xs font-semibold">
                     Section 05 / Financial Matrix
                   </h4>
-                  <h1 className="text-5xl md:text-6xl font-black text-gray-900 tracking-tighter uppercase leading-[0.85]">
+                  <h1 className="text-2xl md:text-2xl font-bold text-black tracking-tighter uppercase leading-[0.85]">
                     Rekap <br /> <span className="text-emerald-600">Kontribusi.</span>
                   </h1>
                 </div>
               </div>
-              <p className="text-lg font-bold text-gray-400 tracking-tight leading-relaxed">
+              <p className="text-lg font-bold text-emerald-950 tracking-tight leading-relaxed">
                 Dokumentasi kuantitatif dari inisiatif dan swadaya selama KKN. <br />
-                <span className="text-gray-900 italic">
+                <span className="text-black">
                   "Transparansi anggaran adalah wujud profesionalisme pengabdian."
                 </span>
               </p>
@@ -162,13 +161,13 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <Link
                 href={route('student.program-kerja.index')}
-                className="h-20 px-10 rounded-[2rem] bg-white border border-slate-100 text-gray-400 hover:text-emerald-600 hover:border-emerald-200 font-black text-[10px] transition-all flex items-center gap-4 uppercase tracking-[0.2em] shadow-sm"
+                className="h-10 px-6 rounded-xl bg-white border border-emerald-100/60 text-emerald-950 hover:text-emerald-600 hover:border-emerald-200 font-bold text-sm transition-all flex items-center gap-4 uppercase tracking-wider text-xs font-semibold shadow-sm"
               >
                 <FileSpreadsheet size={18} /> Program Kerja
               </Link>
               <button
                 onClick={addItem}
-                className="h-20 px-10 rounded-[2rem] bg-emerald-600 text-white hover:bg-emerald-700 font-black text-[10px] transition-all flex items-center gap-4 uppercase tracking-[0.2em] shadow-2xl shadow-emerald-200"
+                className="h-10 px-6 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 font-bold text-sm transition-all flex items-center gap-4 uppercase tracking-wider text-xs font-semibold shadow-2xl shadow-emerald-200"
               >
                 <Plus size={18} strokeWidth={3} /> Tambah Item
               </button>
@@ -207,33 +206,33 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
 
         {/* --- FINANCIAL LEDGER MATRIX --- */}
         <form onSubmit={handleSubmit} className="space-y-12">
-          <div className="bg-white border border-slate-100 rounded-[3.5rem] overflow-hidden shadow-2xl shadow-slate-200/50">
+          <div className="bg-white border border-emerald-100/60 rounded-[3.5rem] overflow-hidden shadow-2xl shadow-slate-200/50">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-emerald-700 text-white">
-                    <th className="px-8 py-8 text-[10px] font-black uppercase tracking-[0.3em] opacity-40">
+                    <th className="px-8 py-8 text-sm font-bold uppercase tracking-wider text-xs font-semibold opacity-40">
                       #
                     </th>
-                    <th className="px-8 py-8 text-[10px] font-black uppercase tracking-[0.3em] min-w-[320px]">
+                    <th className="px-8 py-8 text-sm font-bold uppercase tracking-wider text-xs font-semibold min-w-[320px]">
                       Uraian Aktivitas Strategis
                     </th>
-                    <th className="px-8 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-center">
+                    <th className="px-8 py-8 text-sm font-bold uppercase tracking-wider text-xs font-semibold text-center">
                       Unit
                     </th>
-                    <th className="px-8 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-right">
+                    <th className="px-8 py-8 text-sm font-bold uppercase tracking-wider text-xs font-semibold text-right">
                       Swadaya MHS
                     </th>
-                    <th className="px-8 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-right">
+                    <th className="px-8 py-8 text-sm font-bold uppercase tracking-wider text-xs font-semibold text-right">
                       Masyarakat
                     </th>
-                    <th className="px-8 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-right">
+                    <th className="px-8 py-8 text-sm font-bold uppercase tracking-wider text-xs font-semibold text-right">
                       Bantuan
                     </th>
-                    <th className="px-8 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-right">
+                    <th className="px-8 py-8 text-sm font-bold uppercase tracking-wider text-xs font-semibold text-right">
                       Donatur
                     </th>
-                    <th className="px-8 py-8 text-[10px] font-black uppercase tracking-[0.3em] text-right text-emerald-400">
+                    <th className="px-8 py-8 text-sm font-bold uppercase tracking-wider text-xs font-semibold text-right text-emerald-400">
                       Total (K)
                     </th>
                     <th className="px-6 py-8"></th>
@@ -249,7 +248,7 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
                         exit={{ opacity: 0, scale: 0.95 }}
                         className="group hover:bg-emerald-50/20 transition-all"
                       >
-                        <td className="px-8 py-6 text-xs font-black text-slate-300 font-mono">
+                        <td className="px-8 py-6 text-xs font-bold text-slate-300 font-mono">
                           {String(index + 1).padStart(2, '0')}
                         </td>
                         <td className="px-8 py-6">
@@ -257,7 +256,7 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
                             type="text"
                             value={item.uraian_kegiatan}
                             onChange={(e) => updateItem(index, 'uraian_kegiatan', e.target.value)}
-                            className="w-full h-11 bg-transparent border-none p-0 text-sm font-bold text-gray-900 focus:ring-0 placeholder:text-slate-200 group-hover:text-emerald-700 transition-colors uppercase tracking-tight"
+                            className="w-full h-11 bg-transparent border-none p-0 text-sm font-bold text-black focus:ring-0 placeholder:text-slate-200 group-hover:text-emerald-700 transition-colors uppercase tracking-tight"
                             placeholder="Deskripsi kegiatan..."
                           />
                         </td>
@@ -269,13 +268,13 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
                               onChange={(e) =>
                                 updateItem(index, 'volume', parseInt(e.target.value) || 0)
                               }
-                              className="w-14 h-11 bg-slate-50 border-none rounded-xl text-center text-[11px] font-black text-gray-900 focus:ring-2 focus:ring-emerald-500 font-mono"
+                              className="w-14 h-11 bg-emerald-50/30 border-none rounded-xl text-center text-sm font-bold text-black focus:ring-2 focus:ring-emerald-500 font-mono"
                             />
                             <input
                               type="text"
                               value={item.satuan}
                               onChange={(e) => updateItem(index, 'satuan', e.target.value)}
-                              className="w-20 h-11 bg-transparent border-none p-0 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center"
+                              className="w-20 h-11 bg-transparent border-none p-0 text-sm font-bold text-emerald-950 font-semibold uppercase text-xs text-center"
                               placeholder="Satuan"
                             />
                           </div>
@@ -297,7 +296,7 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
                           onChange={(v) => updateItem(index, 'donatur_lain', v)}
                         />
                         <td className="px-8 py-6 text-right">
-                          <span className="text-sm font-black text-gray-950 font-mono">
+                          <span className="text-sm font-bold text-black font-mono">
                             {item.jumlah.toLocaleString()}
                           </span>
                         </td>
@@ -318,16 +317,16 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
                 </tbody>
                 <tfoot className="bg-emerald-700 text-white">
                   <tr className="divide-x divide-white/5">
-                    <td colSpan={3} className="px-8 py-10">
+                    <td colSpan={3} className="px-8 py-6">
                       <div className="flex items-center gap-4">
                         <div className="h-12 w-12 bg-white/10 rounded-2xl flex items-center justify-center text-emerald-400">
                           <ShieldAlert size={28} />
                         </div>
                         <div className="space-y-1">
-                          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500">
+                          <p className="text-sm font-bold uppercase tracking-wider text-xs font-semibold text-emerald-500">
                             Global Aggregator
                           </p>
-                          <p className="text-xl font-black uppercase tracking-tighter">
+                          <p className="text-xl font-bold font-bold text-center">
                             Total Ledger Balance
                           </p>
                         </div>
@@ -337,11 +336,11 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
                     <TotalCol lab="MASY" val={totalSwadayaMasyarakat} />
                     <TotalCol lab="GOV" val={totalBantuan} />
                     <TotalCol lab="DONOR" val={totalDonatur} />
-                    <td className="px-8 py-10 text-right bg-emerald-600">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-emerald-200 mb-1 opacity-60 px-1">
+                    <td className="px-8 py-6 text-right bg-emerald-600">
+                      <p className="text-sm font-bold font-semibold uppercase text-xs text-emerald-200 mb-1 opacity-60 px-1">
                         Grand Total
                       </p>
-                      <p className="text-2xl font-black tracking-tight font-mono">
+                      <p className="text-2xl font-bold tracking-tight font-mono">
                         {totalJumlah.toLocaleString()}
                       </p>
                     </td>
@@ -357,24 +356,24 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
               <div className="h-12 w-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100">
                 <Info size={24} />
               </div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed pt-1">
+              <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs leading-relaxed pt-1">
                 * Seluruh nilai moneter diinput dalam satuan ribuan rupiah (K). Misal: input{' '}
-                <span className="text-gray-900 font-mono">1.000</span> untuk mewakili{' '}
-                <span className="text-gray-900">Rp 1.000.000</span>.
+                <span className="text-black font-mono">1.000</span> untuk mewakili{' '}
+                <span className="text-black">Rp 1.000.000</span>.
               </p>
             </div>
 
             <div className="flex items-center gap-6">
               <Link
                 href={route('student.dashboard')}
-                className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] hover:text-gray-900 transition-colors"
+                className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold hover:text-black transition-colors"
               >
                 Abort Changes
               </Link>
               <button
                 type="submit"
                 disabled={form.processing}
-                className="h-20 px-12 rounded-[2rem] bg-emerald-600 text-white font-black text-xs uppercase tracking-[0.3em] shadow-2xl shadow-emerald-200 hover:bg-emerald-700 transition-all flex items-center gap-6 active:scale-95 disabled:opacity-50"
+                className="h-10 px-6 rounded-xl bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider text-xs font-semibold shadow-2xl shadow-emerald-200 hover:bg-emerald-700 transition-all flex items-center gap-6 active:scale-95 disabled:opacity-50"
               >
                 {form.processing ? 'Transmitting...' : 'Save Ledger Protocol'}
                 <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center">
@@ -405,16 +404,16 @@ function BentoCard({
   return (
     <div
       className={clsx(
-        'p-10 rounded-[3rem] border flex flex-col justify-between group transition-all h-64',
+        'p-10 rounded-xl border flex flex-col justify-between group transition-all h-64',
         highlight
-          ? 'bg-gray-900 text-white border-gray-200 shadow-2xl'
-          : 'bg-white border-slate-100 hover:border-emerald-200 shadow-sm',
+          ? 'bg-emerald-900 text-white border-emerald-100/60 shadow-2xl'
+          : 'bg-white border-emerald-100/60 hover:border-emerald-200 shadow-sm',
       )}
     >
       <div
         className={clsx(
           'h-14 w-14 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform',
-          color === 'emerald' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-gray-400',
+          color === 'emerald' ? 'bg-emerald-50 text-emerald-600' : 'bg-emerald-50/30 text-emerald-950',
         )}
       >
         <Icon size={26} strokeWidth={2.5} />
@@ -422,13 +421,13 @@ function BentoCard({
       <div>
         <p
           className={clsx(
-            'text-[10px] font-black uppercase tracking-[0.3em] mb-2',
-            color === 'emerald' ? 'text-emerald-500' : 'text-gray-400',
+            'text-sm font-bold uppercase tracking-wider text-xs font-semibold mb-2',
+            color === 'emerald' ? 'text-emerald-500' : 'text-emerald-950',
           )}
         >
           {label}
         </p>
-        <p className="text-xl font-black tracking-tighter uppercase truncate">{value}</p>
+        <p className="text-xl font-bold tracking-tighter uppercase truncate">{value}</p>
       </div>
     </div>
   );
@@ -441,7 +440,7 @@ function LedgerInput({ value, onChange }: { value: number; onChange: (v: number)
         type="number"
         value={value}
         onChange={(e) => onChange(parseInt(e.target.value) || 0)}
-        className="w-24 h-11 bg-slate-50 border-none rounded-xl text-right text-[11px] font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500 font-mono placeholder:opacity-20 translate-x-2"
+        className="w-24 h-11 bg-emerald-50/30 border-none rounded-xl text-right text-sm font-bold text-emerald-700 focus:ring-2 focus:ring-emerald-500 font-mono placeholder:opacity-20 translate-x-2"
         placeholder="0"
       />
     </td>
@@ -450,9 +449,9 @@ function LedgerInput({ value, onChange }: { value: number; onChange: (v: number)
 
 function TotalCol({ lab, val }: { lab: string; val: number }) {
   return (
-    <td className="px-8 py-10 text-right">
-      <p className="text-[9px] font-black uppercase tracking-widest text-white/40 mb-1">{lab}</p>
-      <p className="text-sm font-black tracking-tight font-mono">{val.toLocaleString()}</p>
+    <td className="px-8 py-6 text-right">
+      <p className="text-sm font-bold font-semibold uppercase text-xs text-white/40 mb-1">{lab}</p>
+      <p className="text-sm font-bold tracking-tight font-mono">{val.toLocaleString()}</p>
     </td>
   );
 }

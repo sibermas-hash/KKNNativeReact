@@ -1,33 +1,11 @@
-import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import {
-  Download,
-  MapPin,
-  Pencil,
-  Plus,
-  Search,
-  Trash2,
-  Users,
-  UserCheck,
-  Layers3,
-  RefreshCw,
-  ShieldCheck,
-  Zap,
-  Target,
-  Activity,
-  Filter,
-  X,
-  Database,
-  Info,
-  ChevronDown,
-  ChevronRight,
-  MoreVertical,
-  CheckCircle2
+  Download, MapPin, Pencil, Plus, Search, Trash2, Users, UserCheck, Filter, CheckCircle2, Activity, Layers
 } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
-import { ConfirmDialog, Modal, Pagination, Button } from '@/Components/ui';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ConfirmDialog, Modal, Pagination } from '@/Components/ui';
 import { clsx } from 'clsx';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
 
@@ -112,7 +90,6 @@ export default function GroupsIndex({
   const [search, setSearch] = useState(filters?.search ?? '');
   const [periodId, setPeriodId] = useState(filters?.period_id ? String(filters.period_id) : '');
   const [status, setStatus] = useState(filters?.status ? String(filters.status) : '');
-  const [showFilters, setShowFilters] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -192,452 +169,330 @@ export default function GroupsIndex({
   };
 
   return (
-    <AppLayout title="Direktori Kelompok KKN">
-      <Head title="Kelompok KKN" />
+    <AppLayout title="Data Kelompok">
+      <Head title="Manajemen Kelompok" />
 
-      <div className="max-w-7xl mx-auto space-y-8 pb-24 text-slate-900 font-sans">
-        {/* --- PREMIUM HEADER --- */}
-        <div className="space-y-4">
-            <div className="flex items-center gap-3 text-emerald-600">
-                <Target size={18} />
-                <span className="text-xs font-bold uppercase tracking-[0.25em] opacity-80">Alokasi & Manajemen Unit</span>
-            </div>
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div className="space-y-1">
-                    <h1 className="text-5xl font-extrabold text-slate-900 tracking-tight">
-                        Kelompok <span className="text-emerald-500">KKN.</span>
-                    </h1>
-                    <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mt-2 leading-relaxed max-w-2xl">
-                        Pusat Kendali Plotting Mahasiswa dan Strategi Penugasan Wilayah Terpadu
-                    </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-4">
-                    <Link
-                        href={route('admin.kelompok.template')}
-                        className="h-14 px-8 rounded-2xl bg-white border border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-200 shadow-sm transition-all flex items-center gap-3 text-xs font-bold active:scale-95 uppercase tracking-widest"
-                    >
-                        <Download size={18} /> UNDUH TEMPLATE
-                    </Link>
-                    <button
-                        onClick={openCreateForm}
-                        disabled={!canManage}
-                        className="h-14 px-8 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold transition-all shadow-xl shadow-emerald-100 flex items-center gap-3 active:scale-95 disabled:opacity-50 text-sm uppercase tracking-wider"
-                    >
-                        <Plus size={22} /> TAMBAH KELOMPOK
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        {/* --- STATS GRID --- */}
-         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard label="Total Kelompok" value={summary?.total_groups ?? 0} icon={Layers3} color="emerald" />
-          <StatCard label="Kelompok Aktif" value={summary?.active_groups ?? 0} icon={Activity} color="sky" />
-          <StatCard label="Tanpa DPL" value={summary?.groups_without_main_lecturer ?? 0} icon={UserCheck} color="rose" />
-          <StatCard label="Sisa Kuota" value={summary?.total_available_slots ?? 0} icon={Users} color="slate" />
-        </div>
-
-        {/* --- SEARCH & FILTER BAR --- */}
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm shadow-slate-200/50">
-          <div className="p-8 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-slate-50/20">
-            <div className="flex items-center gap-5">
-              <div className="h-14 w-14 bg-white border border-slate-200 text-emerald-600 rounded-2xl flex items-center justify-center shadow-sm">
-                <Search size={24} />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-base font-bold text-slate-900 uppercase tracking-tight">Pencarian Unit</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Filter berdasarkan kriteria spesifik</p>
-              </div>
-            </div>
-            <div className="flex flex-1 max-w-3xl gap-4">
-                <div className="relative flex-1 group">
-                  <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
-                    className="w-full h-14 pl-12 pr-4 bg-white border border-slate-200 rounded-2xl text-[13px] font-semibold focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all placeholder:text-slate-300"
-                    placeholder="Cari berdasarkan Nama, Lokasi, atau DPL..."
-                  />
-                </div>
-                <button
-                    onClick={() => setShowFilters(!showFilters)}
-                    className={clsx(
-                        "h-14 px-8 rounded-2xl text-xs font-bold uppercase flex items-center gap-3 transition-all border", 
-                        showFilters ? "bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-100/50" : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"
-                    )}
-                >
-                    <Filter size={18} /> {showFilters ? 'Tutup Filter' : 'Filter Lanjut'}
-                </button>
-            </div>
+      <div className="space-y-6 max-w-7xl mx-auto font-sans">
+        
+        {/* HEADER SECTION */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-gray-200">
+          <div className="space-y-1">
+             <div className="flex items-center gap-2">
+                 <Layers size={16} className="text-emerald-600" />
+                 <span className="text-sm font-medium text-gray-500">Operasional Sistem KKN</span>
+             </div>
+             <h1 className="text-2xl font-bold text-gray-900 leading-tight">Manajemen Kelompok KKN</h1>
           </div>
+          
+          <div className="flex items-center gap-3 shrink-0">
+             <Link
+               href={route('admin.kelompok.template')}
+               className="h-10 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 shadow-sm transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+             >
+               <Download size={16} /> Unduh Template
+             </Link>
+             <button
+               onClick={openCreateForm}
+               disabled={!canManage}
+               className="h-10 px-4 bg-emerald-600 border border-transparent text-white rounded-lg text-sm font-medium shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+             >
+               <Plus size={16} /> Tambah Kelompok
+             </button>
+          </div>
+        </div>
 
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="bg-white border-b border-slate-100 overflow-hidden">
-                <div className="p-10 grid grid-cols-1 md:grid-cols-2 gap-10 max-w-5xl">
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Periode Program KKN</label>
-                    <div className="relative">
-                        <select
-                          value={periodId}
-                          onChange={(e) => setPeriodId(e.target.value)}
-                          className="w-full h-14 px-5 rounded-2xl border border-slate-200 bg-slate-50 text-xs font-bold uppercase text-slate-700 outline-none transition-all focus:bg-white focus:border-emerald-500 appearance-none pr-12"
-                        >
-                          <option value="">Semua Periode</option>
-                          {(periods || []).map((p) => (
-                            <option key={p.id} value={p.id}>{p.name?.toUpperCase() || 'UNTITLED'}</option>
-                          ))}
-                        </select>
-                        <ChevronDown size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Status Operasional</label>
-                    <div className="relative">
-                        <select
-                          value={status}
-                          onChange={(e) => setStatus(e.target.value)}
-                          className="w-full h-14 px-5 rounded-2xl border border-slate-200 bg-slate-50 text-xs font-bold uppercase text-slate-700 outline-none transition-all focus:bg-white focus:border-emerald-500 appearance-none pr-12"
-                        >
-                          <option value="">Semua Status</option>
-                          <option value="draft">DRAF (BELUM AKTIF)</option>
-                          <option value="active">AKTIF (TERBUKA)</option>
-                          <option value="closed">SELESAI (TERTUTUP)</option>
-                        </select>
-                        <ChevronDown size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                    </div>
-                  </div>
-                </div>
-                <div className="px-10 pb-10 flex justify-end gap-6">
-                     <button onClick={() => { setSearch(''); setPeriodId(''); setStatus(''); }} className="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors uppercase tracking-[0.2em]">Reset Semua Parameter</button>
-                      <button onClick={handleApplyFilters} className="px-10 h-12 bg-emerald-600 text-white rounded-xl text-xs font-bold uppercase tracking-widest shadow-xl shadow-emerald-100 active:scale-95 transition-all">Terapkan Perubahan</button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+        {/* METRICS ROW */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+           <MetricCard label="Total Kelompok" value={summary?.total_groups ?? 0} icon={Layers} />
+           <MetricCard label="Kelompok Aktif" value={summary?.active_groups ?? 0} icon={Activity} />
+           <MetricCard label="Belum Ada DPL" value={summary?.groups_without_main_lecturer ?? 0} icon={UserCheck} highlight={summary?.groups_without_main_lecturer > 0} color="amber" />
+           <MetricCard label="Kapasitas Sisa" value={summary?.total_available_slots ?? 0} icon={Users} color="emerald" />
+        </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-                <thead className="bg-white text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 border-b border-slate-50">
-                    <tr>
-                      <th className="px-8 py-6 w-16 text-center">#</th>
-                      <th className="px-8 py-6">Informasi Kelompok</th>
-                      <th className="px-8 py-6">Lokasi / Wilayah</th>
-                      <th className="px-8 py-6">Status & Pendamping</th>
-                      <th className="px-8 py-6 text-center">Kapasitas</th>
-                      <th className="px-8 py-6 text-right">Kelola</th>
-                    </tr>
-                </thead>
-              <tbody className="divide-y divide-slate-50">
-                {(groups?.data?.length ?? 0) === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-40 text-center">
-                        <div className="flex flex-col items-center gap-4 text-slate-200">
-                            <Info size={60} strokeWidth={1} />
-                            <p className="text-xs font-bold uppercase tracking-[0.4em] leading-none">Data kelompok belum terenkripsi</p>
-                        </div>
-                    </td>
-                  </tr>
-                ) : (
-                  groups?.data?.map((group, idx) => (
-                    <tr key={group.id} className="hover:bg-slate-50/50 transition-all group">
-                      <td className="px-8 py-8 text-center text-[11px] font-bold text-slate-300 tabular-nums">
-                        {idx + 1 + ((groups?.meta?.current_page ?? 1) - 1) * (groups?.meta?.per_page ?? 15)}
-                      </td>
-                      <td className="px-8 py-8">
-                        <div className="flex flex-col">
-                          <span className="text-base font-bold text-slate-900 group-hover:text-emerald-700 transition-colors uppercase leading-none">
-                            {group.name}
-                          </span>
-                          <span className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-[0.15em] font-mono tabular-nums">
-                            {group.code}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-8 py-8">
-                        <div className="flex flex-col gap-1.5">
-                          <div className="flex items-center gap-2 text-slate-700">
-                            <MapPin size={14} className="text-emerald-500 shrink-0" />
-                            <span className="text-xs font-bold uppercase leading-tight line-clamp-1">
-                              {group.location?.full_name || 'Lokasi Belum Diatur'}
-                            </span>
-                          </div>
-                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-5 opacity-60">
-                            {group.period?.name || '—'}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-8 py-8">
-                        <div className="flex flex-col gap-3">
-                          <div className="flex items-center gap-3">
-                            <span
-                              className={clsx(
-                                'px-3 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest border transition-all',
-                                group.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
-                                group.status === 'closed' ? 'bg-slate-100 text-slate-400 border-slate-200 opacity-60' : 
-                                'bg-amber-50 text-amber-600 border-amber-100'
-                              )}
-                            >
-                              {group.status === 'draft' ? 'DRAF' : group.status === 'active' ? 'AKTIF' : 'SELESAI'}
-                            </span>
-                            {group.ready_for_placement && (
-                              <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-1.5">
-                                <CheckCircle2 size={12} /> Terverifikasi
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase italic opacity-80">
-                            <UserCheck size={12} className="text-slate-300" />
-                            <span className="line-clamp-1">{group.main_lecturer?.name || 'BELUM ADA DPL'}</span>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-8 py-8">
-                        <div className="space-y-3 w-36 mx-auto">
-                          <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest tabular-nums leading-none">
-                            <span>{group.approved_participants_count} User</span>
-                            <span>Limit {group.capacity}</span>
-                          </div>
-                          <div className="h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-100">
-                            <div
-                              className={clsx(
-                                  "h-full transition-all duration-1000",
-                                  (group.approved_participants_count / group.capacity) >= 1 ? 'bg-amber-500' : 'bg-emerald-500'
-                              )}
-                              style={{
-                                width: `${Math.min(100, (group.approved_participants_count / group.capacity) * 100)}%`,
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-8 py-8 text-right">
-                        <div className="flex justify-end gap-3 outline-none">
-                             <Link 
-                                 href={route('admin.kelompok.show', group.id)} 
-                                 className="h-10 px-5 bg-white border border-slate-200 text-slate-500 hover:text-emerald-600 hover:border-emerald-100 shadow-sm rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center active:scale-95 group/btn"
-                             >
-                                 Detail
-                                 <ChevronRight size={14} className="ml-1 opacity-40 group-hover/btn:translate-x-0.5 transition-transform" />
-                             </Link>
-                             {canManage && (
-                                <>
-                                    <button onClick={() => openEditForm(group)} className="h-10 w-10 bg-white border border-slate-200 text-slate-300 hover:text-emerald-600 hover:border-emerald-100 hover:shadow-sm rounded-xl flex items-center justify-center transition-all active:scale-95">
-                                        <Pencil size={18} />
-                                    </button>
-                                    <button onClick={() => setDeletingId(group.id)} className="h-10 w-10 bg-white border border-slate-200 text-slate-200 hover:text-rose-600 hover:border-rose-100 hover:bg-rose-50 hover:shadow-sm rounded-xl flex items-center justify-center transition-all active:scale-95">
-                                        <Trash2 size={20} />
-                                    </button>
-                                </>
+        {/* DATA TABLE SECTION */}
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+           {/* FILTER BAR */}
+           <div className="px-5 py-4 border-b border-gray-200 bg-gray-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="relative w-full md:max-w-md">
+                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                 <input
+                   type="text"
+                   value={search}
+                   onChange={(e) => setSearch(e.target.value)}
+                   onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
+                   className="w-full h-10 pl-9 pr-4 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:border-emerald-500 focus:ring-emerald-500 shadow-sm"
+                   placeholder="Cari kelompok, wilayah, dosen..."
+                 />
+              </div>
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                 <select
+                   value={periodId}
+                   onChange={(e) => setPeriodId(e.target.value)}
+                   className="w-full sm:w-auto h-10 pl-3 pr-8 rounded-lg border border-gray-300 bg-white text-sm text-gray-700 focus:border-emerald-500 focus:ring-emerald-500 shadow-sm"
+                 >
+                   <option value="">Semua Periode</option>
+                   {(periods || []).map((p) => (
+                     <option key={p.id} value={p.id}>{p.name}</option>
+                   ))}
+                 </select>
+                 
+                 <select
+                   value={status}
+                   onChange={(e) => setStatus(e.target.value)}
+                   className="w-full sm:w-auto h-10 pl-3 pr-8 rounded-lg border border-gray-300 bg-white text-sm text-gray-700 focus:border-emerald-500 focus:ring-emerald-500 shadow-sm"
+                 >
+                   <option value="">Semua Status</option>
+                   <option value="draft">Penyusunan (Draft)</option>
+                   <option value="active">Aktif</option>
+                   <option value="closed">Selesai</option>
+                 </select>
+
+                 <button
+                   onClick={handleApplyFilters}
+                   className="w-full sm:w-auto h-10 px-4 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors flex items-center justify-center gap-2 shadow-sm"
+                 >
+                   <Filter size={16} className="text-gray-500" /> Saring
+                 </button>
+              </div>
+           </div>
+
+           <div className="overflow-x-auto">
+             <table className="min-w-full divide-y divide-gray-200">
+               <thead className="bg-gray-50">
+                 <tr>
+                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500">Kelompok & Kode</th>
+                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500">Lokasi Penugasan</th>
+                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500">Status & DPL</th>
+                   <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500">Kapasitas</th>
+                   <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500">Aksi</th>
+                 </tr>
+               </thead>
+               <tbody className="bg-white divide-y divide-gray-200">
+                 {groups?.data?.length === 0 ? (
+                   <tr>
+                     <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-500">
+                       <Layers className="mx-auto h-12 w-12 text-gray-300 mb-3" strokeWidth={1} />
+                       Belum ada data kelompok ditemukan.
+                     </td>
+                   </tr>
+                 ) : (
+                   groups?.data?.map((group) => (
+                     <tr key={group.id} className="hover:bg-gray-50 transition-colors group">
+                       <td className="px-6 py-4 whitespace-nowrap">
+                         <div className="flex flex-col">
+                           <span className="text-sm font-semibold text-gray-900">{group.name}</span>
+                           <span className="text-xs text-gray-500 mt-0.5">Kode: {group.code}</span>
+                         </div>
+                       </td>
+                       <td className="px-6 py-4">
+                         <div className="flex flex-col max-w-xs">
+                           <div className="flex items-start gap-1.5 text-sm text-gray-900">
+                             <MapPin size={16} className="text-emerald-500 shrink-0 mt-0.5" />
+                             <span className="line-clamp-2">{group.location?.full_name || 'Lokasi belum diatur'}</span>
+                           </div>
+                           <span className="text-xs text-gray-500 mt-1">Periode: {group.period?.name || '-'}</span>
+                         </div>
+                       </td>
+                       <td className="px-6 py-4 whitespace-nowrap">
+                         <div className="flex flex-col gap-2">
+                           <div className="flex items-center gap-2">
+                             <span className={clsx(
+                               'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                               group.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 
+                               group.status === 'closed' ? 'bg-gray-100 text-gray-800' : 'bg-amber-100 text-amber-800'
+                             )}>
+                               {group.status === 'draft' ? 'Penyusunan' : group.status === 'active' ? 'Aktif' : 'Terkunci'}
+                             </span>
+                             {group.ready_for_placement && (
+                               <CheckCircle2 size={16} className="text-emerald-500" title="Siap Plotting" />
                              )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                           </div>
+                           <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                             <UserCheck size={14} className="text-gray-400" />
+                             <span className="truncate max-w-[150px]">{group.main_lecturer?.name || 'Belum Ada DPL'}</span>
+                           </div>
+                         </div>
+                       </td>
+                       <td className="px-6 py-4 whitespace-nowrap">
+                         <div className="flex flex-col gap-1.5 w-24 mx-auto">
+                           <div className="flex justify-between text-xs font-semibold">
+                             <span className="text-gray-900">{group.approved_participants_count}</span>
+                             <span className="text-gray-500">/ {group.capacity}</span>
+                           </div>
+                           <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                             <div className={clsx("h-full transition-all", (group.approved_participants_count / group.capacity) >= 1 ? 'bg-amber-500' : 'bg-emerald-500')} style={{ width: `${Math.min(100, (group.approved_participants_count / group.capacity) * 100)}%` }} />
+                           </div>
+                         </div>
+                       </td>
+                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                         <div className="flex items-center justify-end gap-2">
+                           <Link 
+                             href={route('admin.kelompok.show', group.id)} 
+                             className="px-3 py-1.5 bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 rounded-md text-xs font-medium transition-colors"
+                           >
+                             Detail
+                           </Link>
+                           {canManage && (
+                             <>
+                               <button onClick={() => openEditForm(group)} className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors border border-transparent" title="Edit">
+                                 <Pencil size={16} />
+                               </button>
+                               <button onClick={() => setDeletingId(group.id)} className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors border border-transparent" title="Hapus">
+                                 <Trash2 size={16} />
+                               </button>
+                             </>
+                           )}
+                         </div>
+                       </td>
+                     </tr>
+                   ))
+                 )}
+               </tbody>
+             </table>
+           </div>
 
-          <div className="px-10 py-6 border-t border-slate-50 bg-slate-50/20 flex items-center justify-between">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">
-              Data Hal. {groups?.meta?.current_page ?? 1} — {(groups?.meta?.total ?? 0).toLocaleString()} unit terdeteksi
-            </span>
-            {groups?.meta && <Pagination meta={groups.meta} />}
-          </div>
+           {groups?.meta && (
+             <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
+               <span className="text-xs text-gray-500">
+                 Menampilkan <strong>{groups.data.length}</strong> dari total <strong>{groups.meta.total}</strong> kelompoks
+               </span>
+               <Pagination meta={groups.meta} />
+             </div>
+           )}
         </div>
 
-        {/* --- FORM MODAL --- */}
-        <Modal show={showForm} onClose={closeForm} maxWidth="2xl">
-          <div className="bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-100">
-              <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/20">
-                  <div className="space-y-1">
-                      <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                          {editingGroup ? 'Koreksi Data Kelompok' : 'Tambah Unit Kelompok'}
-                      </h2>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Konfigurasi Penugasan & Plotting</p>
-                  </div>
-                  <button onClick={closeForm} className="h-12 w-12 bg-white border border-slate-200 text-slate-300 rounded-2xl flex items-center justify-center hover:text-rose-500 transition-all shadow-sm">
-                      <X size={24} />
-                  </button>
-              </div>
-
-              <form onSubmit={submitForm} className="p-10 space-y-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Periode Program</label>
-                    <div className="relative">
-                        <select
-                          value={form.data.period_id}
-                          onChange={(e) => form.setData('period_id', e.target.value)}
-                          className="w-full h-14 px-5 rounded-2xl bg-slate-50 border border-slate-100 text-[13px] font-bold text-slate-900 focus:bg-white focus:border-emerald-500 outline-none transition-all appearance-none pr-12"
-                          required
-                        >
-                          <option value="">— Pilih Periode —</option>
-                          {(periods || []).map((p) => (
-                            <option key={p.id} value={p.id}>{p.name?.toUpperCase() || 'UNTITLED'}</option>
-                          ))}
-                        </select>
-                        <ChevronDown size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Wilayah Penugasan</label>
-                    <div className="relative">
-                        <select
-                          value={form.data.location_id}
-                          onChange={(e) => form.setData('location_id', e.target.value)}
-                          className="w-full h-14 px-5 rounded-2xl bg-slate-50 border border-slate-100 text-[13px] font-bold text-slate-900 focus:bg-white focus:border-emerald-500 outline-none transition-all appearance-none pr-12"
-                          required
-                        >
-                          <option value="">— Pilih Lokasi —</option>
-                          {(locations || []).map((l) => (
-                            <option key={l.id} value={l.id}>{l.full_name?.toUpperCase() || 'UNKNOWN_LOCATION'}</option>
-                          ))}
-                        </select>
-                        <ChevronDown size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Label / Nama Kelompok</label>
-                  <input
-                    type="text"
-                    value={form.data.name}
-                    onChange={(e) => form.setData('name', e.target.value)}
-                    className="w-full h-14 px-6 rounded-2xl bg-slate-50 border border-slate-100 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300 uppercase tracking-tight"
-                    placeholder="Contoh: Kelompok 01 Desa Karangjati..."
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Kapasitas Maks</label>
-                    <input
-                      type="number"
-                      value={form.data.capacity}
-                      onChange={(e) => form.setData('capacity', e.target.value)}
-                      className="w-full h-14 px-6 rounded-2xl bg-slate-50 border border-slate-100 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 outline-none transition-all tabular-nums"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Status Plotting</label>
-                    <div className="relative">
-                        <select
-                          value={form.data.status}
-                          onChange={(e) => form.setData('status', e.target.value as any)}
-                          className="w-full h-14 px-5 rounded-2xl bg-slate-50 border border-slate-100 text-[13px] font-bold text-slate-900 focus:bg-white focus:border-emerald-500 outline-none transition-all appearance-none pr-12"
-                        >
-                          <option value="draft">DRAF</option>
-                          <option value="active">AKTIF</option>
-                          <option value="closed">NON-AKTIF</option>
-                        </select>
-                        <ChevronDown size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">DPL Utama</label>
-                    <div className="relative">
-                        <select
-                          value={form.data.lead_lecturer_id}
-                          onChange={(e) => form.setData('lead_lecturer_id', e.target.value)}
-                          className="w-full h-14 px-5 rounded-2xl bg-slate-50 border border-slate-100 text-[13px] font-bold text-slate-900 focus:bg-white focus:border-emerald-500 outline-none transition-all appearance-none pr-12"
-                        >
-                          <option value="">(Belum Ditugaskan)</option>
-                          {(lecturers || []).map((l) => (
-                            <option key={l.id} value={l.id}>{l.name?.toUpperCase() || 'UNNAMED_LECTURER'}</option>
-                          ))}
-                        </select>
-                        <ChevronDown size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-10 flex justify-end gap-6 border-t border-slate-50">
-                  <button
-                    onClick={closeForm}
-                    type="button"
-                    className="px-8 font-bold text-slate-400 hover:text-rose-600 transition-colors uppercase text-[10px] tracking-[0.2em]"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={form.processing}
-                    className="px-12 h-14 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs uppercase tracking-[0.15em] rounded-2xl shadow-xl shadow-emerald-100 active:scale-95 transition-all flex items-center gap-3 disabled:opacity-50"
-                  >
-                    {form.processing ? (
-                      <RefreshCw size={20} className="animate-spin" />
-                    ) : (
-                      <CheckCircle2 size={20} />
-                    )}
-                    {editingGroup ? 'Simpan Perubahan' : 'Finalisasi Unit'}
-                  </button>
-                </div>
-              </form>
-          </div>
+        {/* FORM MODAL */}
+        <Modal show={showForm} onClose={closeForm} title={editingGroup ? 'Edit Kelompok' : 'Buat Kelompok Baru'} maxWidth="md">
+           <form onSubmit={submitForm} className="p-6 space-y-5">
+             <div className="space-y-4">
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">Periode Program</label>
+                 <select
+                   value={form.data.period_id}
+                   onChange={(e) => form.setData('period_id', e.target.value)}
+                   className="w-full h-10 px-3 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
+                   required
+                 >
+                   <option value="">Pilih Periode</option>
+                   {(periods || []).map((p) => (
+                     <option key={p.id} value={p.id}>{p.name}</option>
+                   ))}
+                 </select>
+               </div>
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">Wilayah Penugasan</label>
+                 <select
+                   value={form.data.location_id}
+                   onChange={(e) => form.setData('location_id', e.target.value)}
+                   className="w-full h-10 px-3 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
+                   required
+                 >
+                   <option value="">Pilih Lokasi Wilayah</option>
+                   {(locations || []).map((l) => (
+                     <option key={l.id} value={l.id}>{l.full_name}</option>
+                   ))}
+                 </select>
+               </div>
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">Nama Kelompok</label>
+                 <input
+                   type="text"
+                   value={form.data.name}
+                   onChange={(e) => form.setData('name', e.target.value)}
+                   className="w-full h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
+                   placeholder="Cth: Kelompok 45 Desa Karangduren"
+                   required
+                 />
+               </div>
+               <div className="grid grid-cols-2 gap-4">
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">Kapasitas Maksimal</label>
+                   <input
+                     type="number"
+                     min="1"
+                     value={form.data.capacity}
+                     onChange={(e) => form.setData('capacity', e.target.value)}
+                     className="w-full h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
+                     required
+                   />
+                 </div>
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                   <select
+                     value={form.data.status}
+                     onChange={(e) => form.setData('status', e.target.value as any)}
+                     className="w-full h-10 px-3 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
+                     required
+                   >
+                     <option value="draft">Penyusunan (Draft)</option>
+                     <option value="active">Aktif</option>
+                     <option value="closed">Terkunci</option>
+                   </select>
+                 </div>
+               </div>
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">Dosen Pendamping (DPL)</label>
+                 <select
+                   value={form.data.lead_lecturer_id}
+                   onChange={(e) => form.setData('lead_lecturer_id', e.target.value)}
+                   className="w-full h-10 px-3 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
+                 >
+                   <option value="">(Belum Diatur)</option>
+                   {(lecturers || []).map((l) => (
+                     <option key={l.id} value={l.id}>{l.name}</option>
+                   ))}
+                 </select>
+               </div>
+             </div>
+             
+             <div className="pt-5 mt-5 flex justify-end gap-3 border-t border-gray-200">
+               <button
+                 type="button"
+                 onClick={closeForm}
+                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors shadow-sm"
+               >
+                 Batal
+               </button>
+               <button
+                 type="submit"
+                 disabled={form.processing}
+                 className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors disabled:opacity-50"
+               >
+                 {editingGroup ? 'Simpan Perubahan' : 'Buat Kelompok'}
+               </button>
+             </div>
+           </form>
         </Modal>
-
-        <ConfirmDialog
-          show={deletingId !== null}
-          onClose={() => setDeletingId(null)}
-          onConfirm={handleDelete}
-          title="Hapus Unit Kelompok?"
-          message="Metadata kelompok akan dieliminasi secara permanen. Mahasiswa terdaftar akan otomatis dikembalikan ke status pendaftaran mandiri. Lanjutkan tindakan ini?"
-        />
-
-        {/* --- FOOTER GUIDE --- */}
-        <div className="bg-emerald-600 rounded-[2.5rem] p-12 text-white relative overflow-hidden shadow-2xl shadow-emerald-100">
-            <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none rotate-12 -mr-16 -mt-16">
-                 <ShieldCheck size={350} />
-            </div>
-            <div className="flex flex-col md:flex-row items-center justify-between gap-12 relative z-10">
-                <div className="flex items-center gap-10">
-                    <div className="h-24 w-24 bg-white/20 rounded-[2rem] flex items-center justify-center shrink-0 border border-white/20 shadow-sm backdrop-blur-md">
-                        <Users size={48} className="text-white" />
-                    </div>
-                    <div className="space-y-3">
-                        <h4 className="text-2xl font-bold uppercase tracking-tight">Otoritas Penempatan Unit</h4>
-                        <p className="text-sm font-medium text-emerald-50 max-w-2xl leading-relaxed">
-                            Manajemen kelompok adalah inti dari distribusi peserta KKN ke wilayah penugasan. Pastikan setiap unit memiliki kuota mahasiswa yang seimbang dan didampingi oleh Dosen Pembimbing Lapangan yang kompeten.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
       </div>
+
+      <ConfirmDialog
+        open={deletingId !== null}
+        onClose={() => setDeletingId(null)}
+        onConfirm={handleDelete}
+        title="Hapus Kelompok KKN"
+        message="Kelompok KKN serta pendaftar di dalamnya akan dilepaskan secara permanen. Lanjutkan penghapusan?"
+        confirmVariant="danger"
+        confirmLabel="Hapus Kelompok"
+      />
     </AppLayout>
   );
 }
 
-function StatCard({ label, value, icon: Icon, color }: { label: string; value: number | string; icon: LucideIcon; color: 'emerald' | 'sky' | 'amber' | 'rose' | 'slate' }) {
-    const colorMap = {
-        emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-        sky: 'bg-sky-50 text-sky-600 border-sky-100',
-        amber: 'bg-amber-50 text-amber-600 border-amber-100',
-        rose: 'bg-red-50 text-red-600 border-red-100',
-        slate: 'bg-slate-50 text-slate-400 border-slate-100'
-    };
-    return (
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 space-y-6 hover:shadow-lg transition-all group overflow-hidden relative shadow-sm">
-            <div className="flex items-center justify-between relative z-10">
-                <div className={clsx('h-14 w-14 rounded-2xl flex items-center justify-center border transition-all duration-500 group-hover:scale-110 shadow-sm', colorMap[color])}>
-                    <Icon size={24} />
-                </div>
-            </div>
-            <div className="space-y-1 relative z-10">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] leading-none mb-2">{label}</p>
-                <div className="flex items-baseline gap-1">
-                    <p className="text-4xl font-extrabold text-slate-900 tracking-tighter tabular-nums leading-none uppercase">
-                        {typeof value === 'number' ? value.toLocaleString('id-ID') : value}
-                    </p>
-                </div>
-            </div>
+function MetricCard({ label, value, icon: Icon, highlight, color = 'emerald' }: { label: string; value: number | string; icon: any; highlight?: boolean; color?: string }) {
+  const isAmber = highlight || color === 'amber';
+  
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden h-28">
+      {isAmber && <div className="absolute top-0 right-0 p-1.5"><span className="relative flex h-2.5 w-2.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span></span></div>}
+      <div className="flex justify-between items-start z-10">
+        <div className={clsx("h-10 w-10 rounded-lg flex items-center justify-center", isAmber ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600")}>
+          <Icon size={20} strokeWidth={2} />
         </div>
-    );
+      </div>
+      <div className="z-10 mt-2">
+        <p className="text-2xl font-bold text-gray-900 leading-none">{value}</p>
+        <p className="text-xs font-medium text-gray-500 mt-1">{label}</p>
+      </div>
+    </div>
+  );
 }

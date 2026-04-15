@@ -16,8 +16,8 @@ class ProdiFactory extends Factory
 
         return [
             'faculty_id' => Fakultas::factory(),
-            'code' => 'P' . str_pad($sequence, 2, '0', STR_PAD_LEFT),
-            'nama' => 'Program ' . $this->faker->unique()->word(),
+            'code' => 'P'.str_pad($sequence, 2, '0', STR_PAD_LEFT),
+            'nama' => 'Program '.$this->faker->unique()->word(),
         ];
     }
 }

@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
 
 class HealthController extends Controller
@@ -177,7 +178,7 @@ class HealthController extends Controller
             }
 
             $start = microtime(true);
-            $response = \Illuminate\Support\Facades\Http::timeout(5)
+            $response = Http::timeout(5)
                 ->get(config('services.master_api.url').'/health');
             $latency = round((microtime(true) - $start) * 1000, 2);
 

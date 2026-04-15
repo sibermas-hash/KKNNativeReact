@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use App\Models\KKN\PesertaKkn;
+use App\Services\PeriodContextService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -38,7 +41,7 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
         $studentRegistrationLocked = false;
-        $periodContext = app(\App\Services\PeriodContextService::class);
+        $periodContext = app(PeriodContextService::class);
         $activePhase = rescue(
             fn () => $periodContext->getActivePeriod()?->current_phase
                 ?? data_get($periodContext->getActivePeriodData(), 'current_phase')

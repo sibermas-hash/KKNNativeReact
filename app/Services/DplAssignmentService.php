@@ -9,7 +9,9 @@ use App\Models\KKN\DplKecamatanAssignment;
 use App\Models\KKN\DplPeriod;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Periode;
+use App\Models\User;
 use DomainException;
+use Illuminate\Support\Facades\DB;
 
 class DplAssignmentService
 {
@@ -18,7 +20,7 @@ class DplAssignmentService
     ) {}
 
     /**
-     * @return array{assignment: DplPeriod, provisioning: array{user: \App\Models\User, created: bool, activated: bool, temp_password: ?string}}
+     * @return array{assignment: DplPeriod, provisioning: array{user: User, created: bool, activated: bool, temp_password: ?string}}
      */
     public function activateForPeriod(Dosen $dosen, Periode $period, int $maxGroups): array
     {
@@ -56,7 +58,7 @@ class DplAssignmentService
             throw new DomainException('DPL sudah mencapai batas maksimum kelompok untuk periode ini.');
         }
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($dplPeriod, $group) {
+        DB::transaction(function () use ($dplPeriod, $group) {
             $existingKetua = $group->dosen()->wherePivot('role', 'Ketua')->first();
             if ($existingKetua && $existingKetua->id !== $dplPeriod->dosen_id) {
                 // Downgrade existing ketua to ordinary member if they are different

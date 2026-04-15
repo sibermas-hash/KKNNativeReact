@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
 use App\Models\User;
@@ -18,9 +20,11 @@ abstract class BasePolicy
     {
         if ($user->hasRole('superadmin')) {
             // Log access via AuditService
-            AuditService::logGodModeAccess($user, static::class . '@' . $ability);
+            AuditService::logGodModeAccess($user, static::class.'@'.$ability);
+
             return true;
         }
+
         return null; // Fallthrough
     }
 }

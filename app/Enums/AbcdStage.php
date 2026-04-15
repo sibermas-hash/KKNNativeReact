@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enums;
 
 enum AbcdStage: string
@@ -13,7 +15,7 @@ enum AbcdStage: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::DISCOVERY => 'Discovery (Penemuan Aset)',
             self::DREAM => 'Dream (Impian & Visi)',
             self::DESIGN => 'Design (Perancangan Strategi)',
@@ -25,7 +27,7 @@ enum AbcdStage: string
 
     public function weekNumber(): int
     {
-        return match($this) {
+        return match ($this) {
             self::DISCOVERY => 1,
             self::DREAM => 2,
             self::DESIGN => 2,

@@ -1,59 +1,64 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
-use App\Models\KKN\TahunAkademik;
+use App\Models\KKN\Dosen;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\Dosen;
 use App\Models\KKN\Lokasi;
-use App\Models\KKN\Periode;
-use App\Models\KKN\Prodi;
-use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\Periode;
+use App\Models\KKN\PesertaKkn;
+use App\Models\KKN\Prodi;
+use App\Models\KKN\TahunAkademik;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ImportKknExcel extends Command
 {
     protected $signature = 'kkn:import-excel {path} {--dry-run}';
+
     protected $description = 'Clear existing KKN data and import from Excel file';
 
     public function handle()
     {
         $path = $this->argument('path');
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             $this->error("File not found: {$path}");
+
             return 1;
         }
 
-        $this->info("Starting KKN data import...");
+        $this->info('Starting KKN data import...');
 
-        if (!$this->option('dry-run')) {
+        if (! $this->option('dry-run')) {
             $this->clearData();
         } else {
-            $this->info("Dry run: Skipping data clearing.");
+            $this->info('Dry run: Skipping data clearing.');
         }
 
         try {
             $spreadsheet = IOFactory::load($path);
             $worksheet = $spreadsheet->getActiveSheet();
             $rows = $worksheet->toArray();
-            
+
             // Remove header row
             $header = array_shift($rows);
-            
-            $this->info("Found " . count($rows) . " rows in Excel.");
-            
+
+            $this->info('Found '.count($rows).' rows in Excel.');
+
             $bar = $this->output->createProgressBar(count($rows));
             $bar->start();
 
             $period = Periode::where('is_active', true)->first();
-            if (!$period) {
+            if (! $period) {
                 $academicYear = TahunAkademik::firstOrCreate(
                     ['year' => '2024/2025'],
                     ['is_active' => true]
@@ -72,7 +77,9 @@ class ImportKknExcel extends Command
             }
 
             foreach ($rows as $row) {
-                if (empty($row[6])) continue; // Skip if NIM is empty
+                if (empty($row[6])) {
+                    continue;
+                } // Skip if NIM is empty
 
                 $kelompokCode = $row[1];
                 $desa = $row[2];
@@ -88,7 +95,7 @@ class ImportKknExcel extends Command
                 // 1. Faculty & Program (Defaults)
                 $faculty = Fakultas::firstOrCreate(['code' => 'FTIK'], ['nama' => 'Fakultas Tarbiyah dan Ilmu Keguruan']);
                 $program = Prodi::firstOrCreate(
-                    ['code' => 'PBA'], 
+                    ['code' => 'PBA'],
                     ['nama' => 'Pendidikan Bahasa Arab', 'faculty_id' => $faculty->id]
                 );
 
@@ -97,22 +104,22 @@ class ImportKknExcel extends Command
                     ['village_name' => $desa],
                     [
                         'address' => "{$kecamatan}, {$kabupaten}",
-                        'capacity' => 20
+                        'capacity' => 20,
                     ]
                 );
 
                 // 3. Lecturer (DPL)
-                $nip = substr('dpl_' . str_replace([' ', "'"], ['_', ''], strtolower($dplName)), 0, 20);
+                $nip = substr('dpl_'.str_replace([' ', "'"], ['_', ''], strtolower($dplName)), 0, 20);
                 $lecturerUser = User::firstOrCreate(
                     ['username' => $nip],
                     [
                         'name' => $dplName,
-                        'email' => str_replace([' ', "'"], ['.', ''], strtolower($dplName)) . '@uinsaizu.ac.id',
-                        'password' => Hash::make(\Illuminate\Support\Str::password(12)),
+                        'email' => str_replace([' ', "'"], ['.', ''], strtolower($dplName)).'@uinsaizu.ac.id',
+                        'password' => Hash::make(Str::password(12)),
                     ]
                 );
-                
-                if (!$lecturerUser->hasRole('dpl')) {
+
+                if (! $lecturerUser->hasRole('dpl')) {
                     $lecturerUser->assignRole('dpl');
                 }
 
@@ -127,14 +134,14 @@ class ImportKknExcel extends Command
 
                 // 4. Group
                 $group = KelompokKkn::firstOrCreate(
-                    ['code' => 'K' . $kelompokCode],
+                    ['code' => 'K'.$kelompokCode],
                     [
                         'period_id' => $period->id,
                         'location_id' => $location->id,
                         'dpl_id' => $lecturer->id,
                         'nama_kelompok' => "Kelompok {$kelompokCode}",
                         'capacity' => 15,
-                        'status' => 'active'
+                        'status' => 'active',
                     ]
                 );
 
@@ -143,13 +150,13 @@ class ImportKknExcel extends Command
                     ['username' => $nim],
                     [
                         'name' => $nama,
-                        'email' => $nim . '@student.uinsaizu.ac.id',
-                        'password' => Hash::make(\Illuminate\Support\Str::password(12)),
+                        'email' => $nim.'@student.uinsaizu.ac.id',
+                        'password' => Hash::make(Str::password(12)),
                         'phone' => $phone,
                     ]
                 );
-                
-                if (!$user->hasRole('student')) {
+
+                if (! $user->hasRole('student')) {
                     $user->assignRole('student');
                 }
 
@@ -185,10 +192,11 @@ class ImportKknExcel extends Command
 
             $bar->finish();
             $this->newLine();
-            $this->info("Import completed successfully.");
+            $this->info('Import completed successfully.');
 
         } catch (\Exception $e) {
-            $this->error("Error: " . $e->getMessage());
+            $this->error('Error: '.$e->getMessage());
+
             return 1;
         }
 
@@ -197,10 +205,10 @@ class ImportKknExcel extends Command
 
     protected function clearData()
     {
-        $this->warn("Clearing existing data...");
+        $this->warn('Clearing existing data...');
 
         // Disable foreign key checks
-        DB::statement('SET CONSTRAINTS ALL DEFERRED'); 
+        DB::statement('SET CONSTRAINTS ALL DEFERRED');
 
         // Tables to truncate (Indonesian names)
         $tables = [
@@ -227,6 +235,6 @@ class ImportKknExcel extends Command
         // Delete users except superadmin
         User::where('email', '!=', 'superadmin@uinsaizu.ac.id')->delete();
 
-        $this->info("Database cleared.");
+        $this->info('Database cleared.');
     }
 }

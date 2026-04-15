@@ -328,7 +328,7 @@ class DplAssignmentController extends Controller
                 (int) ($validated['max_groups'] ?? 5)
             );
 
-            $message = "Koordinator DPL untuk kecamatan berhasil ditetapkan.";
+            $message = 'Koordinator DPL untuk kecamatan berhasil ditetapkan.';
             if ($activation['provisioning']['temp_password']) {
                 $message .= " Akun login dibuat dengan username {$activation['provisioning']['user']->username} and kata sandi sementara {$activation['provisioning']['temp_password']}.";
             }
@@ -390,7 +390,8 @@ class DplAssignmentController extends Controller
 
         $dplList = Dosen::availableForPeriod($periodId)
             ->with(['dplPeriods' => function ($q) use ($periodId) {
-                $q->where('period_id', $periodId);
+                $q->where('period_id', $periodId)
+                    ->withCount('kelompok');
             }])
             ->get()
             ->map(function ($dosen) {
@@ -402,8 +403,8 @@ class DplAssignmentController extends Controller
                     'nip' => $dosen->nip,
                     'dpl_period_id' => $dplPeriod?->id,
                     'max_groups' => $dplPeriod?->max_groups,
-                    'current_groups' => $dplPeriod?->kelompok()->count() ?? 0,
-                    'remaining_slots' => $dplPeriod?->getRemainingSlots() ?? 0,
+                    'current_groups' => $dplPeriod?->kelompok_count ?? 0,
+                    'remaining_slots' => $dplPeriod ? max(0, $dplPeriod->max_groups - $dplPeriod->kelompok_count) : 0,
                 ];
             });
 
@@ -416,6 +417,7 @@ class DplAssignmentController extends Controller
 
         try {
             $this->assignmentService->removeDplFromPeriod($dplPeriod);
+
             return back()->with('success', 'DPL berhasil dihapus dari periode.');
         } catch (\DomainException $e) {
             return back()->with('error', $e->getMessage());

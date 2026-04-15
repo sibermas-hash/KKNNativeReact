@@ -46,10 +46,10 @@ class StudentSyncService
                 }
             } catch (\Exception $e) {
                 $results['errors']++;
-                $results['log'][] = "Error syncing NIM ".($studentData['nim'] ?? 'UNKNOWN').": ".$e->getMessage();
-                Log::error("Student Sync Error", [
+                $results['log'][] = 'Error syncing NIM '.($studentData['nim'] ?? 'UNKNOWN').': '.$e->getMessage();
+                Log::error('Student Sync Error', [
                     'nim' => $studentData['nim'] ?? 'UNKNOWN',
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }

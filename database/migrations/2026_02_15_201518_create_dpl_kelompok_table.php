@@ -2,10 +2,11 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -33,11 +34,11 @@ return new class extends Migration {
             ]);
         }
 
-    // Optional: Drop the old column later, but keep for now for backward compatibility
-    // Schema::table('kelompok_kkn', function (Blueprint $table) {
-    //     $table->dropForeign(['dpl_id']);
-    //     $table->dropColumn('dpl_id');
-    // });
+        // Optional: Drop the old column later, but keep for now for backward compatibility
+        // Schema::table('kelompok_kkn', function (Blueprint $table) {
+        //     $table->dropForeign(['dpl_id']);
+        //     $table->dropColumn('dpl_id');
+        // });
     }
 
     /**

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Imports\KelompokKknImport;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\DplPeriod;
+use App\Models\KKN\JenisKkn;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\Periode;
@@ -63,11 +64,7 @@ class KelompokKknController extends Controller
         Gate::authorize('manage-groups');
 
         $query = KelompokKkn::with('periode', 'lokasi', 'dosen')
-            ->withCount([
-                'peserta',
-                'peserta as approved_participants_count' => fn ($query) => $query->where('status', 'approved'),
-                'peserta as pending_participants_count' => fn ($query) => $query->where('status', 'pending'),
-            ])
+            ->withCount('peserta')
             ->when($request->input('search'), function ($query, $search) {
                 $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
                 $query->where(function ($q) use ($s) {
@@ -94,9 +91,24 @@ class KelompokKknController extends Controller
                 $query->where('status', $status);
             });
 
-        // Centralized faculty scoping
-        $groups = \App\Services\KKN\FacultyScopeService::apply($query, 'peserta.mahasiswa.faculty_id')
-            ->orderByDesc('created_at')
+        // Optimized Faculty Scoping for Groups:
+        // Include groups where location belongs to the faculty OR has participants from the faculty
+        $user = auth()->user();
+        if ($user && $user->hasRole('faculty_admin') && $user->faculty_id) {
+            $query->where(function ($q) use ($user) {
+                $q->whereHas('lokasi', fn ($loc) => $loc->where('faculty_id', $user->faculty_id))
+                    ->orWhereHas('peserta.mahasiswa', fn ($mhs) => $mhs->where('faculty_id', $user->faculty_id));
+            });
+        }
+
+        // Summary calculation from the base query (pre-pagination)
+        $summaryData = [
+            'total' => $query->count(),
+            'active' => $query->where('status', 'active')->count(),
+            'draft' => $query->where('status', 'draft')->count(),
+        ];
+
+        $groups = $query->orderByDesc('created_at')
             ->paginate(15)
             ->withQueryString();
 
@@ -166,7 +178,7 @@ class KelompokKknController extends Controller
             ]);
         $lecturers = Dosen::orderBy('nama')->get()
             ->map(fn ($d) => ['id' => $d->id, 'name' => $d->nama]);
-        $jenisKknOptions = \App\Models\KKN\JenisKkn::dropdownOptions();
+        $jenisKknOptions = JenisKkn::dropdownOptions();
 
         $groupCollection = collect($groups->items());
 
@@ -186,9 +198,9 @@ class KelompokKknController extends Controller
                 'locations_managed_automatically' => true,
             ],
             'summary' => [
-                'total_groups' => $groups->total(),
-                'active_groups' => $groupCollection->where('status', 'active')->count(),
-                'draft_groups' => $groupCollection->where('status', 'draft')->count(),
+                'total_groups' => (int) ($summaryData->total ?? 0),
+                'active_groups' => (int) ($summaryData->active ?? 0),
+                'draft_groups' => (int) ($summaryData->draft ?? 0),
                 'groups_without_main_lecturer' => $groupCollection->filter(fn (array $group) => blank($group['main_lecturer']))->count(),
                 'groups_ready_for_placement' => $groupCollection->where('ready_for_placement', true)->count(),
                 'total_available_slots' => $groupCollection->sum('available_slots'),
@@ -199,6 +211,17 @@ class KelompokKknController extends Controller
     public function show(KelompokKkn $kelompokKkn): Response
     {
         Gate::authorize('manage-groups');
+
+        // Manual Faculty Scoping for detail view
+        $user = auth()->user();
+        if ($user && $user->hasRole('faculty_admin') && $user->faculty_id) {
+            $kelompokKkn->load('lokasi');
+            $hasParticipantFromFaculty = $kelompokKkn->peserta()->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $user->faculty_id))->exists();
+
+            if ($kelompokKkn->lokasi?->faculty_id !== $user->faculty_id && ! $hasParticipantFromFaculty) {
+                abort(403, 'Anda tidak memiliki akses ke kelompok ini.');
+            }
+        }
 
         $kelompokKkn->load([
             'periode',
@@ -253,13 +276,13 @@ class KelompokKknController extends Controller
                     $ketuaCount++;
                 }
 
-                $dplPeriod = \App\Models\KKN\DplPeriod::where('dosen_id', $l['id'])
+                $dplPeriod = DplPeriod::where('dosen_id', $l['id'])
                     ->where('period_id', $validated['period_id'])
                     ->where('is_active', true)
                     ->first();
 
                 if (! $dplPeriod) {
-                    $dosen = \App\Models\KKN\Dosen::find($l['id']);
+                    $dosen = Dosen::find($l['id']);
 
                     return back()->withErrors(['lecturers' => "Dosen {$dosen->nama} belum terdaftar/aktif di periode ini."])->withInput();
                 }
@@ -350,13 +373,13 @@ class KelompokKknController extends Controller
                     $ketuaCount++;
                 }
 
-                $dplPeriod = \App\Models\KKN\DplPeriod::where('dosen_id', $l['id'])
+                $dplPeriod = DplPeriod::where('dosen_id', $l['id'])
                     ->where('period_id', $validated['period_id'])
                     ->where('is_active', true)
                     ->first();
 
                 if (! $dplPeriod) {
-                    $dosen = \App\Models\KKN\Dosen::find($l['id']);
+                    $dosen = Dosen::find($l['id']);
 
                     return back()->withErrors(['lecturers' => "Dosen {$dosen->nama} belum terdaftar/aktif di periode ini."])->withInput();
                 }

@@ -92,18 +92,18 @@ export default function StudentDashboard({
                                 {studentFirstName.charAt(0)}
                             </div>
                             <div className="space-y-0.5">
-                                <h1 className="text-lg font-bold text-slate-900 tracking-tight">Halo, <span className="text-emerald-600">{studentFirstName}!</span></h1>
-                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">NIM: {student.nim || '-'}</p>
+                                <h1 className="text-lg font-bold text-black tracking-tight">Halo, <span className="text-emerald-600">{studentFirstName}!</span></h1>
+                                <p className="text-sm font-bold text-emerald-900 uppercase tracking-wider">NIM: {student.nim || '-'}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
                             <div className="text-right">
-                                <p className="text-[9px] font-bold text-slate-400 uppercase leading-none mb-1">Status Keanggotaan</p>
-                                <p className="text-[10px] font-bold text-slate-900 uppercase">
+                                <p className="text-sm font-bold text-emerald-900 uppercase leading-none mb-1">Status Keanggotaan</p>
+                                <p className="text-sm font-bold text-black uppercase">
                                     {isApproved ? 'Peserta Aktif' : isPending ? 'Dalam Verifikasi' : isRejected ? 'Perlu Perbaikan' : 'Belum Terdaftar'}
                                 </p>
                             </div>
-                            <div className={clsx('h-8 w-8 rounded-lg flex items-center justify-center', isApproved ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-400')}>
+                            <div className={clsx('h-8 w-8 rounded-lg flex items-center justify-center', isApproved ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-emerald-900')}>
                                 {isApproved ? <BadgeCheck size={16} /> : <Lock size={16} />}
                             </div>
                         </div>
@@ -114,7 +114,7 @@ export default function StudentDashboard({
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg"><Target size={16} /></div>
-                                <h2 className="text-[11px] font-bold text-slate-800 uppercase tracking-tight">Progres Pengabdian</h2>
+                                <h2 className="text-sm font-bold text-black uppercase tracking-tight">Progres Pengabdian</h2>
                             </div>
                             <span className="text-xs font-bold text-emerald-600">{progressPercent}%</span>
                         </div>
@@ -135,14 +135,14 @@ export default function StudentDashboard({
                                         phase.isCompleted ? 'bg-emerald-50 border-emerald-100' : phase.isActive ? 'bg-white border-emerald-500 shadow-sm' : 'bg-slate-50 border-slate-50'
                                     )}>
                                         <div className={clsx(
-                                            'h-6 w-6 mx-auto md:mx-0 rounded-lg flex items-center justify-center text-[10px] font-bold',
-                                            phase.isCompleted ? 'bg-emerald-600 text-white' : phase.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-400'
+                                            'h-6 w-6 mx-auto md:mx-0 rounded-lg flex items-center justify-center text-sm font-bold',
+                                            phase.isCompleted ? 'bg-emerald-600 text-white' : phase.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-emerald-900'
                                         )}>
                                             {phase.isCompleted ? <CheckCircle size={12} /> : phase.id}
                                         </div>
                                         <div>
-                                            <p className={clsx('text-[10px] font-bold leading-none mb-0.5', phase.isActive || phase.isCompleted ? 'text-slate-900' : 'text-slate-400')}>{phase.label}</p>
-                                            <p className="text-[8px] font-semibold text-slate-400 uppercase">{phase.desc}</p>
+                                            <p className={clsx('text-sm font-bold leading-none mb-0.5', phase.isActive || phase.isCompleted ? 'text-black' : 'text-emerald-900')}>{phase.label}</p>
+                                            <p className="text-sm font-semibold text-emerald-900 uppercase">{phase.desc}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -157,10 +157,10 @@ export default function StudentDashboard({
                                 <MapPin size={24} />
                             </div>
                             <div className="space-y-1">
-                                <h3 className="text-lg font-bold text-slate-900 uppercase tracking-tight">
+                                <h3 className="text-lg font-bold text-black uppercase tracking-tight">
                                     {isRejected ? 'Perbaikan Data Diperlukan' : isPending ? 'Sedang Memverifikasi Berkas' : 'Mulai Pendaftaran KKN'}
                                 </h3>
-                                <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                                <p className="text-xs text-emerald-900 max-w-md mx-auto leading-relaxed">
                                     {isRejected ? (registration?.rejection_reason || 'Mohon periksa kembali dokumen.') : isPending ? 'Dokumen Anda sedang dalam antrean verifikasi.' : 'Lengkapi profil untuk mendaftar.'}
                                 </p>
                             </div>
@@ -183,19 +183,19 @@ export default function StudentDashboard({
                                     <div className="relative z-10 flex flex-col md:flex-row justify-between gap-6">
                                         <div className="space-y-3">
                                             <div>
-                                                <p className="text-emerald-200 text-[9px] font-bold uppercase tracking-widest mb-1">Lokasi Penempatan</p>
+                                                <p className="text-emerald-200 text-sm font-bold font-semibold uppercase text-xs mb-1">Lokasi Penempatan</p>
                                                 <h2 className="text-2xl font-bold tracking-tight uppercase">
                                                     {registration?.group?.location?.name ?? 'Plotting...'}
                                                 </h2>
-                                                <p className="text-emerald-100 font-semibold text-[11px] mt-0.5 uppercase">Unit: {registration?.group?.name}</p>
+                                                <p className="text-emerald-100 font-semibold text-sm mt-0.5 uppercase">Unit: {registration?.group?.name}</p>
                                             </div>
                                             <div className="pt-4 border-t border-white/20 grid grid-cols-2 gap-6">
                                                 <div>
-                                                    <p className="text-emerald-200 text-[8px] font-bold uppercase">Dosen Pembimbing</p>
+                                                    <p className="text-emerald-200 text-sm font-bold uppercase">Dosen Pembimbing</p>
                                                     <p className="font-bold text-xs truncate max-w-[150px]">{registration?.group?.lecturer?.name ?? '-'}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-emerald-200 text-[8px] font-bold uppercase">Periode</p>
+                                                    <p className="text-emerald-200 text-sm font-bold uppercase">Periode</p>
                                                     <p className="font-bold text-xs">{registration?.period?.name}</p>
                                                 </div>
                                             </div>
@@ -217,13 +217,13 @@ export default function StudentDashboard({
                                                 <BadgeCheck size={20} />
                                             </div>
                                             <div>
-                                                <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mb-0.5">Nilai Sertifikasi</p>
-                                                <p className="text-2xl font-black text-slate-900">{grade.letter} <span className="text-sm font-bold text-slate-400">({grade.score?.toFixed(2)})</span></p>
+                                                <p className="text-sm font-bold text-emerald-600 font-semibold uppercase text-xs mb-0.5">Nilai Sertifikasi</p>
+                                                <p className="text-2xl font-bold text-black">{grade.letter} <span className="text-sm font-bold text-emerald-900">({grade.score?.toFixed(2)})</span></p>
                                             </div>
                                         </div>
                                         <a
                                             href={route('student.certificate.download', grade.id)}
-                                            className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-[10px] font-bold rounded-lg hover:bg-slate-800 transition-all uppercase tracking-wider"
+                                            className="flex items-center gap-2 px-4 py-2 bg-emerald-900 text-white text-sm font-bold rounded-lg hover:bg-emerald-800 transition-all uppercase tracking-wider"
                                         >
                                             <Download size={14} />
                                             Unduh
@@ -235,7 +235,7 @@ export default function StudentDashboard({
                             {/* Sidebar Menu */}
                             <div className="space-y-4">
                                 <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
-                                    <h3 className="text-[10px] font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <h3 className="text-sm font-bold text-black font-semibold uppercase text-xs mb-4 flex items-center gap-2">
                                         <LayoutGrid size={12} className="text-emerald-600" />
                                         Navigasi
                                     </h3>
@@ -248,13 +248,13 @@ export default function StudentDashboard({
                                 </div>
 
                                 <div className="bg-slate-50 rounded-xl p-5 border border-slate-100">
-                                    <h3 className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">Informasi</h3>
+                                    <h3 className="text-sm font-bold text-emerald-900 font-semibold uppercase text-xs mb-3">Informasi</h3>
                                     <div className="space-y-2">
-                                        <div className="flex gap-2 text-[10px] font-semibold text-slate-600 leading-tight">
+                                        <div className="flex gap-2 text-sm font-semibold text-slate-600 leading-tight">
                                             <div className="h-1 w-1 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                                             <p>Logbook wajib divalidasi DPL dalam 72 jam.</p>
                                         </div>
-                                        <div className="flex gap-2 text-[10px] font-semibold text-slate-600 leading-tight">
+                                        <div className="flex gap-2 text-sm font-semibold text-slate-600 leading-tight">
                                             <div className="h-1 w-1 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                                             <p>Pastikan NIK data diri sesuai BPJS TK.</p>
                                         </div>
@@ -280,8 +280,8 @@ function StatBox({ icon: Icon, label, value, color = 'emerald' }: DashboardStatP
                 <Icon size={18} />
             </div>
             <div>
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</p>
-                <p className="text-lg font-bold text-slate-900">{value}</p>
+                <p className="text-sm font-bold text-emerald-900 font-semibold uppercase text-xs leading-none mb-1">{label}</p>
+                <p className="text-lg font-bold text-black">{value}</p>
             </div>
         </div>
     );
@@ -291,7 +291,7 @@ function QuickLink({ href, icon: Icon, label }: DashboardQuickLinkProps) {
     return (
         <Link
             href={href}
-            className="flex items-center gap-2.5 p-3 rounded-xl hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 transition-all group font-bold text-[11px] uppercase"
+            className="flex items-center gap-2.5 p-3 rounded-xl hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 transition-all group font-bold text-sm uppercase"
         >
             <Icon size={16} className="text-slate-300 group-hover:text-emerald-600 transition-colors" />
             {label}

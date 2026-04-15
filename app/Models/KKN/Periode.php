@@ -13,16 +13,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Cache;
 
-use Illuminate\Database\Eloquent\Attributes\Connection;
-use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Casts;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
+class Periode extends Model
+{
 
-#[Connection('kkn')]
-#[Table('periode')]
-#[Fillable([
-    'academic_year_id',
+    use HasFactory, SoftDeletes;
+
+    protected $table = 'periode';
+
+    protected $connection = 'kkn';
+
+    protected $fillable = [
+        'academic_year_id',
         'jenis_kkn_id',
         'periode',
         'jenis',
@@ -40,19 +41,20 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
         'grading_start',
         'grading_end',
         'current_phase',
-])]
-#[Casts([
-    'start_date' => 'date',
-        'end_date' => 'date',
-        'registration_start' => 'date',
-        'registration_end' => 'date',
-        'grading_start' => 'date',
-        'grading_end' => 'date',
-        'is_active' => 'boolean',
-])]
-class Periode extends Model
-{
-    use HasFactory, SoftDeletes;
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'start_date' => 'date',
+            'end_date' => 'date',
+            'registration_start' => 'date',
+            'registration_end' => 'date',
+            'grading_start' => 'date',
+            'grading_end' => 'date',
+            'is_active' => 'boolean',
+        ];
+    }
 
     public const PROGRAM_TYPE_REGULER = 'reguler';
 
@@ -87,14 +89,6 @@ class Periode extends Model
         'default_period_id',
         'available_periods',
     ];
-
-    
-
-    
-
-    
-
-    
 
     public static function programTypeOptions(): array
     {

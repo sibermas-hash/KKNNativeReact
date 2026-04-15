@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs;
 
 use App\Models\KKN\NilaiKkn;
 use App\Models\User;
-use App\Services\CertificateService;
 use App\Notifications\KknActivityNotification;
+use App\Services\CertificateService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -37,11 +39,11 @@ class GenerateMassCertificatesJob implements ShouldQueue
             $q->where('period_id', $this->periodId);
         })->where('is_finalized', true);
 
-        if (!empty($this->filters['faculty_id'])) {
-            $query->whereHas('mahasiswa', fn($q) => $q->where('faculty_id', $this->filters['faculty_id']));
+        if (! empty($this->filters['faculty_id'])) {
+            $query->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $this->filters['faculty_id']));
         }
 
-        if (!empty($this->filters['kelompok_id'])) {
+        if (! empty($this->filters['kelompok_id'])) {
             $query->where('kelompok_id', $this->filters['kelompok_id']);
         }
 
@@ -49,22 +51,24 @@ class GenerateMassCertificatesJob implements ShouldQueue
             'mahasiswa.user',
             'kelompok.periode',
             'kelompok.lokasi',
-            'kelompok.dpl.user'
+            'kelompok.dpl.user',
         ])->get();
 
         $total = $scores->count();
         if ($total === 0) {
             Cache::put($cacheKey, ['status' => 'failed', 'message' => 'Tidak ada sertifikat untuk diproses.'], 3600);
+
             return;
         }
 
-        $zip = new ZipArchive();
-        $zipName = "Sertifikat_KKN_Periode_{$this->periodId}_" . now()->format('Ymd_His') . ".zip";
+        $zip = new ZipArchive;
+        $zipName = "Sertifikat_KKN_Periode_{$this->periodId}_".now()->format('Ymd_His').'.zip';
         $zipRelativePath = "exports/{$zipName}";
         $zipFullPath = storage_path("app/public/{$zipRelativePath}");
 
         if ($zip->open($zipFullPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             Cache::put($cacheKey, ['status' => 'failed', 'message' => 'Gagal membuat arsip ZIP.'], 3600);
+
             return;
         }
 
@@ -75,13 +79,13 @@ class GenerateMassCertificatesJob implements ShouldQueue
                 $nim = $score->mahasiswa->nim ?? 'Unknown';
                 $name = $score->mahasiswa->nama ?? 'Mahasiswa';
                 $pdfName = "Sertifikat_{$name}_{$nim}.pdf";
-                
+
                 // Sanitize filename
                 $pdfName = preg_replace('/[^A-Za-z0-9_\-\.]/', '_', $pdfName);
-                
+
                 $zip->addFromString($pdfName, $pdf->output());
             } catch (\Exception $e) {
-                Log::error("Failed to generate PDF in background for User ID {$score->user_id}: " . $e->getMessage());
+                Log::error("Failed to generate PDF in background for User ID {$score->user_id}: ".$e->getMessage());
             }
 
             $processed++;
@@ -90,7 +94,7 @@ class GenerateMassCertificatesJob implements ShouldQueue
                     'status' => 'processing',
                     'processed' => $processed,
                     'total' => $total,
-                    'progress' => round(($processed / $total) * 100)
+                    'progress' => round(($processed / $total) * 100),
                 ], 3600);
             }
         }
@@ -104,7 +108,7 @@ class GenerateMassCertificatesJob implements ShouldQueue
             'processed' => $processed,
             'total' => $total,
             'download_url' => $downloadUrl,
-            'finished_at' => now()
+            'finished_at' => now(),
         ], 3600);
 
         // Notify Admin

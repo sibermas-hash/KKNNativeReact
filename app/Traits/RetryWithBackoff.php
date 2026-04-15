@@ -1,9 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Traits;
 
-use Illuminate\Support\Facades\Log;
 use Exception;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\ServerException;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Trait untuk retry logic dengan exponential backoff
@@ -13,12 +19,12 @@ trait RetryWithBackoff
     /**
      * Execute callback with retry and exponential backoff
      *
-     * @param callable $callback Function to execute
-     * @param int $maxAttempts Maximum number of attempts
-     * @param int $initialDelay Initial delay in milliseconds
-     * @param float $backoffMultiplier Backoff multiplier (default: 2 = exponential)
-     * @param array $exceptions Exceptions to retry on
-     * @return mixed
+     * @param  callable  $callback  Function to execute
+     * @param  int  $maxAttempts  Maximum number of attempts
+     * @param  int  $initialDelay  Initial delay in milliseconds
+     * @param  float  $backoffMultiplier  Backoff multiplier (default: 2 = exponential)
+     * @param  array  $exceptions  Exceptions to retry on
+     *
      * @throws Exception
      */
     protected function retry(
@@ -32,10 +38,10 @@ trait RetryWithBackoff
         $delay = $initialDelay;
 
         $defaultExceptions = [
-            \Illuminate\Http\Client\ConnectionException::class,
-            \Illuminate\Http\Client\RequestException::class,
-            \GuzzleHttp\Exception\ConnectException::class,
-            \GuzzleHttp\Exception\ServerException::class,
+            ConnectionException::class,
+            RequestException::class,
+            ConnectException::class,
+            ServerException::class,
             Exception::class,
         ];
 
@@ -62,7 +68,7 @@ trait RetryWithBackoff
                     }
                 }
 
-                if (!$shouldRetry || $attempts >= $maxAttempts) {
+                if (! $shouldRetry || $attempts >= $maxAttempts) {
                     Log::error("Operation failed after {$attempts} attempts", [
                         'error' => $e->getMessage(),
                         'exception' => get_class($e),

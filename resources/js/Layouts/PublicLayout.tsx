@@ -1,166 +1,165 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Globe, ArrowRight, Menu, X, Landmark } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { route } from 'ziggy-js';
 import type { PageProps } from '@/types';
+import { 
+  Building2, 
+  MapPin, 
+  Phone, 
+  Mail, 
+  Globe,
+  Menu,
+  X,
+  UserCircle
+} from 'lucide-react';
+import { useState } from 'react';
+import { clsx } from 'clsx';
+import { motion, AnimatePresence } from 'framer-motion';
 
-interface Props {
-    children: React.ReactNode;
-}
+/** Safe route helper to avoid ReferenceErrors during hydration */
+const safeRoute = (name: string, params?: any) => {
+    try {
+        return (window as any).route ? (window as any).route(name, params) : '#';
+    } catch (e) {
+        return '#';
+    }
+};
 
-export default function PublicLayout({ children }: Props) {
-    const page = usePage<PageProps>();
-    const { auth } = page.props;
-    const portalHref = auth.user ? route('dashboard') : route('login');
+export default function PublicLayout({ children }: { children: React.ReactNode }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { auth } = usePage<PageProps>().props;
 
-    const navLinks = [
-        { name: 'Profil', href: route('public.about') },
-        { name: 'Skema', href: route('public.schemes') },
-        { name: 'Warta', href: route('public.announcements') },
-        { name: 'Unduhan', href: route('public.downloads') },
+    const navItems = [
+        { label: 'Beranda', href: '/' },
+        { label: 'Skema KKN', href: safeRoute('public.schemes') },
+        { label: 'Pengumuman', href: safeRoute('public.announcements') },
+        { label: 'Unduhan', href: safeRoute('public.downloads') },
     ];
 
     return (
-        <div className="min-h-screen bg-white font-sans text-gray-900">
-            <Head>
-                <link rel="preconnect" href="https://fonts.googleapis.com" />
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-                <link
-                    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-                    rel="stylesheet"
-                />
-            </Head>
-
-            <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 lg:px-8 flex items-center justify-between h-16">
-                    <div className="flex items-center gap-3">
-                        <img src="/images/logo_kkn.png" alt="Logo KKN" className="h-10 w-10" />
-                        <div>
-                            <h1 className="text-lg font-bold text-gray-900">SIM-KKN UIN Saizu</h1>
-                            <span className="text-xs text-gray-500">
-                                Sistem Informasi Manajemen
-                            </span>
+        <div className="min-h-screen bg-white text-black font-sans selection:bg-emerald-100">
+            {/* NAVIGATION SIMPLE */}
+            <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-emerald-100 h-16">
+                <div className="max-w-7xl mx-auto px-6 lg:px-8 h-full flex items-center justify-between">
+                    <Link href="/" className="flex items-center gap-3 no-underline group">
+                        <div className="h-8 w-8 bg-emerald-50 rounded-lg flex items-center justify-center">
+                            <img src="/images/logo_kkn.png" alt="Logo" className="h-6 w-6 object-contain" />
                         </div>
-                    </div>
+                        <span className="text-sm font-bold text-black uppercase tracking-tight">KKN UIN SAIZU</span>
+                    </Link>
 
+                    {/* Desktop Nav */}
                     <div className="hidden lg:flex items-center gap-8">
-                        {navLinks.map((link) => (
-                            <Link
-                                key={link.name}
-                                href={link.href}
-                                className="text-sm font-medium text-gray-600 hover:text-emerald-600 transition-colors"
+                        {navItems.map((item) => (
+                            <Link 
+                                key={item.label} 
+                                href={item.href} 
+                                className="text-xs font-bold text-black hover:text-emerald-500 font-semibold uppercase text-xs no-underline transition-colors"
                             >
-                                {link.name}
+                                {item.label}
                             </Link>
                         ))}
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <Link
-                            href={portalHref}
-                            className="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors"
+                        <Link 
+                            href={auth.user ? safeRoute('dashboard') : safeRoute('login')} 
+                            className="px-5 py-2 bg-emerald-950 text-white rounded-lg text-xs font-bold uppercase tracking-wider no-underline hover:bg-emerald-800 transition-all shadow-md"
                         >
-                            {auth.user ? 'Dashboard' : 'Masuk'}
+                            {auth.user ? 'Dashboard' : 'Login Admin'}
                         </Link>
-
-                        <button
-                            className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            aria-label={isMenuOpen ? 'Tutup menu' : 'Buka menu'}
-                        >
-                            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                        </button>
                     </div>
+
+                    {/* Mobile Toggle */}
+                    <button className="lg:hidden text-black p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
                 </div>
 
-                {isMenuOpen && (
-                    <div className="lg:hidden bg-white border-t border-gray-200 p-4">
-                        {navLinks.map((link) => (
-                            <Link
-                                key={link.name}
-                                href={link.href}
-                                onClick={() => setIsMenuOpen(false)}
-                                className="block py-3 text-base font-medium text-gray-700 hover:text-emerald-600 border-b border-gray-100 last:border-0"
+                {/* Mobile Menu Overlay */}
+                <AnimatePresence>
+                    {isMenuOpen && (
+                        <>
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="fixed inset-0 z-40 bg-emerald-950/20 lg:hidden" 
+                                onClick={() => setIsMenuOpen(false)} 
+                            />
+                            <motion.div 
+                                initial={{ opacity: 0, y: -10 }} 
+                                animate={{ opacity: 1, y: 0 }} 
+                                exit={{ opacity: 0, y: -10 }}
+                                className="absolute top-16 left-0 w-full bg-white border-b border-emerald-100 p-6 flex flex-col gap-4 lg:hidden shadow-xl z-50"
                             >
-                                {link.name}
-                            </Link>
-                        ))}
-                    </div>
-                )}
+                                {navItems.map((item) => (
+                                    <Link 
+                                        key={item.label} 
+                                        href={item.href} 
+                                        className="text-sm font-bold text-black font-semibold uppercase text-xs no-underline"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        {item.label}
+                                    </Link>
+                                ))}
+                                <Link 
+                                    href={auth.user ? safeRoute('dashboard') : safeRoute('login')} 
+                                    className="px-5 py-3 bg-emerald-950 text-white rounded-lg text-sm font-bold text-center no-underline"
+                                    onClick={() => setIsMenuOpen(false)}
+                                >
+                                    {auth.user ? 'Ke Dashboard' : 'Login Admin'}
+                                </Link>
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>
             </nav>
 
-            <main className="min-h-screen">{children}</main>
+            {/* MAIN CONTENT */}
+            <main className="min-h-[calc(100vh-4rem-20rem)] animate-in fade-in duration-500">
+                {children}
+            </main>
 
-            <footer className="bg-gray-50 border-t border-gray-200 py-12">
-                <div className="max-w-7xl mx-auto px-4 lg:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            {/* FOOTER SIMPLE */}
+            <footer className="bg-emerald-950 text-emerald-100 py-16">
+                <div className="max-w-7xl mx-auto px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center">
+                                <img src="/images/logo_kkn.png" alt="Logo" className="h-7 w-7" />
+                            </div>
+                            <span className="font-bold text-white text-lg uppercase tracking-tight">KKN UIN SAIZU</span>
+                        </div>
+                        <p className="text-xs text-emerald-400 leading-relaxed uppercase tracking-wider">
+                            Inovasi pengabdian masyarakat untuk akselerasi kesejahteraan umat dan pembangunan bangsa berkelanjutan.
+                        </p>
+                    </div>
+
+                    <div className="space-y-6">
+                        <h4 className="text-sm font-bold text-white font-semibold uppercase text-xs">Informasi Kontak</h4>
                         <div className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <img
-                                    src="/images/logo_kkn.png"
-                                    alt="Logo KKN"
-                                    className="h-10 w-10"
-                                />
-                                <div>
-                                    <h3 className="font-bold text-gray-900">SIM-KKN UIN Saizu</h3>
-                                    <span className="text-xs text-gray-500">
-                                        LPPM UIN Prof. K.H. Saifuddin Zuhri
-                                    </span>
-                                </div>
+                            <div className="flex items-start gap-4 text-xs text-emerald-400">
+                                <MapPin size={18} className="shrink-0 text-emerald-500" />
+                                <span>Jl. Jend. A. Yani No. 40, Purwokerto, Jawa Tengah</span>
                             </div>
-                            <p className="text-sm text-gray-600">
-                                Sistem Informasi Manajemen Pengabdian Masyarakat UIN Prof. K.H.
-                                Saifuddin Zuhri Purwokerto.
-                            </p>
-                        </div>
-
-                        <div className="space-y-3">
-                            <h4 className="font-semibold text-gray-900">Navigasi</h4>
-                            <div className="flex flex-col gap-2 text-sm text-gray-600">
-                                <Link
-                                    href={route('public.about')}
-                                    className="hover:text-emerald-600"
-                                >
-                                    Profil LPPM
-                                </Link>
-                                <Link
-                                    href={route('public.schemes')}
-                                    className="hover:text-emerald-600"
-                                >
-                                    Skema KKN
-                                </Link>
-                                <Link
-                                    href={route('public.announcements')}
-                                    className="hover:text-emerald-600"
-                                >
-                                    Warta
-                                </Link>
-                                <Link
-                                    href={route('public.downloads')}
-                                    className="hover:text-emerald-600"
-                                >
-                                    Unduhan
-                                </Link>
+                            <div className="flex items-center gap-4 text-xs text-emerald-400">
+                                <Phone size={18} className="shrink-0 text-emerald-500" />
+                                <span>(0281) 635624</span>
                             </div>
-                        </div>
-
-                        <div className="space-y-3">
-                            <h4 className="font-semibold text-gray-900">Kontak</h4>
-                            <div className="space-y-2 text-sm text-gray-600">
-                                <p className="flex items-start gap-2">
-                                    <Landmark className="h-4 w-4 mt-0.5 shrink-0" />
-                                    Jl. Jend. A. Yani No.40-A, Purwokerto Utara, Jawa Tengah.
-                                </p>
-                                <p>lppm@uinsaizu.ac.id</p>
+                            <div className="flex items-center gap-4 text-xs text-emerald-400">
+                                <Mail size={18} className="shrink-0 text-emerald-500" />
+                                <span>lppm@uinsaizu.ac.id</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-                        <p>&copy; {new Date().getFullYear()} UIN SAIZU PURWOKERTO</p>
-                        <p>Versi 4.2.0</p>
+                    <div className="space-y-6">
+                        <h4 className="text-sm font-bold text-white font-semibold uppercase text-xs">Tautan Institusi</h4>
+                        <div className="grid grid-cols-2 gap-3">
+                            <a href="https://uinsaizu.ac.id" className="text-xs text-emerald-400 hover:text-white transition-colors no-underline uppercase font-bold tracking-tight">&rarr; UIN SAIZU</a>
+                            <a href="https://lppm.uinsaizu.ac.id" className="text-xs text-emerald-400 hover:text-white transition-colors no-underline uppercase font-bold tracking-tight">&rarr; LPPM Pusat</a>
+                        </div>
                     </div>
+                </div>
+                <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-12 mt-12 border-t border-emerald-900 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-emerald-700 font-bold uppercase tracking-wider text-xs font-semibold">
+                    <span>&copy; {new Date().getFullYear()} LPPM UIN SAIZU PURWOKERTO</span>
+                    <span>SISTEM INFORMASI MANAJEMEN KKN V4.0.2</span>
                 </div>
             </footer>
         </div>

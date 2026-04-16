@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\KKN\KegiatanKkn;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class LogbookService
 {
@@ -42,8 +43,9 @@ class LogbookService
 
             // If there are files, we can handle them
             foreach ($documentationFiles as $file) {
-                $filename = time().'_'.$mahasiswaId.'_'.$file->getClientOriginalName();
-                $path = $file->storeAs("daily_reports/{$kelompokId}", $filename, 'public');
+                $extension = strtolower($file->getClientOriginalExtension());
+                $safeFilename = time().'_'.$mahasiswaId.'_'.Str::uuid().'.'.$extension;
+                $path = $file->storeAs("daily_reports/{$kelompokId}", $safeFilename, 'public');
 
                 if (method_exists($kegiatan, 'fileKegiatan')) {
                     $kegiatan->fileKegiatan()->create(['file_path' => $path]);

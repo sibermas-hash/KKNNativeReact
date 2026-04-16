@@ -274,7 +274,7 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
               : `Akun "${mahasiswa.nama}" akan diaktifkan. Mahasiswa dapat login kembali ke sistem.`
             }
             confirmLabel={account.is_active ? 'Kunci Akun' : 'Aktifkan Akun'}
-            confirmVariant={account.is_active ? 'danger' : 'default'}
+            confirmVariant={account.is_active ? 'danger' : 'primary'}
           />
         </>
       )}

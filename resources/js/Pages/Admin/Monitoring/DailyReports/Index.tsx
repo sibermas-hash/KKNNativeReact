@@ -1,226 +1,251 @@
 import AppLayout from '@/Layouts/AppLayout';
-import { StatusBadge, Badge, Pagination, Button } from '@/Components/ui';
+import { StatusBadge, Pagination } from '@/Components/ui';
 import type { PageProps } from '@/types';
 import {
- Filter,
- Calendar,
- Activity,
- Search,
- ChevronRight,
- Clock,
- MapPin,
- ArrowRight,
- Layers,
- FileText,
- ShieldCheck,
- Zap,
- Users,
- AlertTriangle,
- Eye,
- Target,
- ArrowLeft,
- X,
+  Filter,
+  Calendar,
+  Activity,
+  Search,
+  ChevronRight,
+  Target,
+  ShieldCheck,
+  Zap,
+  Users,
+  SearchCode,
+  FileSearch,
+  RefreshCw,
+  FileText
 } from 'lucide-react';
 import { Head, router, Link } from '@inertiajs/react';
-import { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
 
 interface ReportData {
- id: number;
- date: string;
- title: string;
- status: string;
- student: { name: string; nim: string };
- group: { name: string };
+  id: number;
+  date: string;
+  title: string;
+  status: string;
+  student: { name: string; nim: string };
+  group: { name: string };
 }
 
 interface Props extends PageProps {
- reports: { data: ReportData[]; meta: PaginationMeta };
- filters: { status?: string; search?: string };
+  reports: { data: ReportData[]; meta: PaginationMeta };
+  filters: { status?: string; search?: string };
 }
 
 export default function AdminDailyReportsIndex({ reports, filters }: Props) {
- const [search, setSearch] = useState(filters.search || '');
- const [status, setStatus] = useState(filters.status || '');
+  const [search, setSearch] = useState(filters.search || '');
+  const [status, setStatus] = useState(filters.status || '');
 
- const handleApplyFilters = () => {
- router.get('/admin/laporan/harian', { 
- search: search || undefined, 
- status: status || undefined 
- }, { preserveState: true, replace: true });
- };
+  const handleApplyFilters = () => {
+    router.get('/admin/laporan/harian', { 
+      search: search || undefined, 
+      status: status || undefined 
+    }, { preserveState: true, replace: true });
+  };
 
- return (
- <AppLayout title="Logbook Harian Mahasiswa">
- <Head title="Logbook Harian" />
+  return (
+    <AppLayout title="Audit Logbook Harian Mahasiswa">
+      <Head title="Logbook Harian" />
 
- <div className="max-w-7xl mx-auto space-y-8 pb-24 text-black font-sans">
- {/* --- PREMIUM HEADER --- */}
- <div className="space-y-4">
- <div className="flex items-center gap-3 text-emerald-600">
- <Activity size={18} />
- <span className="text-xs font-bold tracking-[0.25em] opacity-80">Monitoring & Evaluasi Lapangan</span>
- </div>
- <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
- <div className="space-y-1">
- <h1 className="text-2xl font-semibold text-black tracking-tight">
- Logbook <span className="text-emerald-500">Harian.</span>
- </h1>
- <p className="text-sm font-semibold text-emerald-950 font-semibold text-xs mt-2 leading-relaxed max-w-2xl">
- Portal Monitoring Aktivitas Lapangan dan Verifikasi Kehadiran Mahasiswa
- </p>
- </div>
- <div className="flex items-center gap-4">
- <div className="h-14 px-8 bg-white border border-emerald-100/60 rounded-2xl flex items-center gap-4 shadow-sm">
- <FileText size={20} className="text-emerald-500" />
- <div className="flex flex-col">
- <span className="text-sm font-bold text-emerald-950 font-semibold text-xs leading-none mb-1">Status Data</span>
- <span className="text-sm font-bold text-black tabular-nums leading-none tracking-tight">{reports.meta.total.toLocaleString()} LAPORAN TERINPUT</span>
- </div>
- </div>
- </div>
- </div>
- </div>
+      <div className="max-w-7xl mx-auto space-y-6 pb-12 font-sans px-4 sm:px-6 lg:px-8 text-emerald-950">
+        
+        {/* --- PREMIUM HEADER --- */}
+        <div className="space-y-4 pt-6">
+           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-emerald-600 mb-2">
+                   <Activity size={16} />
+                   <span className="text-[10px] font-bold tracking-wider uppercase">Monitoring & Evaluasi</span>
+                </div>
+                <h1 className="text-3xl font-black text-emerald-950 tracking-tight leading-tight">
+                  Logbook <span className="text-emerald-500">Harian</span>
+                </h1>
+                <p className="text-sm font-medium text-emerald-700/80 leading-relaxed max-w-2xl">
+                  Audit transmisi aktivitas harian dan kehadiran mahasiswa. Pastikan validitas data pengabdian lapangan.
+                </p>
+              </div>
+              <div className="shrink-0 bg-emerald-600 rounded-xl px-6 py-4 flex items-center gap-4 text-white shadow-md">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-emerald-100 uppercase tracking-wide opacity-90">Total Transmisi</span>
+                  <span className="text-2xl font-black text-white tabular-nums tracking-tight leading-none">{reports.meta.total.toLocaleString('id-ID')}</span>
+                </div>
+                <div className="w-px h-8 bg-white/30" />
+                <FileText size={20} className="text-emerald-50" />
+              </div>
+           </div>
+        </div>
 
- {/* --- FILTER & TABEL --- */}
- <section className="bg-white border border-emerald-100/60 rounded-2xl overflow-hidden shadow-sm shadow-slate-200/50">
- <div className="p-8 border-b border-emerald-100/60 flex flex-col lg:flex-row items-center justify-between gap-6 bg-emerald-50/30/20">
- <div className="flex-1 relative w-full lg:max-w-xl group">
- <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
- <input 
- type="text" 
- value={search} 
- onChange={(e) => setSearch(e.target.value)} 
- onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} 
- className="w-full h-14 pl-14 pr-6 bg-white border border-emerald-100/60 rounded-2xl text-sm font-semibold focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all placeholder:text-slate-300 tracking-wider" 
- placeholder="CARI MAHASISWA, NIM, ATAU JUDUL LAPORAN..." 
- />
- </div>
- <div className="flex items-center gap-4 w-full lg:w-auto">
- <div className="relative flex-1 lg:w-64">
- <select 
- value={status} 
- onChange={(e) => { setStatus(e.target.value); router.get('/admin/laporan/harian', { search, status: e.target.value }, { preserveState: true }); }} 
- className="w-full h-14 bg-white border border-emerald-100/60 rounded-2xl px-6 text-sm font-bold font-semibold text-xs outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 appearance-none pr-12"
- >
- <option value="">SEMUA STATUS</option>
- <option value="submitted">DIKIRIM (PENDING)</option>
- <option value="disetujui">DISETUJUI (VERIFIED)</option>
- <option value="revisi">REVISI (NEED FIX)</option>
- <option value="draf">DRAF (UNSUBMITTED)</option>
- </select>
- <ChevronRight size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 rotate-90 pointer-events-none" />
- </div>
- <button 
- onClick={handleApplyFilters} 
- className="h-14 px-8 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-100 transition-all active:scale-95"
- >
- <Filter size={20} />
- </button>
- </div>
- </div>
+        {/* --- STATS OVERVIEW --- */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+           <MetricCard label="Audit Aktif" value="REAL-TIME" icon={RefreshCw} desc="Database Utama SIKKKN" />
+           <MetricCard label="Status Sinyal" value="TERINKRIPSI" icon={Zap} desc="Transmisi Aman" />
+           <MetricCard label="Otomasi Audit" value="AKTIF" icon={ShieldCheck} desc="Verifikasi AI" />
+           <MetricCard label="Cakupan Data" value="MENYELURUH" icon={Users} desc="Populasi Global" />
+        </div>
 
- <div className="overflow-x-auto">
- <table className="w-full text-left">
- <thead className="bg-white border-b border-slate-50 text-sm font-bold tracking-wider text-xs font-semibold text-emerald-950">
- <tr>
- <th className="px-6 py-6">Aktivitas Mahasiswa</th>
- <th className="px-6 py-6">Data Personel</th>
- <th className="px-6 py-6">Unit / Kelompok</th>
- <th className="px-6 py-6 text-right">Status Verifikasi</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-slate-50">
- {reports.data.length > 0 ? (
- reports.data.map((r) => (
- <tr key={r.id} className="group hover:bg-emerald-50/30/50 transition-all">
- <td className="px-6 py-8">
- <div className="flex flex-col">
- <span className="text-[15px] font-bold text-black leading-tight group-hover:text-emerald-700 transition-colors tracking-tight">{r.title}</span>
- <div className="flex items-center gap-3 mt-2">
- <Calendar size={14} className="text-emerald-500" />
- <span className="text-sm font-bold text-emerald-950 font-semibold text-xs tabular-nums">{r.date}</span>
- </div>
- </div>
- </td>
- <td className="px-6 py-8">
- <div className="flex flex-col gap-1">
- <span className="text-sm font-bold text-emerald-700 leading-none">{r.student.name}</span>
- <span className="text-sm font-bold text-emerald-950 font-semibold text-xs font-mono">NIM: {r.student.nim}</span>
- </div>
- </td>
- <td className="px-6 py-8">
- <div className="inline-flex items-center gap-3 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 transition-all shadow-sm">
- <Target size={14} className="text-emerald-500" />
- <span className="text-sm font-bold font-semibold text-xs leading-none truncate max-w-[150px]">{r.group.name}</span>
- </div>
- </td>
- <td className="px-6 py-8">
- <div className="flex items-center justify-end gap-5">
- <span className={clsx('px-4 py-1.5 rounded-lg text-sm font-bold font-semibold text-xs border transition-all', 
- r.status.toLowerCase() === 'disetujui' || r.status.toLowerCase() === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
- r.status.toLowerCase() === 'revisi' ? 'bg-amber-50 text-amber-600 border-amber-100' : 
- r.status.toLowerCase() === 'submitted' ? 'bg-sky-50 text-sky-600 border-sky-100' :
- 'bg-emerald-50/30 text-emerald-950 border-emerald-100/60')}>
- {r.status === 'disetujui' ? 'VERIFIED' : r.status.toUpperCase()}
- </span>
- <Link 
- href={`/admin/laporan/harian/${r.id}`} 
- className="h-10 px-5 bg-white border border-emerald-100/60 text-emerald-950 hover:text-emerald-600 hover:border-emerald-100 hover:shadow-sm rounded-xl text-sm font-bold font-semibold text-xs flex items-center gap-2 transition-all active:scale-95 group/btn"
- >
- Lihat Detail
- <ChevronRight size={14} className="opacity-40 group-hover/btn:translate-x-0.5 transition-transform" />
- </Link>
- </div>
- </td>
- </tr>
- ))
- ) : (
- <tr>
- <td colSpan={4} className="py-40 text-center">
- <div className="flex flex-col items-center gap-4 text-slate-200">
- <Clock size={60} strokeWidth={1} />
- <p className="text-xs font-bold tracking-wider text-xs font-semibold leading-none">Belum ada transmisi data hari ini</p>
- </div>
- </td>
- </tr>
- )}
- </tbody>
- </table>
- </div>
+        {/* --- DATA TABLE CARD --- */}
+        <section className="bg-white border text-sm border-emerald-100 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+           <div className="px-6 py-5 bg-emerald-50/30 border-b border-emerald-100 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                 <div className="md:col-span-5 relative group">
+                    <label className="text-[11px] font-bold text-emerald-800 tracking-wide mb-1.5 block">Cari Laporan</label>
+                    <div className="relative">
+                       <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-400 group-focus-within:text-emerald-600" />
+                       <input 
+                         type="text" 
+                         value={search} 
+                         onChange={(e) => setSearch(e.target.value)} 
+                         onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()} 
+                         className="w-full h-10 pl-10 pr-4 bg-white border border-emerald-200 rounded-lg text-xs font-semibold text-emerald-950 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-emerald-300" 
+                         placeholder="Cari nama, nim, atau judul..." 
+                       />
+                    </div>
+                 </div>
 
- <div className="px-6 py-6 border-t border-slate-50 bg-emerald-50/30/20 flex items-center justify-between">
- <span className="text-sm font-bold text-emerald-950 font-semibold text-xs leading-none">
- Data Hal. {reports.meta.current_page} — {reports.meta.total} entri logbook terdeteksi
- </span>
- <Pagination meta={reports.meta} />
- </div>
- </section>
+                 <div className="md:col-span-4 relative">
+                    <label className="text-[11px] font-bold text-emerald-800 tracking-wide mb-1.5 block">Status Audit</label>
+                    <div className="relative">
+                       <select 
+                         value={status} 
+                         onChange={(e) => setStatus(e.target.value)} 
+                         className="w-full h-10 pl-4 pr-10 bg-white border border-emerald-200 rounded-lg text-xs font-semibold text-emerald-950 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all appearance-none"
+                       >
+                         <option value="">Semua Status</option>
+                         <option value="submitted">Dikirim (Pending)</option>
+                         <option value="disetujui">Disetujui (Verified)</option>
+                         <option value="revisi">Revisi</option>
+                         <option value="draf">Draf</option>
+                       </select>
+                       <ChevronRight size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-400 rotate-90 pointer-events-none" />
+                    </div>
+                 </div>
 
- {/* --- FOOTER GUIDE --- */}
- <div className="bg-emerald-600 rounded-[2.5rem] p-12 text-white relative overflow-hidden shadow-2xl shadow-emerald-100">
- <div className="absolute top-0 right-0 p-12 opacity-10 rotate-12 -mr-16 -mt-16"><ShieldCheck size={350} /></div>
- <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
- <div className="flex items-center gap-6">
- <div className="h-12 w-24 bg-white/20 rounded-xl flex items-center justify-center shrink-0 border border-white/20 shadow-sm backdrop-blur-md">
- <Activity size={48} className="text-white" />
- </div>
- <div className="space-y-3">
- <h4 className="text-2xl font-bold tracking-tight">Manajemen Monitoring Harian</h4>
- <p className="text-sm font-medium text-emerald-50 max-w-2xl leading-relaxed">
- Log harian mahasiswa adalah parameter utama penilaian disiplin dan progres kegiatan di lapangan. Pastikan tim DPL melakukan validasi berkala untuk menjamin autentisitas aktivitas pengabdian.
- </p>
- </div>
- </div>
- <div className="flex flex-col items-center gap-2 opacity-30 text-white animate-pulse">
- <Activity size={32} />
- <span className="text-sm font-bold tracking-wider text-xs font-semibold">Live Stream Active</span>
- </div>
- </div>
- </div>
- </div>
- </AppLayout>
- );
+                 <div className="md:col-span-3">
+                    <button 
+                      onClick={handleApplyFilters} 
+                      className="w-full h-10 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 active:scale-95"
+                    >
+                      <Filter size={14} strokeWidth={2.5} /> Filter Data
+                    </button>
+                 </div>
+              </div>
+           </div>
+
+           <div className="overflow-x-auto">
+              <table className="min-w-full text-left whitespace-nowrap">
+                <thead className="bg-emerald-50/50 text-emerald-950 border-b border-emerald-100">
+                  <tr>
+                    <th className="px-6 py-3 text-[11px] font-bold uppercase tracking-wider">Aktivitas</th>
+                    <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wider">Personel</th>
+                    <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-center">Kelompok</th>
+                    <th className="px-6 py-3 text-right text-[11px] font-bold uppercase tracking-wider">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-emerald-50">
+                  {reports.data.length === 0 ? (
+                     <EmptyState />
+                  ) : (
+                    reports.data.map((r) => (
+                     <tr key={r.id} className="group hover:bg-emerald-50/50 transition-colors">
+                       <td className="px-6 py-4">
+                         <div className="flex flex-col gap-1">
+                           <span className="text-sm font-semibold text-emerald-900 group-hover:text-emerald-700 max-w-[300px] truncate" title={r.title}>{r.title}</span>
+                           <div className="flex items-center gap-1.5 text-emerald-600">
+                             <Calendar size={12} strokeWidth={2.5} />
+                             <span className="text-xs font-medium">{r.date}</span>
+                           </div>
+                         </div>
+                       </td>
+                       <td className="px-4 py-4">
+                         <div className="flex flex-col">
+                           <span className="text-xs font-bold text-emerald-900">{r.student.name}</span>
+                           <span className="text-[11px] font-medium text-emerald-500 font-mono">{r.student.nim}</span>
+                         </div>
+                       </td>
+                       <td className="px-4 py-4 text-center">
+                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-md text-emerald-700">
+                           <Target size={12} strokeWidth={2.5} />
+                           <span className="text-[11px] font-bold tracking-wide truncate max-w-[120px]">{r.group.name}</span>
+                         </div>
+                       </td>
+                       <td className="px-6 py-4 text-right">
+                         <div className="flex items-center justify-end gap-4">
+                           <StatusBadge status={r.status} />
+                           <Link 
+                             href={`/admin/laporan/harian/${r.id}`} 
+                             className="px-3 py-1.5 hover:bg-emerald-100 text-emerald-700 hover:text-emerald-800 rounded-md text-[11px] font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-1"
+                           >
+                             Detail <ChevronRight size={12} strokeWidth={3} />
+                           </Link>
+                         </div>
+                       </td>
+                     </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+           </div>
+
+           {/* PAGINATION */}
+           <div className="px-6 py-4 border-t border-emerald-100 bg-emerald-50/30 flex items-center justify-between">
+              <span className="text-[11px] font-semibold text-emerald-700">
+                 Total: <strong className="text-emerald-950">{reports.meta.total}</strong> Laporan
+              </span>
+              <Pagination meta={reports.meta} />
+           </div>
+        </section>
+
+        {/* --- GOVERNANCE FOOTER --- */}
+        <div className="bg-emerald-900 rounded-2xl p-6 text-emerald-50 flex items-center shadow-md justify-between gap-6 overflow-hidden relative">
+          <div className="flex items-start gap-4 z-10">
+             <ShieldCheck size={28} className="text-emerald-400 shrink-0 mt-0.5" />
+             <div>
+                <h3 className="text-sm font-bold text-white mb-1 tracking-wide">Audit Trail Logbook</h3>
+                <p className="text-xs text-emerald-200 leading-relaxed max-w-3xl">
+                  Seluruh interaksi laporan dipantau permanen dalam log sistem. DPL diwajibkan memberikan feedback akurat.
+                </p>
+             </div>
+          </div>
+          <div className="text-xs font-bold text-emerald-400 bg-emerald-950 px-3 py-1.5 rounded border border-emerald-800 shrink-0 hidden sm:block">
+            SISTEM AKTIF
+          </div>
+        </div>
+      </div>
+    </AppLayout>
+  );
 }
+
+function MetricCard({ label, value, icon: Icon, desc }: { label: string; value: any; icon: any; desc: string }) {
+  return (
+    <div className="bg-white border border-emerald-100 rounded-xl p-4 flex items-center gap-4 shadow-sm relative">
+      <div className="h-10 w-10 shrink-0 rounded-lg flex items-center justify-center text-emerald-600 bg-emerald-50 border border-emerald-100">
+        <Icon size={18} strokeWidth={2.5} />
+      </div>
+      <div className="flex flex-col">
+        <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">{label}</span>
+        <span className="text-lg font-black text-emerald-950 leading-tight truncate">{value}</span>
+      </div>
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <tr>
+      <td colSpan={10} className="px-6 py-16 text-center">
+          <div className="flex flex-col items-center justify-center gap-3">
+            <div className="h-16 w-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-300 border border-emerald-100">
+              <SearchCode size={28} strokeWidth={1.5} />
+            </div>
+            <span className="text-sm font-bold text-emerald-900">Data Logbook Nihil</span>
+            <p className="text-xs text-emerald-500">Tidak ada data transmisi laporan pada filter sistem saat ini.</p>
+          </div>
+      </td>
+    </tr>
+  );
+}
+

@@ -15,15 +15,34 @@ use Illuminate\Support\Facades\Log;
 
 class StudentSyncService
 {
+    protected array $facultyMap = [];
+
+    protected array $prodiMap = [];
+
+    protected bool $mapsLoaded = false;
+
     public function __construct(
         private MasterApiService $masterApi
     ) {}
+
+    protected function loadMaps(): void
+    {
+        if ($this->mapsLoaded) {
+            return;
+        }
+
+        $this->facultyMap = Fakultas::on('kkn')->pluck('id', 'master_id')->all();
+        $this->prodiMap = Prodi::on('kkn')->pluck('id', 'master_id')->all();
+        $this->mapsLoaded = true;
+    }
 
     /**
      * Sync students from Master API.
      */
     public function syncFromApi(array $nimList = []): array
     {
+        $this->loadMaps();
+
         $results = [
             'total' => 0,
             'synced' => 0,
@@ -60,23 +79,29 @@ class StudentSyncService
     /**
      * Create or update student and their associated user account.
      */
-    public function upsertStudent(array $data): bool
+    public function upsertStudent(array $data, bool $useCachedMaps = true): bool
     {
-        return DB::transaction(function () use ($data) {
-            // 1. Resolve Faculty & Prodi
-            $facultyId = null;
-            $organizationMasterId = $this->normalizeMasterId($data['organization_id'] ?? null);
-            if ($organizationMasterId !== null) {
-                $facultyId = Fakultas::where('master_id', $organizationMasterId)->first()?->id;
+        return DB::transaction(function () use ($data, $useCachedMaps) {
+            if ($useCachedMaps && $this->mapsLoaded) {
+                $organizationMasterId = $this->normalizeMasterId($data['organization_id'] ?? null);
+                $facultyId = $organizationMasterId !== null ? ($this->facultyMap[$organizationMasterId] ?? null) : null;
+
+                $programMasterId = $this->normalizeMasterId($data['prodi_id'] ?? null);
+                $prodiId = $programMasterId !== null ? ($this->prodiMap[$programMasterId] ?? null) : null;
+            } else {
+                $facultyId = null;
+                $organizationMasterId = $this->normalizeMasterId($data['organization_id'] ?? null);
+                if ($organizationMasterId !== null) {
+                    $facultyId = Fakultas::on('kkn')->where('master_id', $organizationMasterId)->first()?->id;
+                }
+
+                $prodiId = null;
+                $programMasterId = $this->normalizeMasterId($data['prodi_id'] ?? null);
+                if ($programMasterId !== null) {
+                    $prodiId = Prodi::on('kkn')->where('master_id', $programMasterId)->first()?->id;
+                }
             }
 
-            $prodiId = null;
-            $programMasterId = $this->normalizeMasterId($data['prodi_id'] ?? null);
-            if ($programMasterId !== null) {
-                $prodiId = Prodi::where('master_id', $programMasterId)->first()?->id;
-            }
-
-            // Fallbacks - Log warning instead of silent wrong assignment
             if (! $facultyId && $organizationMasterId !== null) {
                 Log::warning("Student {$data['nim']} has unmapped organization_id: {$organizationMasterId}. Skipping faculty assignment.");
             }
@@ -84,28 +109,25 @@ class StudentSyncService
                 Log::warning("Student {$data['nim']} has unmapped prodi_id: {$programMasterId}. Skipping prodi assignment.");
             }
 
-            // 2. Determine Password (DDMMYYYY from birth_date or fallback to NIM)
             $password = PasswordHelper::fromBirthDate(
                 $data['birth_date'] ?? null,
                 $data['nim']
             );
 
-            // 3. Create/Update User
             $email = $data['email'] ?? $data['nim'].'@student.uinsaizu.ac.id';
-            $isNewUser = ! User::where('username', $data['nim'])->exists();
+            $isNewUser = ! User::on('kkn')->where('username', $data['nim'])->exists();
 
-            $user = User::firstOrCreate(
+            $user = User::on('kkn')->firstOrCreate(
                 ['username' => $data['nim']],
                 [
                     'name' => $data['name'],
-                    'email' => $email, // Use calculated email
+                    'email' => $email,
                     'password' => Hash::make($password),
                     'is_active' => true,
-                    'must_change_password' => true, // Force change on first login
+                    'must_change_password' => true,
                 ]
             );
 
-            $email = $data['email'] ?? ($data['nim'].'@student.uinsaizu.ac.id');
             $address = $data['address'] ?? $data['alamat'] ?? $data['domicile'] ?? null;
 
             $user->fill(array_filter([
@@ -122,8 +144,7 @@ class StudentSyncService
                 $user->assignRole('student');
             }
 
-            // 3. Create/Update Mahasiswa record
-            Mahasiswa::updateOrCreate(
+            Mahasiswa::on('kkn')->updateOrCreate(
                 ['nim' => $data['nim']],
                 [
                     'user_id' => $user->id,

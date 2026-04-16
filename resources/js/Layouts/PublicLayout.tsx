@@ -34,8 +34,24 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         { label: 'Unduhan', href: safeRoute('public.downloads') },
     ];
 
+    // Logic to determine dashboard route based on user role
+    const getDashboardRoute = () => {
+        if (!auth.user) return safeRoute('login');
+        
+        const roles = (auth.user.roles as any[])?.map(r => typeof r === 'string' ? r : r.name) || [];
+        if (roles.includes('superadmin') || roles.includes('faculty_admin') || roles.includes('admin')) {
+            return safeRoute('admin.dashboard');
+        }
+        if (roles.includes('dpl')) {
+            return safeRoute('dpl.dashboard');
+        }
+        return safeRoute('student.dashboard');
+    };
+
+    const dashboardHref = getDashboardRoute();
+
     return (
-        <div className="min-h-screen bg-white text-black font-sans selection:bg-emerald-100">
+        <div className="min-h-screen bg-white text-emerald-950 font-sans selection:bg-emerald-100">
             {/* NAVIGATION SIMPLE */}
             <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-emerald-100 h-16">
                 <div className="max-w-7xl mx-auto px-6 lg:px-8 h-full flex items-center justify-between">
@@ -43,7 +59,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                         <div className="h-8 w-8 bg-emerald-50 rounded-lg flex items-center justify-center">
                             <img src="/images/logo_kkn.png" alt="Logo" className="h-6 w-6 object-contain" />
                         </div>
-                        <span className="text-sm font-bold text-black uppercase tracking-tight">KKN UIN SAIZU</span>
+                        <span className="text-sm font-bold text-emerald-950 uppercase tracking-tight">KKN UIN SAIZU</span>
                     </Link>
 
                     {/* Desktop Nav */}
@@ -52,21 +68,21 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                             <Link 
                                 key={item.label} 
                                 href={item.href} 
-                                className="text-xs font-bold text-black hover:text-emerald-500 font-semibold uppercase text-xs no-underline transition-colors"
+                                className="text-xs font-bold text-emerald-950 hover:text-emerald-500 font-semibold uppercase text-xs no-underline transition-colors"
                             >
                                 {item.label}
                             </Link>
                         ))}
                         <Link 
-                            href={auth.user ? safeRoute('dashboard') : safeRoute('login')} 
+                            href={dashboardHref} 
                             className="px-5 py-2 bg-emerald-950 text-white rounded-lg text-xs font-bold uppercase tracking-wider no-underline hover:bg-emerald-800 transition-all shadow-md"
                         >
-                            {auth.user ? 'Dashboard' : 'Login Admin'}
+                            {auth.user ? 'Dashboard' : 'Login Portal'}
                         </Link>
                     </div>
 
                     {/* Mobile Toggle */}
-                    <button className="lg:hidden text-black p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                    <button className="lg:hidden text-emerald-950 p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
                         {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
                 </div>
@@ -92,18 +108,18 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                                     <Link 
                                         key={item.label} 
                                         href={item.href} 
-                                        className="text-sm font-bold text-black font-semibold uppercase text-xs no-underline"
+                                        className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs no-underline"
                                         onClick={() => setIsMenuOpen(false)}
                                     >
                                         {item.label}
                                     </Link>
                                 ))}
                                 <Link 
-                                    href={auth.user ? safeRoute('dashboard') : safeRoute('login')} 
+                                    href={dashboardHref} 
                                     className="px-5 py-3 bg-emerald-950 text-white rounded-lg text-sm font-bold text-center no-underline"
                                     onClick={() => setIsMenuOpen(false)}
                                 >
-                                    {auth.user ? 'Ke Dashboard' : 'Login Admin'}
+                                    {auth.user ? 'Ke Portal' : 'Login Portal'}
                                 </Link>
                             </motion.div>
                         </>

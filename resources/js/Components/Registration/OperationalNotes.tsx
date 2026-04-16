@@ -19,7 +19,7 @@ export const OperationalNotes: React.FC<OperationalNotesProps> = ({ notes, setNo
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
         rows={4}
-        className="w-full px-8 py-6 rounded-[2rem] border-2 border-slate-50 bg-emerald-50/30/50 focus:bg-white focus:border-emerald-500 focus:ring-8 focus:ring-emerald-500/5 transition-all outline-none text-[13px] font-bold text-emerald-700 placeholder:text-slate-300 uppercase tracking-tight"
+        className="w-full px-8 py-6 rounded-[2rem] border-2 border-emerald-50 bg-emerald-50/30/50 focus:bg-white focus:border-emerald-500 focus:ring-8 focus:ring-emerald-500/5 transition-all outline-none text-[13px] font-bold text-emerald-700 placeholder:text-emerald-400 uppercase tracking-tight"
         placeholder="Tuliskan catatan khusus pendaftaran jika diperlukan..."
       />
     </div>

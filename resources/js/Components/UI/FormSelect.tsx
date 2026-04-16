@@ -45,11 +45,11 @@ const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
                             aria-invalid={!!error}
                             aria-describedby={describedBy}
                             className={clsx(
-                                'w-full rounded-xl border border-emerald-100/60 bg-white px-4 py-2.5 text-sm text-black transition-all appearance-none cursor-pointer',
+                                'w-full rounded-xl border border-emerald-100/60 bg-white px-4 py-2.5 text-sm text-emerald-950 transition-all appearance-none cursor-pointer',
                                 'focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20',
                                 error
                                     ? 'border-rose-500 focus:ring-rose-500/20'
-                                    : 'hover:border-slate-400',
+                                    : 'hover:border-emerald-300',
                                 rest.disabled && 'bg-emerald-50/30 text-emerald-950 cursor-not-allowed border-emerald-100/60',
                                 'pr-10',
                                 className,

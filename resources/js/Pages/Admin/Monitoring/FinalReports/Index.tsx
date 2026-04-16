@@ -1,262 +1,261 @@
-import { Head, router, Link } from '@inertiajs/react';
+import { Head, router, Link, Deferred } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { StatusBadge, Pagination } from '@/Components/ui';
 import type { PageProps } from '@/types';
 import { 
- FileCheck, 
- Filter, 
- FileText, 
- Clock, 
- Eye, 
- Layers, 
- User, 
- History, 
- Search, 
- CheckCircle2, 
- Database, 
- ShieldCheck, 
- Zap, 
- Cpu, 
- ArrowRight,
- SearchCheck,
- Archive,
- ChevronRight
+  FileCheck, 
+  Filter, 
+  FileText, 
+  Layers, 
+  CheckCircle2, 
+  Database, 
+  ShieldCheck, 
+  Cpu, 
+  ArrowUpRight,
+  Archive,
+  ChevronRight,
+  SearchCode,
+  FileSearch,
+  Activity,
+  Loader2
 } from 'lucide-react';
 import { route } from 'ziggy-js';
-import { motion } from 'framer-motion';
-import { clsx } from 'clsx';
-import type { PaginationMeta } from '@/Components/ui/Pagination';
 
 interface FinalReportData {
- id: number;
- title: string;
- status: string;
- submitted_at: string | null;
- mahasiswa?: { nama?: string | null; nim?: string | null; } | null;
- kelompok?: { nama_kelompok?: string | null; } | null;
+  id: number;
+  title: string;
+  status: string;
+  submitted_at: string | null;
+  mahasiswa?: { nama?: string | null; nim?: string | null; } | null;
+  kelompok?: { nama_kelompok?: string | null; } | null;
 }
 
 interface Props extends PageProps {
- reports: {
- data: FinalReportData[];
- meta: PaginationMeta;
- };
- filters: { status?: string; };
+  reports?: {
+    data: FinalReportData[];
+    meta: PaginationMeta;
+  };
+  filters: { status?: string; };
 }
 
 const statusOptions = [
- { value: '', label: 'ALL STATUS' },
- { value: 'submitted', label: 'SUBMITTED' },
- { value: 'reviewed', label: 'UNDER REVIEW' },
- { value: 'disetujui', label: 'APPROVED' },
- { value: 'revisi', label: 'REVISION' },
+  { value: '', label: 'SEMUA STATUS' },
+  { value: 'submitted', label: 'DIKIRIM (PENDING)' },
+  { value: 'reviewed', label: 'MENUNGGU REVIEW' },
+  { value: 'disetujui', label: 'DISETUJUI (VERIFIED)' },
+  { value: 'revisi', label: 'REVISI (NEED FIX)' },
 ];
 
-const containerVariants = {
- hidden: { opacity: 0 },
- visible: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.1 } }
-};
-
-const itemVariants = {
- hidden: { opacity: 0, y: 20 },
- visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }
-};
-
 export default function AdminFinalReportsIndex({ reports, filters }: Props) {
- const rows = reports.data ?? [];
+  const rows = reports?.data ?? [];
 
- const handleFilterChange = (value: string) => {
- router.get('/admin/laporan/akhir', { status: value || undefined }, { preserveState: true, preserveScroll: true, replace: true });
- };
+  const handleFilterChange = (value: string) => {
+    router.get('/admin/laporan/akhir', { status: value || undefined }, { preserveState: true, replace: true });
+  };
 
- return (
- <AppLayout title="Repositori Laporan Mahasiswa">
- <Head title="Repositori Laporan" />
+  return (
+    <AppLayout title="Audit Repositori Laporan Mahasiswa">
+      <Head title="Repositori Laporan" />
 
- <div className="max-w-7xl mx-auto space-y-8 pb-24 text-black font-sans">
- {/* --- PREMIUM HEADER --- */}
- <div className="space-y-4">
- <div className="flex items-center gap-3 text-emerald-600">
- <Archive size={18} />
- <span className="text-xs font-bold tracking-[0.25em] opacity-80">Repositori & Arsip Produk Akademik</span>
- </div>
- <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
- <div className="space-y-1">
- <h1 className="text-2xl font-semibold text-black tracking-tight">
- Repositori <span className="text-emerald-500">Laporan.</span>
- </h1>
- <p className="text-sm font-semibold text-emerald-950 font-semibold text-xs mt-2 leading-relaxed max-w-2xl">
- Pusat Verifikasi Produk Akademik dan Validasi Kelulusan Mahasiswa KKN
- </p>
- </div>
- <div className="flex items-center gap-4">
- <div className="h-14 px-8 bg-white border border-emerald-100/60 rounded-2xl flex items-center gap-4 shadow-sm">
- <FileCheck size={20} className="text-emerald-500" />
- <div className="flex flex-col">
- <span className="text-sm font-bold text-emerald-950 font-semibold text-xs leading-none mb-1">Status Inventori</span>
- <span className="text-sm font-bold text-black tabular-nums leading-none tracking-tight">{reports.meta.total.toLocaleString()} BERKAS TERARSIP</span>
- </div>
- </div>
- </div>
- </div>
- </div>
+      <div className="max-w-[1500px] mx-auto space-y-8 pb-20 font-sans px-4 sm:px-6 lg:px-8 text-emerald-950">
+        
+        {/* --- COMPACT PREMIUM HEADER --- */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pt-10">
+           <div className="space-y-4">
+              <div className="flex items-center gap-2 text-emerald-600">
+                 <Archive size={16} />
+                 <span className="text-[9px] font-black tracking-[0.2em] uppercase opacity-70">Arsip Produk Akademik</span>
+              </div>
+              <div className="space-y-1">
+                <h1 className="text-3xl font-black text-emerald-950 tracking-tighter leading-none">
+                  Repositori <span className="text-emerald-500">Laporan.</span>
+                </h1>
+                <p className="text-[11px] font-bold text-emerald-700/70 tracking-tight leading-none uppercase tracking-wider">
+                  Audit Integritas Luaran Pengabdian & Validasi Kelulusan Akhir
+                </p>
+              </div>
+           </div>
+           
+           <div className="shrink-0">
+              <Deferred data="reports" fallback={<div className="h-14 w-48 bg-emerald-50 animate-pulse rounded-2xl" />}>
+                <div className="h-14 px-6 bg-white border border-emerald-100 rounded-2xl flex items-center gap-6 shadow-sm">
+                  <div className="flex flex-col">
+                    <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest leading-none mb-1">Populasi Arsip</span>
+                    <span className="text-lg font-black text-emerald-950 tabular-nums leading-none tracking-tight">{(reports?.meta.total || 0).toLocaleString('id-ID')} BERKAS</span>
+                  </div>
+                  <div className="w-px h-8 bg-emerald-100" />
+                  <FileCheck size={20} className="text-emerald-600" />
+                </div>
+              </Deferred>
+           </div>
+        </div>
 
- {/* --- INSTITUTIONAL STATS --- */}
- <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
- <MetricCard label="Akurasi Data" value="VALIDATED" icon={ShieldCheck} color="emerald" desc="Verifikasi integritas dokumen 100%" />
- <MetricCard label="Aturan Audit" value="STANDAR" icon={CheckCircle2} color="emerald" desc="Sesuai regulasi akademik LPPM" />
- <MetricCard label="Status Pengarsipan" value="OPTIMAL" icon={History} color="emerald" desc="Sistem penyimpanan cloud aktif" />
- </div>
+        {/* --- STATS STRIP COMPACT --- */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+           <CompactMetric label="Audit Data" value="VALIDATED" icon={ShieldCheck} />
+           <CompactMetric label="Aturan SOP" value="STANDAR" icon={CheckCircle2} />
+           <CompactMetric label="Node Arsip" value="AKTIF" icon={Database} />
+           <CompactMetric label="Sikkk Sinyal" value="REAL-TIME" icon={Activity} />
+        </div>
 
- {/* --- FILTER & TABEL --- */}
- <section className="bg-white border border-emerald-100/60 rounded-2xl overflow-hidden shadow-sm shadow-slate-200/50">
- <div className="p-8 border-b border-emerald-100/60 flex flex-col md:flex-row items-center justify-between gap-6 bg-emerald-50/30/20">
- <div className="flex items-center gap-5">
- <div className="h-12 w-12 bg-white text-emerald-600 rounded-2xl flex items-center justify-center border border-emerald-100/60 shadow-sm">
- <Filter size={24} />
- </div>
- <div className="space-y-1">
- <h3 className="text-base font-bold text-black tracking-tight">Penyaringan Dokumen</h3>
- <p className="text-sm font-bold text-emerald-950 tracking-wider text-xs font-semibold">Filter berdasarkan status validasi</p>
- </div>
- </div>
- <div className="relative w-full md:w-80 group">
- <select 
- value={filters.status ?? ''}
- onChange={(e) => handleFilterChange(e.target.value)}
- className="w-full h-14 pl-6 pr-12 bg-white border border-emerald-100/60 rounded-2xl text-sm font-bold text-emerald-700 outline-none transition-all focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 appearance-none font-semibold text-xs"
- >
- {statusOptions.map(opt => (
- <option key={opt.value} value={opt.value}>
- {opt.value === '' ? 'SEMUA STATUS' : opt.label}
- </option>
- ))}
- </select>
- <ChevronRight size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 rotate-90 pointer-events-none" />
- </div>
- </div>
+        {/* --- DATA TABLE SECTION --- */}
+        <section className="bg-white border border-emerald-100 rounded-3xl shadow-sm overflow-hidden flex flex-col">
+           {/* FILTER BAR COMPACT */}
+           <div className="px-6 py-4 bg-white border-b border-emerald-50 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                 <div className="h-10 w-10 bg-white rounded-xl border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-xs">
+                    <FileSearch size={20} strokeWidth={2.5} />
+                 </div>
+                 <h3 className="text-xs font-black text-emerald-950 uppercase tracking-tight">Pusat Validasi Dokumen</h3>
+              </div>
 
- <div className="overflow-x-auto">
- <table className="w-full text-left">
- <thead className="bg-white text-sm font-bold tracking-wider text-xs font-semibold text-emerald-950 border-b border-slate-50">
- <tr>
- <th className="px-6 py-6 w-16 text-center">#</th>
- <th className="px-6 py-6">Identitas Dokumen</th>
- <th className="px-6 py-6">Mahasiswa / Personel</th>
- <th className="px-6 py-6 text-center">Unit / Kelompok</th>
- <th className="px-6 py-6 text-right">Status Verifikasi</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-slate-50">
- {rows.length > 0 ? rows.map((report, idx) => (
- <tr key={report.id} className="hover:bg-emerald-50/30/50 transition-all group">
- <td className="px-6 py-8 text-center text-sm font-bold text-slate-300 tabular-nums">
- {idx + 1 + (reports.meta.current_page - 1) * reports.meta.per_page}
- </td>
- <td className="px-6 py-8">
- <div className="flex items-center gap-6">
- <div className="h-14 w-14 bg-white border border-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 transition-all shadow-sm">
- <FileText size={24} />
- </div>
- <div className="flex flex-col gap-1">
- <span className="text-[15px] font-bold text-black leading-tight group-hover:text-emerald-700 transition-colors tracking-tight">{report.title}</span>
- <span className="text-sm font-bold text-slate-300 tracking-wider text-xs font-semibold font-mono">Arsip ID: #{report.id}</span>
- </div>
- </div>
- </td>
- <td className="px-6 py-8">
- <div className="flex flex-col gap-1">
- <span className="text-sm font-bold text-emerald-700 leading-none">{report.mahasiswa?.nama || '—'}</span>
- <span className="text-sm font-bold text-emerald-950 font-semibold text-xs font-mono">NIM: {report.mahasiswa?.nim || '—'}</span>
- </div>
- </td>
- <td className="px-6 py-8 text-center">
- <div className="inline-flex items-center gap-3 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 transition-all shadow-sm">
- <Layers size={14} className="text-emerald-500" />
- <span className="text-sm font-bold text-emerald-950 font-semibold text-xs group-hover:text-white transition-colors leading-none">{report.kelompok?.nama_kelompok || '—'}</span>
- </div>
- </td>
- <td className="px-6 py-8 text-right">
- <div className="flex items-center justify-end gap-5">
- <StatusBadge status={report.status} className="!rounded-lg !font-bold !py-1.5 !px-4 !text-sm ! !tracking-normal !border !shadow-none" />
- <Link 
- href={route('admin.laporan.akhir.show', report.id)}
- className="h-10 px-5 bg-white border border-emerald-100/60 text-emerald-950 hover:text-emerald-600 hover:border-emerald-100 hover:shadow-sm rounded-xl text-sm font-bold font-semibold text-xs flex items-center gap-2 transition-all active:scale-95 group/btn"
- >
- Lihat Detail
- <ChevronRight size={14} className="opacity-40 group-hover/btn:translate-x-0.5 transition-transform" />
- </Link>
- </div>
- </td>
- </tr>
- )) : (
- <tr>
- <td colSpan={5} className="px-6 py-40 text-center">
- <div className="flex flex-col items-center gap-6 text-slate-200">
- <Archive size={60} strokeWidth={1} />
- <p className="text-xs font-bold tracking-wider text-xs font-semibold leading-none">Repositori laporan masih kosong</p>
- </div>
- </td>
- </tr>
- )}
- </tbody>
- </table>
- </div>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                 <div className="relative flex-1 sm:w-64 group">
+                    <select 
+                      value={filters.status ?? ''}
+                      onChange={(e) => handleFilterChange(e.target.value)}
+                      className="w-full h-10 pl-4 pr-10 bg-white border border-emerald-100 rounded-xl text-[10px] font-black text-emerald-950 focus:border-emerald-500 outline-none transition-all appearance-none uppercase tracking-widest shadow-xs"
+                    >
+                      {statusOptions.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                    <ChevronRight size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400 rotate-90 pointer-events-none" />
+                 </div>
+                 <button className="h-10 w-10 bg-white border border-emerald-200 text-emerald-950 rounded-xl flex items-center justify-center hover:bg-emerald-50 transition-all shadow-sm">
+                    <Filter size={16} strokeWidth={3} />
+                 </button>
+              </div>
+           </div>
 
- <div className="px-6 py-6 border-t border-slate-50 bg-emerald-50/30/20 flex items-center justify-between">
- <span className="text-sm font-bold text-emerald-950 font-semibold text-xs leading-none">
- Inventori Hal. {reports.meta?.current_page} — {reports.meta?.total} laporan terarsip
- </span>
- {reports.meta && <Pagination meta={reports.meta} />}
- </div>
- </section>
+           <Deferred data="reports" fallback={
+              <div className="flex flex-col items-center justify-center py-32 bg-white">
+                 <Loader2 size={32} className="text-emerald-500 animate-spin mb-4" />
+                 <span className="text-[10px] font-black text-emerald-950 uppercase tracking-[.3em] animate-pulse">Sinkronisasi Database...</span>
+              </div>
+           }>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-left whitespace-nowrap">
+                  <thead className="bg-emerald-50/20 text-emerald-950 border-b border-emerald-100/50">
+                    <tr>
+                      <th className="px-6 py-3.5 text-[9px] font-black uppercase tracking-widest">Identitas Berkas</th>
+                      <th className="px-5 py-3.5 text-[9px] font-black uppercase tracking-widest">Kontributor</th>
+                      <th className="px-5 py-3.5 text-center text-[9px] font-black uppercase tracking-widest">Unit / Kelompok</th>
+                      <th className="px-6 py-3.5 text-right text-[9px] font-black uppercase tracking-widest">Validasi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-emerald-50/50">
+                    {rows.length === 0 ? (
+                        <EmptyState />
+                    ) : (
+                      rows.map((report) => (
+                        <tr key={report.id} className="group hover:bg-emerald-50/30 transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-4">
+                              <div className="h-10 w-10 bg-white border border-emerald-100 text-emerald-200 rounded-xl flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 transition-all shadow-xs">
+                                <FileText size={18} strokeWidth={2.5} />
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-[12px] font-bold text-emerald-950 uppercase tracking-tight leading-tight group-hover:text-emerald-700 transition-colors max-w-[350px] truncate mb-1">{report.title}</span>
+                                <span className="text-[8px] font-black text-emerald-400 font-mono tracking-widest uppercase">DOCID: #{report.id.toString().padStart(5, '0')}</span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-5 py-4">
+                            <div className="flex flex-col">
+                              <span className="text-[11px] font-black text-emerald-950 uppercase leading-none mb-1.5">{report.mahasiswa?.nama || '-'}</span>
+                              <span className="text-[9px] font-black text-emerald-400 font-mono tracking-tighter uppercase italic">NIM: {report.mahasiswa?.nim || '-'}</span>
+                            </div>
+                          </td>
+                          <td className="px-5 py-4 text-center">
+                            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-emerald-100 rounded-lg group-hover:border-emerald-200 transition-all shadow-xs">
+                              <Layers size={12} className="text-emerald-500" />
+                              <span className="text-[9px] font-black uppercase tracking-wider text-emerald-900 truncate max-w-[120px]">{report.kelompok?.nama_kelompok || '-'}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-5">
+                              <StatusBadge status={report.status} className="scale-90" />
+                              <Link 
+                                href={route('admin.laporan.akhir.show', report.id)}
+                                className="h-8 px-4 bg-white border border-emerald-100 text-emerald-950 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all active:scale-90 shadow-xs flex items-center gap-2"
+                              >
+                                AUDIT <ArrowUpRight size={12} strokeWidth={3} />
+                              </Link>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
- {/* --- FOOTER GUIDE --- */}
- <div className="bg-emerald-600 rounded-[2.5rem] p-12 text-white relative overflow-hidden shadow-2xl shadow-emerald-100">
- <div className="absolute top-0 right-0 p-12 opacity-10 rotate-12 -mr-16 -mt-16"><ShieldCheck size={350} /></div>
- <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
- <div className="flex items-center gap-6">
- <div className="h-12 w-24 bg-white/20 rounded-xl flex items-center justify-center shrink-0 border border-white/20 shadow-sm backdrop-blur-md">
- <FileCheck size={48} className="text-white" />
- </div>
- <div className="space-y-3">
- <h4 className="text-2xl font-bold tracking-tight">Manajemen Validasi Laporan</h4>
- <p className="text-sm font-medium text-emerald-50 max-w-2xl leading-relaxed">
- Laporan akhir adalah bukti otentik pengabdian mahasiswa. Validasi yang ketat menjamin kualitas luaran KKN dan integritas institusional UIN SAIZU dalam kontribusi nyata di masyarakat.
- </p>
- </div>
- </div>
- <div className="flex flex-col items-center gap-2 opacity-30 text-emerald-100">
- <Cpu size={32} />
- <span className="text-sm font-bold tracking-wider text-xs font-semibold">Node Arsip Aktif</span>
- </div>
- </div>
- </div>
- </div>
- </AppLayout>
- );
+              {/* PAGINATION COMPACT */}
+              <div className="px-6 py-4 border-t border-emerald-100 bg-white flex items-center justify-between">
+                  <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">
+                    Entry <strong className="text-emerald-950 underline decoration-emerald-200">#{reports?.meta.from || 0}-{reports?.meta.to || 0}</strong> of <strong className="text-emerald-950">{(reports?.meta.total || 0).toLocaleString('id-ID')}</strong> Document Nodes
+                  </span>
+                  {reports && <Pagination meta={reports.meta} />}
+              </div>
+           </Deferred>
+        </section>
+
+        {/* --- COMPACT GOVERNANCE FOOTER --- */}
+        <div className="bg-white rounded-[2rem] p-8 text-emerald-950 relative overflow-hidden shadow-sm border border-emerald-100 group/governance">
+          <div className="absolute top-0 right-0 p-8 opacity-5 rotate-12 -mr-16 -mt-16 pointer-events-none">
+             <Cpu size={300} strokeWidth={0.5} className="text-emerald-600" />
+          </div>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+            <div className="flex items-center gap-6">
+              <div className="h-16 w-16 bg-emerald-50 rounded-2xl flex items-center justify-center shrink-0 border border-emerald-100">
+                <ShieldCheck size={32} className="text-emerald-600" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-lg font-black uppercase tracking-tight leading-none text-emerald-950">Protokol Integritas Akademik</h3>
+                <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest leading-none">Audit Tahunan KKN - LPPM UIN Saizu</p>
+                <p className="text-[10px] font-bold text-emerald-800/60 leading-relaxed max-w-2xl mt-2 line-clamp-2 uppercase">
+                   Validasi otomasi terhadap luaran pengabdian menjamin kualitas kontribusi institusional. Setiap dokumen yang disahkan menjadi basis data legal kelulusan.
+                </p>
+              </div>
+            </div>
+            <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-full border border-emerald-100">
+               <div className="h-1.5 w-1.5 bg-emerald-600 rounded-full animate-pulse shadow-[0_0_8px_#10b981]" />
+               <span className="text-[9px] font-black tracking-[0.2em] text-emerald-600 uppercase">Audit Mode: ACTIVE</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </AppLayout>
+  );
 }
 
-function MetricCard({ label, value, icon: Icon, color, desc }: { label: string, value: string, icon: LucideIcon, color: 'emerald' | 'amber', desc: string }) {
- return (
- <div className="bg-white border border-emerald-100/60 rounded-2xl p-8 space-y-6 hover:shadow-lg transition-all group overflow-hidden relative shadow-sm">
- <div className="flex items-center justify-between relative z-10">
- <div className={clsx(
- "h-14 w-14 rounded-2xl flex items-center justify-center border transition-all duration-500 group-hover:scale-110 shadow-sm",
- color === 'emerald' ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-amber-50 text-amber-600 border-amber-100"
- )}>
- <Icon size={24} />
- </div>
- </div>
- <div className="space-y-1 relative z-10">
- <p className="text-sm font-bold text-emerald-950 tracking-wider text-xs font-semibold leading-none mb-2">{label}</p>
- <div className="flex items-baseline gap-1">
- <p className="text-2xl font-semibold text-black tracking-tight tabular-nums leading-none ">
- {value}
- </p>
- </div>
- <p className="mt-4 text-sm font-bold text-slate-300 tracking-wider text-xs font-semibold">{desc}</p>
- </div>
- </div>
- );
+function CompactMetric({ label, value, icon: Icon }: { label: string; value: string; icon: any }) {
+  return (
+    <div className="bg-white border border-emerald-100 rounded-2xl p-4 flex items-center gap-4 shadow-sm hover:border-emerald-300 transition-all group overflow-hidden">
+      <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border bg-emerald-50 text-emerald-600 border-emerald-50 group-hover:scale-110 group-hover:rotate-3 transition-transform">
+        <Icon size={18} strokeWidth={2.5} />
+      </div>
+      <div className="flex flex-col">
+        <span className="text-[8px] font-black text-emerald-400 tracking-widest uppercase mb-1">{label}</span>
+        <span className="text-sm font-black text-emerald-950 tracking-tight group-hover:text-emerald-600 transition-colors uppercase">{value}</span>
+      </div>
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <tr>
+      <td colSpan={10} className="px-10 py-24 text-center">
+          <div className="flex flex-col items-center justify-center gap-3">
+            <div className="h-16 w-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-100 mb-2">
+              <SearchCode size={32} strokeWidth={1.5} />
+            </div>
+            <span className="text-xs font-black text-emerald-950 uppercase tracking-widest">Repositori Nihil</span>
+            <p className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.2em] opacity-40">Tidak ditemukan arsip laporan untuk parameter saat ini.</p>
+          </div>
+      </td>
+    </tr>
+  );
 }

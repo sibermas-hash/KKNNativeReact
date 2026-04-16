@@ -9,6 +9,7 @@ interface ConfirmDialogProps {
     title?: string;
     message?: string;
     confirmLabel?: string;
+    cancelLabel?: string;
     confirmVariant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline' | 'clean';
     processing?: boolean;
 }
@@ -21,6 +22,7 @@ export default function ConfirmDialog({
     title = 'Konfirmasi Tindakan',
     message = 'Apakah Anda yakin ingin melanjutkan tindakan ini?',
     confirmLabel = 'Ya, Lanjutkan',
+    cancelLabel = 'Batal',
     confirmVariant = 'danger',
     processing = false,
 }: ConfirmDialogProps) {
@@ -28,12 +30,12 @@ export default function ConfirmDialog({
 
     return (
         <Modal show={isVisible} onClose={onClose} title={title} maxWidth="sm">
-                <p className="text-sm font-medium text-black">
+                <p className="text-sm font-medium text-emerald-950">
                     {message}
                 </p>
                 <div className="flex justify-end gap-3 mt-6">
                     <Button variant="secondary" onClick={onClose} disabled={processing}>
-                        Batal
+                        {cancelLabel}
                     </Button>
                     <Button variant={confirmVariant} onClick={onConfirm} loading={processing}>
                         {confirmLabel}

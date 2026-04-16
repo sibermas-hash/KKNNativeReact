@@ -29,7 +29,6 @@ class WorkshopService
         $payload = [
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
-            'methodology' => $data['methodology'] ?? null,
             'workshop_date' => $data['workshop_date'],
             'start_time' => $data['start_time'] ?? null,
             'end_time' => $data['end_time'] ?? null,
@@ -39,7 +38,7 @@ class WorkshopService
         ];
 
         if (Workshop::supportsPeriodAssignment()) {
-            $payload['period_id'] = $data['period_id'] ?? null;
+            $payload['periode_id'] = $data['period_id'] ?? null;
         }
 
         return Workshop::create($payload);
@@ -52,7 +51,7 @@ class WorkshopService
                 throw new \InvalidArgumentException('Pembekalan yang sudah memasuki tahap presensi tidak dapat diubah lagi.');
             }
 
-            $registeredCount = $workshop->participants()->count();
+            $registeredCount = $workshop->peserta()->count();
             $maxParticipants = $data['max_participants'] ?? null;
 
             if ($maxParticipants !== null && $maxParticipants < $registeredCount) {
@@ -60,10 +59,9 @@ class WorkshopService
             }
 
             $workshop->update([
-                ...(Workshop::supportsPeriodAssignment() ? ['period_id' => $data['period_id'] ?? $workshop->period_id] : []),
+                ...(Workshop::supportsPeriodAssignment() ? ['periode_id' => $data['period_id'] ?? $workshop->periode_id] : []),
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
-                'methodology' => $data['methodology'] ?? null,
                 'workshop_date' => $data['workshop_date'],
                 'start_time' => $data['start_time'] ?? null,
                 'end_time' => $data['end_time'] ?? null,
@@ -243,6 +241,7 @@ class WorkshopService
                 $participant->update([
                     'attendance_status' => $attended ? 'attended' : 'absent',
                     'checked_in_at' => $attended ? now() : null,
+                    'is_passed' => $attended,
                 ]);
 
                 if ($attended) {
@@ -251,6 +250,33 @@ class WorkshopService
                     $this->revokeCertificate($participant);
                 }
 
+                $this->syncWorkshopScore($participant);
+
+                $results[] = $participant->fresh();
+            }
+
+            return $results;
+        });
+    }
+
+    /**
+     * Bulk mark passing status
+     */
+    public function bulkMarkPassingStatus(int $workshopId, array $passedUserIds): array
+    {
+        return DB::transaction(function () use ($workshopId, $passedUserIds) {
+            $results = [];
+
+            $participants = PesertaWorkshop::where('workshop_id', $workshopId)->get();
+
+            foreach ($participants as $participant) {
+                $passed = in_array($participant->user_id, $passedUserIds);
+
+                $participant->update([
+                    'is_passed' => $passed,
+                ]);
+
+                // Sinkronisasi nilai otomatis ketika kelulusan berubah
                 $this->syncWorkshopScore($participant);
 
                 $results[] = $participant->fresh();
@@ -333,10 +359,10 @@ class WorkshopService
         ?int $periodId = null
     ): array {
         $query = Workshop::where('workshop_date', '>=', now()->toDateString())
-            ->withCount('participants');
+            ->withCount('peserta');
 
         if (Workshop::supportsPeriodAssignment() && $periodId) {
-            $query->where('period_id', $periodId);
+            $query->where('periode_id', $periodId);
         }
 
         if (! $includeAllStatuses) {
@@ -349,13 +375,13 @@ class WorkshopService
 
         if ($includeParticipants) {
             $query->with([
-                'participants' => fn ($participantQuery) => $participantQuery
+                'peserta' => fn ($participantQuery) => $participantQuery
                     ->with('user:id,name,email')
                     ->orderBy('created_at'),
             ]);
         } elseif ($userId) {
             $query->with([
-                'participants' => fn ($participantQuery) => $participantQuery
+                'peserta' => fn ($participantQuery) => $participantQuery
                     ->select('id', 'workshop_id', 'user_id', 'attendance_status')
                     ->where('user_id', $userId),
             ]);
@@ -366,12 +392,12 @@ class WorkshopService
             ->get();
 
         return $workshops->map(function ($workshop) use ($userId, $includeParticipants) {
-            $userRegistration = $userId ? $workshop->participants->first() : null;
+            $userRegistration = $userId ? $workshop->peserta->first() : null;
             $timeWindow = collect([$workshop->start_time, $workshop->end_time])
                 ->filter()
                 ->implode(' - ');
             $hasRecordedAttendance = $includeParticipants
-                ? $workshop->participants->contains(fn (PesertaWorkshop $participant) => in_array($participant->attendance_status, ['attended', 'absent', 'excused'], true))
+                ? $workshop->peserta->contains(fn (PesertaWorkshop $participant) => in_array($participant->attendance_status, ['attended', 'absent', 'excused'], true))
                 : false;
 
             return [
@@ -385,7 +411,7 @@ class WorkshopService
                 'start_time' => $workshop->start_time ? substr((string) $workshop->start_time, 0, 5) : null,
                 'end_time' => $workshop->end_time ? substr((string) $workshop->end_time, 0, 5) : null,
                 'location' => $workshop->location,
-                'registered' => $workshop->participants_count,
+                'registered' => $workshop->peserta_count,
                 'max_participants' => $workshop->max_participants,
                 'status' => $workshop->status,
                 'period' => Workshop::supportsPeriodAssignment() && $workshop->periode
@@ -395,14 +421,14 @@ class WorkshopService
                     ]
                     : null,
                 'is_full' => $workshop->max_participants
-                    ? $workshop->participants_count >= $workshop->max_participants
+                    ? $workshop->peserta_count >= $workshop->max_participants
                     : false,
-                'can_edit' => $includeParticipants && $workshop->status === 'scheduled' && ! $hasRecordedAttendance,
-                'can_cancel' => $includeParticipants && $workshop->status === 'scheduled' && ! $hasRecordedAttendance,
+                'can_edit' => $includeParticipants && ! $hasRecordedAttendance,
+                'can_cancel' => $includeParticipants && ! $hasRecordedAttendance,
                 'is_registered' => (bool) $userRegistration,
                 'attendance_status' => $userRegistration?->attendance_status,
                 'participants' => $includeParticipants
-                    ? $workshop->participants->map(fn (PesertaWorkshop $participant) => [
+                    ? $workshop->peserta->map(fn (PesertaWorkshop $participant) => [
                         'id' => $participant->id,
                         'user_id' => $participant->user_id,
                         'name' => $participant->user?->name ?? 'Peserta Pembekalan',
@@ -422,7 +448,7 @@ class WorkshopService
             return false;
         }
 
-        return ! $workshop->participants()
+        return ! $workshop->peserta()
             ->whereIn('attendance_status', ['attended', 'absent', 'excused'])
             ->exists();
     }

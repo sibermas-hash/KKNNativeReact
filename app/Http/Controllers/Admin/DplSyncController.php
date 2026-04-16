@@ -29,17 +29,32 @@ class DplSyncController extends Controller
     {
         Gate::authorize('sync-data');
 
-        return Inertia::render('Admin/Operational/Dpl/Sync', [
-            'title' => 'Sinkronisasi Master Dosen',
-            'summary' => [
-                'local_lecturers' => Dosen::count(),
-                'with_master_link' => Dosen::whereNotNull('master_id')->count(),
-                'with_user_account' => Dosen::whereNotNull('user_id')->count(),
-                'last_synced_at' => Dosen::query()
-                    ->whereNotNull('master_synced_at')
-                    ->max('master_synced_at'),
-            ],
-        ]);
+        try {
+            return Inertia::render('Admin/Operational/Dpl/Sync', [
+                'title' => 'Sinkronisasi Master Dosen',
+                'summary' => [
+                    'local_lecturers' => Dosen::count(),
+                    'with_master_link' => Dosen::whereNotNull('master_id')->count(),
+                    'with_user_account' => Dosen::whereNotNull('user_id')->count(),
+                    'last_synced_at' => Dosen::query()
+                        ->whereNotNull('master_synced_at')
+                        ->max('master_synced_at'),
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return Inertia::render('Admin/Operational/Dpl/Sync', [
+                'title' => 'Sinkronisasi Master Dosen',
+                'summary' => [
+                    'local_lecturers' => 0,
+                    'with_master_link' => 0,
+                    'with_user_account' => 0,
+                    'last_synced_at' => null,
+                ],
+                'error' => 'Gagal memuat data sinkronisasi.',
+            ]);
+        }
     }
 
     public function sync(Request $request): RedirectResponse

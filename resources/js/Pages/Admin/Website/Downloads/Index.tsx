@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { router, Head, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Pagination, Button } from '@/Components/ui';
-import type { PageProps, Download } from '@/types';
+import type { PageProps, Download, LucideIcon } from '@/types';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
 import { route } from 'ziggy-js';
 import { motion, AnimatePresence } from 'framer-motion';

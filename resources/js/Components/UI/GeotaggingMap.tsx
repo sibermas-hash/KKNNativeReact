@@ -68,7 +68,7 @@ export default function GeotaggingMap({
               <p className="text-[12px] font-bold uppercase tracking-widest text-emerald-600 mb-1">
                 Geotagging Verified
               </p>
-              <p className="text-xs font-bold text-black uppercase ">{label}</p>
+              <p className="text-xs font-bold text-emerald-950 uppercase ">{label}</p>
             </div>
           </Popup>
         </Marker>

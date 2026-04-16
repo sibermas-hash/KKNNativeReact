@@ -17,8 +17,10 @@ class FullLifecycleSimulationSeeder extends Seeder
         }
 
         // 1. Ambil Periode 56 & Lokasi & DPL
-        $periode = DB::table('periode')->where('periode', 56)->where('jenis', 'KKN Reguler')->first();
+        $periode = DB::table('periode')->where('periode', 56)->where('jenis', 'REGULER')->first();
         if (! $periode) {
+            $this->command->error('Periode 56 REGULER tidak ditemukan.');
+
             return;
         }
 

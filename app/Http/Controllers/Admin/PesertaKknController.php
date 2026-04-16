@@ -8,10 +8,9 @@ use App\Http\Controllers\Controller;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
-use App\Services\Admin\RegistrationService;
+use App\Services\KKN\RegistrationApprovalService;
 use App\Services\KKN\FacultyScopeService;
 use App\Services\KKN\KknRequirementService;
-use App\Services\KKN\RegistrationApprovalService;
 use App\Services\KKN\RegistrationExportService;
 use App\Traits\HandlesPagination;
 use Illuminate\Http\RedirectResponse;
@@ -26,7 +25,7 @@ class PesertaKknController extends Controller
     use HandlesPagination;
 
     public function __construct(
-        private readonly RegistrationService $registrationService
+        private readonly RegistrationApprovalService $registrationService
     ) {}
 
     private function normalizeStatus(?string $status): ?string

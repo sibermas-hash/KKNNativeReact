@@ -14,8 +14,9 @@ interface DocumentUploadProps {
   };
   student_academic?: {
     has_health_certificate: boolean;
-    has_parent_permission: boolean;
+    has_parent_permission?: boolean;
     parent_permission_template?: string | null;
+    [key: string]: unknown;
   } | null;
   hasHealthCertificate: boolean;
   hasParentPermission: boolean;
@@ -29,12 +30,12 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
 }) => {
   return (
     <div className="p-12 rounded-[3.5rem] bg-white border border-emerald-100/60 shadow-sm space-y-12 relative overflow-hidden">
-      <div className="flex items-center gap-6 border-b border-slate-50 pb-8">
+      <div className="flex items-center gap-6 border-b border-emerald-50 pb-8">
         <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-inner">
           <FileText size={24} strokeWidth={2.5} />
         </div>
         <div>
-          <h3 className="text-xs font-bold text-black uppercase tracking-[0.4em]">
+          <h3 className="text-xs font-bold text-emerald-950 uppercase tracking-[0.4em]">
             Data Ingestion
           </h3>
           <p className="text-[12px] font-bold text-emerald-950 uppercase mt-1 opacity-70">
@@ -86,7 +87,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-8 border-t border-slate-50">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-8 border-t border-emerald-50">
           <RequirementNode
             label="FISIK"
             ok={hasHealthCertificate}

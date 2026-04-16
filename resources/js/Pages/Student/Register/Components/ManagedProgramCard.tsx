@@ -1,5 +1,5 @@
 import { Lock, Activity } from 'lucide-react';
-import { PeriodOption } from '../types';
+import type { PeriodOption } from '../types';
 
 export const ManagedProgramCard = ({ program }: { program: PeriodOption }) => {
   return (

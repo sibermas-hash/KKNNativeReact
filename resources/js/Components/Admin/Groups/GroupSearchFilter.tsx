@@ -49,7 +49,7 @@ export const GroupSearchFilter = ({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleApply()}
-            className="w-full h-12 pl-16 pr-6 bg-emerald-50/10 border border-emerald-100/30 rounded-2xl text-sm font-bold text-black focus:bg-white focus:border-emerald-500 transition-all outline-none placeholder:text-black/20"
+            className="w-full h-12 pl-16 pr-6 bg-emerald-50/10 border border-emerald-100/30 rounded-2xl text-sm font-bold text-emerald-950 focus:bg-white focus:border-emerald-500 transition-all outline-none placeholder:text-emerald-950/20"
             placeholder="Cari Kelompok, Lokasi, atau Pembimbing..."
           />
         </div>
@@ -93,7 +93,7 @@ export const GroupSearchFilter = ({
                       <select
                         value={periodId}
                         onChange={(e) => setPeriodId(e.target.value)}
-                        className="w-full h-11 px-4 rounded-xl border border-emerald-100 bg-white text-xs font-bold text-black outline-none transition-all focus:border-emerald-500 appearance-none pr-10 cursor-pointer uppercase tracking-tight"
+                        className="w-full h-11 px-4 rounded-xl border border-emerald-100 bg-white text-xs font-bold text-emerald-950 outline-none transition-all focus:border-emerald-500 appearance-none pr-10 cursor-pointer uppercase tracking-tight"
                       >
                         <option value="">Semua Periode</option>
                         {(periods || []).map((p) => (
@@ -116,7 +116,7 @@ export const GroupSearchFilter = ({
                       <select
                         value={status}
                         onChange={(e) => setStatus(e.target.value)}
-                        className="w-full h-11 px-4 rounded-xl border border-emerald-100 bg-white text-xs font-bold text-black outline-none transition-all focus:border-emerald-500 appearance-none pr-10 cursor-pointer uppercase tracking-tight"
+                        className="w-full h-11 px-4 rounded-xl border border-emerald-100 bg-white text-xs font-bold text-emerald-950 outline-none transition-all focus:border-emerald-500 appearance-none pr-10 cursor-pointer uppercase tracking-tight"
                       >
                         <option value="">Semua Status</option>
                         <option value="draft">Draft / Persiapan</option>

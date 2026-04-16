@@ -15,15 +15,22 @@ class MonitoringDpl extends Model
     protected $table = 'monitoring_dpl';
 
     protected $fillable = [
-    'dpl_id',
-    'kelompok_id',
-    'periode_id',
-    'tanggal_kunjungan',
-    'permasalahan',
-    'solusi',
-    'catatan_tambahan',
-];
+        'dpl_id',
+        'kelompok_id',
+        'periode_id',
+        'tanggal_kunjungan',
+        'permasalahan',
+        'solusi',
+        'catatan_tambahan',
+    ];
 
+    /**
+     * Get count of monitorings for a group in a period.
+     */
+    public static function getCountForGroup(int $groupId): int
+    {
+        return self::where('kelompok_id', $groupId)->count();
+    }
     protected $casts = ['tanggal_kunjungan' => 'date'];
 
     use HasFactory;

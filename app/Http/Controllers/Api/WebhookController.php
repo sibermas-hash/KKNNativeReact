@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\PasswordHelper;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\Mahasiswa;
-use App\Models\KKN\Prodi;
 use App\Models\User;
+use App\Services\StudentSyncService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
 class WebhookController extends Controller
@@ -23,6 +26,10 @@ class WebhookController extends Controller
         'dosen.updated',
         'dosen.deleted',
     ];
+
+    public function __construct(
+        private StudentSyncService $studentSync
+    ) {}
 
     public function handle(Request $request)
     {
@@ -38,14 +45,23 @@ class WebhookController extends Controller
 
         Log::info("Webhook received for event: {$event}", ['webhook_id' => $validated['webhook_id'] ?? 'N/A']);
 
-        // Format is {entity}.{action}, e.g., 'mahasiswa.created'
-        if (str_starts_with($event, 'mahasiswa.')) {
-            $this->syncMahasiswa($event, $data);
-        } elseif (str_starts_with($event, 'dosen.')) {
-            $this->syncDosen($event, $data);
-        }
+        try {
+            if (str_starts_with($event, 'mahasiswa.')) {
+                $this->syncMahasiswa($event, $data);
+            } elseif (str_starts_with($event, 'dosen.')) {
+                $this->syncDosen($event, $data);
+            }
 
-        return response()->json(['status' => 'processed']);
+            return response()->json(['status' => 'processed']);
+        } catch (\Exception $e) {
+            Log::error("Webhook processing failed for {$event}", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'payload' => $data,
+            ]);
+
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+        }
     }
 
     protected function syncMahasiswa(string $event, array $data): void
@@ -55,16 +71,18 @@ class WebhookController extends Controller
         }
 
         if (str_ends_with($event, '.deleted')) {
-            $mahasiswa = Mahasiswa::where('nim', $data['nim'])->first();
+            $mahasiswa = Mahasiswa::on('kkn')->where('nim', $data['nim'])->first();
             if ($mahasiswa) {
-                $mahasiswa->update(['master_synced_at' => null]);
+                DB::transaction(function () use ($mahasiswa) {
+                    $mahasiswa->update(['master_synced_at' => null]);
 
-                if ($mahasiswa->user_id) {
-                    $user = User::find($mahasiswa->user_id);
-                    if ($user) {
-                        $user->update(['is_active' => false]);
+                    if ($mahasiswa->user_id) {
+                        $user = User::on('kkn')->find($mahasiswa->user_id);
+                        if ($user) {
+                            $user->update(['is_active' => false]);
+                        }
                     }
-                }
+                });
 
                 Log::info('Mahasiswa soft-deactivated via webhook', ['nim' => $data['nim']]);
             }
@@ -72,25 +90,7 @@ class WebhookController extends Controller
             return;
         }
 
-        $mahasiswa = Mahasiswa::updateOrCreate(
-            ['nim' => $data['nim']],
-            [
-                'nama' => $data['nama'] ?? null,
-                'prodi_id' => $this->resolveProdi($data['prodi_id'] ?? null),
-                'fakultas_id' => $this->resolveFakultas($data['fakultas_id'] ?? null),
-                'angkatan' => $data['angkatan'] ?? date('Y'),
-                'jenis_kelamin' => $data['jenis_kelamin'] ?? 'L',
-                'no_hp' => $data['no_hp'] ?? null,
-                'master_synced_at' => now(),
-            ]
-        );
-
-        if ($mahasiswa->user_id) {
-            $user = User::find($mahasiswa->user_id);
-            if ($user && ! $user->is_active) {
-                $user->update(['is_active' => true]);
-            }
-        }
+        $this->studentSync->upsertStudent($data);
     }
 
     protected function syncDosen(string $event, array $data): void
@@ -100,16 +100,18 @@ class WebhookController extends Controller
         }
 
         if (str_ends_with($event, '.deleted')) {
-            $dosen = Dosen::where('nip', $data['nip'])->first();
+            $dosen = Dosen::on('kkn')->where('nip', $data['nip'])->first();
             if ($dosen) {
-                $dosen->update(['master_synced_at' => null]);
+                DB::transaction(function () use ($dosen) {
+                    $dosen->update(['master_synced_at' => null]);
 
-                if ($dosen->user_id) {
-                    $user = User::find($dosen->user_id);
-                    if ($user) {
-                        $user->update(['is_active' => false]);
+                    if ($dosen->user_id) {
+                        $user = User::on('kkn')->find($dosen->user_id);
+                        if ($user) {
+                            $user->update(['is_active' => false]);
+                        }
                     }
-                }
+                });
 
                 Log::info('Dosen soft-deactivated via webhook', ['nip' => $data['nip']]);
             }
@@ -117,43 +119,69 @@ class WebhookController extends Controller
             return;
         }
 
-        $dosen = Dosen::updateOrCreate(
-            ['nip' => $data['nip']],
-            [
-                'nama' => $data['nama'] ?? null,
-                'faculty_id' => $this->resolveFakultas($data['fakultas_id'] ?? null),
-                'jenis_kelamin' => $data['jenis_kelamin'] ?? 'L',
-                'no_hp' => $data['no_hp'] ?? null,
-                'is_active' => ($data['is_active'] ?? true) ? 1 : 0,
-                'master_synced_at' => now(),
-            ]
-        );
+        DB::transaction(function () use ($data) {
+            $nip = $data['nip'];
+            $facultyId = null;
+            $organizationMasterId = $this->normalizeMasterId($data['organization_id'] ?? $data['fakultas_id'] ?? null);
+            if ($organizationMasterId !== null) {
+                $facultyId = Fakultas::on('kkn')->where('master_id', $organizationMasterId)->first()?->id;
+            }
 
-        if ($dosen->user_id) {
-            $user = User::find($dosen->user_id);
+            $username = (string) $nip;
+            $incomingEmail = $data['email'] ?? null;
+            $fallbackEmail = $username.'@kkn.local';
+
+            $user = User::on('kkn')->firstOrNew(['username' => $username]);
+            $isNewUser = ! $user->exists;
+
+            if ($isNewUser) {
+                $user->email = ! empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
+                $birthDate = $data['birth_date'] ?? $data['tanggal_lahir'] ?? null;
+                $user->password = Hash::make(
+                    PasswordHelper::fromBirthDate($birthDate, $username)
+                );
+            } elseif (empty($user->email)) {
+                $user->email = ! empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
+            }
+
+            $user->username = $username;
+            $user->name = $data['nama'] ?? $data['name'] ?? 'Unknown';
+            $user->save();
+
+            if (! $user->hasRole('dpl')) {
+                $user->assignRole('dpl');
+            }
+
+            Dosen::on('kkn')->updateOrCreate(
+                ['nip' => $nip],
+                [
+                    'user_id' => $user->id,
+                    'nama' => $data['nama'] ?? $data['name'] ?? 'Unknown',
+                    'faculty_id' => $facultyId,
+                    'phone' => $data['phone'] ?? $data['telepon'] ?? $data['no_hp'] ?? null,
+                    'gender' => $data['gender'] ?? $data['jenis_kelamin'] ?? 'L',
+                    'birth_date' => $data['birth_date'] ?? $data['tanggal_lahir'] ?? null,
+                    'is_cpns' => str_contains(strtoupper($data['status_pegawai'] ?? $data['employment_status'] ?? ''), 'CPNS'),
+                    'is_tugas_belajar' => str_contains(strtoupper($data['status_aktif'] ?? $data['active_status'] ?? 'AKTIF'), 'TUGAS BELAJAR'),
+                    'master_id' => $this->normalizeMasterId($data['id'] ?? $data['master_id'] ?? null),
+                    'master_synced_at' => now(),
+                ]
+            );
+
             if ($user && ! $user->is_active) {
                 $user->update(['is_active' => true]);
             }
-        }
+        });
     }
 
-    // Helper to map IDs if master uses different IDs than local
-    // Issue 11 Fix: Validate IDs exist in local database instead of pass-through
-    protected function resolveProdi($masterId)
+    private function normalizeMasterId(mixed $value): ?string
     {
-        if (! $masterId) {
+        if ($value === null) {
             return null;
         }
 
-        return Prodi::where('master_id', (string) $masterId)->value('id');
-    }
+        $normalized = trim((string) $value);
 
-    protected function resolveFakultas($masterId)
-    {
-        if (! $masterId) {
-            return null;
-        }
-
-        return Fakultas::where('master_id', (string) $masterId)->value('id');
+        return $normalized === '' ? null : $normalized;
     }
 }

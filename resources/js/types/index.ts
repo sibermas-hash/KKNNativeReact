@@ -190,10 +190,15 @@ export interface EvaluationItem {
 export interface Announcement {
   id: number;
   title: string;
+  slug?: string;
   category: string;
   content: string;
+  image?: string;
   is_active: boolean;
   published_at: string;
+  meta_title?: string;
+  meta_description?: string;
+  meta_keywords?: string;
 }
 
 export interface Download {
@@ -218,6 +223,7 @@ export interface KKNScore {
   weighted_score?: number;
   total_score?: number;
   grade?: string;
+  letter_grade?: string;
   status?: 'draft' | 'finalized';
 }
 
@@ -237,8 +243,17 @@ export interface RouteConfig {
   exclude?: string[];
 }
 
+// Breadcrumb navigation link
+export interface BreadcrumbLink {
+  name: string;
+  label?: string;
+  url?: string;
+  icon?: React.ComponentType<{ size?: number; className?: string }>;
+  active?: boolean;
+}
+
 // Lucide React Icon Component Type
-export type LucideIcon = React.ComponentType<{ size?: number; className?: string }>;
+export type LucideIcon = React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>;
 
 // Color Palette Type for Dashboard Components
 export type ColorPalette = {

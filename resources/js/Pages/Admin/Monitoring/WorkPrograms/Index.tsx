@@ -1,228 +1,293 @@
-import { Head, router, Link } from '@inertiajs/react';
+import { Head, router, Link, Deferred } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { StatusBadge, Badge, Pagination, Button } from '@/Components/ui';
+import { StatusBadge, Pagination } from '@/Components/ui';
 import type { PageProps } from '@/types';
 import {
- ClipboardList,
- Filter,
- Search,
- Zap,
- Layers,
- MapPin,
- Calendar,
- Activity,
- ArrowRight,
- Database,
- Globe,
- Binary,
- ShieldCheck,
- Navigation,
- Clock,
- Target,
- ChevronRight,
- Archive,
- History,
- Briefcase,
- LayoutGrid,
- Cpu,
- ArrowLeft,
+  ClipboardList,
+  Filter,
+  Globe,
+  ShieldCheck,
+  MapPin,
+  ChevronRight,
+  SearchCode,
+  Trophy,
+  Search,
+  Sparkles,
+  ArrowRight,
+  CheckCircle2,
+  Loader2
 } from 'lucide-react';
-import { clsx } from 'clsx';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
 
 interface WorkProgramData {
- id: number;
- title: string;
- status: string;
- submitted_at: string | null;
- kelompok?: {
- nama_kelompok?: string | null;
- lokasi?: {
- full_name?: string | null;
- village_name?: string | null;
- } | null;
- } | null;
+  id: number;
+  title: string;
+  status: string;
+  submitted_at: string | null;
+  kelompok?: {
+    nama_kelompok?: string | null;
+    lokasi?: {
+      full_name?: string | null;
+      village_name?: string | null;
+    } | null;
+  } | null;
 }
 
 interface Props extends PageProps {
- workPrograms: { data: WorkProgramData[]; meta: PaginationMeta };
- sdg_distribution?: Array<{ id: number; count: number }>;
- filters: { status?: string };
+  workPrograms?: { data: WorkProgramData[]; meta: PaginationMeta };
+  sdg_distribution?: Array<{ id: number; count: number }>;
+  filters: { status?: string; semantic_search?: string };
+  semantic_results?: WorkProgramData[] | null;
 }
 
 const SDG_COLORS = [
- '#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0',
- '#064e3b', '#065f46', '#047857', '#059669', '#10b981',
- '#34d399', '#6ee7b7', '#a7f3d0', '#ecfdf5', '#d1fae5',
- '#111827', '#374151'
+  '#E11D48', '#D97706', '#059669', '#10B981', '#FF3A21', 
+  '#26BDE2', '#FCC30B', '#A21942', '#FD6925', '#DD1367', 
+  '#FD9D24', '#BF8B2E', '#3F7E44', '#0A97D9', '#56C02B', 
+  '#00689D', '#19486A'
 ];
 
-const SDG_NAMES: Record<number, string> = {
- 1: 'Tanpa Kemiskinan', 2: 'Tanpa Kelaparan', 3: 'Kehidupan Sehat', 4: 'Pendidikan Berkualitas',
- 5: 'Kesetaraan Gender', 6: 'Air Bersih & Sanitasi', 7: 'Energi Bersih', 8: 'Pekerjaan Layak',
- 9: 'Industri & Infrastruktur', 10: 'Berkurangnya Kesenjangan', 11: 'Kota Berkelanjutan',
- 12: 'Konsumsi Bertanggung Jawab', 13: 'Perubahan Iklim', 14: 'Ekosistem Lautan',
- 15: 'Ekosistem Daratan', 16: 'Perdamaian & Keadilan', 17: 'Kemitraan'
-};
+export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution, filters, semantic_results }: Props) {
+  const [search, setSearch] = useState(filters.semantic_search || '');
+  const debouncedSearch = useDebounce(search, 500);
 
-export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution, filters }: Props) {
- const handleFilterChange = (value: string) => {
- router.get('/admin/laporan/program-kerja', { status: value || undefined }, { preserveState: true, replace: true });
- };
+  useEffect(() => {
+    if (debouncedSearch !== (filters.semantic_search || '')) {
+      router.get('/admin/laporan/program-kerja', 
+        { ...filters, semantic_search: debouncedSearch || undefined }, 
+        { preserveState: true, replace: true }
+      );
+    }
+  }, [debouncedSearch]);
 
- return (
- <AppLayout title="Monitoring Program Kerja">
- <Head title="Program Kerja KKN" />
+  const handleStatusChange = (value: string) => {
+    router.get('/admin/laporan/program-kerja', 
+      { ...filters, status: value || undefined }, 
+      { preserveState: true, replace: true }
+    );
+  };
 
- <div className="max-w-7xl mx-auto space-y-8 pb-24 text-black font-sans">
- {/* --- PREMIUM HEADER --- */}
- <div className="space-y-4">
- <div className="flex items-center gap-3 text-emerald-600">
- <ClipboardList size={18} />
- <span className="text-xs font-bold tracking-[0.25em] opacity-80">Monitoring & Evaluasi</span>
- </div>
- <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
- <div className="space-y-1">
- <h1 className="text-2xl font-semibold text-black tracking-tight">
- Program <span className="text-emerald-500">Kerja.</span>
- </h1>
- <p className="text-sm font-semibold text-emerald-950 font-semibold text-xs mt-2 leading-relaxed max-w-2xl">
- Direktori Monitoring Inisiatif Strategis dan Kontribusi Capaian SDGs Mahasiswa KKN
- </p>
- </div>
- <div className="flex items-center gap-4">
- <div className="h-14 px-8 bg-emerald-500 text-white border border-emerald-400 rounded-2xl flex items-center gap-5 shadow-xl shadow-emerald-100">
- <div className="flex flex-col">
- <span className="text-sm font-bold text-emerald-100 font-semibold text-xs leading-none mb-1">Misi Terdata</span>
- <span className="text-sm font-bold text-white tabular-nums leading-none tracking-tight">{workPrograms.meta.total} PROGRAM</span>
- </div>
- <div className="w-px h-8 bg-emerald-400/50" />
- <Target size={18} className="text-white" />
- </div>
- </div>
- </div>
- </div>
+  return (
+    <AppLayout title="Audit Monitoring Program Kerja">
+      <Head title="Monitoring Proker" />
 
- {/* --- SDG ANALYTICS (Compact) --- */}
- {sdg_distribution && (
- <section className="bg-white border border-emerald-100/60 rounded-xl overflow-hidden shadow-sm shadow-slate-200/50">
- <div className="p-6 bg-emerald-50/30/20 border-b border-emerald-100/60 flex items-center justify-between">
- <div className="flex items-center gap-4">
- <div className="h-10 w-10 bg-white border border-emerald-100/60 text-emerald-600 rounded-xl flex items-center justify-center shadow-sm">
- <Globe size={18} />
- </div>
- <div className="flex flex-col">
- <span className="text-sm font-bold text-black tracking-tight">SDGs Impact Distribution</span>
- <p className="text-sm font-bold text-emerald-950 tracking-wider text-xs font-semibold mt-1">Pemetaan Kontribusi Global</p>
- </div>
- </div>
- </div>
- <div className="p-6 overflow-x-auto custom-scrollbar">
- <div className="flex gap-4 pb-2">
- {sdg_distribution.map((sdg) => (
- <div key={sdg.id} className="h-28 w-28 shrink-0 p-4 bg-emerald-50/30/50 border border-emerald-100/60 rounded-2xl flex flex-col items-center justify-between hover:bg-white hover:border-emerald-200 transition-all cursor-default group">
- <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-emerald-100/20 transition-transform group-hover:scale-110" style={{ backgroundColor: SDG_COLORS[(sdg.id - 1) % SDG_COLORS.length] }}>{sdg.id}</div>
- <div className="text-center">
- <p className="text-xl font-bold text-black leading-none tabular-nums">{sdg.count}</p>
- <p className="text-sm font-bold text-emerald-950 font-bold text-center truncate w-20 mx-auto mt-2 opacity-60">{SDG_NAMES[sdg.id]}</p>
- </div>
- </div>
- ))}
- </div>
- </div>
- </section>
- )}
+      <div className="max-w-7xl mx-auto space-y-4 pb-8 font-sans px-4 sm:px-6 lg:px-8 text-emerald-950">
+        
+        {/* --- HEADER COMPACT --- */}
+        <div className="pt-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 bg-white border border-emerald-100 rounded-lg flex items-center justify-center text-emerald-600 shadow-sm shrink-0">
+               <ClipboardList size={22} />
+            </div>
+            <div>
+              <h1 className="text-xl font-black text-emerald-950 tracking-tight leading-none uppercase">
+                Program <span className="text-emerald-500">Kerja</span>
+              </h1>
+              <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mt-1 italic">Governance & SDG Mapping</p>
+            </div>
+          </div>
 
- {/* --- FILTER & LIST --- */}
- <section className="bg-white border border-emerald-100/60 rounded-[2.5rem] overflow-hidden shadow-sm shadow-slate-200/50">
- <div className="p-4 border-b border-emerald-100/60 bg-emerald-50/30/20">
- <select 
- value={filters.status ?? ''} 
- onChange={(e) => handleFilterChange(e.target.value)} 
- className="w-full lg:w-56 h-11 bg-white border border-emerald-100/60 rounded-xl px-4 text-sm font-bold font-semibold text-xs outline-none transition focus:border-emerald-500 shadow-sm"
- >
- <option value="">SEMUA STATUS PROGRAM</option>
- <option value="draf">DRAFT (PROSES)</option>
- <option value="submitted">MENUNGGU VERIFIKASI</option>
- <option value="disetujui">TERVERIFIKASI</option>
- <option value="revisi">REVISI DIBUTUHKAN</option>
- </select>
- </div>
+          <div className="flex items-center gap-3 bg-white border border-emerald-100 rounded-lg p-1.5 pr-4 shadow-sm">
+             <Deferred data="workPrograms" fallback={<div className="h-8 w-16 bg-emerald-50 animate-pulse rounded-md" />}>
+                <div className="h-8 px-3 bg-emerald-50 text-emerald-700 rounded-md flex items-center gap-2 border border-emerald-100/50">
+                   <Trophy size={14} className="text-emerald-500" />
+                   <span className="text-sm font-black tabular-nums">{workPrograms?.meta.total.toLocaleString('id-ID')}</span>
+                </div>
+             </Deferred>
+             <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wider">Total Inisiatif</span>
+          </div>
+        </div>
 
- <div className="overflow-x-auto min-h-[400px]">
- <table className="w-full text-left">
- <thead className="bg-white border-b border-slate-50 text-sm font-bold tracking-wider text-xs font-semibold text-emerald-950">
- <tr>
- <th className="px-6 py-6">Judul Program Kerja</th>
- <th className="px-6 py-6 text-center">Kelompok Pelaksana</th>
- <th className="px-6 py-6 text-center">Lokasi Desa</th>
- <th className="px-6 py-6 text-right">Status & Verifikasi</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-slate-50">
- {workPrograms.data.map((p) => (
- <tr key={p.id} className="group hover:bg-emerald-50/30/50 transition-all">
- <td className="px-6 py-8">
- <div className="flex items-center gap-5">
- <div className="h-10 w-10 bg-white border border-emerald-100/60 text-slate-300 rounded-xl flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white group-hover:border-emerald-500 transition-all"><ClipboardList size={18} /></div>
- <div className="flex flex-col">
- <span className="text-[14px] font-bold text-black leading-tight line-clamp-1 group-hover:text-emerald-700 transition-colors tracking-tight">{p.title}</span>
- <span className="text-sm font-bold text-emerald-950 font-semibold text-xs mt-1.5 opacity-60">ID Program: #{p.id}</span>
- </div>
- </div>
- </td>
- <td className="px-6 py-8 text-center">
- <span className="inline-flex px-4 py-1.5 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-bold font-semibold text-xs border border-emerald-100 shadow-sm">{p.kelompok?.nama_kelompok || 'INVALID'}</span>
- </td>
- <td className="px-6 py-8 text-center">
- <div className="flex flex-col items-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
- <div className="flex items-center gap-2 text-emerald-950">
- <MapPin size={12} className="text-rose-500" />
- <span className="text-sm font-bold font-semibold text-xs leading-none">{p.kelompok?.lokasi?.village_name || 'TIDAK TERLINK'}</span>
- </div>
- <span className="text-sm font-bold text-emerald-950 font-bold text-center truncate max-w-[150px]">{p.kelompok?.lokasi?.full_name}</span>
- </div>
- </td>
- <td className="px-6 py-8 text-right">
- <div className="flex items-center justify-end gap-5">
- <StatusBadge status={p.status} className="!h-8 !px-4 !rounded-xl !font-bold !text-sm ! !tracking-normal shadow-sm" />
- <Link href={`/admin/laporan/program-kerja/${p.id}`} className="h-11 px-5 bg-white border border-emerald-100/60 text-emerald-950 hover:text-emerald-600 hover:border-emerald-100 rounded-2xl flex items-center justify-center transition-all opacity-40 group-hover:opacity-100 shadow-sm active:scale-95 text-sm font-bold font-semibold text-xs">Detail</Link>
- </div>
- </td>
- </tr>
- ))}
- {workPrograms.data.length === 0 && (
- <tr><td colSpan={4} className="py-32 text-center text-sm font-bold text-slate-300 tracking-normal">Data program kerja tidak ditemukan.</td></tr>
- )}
- </tbody>
- </table>
- </div>
+        {/* --- STATS & ANALYTICS BAR --- */}
+        <Deferred data="sdg_distribution" fallback={<div className="h-24 w-full bg-emerald-50/50 animate-pulse rounded-xl border border-emerald-100" />}>
+          {sdg_distribution && (
+            <div className="bg-white border border-emerald-100 rounded-xl shadow-sm p-3 border-l-4 border-l-emerald-500">
+               <div className="flex items-center gap-2 mb-3 px-1">
+                  <Globe size={14} className="text-emerald-600" />
+                  <span className="text-[10px] font-black text-emerald-950 uppercase tracking-[0.1em]">Distribusi Dampak Global (SDGs)</span>
+               </div>
+               <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                  {sdg_distribution.map((sdg) => (
+                     <div key={sdg.id} className="min-w-[80px] bg-white border border-emerald-50 rounded-lg p-2 flex flex-col items-center justify-center group hover:bg-emerald-50 transition-all cursor-help relative shadow-sm">
+                        <div className="w-full h-1 rounded-full mb-2" style={{ backgroundColor: SDG_COLORS[(sdg.id - 1) % SDG_COLORS.length] }} />
+                        <span className="text-[9px] font-black text-emerald-600/60 leading-none mb-1">SDG {sdg.id}</span>
+                        <span className="text-sm font-black text-emerald-950 tabular-nums leading-none">{sdg.count}</span>
+                     </div>
+                  ))}
+               </div>
+            </div>
+          )}
+        </Deferred>
 
- <div className="px-6 py-6 border-t border-slate-50 bg-emerald-50/30/20 flex flex-col sm:flex-row items-center justify-between gap-6">
- <span className="text-sm font-bold text-emerald-950 font-semibold text-xs leading-none">Menampilkan Hal. {workPrograms.meta.current_page} dari {workPrograms.meta.last_page}</span>
- <Pagination meta={workPrograms.meta} />
- </div>
- </section>
+        {/* --- FILTERS & SEARCH BAR --- */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+           <div className="md:col-span-3 relative group">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-emerald-500 group-focus-within:text-emerald-600 transition-colors">
+                 <Search size={16} strokeWidth={2.5} />
+              </div>
+              <input 
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cari Judul Program (Fitur AI Semantic Search Aktif)..."
+                className="w-full h-10 pl-10 pr-10 bg-white border border-emerald-100 rounded-lg text-xs font-semibold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 outline-none transition-all placeholder:text-emerald-300 shadow-sm"
+              />
+              <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                 <Sparkles size={14} className="text-emerald-400 animate-pulse" />
+              </div>
+           </div>
+           
+           <div className="relative">
+              <select 
+                value={filters.status ?? ''} 
+                onChange={(e) => handleStatusChange(e.target.value)} 
+                className="w-full h-10 pl-3 pr-10 bg-white border border-emerald-100 rounded-lg text-xs font-bold text-emerald-950 focus:border-emerald-500 outline-none transition-all appearance-none shadow-sm cursor-pointer hover:bg-emerald-50/50"
+              >
+                <option value="">Semua Status Audit</option>
+                <option value="draft">Draft (Proses)</option>
+                <option value="submitted">Menunggu Verifikasi</option>
+                <option value="approved">Diterima / Aktif</option>
+                <option value="revision">Perlu Revisi</option>
+              </select>
+              <ChevronRight size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400 rotate-90 pointer-events-none" />
+           </div>
+        </div>
 
- {/* --- INFO CARD (CLEAN EMERALD) --- */}
- <div className="bg-emerald-50 border border-emerald-100 rounded-[2.5rem] p-12 text-black relative overflow-hidden shadow-sm">
- <div className="absolute top-0 right-0 p-12 opacity-5 rotate-12 -mr-16 -mt-16 text-emerald-600"><Briefcase size={350} /></div>
- <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
- <div className="flex items-center gap-6">
- <div className="h-12 w-24 bg-emerald-500 text-white rounded-xl flex items-center justify-center shrink-0 shadow-xl shadow-emerald-200">
- <ShieldCheck size={48} />
- </div>
- <div className="space-y-3">
- <h4 className="text-2xl font-bold tracking-tight leading-none">Ringkasan Validasi Program Kerja</h4>
- <p className="text-sm font-medium text-emerald-700/70 max-w-3xl leading-relaxed">
- Monitoring program kerja memastikan transparansi dan kualitas inisiatif strategis kelompok. Setiap program diverifikasi untuk menjamin keselarasan dengan target capaian SDGs institusi serta efektivitas dampak sosial di lokasi KKN.
- </p>
- </div>
- </div>
- </div>
- </div>
- </div>
- </AppLayout>
- );
+        {/* --- SEMANTIC RESULTS HIGHLIGHT --- */}
+        {semantic_results && semantic_results.length > 0 && (
+          <div className="bg-white border border-emerald-100 rounded-xl p-3 shadow-sm">
+             <div className="flex items-center gap-2 mb-2 px-1">
+                <Sparkles size={14} className="text-emerald-500" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Hasil Pencarian Cerdas (AI)</span>
+             </div>
+             <div className="space-y-2">
+                {semantic_results.map(res => (
+                  <Link key={res.id} href={`/admin/laporan/program-kerja/${res.id}`} className="block bg-emerald-50/50 hover:bg-emerald-100 border border-emerald-100 rounded-lg p-2.5 transition-colors group">
+                     <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold group-hover:text-emerald-700 truncate text-emerald-950">{res.title}</span>
+                        <ArrowRight size={12} className="text-emerald-400 group-hover:text-emerald-600" />
+                     </div>
+                  </Link>
+                ))}
+             </div>
+          </div>
+        )}
+
+        {/* --- MAIN DATA TABLE --- */}
+        <section className="bg-white border border-emerald-100 rounded-xl shadow-sm overflow-hidden">
+           <Deferred data="workPrograms" fallback={<LoadingState />}>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-left whitespace-nowrap">
+                  <thead className="bg-emerald-50/30 text-emerald-950 border-b border-emerald-100">
+                    <tr>
+                      <th className="px-5 py-3 text-[10px] font-black uppercase tracking-widest">Judul Inisiatif Program</th>
+                      <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-center">Unit Pelaksana</th>
+                      <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-center">Wilayah</th>
+                      <th className="px-5 py-3 text-right text-[10px] font-black uppercase tracking-widest">Status Audit</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-emerald-50/50">
+                    {!workPrograms || workPrograms.data.length === 0 ? (
+                        <EmptyState />
+                    ) : (
+                      workPrograms.data.map((p) => (
+                        <tr key={p.id} className="group hover:bg-emerald-50/30 transition-colors">
+                          <td className="px-5 py-3.5">
+                            <div className="flex flex-col">
+                              <span className="text-[13px] font-bold text-emerald-950 group-hover:text-emerald-700 max-w-[450px] truncate leading-tight" title={p.title}>{p.title}</span>
+                              <span className="text-[9px] font-black text-emerald-400 font-mono mt-0.5 tracking-tighter">REGID: {p.id.toString().padStart(6, '0')}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3.5 text-center">
+                            <span className="px-2.5 py-1 bg-white border border-emerald-100 text-emerald-900 rounded-md text-[10px] font-black shadow-xs">
+                              {p.kelompok?.nama_kelompok || '-'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 text-center">
+                            <div className="flex items-center justify-center gap-1.5">
+                              <MapPin size={10} className="text-emerald-600/50" />
+                              <span className="text-xs font-bold text-emerald-900">{p.kelompok?.lokasi?.village_name || '-'}</span>
+                              <span className="text-[10px] text-emerald-400 font-medium whitespace-nowrap">({p.kelompok?.lokasi?.district_name || 'Lokasi Terpusat'})</span>
+                            </div>
+                          </td>
+                          <td className="px-5 py-3.5 text-right">
+                            <div className="flex items-center justify-end gap-3 text-sm">
+                              <StatusBadge status={p.status} className="font-black text-[9px] uppercase tracking-wider" />
+                              <Link 
+                                href={`/admin/laporan/program-kerja/${p.id}`} 
+                                className="h-8 w-8 bg-white border border-emerald-100 flex items-center justify-center text-emerald-600 rounded-lg hover:bg-emerald-600 hover:text-white transition-all shadow-xs group-hover:scale-110"
+                              >
+                                <ArrowRight size={14} strokeWidth={3} />
+                              </Link>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* PAGINATION COMPACT */}
+              <div className="px-5 py-3 border-t border-emerald-100 bg-white flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 size={12} className="text-emerald-500" />
+                    <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">
+                        Total <strong className="text-emerald-950 font-black">{workPrograms?.meta.total ?? 0}</strong> Entri Terverifikasi
+                    </span>
+                  </div>
+                  {workPrograms && <Pagination meta={workPrograms.meta} />}
+              </div>
+           </Deferred>
+        </section>
+
+        {/* --- MINI GOVERNANCE FOOTER --- */}
+        <div className="bg-white rounded-xl p-4 text-emerald-950 flex items-center justify-between gap-4 shadow-sm border border-emerald-100 relative overflow-hidden group/footer">
+          <div className="absolute inset-0 bg-emerald-50/30 opacity-0 group-hover/footer:opacity-100 transition-opacity pointer-events-none" />
+          <div className="flex items-center gap-3 relative z-10">
+             <div className="h-10 w-10 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600 border border-emerald-100">
+               <ShieldCheck size={20} />
+             </div>
+             <p className="text-[10px] font-black text-emerald-950 leading-tight uppercase tracking-[0.1em]">
+                Sistem Monitoring Program Kerja Institusional. <span className="text-emerald-400">Penjaminan Mutu & Transparansi Berbasis SDGs.</span>
+             </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 relative z-10 px-3 py-1.5 bg-emerald-50 rounded-full border border-emerald-100">
+             <div className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_#10b981]" />
+             <span className="text-[9px] font-black tracking-widest text-emerald-600 uppercase">Audit Mode: ACTIVE</span>
+          </div>
+        </div>
+      </div>
+    </AppLayout>
+  );
 }
+
+function EmptyState() {
+  return (
+    <tr>
+      <td colSpan={10} className="px-5 py-12 text-center">
+          <div className="flex flex-col items-center justify-center gap-2">
+            <div className="h-12 w-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-200 border border-emerald-50">
+              <SearchCode size={24} strokeWidth={1.5} />
+            </div>
+            <span className="text-xs font-bold text-emerald-950 uppercase tracking-wider">Modul Program Nihil</span>
+            <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Tidak ditemukan data untuk parameter filter saat ini.</p>
+          </div>
+      </td>
+    </tr>
+  );
+}
+
+function LoadingState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 bg-white">
+       <Loader2 size={40} className="text-emerald-500 animate-spin mb-4" />
+       <span className="text-[10px] font-black text-emerald-950 uppercase tracking-[0.2em] animate-pulse">Sinkronisasi Data Audit...</span>
+    </div>
+  );
+}
+
+
+

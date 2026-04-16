@@ -97,7 +97,7 @@ export default function BellDropdown() {
  >
  <div className="flex items-center justify-between border-b border-emerald-100/60 px-4 py-3">
  <div className="flex items-center gap-2">
- <h3 className="text-sm font-semibold text-black">Notifikasi</h3>
+ <h3 className="text-sm font-semibold text-emerald-950">Notifikasi</h3>
  {count > 0 && (
  <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[12px] font-semibold text-rose-600">
  {count > 99 ? '99+' : count}
@@ -128,7 +128,7 @@ export default function BellDropdown() {
  }`}
  />
  <div className="min-w-0 flex-1">
- <p className="text-sm font-semibold text-black">{item.title}</p>
+ <p className="text-sm font-semibold text-emerald-950">{item.title}</p>
  <p className="mt-1 text-xs leading-relaxed text-emerald-950">{item.message}</p>
  <div className="mt-3 flex items-center justify-between gap-3">
  <span className="inline-flex items-center gap-1 text-xs text-emerald-950">

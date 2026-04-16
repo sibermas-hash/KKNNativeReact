@@ -240,7 +240,7 @@ export default function StudentDailyReportCreate({ group, geoPolicy }: Props) {
                 Riwayat Logbook
               </span>
             </div>
-            <h1 className="text-3xl font-extrabold text-black tracking-tighter uppercase leading-none">
+            <h1 className="text-3xl font-extrabold text-emerald-950 tracking-tighter uppercase leading-none">
               Catat Aktivitas
             </h1>
             <p className="text-sm font-medium text-emerald-950">
@@ -345,7 +345,7 @@ export default function StudentDailyReportCreate({ group, geoPolicy }: Props) {
                 <div className="h-12 w-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-sm">
                   <Camera size={24} />
                 </div>
-                <h2 className="text-xl font-bold text-black font-bold text-center leading-none">
+                <h2 className="text-xl font-bold text-emerald-950 font-bold text-center leading-none">
                   Bukti Visual
                 </h2>
               </div>
@@ -363,7 +363,7 @@ export default function StudentDailyReportCreate({ group, geoPolicy }: Props) {
                     size={48}
                     className="mx-auto text-slate-300 mb-4 group-hover:text-emerald-500"
                   />
-                  <p className="text-sm font-bold text-black uppercase tracking-tight">
+                  <p className="text-sm font-bold text-emerald-950 uppercase tracking-tight">
                     {form.data.files.length > 0
                       ? `${form.data.files.length} Foto Terpilih`
                       : 'Klik untuk Unggah Foto'}
@@ -385,7 +385,7 @@ export default function StudentDailyReportCreate({ group, geoPolicy }: Props) {
           <div className="lg:col-span-1 space-y-10">
             <section className="rounded-xl border border-emerald-100/60 bg-white p-8 shadow-sm space-y-8 sticky top-6">
               <div className="space-y-4">
-                <h3 className="text-xs font-bold text-black font-semibold uppercase text-xs flex items-center gap-3 leading-none">
+                <h3 className="text-xs font-bold text-emerald-950 font-semibold uppercase text-xs flex items-center gap-3 leading-none">
                   <div className="h-2 w-2 rounded-full bg-blue-500" />
                   Security & GPS
                 </h3>
@@ -468,7 +468,7 @@ function GeoInfoItem({
       <p
         className={clsx(
           'text-xs font-bold uppercase tracking-tight leading-none',
-          color === 'emerald' ? 'text-emerald-600' : 'text-black',
+          color === 'emerald' ? 'text-emerald-600' : 'text-emerald-950',
         )}
       >
         {value}

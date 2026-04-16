@@ -20,6 +20,7 @@ import {
   CornerDownRight,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import type { LucideIcon } from '@/types';
 
 interface Report {
   id: number;
@@ -28,7 +29,7 @@ interface Report {
   status: string;
   activity: string;
   reflection: string | null;
-  file_kegiatan: File[];
+  file_kegiatan: FileKegiatan[];
   ai_summary?: string;
   ai_analysis?: {
     summary: string;
@@ -43,7 +44,7 @@ interface Props {
   reports: {
     data: Report[];
     total: number;
-    links: Array<{ name: string; url?: string; icon?: LucideIcon }>;
+    links: Array<{ name: string; label?: string; url?: string; icon?: LucideIcon; active?: boolean }>;
     current_page: number;
     last_page: number;
   };
@@ -51,6 +52,12 @@ interface Props {
     success?: string;
     error?: string;
   };
+}
+
+interface FileKegiatan {
+  id: number;
+  file_path: string;
+  file_name?: string;
 }
 
 export default function DailyReportIndex({ reports, flash }: Props) {
@@ -95,7 +102,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
       opacity: 1,
       y: 0,
       scale: 1,
-      transition: { type: 'spring', stiffness: 100, damping: 20 },
+      transition: { type: 'spring' as const, stiffness: 100, damping: 20 },
     },
   };
 
@@ -117,14 +124,14 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                   <h4 className="text-sm font-bold text-emerald-600 uppercase tracking-wider text-xs font-semibold">
                     Section 01 / Operational Log
                   </h4>
-                  <h1 className="text-2xl md:text-2xl font-bold text-black tracking-tighter uppercase leading-[0.85]">
+                  <h1 className="text-2xl md:text-2xl font-bold text-emerald-950 tracking-tighter uppercase leading-[0.85]">
                     Jurnal <br /> <span className="text-emerald-600">Pengabdian.</span>
                   </h1>
                 </div>
               </div>
               <p className="text-lg font-bold text-emerald-950 tracking-tight leading-relaxed">
                 Rekam jejak digital kontribusi Anda di masyarakat. <br />
-                <span className="text-black">
+                <span className="text-emerald-950">
                   "Setiap tindakan adalah data, setiap data adalah dedikasi."
                 </span>
               </p>
@@ -172,7 +179,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                 >
                   {sop.label}
                 </p>
-                <p className="text-sm font-bold text-black leading-tight uppercase tracking-tight">
+                <p className="text-sm font-bold text-emerald-950 leading-tight uppercase tracking-tight">
                   {sop.desc}
                 </p>
               </div>
@@ -217,7 +224,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                         <span className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold mb-2">
                           {new Date(report.date).toLocaleDateString('id-ID', { month: 'long' })}
                         </span>
-                        <span className="text-2xl font-bold text-black tracking-tighter leading-none">
+                        <span className="text-2xl font-bold text-emerald-950 tracking-tighter leading-none">
                           {new Date(report.date).getDate()}
                         </span>
                         <div className="mt-4 h-1.5 w-1.5 rounded-full bg-emerald-500 group-hover:scale-[3] transition-transform" />
@@ -252,7 +259,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                         </div>
 
                         <div className="space-y-4">
-                          <h4 className="text-2xl lg:text-3xl font-bold text-black tracking-tight leading-none group-hover:text-emerald-600 transition-colors uppercase">
+                          <h4 className="text-2xl lg:text-3xl font-bold text-emerald-950 tracking-tight leading-none group-hover:text-emerald-600 transition-colors uppercase">
                             {report.title}
                           </h4>
                           <div className="flex items-start gap-4">
@@ -267,18 +274,24 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                         {report.ai_analysis && (
                           <div className="p-6 bg-emerald-50/30 rounded-3xl border border-emerald-100/60 space-y-4 relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-4 opacity-5">
-                                <Activity size={64} />
+                              <Activity size={64} />
                             </div>
                             <div className="flex items-center gap-3">
                               <div className="h-8 w-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-emerald-200">
                                 <LayoutGrid size={16} strokeWidth={3} />
                               </div>
-                              <h5 className="text-sm font-bold text-black uppercase tracking-wider text-xs font-semibold">AI Intelligence Review</h5>
+                              <h5 className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold">
+                                AI Intelligence Review
+                              </h5>
                               <div className="ml-auto flex items-center gap-2">
-                                <span className={clsx(
-                                  "px-2 py-1 rounded-md text-sm font-bold uppercase",
-                                  report.ai_analysis.abcd_compliance >= 8 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
-                                )}>
+                                <span
+                                  className={clsx(
+                                    'px-2 py-1 rounded-md text-sm font-bold uppercase',
+                                    report.ai_analysis.abcd_compliance >= 8
+                                      ? 'bg-emerald-100 text-emerald-700'
+                                      : 'bg-amber-100 text-amber-700',
+                                  )}
+                                >
                                   ABCD: {report.ai_analysis.abcd_compliance}/10
                                 </span>
                               </div>
@@ -287,9 +300,14 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                               {report.ai_analysis.feedback}
                             </p>
                             <div className="flex flex-wrap gap-2 pt-1">
-                                {report.ai_analysis.tags.map((tag, idx) => (
-                                    <span key={idx} className="text-sm font-bold text-emerald-600 font-bold text-center">#{tag}</span>
-                                ))}
+                              {report.ai_analysis.tags.map((tag, idx) => (
+                                <span
+                                  key={idx}
+                                  className="text-sm font-bold text-emerald-600 font-bold text-center"
+                                >
+                                  #{tag}
+                                </span>
+                              ))}
                             </div>
                           </div>
                         )}
@@ -298,7 +316,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                           {report.status !== 'approved' && (
                             <Link
                               href={route('student.laporan-harian.edit', report.id)}
-                              className="h-14 px-8 rounded-2xl bg-emerald-50/30 border border-emerald-100/60 text-black hover:bg-emerald-600 hover:text-white font-bold text-sm transition-all flex items-center gap-3 uppercase tracking-wider text-xs font-semibold"
+                              className="h-14 px-8 rounded-2xl bg-emerald-50/30 border border-emerald-100/60 text-emerald-950 hover:bg-emerald-600 hover:text-white font-bold text-sm transition-all flex items-center gap-3 uppercase tracking-wider text-xs font-semibold"
                             >
                               Review Detail <ChevronRight size={14} strokeWidth={3} />
                             </Link>
@@ -418,7 +436,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                 <Link
                   key={i}
                   href={link.url}
-                  dangerouslySetInnerHTML={{ __html: link.label }}
+                  dangerouslySetInnerHTML={{ __html: link.label ?? '' }}
                   className={clsx(
                     'h-14 min-w-[56px] px-5 flex items-center justify-center rounded-2xl text-sm font-bold tracking-widest uppercase transition-all',
                     link.active

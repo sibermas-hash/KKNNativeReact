@@ -7,6 +7,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { initCapacitor } from '@/lib/capacitor-init';
 import { ToastProvider } from '@/Hooks/useToast';
 import axios from 'axios';
+import AppLayout from '@/Layouts/AppLayout';
 
 // Initialize theme on page load
 function initializeTheme() {
@@ -39,8 +40,16 @@ initializeTheme();
 
 createInertiaApp({
  title: (title) => `${title} - ${appName}`,
- resolve: (name) =>
- resolvePageComponent(`./Pages/${name}.tsx`, import.meta.glob('./Pages/**/*.tsx')),
+  resolve: (name) => {
+    const pages = import.meta.glob('./Pages/**/*.tsx');
+    return resolvePageComponent(`./Pages/${name}.tsx`, pages).then((module: any) => {
+      const page = module.default;
+      if (page.layout === undefined && (name.startsWith('Admin/') || name.startsWith('Dpl/') || name.startsWith('Student/'))) {
+        page.layout = AppLayout.layout;
+      }
+      return module;
+    });
+  },
  setup({ el, App, props }) {
  initCapacitor();
  const root = createRoot(el);

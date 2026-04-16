@@ -47,7 +47,7 @@ class StudentTransferController extends Controller
             ->orderBy('jenis')
             ->get(['id', 'name', 'periode', 'jenis', 'kuota']);
 
-        return Inertia::render('Admin/Registrations/Transfer', [
+        return Inertia::render('Admin/Operational/Registrations/Transfer', [
             'students' => $students ? $this->formatPaginator($students) : [
                 'data' => [],
                 'meta' => [

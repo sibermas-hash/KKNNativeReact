@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\KKN\Workshop;
+use App\Services\DplEligibilityService;
 use App\Services\PeriodContextService;
 use App\Services\WorkshopService;
 use Illuminate\Http\Request;
@@ -15,9 +16,12 @@ class WorkshopController extends Controller
 {
     protected $workshopService;
 
-    public function __construct(WorkshopService $workshopService)
+    protected $eligibilityService;
+
+    public function __construct(WorkshopService $workshopService, DplEligibilityService $eligibilityService)
     {
         $this->workshopService = $workshopService;
+        $this->eligibilityService = $eligibilityService;
     }
 
     /**
@@ -25,25 +29,27 @@ class WorkshopController extends Controller
      */
     public function index(Request $request, PeriodContextService $periodContextService)
     {
+        $user = $request->user();
         $activePeriodId = $periodContextService->getActivePeriodId() ?? $periodContextService->getDefaultPeriodId();
+
         $workshops = $this->workshopService->getUpcomingWorkshops(
-            $request->user()->hasRole('student') ? $request->user()->id : null,
-            $request->user()->hasRole('superadmin'),
-            $request->user()->hasRole('superadmin'),
+            $user->hasRole('student') ? $user->id : null,
+            $user->hasRole('superadmin'),
+            $user->hasRole('superadmin'),
             $activePeriodId
         );
 
-        if ($request->user()->hasRole('superadmin')) {
-            return Inertia::render('Admin/Workshops/Index', [
-                'workshops' => $workshops,
-            ]);
+        // PRD FR-01: Eligibility for Lecturers
+        $dplEligibility = null;
+        if ($user->hasRole('dpl')) {
+            $dosen = $user->dosen;
+            if ($dosen) {
+                $dplEligibility = $this->eligibilityService->canAttendWorkshop($dosen);
+            }
         }
 
-        return Inertia::render('Student/Workshops/Index', [
+        return Inertia::render('Admin/Workshops/Index', [
             'workshops' => $workshops,
-            'workflow' => [
-                'period_scoped' => Workshop::supportsPeriodAssignment(),
-            ],
         ]);
     }
 
@@ -114,6 +120,26 @@ class WorkshopController extends Controller
     }
 
     /**
+     * Update workshop passing status (Admin)
+     */
+    public function markPassingStatus(Request $request, int $workshop)
+    {
+        abort_unless($request->user()->hasRole('superadmin'), 403, 'Hanya superadmin yang dapat mengelola status kelulusan pembekalan.');
+
+        $validated = $request->validate([
+            'user_ids' => ['nullable', 'array'],
+            'user_ids.*' => ['integer'],
+        ]);
+
+        $this->workshopService->bulkMarkPassingStatus(
+            $workshop,
+            collect($validated['user_ids'] ?? [])->map(fn ($id) => (int) $id)->values()->all()
+        );
+
+        return back()->with('success', 'Status kelulusan pembekalan berhasil diperbarui.');
+    }
+
+    /**
      * Update workshop attendance (Admin)
      */
     public function markAttendance(Request $request, int $workshop)
@@ -134,21 +160,36 @@ class WorkshopController extends Controller
     }
 
     /**
-     * Register for a workshop (Student)
+     * Register for a workshop
      */
     public function register(Request $request, int $workshopId)
     {
+        $user = $request->user();
+
+        // PRD FR-01: Validation for Lecturers (DPL)
+        if ($user->hasRole('dpl')) {
+            $dosen = $user->dosen;
+            if (! $dosen) {
+                return back()->with('error', 'Profil dosen tidak ditemukan.');
+            }
+
+            $check = $this->eligibilityService->canAttendWorkshop($dosen);
+            if (! $check['eligible']) {
+                return back()->with('error', $check['reason']);
+            }
+        }
+
         try {
             $this->workshopService->registerParticipant(
                 $workshopId,
-                $request->user()->id
+                $user->id
             );
 
             return back()->with('success', 'Pendaftaran pembekalan berhasil.');
         } catch (\Exception $e) {
             Log::error('Workshop registration failed', ['error' => $e->getMessage()]);
 
-            return back()->with('error', 'Pendaftaran pembekalan gagal. Silakan coba lagi.');
+            return back()->with('error', 'Pendaftaran pembekalan gagal: '.$e->getMessage());
         }
     }
 }

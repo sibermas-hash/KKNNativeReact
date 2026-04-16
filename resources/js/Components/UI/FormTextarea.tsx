@@ -33,11 +33,11 @@ const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
                         id={id}
                         rows={rest.rows ?? 4}
                         className={clsx(
-                            'w-full rounded-xl border border-emerald-100/60 bg-white px-4 py-2.5 text-sm text-black transition-all placeholder:text-emerald-950 resize-none',
+                            'w-full rounded-xl border border-emerald-100/60 bg-white px-4 py-2.5 text-sm text-emerald-950 transition-all placeholder:text-emerald-950 resize-none',
                             'focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20',
                             error
                                 ? 'border-rose-500 focus:ring-rose-500/20'
-                                : 'hover:border-slate-400',
+                                : 'hover:border-emerald-300',
                             rest.disabled && 'bg-emerald-50/30 text-emerald-950 cursor-not-allowed border-emerald-100/60',
                             className,
                         )}

@@ -29,7 +29,7 @@ export default function PremiumStat({ label, value, icon: Icon, highlight = fals
             </div>
             
             <div className="mt-6 relative z-10">
-                <p className="text-4xl font-extrabold text-black tracking-tight mb-1 transition-all">{value ?? 0}</p>
+                <p className="text-4xl font-extrabold text-emerald-950 tracking-tight mb-1 transition-all">{value ?? 0}</p>
                 <p className="text-sm font-bold text-emerald-950 tracking-wide uppercase">{label}</p>
             </div>
         </PremiumCard>

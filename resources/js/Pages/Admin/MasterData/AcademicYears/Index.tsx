@@ -142,8 +142,8 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
  });
  };
 
- return (
- <AppLayout title="Data Tahun Akademik">
+  return (
+    <>
  <Head title="Data Tahun Akademik" />
 
  <ConfirmDialog
@@ -323,7 +323,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
  {paginationMeta && (
  <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 mt-auto flex items-center justify-between">
  <span className="text-xs text-gray-500">
- Menampilkan <strong>{paginationMeta.data?.length || rows.length}</strong> baris
+ Menampilkan <strong>{rows.length}</strong> baris
  </span>
  <Pagination meta={paginationMeta} />
  </div>
@@ -332,6 +332,10 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
  </div>
  </div>
  </div>
- </AppLayout>
- );
+    </>
+  );
 }
+
+AcademicYearsIndex.layout = (page: React.ReactNode) => (
+  <AppLayout title="Data Tahun Akademik">{page}</AppLayout>
+);

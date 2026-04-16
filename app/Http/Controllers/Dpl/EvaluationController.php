@@ -107,6 +107,13 @@ class EvaluationController extends Controller
             ->with(['peserta' => fn ($q) => $q->where('status', 'approved')->with('mahasiswa'), 'periode'])
             ->get();
 
+        // Statistik monitoring per kelompok untuk validasi syarat penilaian
+        $monitoringStats = \App\Models\KKN\MonitoringDpl::whereIn('kelompok_id', $groupIds)
+            ->selectRaw('kelompok_id, COUNT(*) as count')
+            ->groupBy('kelompok_id')
+            ->get()
+            ->pluck('count', 'kelompok_id');
+
         // LARAVEL 13 OPTIMIZATION: Concurrency for Parallel AI Data Fetching
         $studentIds = $groups->flatMap(fn ($g) => $g->peserta->pluck('mahasiswa_id'))->filter()->unique()->values();
 
@@ -135,6 +142,8 @@ class EvaluationController extends Controller
                 'id' => $group->id,
                 'name' => $group->nama_kelompok,
                 'period_name' => $group->periode?->name ?? '-',
+                'monitoring_count' => $monitoringStats[$group->id] ?? 0,
+                'is_eligible_for_grading' => ($monitoringStats[$group->id] ?? 0) >= 2,
                 'students' => $group->peserta->map(fn ($registration) => [
                     'id' => $registration->mahasiswa?->id,
                     'nim' => $registration->mahasiswa?->nim ?? '-',

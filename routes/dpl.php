@@ -20,6 +20,12 @@ Route::middleware(['role:dpl'])->prefix('dpl')->name('dpl.')->group(function () 
     Route::get('kelompok', [Dpl\GroupController::class, 'index'])->name('kelompok.index');
     Route::get('kelompok/{group}', [Dpl\GroupController::class, 'show'])->name('kelompok.show');
 
+    // Workshop Registration (PRD FR-01)
+    Route::prefix('workshops')->name('workshops.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\WorkshopController::class, 'index'])->name('index');
+        Route::post('/{workshop}/register', [\App\Http\Controllers\WorkshopController::class, 'register'])->name('register');
+    });
+
     // ─── FASE: PELAKSANAAN (execution) ────────────────────────────────
     // Terbuka saat admin klik "Terjun Lapangan"
     Route::middleware(['phase:execution,grading'])->group(function () {

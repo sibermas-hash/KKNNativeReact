@@ -64,7 +64,11 @@ class KelompokKknController extends Controller
         Gate::authorize('manage-groups');
 
         $query = KelompokKkn::with('periode', 'lokasi', 'dosen')
-            ->withCount('peserta')
+            ->withCount(['peserta', 'peserta as approved_participants_count' => function ($q) {
+                $q->where('status', 'approved');
+            }, 'peserta as pending_participants_count' => function ($q) {
+                $q->where('status', 'pending');
+            }])
             ->when($request->input('search'), function ($query, $search) {
                 $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
                 $query->where(function ($q) use ($s) {
@@ -101,11 +105,11 @@ class KelompokKknController extends Controller
             });
         }
 
-        // Summary calculation from the base query (pre-pagination)
+        // Summary calculation from CLONED queries to avoid mutating the base query
         $summaryData = [
-            'total' => $query->count(),
-            'active' => $query->where('status', 'active')->count(),
-            'draft' => $query->where('status', 'draft')->count(),
+            'total' => (clone $query)->count(),
+            'active' => (clone $query)->where('status', 'active')->count(),
+            'draft' => (clone $query)->where('status', 'draft')->count(),
         ];
 
         $groups = $query->orderByDesc('created_at')
@@ -198,9 +202,9 @@ class KelompokKknController extends Controller
                 'locations_managed_automatically' => true,
             ],
             'summary' => [
-                'total_groups' => (int) ($summaryData->total ?? 0),
-                'active_groups' => (int) ($summaryData->active ?? 0),
-                'draft_groups' => (int) ($summaryData->draft ?? 0),
+                'total_groups' => (int) ($summaryData['total'] ?? 0),
+                'active_groups' => (int) ($summaryData['active'] ?? 0),
+                'draft_groups' => (int) ($summaryData['draft'] ?? 0),
                 'groups_without_main_lecturer' => $groupCollection->filter(fn (array $group) => blank($group['main_lecturer']))->count(),
                 'groups_ready_for_placement' => $groupCollection->where('ready_for_placement', true)->count(),
                 'total_available_slots' => $groupCollection->sum('available_slots'),
@@ -426,7 +430,6 @@ class KelompokKknController extends Controller
             return redirect()->route('admin.kelompok.index')->with('error', 'Kelompok masih memiliki peserta aktif. Pindahkan atau tolak semua peserta terlebih dahulu.');
         }
 
-        $kelompokKkn->dosen()->detach(); // Clean up pivot
         $kelompokKkn->delete();
 
         return redirect()->route('admin.kelompok.index')->with('success', 'Kelompok berhasil dihapus.');

@@ -102,9 +102,6 @@ class DashboardController extends Controller
             'workProgramCount' => $activeGroupId
                 ? ProgramKerja::where('kelompok_id', $activeGroupId)->count()
                 : 0,
-            'abcdStage' => $activeGroupId
-                ? ProgramKerja::where('kelompok_id', $activeGroupId)->first()?->abcd_stage?->value
-                : null,
             'finalReport' => ($mahasiswaId && $activeGroupId)
                 ? LaporanAkhir::query()
                     ->where('mahasiswa_id', $mahasiswaId)

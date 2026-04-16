@@ -10,7 +10,7 @@ export const GroupActionButtons = ({ canManage, onOpenCreateForm }: GroupActionB
   return (
     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 pt-8">
       <div className="space-y-1">
-        <h1 className="text-4xl font-bold tracking-tight text-black">
+        <h1 className="text-4xl font-bold tracking-tight text-emerald-950">
           Unit <span className="text-emerald-600">Pelaksana.</span>
         </h1>
         <p className="text-sm font-medium text-emerald-950 max-w-2xl">

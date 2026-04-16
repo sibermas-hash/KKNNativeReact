@@ -4,16 +4,16 @@ import { clsx } from 'clsx';
 
 export interface PaginationMeta {
     current_page: number;
-    from: number | null;
-    last_page: number;
-    links: {
+    from?: number | null;
+    last_page?: number;
+    links?: {
         url: string | null;
         label: string;
         active: boolean;
     }[];
-    path: string;
-    per_page: number;
-    to: number | null;
+    path?: string;
+    per_page?: number;
+    to?: number | null;
     total: number;
     prev_page_url?: string | null;
     next_page_url?: string | null;
@@ -24,7 +24,7 @@ interface PaginationProps {
 }
 
 export default function Pagination({ meta }: PaginationProps) {
-    if (meta.last_page <= 1) return null;
+    if (!meta.last_page || meta.last_page <= 1 || !meta.links) return null;
 
     const getButtonClass = (active: boolean, disabled: boolean) => {
         return clsx(

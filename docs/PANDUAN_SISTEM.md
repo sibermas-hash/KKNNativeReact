@@ -53,7 +53,7 @@ Daftar perintah Artisan yang sering digunakan untuk pemeliharaan sistem:
 
 | Perintah | Fungsi |
 | :--- | :--- |
-| `php artisan master:sync` | Menarik data Dosen/Mhs dari API Master (SIKAD). |
+| `php artisan sync:master-data` | Menarik data Dosen/Mhs dari API Master (SIKAD). Opsi: `--type=all\|mahasiswa\|dosen\|fakultas`, `--source=api\|db`, `--delta`, `--force`. |
 | `php artisan kkn:import-excel` | Import data manual dari file Excel (Offline). |
 | `php artisan optimize:clear` | Membersihkan cache Laravel (Wajib setelah update). |
 | `php artisan migrate:status` | Mengecek apakah struktur database sudah terbaru. |

@@ -1,6 +1,7 @@
 import React from 'react';
 import { clsx } from 'clsx';
-import { motion, HTMLMotionProps } from 'framer-motion';
+import type { HTMLMotionProps } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface PremiumCardProps extends HTMLMotionProps<"div"> {
     children: React.ReactNode;

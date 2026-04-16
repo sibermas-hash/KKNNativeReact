@@ -6,12 +6,12 @@ namespace App\Enums;
 
 enum AbcdStage: string
 {
-    case DISCOVERY = 'Discovery';
-    case DREAM = 'Dream';
-    case DESIGN = 'Design';
-    case DEFINE = 'Define';
-    case DESTINY = 'Destiny';
-    case REFLECTION = 'Reflection';
+    case DISCOVERY = 'discovery';
+    case DREAM = 'dream';
+    case DESIGN = 'design';
+    case DEFINE = 'define';
+    case DESTINY = 'destiny';
+    case REFLECTION = 'reflection';
 
     public function label(): string
     {

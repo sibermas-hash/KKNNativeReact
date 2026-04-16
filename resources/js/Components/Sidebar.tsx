@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import type { PageProps } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -55,7 +56,7 @@ const safeRoute = (name: string, params?: Record<string, unknown>) => {
 
 const getAdminNav = (): NavGroup[] => [
   {
-    title: 'DASHBOARD',
+    title: 'DASBOR',
     items: [{ label: 'Beranda', href: safeRoute('admin.dashboard'), icon: LayoutDashboard }],
   },
   {
@@ -67,6 +68,7 @@ const getAdminNav = (): NavGroup[] => [
       { label: 'Wilayah Penugasan', href: safeRoute('admin.locations.index'), icon: MapPin },
       { label: 'Mahasiswa', href: safeRoute('admin.mahasiswa.index'), icon: Users },
       { label: 'Dosen', href: safeRoute('admin.dpl.index'), icon: UserCheck },
+      { label: 'Workshop & Pembekalan', href: safeRoute('admin.workshops.index'), icon: GraduationCap },
     ],
   },
   {
@@ -93,7 +95,7 @@ const getAdminNav = (): NavGroup[] => [
     title: 'PENILAIAN',
     items: [
       { label: 'Nilai Peserta', href: safeRoute('admin.nilai.index'), icon: FileText },
-      { label: 'Grade Reports', href: safeRoute('admin.grade-reports.index'), icon: BarChart3 },
+      { label: 'Laporan Nilai', href: safeRoute('admin.grade-reports.index'), icon: BarChart3 },
       { label: 'Evaluasi', href: safeRoute('admin.evaluasi.index'), icon: Star },
       { label: 'Yudisium', href: safeRoute('admin.yudisium.index'), icon: GraduationCap },
     ],
@@ -114,7 +116,7 @@ const getAdminNav = (): NavGroup[] => [
   {
     title: 'PENGATURAN & SINKRONISASI',
     items: [
-      { label: 'Dashboard AI', href: safeRoute('admin.ai.monitor'), icon: Cpu },
+      { label: 'Monitor AI', href: safeRoute('admin.ai.monitor'), icon: Cpu },
       { label: 'Pengguna', href: safeRoute('admin.pengguna.index'), icon: Shield },
       {
         label: 'Konfigurasi Nilai',
@@ -129,9 +131,10 @@ const getAdminNav = (): NavGroup[] => [
 
 const getDplNav = (): NavGroup[] => [
   {
-    title: 'DPL ACCESS',
+    title: 'AKSES DPL',
     items: [
       { label: 'Beranda DPL', href: safeRoute('dpl.dashboard'), icon: LayoutDashboard },
+      { label: 'Workshop & Pembekalan', href: safeRoute('dpl.workshops.index'), icon: GraduationCap },
       { label: 'Data Kelompok', href: safeRoute('dpl.kelompok.index'), icon: Users },
       { label: 'Monitoring Mahasiswa', href: safeRoute('dpl.monitoring.index'), icon: Activity },
       { label: 'Penilaian Akhir', href: safeRoute('dpl.evaluations.index'), icon: Star },
@@ -199,12 +202,31 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ open, onClose }: SidebarProps) {
-  const { auth, url } = usePage<PageProps & { url: string }>().props;
+  const { props, url } = usePage<PageProps & { url: string }>();
+  const { auth } = props;
+  
   const roles =
     (auth.user?.roles as any[])?.map((r) => (typeof r === 'string' ? r : (r as any).name)) || [];
   const currentPhase = (auth as any)?.active_phase ?? 'upcoming';
   const navGroups = getNavForRole(roles, currentPhase);
-  const currentPath = typeof url === 'string' ? url : window.location.pathname;
+  const currentPath = url;
+
+  const navRef = useRef<HTMLDivElement>(null);
+  const activeItemRef = useRef<HTMLAnchorElement>(null);
+
+  // Restore scroll once on mount
+  useEffect(() => {
+    if (navRef.current) {
+      const savedScroll = sessionStorage.getItem('sidebar-scroll');
+      if (savedScroll) {
+        navRef.current.scrollTop = parseInt(savedScroll, 10);
+      }
+    }
+  }, []);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    sessionStorage.setItem('sidebar-scroll', e.currentTarget.scrollTop.toString());
+  };
 
   return (
     <>
@@ -219,7 +241,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           />
         )}
       </AnimatePresence>
-
+ 
       <aside
         className={clsx(
           'fixed inset-y-0 left-0 z-50 w-[270px] bg-white/80 backdrop-blur-2xl border-r border-emerald-100/50 flex flex-col transition-transform duration-500 lg:translate-x-0',
@@ -233,32 +255,49 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             <img src="/images/logo_kkn.png" alt="Logo" className="h-5 w-5 object-contain" />
           </div>
           <div className="relative z-10">
-            <h1 className="text-sm font-semibold text-black  tracking-tight">KKN UIN SAIZU</h1>
-            <p className="text-xs font-bold text-emerald-600  tracking-normal mt-0.5">
+            <h1 className="text-sm font-semibold text-emerald-950 tracking-tight">KKN UIN SAIZU</h1>
+            <p className="text-xs font-bold text-emerald-600 tracking-normal mt-0.5">
               Portal Administrasi
             </p>
           </div>
         </div>
-
+ 
         {/* NAVIGATION LAYER */}
-        <nav className="flex-1 overflow-y-auto px-5 py-8 space-y-8 scrollbar-hide relative z-10">
+        <nav 
+          ref={navRef}
+          onScroll={handleScroll}
+          className="flex-1 overflow-y-auto px-5 py-8 space-y-8 scrollbar-hide relative z-10 scroll-smooth"
+        >
           {navGroups.map((group) => (
             <div key={group.title}>
-              <h3 className="px-3 mb-3 text-[12px] font-semibold text-emerald-950  tracking-normal">
+              <h3 className="px-3 mb-3 text-[12px] font-semibold text-emerald-950 tracking-normal">
                 {group.title}
               </h3>
               <div className="space-y-1">
                 {group.items.map((item) => {
-                  const isActive =
-                    currentPath === item.href ||
-                    (item.href !== safeRoute('admin.dashboard') &&
-                      currentPath.startsWith(item.href));
+                  const getPath = (href: string) => {
+                    try {
+                      return new URL(href, window.location.origin).pathname;
+                    } catch (e) {
+                      return href;
+                    }
+                  };
+
+                  const itemPath = getPath(item.href);
+                  const normalizedCurrentPath = currentPath.split('?')[0];
+                  
+                  const isActive = 
+                    normalizedCurrentPath === itemPath || 
+                    (itemPath !== '/admin' && normalizedCurrentPath.startsWith(itemPath));
+
                   const isValidHref = item.href && item.href !== '#';
                   return (
                     <Link
                       key={item.href}
+                      ref={isActive ? activeItemRef : null}
                       href={isValidHref ? item.href : '#'}
                       method={isValidHref ? 'get' : undefined}
+                      preserveScroll
                       onClick={(e) => {
                         if (!isValidHref) {
                           e.preventDefault();
@@ -268,32 +307,29 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                         }
                       }}
                       className={clsx(
-                        'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-300 relative overflow-hidden group',
+                        'flex items-center gap-4 px-4 py-3 rounded-xl text-sm transition-all duration-300 relative overflow-hidden group',
                         isActive
-                          ? 'bg-gradient-to-r from-emerald-50/80 to-transparent shadow-[inset_3px_0_0_0_rgba(16,185,129,1)] font-bold'
-                          : 'text-black hover:bg-emerald-50/50 font-medium',
+                          ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-600/20 font-bold z-10'
+                          : 'text-emerald-950 hover:bg-emerald-50 hover:text-emerald-600 font-medium',
                       )}
                     >
                       <item.icon
                         className={clsx(
-                          'h-[18px] w-[18px] transition-transform duration-300 group-hover:scale-110',
+                          'h-[20px] w-[20px] transition-transform duration-300 group-hover:scale-110',
                           isActive
-                            ? 'text-emerald-600'
-                            : 'text-emerald-950 group-hover:text-emerald-600',
+                            ? 'text-white'
+                            : 'text-emerald-600 group-hover:text-emerald-700',
                         )}
-                        strokeWidth={isActive ? 2.5 : 2}
+                        strokeWidth={isActive ? 3 : 2.5}
                       />
                       <span
                         className={clsx(
-                          'transition-colors',
-                          isActive ? 'text-emerald-950' : 'text-black group-hover:text-emerald-900',
+                          'transition-colors uppercase tracking-wider text-[11px]',
+                          isActive ? 'text-white font-bold' : 'text-emerald-950 font-semibold',
                         )}
                       >
                         {item.label}
                       </span>
-                      {isActive && (
-                        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]" />
-                      )}
                     </Link>
                   );
                 })}
@@ -301,21 +337,22 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             </div>
           ))}
         </nav>
-
+ 
         {/* USER PROFILE SECTION LUXURY */}
         <div className="p-5 border-t border-emerald-100/50 bg-gradient-to-t from-white to-transparent relative z-10">
           <Link
             href={safeRoute('profile.show')}
+            preserveScroll
             className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white border border-emerald-100/60 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-900/5 transition-all duration-300 group"
           >
             <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform duration-300 border border-emerald-100/50">
               <UserCircle size={20} strokeWidth={2.5} />
             </div>
             <div className="flex flex-col">
-              <span className="text-xs font-semibold text-black tracking-tight">
+              <span className="text-xs font-semibold text-emerald-950 tracking-tight">
                 Pengaturan Profil
               </span>
-              <span className="text-[12px] font-bold text-emerald-950  tracking-wider mt-0.5">
+              <span className="text-[12px] font-bold text-emerald-950 tracking-wider mt-0.5">
                 Akun & Sistem
               </span>
             </div>

@@ -62,13 +62,17 @@ class MasterDataSeeder extends Seeder
             [
                 'academic_year_id' => $academicYear->id,
                 'name' => 'KKN Reguler',
+                'periode' => 56,
+                'jenis' => 'KKN Reguler',
             ],
             [
+                'angkatan' => 56,
                 'start_date' => Carbon::now()->addMonth()->toDateString(),
                 'end_date' => Carbon::now()->addMonths(3)->toDateString(),
                 'registration_start' => Carbon::now()->subWeeks(2)->toDateString(),
                 'registration_end' => Carbon::now()->addWeeks(2)->toDateString(),
                 'is_active' => true,
+                'current_phase' => 'registration',
             ]
         );
     }

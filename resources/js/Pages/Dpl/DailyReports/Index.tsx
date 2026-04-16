@@ -17,6 +17,7 @@ import {
     Check
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import type { LucideIcon } from '@/types';
 
 interface Report {
     id: number;
@@ -50,7 +51,7 @@ interface Group {
 interface Props {
     reports: {
         data: Report[];
-        links: Array<{ name: string; url?: string; icon?: LucideIcon }>;
+        links: Array<{ name: string; label?: string; url?: string; icon?: LucideIcon; active?: boolean }>;
         total: number;
     };
     groups: Group[];
@@ -317,7 +318,7 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
                                     <Link
                                         key={i}
                                         href={link.url}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                        dangerouslySetInnerHTML={{ __html: link.label ?? '' }}
                                         className={clsx(
                                             "h-10 min-w-[40px] px-3 flex items-center justify-center rounded-xl text-xs font-bold transition-all",
                                             link.active ? "bg-emerald-900 text-white shadow-lg" : "bg-white border border-emerald-100/60 text-emerald-950 hover:border-emerald-200 hover:text-emerald-600"

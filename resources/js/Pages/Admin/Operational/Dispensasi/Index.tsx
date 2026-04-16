@@ -1,6 +1,9 @@
 import { type FormEvent, useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
-import { ShieldCheck, Plus, Trash2, Search, X, UserCheck, RefreshCw, FileWarning, Fingerprint, Activity } from 'lucide-react';
+import { 
+  ShieldCheck, Plus, Trash2, Search, X, UserCheck, RefreshCw, 
+  FileWarning, Fingerprint, Activity, AlertCircle, ChevronRight, Zap, Target
+} from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Pagination, ConfirmDialog } from '@/Components/ui';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
@@ -14,27 +17,17 @@ interface Dispensasi {
   granted_by_user?: { id: number; name: string } | null;
 }
 interface Period { id: number; name: string; }
-type PaginatedDispensasi = PaginationMeta & { data: Dispensasi[] };
+interface PaginatedDispensasi { data: Dispensasi[]; meta: PaginationMeta; }
 interface Props { dispensasi: PaginatedDispensasi; periods: Period[]; filters: { search?: string }; }
 
 const REQUIREMENT_OPTIONS = [
-  { value: 'min_sks', label: 'SKS Minimum' },
-  { value: 'min_gpa', label: 'IPK Minimum' },
-  { value: 'bta_ppi', label: 'Lulus BTA & PPI' },
-  { value: 'documents', label: 'Kelengkapan Dokumen' },
-  { value: 'personal_status', label: 'Status Aktif Mahasiswa' },
-  { value: 'program_prodi', label: 'Sinkronisasi Prodi' },
+  { value: 'min_sks', label: 'SKS MINIMUM' },
+  { value: 'min_gpa', label: 'IPK MINIMUM' },
+  { value: 'bta_ppi', label: 'LULUS BTA & PPI' },
+  { value: 'documents', label: 'KELENGKAPAN BERKAS' },
+  { value: 'personal_status', label: 'STATUS KEAKTIFAN' },
+  { value: 'program_prodi', label: 'KOMPATIBILITAS PRODI' },
 ];
-
-const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
-};
-
-const itemVariants = {
-    hidden: { opacity: 0, y: 15 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } }
-};
 
 export default function DispensasiIndex({ dispensasi, periods, filters }: Props) {
   const [search, setSearch] = useState(filters.search ?? '');
@@ -48,130 +41,123 @@ export default function DispensasiIndex({ dispensasi, periods, filters }: Props)
   const toggleRequirement = (v: string) => { const curr = form.data.bypassed_requirements; form.setData('bypassed_requirements', curr.includes(v) ? curr.filter(x => x !== v) : [...curr, v]); };
 
   return (
-    <AppLayout title="Dispensasi Sistem Akses">
-      <Head title="Dispensasi Otoritas | Sistem KKN" />
+    <AppLayout title="Otoritas Dispensasi Khusus">
+      <Head title="Manajemen Dispensasi" />
 
-      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="max-w-[1600px] mx-auto space-y-16 sm:px-6 lg:px-8 font-sans pb-24 pt-6">
+      <div className="max-w-[1600px] mx-auto space-y-12 pb-24 font-sans px-4 sm:px-6 lg:px-8 text-emerald-950">
         {/* --- PREMIUM HEADER --- */}
-        <motion.header variants={itemVariants} className="relative overflow-hidden rounded-xl border border-emerald-100 bg-white p-12 shadow-sm">
-            <div className="absolute top-0 right-0 h-64 w-64 translate-x-1/2 -translate-y-1/2 rounded-full bg-rose-50 opacity-50 blur-3xl" />
-            <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
-                <div className="space-y-4 max-w-3xl">
-                    <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
-                            <ShieldCheck size={20} strokeWidth={2.5} />
-                        </div>
-                        <span className="text-sm font-bold text-emerald-600 uppercase tracking-wider text-xs font-semibold leading-none">
-                            Otoritas Administrator Khusus
-                        </span>
-                    </div>
-                    <h1 className="text-2xl font-bold text-emerald-950 tracking-tight leading-none pt-2">
-                        Pusat Kendali <span className="text-rose-600">Dispensasi</span>.
-                    </h1>
-                    <p className="text-emerald-950 font-medium text-lg leading-relaxed pt-2">
-                        Terbitkan pengecualian otorisasi pendaftaran untuk kasus khusus. Segala bentuk bypass sistem akan terdata dalam log audit dan diawasi sepenuhnya.
-                    </p>
-                </div>
-                
-                <div className="flex items-center gap-4 shrink-0">
-                    <div className="h-14 px-6 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center gap-4">
-                        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs">
-                            <span className="text-emerald-600 text-lg mr-2 tabular-nums">{dispensasi.total}</span>
-                            Dispensasi Aktif
-                        </span>
-                    </div>
-                    <button
-                        onClick={() => setShowForm(!showForm)}
-                        className={clsx(
-                            "h-14 px-6 rounded-xl font-bold text-xs uppercase tracking-wider text-xs font-semibold shadow-rose flex items-center gap-3 transition-all",
-                            showForm 
-                                ? "bg-white border-2 border-emerald-100 text-emerald-950 hover:bg-emerald-50" 
-                                : "bg-emerald-950 border border-transparent text-white hover:bg-emerald-800"
-                        )}
-                    >
-                        {showForm ? <><X size={16} strokeWidth={2.5} /> Batalkan Proses</> : <><Plus size={16} strokeWidth={2.5} /> Terbitkan Baru</>}
-                    </button>
-                </div>
-            </div>
-        </motion.header>
+        <div className="space-y-6 pt-12">
+           <div className="flex items-center gap-3 text-rose-600">
+              <ShieldCheck size={20} />
+              <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-80">Protokol Intervensi Sistem</span>
+           </div>
+           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+              <div className="space-y-2">
+                <h1 className="text-4xl font-black text-emerald-950 tracking-tighter leading-none">
+                  Kendali <span className="text-rose-500">Dispensasi.</span>
+                </h1>
+                <p className="text-sm font-semibold text-emerald-700/80 tracking-tight leading-relaxed max-w-2xl mt-4">
+                  Terbitkan pengecualian persyaratan pendaftaran untuk kondisi akademik darurat. Setiap bypass sistem akan diaudit secara ketat dan dicatat dalam log monitoring.
+                </p>
+              </div>
+              <div className="shrink-0">
+                  <button
+                    onClick={() => setShowForm(!showForm)}
+                    className={clsx(
+                        "h-16 px-8 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl transition-all border-2 flex items-center gap-4 active:scale-95",
+                        showForm 
+                            ? "bg-white border-emerald-100 text-emerald-950 hover:bg-emerald-50 shadow-emerald-50" 
+                            : "bg-emerald-950 border-emerald-950 text-white hover:bg-black shadow-emerald-200"
+                    )}
+                  >
+                    {showForm ? <><X size={18} strokeWidth={3} /> BATALKAN PROSES</> : <><Plus size={18} strokeWidth={3} /> TERBITKAN DISPENSASI</>}
+                  </button>
+              </div>
+           </div>
+        </div>
 
-        {/* --- FORM KENDALI NEW --- */}
+        {/* --- STATS OVERVIEW --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+           <MetricCard label="Dispensasi Aktif" value={dispensasi.meta.total} icon={Zap} desc="Total Kasus Bypass" />
+           <MetricCard label="Status Otoritas" value="TERKONTROL" icon={ShieldCheck} desc="Log Audit Aktif" />
+           <MetricCard label="Integritas Data" value="VALID" icon={Activity} desc="Sinkronisasi Master" />
+           <MetricCard label="Tingkat Risiko" value="RENDAH" icon={AlertCircle} desc="Monitoring Berkala" />
+        </div>
+
+        {/* --- FORM INTERVENSI --- */}
         <AnimatePresence>
             {showForm && (
-                <motion.div 
+                <motion.section 
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     className="overflow-hidden"
                 >
-                    <div className="bg-white border-2 border-rose-100 rounded-[2.5rem] p-10 shadow-form relative">
-                        <div className="absolute top-0 right-10 w-32 h-32 bg-rose-50/50 rounded-full blur-3xl -translate-y-1/2 pointer-events-none" />
+                    <div className="bg-white border-2 border-rose-100 rounded-[3rem] p-12 shadow-2xl shadow-rose-100/30 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-12 opacity-5 rotate-12 -mr-16 -mt-16"><FileWarning size={200} /></div>
                         
-                        <div className="flex items-center gap-4 mb-10 border-b-2 border-slate-50 pb-6 relative z-10">
-                            <div className="h-14 w-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center">
-                                <FileWarning size={28} strokeWidth={2.5} />
+                        <div className="flex items-center gap-6 mb-12 border-b-2 border-emerald-50 pb-8 relative z-10">
+                            <div className="h-16 w-16 bg-rose-50 text-rose-500 rounded-[1.5rem] flex items-center justify-center border-2 border-rose-100 shadow-sm">
+                                <FileWarning size={32} strokeWidth={2.5} />
                             </div>
-                            <div>
-                                <h3 className="text-xl font-bold text-emerald-950 leading-none mb-1">Form Registrasi Perlakuan Khusus</h3>
-                                <p className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold opacity-60">
-                                    Dokumentasikan alasan persetujuan agar tidak menyalahi SOP pendaftaran KKN.
-                                </p>
+                            <div className="flex flex-col">
+                                <h3 className="text-xl font-black text-emerald-950 uppercase tracking-tight leading-none mb-1.5">Otorisasi Perlakuan Khusus</h3>
+                                <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em]">Dokumentasikan Alasan Persetujuan Secara Formal</p>
                             </div>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-10 relative z-10">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <form onSubmit={handleSubmit} className="space-y-12 relative z-10">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                                 <div className="space-y-3">
-                                    <label className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs flex items-center gap-2">
-                                        NIM Kadidat <span className="text-rose-500">*</span>
+                                    <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest pl-1 leading-none">
+                                        NIM KANDIDAT TARGET <span className="text-rose-500">*</span>
                                     </label>
                                     <div className="relative group">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-600">
-                                            <Fingerprint size={18} />
+                                        <div className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-300 group-focus-within:text-emerald-600 transition-colors">
+                                            <Fingerprint size={20} strokeWidth={2.5} />
                                         </div>
                                         <input 
                                             value={form.data.nim} 
                                             onChange={e => form.setData('nim', e.target.value)} 
-                                            className="w-full h-14 pl-12 pr-4 bg-emerald-50/30 border-2 border-emerald-100 rounded-xl text-emerald-950 font-bold focus:border-emerald-600 focus:ring-0 placeholder:text-slate-300 transition-all font-mono text-lg" 
-                                            placeholder="Cth: 191240001" 
+                                            className="w-full h-16 pl-14 pr-6 bg-emerald-50/30 border-2 border-emerald-50 rounded-2xl text-emerald-950 font-black focus:bg-white focus:border-emerald-500 outline-none transition-all font-mono text-xl tracking-widest placeholder:text-emerald-100" 
+                                            placeholder="NIM MAHASISWA" 
                                             required 
                                         />
                                     </div>
-                                    {form.errors.nim && <p className="text-sm font-bold text-rose-600 uppercase tracking-wider text-[10px]">{form.errors.nim}</p>}
+                                    {form.errors.nim && <p className="text-[9px] font-black text-rose-500 uppercase tracking-widest mt-2 pl-1">{form.errors.nim}</p>}
                                 </div>
 
                                 <div className="space-y-3">
-                                    <label className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs">Target Periode Impelementasi</label>
+                                    <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest pl-1 leading-none">TARGET PERIODE AKADEMIK</label>
                                     <select 
                                         value={form.data.period_id} 
                                         onChange={e => form.setData('period_id', e.target.value)} 
-                                        className="w-full h-14 px-4 bg-emerald-50/30 border-2 border-emerald-100 rounded-xl text-emerald-950 font-bold focus:border-emerald-600 focus:ring-0 transition-all uppercase tracking-wider text-xs font-semibold"
+                                        className="w-full h-16 px-6 bg-emerald-50/30 border-2 border-emerald-50 rounded-2xl text-xs font-black text-emerald-950 focus:bg-white focus:border-emerald-500 outline-none transition-all uppercase tracking-widest appearance-none"
                                     >
-                                        <option value="">TERAPKAN GLOBAL (SEMUA SIKLUS)</option>
-                                        {periods.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                        <option value="">BERLAKU GLOBAL (SEMUA SIKLUS)</option>
+                                        {periods.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>)}
                                     </select>
                                 </div>
 
                                 <div className="space-y-3">
-                                    <label className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs flex items-center gap-2">
-                                        Surat Keterangan / Justifikasi <span className="text-rose-500">*</span>
+                                    <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest pl-1 leading-none">
+                                        JUSTIFIKASI FORMAL <span className="text-rose-500">*</span>
                                     </label>
                                     <input 
                                         value={form.data.alasan} 
                                         onChange={e => form.setData('alasan', e.target.value)} 
-                                        className="w-full h-14 px-4 bg-emerald-50/30 border-2 border-emerald-100 rounded-xl text-emerald-950 font-bold focus:border-emerald-600 focus:ring-0 transition-all placeholder:text-slate-300 placeholder:normal-case placeholder:font-normal" 
-                                        placeholder="Tuliskan justifikasi yang valid menurut aturan" 
+                                        className="w-full h-16 px-6 bg-emerald-50/30 border-2 border-emerald-50 rounded-2xl text-xs font-bold text-emerald-950 focus:bg-white focus:border-emerald-500 outline-none transition-all placeholder:text-emerald-200 uppercase tracking-widest" 
+                                        placeholder="ALASAN DISPENSASI..." 
                                         required 
                                     />
                                 </div>
                             </div>
 
-                            <div className="space-y-4 pt-6 border-t-2 border-slate-50">
-                                <label className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs block mb-4">
-                                    Pilih Komponen Bypass (Syarat yang Dikecualikan)
+                            <div className="space-y-6 pt-10 border-t-2 border-emerald-50">
+                                <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest pl-1 block">
+                                    KOMPONEN BYPASS (PARAMETER YANG DIABAIKAN SISTEM)
                                 </label>
-                                <div className="flex flex-wrap gap-3">
+                                <div className="flex flex-wrap gap-4">
                                     {REQUIREMENT_OPTIONS.map(opt => {
                                         const isChecked = form.data.bypassed_requirements.includes(opt.value);
                                         return (
@@ -180,17 +166,17 @@ export default function DispensasiIndex({ dispensasi, periods, filters }: Props)
                                                 type="button" 
                                                 onClick={() => toggleRequirement(opt.value)} 
                                                 className={clsx(
-                                                    "h-12 px-6 rounded-xl font-bold text-xs uppercase tracking-wider text-[11px] border-2 transition-all active:scale-95 flex items-center gap-3",
+                                                    "h-14 px-8 rounded-2xl font-black text-[10px] uppercase tracking-widest border-2 transition-all active:scale-95 flex items-center gap-4",
                                                     isChecked 
-                                                        ? 'bg-rose-50 border-rose-200 text-rose-700 shadow-sm' 
-                                                        : 'bg-white border-emerald-100/60 text-emerald-950 hover:border-emerald-300'
+                                                        ? 'bg-rose-50 border-rose-200 text-rose-600 shadow-xl shadow-rose-100/50' 
+                                                        : 'bg-white border-emerald-50 text-emerald-950 hover:border-emerald-200'
                                                 )}
                                             >
                                                 <div className={clsx(
-                                                    "h-4 w-4 rounded border flex items-center justify-center transition-colors",
-                                                    isChecked ? "border-rose-500 bg-rose-500" : "border-slate-300"
+                                                    "h-5 w-5 rounded-lg border-2 flex items-center justify-center transition-all",
+                                                    isChecked ? "border-rose-500 bg-rose-500 shadow-lg shadow-rose-200" : "border-emerald-100"
                                                 )}>
-                                                    {isChecked && <X size={10} className="text-white" strokeWidth={4} />}
+                                                    {isChecked && <X size={12} className="text-white" strokeWidth={4} />}
                                                 </div>
                                                 {opt.label}
                                             </button>
@@ -199,108 +185,117 @@ export default function DispensasiIndex({ dispensasi, periods, filters }: Props)
                                 </div>
                             </div>
 
-                            <div className="flex justify-end gap-4 pt-8 border-t-2 border-slate-50">
-                                <button type="button" onClick={() => setShowForm(false)} className="h-14 px-8 font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold hover:text-rose-600 transition-colors">
-                                    Batalkan Otomasi
+                            <div className="flex justify-end gap-5 pt-12 border-t-2 border-emerald-50">
+                                <button type="button" onClick={() => setShowForm(false)} className="h-16 px-10 text-[11px] font-black text-emerald-700 uppercase tracking-widest hover:text-rose-500 transition-colors">
+                                    BATALKAN
                                 </button>
-                                <button type="submit" disabled={form.processing} className="h-14 px-8 bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-xl shadow-rose-200 font-bold uppercase tracking-wider text-xs font-semibold flex items-center gap-3 active:scale-95 transition-all disabled:opacity-50">
-                                    {form.processing && <RefreshCw size={18} className="animate-spin" />}
-                                    TERBITKAN OTORISASI
-                                    <ShieldCheck size={20} strokeWidth={2.5} />
+                                <button type="submit" disabled={form.processing} className="h-16 px-12 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl shadow-2xl shadow-rose-100 font-black uppercase tracking-widest text-[11px] flex items-center gap-4 active:scale-95 transition-all disabled:opacity-50">
+                                    {form.processing ? <RefreshCw size={20} className="animate-spin" /> : <ShieldCheck size={20} strokeWidth={3} />}
+                                    TERBITKAN OTORISASI BYPASS
                                 </button>
                             </div>
                         </form>
                     </div>
-                </motion.div>
+                </motion.section>
             )}
         </AnimatePresence>
 
-        {/* --- MAIN LEDGER --- */}
-        <motion.div variants={itemVariants} className="bg-white border border-emerald-100 rounded-xl overflow-hidden shadow-sm pt-8">
-            <div className="px-10 pb-8 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-emerald-50">
-                <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center border border-emerald-100">
-                        <Activity size={24} strokeWidth={2.5} />
+        {/* --- MAIN PAGE CONTENT --- */}
+        <section className="bg-white border-2 border-emerald-50 rounded-[3rem] overflow-hidden shadow-sm flex flex-col pt-8">
+            <div className="px-10 pb-10 flex flex-col md:flex-row md:items-center justify-between gap-8 border-b-2 border-emerald-50">
+                <div className="flex items-center gap-6">
+                    <div className="h-16 w-16 bg-emerald-50 text-emerald-600 rounded-[1.5rem] flex items-center justify-center border-2 border-emerald-50 shadow-sm">
+                        <Activity size={32} strokeWidth={2.5} />
                     </div>
-                    <h3 className="text-xl font-bold text-emerald-950 leading-none">Buku Induk Log Bypass Sistem</h3>
+                    <div className="flex flex-col">
+                        <h3 className="text-xl font-black text-emerald-950 uppercase tracking-tight leading-none mb-1.5">Log Audit Bypass</h3>
+                        <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em]">Direktori Otoritas Jalur Khusus</p>
+                    </div>
                 </div>
                 <form onSubmit={handleSearch} className="relative w-full md:w-96">
-                    <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                    <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-500" />
                     <input 
                         value={search} 
                         onChange={e => setSearch(e.target.value)} 
-                        className="w-full h-12 pl-12 pr-4 bg-emerald-50/50 border border-emerald-100/60 rounded-xl text-emerald-950 font-bold focus:border-emerald-600 focus:ring-0 placeholder:text-slate-300 placeholder:font-normal transition-all" 
-                        placeholder="Identifikasi via NIM Mahasiswa..." 
+                        className="w-full h-14 pl-14 pr-6 bg-emerald-50/30 border-2 border-emerald-50 rounded-2xl text-emerald-950 font-black focus:bg-white focus:border-emerald-500 outline-none transition-all placeholder:text-emerald-200 uppercase tracking-widest" 
+                        placeholder="CARI NIM MAHASISWA..." 
                     />
                 </form>
             </div>
 
-            <div className="overflow-x-auto min-h-[400px]">
+            <div className="overflow-x-auto min-h-[500px]">
                 <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="bg-emerald-950 text-white">
-                            <th className="px-10 py-6 text-sm font-bold uppercase tracking-wider text-xs font-semibold">Profil Target Mahasiswa</th>
-                            <th className="px-8 py-6 text-sm font-bold uppercase tracking-wider text-xs font-semibold">Berlaku Pada Siklus</th>
-                            <th className="px-8 py-6 text-sm font-bold uppercase tracking-wider text-xs font-semibold">Komponen Syarat Termodifikasi</th>
-                            <th className="px-8 py-6 text-sm font-bold uppercase tracking-wider text-xs font-semibold">Otorisator Administrasi</th>
-                            <th className="px-8 py-6 text-right text-sm font-bold uppercase tracking-wider text-xs font-semibold">Kontrol Cabut</th>
+                    <thead className="bg-emerald-50/50 text-emerald-950">
+                        <tr>
+                            <th className="px-10 py-6 text-[10px] font-black uppercase tracking-widest">Identitas Target [NIM]</th>
+                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Siklus Penugasan</th>
+                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest">Parameter Modifikasi</th>
+                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest">Otorisator Hub</th>
+                            <th className="px-10 py-6 text-right text-[10px] font-black uppercase tracking-widest">Aksi</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-emerald-50">
                         {dispensasi.data.length === 0 ? (
-                            <tr>
-                                <td colSpan={5} className="py-32 text-center text-emerald-950">
-                                    <Fingerprint size={48} className="mx-auto text-slate-200 mb-4" strokeWidth={1} />
-                                    <p className="text-sm font-bold uppercase tracking-widest opacity-40">Tidak ada jalur khusus ditemukan</p>
-                                </td>
-                            </tr>
+                            <EmptyState />
                         ) : dispensasi.data.map(item => (
-                            <tr key={item.id} className="hover:bg-emerald-50/50 transition-colors group">
+                            <tr key={item.id} className="group hover:bg-emerald-50/30 transition-all">
                                 <td className="px-10 py-8">
-                                    <div className="flex flex-col gap-2">
-                                        <span className="text-lg font-bold text-emerald-950 font-mono leading-none group-hover:text-emerald-700 transition-colors">{item.nim}</span>
-                                        <div className="flex items-start gap-2 text-emerald-950 opacity-60">
-                                            <FileWarning size={14} className="mt-0.5 shrink-0" />
-                                            <span className="text-sm font-bold leading-tight max-w-[200px]">{item.alasan}</span>
+                                    <div className="flex flex-col gap-3">
+                                        <span className="text-lg font-black text-emerald-950 font-mono leading-none tracking-widest group-hover:text-emerald-700 transition-colors uppercase">{item.nim}</span>
+                                        <div className="flex items-start gap-2 bg-emerald-50/50 p-2 rounded-lg border border-emerald-50/50 max-w-fit">
+                                            <FileWarning size={12} className="text-emerald-400 mt-0.5 shrink-0" />
+                                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest leading-none truncate max-w-[250px]" title={item.alasan}>{item.alasan}</span>
                                         </div>
                                     </div>
                                 </td>
                                 <td className="px-8 py-8">
-                                    <span className="px-4 py-2 bg-slate-100 rounded-lg text-sm font-bold text-emerald-950 tracking-wider text-[11px] uppercase">
-                                        {item.periode?.name || 'BERLAKU GLOBAL'}
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-200" />
+                                        <span className="text-[10px] font-black text-emerald-950 uppercase tracking-[0.15em]">
+                                            {item.periode?.name || 'DOMINASI GLOBAL'}
+                                        </span>
+                                    </div>
                                 </td>
                                 <td className="px-8 py-8">
-                                    <div className="flex flex-wrap gap-2 max-w-[300px]">
-                                        {(item.bypassed_requirements || []).map(r => {
-                                            const label = REQUIREMENT_OPTIONS.find(o => o.value === r)?.label || r;
+                                    <div className="flex flex-wrap gap-2 max-w-[350px]">
+                                        {(item.bypassed_requirements || []).length > 0 ? (item.bypassed_requirements || []).map(r => {
+                                            const label = REQUIREMENT_OPTIONS.find(o => o.value === r)?.label || r.toUpperCase();
                                             return (
-                                                <span key={r} className="px-3 py-1.5 bg-rose-50 border border-rose-100 text-rose-700 rounded-lg text-sm font-bold uppercase tracking-wider text-[10px]">
-                                                    DIBEBASKAN: {label}
+                                                <span key={r} className="px-3 py-1.5 bg-rose-50 border-2 border-rose-100 text-rose-600 rounded-lg text-[9px] font-black uppercase tracking-widest leading-none">
+                                                    BYPASSED: {label}
                                                 </span>
                                             );
-                                        })}
-                                        {!(item.bypassed_requirements?.length) && <span className="text-slate-300 font-bold uppercase tracking-wider text-xs">BYPASS UMUM</span>}
+                                        }) : (
+                                           <span className="text-[9px] font-black text-emerald-300 uppercase tracking-widest tracking-[0.2em] opacity-60">MASTER BYPASS (FULL ACCESS)</span>
+                                        )}
                                     </div>
                                 </td>
                                 <td className="px-8 py-8">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center border border-emerald-200">
-                                            <UserCheck size={18} strokeWidth={2.5} />
+                                        <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border-2 border-emerald-50 group-hover:bg-white transition-colors">
+                                            <UserCheck size={18} strokeWidth={3} />
                                         </div>
-                                        <span className="text-sm font-bold text-emerald-950 leading-none">
-                                            {item.granted_by_user?.name || 'SISTEM ROOT'}
-                                        </span>
+                                        <div className="flex flex-col">
+                                          <span className="text-[11px] font-black text-emerald-950 uppercase leading-none mb-1">
+                                              {item.granted_by_user?.name || 'Otoritas Sistem'}
+                                          </span>
+                                          <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest leading-none">Root Administrator</span>
+                                        </div>
                                     </div>
                                 </td>
-                                <td className="px-8 py-8 text-right">
-                                    <button 
-                                        onClick={() => setRevokingId(item.id)} 
-                                        className="h-12 w-12 rounded-xl text-slate-300 hover:text-white hover:bg-rose-500 border border-transparent hover:border-rose-600 transition-all inline-flex items-center justify-center active:scale-95 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0" 
-                                        title="Cabut Otorisasi"
-                                    >
-                                        <Trash2 size={20} strokeWidth={2.5} />
-                                    </button>
+                                <td className="px-10 py-8 text-right whitespace-nowrap">
+                                    <div className="flex items-center justify-end opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
+                                      <button 
+                                          onClick={() => setRevokingId(item.id)} 
+                                          className="h-10 w-10 bg-white border-2 border-rose-100 text-rose-400 hover:bg-rose-50 hover:text-rose-600 rounded-xl flex items-center justify-center transition-all shadow-sm active:scale-90" 
+                                          title="Cabut Otorisasi"
+                                      >
+                                          <Trash2 size={18} strokeWidth={2.5} />
+                                      </button>
+                                      <button className="h-10 w-10 bg-white border-2 border-emerald-100 text-emerald-400 hover:bg-emerald-50 rounded-xl flex items-center justify-center transition-all shadow-sm ml-3 group-hover:scale-105">
+                                         <ChevronRight size={18} strokeWidth={3} />
+                                      </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -308,25 +303,78 @@ export default function DispensasiIndex({ dispensasi, periods, filters }: Props)
                 </table>
             </div>
 
-            <div className="px-10 py-6 border-t border-emerald-50 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <span className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs opacity-60">
-                    Menampilkan total <strong className="text-emerald-700">{dispensasi.total}</strong> riwayat otorisasi khusus
+            <div className="px-10 py-6 border-t-2 border-emerald-50 bg-emerald-50/30 flex items-center justify-between">
+                <span className="text-[10px] font-black text-emerald-700 uppercase tracking-[0.2em]">
+                   Total <strong className="text-emerald-950 text-xs tabular-nums tracking-tight">{dispensasi.meta.total}</strong> Jalur Intervensi Terdaftar
                 </span>
-                <Pagination meta={dispensasi} />
+                <Pagination meta={dispensasi.meta} />
             </div>
-        </motion.div>
-      </motion.div>
+        </section>
+
+        {/* --- GOVERNANCE FOOTER --- */}
+        <div className="bg-emerald-950 rounded-[3rem] p-12 text-white relative overflow-hidden shadow-2xl border border-emerald-800 group/governance">
+          <div className="absolute top-0 right-0 p-12 opacity-10 rotate-12 -mr-32 -mt-32 transition-transform group-hover/governance:rotate-45 duration-1000">
+            <Target size={500} strokeWidth={0.5} />
+          </div>
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-12 relative z-10">
+            <div className="space-y-6 flex-1">
+              <div className="flex items-center gap-6">
+                <div className="h-20 w-20 bg-emerald-900/50 rounded-3xl flex items-center justify-center shrink-0 border border-emerald-800 shadow-inner group-hover/governance:scale-110 transition-transform">
+                  <ShieldCheck size={40} className="text-emerald-400" strokeWidth={2.5} />
+                </div>
+                <div className="flex flex-col">
+                  <h3 className="text-2xl font-black uppercase tracking-tight leading-none mb-1">Otoritas Validasi Terpusat</h3>
+                  <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.3em] opacity-80">Kebijakan Intervensi Akademik</span>
+                </div>
+              </div>
+              <p className="text-[12px] font-bold text-emerald-400/80 uppercase tracking-widest leading-relaxed max-w-4xl">
+                 Penggunaan fitur dispensasi harus didasarkan pada disposisi tertulis dari pimpinan institusi atau kondisi mendesak lainnya yang diakomodasi oleh peraturan. Setiap intervensi sistem akan masuk ke dalam audit log universitas untuk menjamin transparansi dan keadilan proses seleksi KKN bagi seluruh mahasiswa.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <ConfirmDialog
         open={!!revokingId}
         onClose={() => setRevokingId(null)}
         onConfirm={() => { if (revokingId) router.delete(`/admin/dispensasi/${revokingId}`, { onSuccess: () => setRevokingId(null) }); }}
-        title="Cabut Dispensasi Khusus"
-        message="Cabut hak istimewa untuk bypass syarat? Mahasiswa yang bersangkutan akan langsung terblokir jika syarat aslinya tidak terpenuhi."
-        confirmLabel="Ya, Eksekusi Pencabutan"
+        title="KONFIRMASI PENCABUTAN DISPENSASI"
+        message="Apakah Anda yakin ingin melenyapkan hak istimewa intervensi sistem ini? Mahasiswa yang bersangkutan akan kembali tunduk pada validasi persyaratan standar sistem pendaftaran KKN."
+        confirmLabel="YA, CABUT HAK DISPENSASI"
         confirmVariant="danger"
       />
     </AppLayout>
   );
 }
 
+function MetricCard({ label, value, icon: Icon, desc }: { label: string; value: any; icon: any; desc: string }) {
+  return (
+    <div className="bg-white border-2 border-emerald-50 rounded-[2rem] p-6 flex items-center gap-5 shadow-sm hover:border-emerald-100 transition-all group overflow-hidden relative">
+      <div className="h-14 w-14 rounded-2xl bg-emerald-50 border-2 border-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all shadow-sm">
+        <Icon size={24} strokeWidth={2.5} />
+      </div>
+      <div className="flex flex-col relative z-20">
+        <span className="text-[10px] font-black text-emerald-400 tracking-[0.2em] uppercase leading-none mb-3">{label}</span>
+        <span className="text-2xl font-black text-emerald-950 tracking-tighter leading-none group-hover:text-emerald-700 transition-colors uppercase mb-1.5">{value}</span>
+        <p className="text-[9px] font-black text-emerald-300 uppercase tracking-widest opacity-60 leading-none">{desc}</p>
+      </div>
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <tr>
+      <td colSpan={5} className="py-32 text-center text-emerald-950">
+          <div className="flex flex-col items-center justify-center gap-4">
+            <div className="h-24 w-24 bg-emerald-50 rounded-[2.5rem] flex items-center justify-center text-emerald-100 mb-2">
+              <Fingerprint size={48} strokeWidth={1} />
+            </div>
+            <span className="text-sm font-black text-emerald-950 uppercase tracking-[0.2em]">Data Dispensasi Kosong</span>
+            <p className="text-[11px] font-black text-emerald-400 uppercase tracking-widest leading-none opacity-60">Tidak ada jalur intervensi yang ditemukan dalam basis data log.</p>
+          </div>
+      </td>
+    </tr>
+  );
+}

@@ -61,7 +61,16 @@ class ProgramKerjaController extends Controller
             }),
             'filters' => $request->only('status', 'semantic_search'),
             'semantic_results' => $request->filled('semantic_search')
-                ? Inertia::defer(fn () => ProgramKerja::whereVector('title', Ai::embeddings([$request->input('semantic_search')])[0])->take(5)->get())
+                ? Inertia::defer(function () use ($request) {
+                    try {
+                        $embeddings = Ai::embeddings([$request->input('semantic_search')]);
+                        if (empty($embeddings)) return [];
+                        return ProgramKerja::whereVector('title', $embeddings[0])->take(5)->get();
+                    } catch (\Exception $e) {
+                         \Log::error("AI Semantic Search Failed: " . $e->getMessage());
+                         return [];
+                    }
+                })
                 : null,
         ]);
     }

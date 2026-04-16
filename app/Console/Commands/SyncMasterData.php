@@ -28,7 +28,8 @@ class SyncMasterData extends Command
         {--type=all : Type of data to sync (all, mahasiswa, dosen, fakultas)}
         {--source=api : Source of data (api or db)}
         {--delta : Run a delta sync based on last sync time}
-        {--force : Force sync even if cache is fresh}';
+        {--force : Force sync even if cache is fresh}
+        {--nim=* : Specific NIMs to sync (for mahasiswa only)}';
 
     protected $description = 'Sync identity data from Master API Service to KKN local database';
 
@@ -104,7 +105,7 @@ class SyncMasterData extends Command
     protected function syncFaculties(): void
     {
         $this->info('Syncing faculties...');
-        
+
         $startTime = now();
         $isDelta = $this->option('delta');
         $source = $this->option('source');
@@ -114,6 +115,7 @@ class SyncMasterData extends Command
             $orgs = $this->masterApi->getAllOrganizations();
         } else {
             $this->warn('  Direct DB sync for faculties not fully implemented (skipping). Use API source.');
+
             return;
         }
 
@@ -151,7 +153,7 @@ class SyncMasterData extends Command
             } catch (\Exception $e) {
                 $stats['total_errors']++;
                 $errorDetails[] = ['id' => $orgData['id'] ?? 'unknown', 'error' => $e->getMessage()];
-                Log::warning("Failed to sync faculty", ['id' => $orgData['id'] ?? 'unknown', 'error' => $e->getMessage()]);
+                Log::warning('Failed to sync faculty', ['id' => $orgData['id'] ?? 'unknown', 'error' => $e->getMessage()]);
             }
         }
 
@@ -189,7 +191,7 @@ class SyncMasterData extends Command
             $employees = $this->masterApi->yieldSyncDosen($since);
         } else {
             // Direct DB Pull from 'master' connection
-            $employees = MasterLecturer::when($isDelta && $since, fn($q) => $q->where('updated_at', '>=', $since))->cursor();
+            $employees = MasterLecturer::when($isDelta && $since, fn ($q) => $q->where('updated_at', '>=', $since))->cursor();
         }
 
         $this->processLecturersSync($employees, $source, $isDelta);
@@ -206,7 +208,7 @@ class SyncMasterData extends Command
             'total_errors' => 0,
         ];
         $errorDetails = [];
-        
+
         $now = now();
 
         // Default faculty if not found in data
@@ -223,7 +225,7 @@ class SyncMasterData extends Command
 
         foreach ($employees as $emp) {
             $stats['total_fetched']++;
-            
+
             try {
                 // Normalizing data between DB and API
                 $empData = ($source === 'db') ? [
@@ -242,6 +244,7 @@ class SyncMasterData extends Command
                 $nip = $empData['nip'] ?? null;
                 if (! $nip) {
                     $stats['total_skipped']++;
+
                     continue;
                 }
 
@@ -297,7 +300,7 @@ class SyncMasterData extends Command
                             'master_synced_at' => $now,
                         ]
                     );
-                    
+
                     if ($dosen->wasRecentlyCreated) {
                         $stats['total_created']++;
                     } else {
@@ -311,7 +314,7 @@ class SyncMasterData extends Command
             } catch (\Exception $e) {
                 $stats['total_errors']++;
                 $errorDetails[] = ['nip' => $nip ?? 'unknown', 'error' => $e->getMessage()];
-                Log::warning("Failed to sync lecturer", ['nip' => $nip ?? 'unknown', 'error' => $e->getMessage()]);
+                Log::warning('Failed to sync lecturer', ['nip' => $nip ?? 'unknown', 'error' => $e->getMessage()]);
             }
         }
 
@@ -333,7 +336,7 @@ class SyncMasterData extends Command
             'started_at' => $startTime,
             'finished_at' => $endTime,
         ]);
-        
+
         SystemSetting::set('last_sync_dosen', $now->toIso8601String());
 
         $this->info("  {$stats['total_fetched']} lecturers synced ({$stats['total_created']} created, {$stats['total_updated']} updated) in {$duration}s");
@@ -345,13 +348,17 @@ class SyncMasterData extends Command
 
         $source = $this->option('source');
         $isDelta = $this->option('delta');
-        $since = $isDelta ? SystemSetting::get('last_sync_mahasiswa', now()->subDay()->toIso8601String()) : null;
+        $nimList = $this->option('nim');
 
-        if ($source === 'api') {
+        if (! empty($nimList)) {
+            $this->info('  Syncing specific NIMs: '.implode(', ', $nimList));
+            $students = $this->masterApi->getStudentsByNimList($nimList);
+        } elseif ($source === 'api') {
+            $since = $isDelta ? SystemSetting::get('last_sync_mahasiswa', now()->subDay()->toIso8601String()) : null;
             $students = $this->masterApi->yieldSyncMahasiswa($since);
         } else {
-            // Direct DB Pull from 'master' connection
-            $students = MasterStudent::when($isDelta && $since, fn($q) => $q->where('updated_at', '>=', $since))->cursor();
+            $since = $isDelta ? SystemSetting::get('last_sync_mahasiswa', now()->subDay()->toIso8601String()) : null;
+            $students = MasterStudent::when($isDelta && $since, fn ($q) => $q->where('updated_at', '>=', $since))->cursor();
         }
 
         $this->processStudentsSync($students, $source, $isDelta);
@@ -368,7 +375,7 @@ class SyncMasterData extends Command
             'total_errors' => 0,
         ];
         $errorDetails = [];
-        
+
         $now = now();
         $defaultFaculty = Fakultas::on('kkn')->first();
         if (! $defaultFaculty) {
@@ -381,11 +388,13 @@ class SyncMasterData extends Command
             $this->info('  Created Default Faculty as fallback');
         }
 
+        $facultyMap = Fakultas::on('kkn')->pluck('id', 'master_id')->all();
+        $prodiMap = Prodi::on('kkn')->pluck('id', 'master_id')->all();
+
         foreach ($students as $stud) {
             $stats['total_fetched']++;
-            
+
             try {
-                // Normalizing data between DB and API
                 $studData = ($source === 'db') ? [
                     'id' => $stud->id,
                     'nim' => $stud->nim,
@@ -405,27 +414,31 @@ class SyncMasterData extends Command
                 $nim = $studData['nim'] ?? null;
                 if (! $nim) {
                     $stats['total_skipped']++;
+
                     continue;
                 }
 
-                DB::transaction(function () use ($studData, $nim, $now, $defaultFaculty, &$stats) {
-                    // Map Prodi (Program Studi)
+                DB::transaction(function () use ($studData, $nim, $now, $defaultFaculty, $facultyMap, $prodiMap, &$stats) {
                     $prodiName = $studData['prodi'] ?? 'Unknown Program';
-                    $programLookup = isset($studData['prodi_id'])
-                        ? ['master_id' => (string) $studData['prodi_id']]
-                        : ['nama' => $prodiName];
+                    $programMasterId = isset($studData['prodi_id']) ? (string) $studData['prodi_id'] : null;
+                    $prodiId = $programMasterId !== null ? ($prodiMap[$programMasterId] ?? null) : null;
 
-                    $program = Prodi::on('kkn')->updateOrCreate(
-                        $programLookup,
-                        [
-                            'code' => strtoupper(substr(Str::slug($prodiName), 0, 10)),
-                            'nama' => $prodiName,
-                            'faculty_id' => $defaultFaculty?->id,
-                            'master_synced_at' => $now,
-                        ]
-                    );
+                    if (! $prodiId) {
+                        $program = Prodi::on('kkn')->firstOrCreate(
+                            $programMasterId ? ['master_id' => $programMasterId] : ['nama' => $prodiName],
+                            [
+                                'code' => strtoupper(substr(Str::slug($prodiName), 0, 10)),
+                                'nama' => $prodiName,
+                                'faculty_id' => $defaultFaculty?->id,
+                                'master_synced_at' => $now,
+                            ]
+                        );
+                        $prodiId = $program->id;
+                    }
 
-                    // 1. Ensure User account exists
+                    $organizationMasterId = isset($studData['organization_id']) ? (string) $studData['organization_id'] : null;
+                    $facultyId = $organizationMasterId !== null ? ($facultyMap[$organizationMasterId] ?? null) : null;
+
                     $username = (string) $nim;
                     $incomingEmail = $studData['email'] ?? null;
                     $fallbackEmail = $username.'@kkn.local';
@@ -444,6 +457,7 @@ class SyncMasterData extends Command
 
                     if ($isNewUser) {
                         $user->password = Hash::make(Str::password(12));
+                        $user->must_change_password = true;
                     }
 
                     $user->save();
@@ -452,21 +466,19 @@ class SyncMasterData extends Command
                         $user->assignRole('student');
                     }
 
-                    // 2. Ensure Student record exists (Local KKN)
                     $mahasiswa = Mahasiswa::on('kkn')->updateOrCreate(
                         ['nim' => $nim],
                         [
                             'master_id' => (string) $studData['id'],
                             'user_id' => $user->id,
                             'nama' => $studData['nama'] ?? $studData['name'] ?? 'Unknown',
-                            'faculty_id' => $defaultFaculty?->id,
-                            'program_id' => $program->id,
+                            'faculty_id' => $facultyId ?? $defaultFaculty?->id,
+                            'program_id' => $prodiId,
                             'batch_year' => $studData['angkatan'] ?? $studData['batch_year'] ?? date('Y'),
                             'gender' => $studData['jenis_kelamin'] ?? $studData['gender'] ?? 'L',
                             'birth_place' => $studData['tempat_lahir'] ?? $studData['birth_place'] ?? null,
                             'birth_date' => $studData['tanggal_lahir'] ?? $studData['birth_date'] ?? null,
 
-                            // PRD 5.2 Academic Data Integration
                             'total_sks' => (int) ($studData['total_sks'] ?? $studData['sks_lulus'] ?? 0),
                             'sks_completed' => (int) ($studData['sks_lulus'] ?? $studData['total_sks'] ?? 0),
                             'gpa' => (float) ($studData['ipk'] ?? $studData['gpa'] ?? 0),
@@ -475,7 +487,7 @@ class SyncMasterData extends Command
                             'semester' => (int) ($studData['semester'] ?? $studData['semester_aktif'] ?? 0),
                             'master_synced_at' => $now,
                         ]
-                    );                    
+                    );
                     if ($mahasiswa->wasRecentlyCreated) {
                         $stats['total_created']++;
                     } else {
@@ -489,7 +501,7 @@ class SyncMasterData extends Command
             } catch (\Exception $e) {
                 $stats['total_errors']++;
                 $errorDetails[] = ['nim' => $nim ?? 'unknown', 'error' => $e->getMessage()];
-                Log::warning("Failed to sync student", ['nim' => $nim ?? 'unknown', 'error' => $e->getMessage()]);
+                Log::warning('Failed to sync student', ['nim' => $nim ?? 'unknown', 'error' => $e->getMessage()]);
             }
         }
 
@@ -511,7 +523,7 @@ class SyncMasterData extends Command
             'started_at' => $startTime,
             'finished_at' => $endTime,
         ]);
-        
+
         SystemSetting::set('last_sync_mahasiswa', $now->toIso8601String());
 
         $this->info("  {$stats['total_fetched']} students synced ({$stats['total_created']} created, {$stats['total_updated']} updated) in {$duration}s");

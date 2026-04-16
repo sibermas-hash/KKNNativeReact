@@ -225,7 +225,7 @@ export default function MahasiswaIndex({ students, filters, faculties, programs,
           : `Akun milik "${confirmToggle?.nama}" akan diaktifkan. Mahasiswa dapat login kembali ke sistem.`
         }
         confirmLabel={confirmToggle?.account?.is_active ? 'Nonaktifkan Akun' : 'Aktifkan Akun'}
-        confirmVariant={confirmToggle?.account?.is_active ? 'danger' : 'default'}
+        confirmVariant={confirmToggle?.account?.is_active ? 'danger' : 'primary'}
       />
     </>
   );

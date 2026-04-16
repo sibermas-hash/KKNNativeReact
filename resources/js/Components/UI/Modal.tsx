@@ -6,7 +6,7 @@ import { X } from 'lucide-react';
 interface ModalProps {
     children: React.ReactNode;
     show: boolean;
-    maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+    maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl';
     onClose: () => void;
     title?: string;
 }
@@ -18,6 +18,9 @@ export default function Modal({ children, show, maxWidth = 'md', onClose, title 
         lg: 'max-w-lg',
         xl: 'max-w-xl',
         '2xl': 'max-w-2xl',
+        '3xl': 'max-w-3xl',
+        '4xl': 'max-w-4xl',
+        '5xl': 'max-w-5xl',
     };
 
     return (
@@ -54,7 +57,7 @@ export default function Modal({ children, show, maxWidth = 'md', onClose, title 
                             >
                                 <div className="flex items-center justify-between mb-4">
                                     {title && (
-                                        <Dialog.Title className="text-lg font-semibold text-black">
+                                        <Dialog.Title className="text-lg font-semibold text-emerald-950">
                                             {title}
                                         </Dialog.Title>
                                     )}

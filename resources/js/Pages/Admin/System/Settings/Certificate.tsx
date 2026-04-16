@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/Components/ui';
 import { clsx } from 'clsx';
+import type { LucideIcon } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ConfigItem { id: number; config_key: string; label: string; value: string | null; type: 'text' | 'longtext' | 'gambar'; }
@@ -39,7 +40,7 @@ const containerVariants = {
 
 const itemVariants = {
  hidden: { opacity: 0, y: 20 },
- visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }
+ visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } }
 };
 
 export default function CertificateSettings({ configs = [] }: Props) {

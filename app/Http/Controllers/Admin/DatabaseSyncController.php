@@ -17,12 +17,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
-class DatabaseSyncController extends Controller
+class DatabaseSyncController extends Controller implements \Illuminate\Routing\Controllers\HasMiddleware
 {
     public function __construct(
         private readonly DatabaseSyncMonitoringService $monitoringService
     ) {
-        $this->middleware(['auth', 'role:superadmin|admin']);
+    }
+
+    public static function middleware(): array
+    {
+        return [
+            'auth',
+            'role:superadmin|admin',
+        ];
     }
 
     /**
@@ -31,7 +38,19 @@ class DatabaseSyncController extends Controller
     public function index(Request $request)
     {
         $health = $this->monitoringService->checkDatabaseHealth();
-        $apiHealth = $this->monitoringService->checkMasterApiHealth();
+        
+        try {
+            $apiHealth = $this->monitoringService->checkMasterApiHealth();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Failed to fetch Master API health: ' . $e->getMessage());
+            $apiHealth = [
+                'api_status' => 'DOWN',
+                'api_error' => $e->getMessage(),
+                'last_sync' => null,
+                'timestamp' => now()->toIso8601String(),
+            ];
+        }
+
         $dashboard = $this->monitoringService->getSyncDashboard();
 
         // Entity type filter
@@ -51,7 +70,7 @@ class DatabaseSyncController extends Controller
             $logsQuery->where('created_at', '>=', now()->subDays((int) $period));
         }
 
-        $logs = $logsQuery->paginate(50)->withQueryString();
+        $logsPagination = $logsQuery->paginate(15)->withQueryString();
 
         // Get entity types for filter
         $entityTypes = DatabaseSyncLog::query()
@@ -63,8 +82,22 @@ class DatabaseSyncController extends Controller
             'health' => $health,
             'apiHealth' => $apiHealth,
             'dashboard' => $dashboard,
-            'logs' => $logs,
-            'entityTypes' => $entityTypes,
+            'logs' => [
+                'data' => $logsPagination->items(),
+                'meta' => [
+                    'current_page' => $logsPagination->currentPage(),
+                    'from' => $logsPagination->firstItem(),
+                    'last_page' => $logsPagination->lastPage(),
+                    'path' => $logsPagination->path(),
+                    'per_page' => $logsPagination->perPage(),
+                    'to' => $logsPagination->lastItem(),
+                    'total' => $logsPagination->total(),
+                    'links' => $logsPagination->linkCollection()->toArray(),
+                    'prev_page_url' => $logsPagination->previousPageUrl(),
+                    'next_page_url' => $logsPagination->nextPageUrl(),
+                ],
+            ],
+            'entityTypes' => $entityTypes ?? [],
             'filters' => [
                 'entity_type' => $entityType,
                 'period' => $period,

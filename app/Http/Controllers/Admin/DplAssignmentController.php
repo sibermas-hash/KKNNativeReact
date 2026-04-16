@@ -21,11 +21,14 @@ use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
 
+use App\Services\DplEligibilityService;
+
 class DplAssignmentController extends Controller
 {
     public function __construct(
         private PeriodContextService $contextService,
         private DplAssignmentService $assignmentService,
+        private DplEligibilityService $eligibilityService,
     ) {}
 
     /**
@@ -209,13 +212,18 @@ class DplAssignmentController extends Controller
                 'per_page' => $groupsPaginated->perPage(),
                 'total' => $groupsPaginated->total(),
             ],
-            'allDosen' => Inertia::defer(fn () => $allDosen->map(fn (Dosen $dosen) => [
-                'id' => $dosen->id,
-                'nama' => $dosen->nama,
-                'nip' => $dosen->nip,
-                'is_cpns' => (bool) $dosen->is_cpns,
-                'is_tugas_belajar' => (bool) $dosen->is_tugas_belajar,
-            ])->values()),
+            'allDosen' => Inertia::defer(fn () => $allDosen->map(function (Dosen $dosen) {
+                $check = $this->eligibilityService->isQualifiedForDpl($dosen);
+                return [
+                    'id' => $dosen->id,
+                    'nama' => $dosen->nama,
+                    'nip' => $dosen->nip,
+                    'is_cpns' => (bool) $dosen->is_cpns,
+                    'is_tugas_belajar' => (bool) $dosen->is_tugas_belajar,
+                    'is_qualified' => $check['eligible'],
+                    'qualification_reason' => $check['reason'],
+                ];
+            })->values()),
             'allPeriods' => Inertia::defer(fn () => $allPeriods->map(fn (Periode $period) => [
                 'id' => $period->id,
                 'name' => $period->name,

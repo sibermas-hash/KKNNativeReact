@@ -255,7 +255,7 @@ export default function ProfileShow() {
                               <label className="text-sm font-medium text-gray-700">{loc.label}</label>
                               <FormInput
                                 value={profileForm.data[loc.id as keyof typeof profileForm.data] as string}
-                                onChange={e => profileForm.setData(String(loc.id), e.target.value)}
+                                onChange={e => profileForm.setData(loc.id as any, e.target.value)}
                                 className="h-10"
                               />
                             </div>

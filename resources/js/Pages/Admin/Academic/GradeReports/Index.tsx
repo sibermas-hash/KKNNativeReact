@@ -10,13 +10,8 @@ import {
  ShieldCheck,
  Users,
  Activity,
- Target,
- ChevronRight,
- ArrowRight,
- Filter,
  RefreshCw,
  Building2,
- Globe,
  Binary,
  Zap
 } from 'lucide-react';
@@ -24,7 +19,7 @@ import { clsx } from 'clsx';
 import { route } from 'ziggy-js';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppLayout from '@/Layouts/AppLayout';
-import { Button, Pagination } from '@/Components/ui';
+import { Button } from '@/Components/ui';
 import type { LucideIcon } from '@/types';
 
 interface StudentGrade {
@@ -55,7 +50,7 @@ export default function RekapNilaiIndex({
  const [certProgress, setCertProgress] = useState<{ status: 'idle' | 'processing' | 'completed' | 'failed'; progress: number; processed: number; total: number; download_url?: string; }>({ status: 'idle', progress: 0, processed: 0, total: 0 });
 
  useEffect(() => {
- let interval: NodeJS.Timeout;
+ let interval: ReturnType<typeof setInterval>;
  if (certProgress.status === 'processing') {
  interval = setInterval(() => {
  fetch(route('admin.grade-reports.progres-sertifikat', { period_id: periodId }))
@@ -72,12 +67,12 @@ export default function RekapNilaiIndex({
  };
 
  const handleFinalize = (scoreId: number) => {
- if (confirm('Finalisasi nilai mahasiswa ini?')) router.patch(route('admin.grade-reports.finalisasi', scoreId), {}, { preserveScroll: true });
+ if (confirm('Finalisasi nilai mahasiswa ini secara permanen?')) router.patch(route('admin.grade-reports.finalisasi', scoreId), {}, { preserveScroll: true });
  };
 
  const handleBulkFinalize = () => {
  if (!periodId) return;
- if (confirm('Finalisasi massal untuk nilai yang sudah lengkap pada periode ini?')) router.post(route('admin.grade-reports.finalisasi-massal'), { period_id: periodId }, { preserveScroll: true });
+ if (confirm('Finalisasi massal untuk seluruh nilai yang sudah lengkap pada periode ini?')) router.post(route('admin.grade-reports.finalisasi-massal'), { period_id: periodId }, { preserveScroll: true });
  };
 
  const exportWithPath = (path: 'ekspor' | 'ekspor-ledger') => {
@@ -93,56 +88,56 @@ export default function RekapNilaiIndex({
 
  const handleBulkCertificates = () => {
  if (!periodId) return;
- if (confirm('Mulai pembuatan sertifikat massal di latar belakang? Fitur ini akan memproses seluruh mahasiswa yang nilainya sudah difinalisasi.')) {
+ if (confirm('Mulai proses penerbitan sertifikat massal? Sistem akan memproses seluruh mahasiswa yang nilainya telah difinalisasi di latar belakang.')) {
  setCertProgress({ status: 'processing', progress: 0, processed: 0, total: 0 });
  router.post(route('admin.grade-reports.sertifikat-massal'), { period_id: periodId, faculty_id: facultyId || undefined }, { preserveScroll: true });
  }
  };
 
  return (
- <AppLayout title="Rekapitulasi Nilai Mahasiswa">
+ <AppLayout title="Laporan & Rekapitulasi Nilai">
  <Head title="Rekapitulasi Nilai" />
 
- <div className="max-w-7xl mx-auto space-y-8 pb-24 text-black font-sans">
+ <div className="max-w-7xl mx-auto space-y-8 pb-24 text-emerald-950 font-sans">
  {/* --- PREMIUM HEADER --- */}
  <div className="space-y-4">
  <div className="flex items-center gap-3 text-emerald-600">
  <GraduationCap size={18} />
- <span className="text-xs font-bold tracking-[0.25em] opacity-80">Akademik & Penilaian</span>
+ <span className="text-xs font-bold tracking-[0.2em] opacity-80 uppercase">Administrasi & Pencatatan</span>
  </div>
  <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
  <div className="space-y-1">
- <h1 className="text-2xl font-semibold text-black tracking-tight">
- Rekap <span className="text-emerald-500">Nilai.</span>
+ <h1 className="text-3xl font-extrabold text-emerald-950 tracking-tight">
+ Rekapitulasi <span className="text-emerald-500">Nilai.</span>
  </h1>
- <p className="text-sm font-semibold text-emerald-950 font-semibold text-xs mt-2 leading-relaxed max-w-2xl">
- Manajemen Finalisasi Capaian Akademik dan Manajemen Sertifikasi Terpadu Mahasiswa KKN
+ <p className="font-semibold text-xs text-emerald-700 mt-2 leading-relaxed max-w-2xl">
+ Dasbor terpusat untuk finalisasi capaian akademik dan manajemen penerbitan sertifikat mahasiswa KKN.
  </p>
  </div>
  <div className="flex flex-wrap items-center gap-4">
  {canExport && (
  <button
  onClick={() => exportWithPath('ekspor')}
- className="h-14 px-8 rounded-2xl bg-white border border-emerald-100/60 text-emerald-950 hover:text-emerald-600 hover:border-emerald-200 shadow-sm transition-all flex items-center gap-3 text-xs font-bold active:scale-95 font-semibold text-xs"
+ className="h-12 px-6 rounded-xl bg-white border border-emerald-100 text-emerald-800 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 shadow-sm transition-all flex items-center gap-2 font-bold active:scale-95 text-[11px] tracking-widest uppercase"
  >
- <FileSpreadsheet size={18} /> EKSPOR NILAI
+ <FileSpreadsheet size={16} /> EKSPOR NILAI
  </button>
  )}
  {canFinalizeMass && (
  <button
  onClick={handleBulkFinalize}
- className="h-14 px-8 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-xl shadow-emerald-100 flex items-center gap-3 active:scale-95 text-sm tracking-wider"
+ className="h-12 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all shadow-md flex items-center gap-2 font-bold active:scale-95 text-[11px] tracking-widest uppercase"
  >
- <ShieldCheck size={18} className="text-white" /> FINALISASI MASSAL
+ <ShieldCheck size={16} className="text-white" /> FINALISASI MASSAL
  </button>
  )}
  <button
  onClick={handleBulkCertificates}
  disabled={certProgress.status === 'processing'}
- className="h-14 px-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold transition-all shadow-xl shadow-emerald-100 flex items-center gap-3 active:scale-95 disabled:opacity-50 text-sm tracking-wider"
+ className="h-12 px-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl transition-all shadow-md flex items-center gap-2 font-bold active:scale-95 disabled:opacity-50 text-[11px] tracking-widest uppercase"
  >
- {certProgress.status === 'processing' ? <RefreshCw size={18} className="animate-spin" /> : <GraduationCap size={18} />}
- TERBITKAN SERTIFIKAT
+ {certProgress.status === 'processing' ? <RefreshCw size={16} className="animate-spin" /> : <GraduationCap size={16} />}
+ CETAK SERTIFIKAT
  </button>
  </div>
  </div>
@@ -152,27 +147,27 @@ export default function RekapNilaiIndex({
  <AnimatePresence>
  {certProgress.status === 'processing' && (
  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
- <div className="bg-emerald-600 rounded-xl p-8 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl shadow-emerald-200 border border-white/20">
- <div className="absolute top-0 right-0 p-8 opacity-5"><RefreshCw size={120} className="animate-spin duration-slow" /></div>
+ <div className="bg-emerald-600 rounded-xl p-8 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg shadow-emerald-200 border border-emerald-400">
+ <div className="absolute top-0 right-0 p-8 opacity-10"><RefreshCw size={120} className="animate-spin" style={{ animationDuration: '3s' }} /></div>
  <div className="space-y-1 relative z-10">
- <h4 className="text-sm font-bold font-semibold text-xs text-white">Processing Certification Vault</h4>
- <p className="text-sm font-bold text-emerald-100 font-semibold text-xs opacity-80">Generating encrypted student certificates in background corridor.</p>
+ <h4 className="text-sm font-bold text-white uppercase tracking-wider">Menerbitkan Dokumen Legal</h4>
+ <p className="text-[11px] font-semibold text-emerald-100 uppercase tracking-widest opacity-90">Sistem sedang merangkai sertifikat mahasiswa secara otomatis di latar belakang.</p>
  </div>
  <div className="flex items-center gap-6 relative z-10">
  <span className="text-2xl font-bold text-white tabular-nums">{certProgress.progress}%</span>
- <div className="h-2 w-32 bg-white/20 rounded-full overflow-hidden border border-white/10"><motion.div initial={{ width: 0 }} animate={{ width: `${certProgress.progress}%` }} className="h-full bg-white" /></div>
+ <div className="h-2 w-32 bg-emerald-800 rounded-full overflow-hidden border border-emerald-500"><motion.div initial={{ width: 0 }} animate={{ width: `${certProgress.progress}%` }} className="h-full bg-white" /></div>
  </div>
  </div>
  </motion.div>
  )}
  {certProgress.status === 'completed' && certProgress.download_url && (
  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="overflow-hidden">
- <div className="bg-emerald-600 rounded-xl p-6 text-white flex items-center justify-between shadow-xl shadow-emerald-100">
+ <div className="bg-emerald-600 rounded-xl p-6 text-white flex flex-col md:flex-row items-center justify-between gap-4 shadow-lg shadow-emerald-200">
  <div className="flex items-center gap-4">
- <div className="h-10 w-10 bg-white/20 rounded-lg flex items-center justify-center"><ShieldCheck size={20} /></div>
- <span className="text-sm font-bold tracking-tight">Certification Archive Ready.</span>
+ <div className="h-10 w-10 bg-white/20 rounded-lg flex items-center justify-center shrink-0"><ShieldCheck size={20} /></div>
+ <span className="text-sm font-bold tracking-tight uppercase">Arsip Sertifikat Telah Siap Diunduh.</span>
  </div>
- <a href={certProgress.download_url} target="_blank" rel="noopener noreferrer" className="h-10 px-6 bg-white text-emerald-600 border border-white/20 rounded-lg font-bold text-sm flex items-center gap-3 font-semibold text-xs shadow-lg hover:bg-emerald-50/30 transition-all"><Download size={14} /> DOWNLOAD ARCHIVE (ZIP)</a>
+ <a href={certProgress.download_url} target="_blank" rel="noopener noreferrer" className="h-10 px-6 bg-white text-emerald-700 border border-emerald-200 rounded-lg font-bold flex items-center gap-2 text-[11px] uppercase tracking-widest shadow-md hover:bg-emerald-50 transition-all"><Download size={14} /> UNDUH ARSIP (ZIP)</a>
  </div>
  </motion.div>
  )}
@@ -181,114 +176,120 @@ export default function RekapNilaiIndex({
  {/* --- ANALYTICS --- */}
  {stats && (
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
- <MetricStrip label="Total Personnel" value={stats.total_students} icon={Users} />
- <MetricStrip label="Graded Missions" value={stats.graded_count} icon={Activity} />
- <MetricStrip label="Locked Vaults" value={stats.locked_count} icon={Lock} />
- <MetricStrip label="Mean Performance" value={Number(stats.average_value ?? 0).toFixed(2)} icon={BarChart3} />
+ <MetricStrip label="Total Mahasiswa" value={stats.total_students} icon={Users} />
+ <MetricStrip label="Nilai Terinput" value={stats.graded_count} icon={Activity} />
+ <MetricStrip label="Telah Difinalisasi" value={stats.locked_count} icon={Lock} />
+ <MetricStrip label="Rata-Rata Nilai" value={Number(stats.average_value ?? 0).toFixed(2)} icon={BarChart3} />
  </div>
  )}
 
  {/* --- FILTERS & LEDGER --- */}
- <section className="bg-white border border-emerald-100/60 rounded-xl overflow-hidden shadow-sm">
- <div className="p-4 bg-emerald-50/30/20 border-b border-slate-50 space-y-4">
- <div className="flex flex-col lg:flex-row gap-3">
+ <section className="bg-white border-2 border-emerald-50 rounded-2xl overflow-hidden shadow-sm">
+ <div className="p-5 bg-emerald-50/50 border-b-2 border-emerald-50 space-y-4">
+ <div className="flex flex-col lg:flex-row gap-4">
  <div className="flex-1 relative">
- <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300" />
- <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && applyFilters()} placeholder="CARI NIM / NAMA..." className="w-full h-10 pl-10 pr-4 bg-white border border-emerald-100/60 rounded-lg text-sm focus:border-emerald-500 outline-none transition-all placeholder:text-slate-200 font-semibold text-xs font-bold" />
+ <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600" />
+ <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && applyFilters()} placeholder="CARI NIM ATAU NAMA MAHASISWA..." className="w-full h-12 pl-10 pr-4 bg-white border border-emerald-100 rounded-lg focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-emerald-300 font-semibold text-xs tracking-wide text-emerald-950" />
  </div>
- <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
- <select value={periodId} onChange={(e) => { setPeriodId(e.target.value); router.get(route('admin.grade-reports.index', { period_id: e.target.value })); }} className="h-10 bg-white border border-emerald-100/60 rounded-lg px-3 text-sm font-bold font-semibold text-xs outline-none transition focus:border-emerald-500 min-w-[140px]">
- <option value="">SELECT SESSION</option>
- {periods.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+ <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+ <select value={periodId} onChange={(e) => { setPeriodId(e.target.value); router.get(route('admin.grade-reports.index', { period_id: e.target.value })); }} className="h-12 bg-white border border-emerald-100 rounded-lg px-4 text-emerald-950 font-semibold text-xs tracking-wide outline-none transition focus:border-emerald-500 min-w-[140px]">
+ <option value="">SEMUA PERIODE</option>
+ {periods.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>)}
  </select>
- <select value={facultyId} onChange={(e) => setFacultyId(e.target.value)} disabled={!!lockedFaculty} className="h-10 bg-white border border-emerald-100/60 rounded-lg px-3 text-sm font-bold font-semibold text-xs outline-none transition focus:border-emerald-500 min-w-[140px] disabled:opacity-50">
- <option value="">ALL FACULTIES</option>
- {faculties.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+ <select value={facultyId} onChange={(e) => setFacultyId(e.target.value)} disabled={!!lockedFaculty} className="h-12 bg-white border border-emerald-100 rounded-lg px-4 text-emerald-950 font-semibold text-xs tracking-wide outline-none transition focus:border-emerald-500 min-w-[140px] disabled:bg-emerald-50 disabled:opacity-70">
+ <option value="">SEMUA FAKULTAS</option>
+ {faculties.map(f => <option key={f.id} value={f.id}>{f.name.toUpperCase()}</option>)}
  </select>
- <select value={huruf} onChange={(e) => setHuruf(e.target.value)} className="h-10 bg-white border border-emerald-100/60 rounded-lg px-3 text-sm font-bold font-semibold text-xs outline-none transition focus:border-emerald-500 min-w-[100px]">
- <option value="">ALL GRADES</option>
- {['A','B','C','D','E'].map(h => <option key={h} value={h}>{h}</option>)}
+ <select value={huruf} onChange={(e) => setHuruf(e.target.value)} className="h-12 bg-white border border-emerald-100 rounded-lg px-4 text-emerald-950 font-semibold text-xs tracking-wide outline-none transition focus:border-emerald-500 min-w-[120px]">
+ <option value="">GRADE</option>
+ {['A','B','C','D','E'].map(h => <option key={h} value={h}>NILAI {h}</option>)}
  </select>
  </div>
  </div>
  <div className="flex items-center justify-between gap-3 pt-2">
- <Button onClick={() => applyFilters()} className="h-9 px-6 bg-emerald-600 text-white rounded-lg text-sm font-bold font-semibold text-xs shadow-lg shadow-emerald-200 active:scale-95">EXECUTE_FILTER</Button>
- <div className="hidden sm:flex items-center gap-2 opacity-30">
+ <Button onClick={() => applyFilters()} className="h-10 px-8 bg-emerald-600 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest shadow-md hover:bg-emerald-700 transition active:scale-95">TERAPKAN PENCARIAN</Button>
+ <div className="hidden sm:flex items-center gap-2 text-emerald-600/60">
  <Binary size={14} />
- <span className="text-sm font-bold font-semibold text-xs">Filter state synced with kernel</span>
+ <span className="font-semibold text-[10px] uppercase tracking-widest pl-1">Data sinkronisasi sistem KKN</span>
  </div>
  </div>
  </div>
 
  <div className="overflow-x-auto min-h-[400px]">
  <table className="w-full text-left">
- <thead className="bg-emerald-50/30 border-b border-slate-50 text-sm font-bold font-semibold text-xs text-emerald-950">
+ <thead className="bg-emerald-50/50 border-b-2 border-emerald-100">
  <tr>
- <th className="px-6 py-4">Mahasiswa Node</th>
- <th className="px-6 py-4">Institutional Matrix</th>
- <th className="px-6 py-4">Deployment Squad</th>
- <th className="px-6 py-4 text-center">Score Vector</th>
- <th className="px-6 py-4 text-center">Protocol Status</th>
- <th className="px-6 py-4 text-right">Action</th>
+ <th className="px-6 py-4 text-[10px] font-bold text-emerald-800 uppercase tracking-widest">Identitas Mahasiswa</th>
+ <th className="px-6 py-4 text-[10px] font-bold text-emerald-800 uppercase tracking-widest">Fakultas & Prodi</th>
+ <th className="px-6 py-4 text-[10px] font-bold text-emerald-800 uppercase tracking-widest">Penempatan</th>
+ <th className="px-6 py-4 text-[10px] font-bold text-emerald-800 uppercase tracking-widest text-center">Hasil Akhir</th>
+ <th className="px-6 py-4 text-[10px] font-bold text-emerald-800 uppercase tracking-widest text-center">Status</th>
+ <th className="px-6 py-4 text-[10px] font-bold text-emerald-800 uppercase tracking-widest text-right">Tindakan</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-slate-50 font-sans">
+ <tbody className="divide-y divide-emerald-50 font-sans bg-white">
  {scores?.map((grade) => (
- <tr key={grade.id} className="group hover:bg-emerald-50/30/50 transition-all">
+ <tr key={grade.id} className="group hover:bg-emerald-50/30 transition-all">
  <td className="px-6 py-4">
  <div className="flex flex-col">
- <span className="text-sm font-bold text-black leading-none group-hover:text-emerald-700 transition-colors truncate max-w-[180px]">{grade.name}</span>
- <span className="text-sm font-bold text-slate-300 font-bold text-center mt-1 font-mono">NIM: {grade.nim}</span>
+ <span className="text-sm font-bold text-emerald-950 leading-none group-hover:text-emerald-700 transition-colors truncate max-w-[200px] uppercase">{grade.name}</span>
+ <span className="text-[11px] font-semibold text-emerald-600 mt-1.5 tabular-nums tracking-wide">{grade.nim}</span>
  </div>
  </td>
  <td className="px-6 py-4">
  <div className="flex flex-col">
- <span className="text-sm font-bold text-emerald-950 leading-none truncate max-w-[140px]">{grade.fakultas || 'NULL'}</span>
- <span className="text-sm font-bold text-slate-300 mt-1 leading-none">{grade.prodi || 'UNSPECIFIED'}</span>
+ <span className="text-xs font-bold text-emerald-900 leading-none truncate max-w-[180px] uppercase">{grade.fakultas || 'BELUM DIATUR'}</span>
+ <span className="text-[10px] font-semibold text-emerald-600 mt-1.5 leading-none uppercase">{grade.prodi || 'TIDAK ADA PRODI'}</span>
  </div>
  </td>
  <td className="px-6 py-4 text-left">
- <span className="inline-flex h-6 items-center px-3 bg-emerald-600 text-white rounded-md text-sm font-bold font-semibold text-xs truncate max-w-[150px]">{grade.group_name}</span>
+ <span className="inline-flex h-7 items-center px-3 bg-emerald-100/50 border border-emerald-200 text-emerald-800 rounded-lg text-xs font-bold truncate max-w-[150px]">{grade.group_name}</span>
  </td>
  <td className="px-6 py-4 text-center">
  <div className="flex flex-col items-center">
- <span className="text-xl font-bold text-black font-mono tracking-tight tabular-nums leading-none mb-1 group-hover:text-emerald-600 transition-colors">{grade.final_grade_value !== null ? Number(grade.final_grade_value).toFixed(2) : '0.00'}</span>
- <div className={clsx('h-6 px-3 flex items-center justify-center rounded-md font-bold text-sm font-semibold text-xs', grade.final_grade_letter === 'A' ? 'bg-emerald-600 text-white' : grade.final_grade_letter === 'B' ? 'bg-emerald-50/60 text-emerald-600' : 'bg-emerald-50/30 text-slate-200')}>{grade.final_grade_letter || 'NA'}</div>
+ <span className="text-xl font-bold text-emerald-950 tracking-tight tabular-nums leading-none mb-1.5">{grade.final_grade_value !== null ? Number(grade.final_grade_value).toFixed(2) : '-'}</span>
+ <div className={clsx('h-6 px-4 flex items-center justify-center rounded-md font-bold text-[10px] uppercase tracking-wider', grade.final_grade_letter === 'A' || grade.final_grade_letter === 'A-' ? 'bg-emerald-600 text-white shadow-sm' : (grade.final_grade_letter && grade.final_grade_letter.includes('B')) ? 'bg-emerald-100 text-emerald-800' : 'bg-emerald-50 text-emerald-600')}>{grade.final_grade_letter || 'N/A'}</div>
  </div>
  </td>
  <td className="px-6 py-4 text-center">
- <div className={clsx('inline-flex h-7 items-center px-4 rounded-full text-sm font-bold tracking-normal border transition-all', grade.is_locked ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-emerald-50/30 text-slate-300 border-emerald-100/60')}>
- {grade.is_locked ? 'AUDIT_SECURED' : 'DRAFT_STATE'}
+ <div className={clsx('inline-flex h-7 items-center px-4 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all', grade.is_locked ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-white text-emerald-600 border-emerald-100/60')}>
+ {grade.is_locked ? 'FINAL MUTLAK' : 'DRAFT'}
  </div>
  </td>
  <td className="px-6 py-4 text-right">
- <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-all scale-95 group-hover:scale-100">
+ <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-all">
  {grade.can_finalize && !grade.is_locked ? (
- <Button onClick={() => handleFinalize(grade.score_id!)} className="h-8 px-4 bg-emerald-600 text-white font-bold text-sm font-semibold text-xs rounded-lg flex items-center gap-2 hover:bg-emerald-700 transition-all shadow-sm"><Lock size={12} /> EXECUTE_LOCK</Button>
- ) : <span className="text-sm font-bold text-slate-200 ">{grade.is_locked ? 'LOCKED_BY_ADMIN' : 'WAITING_DATA'}</span>}
+ <Button onClick={() => handleFinalize(grade.score_id!)} className="h-8 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] tracking-widest uppercase rounded-lg flex items-center gap-2 transition-all shadow-sm"><Lock size={12} /> KUNCI NILAI</Button>
+ ) : <span className="text-[10px] font-bold text-emerald-600/70 tracking-widest uppercase">{grade.is_locked ? 'TERKUNCI' : 'BELUM LENGKAP'}</span>}
  </div>
  </td>
  </tr>
  ))}
  {(!scores || scores.length === 0) && (
- <tr><td colSpan={6} className="py-20 text-center text-sm font-bold text-slate-300 tracking-normal">Metadata buffer null.</td></tr>
+ <tr><td colSpan={6} className="py-24 text-center">
+ <div className="flex flex-col items-center justify-center gap-2">
+ <Search size={24} className="text-emerald-200 mb-2" />
+ <span className="text-sm font-bold text-emerald-700 tracking-wide">TIDAK ADA DATA UNTUK DITAMPILKAN</span>
+ <span className="text-[11px] font-semibold text-emerald-500">Sesuaikan filter atau pastikan mahasiswa telah dinilai.</span>
+ </div>
+ </td></tr>
  )}
  </tbody>
  </table>
  </div>
  </section>
 
- <div className="bg-emerald-600 rounded-xl p-8 text-white relative overflow-hidden shadow-xl shadow-emerald-100">
- <div className="absolute top-0 right-0 p-8 opacity-5 rotate-12"><Building2 size={200} /></div>
+ <div className="bg-emerald-600 rounded-2xl p-8 text-white relative overflow-hidden shadow-xl shadow-emerald-200 border border-emerald-500">
+ <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12"><Building2 size={200} /></div>
  <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
  <div className="flex items-center gap-6">
- <div className="h-14 w-14 bg-white/10 rounded-xl flex items-center justify-center shrink-0"><ShieldCheck size={28} /></div>
- <div className="space-y-1">
- <h4 className="text-lg font-bold tracking-tight leading-none">Immutable Grade Synchronization</h4>
- <p className="text-sm font-bold text-emerald-100/60 font-semibold text-xs leading-relaxed max-w-xl">Rekapitulasi nilai adalah pusat verifikasi akhir keberhasilan KKN. Nilai yang difinalisasi bersifat permanen dan langsung diintegrasikan ke sertifikat akademik.</p>
+ <div className="h-16 w-16 bg-white border border-emerald-200 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><ShieldCheck size={32} /></div>
+ <div className="space-y-2">
+ <h4 className="text-xl font-bold tracking-tight uppercase">Sistem Validasi Nilai Permanen</h4>
+ <p className="text-[12px] font-semibold text-emerald-50 uppercase tracking-widest leading-relaxed max-w-xl">Rekapitulasi ini merupakan muara verifikasi akhir keberhasilan KKN. Nilai yang dikunci bersifat mutlak, permanen, dan siap diterbitkan ke dalam sertifikat.</p>
  </div>
  </div>
- <div className="flex items-center gap-2 text-white/40"><Zap size={14} /><span className="text-sm font-bold font-semibold text-xs">Integrity Enforced</span></div>
+ <div className="flex items-center gap-2 border border-emerald-400 bg-emerald-700 px-4 py-2 rounded-lg"><Zap size={14} className="text-emerald-100" /><span className="text-[10px] font-bold text-emerald-50 tracking-widest uppercase">Integritas Terjaga</span></div>
  </div>
  </div>
  </div>
@@ -298,11 +299,11 @@ export default function RekapNilaiIndex({
 
 function MetricStrip({ label, value, icon: Icon }: { label: string, value: string | number, icon: LucideIcon }) {
  return (
- <div className="bg-white border border-emerald-100/60 rounded-xl p-4 flex items-center gap-4 shadow-sm hover:border-emerald-200 transition-all group overflow-hidden relative">
- <div className="h-8 w-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center shrink-0 group-hover:rotate-6 transition-transform shadow-sm"><Icon size={16} /></div>
+ <div className="bg-white border-2 border-emerald-50 rounded-2xl p-5 flex items-center gap-5 shadow-sm hover:border-emerald-100 transition-all group overflow-hidden relative">
+ <div className="h-12 w-12 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all shadow-sm"><Icon size={20} strokeWidth={2.5} /></div>
  <div className="flex flex-col relative z-20">
- <span className="text-sm font-bold text-emerald-950 font-semibold text-xs leading-none mb-1">{label}</span>
- <span className="text-xl font-bold text-black tracking-tight tabular-nums leading-none group-hover:text-emerald-600 transition-colors">{value}</span>
+ <span className="text-[10px] font-bold text-emerald-700 tracking-widest uppercase leading-none mb-2">{label}</span>
+ <span className="text-2xl font-black text-emerald-950 tracking-tight tabular-nums leading-none group-hover:text-emerald-700 transition-colors">{value}</span>
  </div>
  </div>
  );

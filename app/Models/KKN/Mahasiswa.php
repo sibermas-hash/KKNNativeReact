@@ -39,12 +39,11 @@ class Mahasiswa extends Model
         'shirt_size',
         'birth_place',
         'birth_date',
-    ];
-
-    protected $guarded = [
         'master_id',
         'master_synced_at',
     ];
+
+    protected $guarded = [];
 
     protected function casts(): array
     {

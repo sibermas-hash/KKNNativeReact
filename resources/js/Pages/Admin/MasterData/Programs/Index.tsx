@@ -56,7 +56,7 @@ const containerVariants = {
 
 const itemVariants = {
  hidden: { opacity: 0, y: 20 },
- visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+ visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } },
 };
 
 export default function ProgramsIndex({ programs = { data: [], meta: { total: 0, current_page: 1 } }, faculties = [], filters = {} }: Props) {

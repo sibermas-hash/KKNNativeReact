@@ -8,11 +8,11 @@ interface GuestLayoutProps {
 
 export default function GuestLayout({ children, title }: GuestLayoutProps) {
     return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center font-sans p-6 selection:bg-green-100 selection:text-green-900">
+        <div className="min-h-screen bg-emerald-50/30 flex items-center justify-center font-sans p-6 selection:bg-green-100 selection:text-green-900">
             <Head title={title ? `${title} | KKN UIN SAIZU` : 'Login | KKN UIN SAIZU'} />
 
             <div className="w-full max-w-sm">
-                <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8 md:p-10">
+                <div className="bg-white rounded-3xl shadow-xl shadow-emerald-200/50 border border-emerald-100 p-8 md:p-10">
                     {children}
                 </div>
 
@@ -23,7 +23,7 @@ export default function GuestLayout({ children, title }: GuestLayoutProps) {
                     >
                         &larr; Kembali ke Beranda
                     </Link>
-                    <p className="mt-4 text-sm font-bold text-slate-300 font-semibold uppercase text-xs">
+                    <p className="mt-4 text-sm font-bold text-emerald-300 font-semibold uppercase text-xs">
                         &copy; {new Date().getFullYear()} LPPM UIN Saizu
                     </p>
                 </div>

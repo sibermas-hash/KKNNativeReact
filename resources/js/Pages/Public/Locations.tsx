@@ -180,7 +180,7 @@ export default function Locations({ locations, filters }: Props) {
                     </AnimatePresence>
 
                     {/* --- PAGINATION (ELEGANT) --- */}
-                    {locations.meta && locations.meta.last_page > 1 && (
+                    {locations.meta && (locations.meta.last_page ?? 1) > 1 && (
                         <div className="mt-24 border-t border-slate-50 pt-16 flex flex-col items-center gap-8">
                              <Pagination meta={locations.meta} />
                              <PageInfo meta={locations.meta} />

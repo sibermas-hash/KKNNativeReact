@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\Admin\AiStatusController;
 use App\Http\Controllers\Admin\PublicContentController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\ReportController;
@@ -25,10 +26,11 @@ Route::middleware([
     // TEMPORARY: Dev route to seed dummy data for stabilization testing
     if (app()->environment('local')) {
         Route::get('/dev/seed-dummy', function () {
-            if (!auth()->user()->hasRole('superadmin')) {
+            if (! auth()->user()->hasRole('superadmin')) {
                 abort(403);
             }
-            \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'DummyKKN56Seeder']);
+            Artisan::call('db:seed', ['--class' => 'DummyKKN56Seeder']);
+
             return 'Dummy data seeded successfully! Dashboard should now show statistics.';
         })->name('dev.seed-dummy');
     }
@@ -68,7 +70,7 @@ Route::middleware([
 
     // Data Management
     // AI Systems Monitor
-    Route::get('ai-monitor', [\App\Http\Controllers\Admin\AiStatusController::class, 'index'])->name('ai.monitor');
+    Route::get('ai-monitor', [AiStatusController::class, 'index'])->name('ai.monitor');
 
     Route::get('pendaftaran', [Admin\PesertaKknController::class, 'index'])->name('pendaftaran.index');
     Route::get('pendaftaran/ekspor', [Admin\PesertaKknController::class, 'export'])->name('pendaftaran.ekspor');
@@ -98,6 +100,11 @@ Route::middleware([
     Route::get('dispensasi', [Admin\DispensasiController::class, 'index'])->name('dispensasi.index');
     Route::post('dispensasi', [Admin\DispensasiController::class, 'store'])->name('dispensasi.store');
     Route::delete('dispensasi/{dispensasi}', [Admin\DispensasiController::class, 'destroy'])->name('dispensasi.destroy');
+
+    // Workshop Management - DIHIDMATKAN SEMENTARA (tabel belum ada)
+    // Route::prefix('workshops')->name('workshops.')->group(function () {
+    //     Route::get('/', [\App\Http\Controllers\WorkshopController::class, 'index'])->name('index');
+    // });
 });
 
 /*
@@ -138,6 +145,15 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
     Route::get('locations', [Admin\LokasiController::class, 'index'])->name('locations.index');
     Route::resource('lokasi', Admin\LokasiController::class)
         ->only(['index', 'store', 'update', 'destroy']);
+
+    // Workshop Management
+    Route::prefix('workshops')->name('workshops.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\WorkshopController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\WorkshopController::class, 'store'])->name('store');
+        Route::patch('/{workshop}', [\App\Http\Controllers\WorkshopController::class, 'update'])->name('update');
+        Route::patch('/{workshop}/cancel', [\App\Http\Controllers\WorkshopController::class, 'cancel'])->name('cancel');
+        Route::post('/{workshop}/mark-attendance', [\App\Http\Controllers\WorkshopController::class, 'markAttendance'])->name('mark-attendance');
+    });
 
     // User & Staff Management
     Route::get('pengguna', [Admin\UserController::class, 'index'])->name('pengguna.index');

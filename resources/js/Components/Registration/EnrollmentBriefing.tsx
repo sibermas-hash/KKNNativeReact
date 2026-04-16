@@ -27,12 +27,12 @@ export const EnrollmentBriefing = ({
 }: EnrollmentBriefingProps) => {
   return (
     <div className="p-10 rounded-[3rem] bg-white border border-emerald-100/60 shadow-md sticky top-12 space-y-10">
-      <div className="flex items-center gap-5 border-b border-slate-50 pb-8">
+      <div className="flex items-center gap-5 border-b border-emerald-50 pb-8">
         <div className="h-14 w-14 bg-emerald-600 rounded-[1.5rem] flex items-center justify-center text-white shadow-xl shadow-emerald-200">
           <ShieldCheck size={28} strokeWidth={2.5} />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-black uppercase tracking-widest">
+          <h3 className="text-sm font-bold text-emerald-950 uppercase tracking-widest">
             Enrollment Briefing
           </h3>
           <p className="text-[12px] font-bold text-emerald-950 uppercase mt-1 opacity-70">
@@ -58,7 +58,7 @@ export const EnrollmentBriefing = ({
           icon={Activity}
         />
 
-        <div className="pt-6 border-t border-slate-50 space-y-4">
+        <div className="pt-6 border-t border-emerald-50 space-y-4">
           <div className="flex justify-between items-center">
             <span className="text-[12px] font-bold text-emerald-950 uppercase tracking-[0.3em]">
               Integrity Status
@@ -94,7 +94,7 @@ export const EnrollmentBriefing = ({
           'w-full py-6 rounded-[2rem] text-xs font-bold uppercase tracking-[0.3em] shadow-2xl transition-all relative overflow-hidden group flex items-center justify-center gap-4',
           canSubmit && !formProcessing
             ? 'bg-emerald-600 text-white shadow-emerald-200 hover:bg-emerald-700 hover:-translate-y-2 active:scale-95'
-            : 'bg-emerald-50/60 text-slate-300 cursor-not-allowed',
+            : 'bg-emerald-50/60 text-emerald-400 cursor-not-allowed',
         )}
       >
         <AnimatePresence mode="wait">

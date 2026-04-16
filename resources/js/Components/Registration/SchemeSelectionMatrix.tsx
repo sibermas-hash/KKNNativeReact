@@ -11,7 +11,7 @@ interface SchemeSelectionMatrixProps {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const } },
 };
 
 export const SchemeSelectionMatrix = ({
@@ -24,11 +24,11 @@ export const SchemeSelectionMatrix = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
           <div className="h-1 w-24 bg-emerald-600 rounded-full" />
-          <h2 className="text-xs font-bold text-black uppercase tracking-[0.4em]">
+          <h2 className="text-xs font-bold text-emerald-950 uppercase tracking-[0.4em]">
             Scheme Selection
           </h2>
         </div>
-        <span className="text-[12px] font-bold text-slate-300 uppercase tracking-widest">
+        <span className="text-[12px] font-bold text-emerald-400 uppercase tracking-widest">
           {periods.length} Programs Available
         </span>
       </div>
@@ -42,7 +42,7 @@ export const SchemeSelectionMatrix = ({
               'text-left p-10 rounded-[3rem] border-2 transition-all duration-500 group relative overflow-hidden',
               selectedPeriodId === String(period.id)
                 ? 'border-emerald-500 bg-white ring-8 ring-emerald-50 shadow-2xl'
-                : 'border-slate-50 bg-white hover:border-emerald-100 hover:shadow-xl',
+                : 'border-emerald-50 bg-white hover:border-emerald-100 hover:shadow-xl',
             )}
           >
             <div className="flex justify-between items-start mb-8">
@@ -73,7 +73,7 @@ export const SchemeSelectionMatrix = ({
               <h3
                 className={clsx(
                   'text-2xl font-bold tracking-tighter uppercase',
-                  selectedPeriodId === String(period.id) ? 'text-bg-emerald-100' : 'text-black',
+                  selectedPeriodId === String(period.id) ? 'text-bg-emerald-100' : 'text-emerald-950',
                 )}
               >
                 {period.nama}
@@ -88,7 +88,7 @@ export const SchemeSelectionMatrix = ({
                 'flex items-center gap-4 text-[12px] font-bold uppercase tracking-[0.2em] transition-all',
                 selectedPeriodId === String(period.id)
                   ? 'text-emerald-600'
-                  : 'text-slate-300 group-hover:text-emerald-600',
+                  : 'text-emerald-400 group-hover:text-emerald-600',
               )}
             >
               Select Program{' '}

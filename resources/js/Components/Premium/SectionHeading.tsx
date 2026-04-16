@@ -18,7 +18,7 @@ export function SectionHeading({ title, subtitle, accent, className }: SectionHe
                 viewport={{ once: true }}
                 className="space-y-4"
             >
-                <h2 className="text-5xl lg:text-7xl font-bold text-black tracking-tighter uppercase leading-none">
+                <h2 className="text-5xl lg:text-7xl font-bold text-emerald-950 tracking-tighter uppercase leading-none">
                     {title} {accent && <span className="text-emerald-500">{accent}</span>}
                 </h2>
                 {subtitle && (

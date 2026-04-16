@@ -58,6 +58,8 @@ export interface PeriodOption {
 export interface ProfileSummary {
   is_complete: boolean;
   profile_url: string;
+  nik?: string | null;
+  mother_name?: string | null;
   missing_fields: Array<{
     key: string;
     label: string;
@@ -67,5 +69,6 @@ export interface ProfileSummary {
 export interface DomicileSummary extends ProfileSummary {
   is_verified: boolean;
   verified_at?: string | null;
+  province_name?: string | null;
   regency_name?: string | null;
 }

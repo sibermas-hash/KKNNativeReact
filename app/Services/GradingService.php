@@ -14,11 +14,10 @@ use App\Services\KKN\GradeConversionService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
+use App\Models\KKN\MonitoringDpl;
+
 class GradingService
 {
-    // Grade conversion is handled by GradeConversionService::convert()
-    // See: app/Services/KKN/GradeConversionService.php
-
     /**
      * Submit DPL scores for a student (Refined for KKN 56)
      */
@@ -28,6 +27,13 @@ class GradingService
         array $scores, // Array containing relevansi, ketercapaian, inovasi, administrasi, artikel
         int $dplId
     ): NilaiKkn {
+        // MANDATORY MONITORING GUARD:
+        // LPPM requirement: Min 2 field visits recorded before grading allowed.
+        $monitoringCount = MonitoringDpl::getCountForGroup($groupId);
+        if ($monitoringCount < 2) {
+            throw new \DomainException("Penilaian ditolak. DPL wajib melakukan minimal 2 kali kunjungan monitoring (saat ini: {$monitoringCount}) sebelum memberikan nilai.");
+        }
+
         return DB::transaction(function () use ($userId, $groupId, $scores, $dplId) {
             $score = NilaiKkn::updateOrCreate(
                 ['user_id' => $userId, 'kelompok_id' => $groupId],
@@ -99,34 +105,37 @@ class GradingService
         }
 
         // 1. Calculate Component A (DPL)
-        $aRaw = (
-            (floatval($score->dpl_relevansi_score ?? 0) * (floatval($configs['weight_dpl_report'] ?? 20) / 100)) +
-            (floatval($score->dpl_ketercapaian_score ?? 0) * (floatval($configs['weight_dpl_execution'] ?? 20) / 100)) +
-            (floatval($score->dpl_inovasi_score ?? 0) * (floatval($configs['weight_dpl_article'] ?? 20) / 100)) +
-            (floatval($score->dpl_administrasi_score ?? 0) * (floatval($configs['weight_dpl_report'] ?? 20) / 100)) +
-            (floatval($score->dpl_artikel_score ?? 0) * (floatval($configs['weight_dpl_article'] ?? 20) / 100))
-        );
+        // Consolidate 5 sub-items into 3 official weight categories from Panduan
+        $dplReportWeight = floatval($configs['weight_dpl_report'] ?? 30) / 100;
+        $dplExecutionWeight = floatval($configs['weight_dpl_execution'] ?? 40) / 100;
+        $dplArticleWeight = floatval($configs['weight_dpl_article'] ?? 30) / 100;
+
+        $reportPart = floatval($score->dpl_administrasi_score ?? 0);
+        $executionPart = (floatval($score->dpl_relevansi_score ?? 0) + floatval($score->dpl_ketercapaian_score ?? 0) + floatval($score->dpl_inovasi_score ?? 0)) / 3;
+        $articlePart = floatval($score->dpl_artikel_score ?? 0);
+
+        $aRaw = ($reportPart * $dplReportWeight) + ($executionPart * $dplExecutionWeight) + ($articlePart * $dplArticleWeight);
 
         // 2. Calculate Component B (Village/Mitra)
-        $bRaw = (
-            (floatval($score->desa_interaksi_score ?? 0) * (floatval($configs['weight_village_attitude'] ?? 50) / 100)) +
-            (floatval($score->desa_disiplin_score ?? 0) * (floatval($configs['weight_village_discipline'] ?? 50) / 100))
-        );
+        // Consolidate 3 sub-items into 2 official weight categories
+        $villageAttitudeWeight = floatval($configs['weight_village_attitude'] ?? 50) / 100;
+        $villageDisciplineWeight = floatval($configs['weight_village_discipline'] ?? 50) / 100;
+
+        $attitudePart = floatval($score->desa_interaksi_score ?? 0);
+        $disciplinePart = (floatval($score->desa_disiplin_score ?? 0) + floatval($score->desa_kinerja_score ?? 0)) / 2;
+
+        $bRaw = ($attitudePart * $villageAttitudeWeight) + ($disciplinePart * $villageDisciplineWeight);
 
         // 3. Calculate Component C (LPPM)
-        // SURGICAL CLEANUP: LPPM component is now 100% based on Administration Score
+        // LPPM component is 100% based on Administration Score (includes logbook, video, etc.)
         $cRaw = floatval($score->administration_score ?? 0);
 
-        // 4. Apply Main Weights with defensive division by zero check
-        $dplWeight = floatval($configs['weight_main_dpl'] ?? 40);
-        $villageWeight = floatval($configs['weight_main_village'] ?? 20);
-        $lppmWeight = floatval($configs['weight_main_lppm'] ?? 40);
+        // 4. Apply Main Weights
+        $dplWeight = floatval($configs['weight_main_dpl'] ?? 40) / 100;
+        $villageWeight = floatval($configs['weight_main_village'] ?? 20) / 100;
+        $lppmWeight = floatval($configs['weight_main_lppm'] ?? 40) / 100;
 
-        $aWeighted = $aRaw * ($dplWeight > 0 ? $dplWeight / 100 : 0);
-        $bWeighted = $bRaw * ($villageWeight > 0 ? $villageWeight / 100 : 0);
-        $cWeighted = $cRaw * ($lppmWeight > 0 ? $lppmWeight / 100 : 0);
-
-        $totalScore = $aWeighted + $bWeighted + $cWeighted;
+        $totalScore = ($aRaw * $dplWeight) + ($bRaw * $villageWeight) + ($cRaw * $lppmWeight);
 
         // Determine letter grade from centralized service
         $gradeData = GradeConversionService::convert($totalScore);

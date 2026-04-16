@@ -21,6 +21,8 @@ class PesertaWorkshop extends Model
     'user_id',
     'registered_at',
     'attendance_status',
+    'is_passed',
+    'passing_notes',
     'checked_in_at',
     'certificate_generated',
     'certificate_path',
@@ -32,6 +34,7 @@ class PesertaWorkshop extends Model
     'checked_in_at' => 'datetime',
     'certificate_generated' => 'boolean',
     'certificate_issued_at' => 'datetime',
+    'is_passed' => 'boolean',
 ];
 
     use HasFactory;

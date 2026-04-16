@@ -181,7 +181,7 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                 Kembali ke Daftar
               </span>
             </div>
-            <h1 className="text-3xl font-extrabold text-black tracking-tighter uppercase leading-none">
+            <h1 className="text-3xl font-extrabold text-emerald-950 tracking-tighter uppercase leading-none">
               Ubah Laporan
             </h1>
             <p className="text-sm font-medium text-emerald-950">
@@ -300,7 +300,7 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
           <div className="lg:col-span-1 space-y-10">
             <section className="rounded-xl border border-emerald-100/60 bg-white p-8 shadow-sm space-y-8 sticky top-6">
               <div className="space-y-4">
-                <h2 className="text-xs font-bold text-black font-semibold uppercase text-xs flex items-center gap-3">
+                <h2 className="text-xs font-bold text-emerald-950 font-semibold uppercase text-xs flex items-center gap-3">
                   <div className="h-2 w-2 rounded-full bg-blue-500" />
                   Geolokasi Presisi
                 </h2>
@@ -378,7 +378,7 @@ function GeoInfoItem({
       <p
         className={clsx(
           'text-xs font-bold tracking-tight leading-none',
-          color === 'emerald' ? 'text-emerald-600' : 'text-black',
+          color === 'emerald' ? 'text-emerald-600' : 'text-emerald-950',
         )}
       >
         {value}

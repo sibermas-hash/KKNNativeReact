@@ -17,26 +17,33 @@ class Workshop extends Model
 
     protected $connection = 'kkn';
 
-    protected $table = 'workshops';
+    protected $table = 'workshop';
 
     protected $fillable = [
         'periode_id',
         'title',
         'description',
+        'methodology',
         'location',
         'speaker',
-        'date',
+        'workshop_date',
         'start_time',
         'end_time',
-        'capacity',
-        'is_published',
+        'max_participants',
+        'status',
+        'latitude',
+        'longitude',
+        'radius_meters',
+        'active_token',
     ];
 
     protected $casts = [
         'periode_id' => 'integer',
-        'date' => 'date',
-        'capacity' => 'integer',
-        'is_published' => 'boolean',
+        'workshop_date' => 'date',
+        'max_participants' => 'integer',
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8',
+        'radius_meters' => 'integer',
     ];
 
     public function periode(): BelongsTo
@@ -63,5 +70,13 @@ class Workshop extends Model
     public function getFormattedEndTimeAttribute(): string
     {
         return Carbon::parse($this->attributes['end_time'] ?? '00:00')->format('H:i');
+    }
+
+    /**
+     * Check if the workshops table supports period assignment.
+     */
+    public static function supportsPeriodAssignment(): bool
+    {
+        return in_array('periode_id', (new static)->getFillable(), true);
     }
 }

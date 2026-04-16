@@ -71,7 +71,22 @@ export default function Home({
     stats = {},
 }: Props) {
     const { auth } = usePage<PageProps>().props;
-    const portalHref = auth.user ? safeRoute('dashboard') : safeRoute('login');
+    
+    // Logic to determine dashboard route based on user role
+    const getDashboardRoute = () => {
+        if (!auth.user) return safeRoute('login');
+        
+        const roles = (auth.user.roles as any[])?.map(r => typeof r === 'string' ? r : r.name) || [];
+        if (roles.includes('superadmin') || roles.includes('faculty_admin') || roles.includes('admin')) {
+            return safeRoute('admin.dashboard');
+        }
+        if (roles.includes('dpl')) {
+            return safeRoute('dpl.dashboard');
+        }
+        return safeRoute('student.dashboard');
+    };
+
+    const portalHref = getDashboardRoute();
 
     return (
         <PublicLayout>
@@ -116,7 +131,9 @@ export default function Home({
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
                         <StatItem label="Mahasiswa" value={stats.students} icon={Users} />
                         <StatItem label="Unit Kelompok" value={stats.groups} icon={Layers} />
-                        <StatItem label="Zonasi Lokasi" value={stats.locations} icon={MapPin} />
+                        <Link href={safeRoute('public.locations')} className="no-underline group">
+                            <StatItem label="Zonasi Lokasi" value={stats.locations} icon={MapPin} />
+                        </Link>
                         <StatItem label="Siklus Periode" value={stats.academic_years} icon={Calendar} />
                     </div>
                 </div>
@@ -153,7 +170,7 @@ export default function Home({
                         </div>
                         <div className="space-y-6">
                             {featuredAnnouncements.map((item) => (
-                                <Link key={item.id} href="#" className="flex flex-col gap-3 p-6 bg-white border-2 border-emerald-50 rounded-2xl hover:border-emerald-600 hover:shadow-xl transition-all group no-underline">
+                                <Link key={item.id} href={safeRoute('public.announcements', { id: item.id })} className="flex flex-col gap-3 p-6 bg-white border-2 border-emerald-50 rounded-2xl hover:border-emerald-600 hover:shadow-xl transition-all group no-underline">
                                     <span className="text-[12px] text-emerald-500 font-bold uppercase tracking-[0.3em] italic">{formatDate(item.published_at)}</span>
                                     <h4 className="text-lg font-bold text-black group-hover:text-emerald-600 transition-colors uppercase tracking-tight italic leading-tight">{item.title}</h4>
                                 </Link>
@@ -173,7 +190,13 @@ export default function Home({
                         </div>
                         <div className="space-y-6">
                             {featuredDownloads.map((item) => (
-                                <div key={item.id} className="flex items-center justify-between p-6 bg-white border-2 border-emerald-50 rounded-2xl hover:border-emerald-600 transition-all cursor-pointer group shadow-sm">
+                                <a 
+                                    key={item.id} 
+                                    href={item.external_url || item.file_path || '#'}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center justify-between p-6 bg-white border-2 border-emerald-50 rounded-2xl hover:border-emerald-600 hover:shadow-xl transition-all cursor-pointer group shadow-sm no-underline"
+                                >
                                     <div className="flex items-center gap-6">
                                         <div className="h-10 w-10 bg-emerald-50 border-2 border-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-950 group-hover:text-white transition-all">
                                             <Download size={20} />
@@ -181,7 +204,7 @@ export default function Home({
                                         <span className="text-base font-bold text-black uppercase tracking-tight italic leading-none">{item.title}</span>
                                     </div>
                                     <ChevronRight size={20} className="text-emerald-100 group-hover:text-black transition-colors" />
-                                </div>
+                                </a>
                             ))}
                             {featuredDownloads.length === 0 && <p className="text-sm font-bold text-emerald-300 italic uppercase">Belum ada dokumen publikasi berkas.</p>}
                         </div>

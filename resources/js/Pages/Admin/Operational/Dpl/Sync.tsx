@@ -31,7 +31,7 @@ interface Props {
 }
 
 function formatSyncTime(value: string | null): string {
-  if (!value) return 'BELUM PERNAH';
+  if (!value) return 'BELUM TERDETEKSI';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return new Intl.DateTimeFormat('id-ID', {
@@ -60,114 +60,102 @@ export default function DplSync({ summary }: Props) {
   }
 
   return (
-    <AppLayout title="Sinkronisasi Kolektif Dosen">
-      <Head title="Sinkronisasi Dosen - Panel Kontrol" />
+    <AppLayout title="Sinkronisasi Dosen">
+      <Head title="Pusat Sinkronisasi Dosen" />
 
-      <div className="max-w-[1600px] mx-auto space-y-12 pb-24 font-sans px-4 sm:px-6 lg:px-8">
-        {/* --- MODERN HEADER --- */}
+      <div className="max-w-[1600px] mx-auto space-y-12 pb-24 font-sans px-4 sm:px-6 lg:px-8 text-emerald-950">
+        {/* --- PREMIUM HEADER --- */}
         <div className="space-y-6 pt-12">
           <div className="flex items-center gap-4 text-emerald-600">
             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-            <span className="text-sm font-bold tracking-wider text-xs font-semibold leading-none">
-              Integritas &middot; Data Master
+            <span className="text-[10px] font-black tracking-[0.2em] uppercase leading-none">
+              Integritas Data Master DPL
             </span>
           </div>
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-            <div className="space-y-4">
-              <h1 className="text-2xl font-bold text-black tracking-tight leading-tight pt-2">
-                Sinkronisasi <span>Dosen.</span>
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+            <div className="space-y-2">
+              <h1 className="text-4xl font-black text-emerald-950 tracking-tighter leading-none">
+                Jalur <span className="text-emerald-500">Sinkronisasi.</span>
               </h1>
-              <p className="text-lg font-bold text-emerald-700/40 tracking-tight leading-relaxed max-w-2xl mt-4">
-                Jembatan data master Dosen Pembimbing Lapangan melalui basis data pusat institusi
-                UIN SAIZU.
+              <p className="text-sm font-semibold text-emerald-700/80 tracking-tight leading-relaxed max-w-2xl mt-4">
+                Otomasi transmisi data Dosen Pembimbing Lapangan melalui basis data pusat sistem informasi akademik universitas secara real-time.
               </p>
             </div>
-            <div className="flex items-center gap-6 shrink-0">
-              <div className="h-10 px-6 bg-emerald-600 border border-emerald-800 rounded-xl flex items-center gap-8 text-white shadow-sm font-sans overflow-hidden relative group">
-                <div className="flex flex-col relative z-10">
-                  <span className="text-sm font-bold text-white/40 font-semibold text-xs leading-none mb-2">
-                    Update Terakhir
-                  </span>
-                  <span className="text-sm font-bold text-emerald-200 tabular-nums leading-none tracking-tight">
-                    {formatSyncTime(summary.last_synced_at)}
-                  </span>
-                </div>
-                <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_15px_rgba(16,185,129,0.8)]" />
-              </div>
+            <div className="shrink-0">
+               <div className="bg-emerald-50 border-2 border-emerald-100 rounded-2xl p-6 flex items-center gap-10 shadow-sm relative overflow-hidden group/last">
+                  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover/last:rotate-12 transition-transform"><RefreshCw size={80} /></div>
+                  <div className="flex flex-col relative z-10">
+                    <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest leading-none mb-2">Sinkronisasi Terakhir</span>
+                    <span className="text-lg font-black text-emerald-950 tabular-nums leading-none tracking-tight">
+                      {formatSyncTime(summary.last_synced_at)}
+                    </span>
+                  </div>
+                  <div className="h-12 w-12 rounded-2xl bg-white border-2 border-emerald-100 flex items-center justify-center text-emerald-600 relative z-10 shadow-sm">
+                    <Activity size={24} strokeWidth={2.5} className="animate-pulse" />
+                  </div>
+               </div>
             </div>
           </div>
         </div>
 
         {/* --- STATS GRID --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <MetricCore
-            label="Data Lokal"
-            value={summary.local_lecturers}
-            icon={Users}
-            color="emerald"
-            desc="Total DPL Terintegrasi"
+          <SyncMetric 
+            label="Total Data Lokal" 
+            value={summary.local_lecturers} 
+            icon={Users} 
+            desc="Dosen Terintegrasi" 
           />
-          <MetricCore
-            label="Terhubung Induk"
-            value={summary.with_master_link}
-            icon={Link2}
-            color="emerald"
-            desc="Konektivitas Master Valid"
+          <SyncMetric 
+            label="Koneksi Master" 
+            value={summary.with_master_link} 
+            icon={Link2} 
+            desc="Link ID Valid" 
           />
-          <MetricCore
-            label="Akun Login Aktif"
-            value={summary.with_user_account}
-            icon={ShieldCheck}
-            color="emerald"
-            desc="Dosen Dengan Akses Sistem"
+          <SyncMetric 
+            label="Akun Sistem" 
+            value={summary.with_user_account} 
+            icon={ShieldCheck} 
+            desc="Akses Login Aktif" 
           />
-          <MetricCore
-            label="Arus Data"
-            value="STABIL"
-            icon={Activity}
-            color="emerald"
-            isText
-            desc="Database Master Online"
+          <SyncMetric 
+            label="Status Arus" 
+            value="STABIL" 
+            icon={Zap} 
+            desc="Pipeline Online" 
+            isText 
           />
         </div>
 
         {/* --- SYNC METHODS --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Sinkronisasi Massal */}
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col group transition-all hover:shadow-emerald-950/10 font-sans">
-            <div className="px-6 py-6 border-b border-emerald-50/10 flex items-center justify-between bg-gray-50/50">
-              <div className="flex items-center gap-8">
-                <div className="h-16 w-16 bg-emerald-600 text-white rounded-xl flex items-center justify-center shadow-xl transition-transform group-hover:rotate-12">
-                  <Database size={28} strokeWidth={2.5} />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-emerald-700/40 tracking-wider text-xs font-semibold">
-                    Sinkronisasi Menyeluruh
-                  </h3>
-                  <p className="text-xl font-bold text-black leading-tight font-bold text-center mt-1">
-                    Otomasi Basis Data Pusat
-                  </p>
-                </div>
+          <section className="bg-white border-2 border-emerald-50 rounded-[2.5rem] overflow-hidden shadow-sm flex flex-col group/massal transition-all hover:border-emerald-100 font-sans">
+            <div className="px-10 py-8 border-b-2 border-emerald-50 flex items-center gap-8 bg-emerald-50/20">
+              <div className="h-16 w-16 bg-emerald-600 text-white rounded-[1.5rem] flex items-center justify-center shadow-xl shadow-emerald-100 group-hover/massal:rotate-12 transition-transform duration-500">
+                <Database size={32} strokeWidth={2.5} />
+              </div>
+              <div className="flex flex-col">
+                <h3 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] leading-none mb-2">Transmisi Kolektif</h3>
+                <p className="text-xl font-black text-emerald-950 uppercase tracking-tight">Sinkronisasi Massal</p>
               </div>
             </div>
 
-            <div className="p-12 space-y-12 flex-1 flex flex-col">
-              <div className="bg-emerald-50/30 border border-gray-200 rounded-[2.5rem] p-10 space-y-8 flex-1">
-                <p className="text-sm font-bold text-black leading-relaxed tracking-wide">
-                  Prosedur ini memindai direktori dosen aktif di sistem induk untuk diperbarui ke
-                  basis data portal KKN secara otomatis.
+            <div className="p-10 space-y-10 flex-1 flex flex-col">
+              <div className="bg-emerald-50/50 border-2 border-emerald-50 rounded-[2rem] p-8 space-y-6 flex-1 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-5 -mr-10 -mt-10"><RefreshCw size={150} /></div>
+                <p className="text-sm font-bold text-emerald-950 leading-relaxed relative z-10">
+                  Prosedur ini memindai direktori dosen di sistem induk universitas untuk diperbarui ke dalam basis data KKN secara otomatis dan menyeluruh.
                 </p>
-                <div className="space-y-4">
+                <div className="space-y-4 relative z-10">
                   {[
-                    'Sinkronisasi Identitas & NIP Kolektif',
-                    'Pembaruan Afiliasi Fakultas & Prodi',
-                    'Validasi Status Kepegawaian Terbaru',
+                    'Perbaruan Identitas & NIP Kolektif',
+                    'Sinkronisasi Afiliasi Akademik',
+                    'Optimalisasi Akun Pengguna DPL',
                   ].map((item, idx) => (
                     <div key={idx} className="flex items-center gap-4">
-                      <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                      <span className="text-sm font-bold text-emerald-700 font-semibold text-xs leading-none">
-                        {item}
-                      </span>
+                      <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-200" />
+                      <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">{item}</span>
                     </div>
                   ))}
                 </div>
@@ -176,56 +164,49 @@ export default function DplSync({ summary }: Props) {
               <button
                 onClick={submitBulk}
                 disabled={bulkForm.processing || targetedForm.processing}
-                className="h-10 w-full bg-emerald-600 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-6 text-sm tracking-wider text-xs font-semibold disabled:opacity-50 active:scale-95 border-none"
+                className="h-16 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl shadow-xl shadow-emerald-100 transition-all flex items-center justify-center gap-4 text-[11px] tracking-[0.2em] uppercase disabled:opacity-50 active:scale-95 group/btn"
               >
                 {bulkForm.processing ? (
                   <Loader2 size={24} className="animate-spin" />
                 ) : (
-                  <RefreshCw size={24} strokeWidth={3} />
+                  <RefreshCw size={24} strokeWidth={2.5} className="group-hover/btn:rotate-180 transition-transform duration-700" />
                 )}
-                {bulkForm.processing ? 'MEMPROSES TRANSMISI...' : 'EKSEKUSI SINKRONISASI MASSAL'}
+                {bulkForm.processing ? 'Sedang Mentransmisi...' : 'EKSEKUSI SINKRONISASI TOTAL'}
               </button>
             </div>
-          </div>
+          </section>
 
           {/* Sinkronisasi Terapan */}
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col group transition-all hover:shadow-emerald-950/10 font-sans">
-            <div className="px-6 py-6 border-b border-emerald-50/10 flex items-center justify-between bg-gray-50/50">
-              <div className="flex items-center gap-8">
-                <div className="h-16 w-16 bg-emerald-600 text-white rounded-xl flex items-center justify-center shadow-xl transition-transform group-hover:-rotate-12">
-                  <Target size={28} strokeWidth={2.5} />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-emerald-700/40 tracking-wider text-xs font-semibold">
-                    Perbaruan Manual Terpilih
-                  </h3>
-                  <p className="text-xl font-bold text-black leading-tight font-bold text-center mt-1">
-                    Intervensi Target NIP
-                  </p>
-                </div>
+          <section className="bg-white border-2 border-emerald-50 rounded-[2.5rem] overflow-hidden shadow-sm flex flex-col group/target transition-all hover:border-emerald-100 font-sans">
+            <div className="px-10 py-8 border-b-2 border-emerald-50 flex items-center gap-8 bg-emerald-50/20">
+              <div className="h-16 w-16 bg-emerald-950 text-white rounded-[1.5rem] flex items-center justify-center shadow-xl shadow-emerald-950/10 group-hover/target:-rotate-12 transition-transform duration-500">
+                <Target size={32} strokeWidth={2.5} />
+              </div>
+              <div className="flex flex-col">
+                <h3 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] leading-none mb-2">Intervensi Spesifik</h3>
+                <p className="text-xl font-black text-emerald-950 uppercase tracking-tight">Sinkronisasi Target</p>
               </div>
             </div>
 
-            <form onSubmit={submitTargeted} className="p-12 space-y-8 flex-1 flex flex-col">
+            <form onSubmit={submitTargeted} className="p-10 space-y-8 flex-1 flex flex-col">
               <div className="space-y-4 flex-1">
-                <label className="text-sm font-bold text-emerald-700/40 tracking-wider text-xs font-semibold flex items-center gap-3 leading-none">
-                  <ListFilter size={14} strokeWidth={3} className="text-emerald-500" /> Daftar NIP
-                  Target
+                <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest pl-1 leading-none flex items-center gap-3">
+                  <ListFilter size={14} strokeWidth={3} className="text-emerald-500" /> DAFTAR NIP TARGET (PEMISAH BARIS)
                 </label>
                 <textarea
                   value={targetedForm.data.nip_list}
                   onChange={(e) => targetedForm.setData('nip_list', e.target.value)}
-                  className="w-full flex-1 px-8 py-8 rounded-[2.5rem] bg-gray-50/50 border border-gray-200 text-sm font-bold text-black focus:bg-white focus:border-emerald-500 focus:ring-[15px] focus:ring-emerald-500/5 outline-none transition-all placeholder:text-emerald-100 font-mono scrollbar-hide "
+                  className="w-full flex-1 px-8 py-8 rounded-[2rem] bg-emerald-50/30 border-2 border-emerald-50 text-sm font-bold text-emerald-950 focus:bg-white focus:border-emerald-500 outline-none transition-all placeholder:text-emerald-200 font-mono scrollbar-hide uppercase tracking-widest"
                   placeholder={'19900101XXXXXXXX\n19900101XXXXXXXX'}
                   rows={5}
                 />
               </div>
 
-              <div className="bg-emerald-600 rounded-[2.5rem] p-8 flex items-start gap-6 shadow-sm">
-                <Info size={24} className="text-white shrink-0" strokeWidth={2.5} />
-                <p className="text-sm font-bold text-emerald-50/60 leading-relaxed ">
-                  MODE INI DIGUNAKAN UNTUK PERBAIKAN DATA DOSEN SPESIFIK SECARA INSTAN. MASUKKAN NIP
-                  TARGET UNTUK RE-SINKRONISASI.
+              <div className="bg-emerald-950 rounded-[2rem] p-8 flex items-start gap-6 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-6 opacity-5 rotate-12 -mr-8 -mt-8"><Info size={100} /></div>
+                <Info size={24} className="text-emerald-400 shrink-0 mt-1" strokeWidth={2.5} />
+                <p className="text-[11px] font-bold text-emerald-200 uppercase tracking-widest leading-relaxed relative z-10">
+                  Mode ini memfasilitasi perbaikan data administratif dosen secara instan untuk entri yang cacat atau belum terdaftar pada fase deployment.
                 </p>
               </div>
 
@@ -236,38 +217,37 @@ export default function DplSync({ summary }: Props) {
                   bulkForm.processing ||
                   targetedForm.data.nip_list.trim() === ''
                 }
-                className="h-10 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-2xl shadow-emerald-600/20 transition-all flex items-center justify-center gap-6 text-sm tracking-wider text-xs font-semibold disabled:opacity-50 active:scale-95 border-none"
+                className="h-16 w-full bg-emerald-950 hover:bg-black text-white font-black rounded-2xl shadow-xl shadow-emerald-950/20 transition-all flex items-center justify-center gap-4 text-[11px] tracking-[0.2em] uppercase disabled:opacity-50 active:scale-95"
               >
                 {targetedForm.processing ? (
                   <Loader2 size={24} className="animate-spin" />
                 ) : (
-                  <ArrowRight size={24} strokeWidth={3} />
+                  <ArrowRight size={24} strokeWidth={2.5} />
                 )}
-                {targetedForm.processing ? 'MEMPERBARUI TARGET...' : 'PERBARUI NIP TERPILIH'}
+                {targetedForm.processing ? 'Sedang Memperbarui...' : 'PERBARUI NIP SPESIFIK'}
               </button>
             </form>
-          </div>
+          </section>
         </div>
 
         {/* --- GOVERNANCE FOOTER --- */}
-        <div className="bg-emerald-600 rounded-xl p-16 text-white relative overflow-hidden shadow-sm group">
-          <div className="absolute top-0 right-0 p-16 opacity-5 rotate-12 -mr-32 -mt-32 transition-transform group-hover:rotate-45 duration-1000">
+        <div className="bg-emerald-950 rounded-[3rem] p-12 text-white relative overflow-hidden shadow-2xl border border-emerald-800 group/governance">
+          <div className="absolute top-0 right-0 p-12 opacity-10 rotate-12 -mr-32 -mt-32 transition-transform group-hover/governance:rotate-45 duration-1000">
             <ShieldCheck size={500} strokeWidth={0.5} />
           </div>
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-12 relative z-10">
             <div className="space-y-6 flex-1">
               <div className="flex items-center gap-6">
-                <div className="h-12 w-24 bg-emerald-600 rounded-[2.5rem] flex items-center justify-center shrink-0 border border-emerald-400/20 shadow-2xl transition-transform hover:scale-110">
-                  <RefreshCw size={56} className="text-black" strokeWidth={2.5} />
+                <div className="h-20 w-20 bg-emerald-900/50 rounded-3xl flex items-center justify-center shrink-0 border border-emerald-800 shadow-inner group-hover/governance:scale-110 transition-transform">
+                  <RefreshCw size={40} className="text-emerald-400" strokeWidth={2.5} />
                 </div>
-                <h3 className="text-3xl font-bold font-bold text-center leading-none">
-                  Kedaulatan Data Master.
-                </h3>
+                <div className="flex flex-col">
+                  <h3 className="text-2xl font-black uppercase tracking-tight leading-none mb-1">Kedaulatan Data Master DPL</h3>
+                  <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.3em] opacity-80">Protokol Pemeliharaan Sistem</span>
+                </div>
               </div>
-              <p className="text-sm font-bold text-emerald-50/40 leading-relaxed max-w-4xl group-hover:text-emerald-50/60 transition-colors">
-                Sinkronisasi berkala menjamin data Dosen Pembimbing Lapangan tetap relevan dengan
-                data induk universitas. Pastikan koneksi pipeline arus data utama stabil sebelum
-                menjalankan prosedur sinkronisasi menyeluruh.
+              <p className="text-[12px] font-bold text-emerald-400/80 uppercase tracking-widest leading-relaxed max-w-4xl">
+                Sinkronisasi berkala menjamin data Dosen Pembimbing Lapangan tetap relevan dengan direktori kepegawaian universitas. Pastikan stabilitas koneksi backend dan endpoint API Master sebelum melakukan transmisi data kolektif dalam skala besar guna mencegah degradasi performa database.
               </p>
             </div>
           </div>
@@ -277,7 +257,7 @@ export default function DplSync({ summary }: Props) {
   );
 }
 
-function MetricCore({
+function SyncMetric({
   label,
   value,
   icon: Icon,
@@ -287,33 +267,32 @@ function MetricCore({
   label: string;
   value: string | number;
   icon: any;
-  color: string;
   isText?: boolean;
   desc: string;
 }) {
   return (
-    <div className="bg-white border border-gray-200 p-10 rounded-xl shadow-sm hover:shadow-emerald-950/10 transition-all group relative overflow-hidden font-sans">
+    <div className="bg-white border-2 border-emerald-50 p-8 rounded-[2rem] shadow-sm hover:border-emerald-100 transition-all group relative overflow-hidden font-sans">
       <div className="flex items-center justify-between relative z-10">
-        <div className="h-16 w-16 rounded-xl flex items-center justify-center border border-emerald-100 bg-emerald-50 text-emerald-600 transition-all duration-500 group-hover:scale-110 shadow-sm border-none">
-          <Icon size={28} strokeWidth={2.5} />
+        <div className="h-14 w-14 rounded-2xl flex items-center justify-center border-2 border-emerald-50 bg-emerald-50/30 text-emerald-600 transition-all duration-500 group-hover:scale-110 shadow-sm">
+          <Icon size={24} strokeWidth={2.5} />
         </div>
-        <div className="h-10 w-10 bg-emerald-50/50 rounded-full flex items-center justify-center text-emerald-200 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-2">
-          <ChevronRight size={20} strokeWidth={3} />
+        <div className="h-8 w-8 bg-emerald-50/50 rounded-full flex items-center justify-center text-emerald-200 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1">
+          <ChevronRight size={18} strokeWidth={3} />
         </div>
       </div>
-      <div className="mt-10 space-y-4 relative z-10">
-        <p className="text-sm font-bold text-emerald-700/40 tracking-wider text-xs font-semibold leading-none mb-1">
+      <div className="mt-8 space-y-3 relative z-10">
+        <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest leading-none">
           {label}
         </p>
         <p
           className={clsx(
-            'font-bold text-black tracking-tight tabular-nums leading-none ',
-            isText ? 'text-xl' : 'text-2xl',
+            'font-black text-emerald-950 tracking-tighter leading-none group-hover:text-emerald-700 transition-colors uppercase',
+            isText ? 'text-xl' : 'text-3xl',
           )}
         >
           {typeof value === 'number' ? value.toLocaleString('id-ID') : value}
         </p>
-        <p className="text-sm font-bold text-black/20 tracking-tight pt-4 leading-none">{desc}</p>
+        <p className="text-[9px] font-black text-emerald-300 uppercase tracking-[0.2em] pt-3 leading-none">{desc}</p>
       </div>
     </div>
   );

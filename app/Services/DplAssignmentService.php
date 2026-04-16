@@ -17,6 +17,7 @@ class DplAssignmentService
 {
     public function __construct(
         private DplProvisioningService $provisioningService,
+        private DplEligibilityService $eligibilityService,
     ) {}
 
     /**
@@ -24,6 +25,12 @@ class DplAssignmentService
      */
     public function activateForPeriod(Dosen $dosen, Periode $period, int $maxGroups): array
     {
+        // PRD FR-03: Strict Eligibility Guard
+        $qualification = $this->eligibilityService->isQualifiedForDpl($dosen, $period->id);
+        if (! $qualification['eligible']) {
+            throw new DomainException($qualification['reason']);
+        }
+
         $provisioning = $this->provisioningService->ensureDplAccount($dosen);
 
         $assignment = DplPeriod::updateOrCreate(

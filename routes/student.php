@@ -39,7 +39,11 @@ Route::middleware([
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::post('reports/upload', [ReportController::class, 'upload'])->name('reports.upload');
 
-    // Workshop & Pembekalan dilakukan secara manual oleh LPPM (Tidak ada rute di portal)
+    // Workshop & Pembekalan (Akses Peserta)
+    Route::prefix('workshops')->name('workshops.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\WorkshopController::class, 'index'])->name('index');
+        Route::post('/{workshop}/register', [\App\Http\Controllers\WorkshopController::class, 'register'])->name('register');
+    });
 
     // ─── FASE: PENDAFTARAN ────────────────────────────────────────────
     // Hanya terbuka saat admin klik "Buka Pendaftaran"

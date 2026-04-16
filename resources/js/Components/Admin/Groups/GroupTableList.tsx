@@ -60,7 +60,7 @@ export const GroupTableList = ({
           <tbody className="divide-y divide-emerald-50">
             {groups.data.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-32 text-center text-black/10">
+                <td colSpan={6} className="py-32 text-center text-emerald-950/10">
                     <div className="flex flex-col items-center gap-4">
                         <SearchX size={64} strokeWidth={1} />
                         <p className="text-[12px] font-bold uppercase tracking-[0.2em]">Unit belum terarsip</p>
@@ -70,12 +70,12 @@ export const GroupTableList = ({
             ) : (
               groups.data.map((group, idx) => (
                 <tr key={group.id} className="group hover:bg-emerald-50/10 transition-colors">
-                  <td className="px-8 py-6 text-xs font-bold text-black/20 tabular-nums text-center uppercase">
-                    {idx + 1 + (groups.meta.current_page - 1) * groups.meta.per_page}
+                  <td className="px-8 py-6 text-xs font-bold text-emerald-950/20 tabular-nums text-center uppercase">
+                    {idx + 1 + (groups.meta.current_page - 1) * (groups.meta.per_page ?? 15)}
                   </td>
                   <td className="px-8 py-6">
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-sm font-bold text-black group-hover:text-emerald-600 transition-colors uppercase tracking-tight leading-none">
+                      <span className="text-sm font-bold text-emerald-950 group-hover:text-emerald-600 transition-colors uppercase tracking-tight leading-none">
                         {group.name}
                       </span>
                       <span className="text-[12px] font-bold text-emerald-950 uppercase tracking-widest tabular-nums">
@@ -87,7 +87,7 @@ export const GroupTableList = ({
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
                         <MapPin size={14} className="text-emerald-600" />
-                        <span className="text-[12px] font-bold text-black uppercase leading-none tracking-tight">
+                        <span className="text-[12px] font-bold text-emerald-950 uppercase leading-none tracking-tight">
                           {group.location?.village_name || 'BELUM DIALOKASI'}
                         </span>
                       </div>
@@ -130,7 +130,7 @@ export const GroupTableList = ({
                   <td className="px-8 py-6">
                     <div className="space-y-2.5 w-32 mx-auto">
                       <div className="flex justify-between items-end">
-                        <span className="text-sm font-bold text-black tabular-nums">{group.approved_participants_count}</span>
+                        <span className="text-sm font-bold text-emerald-950 tabular-nums">{group.approved_participants_count}</span>
                         <span className="text-[12px] font-bold text-emerald-950 uppercase tracking-widest">{group.capacity} PK</span>
                       </div>
                       <div className="h-1.5 bg-emerald-50 rounded-full overflow-hidden border border-emerald-100/50">

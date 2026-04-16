@@ -1,5 +1,6 @@
 import React from 'react';
-import { LucideIcon, Loader2 } from 'lucide-react';
+import type { LucideIcon} from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { clsx } from 'clsx';
 
 interface MetricCardProps {
@@ -51,7 +52,7 @@ export function MetricCard({
         {isLoading ? (
           <Loader2 className="w-6 h-6 animate-spin text-emerald-100" />
         ) : (
-          <p className="text-3xl font-bold text-black tracking-tighter tabular-nums leading-none uppercase">
+          <p className="text-3xl font-bold text-emerald-950 tracking-tighter tabular-nums leading-none uppercase">
             {typeof value === 'number' ? value.toLocaleString('id-ID') : value}
           </p>
         )}

@@ -51,7 +51,7 @@ class AbcdReportingService
         if ($activitiesCount < $threshold) {
             return [
                 'can_advance' => false,
-                'reason' => "Minimal butuh {$threshold} aktivitas terverifikasi untuk melanjutkan ke tahap {$nextStage->value}.",
+                'reason' => "Minimal butuh {$threshold} aktivitas terverifikasi untuk melanjutkan ke tahap {$nextStage->label()}.",
             ];
         }
 

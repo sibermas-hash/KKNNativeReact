@@ -1,6 +1,6 @@
 import { clsx } from 'clsx';
 
-type Variant = 'success' | 'warning' | 'danger' | 'info' | 'default' | 'gray';
+type Variant = 'success' | 'warning' | 'danger' | 'info' | 'default' | 'gray' | 'primary';
 
 interface BadgeProps {
     variant?: Variant;
@@ -15,6 +15,7 @@ const variants: Record<Variant, string> = {
     info: 'bg-accent-sky-100 text-accent-sky-600 border border-accent-sky-200',
     default: 'bg-emerald-50/60 text-emerald-700 border border-emerald-100/60',
     gray: 'bg-emerald-50/60 text-emerald-950 border border-emerald-100/60',
+    primary: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
 };
 
 export default function Badge({ variant = 'default', children, className }: BadgeProps) {

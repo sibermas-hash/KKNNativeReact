@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Dosen extends Model
 {
-
     protected $table = 'dosen';
 
     protected $connection = 'kkn';
@@ -70,12 +69,6 @@ class Dosen extends Model
         return $this->pimpinKelompok();
     }
 
-    // Legacy: Keep this for backward compatibility if needed, or remove if fully migrated
-    public function kelompok(): HasMany
-    {
-        return $this->hasMany(KelompokKkn::class, 'dpl_id');
-    }
-
     public function dplPeriods(): HasMany
     {
         return $this->hasMany(DplPeriod::class, 'dosen_id');
@@ -111,7 +104,7 @@ class Dosen extends Model
         return $query->whereHas('dplPeriods', function ($q) use ($periodId) {
             $q->where('period_id', $periodId)
                 ->where('is_active', true)
-                ->whereRaw('(SELECT COUNT(*) FROM kelompok_kkn WHERE dpl_period_id = dpl_periods.id) < max_groups');
+                ->whereRaw('max_groups > (SELECT COUNT(*) FROM kelompok_kkn WHERE dpl_period_id = dpl_periods.id AND deleted_at IS NULL)');
         });
     }
 }

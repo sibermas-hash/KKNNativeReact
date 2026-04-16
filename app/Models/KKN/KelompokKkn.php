@@ -107,6 +107,11 @@ class KelompokKkn extends Model
         return $this->hasMany(ProgramKerja::class, 'kelompok_id');
     }
 
+    public function rekapitulasiKegiatan(): HasMany
+    {
+        return $this->hasMany(RekapitulasiKegiatan::class, 'kelompok_id');
+    }
+
     /**
      * Get main DPL (Lecturer).
      */

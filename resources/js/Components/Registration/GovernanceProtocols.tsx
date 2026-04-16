@@ -11,7 +11,7 @@ export const GovernanceProtocols = ({
 }: GovernanceProtocolsProps) => {
   return (
     <div className="p-12 rounded-[4rem] bg-bg-emerald-50 text-white shadow-2xl relative overflow-hidden group">
-      <div className="absolute top-0 right-0 p-12 text-black/10 group-hover:rotate-12 transition-transform duration-[2s]">
+      <div className="absolute top-0 right-0 p-12 text-emerald-950/10 group-hover:rotate-12 transition-transform duration-[2s]">
         <Lock size={180} />
       </div>
       <div className="relative z-10 grid gap-16 md:grid-cols-2">

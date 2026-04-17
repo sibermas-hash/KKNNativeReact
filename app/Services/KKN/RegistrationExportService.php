@@ -44,6 +44,17 @@ class RegistrationExportService
     }
 
     /**
+     * Ekspor data peserta khusus untuk format pendaftaran BPJS Ketenagakerjaan.
+     */
+    public function exportBpjs($query): BinaryFileResponse
+    {
+        return Excel::download(
+            new \App\Exports\BpjsParticipantExport($query),
+            'peserta-bpjs-kkn.xlsx'
+        );
+    }
+
+    /**
      * Style the header row.
      */
     private function styleHeaderRow(Spreadsheet $sheet, int $columnCount): void

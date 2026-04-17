@@ -51,7 +51,7 @@ interface RegisterProps extends PageProps {
     min_sks: number;
     semester?: number;
   } | null;
-  bpjs_profile?: ProfileSummary | null;
+  biodata_profile?: ProfileSummary | null;
   domicile_profile?: DomicileSummary | null;
 }
 
@@ -69,7 +69,7 @@ export default function Register({
   periods,
   managed_programs = [],
   student_academic,
-  bpjs_profile,
+  biodata_profile,
   domicile_profile,
 }: RegisterProps) {
   const form = useForm({
@@ -112,7 +112,7 @@ export default function Register({
     !!student_academic?.has_health_certificate || !!form.data.health_certificate;
   const hasParentPermission =
     !!student_academic?.has_parent_permission || !!form.data.parent_permission;
-  const hasCompleteBpjsProfile = bpjs_profile?.is_complete ?? true;
+  const hasCompleteBiodataProfile = biodata_profile?.is_complete ?? true;
   const hasVerifiedDomicile = domicile_profile?.is_complete ?? true;
   const supportsSelfService = selectedPeriod?.self_service_enabled ?? true;
   const readyToRegister =
@@ -120,7 +120,7 @@ export default function Register({
     qualifiedByBta &&
     hasHealthCertificate &&
     hasParentPermission &&
-    hasCompleteBpjsProfile &&
+    hasCompleteBiodataProfile &&
     hasVerifiedDomicile;
   const canSubmit = readyToRegister && !!form.data.period_id && supportsSelfService;
 
@@ -157,7 +157,7 @@ export default function Register({
           <div className="space-y-16">
             <IdentityForm 
               domicile_profile={domicile_profile} 
-              bpjs_profile={bpjs_profile}
+              biodata_profile={biodata_profile}
               hasVerifiedDomicile={hasVerifiedDomicile}
             />
             <AcademicForm 
@@ -169,15 +169,15 @@ export default function Register({
 
           {/* --- SYSTEM NOTIFICATIONS --- */}
           <AnimatePresence>
-            {(bpjs_profile && !bpjs_profile.is_complete) ||
+            {(biodata_profile && !biodata_profile.is_complete) ||
             (domicile_profile && !domicile_profile.is_complete) ? (
               <div className="space-y-6">
-                {bpjs_profile && !bpjs_profile.is_complete && (
+                {biodata_profile && !biodata_profile.is_complete && (
                   <WarningMessage
-                    title="Dossier Incomplete"
-                    description={`Data profil wajib dilengkapi: ${bpjs_profile.missing_fields.map((f) => f.label).join(', ')}.`}
-                    actionHref={bpjs_profile.profile_url}
-                    actionLabel="Sync Profile"
+                    title="Biodata Belum Lengkap"
+                    description={`Data biodata profil wajib dilengkapi: ${biodata_profile.missing_fields.map((f) => f.label).join(', ')}.`}
+                    actionHref={biodata_profile.profile_url}
+                    actionLabel="Lengkapi Biodata"
                     icon={Activity}
                   />
                 )}

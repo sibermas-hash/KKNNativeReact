@@ -56,7 +56,7 @@ class ProfileController extends Controller
         $user = auth()->user()->loadMissing(['mahasiswa.fakultas', 'mahasiswa.prodi']);
         $student = $user->mahasiswa;
 
-        $requiredBpjsFields = [
+        $requiredBiodataFields = [
             'nik' => $student?->nik,
             'mother_name' => $student?->mother_name,
             'birth_place' => $student?->birth_place,
@@ -76,7 +76,7 @@ class ProfileController extends Controller
             'address' => 'Alamat lengkap',
         ];
 
-        $missingBiodataFields = collect($requiredBpjsFields)
+        $missingBiodataFields = collect($requiredBiodataFields)
             ->filter(fn ($value) => blank($value))
             ->keys()
             ->map(fn (string $key) => $labels[$key] ?? $key)

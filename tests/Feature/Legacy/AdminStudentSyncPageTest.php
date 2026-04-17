@@ -51,7 +51,7 @@ class AdminStudentSyncPageTest extends TestCase
             ->get('/admin/mahasiswa/sinkron')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Students/Sync')
+                ->component('Admin/Academic/Students/Sync')
                 ->where('summary.local_students', 1)
                 ->where('summary.with_master_link', 1)
                 ->where('summary.last_synced_at', '2026-04-06 09:00:00')

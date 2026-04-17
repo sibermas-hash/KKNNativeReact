@@ -134,7 +134,7 @@ export default function ProfileShow() {
                 <h3 className="text-sm font-semibold text-gray-800">Kelengkapan Data</h3>
                 <div className="space-y-3">
                   <StatusRow
-                    label="Biodata untuk BPJS"
+                    label="Biodata Lengkap"
                     complete={biodataComplete}
                     subtitle={biodataComplete ? 'Semua data terisi' : `${missingFields.length} field belum diisi`}
                   />
@@ -201,7 +201,7 @@ export default function ProfileShow() {
                 {student && (
                   <>
                     <div className="pt-2 border-t border-gray-100">
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Biodata untuk Ketenagakerjaan & BPJS</p>
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Biodata & Kelengkapan Profil</p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <label className="text-sm font-medium text-gray-700 flex items-center gap-1">NIK (KTP) <span className="text-rose-500">*</span></label>

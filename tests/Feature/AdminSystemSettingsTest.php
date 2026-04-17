@@ -37,7 +37,7 @@ class AdminSystemSettingsTest extends TestCase
             ->where('config_key', 'support_contact_label')
             ->firstOrFail();
 
-        $response = $this->actingAs($user)->post('/admin/pengaturan/sistem', [
+        $response = $this->actingAs($user)->patch('/admin/pengaturan/sistem', [
             'settings' => [
                 [
                     'id' => $setting->id,

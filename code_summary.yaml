@@ -1,0 +1,46 @@
+version: "2"
+type: backend
+tech_stack:
+  - PHP 8.4
+  - Laravel 12
+  - PostgreSQL
+  - Inertia.js
+  - Redis
+features:
+  - name: Student Registration
+    description: Student registration for KKN programs with eligibility check.
+    files:
+      - app/Http/Controllers/Student/RegistrationController.php
+      - app/Services/KKN/RegistrationService.php
+    endpoints:
+      - method: GET
+        path: /mahasiswa/pendaftaran
+        description: Show registration form or status
+        auth_required: true
+      - method: POST
+        path: /mahasiswa/pendaftaran
+        description: Submit registration
+        auth_required: true
+  - name: Admin Dashboard
+    description: Administrative overview and phase management.
+    files:
+      - app/Http/Controllers/Admin/DashboardController.php
+    endpoints:
+      - method: GET
+        path: /admin
+        description: View admin dashboard stats
+        auth_required: true
+      - method: POST
+        path: /admin/dashboard/switch-phase
+        description: Switch KKN business phase
+        auth_required: true
+  - name: Public Data API
+    description: Publicly accessible data API for authorized external systems.
+    files:
+      - app/Http/Controllers/Api/PublicDataController.php
+    endpoints:
+      - method: GET
+        path: /api/v1/periods
+        description: List and filter data from allowed tables
+        auth_required: true
+known_limitations: []

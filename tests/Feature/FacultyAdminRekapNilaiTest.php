@@ -70,14 +70,14 @@ class FacultyAdminRekapNilaiTest extends TestCase
         ]);
         $facultyAdmin->assignRole('faculty_admin');
 
-        $response = $this->actingAs($facultyAdmin)->get(route('admin.rekap-nilai.index', [
+        $response = $this->actingAs($facultyAdmin)->get(route('admin.grade-reports.index', [
             'period_id' => $period->id,
             'faculty_id' => $facultyB->id,
         ]));
 
         $response->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/GradeReports/Index')
+                ->component('Admin/Academic/GradeReports/Index')
                 ->where('lockedFaculty.id', $facultyA->id)
                 ->where('lockedFaculty.name', $facultyA->nama)
                 ->where('canExport', false)
@@ -105,11 +105,11 @@ class FacultyAdminRekapNilaiTest extends TestCase
         $facultyAdmin->assignRole('faculty_admin');
 
         $this->actingAs($facultyAdmin)
-            ->get('/admin/rekap-nilai/ekspor?period_id='.$period->id)
+            ->get('/admin/grade-reports/ekspor?period_id='.$period->id)
             ->assertForbidden();
 
         $this->actingAs($facultyAdmin)
-            ->patch('/admin/rekap-nilai/'.$score->id.'/finalisasi')
+            ->patch('/admin/grade-reports/'.$score->id.'/finalisasi')
             ->assertForbidden();
     }
 
@@ -124,8 +124,12 @@ class FacultyAdminRekapNilaiTest extends TestCase
         $facultyAdmin->assignRole('faculty_admin');
 
         $this->actingAs($facultyAdmin)
-            ->get(route('dashboard'))
-            ->assertRedirect('/admin/rekap-nilai');
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard')
+                ->where('ui.is_faculty_admin', true)
+            );
     }
 
     public function test_superadmin_can_export_rekap_using_active_period_when_filter_is_omitted(): void
@@ -137,7 +141,7 @@ class FacultyAdminRekapNilaiTest extends TestCase
         $this->createScoreRecord($faculty, $program, $period, 'Mahasiswa Ekspor', '240099');
 
         $this->actingAs($this->superadmin)
-            ->get('/admin/rekap-nilai/ekspor')
+            ->get('/admin/grade-reports/ekspor')
             ->assertOk()
             ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     }
@@ -151,7 +155,7 @@ class FacultyAdminRekapNilaiTest extends TestCase
         $this->createScoreRecord($faculty, $program, $period, 'Mahasiswa Ledger', '240199');
 
         $this->actingAs($this->superadmin)
-            ->get('/admin/rekap-nilai/ekspor-ledger')
+            ->get('/admin/grade-reports/ekspor-ledger')
             ->assertOk()
             ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     }

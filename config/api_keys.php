@@ -27,6 +27,7 @@ return [
         'kelompok_kkn',
         'lokasi',
         'periode',
+        'periods',
         'tahun_akademik',
     ],
 

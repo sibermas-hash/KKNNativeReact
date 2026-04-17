@@ -26,6 +26,7 @@ class AdminUserSeeder extends Seeder
         $user->username = 'admin';
         $user->name = 'Super Admin';
         $user->is_active = true;
+        $user->email_verified_at = now();
 
         if ($wasRecentlyCreated || $forcedPassword) {
             $user->password = Hash::make($plainPassword);

@@ -1,0 +1,52 @@
+[
+  {
+    "id": "TC001",
+    "title": "get mahasiswa pendaftaran with valid token",
+    "description": "Verify that an authenticated student can successfully retrieve the registration form and eligibility status via GET /mahasiswa/pendaftaran, receiving a 200 response with correct eligibility information."
+  },
+  {
+    "id": "TC002",
+    "title": "post mahasiswa pendaftaran with valid registration data",
+    "description": "Verify that an authenticated student can submit a valid registration payload to POST /mahasiswa/pendaftaran and receive a 201 Created response with registration id and status 'pending'."
+  },
+  {
+    "id": "TC003",
+    "title": "post mahasiswa pendaftaran with ineligible student data",
+    "description": "Verify that submitting registration data for an ineligible student to POST /mahasiswa/pendaftaran returns a 422 Validation Error with detailed fields indicating missing SKS, GPA, or prerequisite failures."
+  },
+  {
+    "id": "TC004",
+    "title": "post mahasiswa pendaftaran without authentication",
+    "description": "Verify that attempting to submit registration to POST /mahasiswa/pendaftaran without a Bearer token returns a 401 Unauthorized response."
+  },
+  {
+    "id": "TC005",
+    "title": "get admin dashboard with admin token",
+    "description": "Verify that an admin user can access GET /admin with a valid admin Bearer token and receive a 200 response containing dashboard statistics and the current_phase field."
+  },
+  {
+    "id": "TC006",
+    "title": "post admin switch phase with valid phase",
+    "description": "Verify that an admin can switch the KKN business phase by POSTing a valid phase payload to /admin/dashboard/switch-phase and receive a 200 response confirming the new phase."
+  },
+  {
+    "id": "TC007",
+    "title": "post admin switch phase with invalid phase",
+    "description": "Verify that POSTing an invalid phase value to /admin/dashboard/switch-phase returns a 422 Validation Error with message 'invalid phase'."
+  },
+  {
+    "id": "TC008",
+    "title": "post admin switch phase with non admin token",
+    "description": "Verify that a non-admin user attempting to switch phases via POST /admin/dashboard/switch-phase receives a 403 Forbidden response."
+  },
+  {
+    "id": "TC009",
+    "title": "get api v1 periods with valid token",
+    "description": "Verify that an authorized external system can retrieve the list of KKN periods via GET /api/v1/periods with a valid API token and receive a 200 response with periods and metadata."
+  },
+  {
+    "id": "TC010",
+    "title": "get api v1 periods without token",
+    "description": "Verify that accessing GET /api/v1/periods without an API token returns a 401 Unauthorized response."
+  }
+]

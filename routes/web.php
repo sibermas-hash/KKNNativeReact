@@ -48,16 +48,9 @@ Route::get('/cari-lokasi', [HomeController::class, 'locations'])->name('public.l
 Route::get('/health', [HealthController::class, 'check'])->name('health');
 Route::get('/health/detailed', [HealthController::class, 'detailed'])->name('health.detailed');
 
-// Public certificate verification
-Route::get('/certificates/verify/{token}', [CertificateController::class, 'verify'])
-    ->name('public.certificate.verify')
-    ->middleware('throttle:20,1');
-
-// Authenticated routes
-Route::middleware(['auth', 'kkn.throttle'])->group(function () {
-    // Logout
-    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
-
+// Authenticated Routes
+Route::middleware(['auth', 'verified', 'disable.debugbar'])->group(function () {
+    // AI Assistant
     Route::get('/ai/history', [AiAssistantController::class, 'history'])->name('ai.history');
     Route::post('/ai/clear', [AiAssistantController::class, 'clear'])->name('ai.clear');
     Route::post('/ai/assistant', [AiAssistantController::class, 'chat'])->name('ai.assistant');
@@ -67,6 +60,9 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
     Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profil/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
     Route::patch('/profil/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+
+    // Logout
+    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
     // Load role-based routes from separate files
     require __DIR__.'/admin.php';
@@ -78,4 +74,5 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         ->name('reports.download')
         ->middleware('role:superadmin|dpl|student');
 });
+
 Route::get('/auto-login', function() { auth()->loginUsingId(1); return redirect('/admin/laporan/program-kerja'); });

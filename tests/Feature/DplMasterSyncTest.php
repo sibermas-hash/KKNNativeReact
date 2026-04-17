@@ -52,16 +52,16 @@ class DplMasterSyncTest extends TestCase
         ]);
 
         $service = Mockery::mock(MasterApiService::class);
-        $service->shouldReceive('getAllEmployees')->once()->andReturn([
-            [
+        $service->shouldReceive('yieldSyncDosen')->once()->andReturn((function() use ($faculty) {
+            yield [
                 'id' => '77',
                 'nip' => '198700010099',
                 'name' => 'Dosen Master Baru',
                 'organization_id' => $faculty->master_id,
                 'birth_date' => '1987-01-01',
                 'gender' => 'L',
-            ],
-        ]);
+            ];
+        })());
         $this->app->instance(MasterApiService::class, $service);
 
         $this->actingAs($admin)
@@ -76,7 +76,7 @@ class DplMasterSyncTest extends TestCase
             'gender' => 'L',
         ], 'kkn');
 
-        $this->assertDatabaseMissing('users', [
+        $this->assertDatabaseHas('users', [
             'username' => '198700010099',
         ]);
     }

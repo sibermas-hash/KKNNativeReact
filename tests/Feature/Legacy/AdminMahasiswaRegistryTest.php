@@ -86,7 +86,7 @@ class AdminMahasiswaRegistryTest extends TestCase
             ->get('/admin/mahasiswa')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Users/MahasiswaIndex')
+                ->component('Admin/System/Users/MahasiswaIndex')
                 ->where('stats.total', 2)
                 ->where('stats.with_account', 2)
                 ->where('stats.synced', 2)
@@ -160,7 +160,7 @@ class AdminMahasiswaRegistryTest extends TestCase
             ->get('/admin/mahasiswa?account_status=locked')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Users/MahasiswaIndex')
+                ->component('Admin/System/Users/MahasiswaIndex')
                 ->where('filters.account_status', 'locked')
                 ->has('students.data', 1)
                 ->where('students.data.0.nim', '24020001')

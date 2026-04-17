@@ -34,7 +34,7 @@ class FacultiesCrudTest extends TestCase
 
         $response->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Academic/Faculties/Index')
+                ->component('Admin/MasterData/Faculties/Index')
                 ->where('syncInfo.mode', 'sync-only')
                 ->where('syncInfo.source', 'Master Mahasiswa')
             );

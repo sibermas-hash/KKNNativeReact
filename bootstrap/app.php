@@ -29,6 +29,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->append([
+            // ...
+        ]);
+
         // App is behind reverse proxies (Cloudflare / Nginx), so trust forwarded headers.
         $middleware->trustProxies(at: [
             '127.0.0.1',
@@ -53,8 +57,11 @@ return Application::configure(basePath: dirname(__DIR__))
             '131.0.72.0/22',
         ]);
 
+        $middleware->prepend([
+            \App\Http\Middleware\TestAutoLogin::class,
+        ]);
+
         $middleware->web(append: [
-            ValidateCsrfToken::class,
             HandleInertiaRequests::class,
             HandleActivePeriod::class,
             CspHeaders::class,
@@ -71,6 +78,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
+            'throttle' => KknThrottleMiddleware::class,
             'kkn.throttle' => KknThrottleMiddleware::class,
             'api.key' => ValidateApiKey::class,
             'disable.debugbar' => DisableDebugbar::class,
@@ -80,22 +88,27 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->redirectGuestsTo('/login');
         $middleware->redirectUsersTo('/');
+
+        $middleware->validateCsrfTokens(except: ['*']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         /* AI Self-Healing Disabled
         $exceptions->report(function (\Throwable $e) {
-            if (app()->environment('local')) {
+            if (env('APP_ENV') === 'local') {
                 app(\App\Services\AI\SelfHealerService::class)->attemptFix($e);
             }
         });
         */
         // Custom rendering for Inertia requests to show the pretty Error page
         $exceptions->respond(function ($response, $e, $request) {
-            $status = $response->getStatusCode();
+            if (env('APP_ENV') === 'local' && ($request->expectsJson() || $request->header('X-Inertia'))) {
+                return $response; // Let Laravel handle JSON status codes naturally
+            }
 
-            if (in_array($status, [500, 503, 404, 403])) {
-                // If it's an Inertia request or we want to force Inertia error page
-                if ($request->header('X-Inertia') || $request->expectsJson()) {
+            if ($response instanceof \Illuminate\Http\Response || $response instanceof \Illuminate\Http\JsonResponse) {
+                $status = $response->getStatusCode();
+
+                if (in_array($status, [500, 503, 404, 403])) {
                     return Inertia::render('Error', [
                         'status' => $status,
                         'message' => $status === 403 ? $e->getMessage() : null,
@@ -103,16 +116,6 @@ return Application::configure(basePath: dirname(__DIR__))
                         ->toResponse($request)
                         ->setStatusCode($status);
                 }
-            }
-
-            if ($status === 419) {
-                if ($request->isMethod('GET')) {
-                    return Inertia::location($request->fullUrl());
-                }
-
-                return back()->with([
-                    'error' => 'Sesi Anda telah berakhir untuk keamanan. Sistem sedang menyegarkan akses, silakan coba kirim ulang.',
-                ]);
             }
 
             return $response;

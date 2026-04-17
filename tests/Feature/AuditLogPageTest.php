@@ -47,7 +47,7 @@ class AuditLogPageTest extends TestCase
             ->get(route('admin.audit-log.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/AuditLog/Index')
+                ->component('Admin/Monitoring/AuditLog/Index')
                 ->where('stats.total', 1)
                 ->where('stats.high_risk', 0)
                 ->where('stats.unique_users', 1)
@@ -88,7 +88,7 @@ class AuditLogPageTest extends TestCase
             ->get(route('admin.audit-log.show', $log))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/AuditLog/Show')
+                ->component('Admin/Monitoring/AuditLog/Show')
                 ->where('log.id', $log->id)
                 ->where('log.action', 'DELETE')
                 ->where('log.user.name', 'Aktor Audit')

@@ -108,7 +108,7 @@ class NilaiKknIdentityConsistencyTest extends TestCase
             ->get(route('admin.rekap-nilai.index', ['period_id' => $period->id]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/GradeReports/Index')
+                ->component('Admin/Academic/GradeReports/Index')
                 ->has('scores', 1)
                 ->where('scores.0.id', $score->id)
                 ->where('scores.0.name', 'Mahasiswa Uji')

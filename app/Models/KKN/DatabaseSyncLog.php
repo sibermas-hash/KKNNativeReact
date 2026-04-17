@@ -31,6 +31,14 @@ class DatabaseSyncLog extends Model
     ];
 
     /**
+     * Relationship ke user yang melakukan sinkronisasi
+     */
+    public function syncedBy()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'synced_by');
+    }
+
+    /**
      * Scope untuk sync yang berhasil
      */
     public function scopeSuccessful($query)

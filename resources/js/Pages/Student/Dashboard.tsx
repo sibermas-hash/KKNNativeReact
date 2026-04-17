@@ -395,7 +395,7 @@ export default function StudentDashboard({
                     </div>
                     <div className="flex gap-2 text-sm font-semibold text-gray-600 leading-tight">
                       <div className="h-1 w-1 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
-                      <p>Pastikan NIK data diri sesuai BPJS TK.</p>
+                      <p>Pastikan NIK data diri sesuai KTP (Biodata).</p>
                     </div>
                   </div>
                 </div>

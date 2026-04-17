@@ -32,12 +32,11 @@ class ApiKey extends Model
         'last_used_at' => 'datetime',
     ];
 
-    public string $key {
-        set(string $value) {
-            $this->attributes['key'] = $this->looksHashed($value)
-                ? $value
-                : Hash::make($value);
-        }
+    public function setKeyAttribute(string $value): void
+    {
+        $this->attributes['key'] = $this->looksHashed($value)
+            ? $value
+            : Hash::make($value);
     }
 
     protected static function booted()

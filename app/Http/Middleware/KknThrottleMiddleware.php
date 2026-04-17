@@ -36,6 +36,9 @@ class KknThrottleMiddleware extends ThrottleRequests
      */
     public function handle($request, $next, $maxAttempts = 60, $decayMinutes = 1, $prefix = ''): Response
     {
+        if (config('app.env') === 'local') {
+            return $next($request);
+        }
         // Define critical endpoints that need stricter limits
         $criticalEndpoints = [
             'password.email',

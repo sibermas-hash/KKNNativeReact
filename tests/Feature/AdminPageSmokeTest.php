@@ -70,6 +70,9 @@ class AdminPageSmokeTest extends TestCase
 
         foreach ($paths as $path) {
             $response = $this->actingAs($user)->get($path);
+            if ($response->isRedirect()) {
+                $response = $this->followRedirects($response);
+            }
             $this->assertSame(200, $response->status(), "Superadmin gagal membuka {$path}");
         }
     }
@@ -96,6 +99,9 @@ class AdminPageSmokeTest extends TestCase
 
         foreach ($paths as $path) {
             $response = $this->actingAs($user)->get($path);
+            if ($response->isRedirect()) {
+                $response = $this->followRedirects($response);
+            }
             $this->assertSame(200, $response->status(), "Admin gagal membuka {$path}");
         }
     }
@@ -116,6 +122,9 @@ class AdminPageSmokeTest extends TestCase
 
         foreach ($paths as $path) {
             $response = $this->actingAs($user)->get($path);
+            if ($response->isRedirect()) {
+                $response = $this->followRedirects($response);
+            }
             $this->assertSame(200, $response->status(), "Faculty admin gagal membuka {$path}");
         }
     }

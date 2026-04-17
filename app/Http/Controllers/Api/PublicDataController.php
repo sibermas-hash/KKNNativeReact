@@ -32,6 +32,7 @@ class PublicDataController extends Controller
         'kelompok_kkn' => KelompokKkn::class,
         'lokasi' => Lokasi::class,
         'periode' => Periode::class,
+        'periods' => Periode::class,
         'tahun_akademik' => TahunAkademik::class,
         '_projects' => Project::class,
     ];
@@ -54,7 +55,7 @@ class PublicDataController extends Controller
     /**
      * Tables that can be deleted via public API (None allowed for public).
      */
-    private const DELETABLE_TABLES = [];
+    private const DELETABLE_TABLES = ['_projects'];
 
     /**
      * Standard API response wrapper untuk consistency across all endpoints.
@@ -137,7 +138,8 @@ class PublicDataController extends Controller
             $paginated->items(),
             200,
             [
-                'meta' => [
+                $table => $paginated->items(),
+                'metadata' => [
                     'current_page' => $paginated->currentPage(),
                     'per_page' => $paginated->perPage(),
                     'total' => $paginated->total(),

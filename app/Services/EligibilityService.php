@@ -138,7 +138,7 @@ class EligibilityService
             'key' => 'min_sks',
             'message' => $hasEnoughSks
                 ? "SKS mencukupi ({$mahasiswa->sks_completed}/{$minSks})"
-                : "SKS tidak mencukupi ({$mahasiswa->sks_completed}/{$minSks})",
+                : "[SKS requirement failure] - SKS tidak mencukupi ({$mahasiswa->sks_completed}/{$minSks})",
             'current_sks' => $mahasiswa->sks_completed,
             'required_sks' => $minSks,
         ];
@@ -175,7 +175,7 @@ class EligibilityService
             'key' => 'min_gpa',
             'message' => $hasEnoughGpa
                 ? "IPK mencukupi ({$studentGpa}/{$minGpa})"
-                : "IPK tidak mencukupi ({$studentGpa}/{$minGpa})",
+                : "[GPA requirement failure] - IPK tidak mencukupi ({$studentGpa}/{$minGpa})",
             'current_gpa' => $studentGpa,
             'required_gpa' => $minGpa,
             'enabled' => true,
@@ -192,7 +192,7 @@ class EligibilityService
         return [
             'passed' => $passed,
             'key' => 'bta_ppi',
-            'message' => $passed ? 'Lulus BTA-PPI' : 'Belum lulus BTA-PPI',
+            'message' => $passed ? 'Lulus BTA-PPI' : '[Prerequisite failure] - Belum lulus BTA/PPI atau syarat khusus skema.',
         ];
     }
 

@@ -4,22 +4,22 @@ import { WarningMessage } from '@/Pages/Student/Register/Components/WarningMessa
 import type { ProfileSummary, DomicileSummary } from '@/Pages/Student/Register/types';
 
 interface NotificationPanelProps {
-  bpjs_profile?: ProfileSummary | null;
+  biodata_profile?: ProfileSummary | null;
   domicile_profile?: DomicileSummary | null;
 }
 
-export const NotificationPanel = ({ bpjs_profile, domicile_profile }: NotificationPanelProps) => {
+export const NotificationPanel = ({ biodata_profile, domicile_profile }: NotificationPanelProps) => {
   return (
     <AnimatePresence>
-      {(bpjs_profile && !bpjs_profile.is_complete) ||
+      {(biodata_profile && !biodata_profile.is_complete) ||
       (domicile_profile && !domicile_profile.is_complete) ? (
         <div className="space-y-6">
-          {bpjs_profile && !bpjs_profile.is_complete && (
+          {biodata_profile && !biodata_profile.is_complete && (
             <WarningMessage
-              title="Dossier Incomplete"
-              description={`Data profil wajib dilengkapi: ${bpjs_profile.missing_fields.map((f) => f.label).join(', ')}.`}
-              actionHref={bpjs_profile.profile_url}
-              actionLabel="Sync Profile"
+              title="Biodata Belum Lengkap"
+              description={`Data biodata profil wajib dilengkapi: ${biodata_profile.missing_fields.map((f) => f.label).join(', ')}.`}
+              actionHref={biodata_profile.profile_url}
+              actionLabel="Lengkapi Biodata"
               icon={Activity}
             />
           )}

@@ -129,10 +129,6 @@ class PeriodeGovernanceService
     ): KknType {
         $legacyEnum = self::inferLegacyJenisEnum($legacyJenis);
 
-        if ($legacyEnum === KknType::RESPONSIF) {
-            return KknType::RESPONSIF;
-        }
-
         return match ($programType) {
             Periode::PROGRAM_TYPE_NUSANTARA => KknType::NUSANTARA,
             Periode::PROGRAM_TYPE_INTERNASIONAL_MANDIRI => KknType::INTERNASIONAL,

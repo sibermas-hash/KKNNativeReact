@@ -7,13 +7,13 @@ const path = require('path');
 const CONFIG = {
     BASE_URL: 'http://localhost:8000',
     LOGIN_URL: 'http://localhost:8000/login',
-    MAX_PAGES: 30,
-    INTERACTIONS_PER_PAGE: 8,
-    CRAWL_DEPTH: 4,
+    MAX_PAGES: 40,
+    INTERACTIONS_PER_PAGE: 10,
+    CRAWL_DEPTH: 5,
     OUTPUT_DIR: './test-results',
     CREDENTIALS: {
-        username: 'mhs_tester',
-        password: 'password'
+        username: 'student',
+        password: 'Password#123'
     }
 };
 
@@ -137,7 +137,19 @@ async function runTester() {
         return;
     }
 
-    await explorePage(page, page.url());
+    // TARGETED EXPLORATION OF STUDENT ROUTES
+    const studentRoutes = [
+        CONFIG.BASE_URL + '/mahasiswa',
+        CONFIG.BASE_URL + '/mahasiswa/pendaftaran',
+        CONFIG.BASE_URL + '/mahasiswa/laporan-harian',
+        CONFIG.BASE_URL + '/mahasiswa/laporan-akhir',
+        CONFIG.BASE_URL + '/profil'
+    ];
+
+    for (const route of studentRoutes) {
+        await explorePage(page, route, 0);
+    }
+
     await browser.close();
     
     if (!fs.existsSync(CONFIG.OUTPUT_DIR)) {

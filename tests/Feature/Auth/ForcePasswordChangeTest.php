@@ -19,7 +19,7 @@ it('redirects dpl with temporary password to profile until password is changed',
         ->assertRedirect(route('profile.show'));
 
     $this->actingAs($user)
-        ->post(route('profile.password'), [
+        ->patch(route('profile.password'), [
             'current_password' => 'Password#123',
             'password' => 'Password#456!',
             'password_confirmation' => 'Password#456!',

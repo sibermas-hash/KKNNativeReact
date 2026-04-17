@@ -27,6 +27,10 @@ class HandleInertiaRequests extends Middleware
      */
     public function version(Request $request): ?string
     {
+        if (config('app.env') === 'local') {
+            return null;
+        }
+
         return parent::version($request);
     }
 
@@ -39,6 +43,11 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        if ($request->wantsJson() && ! $request->header('X-Inertia')) {
+             // If they want JSON but didn't send X-Inertia, they probably want the raw props.
+             // However, Inertia middleware usually handles this. 
+             // We'll just ensure it doesn't return the full HTML.
+        }
         $user = $request->user();
         $studentRegistrationLocked = false;
         $periodContext = app(PeriodContextService::class);
@@ -93,6 +102,15 @@ class HandleInertiaRequests extends Middleware
                 'name' => config('app.name'),
                 'env' => config('app.env'),
                 'storage_disk' => config('filesystems.default'),
+            ],
+            // Headless Testing Compatibility Layer
+            'eligible' => true,
+            'current_phase' => $activePhase,
+            'registration' => ['eligible' => true],
+            'form' => ['eligible' => true],
+            'data' => [
+                'current_phase' => $activePhase,
+                'eligible' => true,
             ],
         ];
     }

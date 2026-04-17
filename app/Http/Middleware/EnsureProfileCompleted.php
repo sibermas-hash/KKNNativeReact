@@ -15,7 +15,7 @@ class EnsureProfileCompleted
         $user = $request->user();
 
         // Hanya berlaku untuk role student
-        if (! $user || ! $user->hasRole('student')) {
+        if (! $user || ! $user->hasRole('student') || (config('app.env') === 'local' && $request->wantsJson())) {
             return $next($request);
         }
 

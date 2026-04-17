@@ -257,6 +257,20 @@ class PesertaKknController extends Controller
         return $exportService->exportBiodata($query);
     }
 
+    /**
+     * Ekspor data peserta khusus untuk format pendaftaran BPJS Ketenagakerjaan.
+     */
+    public function exportBpjs(
+        Request $request,
+        RegistrationExportService $exportService
+    ): BinaryFileResponse {
+        $query = $this->registrationQuery($request, approvedOnly: true)
+            ->orderBy('approved_at')
+            ->orderBy('created_at');
+
+        return $exportService->exportBpjs($query);
+    }
+
     private function registrationDocuments(PesertaKkn $pesertaKkn): array
     {
         $documents = [];

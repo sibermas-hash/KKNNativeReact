@@ -446,7 +446,7 @@ class SystemSettingController extends Controller
         ]);
 
         if ($request->filled('gemini_api_key')) {
-            $apiKeySetting = \App\Models\Master\SystemSetting::where('config_key', 'gemini_api_key')->first();
+            $apiKeySetting = SystemSetting::where('config_key', 'gemini_api_key')->first();
             if ($apiKeySetting) {
                 $apiKeySetting->update([
                     'value' => Crypt::encryptString($request->input('gemini_api_key')),
@@ -455,7 +455,7 @@ class SystemSettingController extends Controller
             }
         }
 
-        $enabledSetting = \App\Models\Master\SystemSetting::where('config_key', 'ai_enabled')->first();
+        $enabledSetting = SystemSetting::where('config_key', 'ai_enabled')->first();
         if ($enabledSetting) {
             $val = in_array($request->input('ai_enabled'), [1, '1', true, 'true'], true) ? '1' : '0';
             $enabledSetting->update(['value' => $val]);
@@ -467,7 +467,7 @@ class SystemSettingController extends Controller
 
     public function removeAiKey(Request $request)
     {
-        $apiKeySetting = \App\Models\Master\SystemSetting::where('config_key', 'gemini_api_key')->first();
+        $apiKeySetting = SystemSetting::where('config_key', 'gemini_api_key')->first();
         if ($apiKeySetting) {
             $apiKeySetting->update(['value' => null]);
             Cache::forget('system_setting_gemini_api_key');

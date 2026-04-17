@@ -52,7 +52,7 @@ class AdminReportsPageTest extends TestCase
             ->get(route('admin.laporan.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Reports/Index')
+                ->component('Admin/Monitoring/Reports/Index')
                 ->where('summary.total_reports', 1)
                 ->where('summary.pending_review', 1)
                 ->has('reports.data', 1)
@@ -116,7 +116,7 @@ class AdminReportsPageTest extends TestCase
             ->get(route('admin.laporan.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Reports/Index')
+                ->component('Admin/Monitoring/Reports/Index')
                 ->where('summary.total_reports', 1)
                 ->where('summary.pending_review', 1)
                 ->has('reports.data', 1)

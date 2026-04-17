@@ -5,13 +5,13 @@ import type { DomicileSummary, ProfileSummary } from '@/Pages/Student/Register/t
 
 interface IdentityFormProps {
   domicile_profile?: DomicileSummary | null;
-  bpjs_profile?: ProfileSummary | null;
+  biodata_profile?: ProfileSummary | null;
   hasVerifiedDomicile: boolean;
 }
 
 export const IdentityForm: React.FC<IdentityFormProps> = ({
   domicile_profile,
-  bpjs_profile,
+  biodata_profile,
   hasVerifiedDomicile,
 }) => {
   return (
@@ -27,19 +27,19 @@ export const IdentityForm: React.FC<IdentityFormProps> = ({
         <div className="p-8 rounded-[2.5rem] bg-white border border-gray-200/60 shadow-sm space-y-6">
           <div className="flex items-center gap-4 text-emerald-600">
             <User size={20} />
-            <span className="text-xs font-bold uppercase tracking-widest">Data Identitas</span>
+            <span className="text-xs font-bold uppercase tracking-widest">Data Biodata</span>
           </div>
           <div className="space-y-4">
             <div className="flex justify-between items-center border-b border-[#f3f4f6] pb-2">
               <span className="text-xs font-bold text-gray-900 uppercase">NIK</span>
               <span className="text-xs font-bold text-gray-900 tracking-tight">
-                {bpjs_profile?.nik || '—'}
+                {biodata_profile?.nik || '—'}
               </span>
             </div>
             <div className="flex justify-between items-center border-b border-[#f3f4f6] pb-2">
               <span className="text-xs font-bold text-gray-900 uppercase">Nama Ibu</span>
               <span className="text-xs font-bold text-gray-900 tracking-tight">
-                {bpjs_profile?.mother_name || '—'}
+                {biodata_profile?.mother_name || '—'}
               </span>
             </div>
           </div>

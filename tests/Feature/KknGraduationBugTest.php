@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Master\SystemSetting;
-use App\Models\Master\User;
+use App\Models\KKN\SystemSetting;
+use App\Models\User;
 use Illuminate\Support\Facades\Crypt;
 use Spatie\Permission\Models\Role;
 
@@ -17,7 +17,7 @@ test('admin dapat menyimpan konfigurasi api key ai dengan aman', function () {
     // Pastikan setting untuk gemini_api_key ada di database (mocking)
     SystemSetting::firstOrCreate(
         ['config_key' => 'gemini_api_key'],
-        ['config_name' => 'Gemini API Key', 'value' => null]
+        ['label' => 'Gemini API Key', 'value' => null]
     );
 
     $dummyKey = 'AIzaSyTestKey1234567890';

@@ -35,7 +35,7 @@ class ProgramsCrudTest extends TestCase
 
         $response->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Academic/Programs/Index')
+                ->component('Admin/MasterData/Programs/Index')
                 ->where('syncInfo.mode', 'sync-only')
                 ->where('syncInfo.source', 'Master Mahasiswa')
             );

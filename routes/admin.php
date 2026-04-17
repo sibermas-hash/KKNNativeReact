@@ -74,6 +74,7 @@ Route::middleware([
     Route::get('pendaftaran', [Admin\PesertaKknController::class, 'index'])->name('pendaftaran.index');
     Route::get('pendaftaran/ekspor', [Admin\PesertaKknController::class, 'export'])->name('pendaftaran.ekspor');
     Route::get('pendaftaran/ekspor-biodata', [Admin\PesertaKknController::class, 'exportBiodata'])->name('pendaftaran.ekspor-biodata');
+    Route::get('pendaftaran/ekspor-bpjs', [Admin\PesertaKknController::class, 'exportBpjs'])->name('pendaftaran.ekspor-bpjs');
     Route::get('pendaftaran/berkas/unduh', [Admin\PesertaKknController::class, 'downloadDocument'])->name('pendaftaran.berkas.unduh');
     Route::get('pendaftaran/{pesertaKkn}', [Admin\PesertaKknController::class, 'show'])->name('pendaftaran.show');
 
@@ -89,7 +90,6 @@ Route::middleware([
     Route::get('laporan/akhir', [Admin\LaporanAkhirController::class, 'index'])->name('laporan.akhir.index');
     Route::get('laporan/akhir/{report}', [Admin\LaporanAkhirController::class, 'show'])->name('laporan.akhir.show');
     Route::get('laporan/akhir/{report}/unduh', [Admin\LaporanAkhirController::class, 'download'])->name('laporan.akhir.unduh');
-    Route::patch('laporan/akhir/{report}/status', [Admin\LaporanAkhirController::class, 'updateStatus'])->name('laporan.akhir.update-status');
     Route::get('evaluasi', [Admin\EvaluasiController::class, 'index'])->name('evaluasi.index');
 
     // Audit Kualifikasi (Cek Kelayakan)
@@ -174,7 +174,7 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
     Route::post('dosen/sinkron', [Admin\DplSyncController::class, 'sync'])->name('dpl.sinkron.store');
     Route::get('dpl/sync', [Admin\DplSyncController::class, 'index'])->name('dpl.sync');
     Route::get('dosen/penugasan', [Admin\DplAssignmentController::class, 'index'])->name('dpl.penugasan');
-    Route::redirect('dpl/assignment', 'dosen/penugasan', 301)->name('dpl.assignment');
+    Route::redirect('dpl/assignment', 'admin/dosen/penugasan', 301)->name('dpl.assignment');
     Route::post('dosen/tugaskan-periode', [Admin\DplAssignmentController::class, 'assignToPeriod'])->name('dpl.tugaskan-periode');
     Route::post('dosen/tugaskan-kelompok/{group}', [Admin\DplAssignmentController::class, 'assignToGroup'])->name('dpl.tugaskan-kelompok');
     Route::post('dosen/tugaskan-wilayah', [Admin\DplAssignmentController::class, 'assignDistrictCoordinator'])->name('dpl.tugaskan-wilayah');

@@ -42,6 +42,7 @@ class SampleUserSeeder extends Seeder
                 'username' => 'student',
                 'name' => 'Mahasiswa Contoh',
                 'is_active' => true,
+                'email_verified_at' => now(),
                 'password' => Hash::make($studentPassword),
             ]
         );
@@ -59,6 +60,11 @@ class SampleUserSeeder extends Seeder
                 'program_id' => $program->id,
                 'batch_year' => 2026,
                 'gender' => 'L',
+                'sks_completed' => 100,
+                'gpa' => 3.5,
+                'health_certificate_path' => 'dummy/health.pdf',
+                'parent_permission_path' => 'dummy/parent.pdf',
+                'is_bta_ppi_passed' => true,
             ]
         );
 
@@ -72,6 +78,7 @@ class SampleUserSeeder extends Seeder
                 'username' => 'dpl',
                 'name' => 'DPL Contoh',
                 'is_active' => true,
+                'email_verified_at' => now(),
                 'password' => Hash::make($lecturerPassword),
             ]
         );

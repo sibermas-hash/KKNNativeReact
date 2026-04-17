@@ -17,10 +17,10 @@ interface Props extends PageProps {
         status: string;
         file_name?: string | null;
     } | null;
-    isLeader: boolean;
+    uploadedBy: string | null;
 }
 
-export default function StudentFinalReportCreate({ group, existingReport, isLeader }: Props) {
+export default function StudentFinalReportCreate({ group, existingReport, uploadedBy }: Props) {
     const form = useForm({
         title: existingReport?.title ?? '',
         abstract: '',
@@ -60,6 +60,8 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
         );
     }
 
+    const isReportLocked = !!existingReport;
+
     return (
         <AppLayout title="Laporan Akhir">
             <Head title="Laporan Akhir" />
@@ -93,7 +95,7 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
                 </section>
 
                 {/* --- MAIN FORM --- */}
-                {isLeader ? (
+                {!isReportLocked ? (
                     <form onSubmit={handleSubmit} className="space-y-10">
                         {/* 1. DATA IDENTITAS LAPORAN */}
                         <div className="rounded-[2.5rem] border border-gray-200/60 bg-white p-10 lg:p-12 shadow-sm space-y-8">
@@ -254,15 +256,25 @@ export default function StudentFinalReportCreate({ group, existingReport, isLead
                         </div>
                     </form>
                 ) : (
-                    <section className="rounded-[2.5rem] border border-amber-100 bg-amber-50 p-12 lg:p-16 text-center space-y-6">
-                        <div className="mx-auto h-10 w-20 rounded-xl bg-white flex items-center justify-center text-amber-500 shadow-sm">
-                            <ShieldAlert size={40} />
+                    <section className="rounded-[2.5rem] border border-emerald-100 bg-emerald-50/30 p-12 lg:p-16 text-center space-y-6">
+                        <div className="mx-auto h-16 w-16 rounded-2xl bg-white flex items-center justify-center text-emerald-600 shadow-sm">
+                            <CheckCircle2 size={40} />
                         </div>
                         <div className="space-y-2">
-                            <h2 className="text-xl font-bold text-amber-900 font-bold text-center">Hanya Ketua Unit</h2>
-                            <p className="text-xs font-bold text-amber-700/70 uppercase tracking-wider text-xs font-semibold leading-relaxed max-w-sm mx-auto">
-                                Sesuai protokol pimpinan, unggahan laporan kolektif didelegasikan penuh kepada <span className="text-amber-900">Ketua Kelompok</span>.
+                            <h2 className="text-xl font-bold text-black font-bold text-center uppercase tracking-tight">Laporan Akhir Terkunci</h2>
+                            <p className="text-xs font-bold text-gray-900 uppercase tracking-wider text-xs font-semibold leading-relaxed max-w-md mx-auto">
+                                Laporan akhir kelompok <span className="text-emerald-600 font-bold">{group.name}</span> sudah berhasil diunggah oleh anggota: <br />
+                                <span className="text-lg text-black lowercase mt-2 block font-extrabold">{uploadedBy || 'Rekan Kelompok'}</span>
                             </p>
+                            <p className="text-xs text-gray-500 mt-4 italic">Sesuai kebijakan LPPM, pengunggahan laporan akhir cukup dilakukan oleh satu perwakilan kelompok.</p>
+                        </div>
+                        <div className="pt-8">
+                             <Link
+                                href={route('student.dashboard')}
+                                className="px-8 py-3 rounded-xl bg-white border border-gray-200 text-xs font-bold uppercase tracking-widest hover:bg-gray-50 transition-all shadow-sm"
+                            >
+                                Kembali ke Dashboard
+                            </Link>
                         </div>
                     </section>
                 )}

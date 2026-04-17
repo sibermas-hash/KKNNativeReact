@@ -52,17 +52,14 @@ class FinalReportController extends Controller
         $mahasiswa = auth()->user()?->mahasiswa;
         $pendaftaran = $mahasiswa?->peserta()->where('status', 'approved')->first();
 
-        // Check if student is the leader of the group
-        $isLeader = $pendaftaran && $pendaftaran->role === 'Ketua';
-
         $laporanAda = $pendaftaran
-            ? LaporanAkhir::where('kelompok_id', $pendaftaran->kelompok_id)->latest()->first()
+            ? LaporanAkhir::where('kelompok_id', $pendaftaran->kelompok_id)->with('mahasiswa')->latest()->first()
             : null;
 
         return Inertia::render('Student/FinalReport/Create', [
             'group' => $pendaftaran?->kelompok,
             'existingReport' => $laporanAda,
-            'isLeader' => $isLeader,
+            'uploadedBy' => $laporanAda?->mahasiswa?->nama,
         ]);
     }
 
@@ -74,7 +71,12 @@ class FinalReportController extends Controller
         $pendaftaran = $mahasiswa->peserta()->where('status', 'approved')->first();
 
         abort_if(! $pendaftaran || ! $pendaftaran->kelompok_id, 403, 'Anda belum terdaftar dalam kelompok.');
-        abort_if($pendaftaran->role !== 'Ketua', 403, 'Hanya Ketua Kelompok yang diizinkan mengunggah Laporan Akhir.');
+
+        // Check if report already exists for this group (safety net)
+        $existing = LaporanAkhir::where('kelompok_id', $pendaftaran->kelompok_id)->exists();
+        if ($existing) {
+            return redirect()->back()->with('error', 'Laporan akhir untuk kelompok Anda sudah diunggah oleh anggota lain.');
+        }
 
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:300'],

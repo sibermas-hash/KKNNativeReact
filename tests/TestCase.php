@@ -15,4 +15,19 @@ abstract class TestCase extends BaseTestCase
 
         $this->withoutVite();
     }
+
+    /**
+     * Indicate that the default seeder should run before each test.
+     */
+    protected bool $seed = true;
+
+    /**
+     * Run specific seeders before each test.
+     *
+     * @return class-string
+     */
+    protected function seeder()
+    {
+        return \Database\Seeders\RoleSeeder::class;
+    }
 }

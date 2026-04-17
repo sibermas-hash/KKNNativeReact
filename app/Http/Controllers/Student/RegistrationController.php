@@ -258,23 +258,26 @@ class RegistrationController extends Controller
         }
 
         DB::transaction(function () use ($request, $mahasiswa, $periodId, $registrationService) {
+            $diskName = config('filesystems.default');
+            $disk = Storage::disk($diskName);
+
             if ($request->hasFile('health_certificate')) {
                 if ($mahasiswa->health_certificate_path) {
-                    Storage::disk('local')->delete($mahasiswa->health_certificate_path);
+                    $disk->delete($mahasiswa->health_certificate_path);
                 }
 
-                // VULN-013 Fix: Store sensitive documents in private storage
-                $path = $request->file('health_certificate')->store('health-certificates', 'local');
+                // Store sensitive documents in the selected storage disk
+                $path = $request->file('health_certificate')->store('health-certificates', $diskName);
                 $mahasiswa->update(['health_certificate_path' => $path]);
             }
 
             if ($request->hasFile('parent_permission')) {
                 if ($mahasiswa->parent_permission_path) {
-                    Storage::disk('local')->delete($mahasiswa->parent_permission_path);
+                    $disk->delete($mahasiswa->parent_permission_path);
                 }
 
-                // VULN-013 Fix: Store sensitive documents in private storage
-                $path = $request->file('parent_permission')->store('parent-permissions', 'local');
+                // Store sensitive documents in the selected storage disk
+                $path = $request->file('parent_permission')->store('parent-permissions', $diskName);
                 $mahasiswa->update(['parent_permission_path' => $path]);
             }
 

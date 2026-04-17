@@ -17,32 +17,32 @@ class LaporanAkhir extends Model
     protected $table = 'laporan_akhir';
 
     protected $fillable = [
-    'mahasiswa_id',
-    'kelompok_id',
-    'title',
-    'abstract',
-    'file_path',
-    'file_name',
-    'video_link',
-    'news_link',
-    'article_1_path',
-    'article_2_path',
-    'poster_1_path',
-    'poster_2_path',
-    'poster_3_path',
-    'status',
-    'submitted_at',
-    'reviewed_at',
-    'reviewed_by',
-    'review_notes',
-    'score',
-];
+        'mahasiswa_id',
+        'kelompok_id',
+        'title',
+        'abstract',
+        'file_path',
+        'file_name',
+        'video_link',
+        'news_link',
+        'article_1_path',
+        'article_2_path',
+        'poster_1_path',
+        'poster_2_path',
+        'poster_3_path',
+        'status',
+        'submitted_at',
+        'reviewed_at',
+        'reviewed_by',
+        'review_notes',
+        'score',
+    ];
 
     protected $casts = [
-    'submitted_at' => 'datetime',
-    'reviewed_at' => 'datetime',
-    'score' => 'decimal:2',
-];
+        'submitted_at' => 'datetime',
+        'reviewed_at' => 'datetime',
+        'score' => 'decimal:2',
+    ];
 
     use HasFactory, SoftDeletes;
 

@@ -18,30 +18,30 @@ class ProgramKerja extends Model
     protected $table = 'program_kerja';
 
     protected $fillable = [
-    'kelompok_id',
-    'title',
-    'description',
-    'sdg_goals',
-    'objectives',
-    'target_participants',
-    'budget',
-    'status',
-    'submitted_at',
-    'approved_at',
-    'approved_by',
-    'approval_notes',
-    'abcd_stage',
-    'kategori',
-];
+        'kelompok_id',
+        'title',
+        'description',
+        'sdg_goals',
+        'objectives',
+        'target_participants',
+        'budget',
+        'status',
+        'submitted_at',
+        'approved_at',
+        'approved_by',
+        'approval_notes',
+        'abcd_stage',
+        'kategori',
+    ];
 
     protected $casts = [
-    'sdg_goals' => 'array',
-    'target_participants' => 'integer',
-    'budget' => 'decimal:2',
-    'submitted_at' => 'datetime',
-    'approved_at' => 'datetime',
-    'abcd_stage' => AbcdStage::class,
-];
+        'sdg_goals' => 'array',
+        'target_participants' => 'integer',
+        'budget' => 'decimal:2',
+        'submitted_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'abcd_stage' => AbcdStage::class,
+    ];
 
     use HasFactory;
 

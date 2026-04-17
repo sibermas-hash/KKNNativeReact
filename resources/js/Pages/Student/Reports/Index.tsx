@@ -50,9 +50,9 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  <Head title="Dokumen Kelompok" />
 
  <div className="space-y-6">
- <section className="rounded-lg border border-emerald-100/60 bg-white p-8">
+ <section className="rounded-lg border border-gray-200/60 bg-white p-8">
  <h1 className="text-2xl font-semibold text-black">Dokumen Kelompok</h1>
- <p className="mt-2 text-sm text-emerald-950">
+ <p className="mt-2 text-sm text-gray-900">
  Unggah dokumen pendukung kelompok dan pantau status dokumen yang sudah terkirim.
  </p>
  </section>
@@ -61,15 +61,15 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  <section className="space-y-4 lg:col-span-2">
  {progress.length > 0 ? (
  progress.map((item) => (
- <article key={item.type} className="rounded-lg border border-emerald-100/60 bg-white p-6">
+ <article key={item.type} className="rounded-lg border border-gray-200/60 bg-white p-6">
  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
  <div>
  <h2 className="text-lg font-semibold text-black">{item.name}</h2>
- <p className="mt-1 text-sm text-emerald-950">
+ <p className="mt-1 text-sm text-gray-900">
  {item.report?.title || 'Belum ada dokumen pada kategori ini.'}
  </p>
  {item.report?.file_name && (
- <p className="mt-1 text-xs text-emerald-950">{item.report.file_name}</p>
+ <p className="mt-1 text-xs text-gray-900">{item.report.file_name}</p>
  )}
  </div>
  <div className="flex items-center gap-3">
@@ -77,7 +77,7 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  {item.report && (
  <a
  href={`/reports/${item.report.id}/download`}
- className="inline-flex items-center rounded-lg border border-emerald-100/60 px-3 py-2 text-sm font-medium text-emerald-700 hover:border-primary hover:text-primary"
+ className="inline-flex items-center rounded-lg border border-gray-200/60 px-3 py-2 text-sm font-medium text-gray-700 hover:border-primary hover:text-primary"
  >
  Unduh
  </a>
@@ -87,22 +87,22 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  </article>
  ))
  ) : (
- <div className="rounded-lg border border-emerald-100/60 bg-white px-6 py-6 text-center text-sm text-emerald-950">
+ <div className="rounded-lg border border-gray-200/60 bg-white px-6 py-6 text-center text-sm text-gray-900">
  Belum ada dokumen yang dipantau.
  </div>
  )}
  </section>
 
- <section className="rounded-lg border border-emerald-100/60 bg-white p-6">
+ <section className="rounded-lg border border-gray-200/60 bg-white p-6">
  <h2 className="text-lg font-semibold text-black">Unggah Dokumen</h2>
  <form onSubmit={handleSubmit} className="mt-6 space-y-4">
  <div className="space-y-2">
- <label htmlFor="document-type" className="block text-sm font-medium text-emerald-700">Jenis dokumen</label>
+ <label htmlFor="document-type" className="block text-sm font-medium text-gray-700">Jenis dokumen</label>
  <select
  id="document-type"
  value={form.data.type}
  onChange={(event) => form.setData('type', event.target.value)}
- className="w-full rounded-lg border border-emerald-100/60 px-3 py-2 text-sm text-emerald-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+ className="w-full rounded-lg border border-gray-200/60 px-3 py-2 text-sm text-gray-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
  >
  {reportTypes.map((type) => (
  <option key={type.type} value={type.type}>
@@ -113,19 +113,19 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
  </div>
 
  <div className="space-y-2">
- <label htmlFor="document-title-input" className="block text-sm font-medium text-emerald-700">Judul dokumen</label>
+ <label htmlFor="document-title-input" className="block text-sm font-medium text-gray-700">Judul dokumen</label>
  <input
  id="document-title-input"
  type="text"
  value={form.data.title}
  onChange={(event) => form.setData('title', event.target.value)}
- className="w-full rounded-lg border border-emerald-100/60 px-3 py-2 text-sm text-emerald-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+ className="w-full rounded-lg border border-gray-200/60 px-3 py-2 text-sm text-gray-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
  />
  {form.errors.title && <p className="text-xs text-red-600">{form.errors.title}</p>}
  </div>
 
  <div className="space-y-2">
-   <label htmlFor="document-file" className="block text-sm font-medium text-emerald-700">Berkas</label>
+   <label htmlFor="document-file" className="block text-sm font-medium text-gray-700">Berkas</label>
    <input
      id="document-file"
      type="file"
@@ -135,12 +135,12 @@ export default function StudentReportsIndex({ progress, reportTypes }: Props) {
          ? selectedType.allowed_types.map((extension) => `.${extension}`).join(',')
          : undefined
      }
-     className="block w-full rounded-lg border border-emerald-100/60 px-3 py-2 text-sm text-emerald-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary"
+     className="block w-full rounded-lg border border-gray-200/60 px-3 py-2 text-sm text-gray-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary"
    />
    {form.errors.file && <p className="text-xs text-red-600">{form.errors.file}</p>}
  </div>
  {selectedType && (
- <p className="text-xs text-emerald-950">
+ <p className="text-xs text-gray-900">
  Format: {selectedType.allowed_types.join(', ')}. Maksimal {selectedType.max_size_mb} MB.
  </p>
  )}

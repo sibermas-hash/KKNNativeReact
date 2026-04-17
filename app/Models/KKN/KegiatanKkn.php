@@ -18,36 +18,36 @@ class KegiatanKkn extends Model
     protected $table = 'kegiatan_kkn';
 
     protected $fillable = [
-    'mahasiswa_id',
-    'kelompok_id',
-    'date',
-    'title',
-    'abcd_stage',
-    'activity',
-    'reflection',
-    'social_media_link',
-    'output',
-    'latitude',
-    'longitude',
-    'gps_accuracy',
-    'captured_at',
-    'location_source',
-    'location_name',
-    'status',
-    'reviewed_at',
-    'reviewed_by',
-    'review_notes',
-    'ai_summary',
-    'ai_analysis',
-];
+        'mahasiswa_id',
+        'kelompok_id',
+        'date',
+        'title',
+        'abcd_stage',
+        'activity',
+        'reflection',
+        'social_media_link',
+        'output',
+        'latitude',
+        'longitude',
+        'gps_accuracy',
+        'captured_at',
+        'location_source',
+        'location_name',
+        'status',
+        'reviewed_at',
+        'reviewed_by',
+        'review_notes',
+        'ai_summary',
+        'ai_analysis',
+    ];
 
     protected $casts = [
-    'date' => 'date',
-    'captured_at' => 'datetime',
-    'gps_accuracy' => 'float',
-    'reviewed_at' => 'datetime',
-    'ai_analysis' => 'array',
-];
+        'date' => 'date',
+        'captured_at' => 'datetime',
+        'gps_accuracy' => 'float',
+        'reviewed_at' => 'datetime',
+        'ai_analysis' => 'array',
+    ];
 
     use HasFactory;
 

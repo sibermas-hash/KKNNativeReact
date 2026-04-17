@@ -99,7 +99,7 @@ class GroupSelectionService
         $queue->status = 'dalam_kelompok';
         $queue->save();
 
-        return $registration->fresh(['kelompok.lokasi', 'kelompok.dpl', 'periode']);
+        return $registration->fresh(['kelompok.lokasi', 'kelompok.dosen', 'periode']);
     }
 
     public function validateGroupAcceptance(KelompokKkn $group, Mahasiswa $mahasiswa, ?int $excludingRegistrationId = null): void
@@ -121,7 +121,7 @@ class GroupSelectionService
         }
 
         $period = $registration->periode()->lockForUpdate()->firstOrFail();
-        
+
         // Pindahkan pengecekan ke sini agar dilakukan saat row Periode terkunci (Atomicity)
         $this->assertCanLeaveCurrentGroup($registration, $period);
 

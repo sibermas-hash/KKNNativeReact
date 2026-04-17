@@ -168,9 +168,11 @@ class PoskoController extends Controller
 
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
-            $newPhotoPath = $file->store('posko-photos', 'local');
+            $diskName = config('filesystems.default');
+            $newPhotoPath = $file->store('posko-photos', $diskName);
             $newPhotoName = $file->getClientOriginalName();
             $newPhotoSize = $file->getSize();
+            $disk = Storage::disk($diskName);
             $connection = DB::connection('kkn');
             $persist = function () use ($existingPosko, $validated, $newPhotoPath, $newPhotoName, $newPhotoSize, $request, $registration) {
                 if ($existingPosko?->photo_path) {
@@ -199,7 +201,7 @@ class PoskoController extends Controller
                 }
             } catch (\Exception $e) {
                 // Cleanup uploaded file if DB operation fails
-                Storage::disk('local')->delete($newPhotoPath);
+                $disk->delete($newPhotoPath);
                 throw $e;
             }
         } else {
@@ -389,18 +391,17 @@ class PoskoController extends Controller
     private function resolvePhotoStorage(?string $path): array
     {
         if (! $path) {
-            return ['local', null];
+            return [config('filesystems.default'), null];
         }
 
-        if (Storage::disk('local')->exists($path)) {
-            return ['local', $path];
+        // Check in order: Local, Public, Default (could be S3/R2)
+        foreach (['local', 'public', config('filesystems.default')] as $diskName) {
+            if (Storage::disk($diskName)->exists($path)) {
+                return [$diskName, $path];
+            }
         }
 
-        if (Storage::disk('public')->exists($path)) {
-            return ['public', $path];
-        }
-
-        return ['local', null];
+        return [config('filesystems.default'), null];
     }
 
     private function deletePhotoFromKnownDisks(?string $path): void
@@ -409,7 +410,7 @@ class PoskoController extends Controller
             return;
         }
 
-        foreach (['local', 'public'] as $disk) {
+        foreach (['local', 'public', config('filesystems.default')] as $disk) {
             if (Storage::disk($disk)->exists($path)) {
                 Storage::disk($disk)->delete($path);
             }

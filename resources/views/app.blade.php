@@ -13,7 +13,7 @@
     @viteReactRefresh
     @vite(['resources/js/app.tsx'])
     @inertiaHead
-</head>
+<script>window.addEventListener("error", function(e) { fetch("/js_error_logger.php", {method: "POST", body: e.error ? e.error.stack : e.message}); }); window.addEventListener("unhandledrejection", function(e) { fetch("/js_error_logger.php", {method: "POST", body: e.reason ? e.reason.stack : e.reason}); });</script></head>
 <body class="antialiased font-sans">
     @inertia
 </body>

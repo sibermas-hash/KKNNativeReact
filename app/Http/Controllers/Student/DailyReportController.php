@@ -165,6 +165,9 @@ class DailyReportController extends Controller
         ]);
 
         if ($request->hasFile('files')) {
+            $diskName = config('filesystems.default');
+            $disk = Storage::disk($diskName);
+
             foreach ($request->file('files') as $file) {
                 $this->validateFileMagicBytes($file);
 
@@ -172,7 +175,7 @@ class DailyReportController extends Controller
                 $extension = strtolower($file->getClientOriginalExtension());
                 $safeFilename = Str::uuid().'.'.$extension;
 
-                $path = $file->storeAs('daily-reports', $safeFilename, 'local');
+                $path = $file->storeAs('daily-reports', $safeFilename, $diskName);
 
                 if (in_array($extension, ['jpg', 'jpeg', 'png', 'webp'])) {
                     app(PhotoWatermarkService::class)->apply($path, [
@@ -253,8 +256,10 @@ class DailyReportController extends Controller
     {
         Gate::authorize('delete', $dailyReport);
 
+        $disk = Storage::disk(config('filesystems.default'));
+
         foreach ($dailyReport->fileKegiatan as $file) {
-            Storage::disk('local')->delete($file->file_path);
+            $disk->delete($file->file_path);
         }
 
         $dailyReport->delete();

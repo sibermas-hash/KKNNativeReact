@@ -15,20 +15,20 @@ class DispensasiKkn extends Model
     protected $table = 'dispensasi_kkn';
 
     protected $fillable = [
-    'nim',
-    'period_id',
-    'alasan',
-    'bypassed_requirements',
-    'granted_by',
-    'is_active',
-];
+        'nim',
+        'period_id',
+        'alasan',
+        'bypassed_requirements',
+        'granted_by',
+        'is_active',
+    ];
 
     protected $casts = [
-    'bypassed_requirements' => 'array',
-    'is_active' => 'boolean',
-];
+        'bypassed_requirements' => 'array',
+        'is_active' => 'boolean',
+    ];
 
-public function periode(): BelongsTo
+    public function periode(): BelongsTo
     {
         return $this->belongsTo(Periode::class, 'period_id');
     }
@@ -69,7 +69,7 @@ public function periode(): BelongsTo
 
         $dispensations = $query->get();
 
-        return $dispensations->flatMap(fn($item) => $item->bypassed_requirements ?? [])
+        return $dispensations->flatMap(fn ($item) => $item->bypassed_requirements ?? [])
             ->filter()
             ->unique()
             ->values()

@@ -35,7 +35,7 @@ class SmokeTest extends TestCase
      */
     public function test_dashboard_redirects_to_login_for_guests(): void
     {
-        $response = $this->get(route('dashboard'));
+        $response = $this->get('/mahasiswa');
 
         $response->assertRedirect(route('login'));
     }
@@ -53,11 +53,8 @@ class SmokeTest extends TestCase
         Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
         $user->assignRole('student');
 
-        $response = $this->actingAs($user)->get(route('dashboard'));
+        $response = $this->actingAs($user)->get(route('student.dashboard'));
 
-        $response->assertRedirect(route('student.dashboard'));
-
-        // Follow the redirect
-        $this->get(route('student.dashboard'))->assertStatus(200);
+        $response->assertStatus(200);
     }
 }

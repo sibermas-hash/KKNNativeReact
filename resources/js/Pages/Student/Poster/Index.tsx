@@ -40,28 +40,28 @@ export default function StudentPosterIndex({ kelompok, allowedTypes, maxSize }: 
 
             <div className="mx-auto max-w-4xl space-y-6">
                 {/* Header */}
-                <div className="rounded-lg border border-emerald-100/60 bg-white p-6">
+                <div className="rounded-lg border border-gray-200/60 bg-white p-6">
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-xl font-semibold text-black">Poster Peta Potensi Desa</h1>
-                            <p className="mt-1 text-sm text-emerald-950">
+                            <p className="mt-1 text-sm text-gray-900">
                                 Sesuai Lampiran 10 Panduan KKN
                             </p>
                         </div>
                         <Link
                             href={route('student.dashboard')}
-                            className="inline-flex items-center gap-2 rounded-lg border border-emerald-100/60 px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50/30"
+                            className="inline-flex items-center gap-2 rounded-lg border border-gray-200/60 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-emerald-50/30"
                         >
                             <ArrowLeft className="h-4 w-4" /> Kembali
                         </Link>
                     </div>
 
-                    <div className="mt-4 rounded-lg border border-emerald-100/60 bg-emerald-50/30 p-4 text-sm text-emerald-950">
+                    <div className="mt-4 rounded-lg border border-gray-200/60 bg-emerald-50/30 p-4 text-sm text-gray-900">
                         <div className="flex items-start gap-3">
                             <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
                             <div>
                                 <p className="font-medium text-black">Poster Peta Potensi Desa sesuai Lampiran 10 Panduan KKN</p>
-                                <p className="mt-1 text-emerald-950">
+                                <p className="mt-1 text-gray-900">
                                     Unggah poster peta potensi desa dalam format PDF atau gambar (JPG, JPEG, PNG).
                                     Ukuran file maksimal {maxSize}. Poster ini memuat peta desa beserta potensi yang ada di lokasi KKN.
                                 </p>
@@ -71,38 +71,38 @@ export default function StudentPosterIndex({ kelompok, allowedTypes, maxSize }: 
                 </div>
 
                 {/* Tujuan & Manfaat Section */}
-                <div className="rounded-xl border border-emerald-100 bg-emerald-50/30 p-6 shadow-sm">
+                <div className="rounded-xl border border-gray-200 bg-emerald-50/30 p-6 shadow-sm">
                     <h2 className="flex items-center gap-2 text-base font-bold text-bg-emerald-100">
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
                             <ImageIcon className="h-5 w-5" />
                         </div>
                         Mengapa Poster Potensi Desa Penting?
                     </h2>
-                    <p className="mt-2 text-sm text-emerald-950 leading-relaxed">
+                    <p className="mt-2 text-sm text-gray-900 leading-relaxed">
                         Poster Potensi Desa merupakan salah satu <strong>luaran wajib KKN</strong> yang berfungsi sebagai media visualisasi hasil observasi dan pemetaan aset desa selama pelaksanaan KKN. Poster ini akan menjadi bagian dari laporan akhir kelompok dan dipublikasikan oleh LPPM.
                     </p>
                     <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        <div className="rounded-lg bg-white p-4 shadow-sm border border-emerald-50">
+                        <div className="rounded-lg bg-white p-4 shadow-sm border border-[#f3f4f6]">
                             <p className="text-xs font-bold text-emerald-600 font-semibold uppercase text-xs mb-1">Branding Desa</p>
-                            <p className="text-sm text-emerald-950 leading-relaxed">
+                            <p className="text-sm text-gray-900 leading-relaxed">
                                 Membantu desa mempromosikan aset alam, sosial, dan produk UMKM unggulan kepada masyarakat luas.
                             </p>
                         </div>
-                        <div className="rounded-lg bg-white p-4 shadow-sm border border-emerald-50">
+                        <div className="rounded-lg bg-white p-4 shadow-sm border border-[#f3f4f6]">
                             <p className="text-xs font-bold text-emerald-600 font-semibold uppercase text-xs mb-1">Visualisasi Aset</p>
-                            <p className="text-sm text-emerald-950 leading-relaxed">
+                            <p className="text-sm text-gray-900 leading-relaxed">
                                 Menyederhanakan data pemetaan aset desa (metode ABCD) ke dalam bentuk visual yang menarik dan mudah dipahami.
                             </p>
                         </div>
-                        <div className="rounded-lg bg-white p-4 shadow-sm border border-emerald-50">
+                        <div className="rounded-lg bg-white p-4 shadow-sm border border-[#f3f4f6]">
                             <p className="text-xs font-bold text-emerald-600 font-semibold uppercase text-xs mb-1">Output Akademik</p>
-                            <p className="text-sm text-emerald-950 leading-relaxed">
+                            <p className="text-sm text-gray-900 leading-relaxed">
                                 Sebagai bukti fisik luaran pengabdian yang akan dipublikasikan di kanal resmi LPPM UIN Saizu.
                             </p>
                         </div>
-                        <div className="rounded-lg bg-white p-4 shadow-sm border border-emerald-50">
+                        <div className="rounded-lg bg-white p-4 shadow-sm border border-[#f3f4f6]">
                             <p className="text-xs font-bold text-emerald-600 font-semibold uppercase text-xs mb-1">Arsip LPPM</p>
-                            <p className="text-sm text-emerald-950 leading-relaxed">
+                            <p className="text-sm text-gray-900 leading-relaxed">
                                 Menjadi database potret desa-desa wilayah KKN untuk riset dan pengabdian lanjutan kampus.
                             </p>
                         </div>
@@ -110,14 +110,14 @@ export default function StudentPosterIndex({ kelompok, allowedTypes, maxSize }: 
                 </div>
 
                 {/* Panduan Konten Poster */}
-                <div className="rounded-xl border border-emerald-100/60 bg-white p-6 shadow-sm">
+                <div className="rounded-xl border border-gray-200/60 bg-white p-6 shadow-sm">
                     <h2 className="flex items-center gap-2 text-base font-bold text-black">
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
                             <FileText className="h-5 w-5" />
                         </div>
                         Panduan Isi Poster
                     </h2>
-                    <p className="mt-2 text-sm text-emerald-950">Pastikan poster yang Anda buat memuat elemen-elemen berikut:</p>
+                    <p className="mt-2 text-sm text-gray-900">Pastikan poster yang Anda buat memuat elemen-elemen berikut:</p>
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                         {[
                             { label: 'Peta Lokasi Desa', desc: 'Peta desa/kelurahan yang menunjukkan batas wilayah dan lokasi potensi' },
@@ -127,11 +127,11 @@ export default function StudentPosterIndex({ kelompok, allowedTypes, maxSize }: 
                             { label: 'Potensi Ekonomi & UMKM', desc: 'Produk unggulan, home industry, pasar, komoditas utama' },
                             { label: 'Identitas Kelompok KKN', desc: 'Logo UIN Saizu, nama kelompok, periode KKN, nama DPL' },
                         ].map((item, idx) => (
-                            <div key={idx} className="flex items-start gap-3 rounded-lg border border-emerald-100/60 bg-emerald-50/30/50 p-3">
-                                <CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+                            <div key={idx} className="flex items-start gap-3 rounded-lg border border-gray-200/60 bg-emerald-50/30/50 p-3">
+                                <CheckCircle className="h-4 w-4 text-[#1a7a4a] mt-0.5 shrink-0" />
                                 <div>
                                     <p className="text-sm font-semibold text-black">{item.label}</p>
-                                    <p className="text-xs text-emerald-950 mt-0.5">{item.desc}</p>
+                                    <p className="text-xs text-gray-900 mt-0.5">{item.desc}</p>
                                 </div>
                             </div>
                         ))}
@@ -146,17 +146,17 @@ export default function StudentPosterIndex({ kelompok, allowedTypes, maxSize }: 
 
                 {/* Current Poster Preview */}
                 {kelompok.poster_potensi_desa_path && (
-                    <div className="rounded-lg border border-emerald-100/60 bg-white p-6">
+                    <div className="rounded-lg border border-gray-200/60 bg-white p-6">
                         <div className="flex items-center gap-3 mb-4">
                             <CheckCircle className="h-5 w-5 text-emerald-600" />
                             <div>
                                 <h2 className="font-semibold text-black">Poster Saat Ini</h2>
-                                <p className="text-sm text-emerald-950">{kelompok.poster_potensi_desa_name}</p>
+                                <p className="text-sm text-gray-900">{kelompok.poster_potensi_desa_name}</p>
                             </div>
                         </div>
 
                         {isImage(kelompok.poster_potensi_desa_name || '') ? (
-                            <div className="rounded-lg border border-emerald-100/60 overflow-hidden bg-emerald-50/30 p-4">
+                            <div className="rounded-lg border border-gray-200/60 overflow-hidden bg-emerald-50/30 p-4">
                                 <img
                                     src={kelompok.poster_potensi_desa_path}
                                     alt="Poster Peta Potensi Desa"
@@ -164,19 +164,19 @@ export default function StudentPosterIndex({ kelompok, allowedTypes, maxSize }: 
                                 />
                             </div>
                         ) : (
-                            <div className="flex items-center gap-4 rounded-lg border border-emerald-100/60 bg-emerald-50/30 p-4">
+                            <div className="flex items-center gap-4 rounded-lg border border-gray-200/60 bg-emerald-50/30 p-4">
                                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-rose-100 text-rose-600">
                                     <FileText className="h-6 w-6" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-black truncate">{kelompok.poster_potensi_desa_name}</p>
-                                    <p className="text-xs text-emerald-950">Dokumen PDF</p>
+                                    <p className="text-xs text-gray-900">Dokumen PDF</p>
                                 </div>
                                 <a
                                     href={kelompok.poster_potensi_desa_path}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 rounded-lg border border-emerald-100/60 px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50/30"
+                                    className="inline-flex items-center gap-2 rounded-lg border border-gray-200/60 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-emerald-50/30"
                                 >
                                     Lihat dokumen
                                 </a>
@@ -186,16 +186,16 @@ export default function StudentPosterIndex({ kelompok, allowedTypes, maxSize }: 
                 )}
 
                 {/* Upload Form */}
-                <form onSubmit={handleSubmit} className="rounded-lg border border-emerald-100/60 bg-white p-6">
+                <form onSubmit={handleSubmit} className="rounded-lg border border-gray-200/60 bg-white p-6">
                     <div className="space-y-6">
                         <div className="flex items-center gap-3">
-                            <Upload className="h-5 w-5 text-emerald-950" />
+                            <Upload className="h-5 w-5 text-gray-900" />
                             <h2 className="font-semibold text-black">Unggah Poster Baru</h2>
                         </div>
 
                         {/* File Input */}
                         <div className="space-y-2">
-                            <label className="block text-sm font-medium text-emerald-700">
+                            <label className="block text-sm font-medium text-gray-700">
                                 File Poster <span className="text-rose-500">*</span>
                             </label>
                             <div className="relative group/upload">
@@ -203,7 +203,7 @@ export default function StudentPosterIndex({ kelompok, allowedTypes, maxSize }: 
                                     type="file"
                                     accept=".pdf,.jpg,.jpeg,.png"
                                     onChange={(e) => form.setData('poster', e.target.files?.[0] ?? null)}
-                                    className="block w-full text-sm text-emerald-700 file:mr-4 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-emerald-700 hover:file:bg-emerald-100 file:cursor-pointer"
+                                    className="block w-full text-sm text-gray-700 file:mr-4 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-gray-700 hover:file:bg-emerald-100 file:cursor-pointer"
                                 />
                             </div>
                             {form.errors.poster && (
@@ -212,14 +212,14 @@ export default function StudentPosterIndex({ kelompok, allowedTypes, maxSize }: 
                                     {form.errors.poster}
                                 </p>
                             )}
-                            <p className="text-xs text-emerald-950">
+                            <p className="text-xs text-gray-900">
                                 Format: {allowedTypes.join(', ')} | Maks: {maxSize}
                             </p>
                         </div>
 
                         {/* Preview */}
                         {form.data.poster && (
-                            <div className="rounded-lg border border-emerald-100/60 bg-emerald-50/30 p-4">
+                            <div className="rounded-lg border border-gray-200/60 bg-emerald-50/30 p-4">
                                 <div className="flex items-center gap-4">
                                     {form.data.poster.type.startsWith('image/') ? (
                                         <>
@@ -228,7 +228,7 @@ export default function StudentPosterIndex({ kelompok, allowedTypes, maxSize }: 
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm font-medium text-black truncate">{form.data.poster.name}</p>
-                                                <p className="text-xs text-emerald-950">
+                                                <p className="text-xs text-gray-900">
                                                     {(form.data.poster.size / 1024 / 1024).toFixed(2)} MB
                                                 </p>
                                             </div>
@@ -240,7 +240,7 @@ export default function StudentPosterIndex({ kelompok, allowedTypes, maxSize }: 
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm font-medium text-black truncate">{form.data.poster.name}</p>
-                                                <p className="text-xs text-emerald-950">
+                                                <p className="text-xs text-gray-900">
                                                     {(form.data.poster.size / 1024 / 1024).toFixed(2)} MB
                                                 </p>
                                             </div>
@@ -251,8 +251,8 @@ export default function StudentPosterIndex({ kelompok, allowedTypes, maxSize }: 
                         )}
 
                         {/* Info */}
-                        <div className="rounded-lg border border-emerald-100/60 bg-emerald-50/30 p-4 text-xs text-emerald-950 space-y-1">
-                            <p className="font-medium text-emerald-700">Ketentuan:</p>
+                        <div className="rounded-lg border border-gray-200/60 bg-emerald-50/30 p-4 text-xs text-gray-900 space-y-1">
+                            <p className="font-medium text-gray-700">Ketentuan:</p>
                             <ul className="list-disc list-inside space-y-1">
                                 <li>File berupa PDF atau gambar (JPG, JPEG, PNG)</li>
                                 <li>Ukuran file maksimal {maxSize}</li>
@@ -265,7 +265,7 @@ export default function StudentPosterIndex({ kelompok, allowedTypes, maxSize }: 
                     <div className="mt-6 flex justify-end gap-3">
                         <Link
                             href={route('student.dashboard')}
-                            className="rounded-lg border border-emerald-100/60 px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50/30"
+                            className="rounded-lg border border-gray-200/60 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-emerald-50/30"
                         >
                             Batal
                         </Link>

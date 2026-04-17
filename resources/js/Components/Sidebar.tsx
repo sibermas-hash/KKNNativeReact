@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import type { PageProps } from '@/types';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   LayoutDashboard,
   Calendar,
@@ -14,18 +14,12 @@ import {
   BarChart3,
   ShieldCheck,
   Award,
-  Hammer,
   RefreshCw,
   Shuffle,
-  Globe,
-  Megaphone,
-  Inbox,
   UserCircle,
   BookOpen,
   Activity,
-  Building2,
   History,
-  CheckCircle2,
   Cpu,
   UserCheck,
   FileCheck,
@@ -79,8 +73,8 @@ const getAdminNav = (): NavGroup[] => [
         href: safeRoute('admin.pendaftaran.index'),
         icon: ClipboardList,
       },
-      { label: 'Cek Kelayakan', href: safeRoute('admin.cek-kelayakan.index'), icon: CheckCircle2 },
-      { label: 'Dispensasi', href: safeRoute('admin.dispensasi.index'), icon: ShieldCheck },
+      { label: 'Cek Kelayakan', href: safeRoute('admin.cek-kelayakan.index'), icon: ShieldCheck },
+      { label: 'Dispensasi & Izin', href: safeRoute('admin.dispensasi.index'), icon: Shield },
     ],
   },
   {
@@ -116,7 +110,6 @@ const getAdminNav = (): NavGroup[] => [
   {
     title: 'PENGATURAN & SINKRONISASI',
     items: [
-      { label: 'Monitor AI', href: safeRoute('admin.ai.monitor'), icon: Cpu },
       { label: 'Pengguna', href: safeRoute('admin.pengguna.index'), icon: Shield },
       {
         label: 'Konfigurasi Nilai',
@@ -230,13 +223,14 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
   return (
     <>
+      {/* Mobile overlay */}
       <AnimatePresence>
         {open && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-emerald-950/20 backdrop-blur-md lg:hidden"
+            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
             onClick={onClose}
           />
         )}
@@ -244,36 +238,35 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
  
       <aside
         className={clsx(
-          'fixed inset-y-0 left-0 z-50 w-[270px] bg-white/80 backdrop-blur-2xl border-r border-emerald-100/50 flex flex-col transition-transform duration-500 lg:translate-x-0',
-          open ? 'translate-x-0 shadow-2xl' : '-translate-x-full',
+          'fixed inset-y-0 left-0 z-50 w-60 bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 lg:translate-x-0',
+          open ? 'translate-x-0 shadow-xl' : '-translate-x-full',
         )}
       >
-        {/* BRANDING PREMIUM */}
-        <div className="h-20 px-8 flex items-center gap-4 border-b border-emerald-100/50 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-100/30 blur-2xl -mr-10 -mt-10" />
-          <div className="h-9 w-9 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-xl flex items-center justify-center border border-emerald-100/80 shadow-sm relative z-10">
-            <img src="/images/logo_kkn.png" alt="Logo" className="h-5 w-5 object-contain" />
+        {/* LOGO AREA */}
+        <div className="h-16 px-5 flex items-center gap-3 border-b border-gray-200">
+          <div className="h-12 w-12 bg-[#1a7a4a] rounded-full flex items-center justify-center shadow-sm shrink-0">
+            <img src="/images/logo_kkn.png" alt="Logo" className="h-6 w-6 object-contain brightness-0 invert" />
           </div>
-          <div className="relative z-10">
-            <h1 className="text-sm font-semibold text-emerald-950 tracking-tight">KKN UIN SAIZU</h1>
-            <p className="text-xs font-bold text-emerald-600 tracking-normal mt-0.5">
+          <div>
+            <h1 className="text-sm font-bold text-gray-900 leading-tight">KKN UIN SAIZU</h1>
+            <p className="text-xs font-semibold text-[#1a7a4a] mt-0.5">
               Portal Administrasi
             </p>
           </div>
         </div>
  
-        {/* NAVIGATION LAYER */}
+        {/* NAVIGATION */}
         <nav 
           ref={navRef}
           onScroll={handleScroll}
-          className="flex-1 overflow-y-auto px-5 py-8 space-y-8 scrollbar-hide relative z-10 scroll-smooth"
+          className="flex-1 overflow-y-auto px-4 py-4 scrollbar-hide scroll-smooth"
         >
-          {navGroups.map((group) => (
-            <div key={group.title}>
-              <h3 className="px-3 mb-3 text-[12px] font-semibold text-emerald-950 tracking-normal">
+          {navGroups.map((group, groupIdx) => (
+            <div key={group.title} className={clsx(groupIdx > 0 && 'mt-6')}>
+              <h3 className="px-4 mb-2 text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 {group.title}
               </h3>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {group.items.map((item) => {
                   const getPath = (href: string) => {
                     try {
@@ -307,27 +300,22 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                         }
                       }}
                       className={clsx(
-                        'flex items-center gap-4 px-4 py-3 rounded-xl text-sm transition-all duration-300 relative overflow-hidden group',
+                        'flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-all duration-200',
                         isActive
-                          ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-600/20 font-bold z-10'
-                          : 'text-emerald-950 hover:bg-emerald-50 hover:text-emerald-600 font-medium',
+                          ? 'bg-[#e8f5ee] text-[#1a7a4a] font-semibold'
+                          : 'text-gray-900 hover:bg-gray-50 font-medium',
                       )}
                     >
                       <item.icon
                         className={clsx(
-                          'h-[20px] w-[20px] transition-transform duration-300 group-hover:scale-110',
+                          'h-5 w-5 shrink-0',
                           isActive
-                            ? 'text-white'
-                            : 'text-emerald-600 group-hover:text-emerald-700',
+                            ? 'text-[#1a7a4a]'
+                            : 'text-gray-700',
                         )}
-                        strokeWidth={isActive ? 3 : 2.5}
+                        strokeWidth={isActive ? 2.5 : 2}
                       />
-                      <span
-                        className={clsx(
-                          'transition-colors uppercase tracking-wider text-[11px]',
-                          isActive ? 'text-white font-bold' : 'text-emerald-950 font-semibold',
-                        )}
-                      >
+                      <span className="truncate">
                         {item.label}
                       </span>
                     </Link>
@@ -338,21 +326,21 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           ))}
         </nav>
  
-        {/* USER PROFILE SECTION LUXURY */}
-        <div className="p-5 border-t border-emerald-100/50 bg-gradient-to-t from-white to-transparent relative z-10">
+        {/* USER PROFILE SECTION */}
+        <div className="p-4 border-t border-gray-200">
           <Link
             href={safeRoute('profile.show')}
             preserveScroll
-            className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white border border-emerald-100/60 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-900/5 transition-all duration-300 group"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 transition-all duration-200 group"
           >
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform duration-300 border border-emerald-100/50">
-              <UserCircle size={20} strokeWidth={2.5} />
+            <div className="h-9 w-9 rounded-full bg-[#e8f5ee] flex items-center justify-center text-[#1a7a4a] shrink-0">
+              <UserCircle size={20} strokeWidth={2} />
             </div>
-            <div className="flex flex-col">
-              <span className="text-xs font-semibold text-emerald-950 tracking-tight">
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs font-semibold text-gray-900 truncate">
                 Pengaturan Profil
               </span>
-              <span className="text-[12px] font-bold text-emerald-950 tracking-wider mt-0.5">
+              <span className="text-xs font-medium text-gray-700 mt-0.5">
                 Akun & Sistem
               </span>
             </div>

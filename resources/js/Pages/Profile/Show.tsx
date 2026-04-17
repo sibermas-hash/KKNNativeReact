@@ -221,7 +221,7 @@ export default function ProfileShow() {
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-sm font-medium text-gray-700 flex items-center gap-1">Jenis Kelamin <span className="text-rose-500">*</span></label>
-                          <select value={profileForm.data.gender} onChange={e => profileForm.setData('gender', e.target.value as 'L' | 'P')} className="w-full h-10 pl-3 pr-8 rounded-md border-gray-300 bg-white text-sm text-gray-700 focus:border-emerald-500 focus:ring-emerald-500 shadow-sm">
+                          <select value={profileForm.data.gender} onChange={e => profileForm.setData('gender', e.target.value as 'L' | 'P')} className="w-full h-10 pl-3 pr-8 rounded-md border-gray-300 bg-white text-sm text-gray-700 focus:border-gray-1000 focus:ring-emerald-500 shadow-sm">
                             <option value="">Pilih Jenis Kelamin</option>
                             <option value="L">Laki-laki</option>
                             <option value="P">Perempuan</option>
@@ -230,7 +230,7 @@ export default function ProfileShow() {
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-sm font-medium text-gray-700 flex items-center gap-1">Ukuran Baju / Jaket <span className="text-rose-500">*</span></label>
-                          <select value={profileForm.data.shirt_size} onChange={e => profileForm.setData('shirt_size', e.target.value)} className="w-full h-10 pl-3 pr-8 rounded-md border-gray-300 bg-white text-sm text-gray-700 focus:border-emerald-500 focus:ring-emerald-500 shadow-sm">
+                          <select value={profileForm.data.shirt_size} onChange={e => profileForm.setData('shirt_size', e.target.value)} className="w-full h-10 pl-3 pr-8 rounded-md border-gray-300 bg-white text-sm text-gray-700 focus:border-gray-1000 focus:ring-emerald-500 shadow-sm">
                             <option value="">Pilih Ukuran</option>
                             {['S', 'M', 'L', 'XL', 'XXL', '3XL'].map(s => <option key={s} value={s}>{s}</option>)}
                           </select>
@@ -334,7 +334,7 @@ function StatusRow({ label, complete, subtitle }: { label: string; complete: boo
         <p className="text-xs font-medium text-gray-800">{label}</p>
         {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
       </div>
-      <span className={clsx("inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold shrink-0", complete ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800')}>
+      <span className={clsx("inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold shrink-0", complete ? 'bg-emerald-100 text-gray-800' : 'bg-amber-100 text-amber-800')}>
         {complete ? 'Lengkap' : 'Belum Lengkap'}
       </span>
     </div>

@@ -41,14 +41,14 @@ export default function GeotaggingMap({
 
   if (!isMounted)
     return (
-      <div style={{ height, backgroundColor: '#f8fafc' }} className="rounded-2xl animate-pulse" />
+      <div style={{ height, backgroundColor: '#f8fafc' }} className="rounded-xl animate-pulse" />
     );
 
   const position: [number, number] = [lat, lng];
 
   return (
     <div
-      className="relative w-full overflow-hidden rounded-[2rem] border border-emerald-100 shadow-xl group/map"
+      className="relative w-full overflow-hidden rounded-[2rem] border border-gray-200 shadow-xl group/map"
       style={{ height }}
     >
       <MapContainer
@@ -65,17 +65,17 @@ export default function GeotaggingMap({
         <Marker position={position}>
           <Popup>
             <div className="p-2 text-center">
-              <p className="text-[12px] font-bold uppercase tracking-widest text-emerald-600 mb-1">
+              <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-1">
                 Geotagging Verified
               </p>
-              <p className="text-xs font-bold text-emerald-950 uppercase ">{label}</p>
+              <p className="text-xs font-bold text-gray-900 uppercase ">{label}</p>
             </div>
           </Popup>
         </Marker>
       </MapContainer>
 
       {/* Tactical Overlay */}
-      <div className="absolute top-4 right-4 z-[1000] px-4 py-2 bg-emerald-600/90 backdrop-blur-md border border-emerald-500/30 text-white text-xs font-bold uppercase tracking-[0.2em] shadow-2xl pointer-events-none group-hover/map:opacity-0 transition-opacity">
+      <div className="absolute top-4 right-4 z-[1000] px-4 py-2 bg-emerald-600/90 backdrop-blur-md border border-[#f3f4f6]0/30 text-white text-xs font-bold uppercase tracking-widest shadow-2xl pointer-events-none group-hover/map:opacity-0 transition-opacity">
         TERMINAL DATA SPASIAL v4.0
       </div>
     </div>

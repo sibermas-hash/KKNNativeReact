@@ -18,12 +18,12 @@ class SystemSetting extends Model
     protected $table = 'system_settings';
 
     protected $fillable = [
-    'config_key',
-    'label',
-    'value',
-    'type',
-    'group',
-];
+        'config_key',
+        'label',
+        'value',
+        'type',
+        'group',
+    ];
 
     use HasFactory;
 

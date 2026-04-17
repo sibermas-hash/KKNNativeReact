@@ -120,4 +120,4 @@ docker-compose exec app php artisan migrate
   - Gunakan `emerald-600` untuk penekanan (high contrast accent).
 - **Bahasa**: Gunakan Bahasa Indonesia yang profesional, santun, dan **mudah dimengerti khalayak umum** (hindari jargon teknis database/sistem).
 - **Komponen**: Gunakan komponen dari `resources/js/Components/Premium/` untuk elemen konsistensi tinggi.
-
+- **Pola Tata Letak (Layout Benchmark)**: **WAJIB** menggunakan pola "Two-Column Master Data" saat merancang halaman CRUD/Administrasi. Jadikan rute `http://localhost:8000/admin/tahun-akademik` (dan `resources/js/Pages/Admin/System/Periods/Index.tsx`) sebagai tolok ukur (Gold Standard / Template Patokan) mutlak untuk penempatan navigasi, split layar 1/3 (Form Formil) dan 2/3 (Data Tabel), serta gaya estetika blok metrik.

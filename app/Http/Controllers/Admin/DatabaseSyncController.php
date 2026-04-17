@@ -14,15 +14,16 @@ use App\Jobs\SyncProgramJob;
 use App\Models\KKN\DatabaseSyncLog;
 use App\Services\DatabaseSyncMonitoringService;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
-class DatabaseSyncController extends Controller implements \Illuminate\Routing\Controllers\HasMiddleware
+class DatabaseSyncController extends Controller implements HasMiddleware
 {
     public function __construct(
         private readonly DatabaseSyncMonitoringService $monitoringService
-    ) {
-    }
+    ) {}
 
     public static function middleware(): array
     {
@@ -38,11 +39,11 @@ class DatabaseSyncController extends Controller implements \Illuminate\Routing\C
     public function index(Request $request)
     {
         $health = $this->monitoringService->checkDatabaseHealth();
-        
+
         try {
             $apiHealth = $this->monitoringService->checkMasterApiHealth();
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::warning('Failed to fetch Master API health: ' . $e->getMessage());
+            Log::warning('Failed to fetch Master API health: '.$e->getMessage());
             $apiHealth = [
                 'api_status' => 'DOWN',
                 'api_error' => $e->getMessage(),

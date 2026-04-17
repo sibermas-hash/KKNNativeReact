@@ -8,9 +8,9 @@ use App\Http\Controllers\Controller;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
-use App\Services\KKN\RegistrationApprovalService;
 use App\Services\KKN\FacultyScopeService;
 use App\Services\KKN\KknRequirementService;
+use App\Services\KKN\RegistrationApprovalService;
 use App\Services\KKN\RegistrationExportService;
 use App\Traits\HandlesPagination;
 use Illuminate\Http\RedirectResponse;
@@ -54,6 +54,7 @@ class PesertaKknController extends Controller
             'mahasiswa.prodi.fakultas:id,code,nama',
             'periode:id,periode,name,program_type,program_subtype,registration_mode,placement_mode,start_date,end_date',
             'kelompok:id,period_id,nama_kelompok,code',
+            'dokumen:id,peserta_kkn_id,document_type',
         ])
             ->when($request->input('search'), fn ($query, $search) => $query->search($search))
             ->when($status, fn ($query, $value) => $query->where('status', $value))
@@ -69,29 +70,12 @@ class PesertaKknController extends Controller
     public function downloadDocument(
         Request $request,
         RegistrationApprovalService $approvalService
-    ): BinaryFileResponse {
+    ): mixed {
         $path = $request->input('path');
         $user = auth()->user();
 
-        $fullPath = $approvalService->downloadDocument($path, $user);
-
-        // Ownership check for non-admin users
-        if (! $user->hasAnyRole(['superadmin', 'faculty_admin'])) {
-            $mahasiswa = Mahasiswa::where('user_id', $user->id)->first();
-
-            if (! $mahasiswa) {
-                abort(403, 'Akses identitas ditolak.');
-            }
-
-            $isOwner = ($mahasiswa->health_certificate_path === $path)
-                || ($mahasiswa->parent_permission_path === $path);
-
-            if (! $isOwner) {
-                abort(403, 'Anda tidak memiliki hak akses untuk mendownload dokumen ini.');
-            }
-        }
-
-        return response()->download($fullPath);
+        // The service now handles security checks and returns either a download or a redirect
+        return $approvalService->downloadDocument($path, $user);
     }
 
     public function index(Request $request, KknRequirementService $kknRequirementService): Response
@@ -136,6 +120,13 @@ class PesertaKknController extends Controller
                         ],
                         'period' => $reg->periode ? ['name' => $reg->periode->name, 'id' => $reg->periode->id] : ['name' => '-', 'id' => null],
                         'group' => $reg->kelompok ? ['name' => $reg->kelompok->nama_kelompok] : null,
+                        'documents' => [
+                            'health_cert' => ! empty($mahasiswa?->health_certificate_path),
+                            'parent_permit' => ! empty($mahasiswa?->parent_permission_path),
+                            'krs' => $reg->dokumen->contains('document_type', 'krs'),
+                            'pembayaran' => $reg->dokumen->contains('document_type', 'pembayaran') || $reg->dokumen->contains('document_type', 'payment'),
+                            'asuransi' => $reg->dokumen->contains('document_type', 'asuransi'),
+                        ],
                     ];
                 });
 
@@ -304,7 +295,7 @@ class PesertaKknController extends Controller
 
     public function show(PesertaKkn $pesertaKkn, KknRequirementService $kknRequirementService): Response
     {
-        $pesertaKkn->load('mahasiswa.fakultas', 'mahasiswa.prodi', 'periode', 'kelompok', 'dokumen', 'rejector');
+        $pesertaKkn->load('mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'periode', 'kelompok', 'dokumen', 'rejector');
 
         $registration = $pesertaKkn->toArray();
         $registration['dokumen'] = $this->registrationDocuments($pesertaKkn);

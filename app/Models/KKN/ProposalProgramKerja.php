@@ -15,17 +15,17 @@ class ProposalProgramKerja extends Model
     protected $table = 'proposal_program_kerja';
 
     protected $fillable = [
-    'program_kerja_id',
-    'file_path',
-    'file_name',
-    'version',
-    'uploaded_at',
-];
+        'program_kerja_id',
+        'file_path',
+        'file_name',
+        'version',
+        'uploaded_at',
+    ];
 
     protected $casts = [
-    'version' => 'integer',
-    'uploaded_at' => 'datetime',
-];
+        'version' => 'integer',
+        'uploaded_at' => 'datetime',
+    ];
 
     use HasFactory;
 

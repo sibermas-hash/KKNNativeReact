@@ -14,13 +14,13 @@ class Download extends Model
     protected $table = 'downloads';
 
     protected $fillable = [
-    'title',
-    'file_name',
-    'file_path',
-    'external_url',
-    'file_type',
-    'is_active',
-];
+        'title',
+        'file_name',
+        'file_path',
+        'external_url',
+        'file_type',
+        'is_active',
+    ];
 
     protected $casts = ['is_active' => 'boolean'];
 

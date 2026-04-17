@@ -6,7 +6,7 @@ namespace App\Services;
 
 use App\Models\KKN\Dosen;
 use App\Models\KKN\PesertaWorkshop;
-use App\Models\KKN\Periode;
+use Illuminate\Database\QueryException;
 
 class DplEligibilityService
 {
@@ -44,7 +44,7 @@ class DplEligibilityService
     {
         // Check administrative baseline first
         $baseCheck = $this->canAttendWorkshop($dosen);
-        if (!$baseCheck['eligible']) {
+        if (! $baseCheck['eligible']) {
             return $baseCheck;
         }
 
@@ -54,13 +54,13 @@ class DplEligibilityService
             $hasPassedWorkshop = PesertaWorkshop::where('user_id', $dosen->user_id)
                 ->where('is_passed', true)
                 ->exists();
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             // Column may not exist yet if migration hasn't been run.
             // Gracefully skip the workshop check.
             $hasPassedWorkshop = true;
         }
 
-        if (!$hasPassedWorkshop) {
+        if (! $hasPassedWorkshop) {
             return [
                 'eligible' => false,
                 'reason' => 'Dosen belum mengikuti atau belum dinyatakan Lulus dalam Workshop DPL.',

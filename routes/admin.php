@@ -1,11 +1,11 @@
 <?php
 
 use App\Http\Controllers\Admin;
-use App\Http\Controllers\Admin\AiStatusController;
 use App\Http\Controllers\Admin\PublicContentController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportExportController;
+use App\Http\Controllers\WorkshopController;
 use App\Http\Middleware\EnsureAdminAuthorization;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
@@ -69,8 +69,7 @@ Route::middleware([
     Route::post('yudisium/proses', [Admin\YudisiumController::class, 'proses'])->name('yudisium.proses');
 
     // Data Management
-    // AI Systems Monitor
-    Route::get('ai-monitor', [AiStatusController::class, 'index'])->name('ai.monitor');
+    // AI Systems Monitor (Merged into System Settings)
 
     Route::get('pendaftaran', [Admin\PesertaKknController::class, 'index'])->name('pendaftaran.index');
     Route::get('pendaftaran/ekspor', [Admin\PesertaKknController::class, 'export'])->name('pendaftaran.ekspor');
@@ -89,12 +88,14 @@ Route::middleware([
     Route::get('laporan/program-kerja', [Admin\ProgramKerjaController::class, 'index'])->name('laporan.program-kerja.index');
     Route::get('laporan/akhir', [Admin\LaporanAkhirController::class, 'index'])->name('laporan.akhir.index');
     Route::get('laporan/akhir/{report}', [Admin\LaporanAkhirController::class, 'show'])->name('laporan.akhir.show');
+    Route::get('laporan/akhir/{report}/unduh', [Admin\LaporanAkhirController::class, 'download'])->name('laporan.akhir.unduh');
     Route::patch('laporan/akhir/{report}/status', [Admin\LaporanAkhirController::class, 'updateStatus'])->name('laporan.akhir.update-status');
     Route::get('evaluasi', [Admin\EvaluasiController::class, 'index'])->name('evaluasi.index');
 
-    Route::get('cek-kelayakan', [Admin\EligibilityController::class, 'index'])->name('cek-kelayakan.index');
-    Route::get('cek-kelayakan/ekspor', [Admin\EligibilityController::class, 'export'])->name('cek-kelayakan.ekspor');
-    Route::get('cek-kelayakan/{mahasiswa}/periksa', [Admin\EligibilityController::class, 'checkStudent'])->name('cek-kelayakan.check');
+    // Audit Kualifikasi (Cek Kelayakan)
+    Route::get('audit-kualifikasi', [Admin\EligibilityController::class, 'index'])->name('cek-kelayakan.index');
+    Route::get('audit-kualifikasi/ekspor', [Admin\EligibilityController::class, 'export'])->name('cek-kelayakan.ekspor');
+    Route::get('audit-kualifikasi/{mahasiswa}/periksa', [Admin\EligibilityController::class, 'checkStudent'])->name('cek-kelayakan.check');
 
     // Dispensasi KKN (Bypass Syarat Pendaftaran)
     Route::get('dispensasi', [Admin\DispensasiController::class, 'index'])->name('dispensasi.index');
@@ -148,11 +149,11 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
 
     // Workshop Management
     Route::prefix('workshops')->name('workshops.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\WorkshopController::class, 'index'])->name('index');
-        Route::post('/', [\App\Http\Controllers\WorkshopController::class, 'store'])->name('store');
-        Route::patch('/{workshop}', [\App\Http\Controllers\WorkshopController::class, 'update'])->name('update');
-        Route::patch('/{workshop}/cancel', [\App\Http\Controllers\WorkshopController::class, 'cancel'])->name('cancel');
-        Route::post('/{workshop}/mark-attendance', [\App\Http\Controllers\WorkshopController::class, 'markAttendance'])->name('mark-attendance');
+        Route::get('/', [WorkshopController::class, 'index'])->name('index');
+        Route::post('/', [WorkshopController::class, 'store'])->name('store');
+        Route::patch('/{workshop}', [WorkshopController::class, 'update'])->name('update');
+        Route::patch('/{workshop}/cancel', [WorkshopController::class, 'cancel'])->name('cancel');
+        Route::post('/{workshop}/mark-attendance', [WorkshopController::class, 'markAttendance'])->name('mark-attendance');
     });
 
     // User & Staff Management
@@ -224,7 +225,7 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
     Route::get('database-sync/logs/{log}', [Admin\DatabaseSyncController::class, 'show'])->name('database-sync.logs.show');
 
     // Eligibility write operations
-    Route::post('cek-kelayakan/bulk-update-sks', [Admin\EligibilityController::class, 'bulkUpdateSks'])->name('cek-kelayakan.bulk-update-sks');
+    Route::post('audit-kualifikasi/bulk-update-sks', [Admin\EligibilityController::class, 'bulkUpdateSks'])->name('cek-kelayakan.bulk-update-sks');
 
     // Grading write operations
     Route::post('nilai', [Admin\GradeController::class, 'store'])->name('nilai.store');
@@ -237,6 +238,9 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
         Route::patch('sertifikat', [Admin\CertificateConfigController::class, 'update'])->name('sertifikat.update');
         Route::get('sistem', [Admin\SystemSettingController::class, 'index'])->name('sistem');
         Route::patch('sistem', [Admin\SystemSettingController::class, 'update'])->name('sistem.update');
+        Route::post('sistem/ai/test', [Admin\SystemSettingController::class, 'testAiConnection'])->name('sistem.ai.test');
+        Route::patch('sistem/ai/update', [Admin\SystemSettingController::class, 'updateAiSettings'])->name('sistem.ai.update');
+        Route::delete('sistem/ai/key', [Admin\SystemSettingController::class, 'removeAiKey'])->name('sistem.ai.remove');
     });
 
     Route::get('audit-log', [Admin\LogAuditController::class, 'index'])->name('audit-log.index');

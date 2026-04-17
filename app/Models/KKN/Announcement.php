@@ -15,22 +15,22 @@ class Announcement extends Model
     protected $table = 'announcements';
 
     protected $fillable = [
-    'title',
-    'slug',
-    'category',
-    'content',
-    'image',
-    'is_active',
-    'published_at',
-    'meta_title',
-    'meta_description',
-    'meta_keywords',
-];
+        'title',
+        'slug',
+        'category',
+        'content',
+        'image',
+        'is_active',
+        'published_at',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
+    ];
 
     protected $casts = [
-    'is_active' => 'boolean',
-    'published_at' => 'datetime',
-];
+        'is_active' => 'boolean',
+        'published_at' => 'datetime',
+    ];
 
     use HasFactory;
 

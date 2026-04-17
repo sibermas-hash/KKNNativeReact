@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Services\KKN;
 
 use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use App\Services\AuditService;
 use App\Services\AutomaticGroupPlacementService;
 use App\Services\GroupSelectionService;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
@@ -256,37 +256,27 @@ class RegistrationApprovalService
 
     /**
      * Download registration document with security checks.
+     * Supports both local and cloud storage.
      */
-    public function downloadDocument(string $path, ?object $user = null): string
+    public function downloadDocument(string $path, ?object $user = null): mixed
     {
-        if (blank($path) || ! Storage::disk('local')->exists($path)) {
+        $disk = Storage::disk(config('filesystems.default'));
+
+        if (blank($path) || ! $disk->exists($path)) {
             throw ValidationException::withMessages([
                 'path' => 'Dokumen tidak ditemukan.',
             ]);
         }
 
         // Security check: Only allow specific folders
-        if (! str_starts_with($path, 'health-certificates/') && ! str_starts_with($path, 'parent-permissions/')) {
-            throw ValidationException::withMessages([
-                'path' => 'Akses folder ditolak.',
-            ]);
+        $allowedFolders = ['health-certificates/', 'parent-permissions/', 'documents/'];
+        if (app()->environment('local')) {
+            $allowedFolders[] = 'dummy/';
         }
 
-        // Path traversal prevention
-        $storageRoot = Storage::disk('local')->path('');
-        $fullPath = realpath($storageRoot.'/'.$path);
-
-        if (! $fullPath) {
-            throw ValidationException::withMessages([
-                'path' => 'Dokumen tidak ditemukan.',
-            ]);
-        }
-
-        // Verify the resolved path is within allowed directories
-        $allowedPrefixes = ['health-certificates', 'parent-permissions'];
         $isAllowed = false;
-        foreach ($allowedPrefixes as $prefix) {
-            if (str_starts_with($fullPath, realpath($storageRoot.'/'.$prefix))) {
+        foreach ($allowedFolders as $folder) {
+            if (str_starts_with($path, $folder)) {
                 $isAllowed = true;
                 break;
             }
@@ -294,11 +284,35 @@ class RegistrationApprovalService
 
         if (! $isAllowed) {
             throw ValidationException::withMessages([
-                'path' => 'Akses ditolak: Path traversal terdeteksi.',
+                'path' => 'Akses folder ditolak.',
             ]);
         }
 
-        return $fullPath;
+        // Ownership check for non-admin users
+        if ($user && ! $user->hasAnyRole(['superadmin', 'faculty_admin'])) {
+            $mahasiswa = Mahasiswa::where('user_id', $user->id)->first();
+            if (! $mahasiswa || ($mahasiswa->health_certificate_path !== $path && $mahasiswa->parent_permission_path !== $path)) {
+                abort(403, 'Anda tidak memiliki hak akses untuk file ini.');
+            }
+        }
+
+        // If local disk, we can perform path traversal checks more strictly
+        if (config('filesystems.default') === 'local') {
+            $storageRoot = $disk->path('');
+            $fullPath = realpath($storageRoot.'/'.$path);
+
+            if (! $fullPath || ! str_starts_with($fullPath, realpath($storageRoot))) {
+                throw ValidationException::withMessages([
+                    'path' => 'Akses ditolak: Path traversal terdeteksi.',
+                ]);
+            }
+
+            return response()->file($fullPath);
+        }
+
+        // For Cloud/S3, redirect to a temporary secure URL (Presigned URL)
+        // This is the most efficient way as it offloads the download to the provider
+        return redirect()->away($disk->temporaryUrl($path, now()->addMinutes(30)));
     }
 
     /**

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, Bot, Loader2 } from 'lucide-react';
+import { MessageSquare, X, Send, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
 export default function AiAssistant() {
@@ -30,31 +30,38 @@ export default function AiAssistant() {
       <AnimatePresence>
         {isOpen && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-            className="mb-4 w-80 h-[400px] bg-white rounded-2xl shadow-2xl border flex flex-col overflow-hidden">
-            <div className="p-4 bg-emerald-600 text-white flex justify-between items-center font-bold">
-              <span>Saizu AI</span>
-              <X className="cursor-pointer" onClick={() => setIsOpen(false)} />
+            className="mb-4 w-80 h-[400px] bg-white rounded-xl border border-gray-200 flex flex-col overflow-hidden"
+            style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+            <div className="p-4 bg-[#16a34a] text-white flex justify-between items-center">
+              <span className="text-sm font-bold">Saizu AI</span>
+              <X className="cursor-pointer h-5 w-5" onClick={() => setIsOpen(false)} />
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-emerald-50/30">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#fafafa]">
               {messages.map((m, i) => (
                 <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`p-2 rounded-lg text-xs max-w-[80%] ${m.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-white border'}`}>
+                  <div className={`p-2.5 rounded-lg text-xs max-w-[80%] ${m.role === 'user' ? 'bg-[#16a34a] text-white' : 'bg-white border border-gray-200 text-gray-900'}`}>
                     {m.text}
                   </div>
                 </div>
               ))}
-              {loading && <Loader2 size={16} className="animate-spin text-emerald-600" />}
+              {loading && <Loader2 size={16} className="animate-spin text-[#16a34a]" />}
             </div>
-            <div className="p-2 border-t flex gap-2">
+            <div className="p-3 border-t border-gray-200 flex gap-2 bg-white">
               <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()}
-                className="flex-1 text-xs border-none focus:ring-0" placeholder="Tanya..." />
-              <button onClick={send} className="p-2 bg-emerald-600 text-white rounded-lg"><Send size={14} /></button>
+                className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2 focus:border-[#16a34a] focus:ring-1 focus:ring-[#16a34a] outline-none text-gray-900 placeholder:text-gray-400" placeholder="Tanya sesuatu..." />
+              <button onClick={send} className="p-2.5 bg-[#16a34a] text-white rounded-lg hover:bg-[#15803d] transition-colors">
+                <Send size={14} />
+              </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-      <button onClick={() => setIsOpen(!isOpen)} className="h-14 w-14 rounded-full bg-emerald-600 text-white shadow-xl flex items-center justify-center">
-        {isOpen ? <X /> : <MessageSquare />}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="h-12 w-12 rounded-full bg-[#16a34a] text-white flex items-center justify-center hover:bg-[#15803d] transition-colors"
+        style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
+      >
+        {isOpen ? <X size={20} /> : <MessageSquare size={20} />}
       </button>
     </div>
   );

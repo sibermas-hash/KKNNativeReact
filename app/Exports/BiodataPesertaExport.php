@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exports;
 
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -78,8 +79,10 @@ class BiodataPesertaExport implements FromQuery, ShouldAutoSize, WithHeadings, W
             $mhs?->nim ?? '-',
             $mhs?->nik ?? '-',
             $mhs?->birth_place ?? '-',
-            $mhs?->birth_date ? \Carbon\Carbon::parse($mhs->birth_date)->format('d-m-Y') : '-',
-            match ($mhs?->gender) { 'L' => 'Laki-laki', 'P' => 'Perempuan', default => '-' },
+            $mhs?->birth_date ? Carbon::parse($mhs->birth_date)->format('d-m-Y') : '-',
+            match ($mhs?->gender) {
+                'L' => 'Laki-laki', 'P' => 'Perempuan', default => '-'
+            },
             $mhs?->mother_name ?? '-',
             $user?->phone ?? '-',
             $user?->address ?? '-',
@@ -96,8 +99,8 @@ class BiodataPesertaExport implements FromQuery, ShouldAutoSize, WithHeadings, W
             match ($row->status) {
                 'approved' => 'Peserta Aktif',
                 'rejected' => 'Ditolak',
-                'pending'  => 'Menunggu Verifikasi',
-                default    => ucfirst((string) $row->status),
+                'pending' => 'Menunggu Verifikasi',
+                default => ucfirst((string) $row->status),
             },
         ];
     }
@@ -106,8 +109,8 @@ class BiodataPesertaExport implements FromQuery, ShouldAutoSize, WithHeadings, W
     {
         return [
             1 => [
-                'font'      => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
-                'fill'      => ['fillType' => Fill::FILL_SOLID, 'color' => ['argb' => 'FF166534']],
+                'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['argb' => 'FF166534']],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
             ],
         ];

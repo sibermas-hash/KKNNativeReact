@@ -91,8 +91,9 @@ class RegistrationService
                 // 2. DYNAMIC ELIGIBILITY FILTER: Check SKS, GPA, and program-specific rules
                 $eligibility = app(EligibilityService::class)->checkEligibility($mahasiswa, $periodeId);
                 if (! $eligibility['is_eligible']) {
+                    $reason = $eligibility['issues'][0]['message'] ?? 'Anda belum memenuhi syarat akademik untuk mengikuti periode KKN ini.';
                     throw ValidationException::withMessages([
-                        'period_id' => $eligibility['reason'] ?? 'Anda belum memenuhi syarat akademik untuk mengikuti periode KKN ini.',
+                        'period_id' => $reason,
                     ]);
                 }
 
@@ -222,7 +223,7 @@ class RegistrationService
                     $queue->status = $existing->kelompok_id ? 'dalam_kelompok' : 'menunggu';
                     $queue->save();
 
-                    return $existing->fresh(['kelompok.lokasi', 'kelompok.dpl', 'periode']);
+                    return $existing->fresh(['kelompok.lokasi', 'kelompok.dosen', 'periode']);
                 }
 
                 $kelompok = KelompokKkn::query()
@@ -234,7 +235,7 @@ class RegistrationService
                 $updated->notes = $notes;
                 $updated->save();
 
-                return $updated->fresh(['kelompok.lokasi', 'kelompok.dpl', 'periode']);
+                return $updated->fresh(['kelompok.lokasi', 'kelompok.dosen', 'periode']);
             });
         });
 

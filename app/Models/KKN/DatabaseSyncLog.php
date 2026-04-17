@@ -11,26 +11,26 @@ class DatabaseSyncLog extends Model
     protected $table = 'database_sync_logs';
 
     protected $fillable = [
-    'source',
-    'target',
-    'entity_type',
-    'entity_id',
-    'action',
-    'status',
-    'request_data',
-    'response_data',
-    'error_message',
-    'synced_at',
-    'synced_by',
-];
+        'source',
+        'target',
+        'entity_type',
+        'entity_id',
+        'action',
+        'status',
+        'request_data',
+        'response_data',
+        'error_message',
+        'synced_at',
+        'synced_by',
+    ];
 
     protected $casts = [
-    'request_data' => 'array',
-    'response_data' => 'array',
-    'synced_at' => 'datetime',
-];
+        'request_data' => 'array',
+        'response_data' => 'array',
+        'synced_at' => 'datetime',
+    ];
 
-/**
+    /**
      * Scope untuk sync yang berhasil
      */
     public function scopeSuccessful($query)

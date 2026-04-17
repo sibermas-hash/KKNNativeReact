@@ -40,15 +40,15 @@ export default function ErrorPage({ status, message }: Props) {
                 className="w-full max-w-lg text-center"
             >
                 {/* Status Icon Appearance */}
-                <div className="mb-10 inline-flex h-24 w-24 items-center justify-center rounded-3xl bg-white border border-emerald-100 shadow-xl shadow-emerald-500/10 ring-8 ring-emerald-50/50">
+                <div className="mb-10 inline-flex h-24 w-24 items-center justify-center rounded-3xl bg-white border border-gray-200 shadow-xl shadow-emerald-500/10 ring-8 ring-emerald-50/50">
                     <Icon className="h-12 w-12 text-emerald-600" />
                 </div>
 
-                <div className="rounded-2xl bg-white border border-emerald-100 p-8 shadow-sm">
+                <div className="rounded-2xl bg-white border border-gray-200 p-8 shadow-sm">
                     <p className="text-lg font-bold text-bg-emerald-50 mb-2">
                         {status === 403 ? 'Akses Terbatas' : (status === 404 ? 'Halaman Tidak Tersedia' : 'Terjadi Gangguan')}
                     </p>
-                    <p className="text-emerald-950 leading-relaxed">
+                    <p className="text-gray-900 leading-relaxed">
                         {description}
                     </p>
                 </div>
@@ -56,7 +56,7 @@ export default function ErrorPage({ status, message }: Props) {
                 <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
                     <button 
                         onClick={() => window.history.back()}
-                        className="group flex items-center gap-2 rounded-xl border border-emerald-100/60 bg-white px-6 py-3 text-sm font-bold text-emerald-700 hover:bg-emerald-50/30 transition-all duration-200"
+                        className="group flex items-center gap-2 rounded-xl border border-gray-200/60 bg-white px-6 py-3 text-sm font-bold text-gray-700 hover:bg-emerald-50/30 transition-all duration-200"
                     >
                         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
                         Kembali
@@ -74,7 +74,7 @@ export default function ErrorPage({ status, message }: Props) {
                 {/* Footer Decor */}
                 <div className="mt-16 flex items-center justify-center gap-2 opacity-50">
                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
-                    <span className="text-[12px] font-bold uppercase tracking-[0.2em] text-bg-emerald-100">
+                    <span className="text-xs font-bold uppercase tracking-widest text-bg-emerald-100">
                         SIM-KKN UIN SAIZU
                     </span>
                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-600" />

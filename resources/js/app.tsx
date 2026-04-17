@@ -51,9 +51,13 @@ createInertiaApp({
     });
   },
  setup({ el, App, props }) {
- initCapacitor();
- const root = createRoot(el);
- root.render(<App {...props} />);
+    initCapacitor();
+    const root = createRoot(el);
+    root.render(
+      <ToastProvider>
+        <App {...props} />
+      </ToastProvider>
+    );
  },
  progress: {
  color: '#0B6B3A',

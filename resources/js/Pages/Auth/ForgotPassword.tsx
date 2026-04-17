@@ -25,7 +25,7 @@ export default function ForgotPassword({
                             <p className="font-medium text-black">
                                 Penggantian kata sandi dilakukan melalui admin.
                             </p>
-                            <p className="text-sm text-emerald-700 mt-1">
+                            <p className="text-sm text-gray-700 mt-1">
                                 Hubungi {support_contact_label} melalui WhatsApp dan sertakan
                                 identitas akun Anda.
                             </p>
@@ -34,23 +34,23 @@ export default function ForgotPassword({
                 </div>
 
                 {status && (
-                    <div className="bg-emerald-50 rounded-lg p-3 text-sm font-medium text-emerald-700">
+                    <div className="bg-emerald-50 rounded-lg p-3 text-sm font-medium text-gray-700">
                         {status}
                     </div>
                 )}
 
-                <div className="bg-white border border-emerald-100/60 rounded-lg p-5">
+                <div className="bg-white border border-gray-200/60 rounded-lg p-5">
                     <p className="font-medium text-black">Data yang perlu dikirim ke admin:</p>
-                    <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-emerald-950">
+                    <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-gray-900">
                         <li>Username, NIM, atau NIP yang digunakan untuk login</li>
                         <li>Nama lengkap</li>
                         <li>Fakultas / Program Studi atau unit kerja</li>
                         <li>Alasan permintaan penggantian kata sandi</li>
                     </ul>
                     {support_whatsapp_number && (
-                        <p className="mt-4 text-sm text-emerald-950">
+                        <p className="mt-4 text-sm text-gray-900">
                             Nomor WhatsApp admin:{' '}
-                            <span className="font-medium text-emerald-700">
+                            <span className="font-medium text-gray-700">
                                 {support_whatsapp_number}
                             </span>
                         </p>
@@ -68,14 +68,14 @@ export default function ForgotPassword({
                         Hubungi Admin via WhatsApp
                     </a>
                 ) : (
-                    <div className="bg-emerald-50/30 border border-emerald-100/60 rounded-lg px-4 py-3 text-sm text-emerald-950">
+                    <div className="bg-emerald-50/30 border border-gray-200/60 rounded-lg px-4 py-3 text-sm text-gray-900">
                         Nomor WhatsApp admin belum dikonfigurasi. Silakan hubungi admin/LPPM melalui
                         kanal resmi kampus.
                     </div>
                 )}
 
                 <div className="text-center">
-                    <Link href="/login" className="text-sm text-emerald-600 hover:text-emerald-700">
+                    <Link href="/login" className="text-sm text-emerald-600 hover:text-gray-700">
                         ← Kembali ke halaman masuk
                     </Link>
                 </div>

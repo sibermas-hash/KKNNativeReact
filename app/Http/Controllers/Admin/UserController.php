@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\KKN\Dosen;
 use App\Models\KKN\DispensasiKkn;
+use App\Models\KKN\Dosen;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Prodi;
@@ -310,10 +310,10 @@ class UserController extends Controller
             'group' => $kelompok ? [
                 'id' => $kelompok->id,
                 'name' => $kelompok->name,
-                'location' => $kelompok->location ? [
-                    'village_name' => $kelompok->location->village_name,
-                    'district_name' => $kelompok->location->district_name,
-                    'regency_name' => $kelompok->location->regency_name,
+                'location' => $kelompok->lokasi ? [
+                    'village_name' => $kelompok->lokasi->village_name,
+                    'district_name' => $kelompok->lokasi->district_name,
+                    'regency_name' => $kelompok->lokasi->regency_name,
                 ] : null,
                 'period' => $peserta?->periode ? ['name' => $peserta->periode->name] : null,
             ] : null,

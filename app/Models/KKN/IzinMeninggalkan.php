@@ -15,25 +15,25 @@ class IzinMeninggalkan extends Model
     protected $table = 'izin_meninggalkan';
 
     protected $fillable = [
-    'mahasiswa_id',
-    'kelompok_id',
-    'tanggal_mulai',
-    'tanggal_kembali',
-    'durasi_hari',
-    'alasan',
-    'status',
-    'diproses_oleh',
-    'diproses_pada',
-    'catatan_dpl',
-];
+        'mahasiswa_id',
+        'kelompok_id',
+        'tanggal_mulai',
+        'tanggal_kembali',
+        'durasi_hari',
+        'alasan',
+        'status',
+        'diproses_oleh',
+        'diproses_pada',
+        'catatan_dpl',
+    ];
 
     protected $casts = [
-    'tanggal_mulai' => 'date',
-    'tanggal_kembali' => 'date',
-    'diproses_pada' => 'datetime',
-];
+        'tanggal_mulai' => 'date',
+        'tanggal_kembali' => 'date',
+        'diproses_pada' => 'datetime',
+    ];
 
-public function mahasiswa(): BelongsTo
+    public function mahasiswa(): BelongsTo
     {
         return $this->belongsTo(Mahasiswa::class, 'mahasiswa_id');
     }

@@ -38,7 +38,7 @@ class ProgramKerjaController extends Controller
             ->withQueryString();
 
         return Inertia::render('Admin/Monitoring/WorkPrograms/Index', [
-            'workPrograms' => Inertia::defer(fn () => $this->formatPaginator($workPrograms)),
+            'workPrograms' => $this->formatPaginator($workPrograms),
             'sdg_distribution' => Inertia::defer(function () use ($query) {
                 $sdgCounts = array_fill(1, 17, 0);
 
@@ -54,21 +54,22 @@ class ProgramKerjaController extends Controller
                     }
                 });
 
-                return collect($sdgCounts)->map(fn ($count, $id) => [
-                    'id' => $id,
-                    'count' => $count,
-                ])->values();
+                return $sdgCounts;
             }),
             'filters' => $request->only('status', 'semantic_search'),
             'semantic_results' => $request->filled('semantic_search')
                 ? Inertia::defer(function () use ($request) {
                     try {
                         $embeddings = Ai::embeddings([$request->input('semantic_search')]);
-                        if (empty($embeddings)) return [];
+                        if (empty($embeddings)) {
+                            return [];
+                        }
+
                         return ProgramKerja::whereVector('title', $embeddings[0])->take(5)->get();
                     } catch (\Exception $e) {
-                         \Log::error("AI Semantic Search Failed: " . $e->getMessage());
-                         return [];
+                        \Log::error('AI Semantic Search Failed: '.$e->getMessage());
+
+                        return [];
                     }
                 })
                 : null,

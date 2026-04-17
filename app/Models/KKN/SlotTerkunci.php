@@ -15,12 +15,12 @@ class SlotTerkunci extends Model
     protected $table = 'slot_terkunci';
 
     protected $fillable = [
-    'kelompok_id',
-    'tipe_slot',
-    'fakultas_id',
-    'prodi_id',
-    'kuota_slot',
-];
+        'kelompok_id',
+        'tipe_slot',
+        'fakultas_id',
+        'prodi_id',
+        'kuota_slot',
+    ];
 
     protected $casts = ['kuota_slot' => 'integer'];
 

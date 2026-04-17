@@ -16,15 +16,15 @@ class DplKecamatanAssignment extends Model
     protected $table = 'dpl_kecamatan_assignments';
 
     protected $fillable = [
-    'dpl_period_id',
-    'dosen_id',
-    'period_id',
-    'district_id',
-    'district_name',
-    'regency_name',
-    'assigned_by',
-    'is_active',
-];
+        'dpl_period_id',
+        'dosen_id',
+        'period_id',
+        'district_id',
+        'district_name',
+        'regency_name',
+        'assigned_by',
+        'is_active',
+    ];
 
     protected $casts = ['is_active' => 'boolean'];
 

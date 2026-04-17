@@ -16,20 +16,20 @@ class KonfigurasiPenilaian extends Model
     protected $table = 'konfigurasi_penilaian';
 
     protected $fillable = [
-    'kkn_type',
-    'config_key',
-    'label',
-    'percentage',
-    'group',
-    'description',
-];
+        'kkn_type',
+        'config_key',
+        'label',
+        'percentage',
+        'group',
+        'description',
+    ];
 
     protected $casts = [
-    'kkn_type' => KknType::class,
-    'percentage' => 'decimal:2',
-];
+        'kkn_type' => KknType::class,
+        'percentage' => 'decimal:2',
+    ];
 
-protected static function booted()
+    protected static function booted()
     {
         static::saved(fn (self $model) => Cache::forget('grading_configs_'.($model->kkn_type?->value ?? 'REGULER')));
         static::deleted(fn (self $model) => Cache::forget('grading_configs_'.($model->kkn_type?->value ?? 'REGULER')));

@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -58,9 +59,27 @@ class SystemSettingController extends Controller
             return $setting;
         });
 
+        $geminiKey = SystemSetting::where('config_key', 'gemini_api_key')->first();
+        $hasKey = $geminiKey && ! empty($geminiKey->value);
+
+        $aiStatus = [
+            'provider' => 'GEMINI GOOGLE AI',
+            'is_healthy' => $hasKey,
+            'endpoint' => 'generativelanguage.googleapis.com',
+            'model_text' => 'gemini-1.5-flash / pro',
+            'last_check' => now()->toIso8601String(),
+        ];
+
+        $aiUsage = [
+            'total_prompts' => Cache::get('ai_usage_total', 0),
+            'successful_heals' => Cache::get('ai_heals_total', 0),
+        ];
+
         return Inertia::render('Admin/System/Settings/System', [
             'settings' => $settings->groupBy('group'),
             'title' => 'Pengaturan Sistem & API',
+            'ai_status' => $aiStatus,
+            'ai_usage' => $aiUsage,
         ]);
     }
 
@@ -374,5 +393,86 @@ class SystemSettingController extends Controller
                 "settings.{$index}.value" => $validator->errors()->first('value'),
             ]);
         }
+    }
+
+    public function testAiConnection(Request $request)
+    {
+        $request->validate([
+            'gemini_api_key' => 'required|string',
+        ]);
+
+        $apiKey = $request->input('gemini_api_key');
+
+        try {
+            $response = Http::timeout(10)
+                ->withHeaders(['Content-Type' => 'application/json'])
+                ->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}", [
+                    'contents' => [
+                        [
+                            'parts' => [
+                                ['text' => 'ping'],
+                            ],
+                        ],
+                    ],
+                ]);
+
+            if ($response->successful()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Koneksi berhasil',
+                    'model' => 'gemini-1.5-flash',
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'API Key tidak valid atau ditolak oleh Google AI.',
+                'error_code' => 'API_REJECTED',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghubungi server Google AI.',
+                'error_code' => 'NETWORK_ERROR',
+            ]);
+        }
+    }
+
+    public function updateAiSettings(Request $request)
+    {
+        $request->validate([
+            'gemini_api_key' => 'nullable|string',
+            'ai_enabled' => 'required|in:0,1,true,false',
+        ]);
+
+        if ($request->filled('gemini_api_key')) {
+            $apiKeySetting = \App\Models\Master\SystemSetting::where('config_key', 'gemini_api_key')->first();
+            if ($apiKeySetting) {
+                $apiKeySetting->update([
+                    'value' => Crypt::encryptString($request->input('gemini_api_key')),
+                ]);
+                Cache::forget('system_setting_gemini_api_key');
+            }
+        }
+
+        $enabledSetting = \App\Models\Master\SystemSetting::where('config_key', 'ai_enabled')->first();
+        if ($enabledSetting) {
+            $val = in_array($request->input('ai_enabled'), [1, '1', true, 'true'], true) ? '1' : '0';
+            $enabledSetting->update(['value' => $val]);
+            Cache::forget('system_setting_ai_enabled');
+        }
+
+        return redirect()->back()->with('success', 'Konfigurasi AI berhasil diperbarui.');
+    }
+
+    public function removeAiKey(Request $request)
+    {
+        $apiKeySetting = \App\Models\Master\SystemSetting::where('config_key', 'gemini_api_key')->first();
+        if ($apiKeySetting) {
+            $apiKeySetting->update(['value' => null]);
+            Cache::forget('system_setting_gemini_api_key');
+        }
+
+        return redirect()->back()->with('success', 'API Key Gemini berhasil dihapus secara permanen.');
     }
 }

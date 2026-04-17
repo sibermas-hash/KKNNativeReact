@@ -151,7 +151,7 @@ class ReportController extends Controller
         return back()->with('success', 'Laporan berhasil diunggah.');
     }
 
-    public function download(Laporan $report)
+    public function download(Laporan $report): mixed
     {
         $user = auth()->user();
 
@@ -172,19 +172,24 @@ class ReportController extends Controller
             abort_unless($user->hasRole('superadmin'), 403, 'Anda tidak memiliki akses ke file laporan ini.');
         }
 
-        [$disk, $path] = $this->resolveReportStorage($report->file_path);
+        [$diskName, $path] = $this->resolveReportStorage($report->file_path);
 
         if (! $path) {
             abort(404, 'File laporan tidak ditemukan.');
         }
 
-        return Storage::disk($disk)->download(
-            $path,
-            $report->file_name ?: basename($path)
-        );
+        $disk = Storage::disk($diskName);
+
+        // If it's a local disk, use file response (preview)
+        if (in_array($diskName, ['local', 'public'])) {
+            return response()->file($disk->path($path));
+        }
+
+        // For Cloud Storage (S3/R2), use a secure temporary URL
+        return redirect()->away($disk->temporaryUrl($path, now()->addMinutes(30)));
     }
 
-    public function showEvidence(NilaiKkn $score)
+    public function showEvidence(NilaiKkn $score): mixed
     {
         $user = auth()->user();
 
@@ -215,27 +220,39 @@ class ReportController extends Controller
             abort(403, 'Path file tidak valid.');
         }
 
-        if (! Storage::exists($score->evidence_file)) {
-            abort(404, 'File bukti tidak ditemukan.');
+        $defaultDisk = config('filesystems.default');
+        $foundDisk = null;
+
+        foreach (['local', 'public', $defaultDisk] as $diskName) {
+            if (Storage::disk($diskName)->exists($score->evidence_file)) {
+                $foundDisk = $diskName;
+                break;
+            }
         }
 
-        return Storage::download($score->evidence_file);
+        abort_if($foundDisk === null, 404, 'File bukti tidak ditemukan.');
+
+        $disk = Storage::disk($foundDisk);
+
+        if (in_array($foundDisk, ['local', 'public'])) {
+            return $disk->download($score->evidence_file);
+        }
+
+        return redirect()->away($disk->temporaryUrl($score->evidence_file, now()->addMinutes(30)));
     }
 
     private function resolveReportStorage(?string $path): array
     {
         if (! $path) {
-            return ['local', null];
+            return [config('filesystems.default'), null];
         }
 
-        if (Storage::disk('local')->exists($path)) {
-            return ['local', $path];
+        foreach (['local', 'public', config('filesystems.default')] as $diskName) {
+            if (Storage::disk($diskName)->exists($path)) {
+                return [$diskName, $path];
+            }
         }
 
-        if (Storage::disk('public')->exists($path)) {
-            return ['public', $path];
-        }
-
-        return ['local', null];
+        return [config('filesystems.default'), null];
     }
 }

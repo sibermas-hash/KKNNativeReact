@@ -32,23 +32,26 @@
         <!-- Database credentials: use environment variables from CI/CD secrets -->
         <env name="DB_CONNECTION" value="pgsql"/>
         <env name="DB_HOST" value="127.0.0.1"/>
-        <env name="DB_PORT" value="5435"/>
+        <env name="DB_PORT" value="5432"/>
         <env name="DB_DATABASE" value="kkn_test"/>
         <env name="DB_USERNAME" value="kknuinsaizu"/>
-        <env name="DB_PASSWORD" value="${DB_TEST_PASSWORD:-kknuinsaizu2026}"/>
+        <env name="DB_PASSWORD" value="kknuinsaizu2026"/>
+        <env name="DB_SSLMODE" value="disable"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="DB_KKN_HOST" value="127.0.0.1"/>
-        <env name="DB_KKN_PORT" value="5435"/>
+        <env name="DB_KKN_PORT" value="5432"/>
         <env name="DB_KKN_DATABASE" value="kkn_test"/>
         <env name="DB_KKN_USERNAME" value="kknuinsaizu"/>
-        <env name="DB_KKN_PASSWORD" value="${DB_TEST_PASSWORD:-kknuinsaizu2026}"/>
+        <env name="DB_KKN_PASSWORD" value="kknuinsaizu2026"/>
+        <env name="DB_KKN_SSLMODE" value="disable"/>
         <env name="DB_MASTER_HOST" value="127.0.0.1"/>
-        <env name="DB_MASTER_PORT" value="5435"/>
+        <env name="DB_MASTER_PORT" value="5432"/>
         <env name="DB_MASTER_DATABASE" value="kkn_test"/>
         <env name="DB_MASTER_USERNAME" value="kknuinsaizu"/>
-        <env name="DB_MASTER_PASSWORD" value="${DB_TEST_PASSWORD:-kknuinsaizu2026}"/>
+        <env name="DB_MASTER_PASSWORD" value="kknuinsaizu2026"/>
+        <env name="DB_MASTER_SSLMODE" value="disable"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>

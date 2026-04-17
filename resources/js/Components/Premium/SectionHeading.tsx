@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 
 interface SectionHeadingProps {
@@ -11,22 +10,17 @@ interface SectionHeadingProps {
 
 export function SectionHeading({ title, subtitle, accent, className }: SectionHeadingProps) {
     return (
-        <div className={clsx("space-y-6 italic", className)}>
-            <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="space-y-4"
-            >
-                <h2 className="text-5xl lg:text-7xl font-bold text-emerald-950 tracking-tighter uppercase leading-none">
-                    {title} {accent && <span className="text-emerald-500">{accent}</span>}
+        <div className={clsx("space-y-2", className)}>
+            <div className="space-y-1">
+                <h2 className="text-2xl font-bold text-gray-900 leading-tight">
+                    {title} {accent && <span className="text-[#1a7a4a]">{accent}</span>}
                 </h2>
                 {subtitle && (
-                    <p className="text-xs font-bold text-emerald-700/40 uppercase tracking-[0.4em] italic leading-none">
+                    <p className="text-sm text-gray-700 leading-relaxed">
                         {subtitle}
                     </p>
                 )}
-            </motion.div>
+            </div>
         </div>
     );
 }

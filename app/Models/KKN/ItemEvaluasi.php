@@ -15,17 +15,17 @@ class ItemEvaluasi extends Model
     protected $table = 'item_evaluasi';
 
     protected $fillable = [
-    'evaluasi_id',
-    'criterion',
-    'score',
-    'weight',
-    'notes',
-];
+        'evaluasi_id',
+        'criterion',
+        'score',
+        'weight',
+        'notes',
+    ];
 
     protected $casts = [
-    'score' => 'decimal:2',
-    'weight' => 'decimal:2',
-];
+        'score' => 'decimal:2',
+        'weight' => 'decimal:2',
+    ];
 
     use HasFactory;
 

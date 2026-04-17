@@ -25,7 +25,7 @@ export const RequirementNode = ({
     whileHover={{ y: -5 }}
     className={clsx(
       'p-6 rounded-xl border-2 transition-all relative overflow-hidden group',
-      ok ? 'bg-white border-emerald-100/60 shadow-sm' : 'bg-rose-50/50 border-rose-100/50',
+      ok ? 'bg-white border-gray-200/60 shadow-sm' : 'bg-rose-50/50 border-rose-100/50',
     )}
   >
     <div className="flex items-center gap-4 mb-4">
@@ -40,7 +40,7 @@ export const RequirementNode = ({
         <Icon size={22} strokeWidth={2.5} />
       </div>
       <div className="space-y-0.5">
-        <span className="block text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold">
+        <span className="block text-sm font-bold text-gray-900 uppercase tracking-wider text-xs font-semibold">
           {label}
         </span>
         <span

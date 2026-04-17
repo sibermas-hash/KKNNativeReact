@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Mahasiswa;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -46,11 +47,11 @@ class AutomaticGroupPlacementService
                     ->where('regency_name', 'not ilike', "%{$domicileRegency}%");
             })
             ->where(function ($query) {
-                 $query->selectRaw('count(*)')
-                       ->from('peserta_kkn')
-                       ->whereColumn('peserta_kkn.kelompok_id', 'kelompok_kkn.id')
-                       ->whereIn('status', GroupSelectionService::activeRegistrationStatuses());
-            }, '<', \Illuminate\Support\Facades\DB::raw('kelompok_kkn.capacity'))
+                $query->selectRaw('count(*)')
+                    ->from('peserta_kkn')
+                    ->whereColumn('peserta_kkn.kelompok_id', 'kelompok_kkn.id')
+                    ->whereIn('status', GroupSelectionService::activeRegistrationStatuses());
+            }, '<', DB::raw('kelompok_kkn.capacity'))
             ->orderBy('active_participants_count')
             ->orderByDesc('capacity')
             ->orderBy('id');

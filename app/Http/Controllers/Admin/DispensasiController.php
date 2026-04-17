@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\DispensasiKkn;
+use App\Models\KKN\IzinMeninggalkan;
 use App\Models\KKN\Periode;
 use App\Traits\HandlesPagination;
 use Illuminate\Http\RedirectResponse;
@@ -36,8 +37,15 @@ class DispensasiController extends Controller
 
             $periods = Periode::orderByDesc('periode')->get(['id', 'name', 'periode']);
 
+            $izins = IzinMeninggalkan::with(['mahasiswa', 'kelompok'])
+                ->orderBy('status')
+                ->orderByDesc('created_at')
+                ->paginate(15, ['*'], 'izins_page')
+                ->withQueryString();
+
             return Inertia::render('Admin/Operational/Dispensasi/Index', [
                 'dispensasi' => $this->formatPaginator($dispensasi),
+                'izins' => $this->formatPaginator($izins),
                 'periods' => $periods,
                 'filters' => $request->only('search'),
             ]);

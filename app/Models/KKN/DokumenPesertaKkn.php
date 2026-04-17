@@ -15,20 +15,20 @@ class DokumenPesertaKkn extends Model
     protected $table = 'dokumen_peserta_kkn';
 
     protected $fillable = [
-    'peserta_kkn_id',
-    'document_type',
-    'file_path',
-    'file_name',
-    'file_size',
-    'uploaded_at',
-    'status',
-    'notes',
-];
+        'peserta_kkn_id',
+        'document_type',
+        'file_path',
+        'file_name',
+        'file_size',
+        'uploaded_at',
+        'status',
+        'notes',
+    ];
 
     protected $casts = [
-    'file_size' => 'integer',
-    'uploaded_at' => 'datetime',
-];
+        'file_size' => 'integer',
+        'uploaded_at' => 'datetime',
+    ];
 
     use HasFactory;
 

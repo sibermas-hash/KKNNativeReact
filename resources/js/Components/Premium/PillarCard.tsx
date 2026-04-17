@@ -1,6 +1,5 @@
 import React from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 
 interface PillarCardProps {
@@ -12,25 +11,21 @@ interface PillarCardProps {
 
 export function PillarCard({ icon: Icon, title, desc, className }: PillarCardProps) {
     return (
-        <motion.div 
-            whileHover={{ y: -5 }}
+        <div 
             className={clsx(
-                "bg-white border border-emerald-50/50 rounded-[3rem] p-10 space-y-8 hover:bg-emerald-50/30 transition-all duration-500 group group-hover:shadow-2xl group-hover:shadow-emerald-950/5 relative overflow-hidden shadow-sm",
+                "bg-white border border-gray-200 rounded-xl p-6 space-y-4 hover:border-gray-300 transition-all duration-200 group",
                 className
             )}
         >
-             <div className="absolute -bottom-4 -right-4 opacity-[0.02] text-emerald-950 group-hover:scale-110 transition-transform duration-1000">
-                <Icon size={120} strokeWidth={0.5} />
+             <div className="h-12 w-12 bg-[#e8f5ee] text-[#1a7a4a] rounded-lg flex items-center justify-center group-hover:bg-[#1a7a4a] group-hover:text-white transition-colors duration-200">
+                <Icon size={24} strokeWidth={2} />
              </div>
-             <div className="h-16 w-16 bg-emerald-950 text-emerald-500 rounded-2xl flex items-center justify-center p-4 shadow-2xl group-hover:rotate-12 transition-transform duration-500">
-                <Icon size={32} strokeWidth={2.5} />
-             </div>
-             <div className="space-y-4 relative z-10 italic">
-                <h3 className="text-xl font-bold text-emerald-950 uppercase tracking-tighter italic leading-none">{title}</h3>
-                <p className="text-xs font-bold text-emerald-950 uppercase tracking-tight leading-relaxed italic pr-4">
+             <div className="space-y-2">
+                <h3 className="text-base font-bold text-gray-900 leading-tight">{title}</h3>
+                <p className="text-sm text-gray-700 leading-relaxed">
                     {desc}
                 </p>
              </div>
-        </motion.div>
+        </div>
     );
 }

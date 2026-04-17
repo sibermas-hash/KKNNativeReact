@@ -17,25 +17,25 @@ class PesertaWorkshop extends Model
     protected $table = 'peserta_workshop';
 
     protected $fillable = [
-    'workshop_id',
-    'user_id',
-    'registered_at',
-    'attendance_status',
-    'is_passed',
-    'passing_notes',
-    'checked_in_at',
-    'certificate_generated',
-    'certificate_path',
-    'certificate_issued_at',
-];
+        'workshop_id',
+        'user_id',
+        'registered_at',
+        'attendance_status',
+        'is_passed',
+        'passing_notes',
+        'checked_in_at',
+        'certificate_generated',
+        'certificate_path',
+        'certificate_issued_at',
+    ];
 
     protected $casts = [
-    'registered_at' => 'datetime',
-    'checked_in_at' => 'datetime',
-    'certificate_generated' => 'boolean',
-    'certificate_issued_at' => 'datetime',
-    'is_passed' => 'boolean',
-];
+        'registered_at' => 'datetime',
+        'checked_in_at' => 'datetime',
+        'certificate_generated' => 'boolean',
+        'certificate_issued_at' => 'datetime',
+        'is_passed' => 'boolean',
+    ];
 
     use HasFactory;
 

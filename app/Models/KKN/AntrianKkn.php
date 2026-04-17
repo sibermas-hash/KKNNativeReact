@@ -15,20 +15,20 @@ class AntrianKkn extends Model
     protected $table = 'antrian_kkn';
 
     protected $fillable = [
-    'mahasiswa_id',
-    'period_id',
-    'posisi_antrian',
-    'status',
-    'penalti_poin',
-    'pindah_count',
-    'joined_at',
-    'last_left_group_at',
-];
+        'mahasiswa_id',
+        'period_id',
+        'posisi_antrian',
+        'status',
+        'penalti_poin',
+        'pindah_count',
+        'joined_at',
+        'last_left_group_at',
+    ];
 
     protected $casts = [
-    'joined_at' => 'datetime',
-    'last_left_group_at' => 'datetime',
-];
+        'joined_at' => 'datetime',
+        'last_left_group_at' => 'datetime',
+    ];
 
     use HasFactory;
 

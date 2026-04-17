@@ -15,27 +15,27 @@ class RekapitulasiKegiatan extends Model
     protected $table = 'rekapitulasi_kegiatan';
 
     protected $fillable = [
-    'kelompok_id',
-    'program_kerja_id',
-    'uraian_kegiatan',
-    'satuan',
-    'volume',
-    'swadaya_mhs',
-    'swadaya_masyarakat',
-    'bantuan_pemerintah',
-    'donatur_lain',
-    'jumlah',
-    'keterangan',
-];
+        'kelompok_id',
+        'program_kerja_id',
+        'uraian_kegiatan',
+        'satuan',
+        'volume',
+        'swadaya_mhs',
+        'swadaya_masyarakat',
+        'bantuan_pemerintah',
+        'donatur_lain',
+        'jumlah',
+        'keterangan',
+    ];
 
     protected $casts = [
-    'volume' => 'integer',
-    'swadaya_mhs' => 'integer',
-    'swadaya_masyarakat' => 'integer',
-    'bantuan_pemerintah' => 'integer',
-    'donatur_lain' => 'integer',
-    'jumlah' => 'integer',
-];
+        'volume' => 'integer',
+        'swadaya_mhs' => 'integer',
+        'swadaya_masyarakat' => 'integer',
+        'bantuan_pemerintah' => 'integer',
+        'donatur_lain' => 'integer',
+        'jumlah' => 'integer',
+    ];
 
     use HasFactory;
 

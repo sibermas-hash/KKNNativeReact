@@ -14,23 +14,23 @@ class ApiKey extends Model
     protected $table = '_api_keys';
 
     protected $fillable = [
-    'key',
-    'name',
-    'permissions',
-    'email',
-    'is_active',
-    'last_used_at',
-];
+        'key',
+        'name',
+        'permissions',
+        'email',
+        'is_active',
+        'last_used_at',
+    ];
 
     protected $hidden = [
-    'key',
-];
+        'key',
+    ];
 
     protected $casts = [
-    'permissions' => 'array',
-    'is_active' => 'boolean',
-    'last_used_at' => 'datetime',
-];
+        'permissions' => 'array',
+        'is_active' => 'boolean',
+        'last_used_at' => 'datetime',
+    ];
 
     public string $key {
         set(string $value) {

@@ -24,7 +24,7 @@ const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
                     <label 
                         htmlFor={id} 
                         className={clsx(
-                            "text-[12px] font-bold text-emerald-950 uppercase tracking-widest pl-1",
+                            "text-xs font-bold text-gray-900 uppercase tracking-widest pl-1",
                             isHorizontal && "sm:min-w-[180px] sm:text-right"
                         )}
                     >
@@ -40,19 +40,19 @@ const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
                             aria-invalid={!!error}
                             aria-describedby={describedBy}
                             className={clsx(
-                                'w-full rounded-xl border border-emerald-100/60 bg-white px-4 py-2.5 text-sm text-emerald-950 transition-all placeholder:text-emerald-950',
+                                'w-full rounded-xl border border-gray-200/60 bg-white px-4 py-2.5 text-sm text-gray-900 transition-all placeholder:text-gray-900',
                                 'focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20',
                                 error
                                     ? 'border-rose-500 focus:ring-rose-500/20'
                                     : 'hover:border-emerald-300',
-                                rest.disabled && 'bg-emerald-50/30 text-emerald-950 cursor-not-allowed border-emerald-100/60',
+                                rest.disabled && 'bg-gray-50 text-gray-900 cursor-not-allowed border-gray-200/60',
                                 className,
                             )}
                             {...rest}
                         />
                     </div>
                     {error && <p id={errorId} role="alert" className="mt-1.5 text-xs font-medium text-rose-600">{error}</p>}
-                    {hint && !error && <p id={hintId} className="mt-1.5 text-xs text-emerald-950">{hint}</p>}
+                    {hint && !error && <p id={hintId} className="mt-1.5 text-xs text-gray-900">{hint}</p>}
                 </div>
             </div>
         );

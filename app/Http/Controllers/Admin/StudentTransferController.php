@@ -34,7 +34,7 @@ class StudentTransferController extends Controller
         $periodId = $this->contextService->getActivePeriodId() ?? $this->contextService->getDefaultPeriodId();
 
         $students = $periodId
-            ? PesertaKkn::with(['mahasiswa.user', 'kelompok.location', 'periode'])
+            ? PesertaKkn::with(['mahasiswa.user', 'kelompok.lokasi', 'periode'])
                 ->where('period_id', $periodId)
                 ->whereNotIn('status', ['rejected', 'pending'])
                 ->when($request->input('search'), fn ($q, $search) => $q->search($search))

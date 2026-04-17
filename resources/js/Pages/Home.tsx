@@ -93,10 +93,10 @@ export default function Home({
             <Head title="Pusat Informasi KKN | UIN SAIZU" />
 
             {/* HERO SECTION - TINGKAT KETERBACAAN TINGGI */}
-            <section className="bg-white pt-24 pb-32 border-b-2 border-emerald-50">
+            <section className="bg-white pt-24 pb-32 border-b-2 border-gray-100">
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="max-w-4xl space-y-10">
-                        <div className="flex items-center gap-3 text-emerald-700 font-bold text-sm uppercase tracking-[0.3em]">
+                        <div className="flex items-center gap-3 text-gray-700 font-bold text-sm uppercase tracking-[0.3em]">
                             <Activity size={20} />
                             Portal Layanan KKN Terpadu
                         </div>
@@ -116,7 +116,7 @@ export default function Home({
                             </Link>
                             <Link
                                 href={safeRoute('public.schemes')}
-                                className="px-10 py-5 bg-white border-2 border-emerald-100 text-black rounded-2xl font-bold hover:border-emerald-600 transition-all text-sm uppercase tracking-widest italic"
+                                className="px-10 py-5 bg-white border-2 border-gray-200 text-black rounded-2xl font-bold hover:border-emerald-600 transition-all text-sm uppercase tracking-widest italic"
                             >
                                 LIHAT SKEMA KKN
                             </Link>
@@ -157,21 +157,21 @@ export default function Home({
             </section>
 
             {/* NEWS & DOWNLOADS - Teks Sangat Gelap */}
-            <section className="py-32 bg-emerald-50/20 border-t-2 border-emerald-50">
+            <section className="py-32 bg-emerald-50/20 border-t-2 border-gray-100">
                 <div className="max-w-7xl mx-auto px-6 lg:px-8 grid md:grid-cols-2 gap-20">
                     {/* WARTA */}
                     <div className="space-y-12">
-                        <div className="flex items-center justify-between border-b-2 border-emerald-100 pb-6">
+                        <div className="flex items-center justify-between border-b-2 border-gray-200 pb-6">
                             <h3 className="text-2xl font-bold text-black uppercase tracking-tight inline-flex items-center gap-4 italic">
-                                <Newspaper size={28} className="text-emerald-500" />
+                                <Newspaper size={28} className="text-[#1a7a4a]" />
                                 Informasi Terkini
                             </h3>
-                            <Link href={safeRoute('public.announcements')} className="text-xs font-bold text-emerald-700 hover:text-black uppercase tracking-widest italic underline decoration-2 underline-offset-8">Lihat Semua</Link>
+                            <Link href={safeRoute('public.announcements')} className="text-xs font-bold text-gray-700 hover:text-black uppercase tracking-widest italic underline decoration-2 underline-offset-8">Lihat Semua</Link>
                         </div>
                         <div className="space-y-6">
                             {featuredAnnouncements.map((item) => (
-                                <Link key={item.id} href={safeRoute('public.announcements', { id: item.id })} className="flex flex-col gap-3 p-6 bg-white border-2 border-emerald-50 rounded-2xl hover:border-emerald-600 hover:shadow-xl transition-all group no-underline">
-                                    <span className="text-[12px] text-emerald-500 font-bold uppercase tracking-[0.3em] italic">{formatDate(item.published_at)}</span>
+                                <Link key={item.id} href={safeRoute('public.announcements', { id: item.id })} className="flex flex-col gap-3 p-6 bg-white border-2 border-gray-100 rounded-2xl hover:border-emerald-600 hover:shadow-xl transition-all group no-underline">
+                                    <span className="text-xs text-[#1a7a4a] font-bold uppercase tracking-[0.3em] italic">{formatDate(item.published_at)}</span>
                                     <h4 className="text-lg font-bold text-black group-hover:text-emerald-600 transition-colors uppercase tracking-tight italic leading-tight">{item.title}</h4>
                                 </Link>
                             ))}
@@ -181,12 +181,12 @@ export default function Home({
 
                     {/* UNDUHAN */}
                     <div className="space-y-12">
-                        <div className="flex items-center justify-between border-b-2 border-emerald-100 pb-6">
+                        <div className="flex items-center justify-between border-b-2 border-gray-200 pb-6">
                             <h3 className="text-2xl font-bold text-black uppercase tracking-tight inline-flex items-center gap-4 italic">
-                                <FileText size={28} className="text-emerald-500" />
+                                <FileText size={28} className="text-[#1a7a4a]" />
                                 Dokumen Resmi
                             </h3>
-                            <Link href={safeRoute('public.downloads')} className="text-xs font-bold text-emerald-700 hover:text-black uppercase tracking-widest italic underline decoration-2 underline-offset-8">Lihat Semua</Link>
+                            <Link href={safeRoute('public.downloads')} className="text-xs font-bold text-gray-700 hover:text-black uppercase tracking-widest italic underline decoration-2 underline-offset-8">Lihat Semua</Link>
                         </div>
                         <div className="space-y-6">
                             {featuredDownloads.map((item) => (
@@ -195,10 +195,10 @@ export default function Home({
                                     href={item.external_url || item.file_path || '#'}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center justify-between p-6 bg-white border-2 border-emerald-50 rounded-2xl hover:border-emerald-600 hover:shadow-xl transition-all cursor-pointer group shadow-sm no-underline"
+                                    className="flex items-center justify-between p-6 bg-white border-2 border-gray-100 rounded-2xl hover:border-emerald-600 hover:shadow-xl transition-all cursor-pointer group shadow-sm no-underline"
                                 >
                                     <div className="flex items-center gap-6">
-                                        <div className="h-10 w-10 bg-emerald-50 border-2 border-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-950 group-hover:text-white transition-all">
+                                        <div className="h-10 w-10 bg-emerald-50 border-2 border-gray-200 rounded-xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-950 group-hover:text-white transition-all">
                                             <Download size={20} />
                                         </div>
                                         <span className="text-base font-bold text-black uppercase tracking-tight italic leading-none">{item.title}</span>
@@ -218,12 +218,12 @@ export default function Home({
 function StatItem({ label, value, icon: Icon }: { label: string; value: any; icon: any }) {
     return (
         <div className="text-center space-y-4 group">
-            <div className="inline-flex h-16 w-16 items-center justify-center bg-white rounded-3xl text-emerald-600 shadow-sm border-2 border-emerald-50 group-hover:border-emerald-500 transition-all group-hover:rotate-12">
+            <div className="inline-flex h-16 w-16 items-center justify-center bg-white rounded-3xl text-emerald-600 shadow-sm border-2 border-gray-100 group-hover:border-gray-1000 transition-all group-hover:rotate-12">
                 <Icon size={32} />
             </div>
             <div className="space-y-1">
                 <p className="text-4xl font-bold text-black tracking-tighter tabular-nums italic">{value ?? 0}</p>
-                <p className="text-[12px] font-bold text-emerald-500 uppercase tracking-[0.4em] italic leading-none">{label}</p>
+                <p className="text-xs font-bold text-[#1a7a4a] uppercase tracking-[0.4em] italic leading-none">{label}</p>
             </div>
         </div>
     );
@@ -231,12 +231,12 @@ function StatItem({ label, value, icon: Icon }: { label: string; value: any; ico
 
 function FeatureBox({ icon: Icon, title, desc }: { icon: any; title: string, desc: string }) {
     return (
-        <div className="p-8 bg-white border-2 border-emerald-50 rounded-3xl hover:bg-white hover:border-emerald-600 hover:shadow-2xl transition-all group">
-            <div className="h-12 w-12 bg-emerald-50 border-2 border-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 mb-6 group-hover:bg-emerald-950 group-hover:text-white transition-all shadow-sm">
+        <div className="p-8 bg-white border-2 border-gray-100 rounded-3xl hover:bg-white hover:border-emerald-600 hover:shadow-2xl transition-all group">
+            <div className="h-12 w-12 bg-emerald-50 border-2 border-gray-200 rounded-xl flex items-center justify-center text-emerald-600 mb-6 group-hover:bg-emerald-950 group-hover:text-white transition-all shadow-sm">
                 <Icon size={24} />
             </div>
             <h4 className="text-base font-bold text-black uppercase tracking-tight italic">{title}</h4>
-            <p className="text-sm font-bold text-emerald-700/60 mt-4 leading-relaxed italic uppercase tracking-tight">{desc}</p>
+            <p className="text-sm font-bold text-gray-700/60 mt-4 leading-relaxed italic uppercase tracking-tight">{desc}</p>
         </div>
     );
 }

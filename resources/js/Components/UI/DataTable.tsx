@@ -25,16 +25,16 @@ export default function DataTable<T extends { id: number | string }>({
     const visibleColumns = columns.filter(col => !col.hideOnMobile);
 
     return (
-        <div className="overflow-hidden rounded-lg border border-emerald-100/60 bg-white">
+        <div className="overflow-hidden rounded-lg border border-gray-200/60 bg-white">
             {/* Desktop Table View */}
             <div className="hidden sm:block overflow-x-auto">
                 <table className="min-w-full divide-y divide-emerald-100/60">
-                    <thead className="bg-emerald-50/30">
+                    <thead className="bg-gray-50">
                         <tr>
                             {columns.map((col) => (
                                 <th
                                     key={col.key}
-                                    className={`px-4 py-3 text-left text-xs font-semibold text-emerald-950 uppercase tracking-wider ${col.className ?? ''}`}
+                                    className={`px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider ${col.className ?? ''}`}
                                 >
                                     {col.label}
                                 </th>
@@ -46,18 +46,18 @@ export default function DataTable<T extends { id: number | string }>({
                             <tr>
                                 <td
                                     colSpan={columns.length}
-                                    className="px-4 py-8 text-center text-sm text-emerald-950"
+                                    className="px-4 py-8 text-center text-sm text-gray-900"
                                 >
                                     {emptyMessage}
                                 </td>
                             </tr>
                         ) : (
                             data.map((item) => (
-                                <tr key={item.id} className="hover:bg-emerald-50/30">
+                                <tr key={item.id} className="hover:bg-gray-50">
                                     {columns.map((col) => (
                                         <td
                                             key={col.key}
-                                            className={`px-4 py-3 text-sm text-emerald-700 ${col.className ?? ''}`}
+                                            className={`px-4 py-3 text-sm text-gray-700 ${col.className ?? ''}`}
                                         >
                                             {col.render
                                                 ? col.render(item)
@@ -76,7 +76,7 @@ export default function DataTable<T extends { id: number | string }>({
             {/* Mobile Card View */}
             <div className="sm:hidden">
                 {data.length === 0 ? (
-                    <div className="px-4 py-8 text-center text-sm text-emerald-950">
+                    <div className="px-4 py-8 text-center text-sm text-gray-900">
                         {emptyMessage}
                     </div>
                 ) : (
@@ -85,10 +85,10 @@ export default function DataTable<T extends { id: number | string }>({
                             <div key={item.id} className="px-4 py-4 space-y-3">
                                 {visibleColumns.map((col) => (
                                     <div key={col.key} className="flex justify-between items-start gap-2">
-                                        <span className="text-xs font-semibold text-emerald-950 uppercase tracking-wider flex-shrink-0">
+                                        <span className="text-xs font-semibold text-gray-900 uppercase tracking-wider flex-shrink-0">
                                             {col.label}
                                         </span>
-                                        <span className="text-sm text-emerald-700 text-right flex-1">
+                                        <span className="text-sm text-gray-700 text-right flex-1">
                                             {col.render
                                                 ? col.render(item)
                                                 : ((item as Record<string, unknown>)[
@@ -104,7 +104,7 @@ export default function DataTable<T extends { id: number | string }>({
             </div>
 
             {meta && (
-                <div className="border-t border-emerald-100/60 px-4 py-3">
+                <div className="border-t border-gray-200/60 px-4 py-3">
                     <Pagination meta={meta} />
                 </div>
             )}

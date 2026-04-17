@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Fakultas extends Model
 {
-
     protected $table = 'fakultas';
 
     protected $connection = 'kkn';

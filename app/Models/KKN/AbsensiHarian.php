@@ -15,17 +15,17 @@ class AbsensiHarian extends Model
     protected $table = 'absensi_harian';
 
     protected $fillable = [
-    'mahasiswa_id',
-    'kelompok_id',
-    'tanggal',
-    'status',
-    'izin_id',
-];
+        'mahasiswa_id',
+        'kelompok_id',
+        'tanggal',
+        'status',
+        'izin_id',
+    ];
 
     protected $casts = [
-    'tanggal' => 'date',
-    'status' => 'string',
-];
+        'tanggal' => 'date',
+        'status' => 'string',
+    ];
 
     use HasFactory;
 

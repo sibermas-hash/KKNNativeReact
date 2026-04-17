@@ -6,7 +6,6 @@ namespace App\Services\KKN;
 
 use App\Models\KKN\KegiatanKkn;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class IntelligenceService
 {

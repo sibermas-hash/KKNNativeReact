@@ -11,15 +11,15 @@ interface MetricItemProps {
 
 export function MetricItem({ label, value, icon: Icon, className }: MetricItemProps) {
     return (
-        <div className={clsx("space-y-6 flex flex-col items-center group italic", className)}>
-             <div className="h-14 w-14 bg-white border border-emerald-100 rounded-2xl flex items-center justify-center group-hover:bg-emerald-950 group-hover:text-emerald-400 transition-all duration-500 shadow-sm group-hover:shadow-2xl group-hover:shadow-emerald-950/20 group-hover:scale-110">
-                <Icon size={24} className="text-emerald-500 group-hover:text-inherit" strokeWidth={2.5} />
+        <div className={clsx("flex flex-col items-center gap-3", className)}>
+             <div className="h-12 w-12 bg-[#e8f5ee] rounded-lg flex items-center justify-center text-[#1a7a4a]">
+                <Icon size={22} strokeWidth={2} />
              </div>
              <div className="text-center">
-                <p className="text-5xl font-bold text-emerald-950 tabular-nums italic uppercase group-hover:text-emerald-600 transition-colors">
+                <p className="text-3xl font-bold text-gray-900 tabular-nums">
                     {value?.toLocaleString('id-ID') || '-'}
                 </p>
-                <p className="text-[12px] font-bold text-emerald-700/30 uppercase tracking-[0.3em] mt-3 italic">{label}</p>
+                <p className="text-xs font-medium text-gray-700 mt-1">{label}</p>
              </div>
         </div>
     );

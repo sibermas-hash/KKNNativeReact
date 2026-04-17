@@ -32,7 +32,7 @@ class GradeController extends Controller
         $isFacultyAdmin = $user?->hasRole('faculty_admin');
         $facultyId = $isFacultyAdmin ? $user?->faculty_id : null;
 
-        $groups = KelompokKkn::with(['dpl.user:id,name', 'periode'])
+        $groups = KelompokKkn::with(['dosen.user:id,name', 'periode'])
             ->when($facultyId, function ($query, $id) {
                 $query->whereHas('peserta.mahasiswa', fn ($q) => $q->where('faculty_id', $id));
             })

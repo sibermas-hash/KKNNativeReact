@@ -39,9 +39,9 @@ class StudentSyncServiceTest extends TestCase
         ];
 
         $this->masterApiMock
-            ->shouldReceive('getSyncMahasiswa')
+            ->shouldReceive('yieldSyncMahasiswa')
             ->once()
-            ->andReturn($mockStudents);
+            ->andReturn((function() use ($mockStudents) { foreach($mockStudents as $s) yield $s; })());
 
         $result = $this->service->syncFromApi();
 
@@ -73,9 +73,9 @@ class StudentSyncServiceTest extends TestCase
         ];
 
         $this->masterApiMock
-            ->shouldReceive('getSyncMahasiswa')
+            ->shouldReceive('yieldSyncMahasiswa')
             ->once()
-            ->andReturn($mockStudents);
+            ->andReturn((function() use ($mockStudents) { foreach($mockStudents as $s) yield $s; })());
 
         Log::shouldReceive('warning')->andReturn(null);
 

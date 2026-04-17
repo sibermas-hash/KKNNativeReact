@@ -14,14 +14,13 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\Periode;
 use App\Services\Admin\DplAssignmentService;
+use App\Services\DplEligibilityService;
 use App\Services\PeriodContextService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
-
-use App\Services\DplEligibilityService;
 
 class DplAssignmentController extends Controller
 {
@@ -64,7 +63,7 @@ class DplAssignmentController extends Controller
             ->paginate(AppConstants::MAX_BATCH_LIMIT);
 
         $groupsPaginated = KelompokKkn::with([
-            'dpl:id,nama,nip',
+            'dosen:id,nama,nip',
             'periode:id,name,periode,jenis',
             'lokasi:id,district_name,regency_name',
         ])
@@ -73,7 +72,7 @@ class DplAssignmentController extends Controller
                     $builder
                         ->where('nama_kelompok', 'like', "%{$escapedSearch}%")
                         ->orWhere('code', 'like', "%{$escapedSearch}%")
-                        ->orWhereHas('dpl', function ($dosenQuery) use ($escapedSearch) {
+                        ->orWhereHas('dosen', function ($dosenQuery) use ($escapedSearch) {
                             $dosenQuery
                                 ->where('nama', 'like', "%{$escapedSearch}%")
                                 ->orWhere('nip', 'like', "%{$escapedSearch}%");
@@ -183,7 +182,7 @@ class DplAssignmentController extends Controller
                 'per_page' => $assignmentsPaginated->perPage(),
                 'total' => $assignmentsPaginated->total(),
             ],
-            'groups' => Inertia::defer(fn () => $groupsPaginated->getCollection()->map(fn (KelompokKkn $group) => [
+            'groups' => $groupsPaginated->getCollection()->map(fn (KelompokKkn $group) => [
                 'id' => $group->id,
                 'name' => $group->nama_kelompok,
                 'code' => $group->code,
@@ -200,20 +199,21 @@ class DplAssignmentController extends Controller
                     'district_name' => $group->lokasi?->district_name,
                     'regency_name' => $group->lokasi?->regency_name,
                 ],
-                'dpl' => $group->dpl ? [
-                    'id' => $group->dpl->id,
-                    'nama' => $group->dpl->nama,
-                    'nip' => $group->dpl->nip,
+                'dpl' => $group->ketua_dpl ? [
+                    'id' => $group->ketua_dpl->id,
+                    'nama' => $group->ketua_dpl->nama,
+                    'nip' => $group->ketua_dpl->nip,
                 ] : null,
-            ])->values()),
+            ])->values(),
             'groups_pagination' => [
                 'current_page' => $groupsPaginated->currentPage(),
                 'last_page' => $groupsPaginated->lastPage(),
                 'per_page' => $groupsPaginated->perPage(),
                 'total' => $groupsPaginated->total(),
             ],
-            'allDosen' => Inertia::defer(fn () => $allDosen->map(function (Dosen $dosen) {
+            'allDosen' => $allDosen->map(function (Dosen $dosen) {
                 $check = $this->eligibilityService->isQualifiedForDpl($dosen);
+
                 return [
                     'id' => $dosen->id,
                     'nama' => $dosen->nama,
@@ -223,23 +223,23 @@ class DplAssignmentController extends Controller
                     'is_qualified' => $check['eligible'],
                     'qualification_reason' => $check['reason'],
                 ];
-            })->values()),
-            'allPeriods' => Inertia::defer(fn () => $allPeriods->map(fn (Periode $period) => [
+            })->values(),
+            'allPeriods' => $allPeriods->map(fn (Periode $period) => [
                 'id' => $period->id,
                 'name' => $period->name,
                 'periode' => $period->periode,
                 'jenis' => $period->jenis,
-            ])->values()),
-            'districts' => Inertia::defer(fn () => $districts->map(fn (Lokasi $district) => [
+            ])->values(),
+            'districts' => $districts->map(fn (Lokasi $district) => [
                 'id' => (string) $district->district_id,
                 'name' => $district->district_name,
                 'sub_districts_count' => (int) ($district->sub_districts_count ?? 0),
                 'district_id' => (string) $district->district_id,
                 'district_name' => $district->district_name,
                 'regency_name' => $district->regency_name,
-            ])->values()),
-            'districtCoordinators' => Inertia::defer(fn () => $districtCoordinatorRows),
-            'currentCoordinators' => Inertia::defer(fn () => $currentCoordinatorRows),
+            ])->values(),
+            'districtCoordinators' => $districtCoordinatorRows,
+            'currentCoordinators' => $currentCoordinatorRows,
             'coordinators_pagination' => [
                 'current_page' => $districtCoordinatorsPaginated->currentPage(),
                 'last_page' => $districtCoordinatorsPaginated->lastPage(),

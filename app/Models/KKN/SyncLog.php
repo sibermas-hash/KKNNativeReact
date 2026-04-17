@@ -14,6 +14,7 @@ class SyncLog extends Model
     use HasFactory;
 
     protected $table = 'sync_logs';
+
     protected $connection = 'kkn';
 
     protected $fillable = [

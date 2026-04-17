@@ -28,8 +28,8 @@ export const FileDrop = ({
         className={clsx(
           'p-8 rounded-xl border-2 border-dashed transition-all flex flex-col items-center text-center gap-4',
           file
-            ? 'border-emerald-500 bg-emerald-50/30'
-            : 'border-emerald-100/60 bg-emerald-50/30/50 group-hover/file:border-emerald-200 group-hover/file:bg-emerald-50/20',
+            ? 'border-[#f3f4f6]0 bg-emerald-50/30'
+            : 'border-gray-200/60 bg-emerald-50/30/50 group-hover/file:border-emerald-200 group-hover/file:bg-emerald-50/20',
           error && 'border-rose-500 bg-rose-50/30',
         )}
       >
@@ -38,7 +38,7 @@ export const FileDrop = ({
             'h-16 w-16 rounded-xl flex items-center justify-center transition-all',
             file
               ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-100'
-              : 'bg-white text-slate-300 group-hover/file:text-emerald-500 group-hover/file:scale-110',
+              : 'bg-white text-slate-300 group-hover/file:text-[#1a7a4a] group-hover/file:scale-110',
             error && 'bg-rose-500 text-white',
           )}
         >
@@ -52,7 +52,7 @@ export const FileDrop = ({
           <p className="text-sm font-bold text-black uppercase tracking-tight truncate max-w-[200px]">
             {file ? file.name : error || label}
           </p>
-          <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs opacity-60">
+          <p className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs opacity-60">
             PDF/JPG MAX 2MB
           </p>
         </div>

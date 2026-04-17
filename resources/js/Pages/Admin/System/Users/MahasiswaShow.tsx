@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { GraduationCap, KeyRound, Lock, Unlock, ArrowLeft, CheckCircle2, XCircle, Users, MapPin, ClipboardList, ShieldCheck, RefreshCw } from 'lucide-react';
+import { GraduationCap, KeyRound, Lock, Unlock, ArrowLeft, CheckCircle2, XCircle, Users, MapPin, ClipboardList, ShieldCheck } from 'lucide-react';
 import { clsx } from 'clsx';
 import AppLayout from '@/Layouts/AppLayout';
 import { ConfirmDialog } from '@/Components/ui';
@@ -37,12 +37,19 @@ interface Props {
   mahasiswa: MahasiswaData; account: AccountData | null;
   registration: RegistrationData | null; group: GroupData | null;
   dispensasi: DispensasiItem[];
+  flash?: { temporary_password_display?: { password?: string, username?: string } };
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  pending: 'bg-amber-100 text-amber-800', approved: 'bg-emerald-100 text-emerald-800', rejected: 'bg-rose-100 text-rose-800',
+  pending: 'bg-amber-50 text-amber-700 border border-amber-200', 
+  approved: 'bg-[#e8f5ee] text-[#1a7a4a] border border-emerald-200', 
+  rejected: 'bg-rose-50 text-rose-700 border border-rose-200',
 };
-const STATUS_LABEL: Record<string, string> = { pending: 'Menunggu', approved: 'Disetujui', rejected: 'Ditolak' };
+const STATUS_LABEL: Record<string, string> = { 
+  pending: 'Menunggu', 
+  approved: 'Disetujui', 
+  rejected: 'Ditolak' 
+};
 
 function formatDate(v: string | null | undefined) {
   if (!v) return '—';
@@ -50,9 +57,11 @@ function formatDate(v: string | null | undefined) {
   catch { return v; }
 }
 
-export default function MahasiswaShow({ mahasiswa, account, registration, group, dispensasi }: Props) {
+export default function MahasiswaShow({ mahasiswa, account, registration, group, dispensasi, flash }: Props) {
   const [confirmReset, setConfirmReset] = useState(false);
   const [confirmToggle, setConfirmToggle] = useState(false);
+
+  const tempPasswordData = flash?.temporary_password_display;
 
   return (
     <>
@@ -60,16 +69,36 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
         <Head title={`Detail — ${mahasiswa.nama}`} />
 
         <div className="max-w-7xl mx-auto space-y-6 sm:px-6 lg:px-8 font-sans pb-12">
+          {/* TEMPORARY PASSWORD BANNER */}
+          {tempPasswordData && (
+            <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-4 shadow-sm animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center">
+                  <KeyRound size={20} />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-semibold text-amber-700">Password Sementara Berhasil Dibuat</span>
+                  <span className="text-sm text-amber-900">
+                    Password baru: <code className="bg-white px-2 py-0.5 rounded border border-amber-200 font-mono font-bold select-all">{tempPasswordData.password}</code>
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-amber-600 font-medium uppercase tracking-wider max-w-[120px] text-right leading-tight">
+                Kopi dan berikan ke mahasiswa. Segera ganti.
+              </p>
+            </div>
+          )}
+
           {/* HEADER */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-gray-200 pt-6">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <Link href="/admin/mahasiswa" className="text-gray-400 hover:text-emerald-600 transition-colors flex items-center gap-1.5 text-sm">
+                <Link href="/admin/mahasiswa" className="text-gray-600 hover:text-[#1a7a4a] transition-colors flex items-center gap-1.5 text-sm">
                   <ArrowLeft size={15} /> Direktori Mahasiswa
                 </Link>
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 tracking-tight leading-tight">{mahasiswa.nama}</h1>
-              <p className="text-sm text-gray-500">NIM: <strong>{mahasiswa.nim}</strong> · Angkatan <strong>{mahasiswa.batch_year || '—'}</strong></p>
+              <h1 className="text-2xl font-bold text-gray-900 leading-tight">{mahasiswa.nama}</h1>
+              <p className="text-sm text-gray-700">NIM: <strong className="text-gray-700">{mahasiswa.nim}</strong> · Angkatan <strong className="text-gray-700">{mahasiswa.batch_year || '—'}</strong></p>
             </div>
             {account && (
               <div className="flex items-center gap-3 shrink-0">
@@ -81,7 +110,12 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
                 </button>
                 <button
                   onClick={() => setConfirmToggle(true)}
-                  className={clsx("h-10 px-4 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2 transition-colors", account.is_active ? "bg-white border border-gray-300 text-gray-700 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-700" : "bg-emerald-600 text-white hover:bg-emerald-700")}
+                  className={clsx(
+                    "h-10 px-4 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2 transition-colors",
+                    account.is_active 
+                      ? "bg-white border border-gray-300 text-gray-700 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-700" 
+                      : "bg-[#16a34a] text-white hover:bg-[#15803d] shadow-none"
+                  )}
                 >
                   {account.is_active ? <><Lock size={15} /> Kunci Akun</> : <><Unlock size={15} /> Aktifkan Akun</>}
                 </button>
@@ -95,10 +129,10 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
               {/* PROFIL AKADEMIK */}
               <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
-                  <GraduationCap size={16} className="text-emerald-600" />
-                  <h2 className="text-sm font-semibold text-gray-800">Profil Akademik</h2>
+                  <GraduationCap size={16} className="text-[#1a7a4a]"/>
+                  <h2 className="text-sm font-semibold text-[#1f2937]">Profil Akademik</h2>
                 </div>
-                <div className="p-5 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div className="p-5 grid grid-cols-2 sm:grid-cols-3 gap-6">
                   <InfoField label="Nama Lengkap" value={mahasiswa.nama} span={2} />
                   <InfoField label="NIM" value={mahasiswa.nim} mono />
                   <InfoField label="NIK" value={mahasiswa.nik || '—'} mono />
@@ -114,26 +148,29 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
               {/* KELAYAKAN */}
               <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
-                  <ShieldCheck size={16} className="text-emerald-600" />
-                  <h2 className="text-sm font-semibold text-gray-800">Kelayakan KKN</h2>
+                  <ShieldCheck size={16} className="text-[#1a7a4a]"/>
+                  <h2 className="text-sm font-semibold text-[#1f2937]">Kelayakan KKN</h2>
                 </div>
                 <div className="p-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div className="p-4 rounded-lg bg-gray-50 border border-gray-200 text-center space-y-1">
                     <p className="text-2xl font-bold text-gray-900 tabular-nums">{mahasiswa.sks_completed ?? 0}</p>
-                    <p className="text-xs text-gray-500">SKS Selesai</p>
+                    <p className="text-xs text-gray-700 font-medium">SKS Selesai</p>
                   </div>
                   <div className="p-4 rounded-lg bg-gray-50 border border-gray-200 text-center space-y-1">
                     <p className="text-2xl font-bold text-gray-900 tabular-nums">{Number(mahasiswa.gpa ?? 0).toFixed(2)}</p>
-                    <p className="text-xs text-gray-500">IPK</p>
+                    <p className="text-xs text-gray-700 font-medium">IPK</p>
                   </div>
-                  <div className={clsx("p-4 rounded-lg border text-center space-y-1.5 col-span-2", mahasiswa.is_bta_ppi_passed ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200')}>
+                  <div className={clsx(
+                    "p-4 rounded-lg border text-center space-y-1.5 col-span-2 flex flex-col items-center justify-center",
+                    mahasiswa.is_bta_ppi_passed ? 'bg-gray-50 border-gray-200' : 'bg-rose-50 border-rose-100'
+                  )}>
                     <div className="flex items-center justify-center gap-2">
                       {mahasiswa.is_bta_ppi_passed
-                        ? <><CheckCircle2 size={16} className="text-emerald-600" /><p className="text-sm font-semibold text-emerald-800">Lulus BTA-PPI</p></>
-                        : <><XCircle size={16} className="text-rose-600" /><p className="text-sm font-semibold text-rose-800">Belum Lulus BTA-PPI</p></>
+                        ? <><CheckCircle2 size={18} className="text-[#1a7a4a]"/><p className="text-sm font-bold text-gray-800">Lulus BTA-PPI</p></>
+                        : <><XCircle size={18} className="text-rose-600"/><p className="text-sm font-bold text-rose-800">Belum Lulus BTA-PPI</p></>
                       }
                     </div>
-                    <p className="text-xs text-gray-500">Prasyarat Utama</p>
+                    <p className="text-xs text-gray-700 uppercase tracking-wider font-bold text-center">Prasyarat Utama</p>
                   </div>
                 </div>
               </div>
@@ -141,33 +178,36 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
               {/* PENDAFTARAN */}
               <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
-                  <ClipboardList size={16} className="text-emerald-600" />
-                  <h2 className="text-sm font-semibold text-gray-800">Status Pendaftaran</h2>
+                  <ClipboardList size={16} className="text-[#1a7a4a]"/>
+                  <h2 className="text-sm font-semibold text-[#1f2937]">Status Pendaftaran</h2>
                 </div>
                 {registration ? (
-                  <div className="p-5 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  <div className="p-5 grid grid-cols-2 sm:grid-cols-3 gap-6">
                     <div>
-                      <p className="text-xs text-gray-500 mb-1">Status</p>
-                      <span className={clsx("inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold", STATUS_BADGE[registration.status] || 'bg-gray-100 text-gray-700')}>
+                      <p className="text-xs text-gray-700 mb-1.5">Status Saat Ini</p>
+                      <span className={clsx("inline-flex items-center px-3 py-1 rounded-full text-xs font-bold", STATUS_BADGE[registration.status] || 'bg-gray-100 text-gray-700')}>
                         {STATUS_LABEL[registration.status] || registration.status}
                       </span>
                     </div>
                     <InfoField label="Tanggal Daftar" value={registration.registration_date || '—'} />
-                    <InfoField label="Periode" value={registration.period?.name || '—'} />
+                    <InfoField label="Periode Terdaftar" value={registration.period?.name || '—'} />
                     {registration.status === 'rejected' && registration.rejection_reason && (
-                      <div className="col-span-3 p-3 bg-rose-50 border border-rose-200 rounded-lg">
-                        <p className="text-xs text-rose-600 font-medium">Alasan Penolakan:</p>
-                        <p className="text-sm text-rose-800 mt-0.5">{registration.rejection_reason}</p>
+                      <div className="col-span-3 p-4 bg-rose-50 border border-rose-100 rounded-xl">
+                        <p className="text-xs text-rose-600 font-bold uppercase tracking-tight">Alasan Penolakan:</p>
+                        <p className="text-sm text-rose-800 mt-1 font-medium">{registration.rejection_reason}</p>
                       </div>
                     )}
-                    <div className="col-span-3 text-right">
-                      <Link href={`/admin/pendaftaran/${registration.id}`} className="text-sm text-emerald-600 hover:underline font-medium">
-                        Lihat Detail Pendaftaran →
+                    <div className="col-span-3 pt-2 text-right">
+                      <Link href={`/admin/pendaftaran/${registration.id}`} className="text-sm text-[#1a7a4a] hover:text-[#1a7a4a] font-bold flex items-center gap-1 justify-end transition-colors">
+                        Lihat Berkas Pendaftaran <ArrowLeft size={14} className="rotate-180" />
                       </Link>
                     </div>
                   </div>
                 ) : (
-                  <div className="p-5 text-sm text-gray-500">Belum ada pendaftaran.</div>
+                  <div className="p-8 text-center">
+                    <ClipboardList className="mx-auto h-10 w-10 text-gray-200 mb-2" strokeWidth={1.5} />
+                    <p className="text-sm text-gray-700 font-medium">Mahasiswa ini belum melakukan pendaftaran KKN.</p>
+                  </div>
                 )}
               </div>
 
@@ -175,17 +215,17 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
               {group && (
                 <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                   <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
-                    <Users size={16} className="text-emerald-600" />
-                    <h2 className="text-sm font-semibold text-gray-800">Kelompok KKN</h2>
+                    <Users size={16} className="text-[#1a7a4a]"/>
+                    <h2 className="text-sm font-semibold text-[#1f2937]">Penempatan Kelompok</h2>
                   </div>
-                  <div className="p-5 grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    <InfoField label="Nama Kelompok" value={group.name} span={2} />
-                    {group.period && <InfoField label="Periode" value={group.period.name} />}
+                  <div className="p-5 grid grid-cols-2 sm:grid-cols-3 gap-6">
+                    <InfoField label="Nama Unit/Kelompok" value={group.name} span={2} />
+                    {group.period && <InfoField label="Tahun/Periode" value={group.period.name} />}
                     {group.location && (
                       <>
-                        <InfoField label="Desa / Kelurahan" value={group.location.village_name} />
+                        <InfoField label="Wilayah Desa" value={group.location.village_name} />
                         <InfoField label="Kecamatan" value={group.location.district_name || '—'} />
-                        <InfoField label="Kabupaten" value={group.location.regency_name || '—'} />
+                        <InfoField label="Kabupaten/Kota" value={group.location.regency_name || '—'} />
                       </>
                     )}
                   </div>
@@ -198,31 +238,37 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
               {/* AKUN */}
               <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
-                  <ShieldCheck size={16} className="text-emerald-600" />
-                  <h2 className="text-sm font-semibold text-gray-800">Akun Sistem</h2>
+                  <ShieldCheck size={16} className="text-[#1a7a4a]"/>
+                  <h2 className="text-sm font-semibold text-[#1f2937]">Hak Akses & Akun</h2>
                 </div>
                 {account ? (
                   <div className="p-5 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">Status</span>
-                      <span className={clsx("inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold", account.is_active ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800")}>
+                    <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                      <span className="text-xs font-medium text-gray-700">Status Akun</span>
+                      <span className={clsx(
+                        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase", 
+                        account.is_active ? "bg-[#e8f5ee] text-[#1a7a4a] border border-emerald-200" : "bg-rose-50 text-rose-700 border border-rose-200"
+                      )}>
                         {account.is_active ? 'Aktif' : 'Terkunci'}
                       </span>
                     </div>
-                    <InfoField label="Username" value={account.username} mono />
-                    <InfoField label="Email" value={account.email || '—'} />
-                    <InfoField label="Dibuat" value={account.created_at || '—'} />
+                    <InfoField label="ID Pengguna (Username)" value={account.username} mono />
+                    <InfoField label="Alamat Email" value={account.email || '—'} />
+                    <InfoField label="Waktu Pendaftaran" value={account.created_at || '—'} />
                     {account.must_change_password && (
-                      <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700">
-                        Wajib ganti sandi pada login berikutnya.
+                      <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg text-xs text-amber-700 font-medium">
+                        User diwajibkan melakukan pembaruan kata sandi saat masuk kembali.
                       </div>
                     )}
-                    <div className="pt-2 border-t border-gray-200">
-                      <InfoField label="Sinkron Terakhir" value={formatDate(mahasiswa.master_synced_at)} />
+                    <div className="pt-2 mt-2 border-t border-gray-100">
+                      <InfoField label="Sinkronisasi Terakhir LPPM" value={formatDate(mahasiswa.master_synced_at)} />
                     </div>
                   </div>
                 ) : (
-                  <div className="p-5 text-sm text-gray-500">Belum memiliki akun sistem.</div>
+                  <div className="p-8 text-center">
+                    <XCircle className="mx-auto h-8 w-8 text-gray-200 mb-2" strokeWidth={1.5} />
+                    <p className="text-xs text-gray-700 font-medium leading-relaxed">Akun sistem belum diinisialisasi melalui sinkronisasi master.</p>
+                  </div>
                 )}
               </div>
 
@@ -230,20 +276,20 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
               {dispensasi.length > 0 && (
                 <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                   <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
-                    <ShieldCheck size={16} className="text-amber-500" />
-                    <h2 className="text-sm font-semibold text-gray-800">Dispensasi Aktif</h2>
+                    <ShieldCheck size={16} className="text-amber-500"/>
+                    <h2 className="text-sm font-semibold text-[#1f2937]">Dispensasi Khusus</h2>
                   </div>
-                  <div className="divide-y divide-gray-200">
+                  <div className="divide-y divide-gray-100">
                     {dispensasi.map(d => (
-                      <div key={d.id} className="p-4 space-y-2">
-                        <p className="text-sm font-medium text-gray-800">{d.alasan}</p>
-                        <p className="text-xs text-gray-500">Periode: {d.periode?.name || 'Semua'} · {d.created_at}</p>
-                        <div className="flex flex-wrap gap-1">
+                      <div key={d.id} className="p-5 space-y-3">
+                        <p className="text-sm font-bold text-[#1f2937] leading-tight">{d.alasan}</p>
+                        <p className="text-xs font-medium text-gray-700 uppercase">Periode: {d.periode?.name || 'Semua'} · {d.created_at}</p>
+                        <div className="flex flex-wrap gap-1.5 pt-1">
                           {(d.bypassed_requirements || []).map(r => (
-                            <span key={r} className="px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded text-xs">{r.replace('_', ' ')}</span>
+                            <span key={r} className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-100 rounded text-xs font-bold uppercase">{r.replace('_', ' ')}</span>
                           ))}
                         </div>
-                        <p className="text-xs text-gray-400">Oleh: {d.granted_by}</p>
+                        <p className="text-xs text-gray-600 font-medium">Otorisator: <span className="text-gray-700">{d.granted_by}</span></p>
                       </div>
                     ))}
                   </div>
@@ -260,20 +306,20 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
             open={confirmReset}
             onClose={() => setConfirmReset(false)}
             onConfirm={() => { router.post(`/admin/pengguna/${account.id}/reset-password-sementara`, {}, { preserveScroll: true }); setConfirmReset(false); }}
-            title="Reset Password Sementara"
-            message={`Hasilkan password sementara baru untuk "${mahasiswa.nama}"? Password lama akan digantikan dan ditampilkan sekali di layar.`}
-            confirmLabel="Ya, Reset Sekarang"
+            title="Reset Password Pengguna"
+            message={`Sistem akan menonaktifkan password lama dan menghasilkan identitas akses baru untuk "${mahasiswa.nama}". Anda harus segera menyerahkan password tersebut kepada yang bersangkutan secara manual.`}
+            confirmLabel="Reset Sekarang"
           />
           <ConfirmDialog
             open={confirmToggle}
             onClose={() => setConfirmToggle(false)}
             onConfirm={() => { router.patch(`/admin/pengguna/${account.id}/toggle-status`, {}, { preserveScroll: true }); setConfirmToggle(false); }}
-            title={account.is_active ? 'Kunci Akun Mahasiswa' : 'Aktifkan Akun Mahasiswa'}
+            title={account.is_active ? 'Bekukan Akses Mahasiswa' : 'Pulihkan Akses Mahasiswa'}
             message={account.is_active
-              ? `Akun "${mahasiswa.nama}" akan dikunci. Mahasiswa tidak dapat login sampai diaktifkan kembali.`
-              : `Akun "${mahasiswa.nama}" akan diaktifkan. Mahasiswa dapat login kembali ke sistem.`
+              ? `Status login untuk "${mahasiswa.nama}" akan dinonaktifkan. Mahasiswa tidak memiliki akses ke portal sampai status dipulihkan.`
+              : `Akses login untuk "${mahasiswa.nama}" akan dipulihkan. Mahasiswa dapat kembali masuk menggunakan kredensial yang ada.`
             }
-            confirmLabel={account.is_active ? 'Kunci Akun' : 'Aktifkan Akun'}
+            confirmLabel={account.is_active ? 'Ya, Bekukan' : 'Ya, Pulihkan'}
             confirmVariant={account.is_active ? 'danger' : 'primary'}
           />
         </>
@@ -285,8 +331,8 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
 function InfoField({ label, value, mono = false, span }: { label: string; value: string; mono?: boolean; span?: number }) {
   return (
     <div className={span ? `col-span-${span}` : undefined}>
-      <p className="text-xs text-gray-500 mb-1">{label}</p>
-      <p className={clsx("text-sm text-gray-900 font-medium break-words", mono && "font-mono")}>{value}</p>
+      <p className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-1 opacity-70">{label}</p>
+      <p className={clsx("text-sm text-gray-900 font-semibold break-words", mono && "font-mono tracking-tight")}>{value}</p>
     </div>
   );
 }

@@ -20,11 +20,18 @@ trait RefreshPostgresDatabase
             try {
                 $this->ensurePostgresDatabaseExists($connectionConfig);
             } catch (\Throwable $e) {
-                // Silently continue, the database likely already exists or permissions are restricted
+                // Database likely already exists or maintenance DB is inaccessible
             }
 
             // Robustly wipe the PostgreSQL schema to avoid dependency issues (views, types, etc.)
-            DB::connection($connectionName)->getPdo()->exec('DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;');
+            try {
+                DB::connection($connectionName)->getPdo()->exec('DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;');
+            } catch (\Throwable $e) {
+                // Schema reset failed, try plain migrate:fresh instead
+                $this->artisan('migrate:fresh', ['--database' => $connectionName, '--force' => true]);
+                $this->app[Kernel::class]->setArtisan(null);
+                return;
+            }
 
             $this->app[Kernel::class]->setArtisan(null);
 

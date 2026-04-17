@@ -94,7 +94,7 @@ class EligibilityService
      */
     private function checkNoPriorCompletion(Mahasiswa $mahasiswa, ?array $preloadedIds = null): array
     {
-        $hasCompleted = $preloadedIds 
+        $hasCompleted = $preloadedIds
             ? isset($preloadedIds[$mahasiswa->id])
             : PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
                 ->where('status', 'completed')
@@ -267,11 +267,11 @@ class EligibilityService
      */
     private function checkNoActiveRegistration(Mahasiswa $mahasiswa, ?int $currentPeriodeId = null, ?array $preloadedIds = null): array
     {
-        $hasActive = $preloadedIds 
+        $hasActive = $preloadedIds
             ? isset($preloadedIds[$mahasiswa->id])
             : PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
                 ->whereIn('status', ['pending', 'approved'])
-                ->when($currentPeriodeId, fn($q) => $q->where('period_id', '!=', $currentPeriodeId))
+                ->when($currentPeriodeId, fn ($q) => $q->where('period_id', '!=', $currentPeriodeId))
                 ->exists();
 
         return [
@@ -289,7 +289,7 @@ class EligibilityService
     public function getEligibleStudents(?int $periodeId = null, ?int $facultyId = null)
     {
         $periode = $periodeId ? Periode::with('jenisKkn')->find($periodeId) : Periode::getActivePeriod();
-        
+
         $query = Mahasiswa::with(['user', 'prodi.fakultas', 'fakultas']);
 
         if ($facultyId) {
@@ -308,17 +308,17 @@ class EligibilityService
 
         $activeRegIds = PesertaKkn::whereIn('mahasiswa_id', $studentIds)
             ->whereIn('status', ['pending', 'approved'])
-            ->when($periodeId, fn($q) => $q->where('period_id', '!=', $periodeId))
+            ->when($periodeId, fn ($q) => $q->where('period_id', '!=', $periodeId))
             ->pluck('mahasiswa_id')
             ->toArray();
 
         $dispensations = DispensasiKkn::whereIn('nim', $studentNims)
-            ->where(function($q) use ($periodeId) {
+            ->where(function ($q) use ($periodeId) {
                 $q->whereNull('period_id')->orWhere('period_id', $periodeId);
             })
             ->get()
             ->groupBy('nim')
-            ->map(fn($items) => $items->flatMap(fn($i) => $i->bypassed_requirements ?? [])->filter()->unique()->values()->toArray())
+            ->map(fn ($items) => $items->flatMap(fn ($i) => $i->bypassed_requirements ?? [])->filter()->unique()->values()->toArray())
             ->toArray();
 
         $settings = SystemSetting::pluck('value', 'config_key')->toArray();

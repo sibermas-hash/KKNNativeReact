@@ -24,7 +24,6 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-
     protected $table = 'users';
 
     protected $fillable = [

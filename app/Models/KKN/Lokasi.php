@@ -16,25 +16,25 @@ class Lokasi extends Model
     protected $table = 'lokasi';
 
     protected $fillable = [
-    'province_id',
-    'regency_id',
-    'district_id',
-    'regency_name',
-    'district_name',
-    'village_code',
-    'village_name',
-    'address',
-    'latitude',
-    'longitude',
-    'capacity',
-    'faculty_id',
-];
+        'province_id',
+        'regency_id',
+        'district_id',
+        'regency_name',
+        'district_name',
+        'village_code',
+        'village_name',
+        'address',
+        'latitude',
+        'longitude',
+        'capacity',
+        'faculty_id',
+    ];
 
     protected $casts = [
-    'latitude' => 'decimal:8',
-    'longitude' => 'decimal:8',
-    'capacity' => 'integer',
-];
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8',
+        'capacity' => 'integer',
+    ];
 
     use HasFactory;
 

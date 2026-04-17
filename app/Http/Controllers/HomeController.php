@@ -11,6 +11,7 @@ use App\Models\KKN\Lokasi;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\SystemSetting;
 use App\Models\KKN\TahunAkademik;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 /**
@@ -44,7 +45,7 @@ class HomeController extends Controller
                     'id' => $d->id,
                     'title' => $d->title,
                     'file_type' => $d->file_type,
-                    'file_path' => $d->file_path ? \Illuminate\Support\Facades\Storage::url($d->file_path) : null,
+                    'file_path' => $d->file_path ? Storage::url($d->file_path) : null,
                     'external_url' => $d->external_url,
                 ]),
                 'aboutContent' => [

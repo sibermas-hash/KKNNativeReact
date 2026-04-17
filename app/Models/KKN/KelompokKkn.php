@@ -54,7 +54,7 @@ class KelompokKkn extends Model
     {
         $this->location_id = $value;
     }
-    
+
     public function getPeriodeIdAttribute(): ?int
     {
         return $this->period_id;
@@ -64,7 +64,7 @@ class KelompokKkn extends Model
     {
         $this->period_id = $value;
     }
-    
+
     public function getKetuaMahasiswaIdAttribute(): ?int
     {
         return null;
@@ -112,14 +112,20 @@ class KelompokKkn extends Model
         return $this->hasMany(RekapitulasiKegiatan::class, 'kelompok_id');
     }
 
+    public function slotTerkunci(): HasMany
+    {
+        return $this->hasMany(SlotTerkunci::class, 'kelompok_id');
+    }
+
     /**
      * Get main DPL (Lecturer).
      */
     public function getKetuaDplAttribute(): ?Dosen
     {
         if ($this->relationLoaded('dosen')) {
-            return $this->dosen->first(fn($d) => $d->pivot->role === 'Ketua');
+            return $this->dosen->first(fn ($d) => $d->pivot->role === 'Ketua');
         }
+
         return $this->dosen()->wherePivot('role', 'Ketua')->first();
     }
 
@@ -135,6 +141,7 @@ class KelompokKkn extends Model
         if (is_string($jenis) && $jenis !== '') {
             return KknType::tryFrom($jenis) ?? KknType::REGULER;
         }
+
         return KknType::REGULER;
     }
 

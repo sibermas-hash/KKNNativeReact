@@ -9,13 +9,13 @@ interface Props {
 }
 
 const phaseInfo: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-    upcoming: { label: 'Pra-Pendaftaran', icon: Clock, color: 'text-emerald-500 bg-emerald-50 border-emerald-100' },
+    upcoming: { label: 'Pra-Pendaftaran', icon: Clock, color: 'text-[#1a7a4a] bg-emerald-50 border-gray-200' },
     registration: { label: 'Masa Pendaftaran', icon: CheckCircle2, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
     placement: { label: 'Seleksi & Plotting', icon: CheckCircle2, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
     execution: { label: 'Pelaksanaan KKN', icon: CheckCircle2, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
     grading: { label: 'Masa Penilaian', icon: CheckCircle2, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
-    finished: { label: 'KKN Selesai', icon: Lock, color: 'text-emerald-400 bg-emerald-50 border-emerald-100' },
-    inactive: { label: 'Tidak Aktif', icon: Lock, color: 'text-emerald-400 bg-emerald-50 border-emerald-100' },
+    finished: { label: 'KKN Selesai', icon: Lock, color: 'text-emerald-400 bg-emerald-50 border-gray-200' },
+    inactive: { label: 'Tidak Aktif', icon: Lock, color: 'text-emerald-400 bg-emerald-50 border-gray-200' },
 };
 
 export default function PhaseBlocked({ message, current_phase }: Props) {
@@ -27,10 +27,10 @@ export default function PhaseBlocked({ message, current_phase }: Props) {
             <Head title="Akses Dibatasi | KKN UIN SAIZU" />
 
             <div className="min-h-[60vh] flex items-center justify-center px-4 bg-white">
-                <div className="max-w-md w-full text-center space-y-8 p-8 rounded-3xl border border-emerald-50 shadow-xl shadow-emerald-50/20 bg-white">
+                <div className="max-w-md w-full text-center space-y-8 p-8 rounded-3xl border border-gray-100 shadow-xl shadow-emerald-50/20 bg-white">
                     {/* Icon */}
-                    <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-emerald-50 border border-emerald-100 mx-auto shadow-inner">
-                        <ShieldAlert size={42} className="text-emerald-500" />
+                    <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-emerald-50 border border-gray-200 mx-auto shadow-inner">
+                        <ShieldAlert size={42} className="text-[#1a7a4a]" />
                     </div>
 
                     {/* Title */}
@@ -38,7 +38,7 @@ export default function PhaseBlocked({ message, current_phase }: Props) {
                         <h1 className="text-2xl font-bold text-bg-emerald-100 tracking-tight">
                             Fitur Belum Tersedia
                         </h1>
-                        <p className="text-sm text-emerald-700/70 leading-relaxed font-medium">
+                        <p className="text-sm text-gray-700/70 leading-relaxed font-medium">
                             {message}
                         </p>
                     </div>

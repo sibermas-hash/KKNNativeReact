@@ -13,6 +13,7 @@ use App\Models\KKN\ItemEvaluasi;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\KonfigurasiPenilaian;
 use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\MonitoringDpl;
 use App\Models\KKN\PesertaKkn;
 use App\Services\GradingService;
 use App\Services\KKN\GradeConversionService;
@@ -108,7 +109,7 @@ class EvaluationController extends Controller
             ->get();
 
         // Statistik monitoring per kelompok untuk validasi syarat penilaian
-        $monitoringStats = \App\Models\KKN\MonitoringDpl::whereIn('kelompok_id', $groupIds)
+        $monitoringStats = MonitoringDpl::whereIn('kelompok_id', $groupIds)
             ->selectRaw('kelompok_id, COUNT(*) as count')
             ->groupBy('kelompok_id')
             ->get()

@@ -9,6 +9,7 @@ use App\Models\KKN\LaporanAkhir;
 use App\Traits\HandlesPagination;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -41,11 +42,42 @@ class LaporanAkhirController extends Controller
     public function show(LaporanAkhir $report): Response
     {
         Gate::authorize('view-reports');
-        $report->load(['mahasiswa.user', 'kelompok.dpl.user', 'reviewer']);
+        $report->load(['mahasiswa.user', 'kelompok.dosen.user', 'reviewer']);
 
         return Inertia::render('Admin/Monitoring/FinalReports/Show', [
             'report' => $report,
         ]);
+    }
+
+    public function download(Request $request, LaporanAkhir $report)
+    {
+        Gate::authorize('view-reports');
+
+        $pathKey = $request->input('asset', 'file_path');
+        $allowedKeys = ['file_path', 'article_1_path', 'article_2_path', 'poster_1_path', 'poster_2_path', 'poster_3_path'];
+
+        if (! in_array($pathKey, $allowedKeys)) {
+            abort(403);
+        }
+
+        $path = $report->{$pathKey};
+
+        if (! $path) {
+            abort(404, 'Asset tidak ditemukan.');
+        }
+
+        $disk = Storage::disk(config('filesystems.default'));
+
+        if (! $disk->exists($path)) {
+            abort(404, 'File fisik tidak ditemukan di storage.');
+        }
+
+        // Handle local vs cloud
+        if (config('filesystems.default') === 'local') {
+            return response()->file($disk->path($path));
+        }
+
+        return redirect()->away($disk->temporaryUrl($path, now()->addMinutes(30)));
     }
 
     public function updateStatus(Request $request, LaporanAkhir $report)

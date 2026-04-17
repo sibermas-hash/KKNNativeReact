@@ -87,35 +87,35 @@ export default function ProgramsIndex({ programs = { data: [], meta: { total: 0,
 
  return (
  <AppLayout title="Direktori Manajemen Program">
- <Head title="Direktori Manajemen Program - Panel Kontrol" />
+ <Head title="Direktori Manajemen Program - Panel Kontrol"/>
 
  <div className="max-w-[1600px] mx-auto space-y-12 pb-24 font-sans px-4 sm:px-6 lg:px-8">
  {/* --- MODERN HEADER --- */}
  <div className="space-y-6 pt-12">
- <div className="flex items-center gap-4 text-emerald-600">
- <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
- <span className="text-sm font-bold tracking-wider text-xs font-semibold leading-none">Akademis &middot; Pusat Data Terintegrasi</span>
+ <div className="flex items-center gap-4 text-[#1a7a4a]">
+ <div className="h-2 w-2 rounded-full bg-gray-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"/>
+ <span className="text-sm font-bold text-xs font-semibold leading-none">Akademis &middot; Pusat Data Terintegrasi</span>
  </div>
  <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
  <div className="space-y-4">
- <h1 className="text-2xl font-bold text-black tracking-tight leading-tight pt-2">
+ <h1 className="text-2xl font-bold text-black leading-tight pt-2">
  Matriks <span>Program.</span>
  </h1>
- <p className="text-lg font-bold text-emerald-700/40 tracking-tight leading-relaxed max-w-2xl mt-4">
+ <p className="text-lg font-bold text-gray-700/40 leading-relaxed max-w-2xl mt-4">
  Matriks pemetaan akademis and basis distribusi peserta KKN institusional.
  </p>
  </div>
  <div className="flex items-center gap-6 shrink-0">
  <div className="h-10 px-6 bg-white border border-gray-200 rounded-xl flex items-center gap-6 shadow-sm">
- <Activity size={24} className="text-emerald-500" strokeWidth={2.5} />
+ <Activity size={24} className="text-[#1a7a4a]"strokeWidth={2.5} />
  <div className="flex flex-col">
- <span className="text-sm font-bold text-emerald-700/40 font-semibold text-xs leading-none mb-2">Total Program</span>
- <span className="text-xl font-bold text-black tabular-nums leading-none tracking-tight">{(programs?.meta?.total ?? 0).toLocaleString()} DATA PRODI</span>
+ <span className="text-sm font-bold text-gray-700/40 font-semibold text-xs leading-none mb-2">Total Program</span>
+ <span className="text-xl font-bold text-black tabular-nums leading-none">{(programs?.meta?.total ?? 0).toLocaleString()} DATA PRODI</span>
  </div>
  </div>
  <button 
  onClick={() => router.get('/admin/prodi/create')} 
- className="h-10 px-6 bg-emerald-600 text-white rounded-xl font-bold shadow-2xl flex items-center gap-6 text-sm transition-all active:scale-95 tracking-wider text-xs font-semibold hover:bg-emerald-600 border-none"
+ className="h-10 px-6 bg-[#16a34a] text-white rounded-xl font-bold shadow-sm flex items-center gap-6 text-sm transition-all active:scale-95 text-xs font-semibold hover:bg-[#16a34a] border-none"
  >
  <Plus size={24} strokeWidth={3} /> REGISTRASI DATA PRODI
  </button>
@@ -126,22 +126,22 @@ export default function ProgramsIndex({ programs = { data: [], meta: { total: 0,
  {/* --- NAVIGATION CONTROL PANEL --- */}
  <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex flex-col lg:flex-row items-center gap-6">
  <div className="flex-1 w-full relative group">
- <Search size={20} className="absolute left-8 top-1/2 -translate-y-1/2 text-emerald-200 group-focus-within:text-emerald-500 transition-colors" strokeWidth={3} />
+ <Search size={20} className="absolute left-8 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#1a7a4a] transition-colors"strokeWidth={3} />
  <input
  type="text"
  placeholder="CARI DATA PRODI / KODE..."
  value={search}
  onChange={(e) => setSearch(e.target.value)}
- className="w-full h-18 pl-20 pr-8 bg-emerald-50/20 border border-gray-200 rounded-xl text-sm font-bold text-black focus:bg-white focus:border-emerald-500 outline-none transition-all placeholder:text-emerald-50/50 "
+ className="w-full h-18 pl-20 pr-8 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-black focus:bg-white focus:border-[#1a7a4a] outline-none transition-all placeholder:text-emerald-50/50"
  />
  </div>
- <div className="h-12 w-px bg-emerald-50 hidden lg:block" />
+ <div className="h-12 w-px bg-gray-50 hidden lg:block"/>
  <div className="relative w-full lg:w-[450px] group">
- <Filter size={20} className="absolute left-8 top-1/2 -translate-y-1/2 text-emerald-500" strokeWidth={3} />
+ <Filter size={20} className="absolute left-8 top-1/2 -translate-y-1/2 text-[#1a7a4a]"strokeWidth={3} />
  <select
  value={facultyId}
  onChange={(e) => setFacultyId(e.target.value)}
- className="w-full h-18 pl-20 pr-12 bg-emerald-50/20 border border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 transition-all outline-none text-sm font-bold text-black appearance-none tracking-wider text-xs font-semibold cursor-pointer"
+ className="w-full h-18 pl-20 pr-12 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#1a7a4a] transition-all outline-none text-sm font-bold text-black appearance-none text-xs font-semibold cursor-pointer"
  >
  <option value="">SELURUH BASIS FAKULTAS</option>
  {(faculties || []).map((f) => (
@@ -150,27 +150,27 @@ export default function ProgramsIndex({ programs = { data: [], meta: { total: 0,
  </option>
  ))}
  </select>
- <ChevronRight size={16} className="absolute right-8 top-1/2 -translate-y-1/2 text-emerald-300 rotate-90 pointer-events-none" strokeWidth={3} />
+ <ChevronRight size={16} className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-600 rotate-90 pointer-events-none"strokeWidth={3} />
  </div>
  </div>
 
  {/* --- MAIN INDEX PANEL --- */}
  <section className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm font-sans">
- <div className="px-6 py-6 bg-gray-50/50 border-b border-emerald-50/50 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+ <div className="px-6 py-6 bg-gray-50/50 border-b border-gray-200/50 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
  <div className="flex items-center gap-8">
- <div className="h-16 w-16 bg-white border border-gray-200 text-emerald-600 rounded-xl flex items-center justify-center shadow-sm">
+ <div className="h-16 w-16 bg-white border border-gray-200 text-[#1a7a4a] rounded-xl flex items-center justify-center shadow-sm">
  <Binary size={28} strokeWidth={2.5} />
  </div>
  <div className="flex flex-col">
  <span className="text-xl font-bold text-black font-bold text-center">Indeks Antrean Prodi</span>
- <span className="text-sm font-bold text-emerald-700/40 tracking-wider text-xs font-semibold mt-1">Parameter Distribusi Akademis</span>
+ <span className="text-sm font-bold text-gray-700/40 text-xs font-semibold mt-1">Parameter Distribusi Akademis</span>
  </div>
  </div>
  </div>
 
  <div className="overflow-x-auto min-h-[500px]">
  <table className="w-full text-left">
- <thead className="bg-white text-sm font-bold tracking-wider text-xs font-semibold text-emerald-700/40 border-b border-emerald-50/50">
+ <thead className="bg-white text-sm font-bold text-xs font-semibold text-gray-700/40 border-b border-gray-200/50">
  <tr>
  <th className="px-6 py-8">Identitas Unit</th>
  <th className="px-6 py-8">Nomenklatur Program</th>
@@ -179,34 +179,34 @@ export default function ProgramsIndex({ programs = { data: [], meta: { total: 0,
  <th className="px-6 py-8 text-right">Manajemen Kendali</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-emerald-50/50">
+ <tbody className="divide-y divide-[#f3f4f6]/50">
  {(programs?.data?.length ?? 0) > 0 ? (
  programs?.data?.map((program) => (
- <tr key={program.id} className="hover:bg-emerald-50/30 transition-all duration-300 group">
+ <tr key={program.id} className="hover:bg-gray-50 transition-all duration-300 group">
  <td className="px-6 py-6">
- <div className="w-16 h-16 bg-emerald-600 text-white border border-emerald-800 rounded-xl flex items-center justify-center font-bold text-xs group-hover:bg-emerald-900 transition-all shadow-xl tabular-nums">
+ <div className="w-16 h-16 bg-[#16a34a] text-white border border-emerald-800 rounded-xl flex items-center justify-center font-bold text-xs group-hover:bg-gray-100 transition-all shadow-sm tabular-nums">
  {program.code || 'NULL'}
  </div>
  </td>
  <td className="px-6 py-6">
  <div className="flex flex-col">
- <span className="text-lg font-bold text-black leading-none tracking-tight truncate max-w-[400px] group-hover:text-emerald-700 transition-colors">
+ <span className="text-lg font-bold text-black leading-none truncate max-w-[400px] group-hover:text-gray-700 transition-colors">
  {program.name}
  </span>
- <span className="text-sm font-bold text-emerald-700/20 mt-3 font-semibold text-xs leading-none">
+ <span className="text-sm font-bold text-gray-700/20 mt-3 font-semibold text-xs leading-none">
  Identitas Sistem &middot; #{program.id}
  </span>
  </div>
  </td>
  <td className="px-6 py-6 text-center">
- <div className="inline-flex items-center gap-4 px-6 py-2 bg-emerald-50 text-emerald-700 border border-gray-200 rounded-xl text-sm font-bold tracking-wider text-xs font-semibold shadow-sm leading-none tabular-nums">
- <Building2 size={12} strokeWidth={3} className="opacity-40" />
+ <div className="inline-flex items-center gap-4 px-6 py-2 bg-gray-50 text-gray-700 border border-gray-200 rounded-xl text-sm font-bold text-xs font-semibold shadow-sm leading-none tabular-nums">
+ <Building2 size={12} strokeWidth={3} className="opacity-40"/>
  {program.faculty?.name || 'BELUM TEROKUPASI'}
  </div>
  </td>
  <td className="px-6 py-6 text-center">
  <div className="flex flex-col items-center gap-2">
- <span className="text-base font-bold text-black tabular-nums group-hover:text-emerald-600 transition-colors">
+ <span className="text-base font-bold text-black tabular-nums group-hover:text-[#1a7a4a] transition-colors">
  {(program.students_count || 0).toLocaleString()} UNIT
  </span>
  </div>
@@ -215,14 +215,14 @@ export default function ProgramsIndex({ programs = { data: [], meta: { total: 0,
  <div className="flex justify-end gap-4 opacity-10 group-hover:opacity-100 transition-all duration-300 font-sans">
  <Link
  href={`/admin/prodi/${program.id}/edit`}
- className="h-12 px-8 bg-white border border-emerald-100 text-emerald-200 hover:text-emerald-600 hover:border-emerald-200 rounded-2xl flex items-center gap-3 text-sm font-bold tracking-wider text-xs font-semibold shadow-sm active:scale-95 no-underline"
+ className="h-12 px-8 bg-white border border-gray-200 text-gray-500 hover:text-[#1a7a4a] hover:border-gray-300 rounded-xl flex items-center gap-3 text-sm font-bold text-xs font-semibold shadow-sm active:scale-95 no-underline"
  >
- <Edit2 size={16} strokeWidth={2.5} className="opacity-60" />
+ <Edit2 size={16} strokeWidth={2.5} className="opacity-60"/>
  KOREKSI
  </Link>
  <button
  onClick={() => handleDelete(program.id)}
- className="h-12 w-12 bg-white border border-emerald-100 text-emerald-100/50 hover:text-rose-600 hover:border-rose-100 hover:bg-rose-50 rounded-2xl flex items-center justify-center transition-all shadow-sm active:scale-95 border-none"
+ className="h-12 w-12 bg-white border border-gray-200 text-gray-700/50 hover:text-rose-600 hover:border-rose-100 hover:bg-rose-50 rounded-xl flex items-center justify-center transition-all shadow-sm active:scale-95 border-none"
  >
  <Trash2 size={24} strokeWidth={2.5} />
  </button>
@@ -237,8 +237,8 @@ export default function ProgramsIndex({ programs = { data: [], meta: { total: 0,
  className="px-6 py-64 text-center"
  >
  <div className="flex flex-col items-center gap-6 text-emerald-50">
- <Layers size={100} strokeWidth={0.5} className="opacity-40" />
- <p className="text-xs font-bold tracking-[0.6em] leading-none opacity-30">Database Prodi Kosong</p>
+ <Layers size={100} strokeWidth={0.5} className="opacity-40"/>
+ <p className="text-xs font-bold leading-none opacity-30">Database Prodi Kosong</p>
  </div>
  </td>
  </tr>
@@ -247,8 +247,8 @@ export default function ProgramsIndex({ programs = { data: [], meta: { total: 0,
  </table>
  </div>
 
- <div className="px-6 py-6 border-t border-gray-200 bg-emerald-50/5 flex flex-col sm:flex-row items-center justify-between gap-6 font-sans">
- <span className="text-sm font-bold text-emerald-700/20 tracking-wider text-xs font-semibold leading-none">
+ <div className="px-6 py-6 border-t border-gray-200 bg-gray-50 flex flex-col sm:flex-row items-center justify-between gap-6 font-sans">
+ <span className="text-sm font-bold text-gray-700/20 text-xs font-semibold leading-none">
  Data Sistem &middot; {programs?.meta?.total ?? 0} DATA PROGRAM
  </span>
  {programs?.meta && <Pagination meta={programs.meta} />}
@@ -256,16 +256,16 @@ export default function ProgramsIndex({ programs = { data: [], meta: { total: 0,
  </section>
 
  {/* --- STRATEGIC INFO --- */}
- <section className="bg-emerald-600 rounded-xl p-12 text-white relative overflow-hidden shadow-sm border-none">
+ <section className="bg-[#16a34a] rounded-xl p-12 text-white relative overflow-hidden shadow-sm border-none">
  <div className="absolute top-0 right-0 p-12 opacity-5 rotate-12 -mr-16 -mt-16"><Database size={450} strokeWidth={0.5} /></div>
  <div className="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
  <div className="flex items-center gap-6">
- <div className="h-12 w-24 bg-emerald-600 text-black rounded-xl flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110">
+ <div className="h-12 w-24 bg-[#16a34a] text-black rounded-xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-110">
  <Flag size={48} strokeWidth={2.5} />
  </div>
  <div className="space-y-4">
  <h4 className="text-3xl font-bold font-bold text-center leading-none">Aturan Skema Program.</h4>
- <p className="text-sm font-bold text-emerald-500 tracking-wider text-xs font-semibold leading-relaxed max-w-2xl opacity-60">
+ <p className="text-sm font-bold text-[#1a7a4a] text-xs font-semibold leading-relaxed max-w-2xl opacity-60">
  Parameter program menentukan validitas penugasan dan kriteria mahasiswa di lapangan. Pastikan konfigurasi skema sesuai dengan pedoman akademik LPPM untuk menjamin validitas pendaftaran.
  </p>
  </div>
@@ -288,14 +288,14 @@ function MetricStrip({
 }) {
  return (
  <div className="bg-white border border-gray-200 rounded-xl p-8 flex items-center gap-6 shadow-sm hover:shadow-emerald-950/10 transition-all group overflow-hidden relative font-sans">
- <div className="h-14 w-14 bg-emerald-50 text-emerald-600 rounded-[1.2rem] flex items-center justify-center shrink-0 group-hover:rotate-6 transition-transform shadow-sm border-none">
+ <div className="h-14 w-14 bg-gray-50 text-[#1a7a4a] rounded-xl flex items-center justify-center shrink-0 group-hover:rotate-6 transition-transform shadow-sm border-none">
  <Icon size={24} strokeWidth={2.5} />
  </div>
  <div className="flex flex-col z-10">
- <span className="text-sm font-bold text-emerald-700/40 tracking-wider text-xs font-semibold leading-none mb-2">
+ <span className="text-sm font-bold text-gray-700/40 text-xs font-semibold leading-none mb-2">
  {label}
  </span>
- <span className="text-3xl font-bold text-black font-bold text-center tabular-nums leading-none group-hover:text-emerald-600 transition-colors ">
+ <span className="text-3xl font-bold text-black font-bold text-center tabular-nums leading-none group-hover:text-[#1a7a4a] transition-colors">
  {value}
  </span>
  </div>

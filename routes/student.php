@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Student;
+use App\Http\Controllers\WorkshopController;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsureProfileCompleted;
 use Illuminate\Support\Facades\Route;
@@ -41,8 +42,8 @@ Route::middleware([
 
     // Workshop & Pembekalan (Akses Peserta)
     Route::prefix('workshops')->name('workshops.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\WorkshopController::class, 'index'])->name('index');
-        Route::post('/{workshop}/register', [\App\Http\Controllers\WorkshopController::class, 'register'])->name('register');
+        Route::get('/', [WorkshopController::class, 'index'])->name('index');
+        Route::post('/{workshop}/register', [WorkshopController::class, 'register'])->name('register');
     });
 
     // ─── FASE: PENDAFTARAN ────────────────────────────────────────────

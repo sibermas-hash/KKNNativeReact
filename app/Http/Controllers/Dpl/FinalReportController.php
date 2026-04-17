@@ -13,7 +13,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FinalReportController extends Controller
 {
@@ -95,22 +94,37 @@ class FinalReportController extends Controller
         ]);
     }
 
-    public function download(LaporanAkhir $report): StreamedResponse
+    public function download(LaporanAkhir $report): mixed
     {
         $groupIds = $this->assignedGroupIds();
         abort_if(! $groupIds->contains($report->kelompok_id), 403, 'Anda tidak memiliki akses ke laporan ini.');
         abort_if(! $report->file_path, 404, 'Dokumen laporan akhir tidak ditemukan.');
 
-        $disk = Storage::disk('local')->exists($report->file_path)
-            ? 'local'
-            : (Storage::disk('public')->exists($report->file_path) ? 'public' : null);
+        $defaultDisk = config('filesystems.default');
+        $foundDisk = null;
 
-        abort_if($disk === null, 404, 'Dokumen laporan akhir tidak ditemukan.');
+        // Check disks in order
+        foreach (['local', 'public', $defaultDisk] as $diskName) {
+            if (Storage::disk($diskName)->exists($report->file_path)) {
+                $foundDisk = $diskName;
+                break;
+            }
+        }
 
-        return Storage::disk($disk)->download(
-            $report->file_path,
-            $report->file_name ?: basename($report->file_path)
-        );
+        abort_if($foundDisk === null, 404, 'Dokumen laporan akhir tidak ditemukan.');
+
+        $disk = Storage::disk($foundDisk);
+
+        // If it's a local disk, use download response
+        if (in_array($foundDisk, ['local', 'public'])) {
+            return $disk->download(
+                $report->file_path,
+                $report->file_name ?: basename($report->file_path)
+            );
+        }
+
+        // For Cloud Storage (S3/R2), use a secure temporary URL
+        return redirect()->away($disk->temporaryUrl($report->file_path, now()->addMinutes(30)));
     }
 
     public function approve(LaporanAkhir $report): RedirectResponse

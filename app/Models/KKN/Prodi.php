@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Prodi extends Model
 {
-
     protected $table = 'prodi';
 
     protected $connection = 'kkn';

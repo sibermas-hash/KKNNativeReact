@@ -11,6 +11,7 @@ use App\Models\KKN\Periode;
 use App\Models\User;
 use App\Services\DplAssignmentService;
 use App\Services\DplProvisioningService;
+use App\Services\DplEligibilityService;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Mockery;
@@ -20,6 +21,8 @@ class DplAssignmentServiceTest extends TestCase
 {
     private DplProvisioningService $provisioningMock;
 
+    private DplEligibilityService $eligibilityMock;
+
     private DplAssignmentService $service;
 
     protected function setUp(): void
@@ -27,7 +30,8 @@ class DplAssignmentServiceTest extends TestCase
         parent::setUp();
 
         $this->provisioningMock = Mockery::mock(DplProvisioningService::class);
-        $this->service = new DplAssignmentService($this->provisioningMock);
+        $this->eligibilityMock = Mockery::mock(DplEligibilityService::class);
+        $this->service = new DplAssignmentService($this->provisioningMock, $this->eligibilityMock);
     }
 
     protected function tearDown(): void
@@ -54,6 +58,12 @@ class DplAssignmentServiceTest extends TestCase
             ->with($dosen)
             ->once()
             ->andReturn($provisioningResult);
+
+        $this->eligibilityMock
+            ->shouldReceive('isQualifiedForDpl')
+            ->with($dosen, $periode->id)
+            ->once()
+            ->andReturn(['eligible' => true]);
 
         $result = $this->service->activateForPeriod($dosen, $periode, 5);
 
@@ -88,6 +98,12 @@ class DplAssignmentServiceTest extends TestCase
                 'activated' => false,
                 'temp_password' => null,
             ]);
+
+        $this->eligibilityMock
+            ->shouldReceive('isQualifiedForDpl')
+            ->with($dosen, $periode->id)
+            ->once()
+            ->andReturn(['eligible' => true]);
 
         $result = $this->service->activateForPeriod($dosen, $periode, 10);
 
@@ -405,6 +421,11 @@ class DplAssignmentServiceTest extends TestCase
                 'activated' => true,
                 'temp_password' => 'temppass',
             ]);
+
+        $this->eligibilityMock
+            ->shouldReceive('isQualifiedForDpl')
+            ->once()
+            ->andReturn(['eligible' => true]);
 
         $result = $this->service->activateForPeriod($dosen, $periode, 0);
 

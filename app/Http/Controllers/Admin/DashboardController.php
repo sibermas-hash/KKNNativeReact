@@ -152,7 +152,7 @@ class DashboardController extends Controller
                     'count' => $trends->get($date, 0),
                 ])->values();
             }),
-            /* 
+            /*
             'intelligence' => Inertia::defer(function () use ($user) {
                 $facultyId = $user?->hasRole('faculty_admin') ? $user?->faculty_id : null;
                 $anomalies = $this->intelligenceService->getHighRiskAnomalies($facultyId);

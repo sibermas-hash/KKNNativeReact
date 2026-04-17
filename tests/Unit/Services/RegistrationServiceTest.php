@@ -140,7 +140,7 @@ class RegistrationServiceTest extends TestCase
         ]);
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Syarat minimal SKS');
+        $this->expectExceptionMessage('SKS tidak mencukupi');
 
         $this->service->register($mahasiswa, $periode->id, null, null);
     }
@@ -162,7 +162,7 @@ class RegistrationServiceTest extends TestCase
         ]);
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('belum dinyatakan LULUS ujian BTA-PPI');
+        $this->expectExceptionMessage('Belum lulus BTA-PPI');
 
         $this->service->register($mahasiswa, $periode->id, null, null);
     }
@@ -184,7 +184,7 @@ class RegistrationServiceTest extends TestCase
         ]);
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('wajib mengunggah');
+        $this->expectExceptionMessage('Dokumen tidak lengkap');
 
         $this->service->register($mahasiswa, $periode->id, null, null);
     }
@@ -213,7 +213,7 @@ class RegistrationServiceTest extends TestCase
         SystemSetting::set('min_sks_registration', 100);
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('pendaftaran aktif di periode KKN lain');
+        $this->expectExceptionMessage('Masih memiliki pendaftaran aktif di periode lain');
 
         $this->service->register($mahasiswa, $periode->id, null, null);
     }
@@ -410,7 +410,7 @@ class RegistrationServiceTest extends TestCase
         ]);
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('wajib mengunggah');
+        $this->expectExceptionMessage('Dokumen tidak lengkap');
 
         $this->service->register($mahasiswa, $periode->id, null, null);
     }

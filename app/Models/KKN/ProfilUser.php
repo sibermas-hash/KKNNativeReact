@@ -17,13 +17,13 @@ class ProfilUser extends Model
     protected $table = 'profil_user';
 
     protected $fillable = [
-    'user_id',
-    'profileable_type',
-    'profileable_id',
-    'phone',
-    'address',
-    'avatar',
-];
+        'user_id',
+        'profileable_type',
+        'profileable_id',
+        'phone',
+        'address',
+        'avatar',
+    ];
 
     use HasFactory;
 

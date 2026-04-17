@@ -31,6 +31,7 @@ class MonitoringDpl extends Model
     {
         return self::where('kelompok_id', $groupId)->count();
     }
+
     protected $casts = ['tanggal_kunjungan' => 'date'];
 
     use HasFactory;

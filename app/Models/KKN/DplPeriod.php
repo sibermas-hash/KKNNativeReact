@@ -16,16 +16,16 @@ class DplPeriod extends Model
     protected $table = 'dpl_periods';
 
     protected $fillable = [
-    'dosen_id',
-    'period_id',
-    'max_groups',
-    'is_active',
-];
+        'dosen_id',
+        'period_id',
+        'max_groups',
+        'is_active',
+    ];
 
     protected $casts = [
-    'max_groups' => 'integer',
-    'is_active' => 'boolean',
-];
+        'max_groups' => 'integer',
+        'is_active' => 'boolean',
+    ];
 
     use HasFactory;
 

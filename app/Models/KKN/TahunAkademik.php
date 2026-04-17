@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Cache;
 
 class TahunAkademik extends Model
 {
-
     protected $table = 'tahun_akademik';
 
     protected $connection = 'kkn';
@@ -19,6 +18,7 @@ class TahunAkademik extends Model
     protected $fillable = ['year', 'is_active'];
 
     protected $casts = ['is_active' => 'boolean'];
+
     use HasFactory;
 
     public static function getActiveYear(): ?self

@@ -23,12 +23,12 @@ export const SchemeSelectionMatrix = ({
     <motion.div variants={itemVariants} className="space-y-10">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <div className="h-1 w-24 bg-emerald-600 rounded-full" />
-          <h2 className="text-xs font-bold text-emerald-950 uppercase tracking-[0.4em]">
+          <div className="h-1 w-24 bg-[#16a34a] rounded-full" />
+          <h2 className="text-xs font-bold text-gray-900 uppercase tracking-[0.4em]">
             Scheme Selection
           </h2>
         </div>
-        <span className="text-[12px] font-bold text-emerald-400 uppercase tracking-widest">
+        <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">
           {periods.length} Programs Available
         </span>
       </div>
@@ -41,8 +41,8 @@ export const SchemeSelectionMatrix = ({
             className={clsx(
               'text-left p-10 rounded-[3rem] border-2 transition-all duration-500 group relative overflow-hidden',
               selectedPeriodId === String(period.id)
-                ? 'border-emerald-500 bg-white ring-8 ring-emerald-50 shadow-2xl'
-                : 'border-emerald-50 bg-white hover:border-emerald-100 hover:shadow-xl',
+                ? 'border-[#f3f4f6]0 bg-white ring-8 ring-emerald-50 shadow-2xl'
+                : 'border-[#f3f4f6] bg-white hover:border-gray-200 hover:shadow-xl',
             )}
           >
             <div className="flex justify-between items-start mb-8">
@@ -50,8 +50,8 @@ export const SchemeSelectionMatrix = ({
                 className={clsx(
                   'h-16 w-16 rounded-[1.5rem] flex items-center justify-center transition-all',
                   selectedPeriodId === String(period.id)
-                    ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-200'
-                    : 'bg-emerald-50/30 text-emerald-950 group-hover:bg-emerald-50 group-hover:text-emerald-600',
+                    ? 'bg-[#16a34a] text-white shadow-xl shadow-emerald-200'
+                    : 'bg-gray-50 text-gray-900 group-hover:bg-gray-50 group-hover:text-emerald-600',
                 )}
               >
                 <FolderKanban size={28} strokeWidth={2.5} />
@@ -59,9 +59,9 @@ export const SchemeSelectionMatrix = ({
               {period.registration?.status && (
                 <span
                   className={clsx(
-                    'px-5 py-2 rounded-2xl text-[12px] font-bold uppercase tracking-widest',
+                    'px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-widest',
                     period.registration.status === 'approved'
-                      ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                      ? 'bg-[#e8f5ee] text-emerald-600 border border-gray-200'
                       : 'bg-amber-50 text-amber-600 border border-amber-100',
                   )}
                 >
@@ -73,19 +73,19 @@ export const SchemeSelectionMatrix = ({
               <h3
                 className={clsx(
                   'text-2xl font-bold tracking-tighter uppercase',
-                  selectedPeriodId === String(period.id) ? 'text-bg-emerald-100' : 'text-emerald-950',
+                  selectedPeriodId === String(period.id) ? 'text-bg-[#e8f5ee]' : 'text-gray-900',
                 )}
               >
                 {period.nama}
               </h3>
-              <p className="text-xs font-bold text-emerald-950 uppercase tracking-widest opacity-70">
+              <p className="text-xs font-bold text-gray-900 uppercase tracking-widest opacity-70">
                 {period.program_type_label || period.jenis || 'KKN Scheme'} &bull; Deadline:{' '}
                 {period.registration_end}
               </p>
             </div>
             <div
               className={clsx(
-                'flex items-center gap-4 text-[12px] font-bold uppercase tracking-[0.2em] transition-all',
+                'flex items-center gap-4 text-xs font-bold uppercase tracking-widest transition-all',
                 selectedPeriodId === String(period.id)
                   ? 'text-emerald-600'
                   : 'text-emerald-400 group-hover:text-emerald-600',

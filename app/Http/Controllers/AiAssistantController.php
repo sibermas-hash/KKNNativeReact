@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\KKN\AiChatHistory;
-use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Periode;
+use App\Models\KKN\PesertaKkn;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+
 use function Laravel\Ai\agent;
 
 class AiAssistantController extends Controller
@@ -23,7 +24,7 @@ class AiAssistantController extends Controller
         $history = AiChatHistory::where('user_id', Auth::id())
             ->orderBy('created_at', 'asc')
             ->get(['role', 'message as text']);
-            
+
         return response()->json($history);
     }
 
@@ -39,7 +40,7 @@ class AiAssistantController extends Controller
         AiChatHistory::create([
             'user_id' => $user->id,
             'role' => 'user',
-            'message' => $validated['message']
+            'message' => $validated['message'],
         ]);
 
         try {
@@ -49,11 +50,11 @@ class AiAssistantController extends Controller
                 ->take(6)
                 ->get()
                 ->reverse()
-                ->map(fn($h) => ['role' => $h->role, 'content' => $h->message])
+                ->map(fn ($h) => ['role' => $h->role, 'content' => $h->message])
                 ->toArray();
 
             $activePeriod = Periode::where('is_active', true)->first()?->name ?? 'None';
-            $stats = "Periode: {$activePeriod}, Mahasiswa: " . PesertaKkn::count() . ", Kelompok: " . KelompokKkn::count();
+            $stats = "Periode: {$activePeriod}, Mahasiswa: ".PesertaKkn::count().', Kelompok: '.KelompokKkn::count();
 
             $response = agent(
                 instructions: "Anda adalah asisten AI KKN UIN Saizu. Gunakan data statistik jika perlu: {$stats}. Jawab singkat. Anda ingat percakapan sebelumnya jika ada."
@@ -67,18 +68,18 @@ class AiAssistantController extends Controller
             AiChatHistory::create([
                 'user_id' => $user->id,
                 'role' => 'assistant',
-                'message' => $response->text
+                'message' => $response->text,
             ]);
 
             return response()->json(['answer' => $response->text]);
         } catch (\Exception $e) {
-            Log::error('AI Agent Failure: ' . $e->getMessage(), [
+            Log::error('AI Agent Failure: '.$e->getMessage(), [
                 'exception' => $e,
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
             ]);
-            
+
             return response()->json([
-                'answer' => 'Maaf Admin, sistem asisten sedang dalam pemeliharaan atau mengalami kendala teknis. Mohon coba beberapa saat lagi.'
+                'answer' => 'Maaf Admin, sistem asisten sedang dalam pemeliharaan atau mengalami kendala teknis. Mohon coba beberapa saat lagi.',
             ], 500);
         }
     }
@@ -89,6 +90,7 @@ class AiAssistantController extends Controller
     public function clear()
     {
         AiChatHistory::where('user_id', Auth::id())->delete();
+
         return response()->json(['status' => 'Memory Cleared']);
     }
 }

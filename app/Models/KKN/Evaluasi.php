@@ -17,20 +17,20 @@ class Evaluasi extends Model
     protected $table = 'evaluasi';
 
     protected $fillable = [
-    'mahasiswa_id',
-    'kelompok_id',
-    'evaluator_type',
-    'evaluator_id',
-    'total_score',
-    'grade',
-    'notes',
-    'evaluated_at',
-];
+        'mahasiswa_id',
+        'kelompok_id',
+        'evaluator_type',
+        'evaluator_id',
+        'total_score',
+        'grade',
+        'notes',
+        'evaluated_at',
+    ];
 
     protected $casts = [
-    'total_score' => 'decimal:2',
-    'evaluated_at' => 'datetime',
-];
+        'total_score' => 'decimal:2',
+        'evaluated_at' => 'datetime',
+    ];
 
     use HasFactory;
 

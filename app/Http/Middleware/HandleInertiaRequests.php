@@ -89,6 +89,11 @@ class HandleInertiaRequests extends Middleware
                 'temporary_password' => $request->session()->get('temporary_password'),
                 'temporary_username' => $request->session()->get('temporary_username'),
             ],
+            'app' => [
+                'name' => config('app.name'),
+                'env' => config('app.env'),
+                'storage_disk' => config('filesystems.default'),
+            ],
         ];
     }
 }

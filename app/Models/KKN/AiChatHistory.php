@@ -7,6 +7,7 @@ namespace App\Models\KKN;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 class AiChatHistory extends Model
 {
     protected $table = 'ai_chat_histories';

@@ -15,7 +15,7 @@ class KonfigurasiPenilaianController extends Controller
     public function index(Request $request)
     {
         KonfigurasiPenilaian::ensureDefaults();
-        
+
         $kknTypeQuery = $request->query('kkn_type');
         $selectedType = $kknTypeQuery ? (KknType::tryFrom($kknTypeQuery) ?? KknType::REGULER) : KknType::REGULER;
 

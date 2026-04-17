@@ -2,10 +2,14 @@ import { Head, router, useForm, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import {
-  Plus, Trash2, Eye, Edit2, Settings2, Search, X, Layers, CheckCircle2, RefreshCw,
+  Plus, Trash2, Eye, Edit2, Search, X, Layers, CheckCircle2, RefreshCw
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import Modal from '@/Components/ui/Modal';
+
+// Premium Components
+import PageHeader from '@/Components/Premium/PageHeader';
+import StatusTag from '@/Components/Premium/StatusTag';
 
 interface JenisKkn {
   id: number;
@@ -94,55 +98,50 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
 
   return (
     <AppLayout title="Jenis Program KKN">
-      <Head title="Manajemen Jenis KKN" />
+      <Head title="Jenis Program KKN" />
 
-      <div className="max-w-7xl mx-auto space-y-6 sm:px-6 lg:px-8 font-sans pb-12">
-        {/* HEADER */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-gray-200 pt-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Layers size={16} className="text-emerald-600" />
-              <span className="text-sm font-medium text-gray-500">Data Master Sistem</span>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight leading-tight">Jenis Program KKN</h1>
-            <p className="text-sm text-gray-500 max-w-2xl mt-1">
-              Pengaturan skema program, kualifikasi peserta, dan mode pendaftaran KKN.
-            </p>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm flex items-center gap-2 text-sm text-gray-600">
-              <Layers size={16} className="text-emerald-600" />
-              <span><strong className="text-gray-900">{jenisKkn.length}</strong> Jenis Terdaftar</span>
-            </div>
-            <button
-              onClick={openCreateForm}
-              className="h-10 px-4 bg-emerald-600 text-white rounded-lg text-sm font-medium shadow-sm hover:bg-emerald-700 transition-colors flex items-center gap-2"
-            >
-              <Plus size={16} /> Tambah Jenis KKN
-            </button>
-          </div>
-        </div>
+      <div className="max-w-7xl mx-auto space-y-6 font-sans pb-12">
+        {/* PAGE HEADER */}
+        <PageHeader
+          title="Jenis Program KKN"
+          subtitle="Pengaturan skema program, kualifikasi peserta, dan mode pendaftaran KKN."
+          icon={Layers}
+          groupLabel="Data Master Sistem"
+          stats={{
+            label: 'Jenis Terdaftar',
+            value: `${jenisKkn.length} Jenis Terdaftar`,
+            icon: Layers,
+          }}
+        >
+          <button
+            onClick={openCreateForm}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#16a34a] text-white text-sm font-semibold rounded-lg hover:bg-[#15803d] transition-colors"
+          >
+            <Plus size={16} /> Tambah Jenis KKN
+          </button>
+        </PageHeader>
 
-        {/* SEARCH */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-200 bg-gray-50/50">
-            <form onSubmit={handleSearch} className="relative w-full md:w-96">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        {/* TABLE CONTENT */}
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          {/* Search bar */}
+          <div className="px-5 py-4 border-b border-gray-200">
+            <form onSubmit={handleSearch} className="relative w-full sm:w-80">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-700" />
               <input
                 type="text"
                 placeholder="Cari nama atau kode jenis KKN..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-10 pl-9 pr-4 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:border-emerald-500 focus:ring-emerald-500 shadow-sm"
+                className="w-full h-10 pl-9 pr-4 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none transition-all placeholder:text-gray-400"
               />
             </form>
           </div>
 
-          {/* TABLE */}
-          <div className="overflow-x-auto min-h-[300px]">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead>
+                <tr className="border-b-2 border-gray-200">
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Nama & Kode</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Kualifikasi Peserta</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Mode Operasional</th>
@@ -150,67 +149,83 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
                   <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-[#f3f4f6]">
                 {jenisKkn.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-500">
-                      Tidak ada jenis KKN yang terdaftar.
+                    <td colSpan={5} className="px-6 py-16 text-center">
+                      <Layers className="mx-auto h-10 w-10 text-[#e5e7eb] mb-3" strokeWidth={1} />
+                      <p className="text-sm text-gray-700">Data jenis KKN tidak ditemukan.</p>
                     </td>
                   </tr>
                 ) : (
                   jenisKkn.map((jenis) => (
                     <tr key={jenis.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-gray-900">{jenis.name}</span>
-                          <span className="text-xs font-mono text-gray-400 mt-0.5">Kode: {jenis.code}</span>
-                          <span className="text-xs text-emerald-600 mt-1">{jenis.periodes_count} Periode Terkait</span>
-                        </div>
-                      </td>
+                      {/* NAMA & KODE */}
                       <td className="px-6 py-4">
                         <div className="flex flex-col gap-1">
-                          <span className="text-xs font-medium text-gray-700 bg-gray-100 px-2 py-0.5 rounded w-fit">
+                          <span className="text-base font-semibold text-gray-900">{jenis.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded">
+                              Kode: {jenis.code}
+                            </span>
+                          </div>
+                          <Link
+                            href={`/admin/jenis-kkn/${jenis.id}`}
+                            className="text-xs text-[#16a34a] font-medium hover:underline"
+                          >
+                            {jenis.periodes_count} Periode Terkait
+                          </Link>
+                        </div>
+                      </td>
+
+                      {/* KUALIFIKASI PESERTA */}
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col gap-1.5">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#f0fdf4] border border-[#bbf7d0] text-[#15803d]">
                             Min. {jenis.min_sks} SKS
                           </span>
-                          <span className="text-xs text-gray-500">IPK Min: {jenis.min_gpa}</span>
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#f0fdf4] border border-[#bbf7d0] text-[#15803d]">
+                            IPK Min: {jenis.min_gpa}
+                          </span>
                         </div>
                       </td>
+
+                      {/* MODE OPERASIONAL */}
                       <td className="px-6 py-4">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-sm text-gray-800">{jenis.registration_mode_label}</span>
-                          <span className="text-xs text-gray-500">{jenis.placement_mode_label}</span>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-sm font-medium text-gray-900">{jenis.registration_mode_label}</span>
+                          <span className="text-xs text-gray-700">{jenis.placement_mode_label}</span>
                         </div>
                       </td>
+
+                      {/* STATUS */}
                       <td className="px-6 py-4 text-center">
-                        <span className={clsx(
-                          'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold',
-                          jenis.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'
-                        )}>
-                          {jenis.is_active ? 'Aktif' : 'Nonaktif'}
-                        </span>
+                        <StatusTag status={jenis.is_active ? 'Aktif' : 'Nonaktif'} />
                       </td>
-                      <td className="px-6 py-4 text-right">
+
+                      {/* AKSI */}
+                      <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
                           <Link
                             href={`/admin/jenis-kkn/${jenis.id}`}
-                            className="px-3 py-1.5 bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 rounded-md text-xs font-medium transition-colors"
+                            className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-md text-sm font-medium border border-gray-300 text-gray-900 bg-white hover:bg-gray-50 transition-colors"
                           >
                             Detail
                           </Link>
                           <button
                             onClick={() => openEditForm(jenis)}
-                            className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors border border-transparent"
+                            className="h-8 w-8 flex items-center justify-center text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
                             title="Edit"
                           >
-                            <Edit2 size={16} />
+                            <Edit2 size={15} />
                           </button>
                           <button
                             onClick={() => handleDelete(jenis.id)}
                             disabled={jenis.periodes_count > 0}
-                            className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors border border-transparent disabled:opacity-30 disabled:cursor-not-allowed"
-                            title={jenis.periodes_count > 0 ? 'Tidak dapat dihapus karena memiliki periode terkait' : 'Hapus'}
+                            className="h-8 w-8 flex items-center justify-center text-[#ef4444] hover:bg-red-50 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            title={jenis.periodes_count > 0 ? "Tidak dapat dihapus (Memiliki Periode)" : "Hapus"}
                           >
-                            <Trash2 size={16} />
+                            <Trash2 size={15} />
                           </button>
                         </div>
                       </td>
@@ -225,112 +240,127 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
 
       {/* FORM MODAL */}
       <Modal show={isFormOpen} onClose={() => setIsFormOpen(false)} maxWidth="2xl">
-        <div className="bg-white rounded-lg font-sans">
-          <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-semibold text-gray-900">
-                {editingJenis ? 'Edit Jenis KKN' : 'Tambah Jenis KKN Baru'}
-              </h3>
-              <p className="text-xs text-gray-500 mt-0.5">Isi parameter kualifikasi dan mode operasional program.</p>
-            </div>
-            <button onClick={() => setIsFormOpen(false)} className="text-gray-400 hover:text-gray-500 p-1">
+        <div className="bg-white rounded-xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h3 className="text-lg font-bold text-gray-900">
+              {editingJenis ? 'Edit Jenis KKN' : 'Tambah Jenis KKN Baru'}
+            </h3>
+            <button onClick={() => setIsFormOpen(false)} className="text-gray-700 hover:text-gray-700 transition-colors">
               <X size={20} />
             </button>
           </div>
 
-          <form onSubmit={submit} className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+          <form onSubmit={submit} className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">Nama Jenis KKN <span className="text-rose-500">*</span></label>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1.5">Nama Jenis KKN <span className="text-[#ef4444]">*</span></label>
                 <input
                   type="text"
                   value={data.name}
                   onChange={(e) => setData('name', e.target.value)}
-                  placeholder="Contoh: KKN Reguler"
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm text-gray-900"
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none placeholder:text-gray-400"
+                  placeholder="Misal: KKN Reguler"
                 />
-                {errors.name && <p className="text-xs text-rose-600">{errors.name}</p>}
+                {errors.name && <p className="text-xs text-[#ef4444] mt-1">{errors.name}</p>}
               </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">
-                  Kode Unik <span className="text-rose-500">*</span>
-                  {editingJenis && <span className="ml-1 text-xs text-gray-400">(tidak dapat diubah)</span>}
-                </label>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1.5">Kode <span className="text-[#ef4444]">*</span></label>
                 <input
                   type="text"
                   value={data.code}
                   onChange={(e) => setData('code', e.target.value.toUpperCase())}
                   disabled={!!editingJenis}
-                  placeholder="Contoh: REGULER"
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm text-gray-900 disabled:bg-gray-50 disabled:text-gray-500"
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none placeholder:text-gray-400 disabled:bg-gray-100 disabled:text-gray-700"
+                  placeholder="Misal: REGULER"
                 />
-                {errors.code && <p className="text-xs text-rose-600">{errors.code}</p>}
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">Minimal SKS <span className="text-rose-500">*</span></label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={data.min_sks}
-                    onChange={(e) => setData('min_sks', parseInt(e.target.value))}
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm text-gray-900 pr-16"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">SKS</span>
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">Minimal IPK <span className="text-rose-500">*</span></label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={data.min_gpa}
-                    onChange={(e) => setData('min_gpa', e.target.value)}
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm text-gray-900 pr-24"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">4.00 skala</span>
-                </div>
+                {errors.code && <p className="text-xs text-[#ef4444] mt-1">{errors.code}</p>}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-gray-200">
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">Mode Pendaftaran</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-1.5">Deskripsi</label>
+              <textarea
+                rows={3}
+                value={data.description}
+                onChange={(e) => setData('description', e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none placeholder:text-gray-400"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-100 rounded-lg border border-gray-200">
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1.5">Minimal SKS <span className="text-[#ef4444]">*</span></label>
+                <input
+                  type="number"
+                  value={data.min_sks}
+                  onChange={(e) => setData('min_sks', parseInt(e.target.value))}
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none bg-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1.5">Minimal IPK <span className="text-[#ef4444]">*</span></label>
+                <input
+                  type="text"
+                  value={data.min_gpa}
+                  onChange={(e) => setData('min_gpa', e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1.5">Mode Pendaftaran</label>
                 <select
                   value={data.registration_mode}
                   onChange={(e) => setData('registration_mode', e.target.value)}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm text-gray-900"
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none bg-white"
                 >
                   {registrationModes.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
                 </select>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">Mode Penempatan</label>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1.5">Mode Penempatan</label>
                 <select
                   value={data.placement_mode}
                   onChange={(e) => setData('placement_mode', e.target.value)}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm text-gray-900"
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none bg-white"
                 >
                   {placementModes.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
                 </select>
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2">
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <div className="relative" onClick={() => setData('is_active', !data.is_active)}>
-                  <div className={clsx('w-10 h-6 rounded-full transition-colors', data.is_active ? 'bg-emerald-500' : 'bg-gray-300')} />
-                  <div className={clsx('absolute top-1 bg-white w-4 h-4 rounded-full shadow transition-transform', data.is_active ? 'translate-x-5' : 'translate-x-1')} />
-                </div>
-                <span className="text-sm font-medium text-gray-700">{data.is_active ? 'Aktif (tersedia untuk periode)' : 'Nonaktif (tersembunyi)'}</span>
-              </label>
+            <div className="flex items-start gap-3">
+              <div className="flex items-center h-5 pt-0.5">
+                <input
+                  id="modal_is_active"
+                  type="checkbox"
+                  checked={data.is_active}
+                  onChange={(e) => setData('is_active', e.target.checked)}
+                  className="w-4 h-4 text-[#16a34a] border-gray-300 rounded focus:ring-[#16a34a]"
+                />
+              </div>
+              <div>
+                <label htmlFor="modal_is_active" className="text-sm font-medium text-gray-900 cursor-pointer">Aktifkan Skema</label>
+                <p className="text-xs text-gray-700 mt-0.5">Skema aktif akan tersedia untuk dipilih saat pembuatan periode KKN.</p>
+              </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-              <button type="button" onClick={() => setIsFormOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-md shadow-sm">
+            <div className="pt-4 border-t border-gray-200 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsFormOpen(false)}
+                className="px-4 py-2.5 border border-gray-300 text-sm font-medium rounded-lg text-gray-900 bg-white hover:bg-gray-50 transition-colors"
+              >
                 Batal
               </button>
-              <button type="submit" disabled={processing} className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 border border-transparent rounded-md shadow-sm disabled:opacity-50 flex items-center gap-2">
-                {processing && <RefreshCw size={14} className="animate-spin" />}
+              <button
+                type="submit"
+                disabled={processing}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#16a34a] text-white text-sm font-semibold rounded-lg hover:bg-[#15803d] transition-colors disabled:opacity-50"
+              >
+                {processing ? <RefreshCw size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
                 {editingJenis ? 'Simpan Perubahan' : 'Tambah Jenis KKN'}
               </button>
             </div>

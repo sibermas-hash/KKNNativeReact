@@ -12,14 +12,14 @@ export default function GuestLayout({ children, title }: GuestLayoutProps) {
             <Head title={title ? `${title} | KKN UIN SAIZU` : 'Login | KKN UIN SAIZU'} />
 
             <div className="w-full max-w-sm">
-                <div className="bg-white rounded-3xl shadow-xl shadow-emerald-200/50 border border-emerald-100 p-8 md:p-10">
+                <div className="bg-white rounded-3xl shadow-xl shadow-emerald-200/50 border border-gray-200 p-8 md:p-10">
                     {children}
                 </div>
 
                 <div className="mt-8 text-center">
                     <Link
                         href={route('home')}
-                        className="text-sm font-medium text-emerald-900 hover:text-green-700 transition-colors flex items-center justify-center gap-2"
+                        className="text-sm font-medium text-gray-900 hover:text-green-700 transition-colors flex items-center justify-center gap-2"
                     >
                         &larr; Kembali ke Beranda
                     </Link>

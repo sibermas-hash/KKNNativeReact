@@ -12,74 +12,73 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class NilaiKkn extends Model
 {
-
     protected function casts(): array
     {
         return [
-    'dpl_graded_at' => 'datetime',
-    'village_graded_at' => 'datetime',
-    'admin_graded_at' => 'datetime',
-    'is_finalized' => 'boolean',
-    'desa_interaksi_score' => 'decimal:2',
-    'desa_disiplin_score' => 'decimal:2',
-    'desa_kinerja_score' => 'decimal:2',
-    'dpl_relevansi_score' => 'decimal:2',
-    'dpl_ketercapaian_score' => 'decimal:2',
-    'dpl_inovasi_score' => 'decimal:2',
-    'dpl_administrasi_score' => 'decimal:2',
-    'dpl_artikel_score' => 'decimal:2',
-    'final_report_score' => 'decimal:2',
-    'execution_score' => 'decimal:2',
-    'article_score' => 'decimal:2',
-    'discipline_score' => 'decimal:2',
-    'attitude_score' => 'decimal:2',
-    'workshop_score' => 'decimal:2',
-    'administration_score' => 'decimal:2',
-    'dpl_weighted_score' => 'decimal:2',
-    'village_weighted_score' => 'decimal:2',
-    'lppm_weighted_score' => 'decimal:2',
-    'total_score' => 'decimal:2',
-];
+            'dpl_graded_at' => 'datetime',
+            'village_graded_at' => 'datetime',
+            'admin_graded_at' => 'datetime',
+            'is_finalized' => 'boolean',
+            'desa_interaksi_score' => 'decimal:2',
+            'desa_disiplin_score' => 'decimal:2',
+            'desa_kinerja_score' => 'decimal:2',
+            'dpl_relevansi_score' => 'decimal:2',
+            'dpl_ketercapaian_score' => 'decimal:2',
+            'dpl_inovasi_score' => 'decimal:2',
+            'dpl_administrasi_score' => 'decimal:2',
+            'dpl_artikel_score' => 'decimal:2',
+            'final_report_score' => 'decimal:2',
+            'execution_score' => 'decimal:2',
+            'article_score' => 'decimal:2',
+            'discipline_score' => 'decimal:2',
+            'attitude_score' => 'decimal:2',
+            'workshop_score' => 'decimal:2',
+            'administration_score' => 'decimal:2',
+            'dpl_weighted_score' => 'decimal:2',
+            'village_weighted_score' => 'decimal:2',
+            'lppm_weighted_score' => 'decimal:2',
+            'total_score' => 'decimal:2',
+        ];
     }
 
     protected $fillable = [
-    'user_id',
-    'kelompok_id',
-    // Aspek Desa (Hal 41)
-    'desa_interaksi_score',
-    'desa_disiplin_score',
-    'desa_kinerja_score',
-    // Aspek DPL (Hal 42)
-    'dpl_relevansi_score',
-    'dpl_ketercapaian_score',
-    'dpl_inovasi_score',
-    'dpl_administrasi_score',
-    'dpl_artikel_score',
-    // Legacy fields (will be mapped from sub-components)
-    'final_report_score',
-    'execution_score',
-    'article_score',
-    'discipline_score',
-    'attitude_score',
-    // LPPM (Hal 43)
-    'workshop_score',
-    'administration_score',
-    // Weighted
-    'dpl_weighted_score',
-    'village_weighted_score',
-    'lppm_weighted_score',
-    'total_score',
-    'letter_grade',
-    'dpl_graded_by',
-    'dpl_graded_at',
-    'village_graded_by',
-    'village_graded_at',
-    'admin_graded_by',
-    'admin_graded_at',
-    'evidence_file',
-    'verification_token',
-    'is_finalized',
-];
+        'user_id',
+        'kelompok_id',
+        // Aspek Desa (Hal 41)
+        'desa_interaksi_score',
+        'desa_disiplin_score',
+        'desa_kinerja_score',
+        // Aspek DPL (Hal 42)
+        'dpl_relevansi_score',
+        'dpl_ketercapaian_score',
+        'dpl_inovasi_score',
+        'dpl_administrasi_score',
+        'dpl_artikel_score',
+        // Legacy fields (will be mapped from sub-components)
+        'final_report_score',
+        'execution_score',
+        'article_score',
+        'discipline_score',
+        'attitude_score',
+        // LPPM (Hal 43)
+        'workshop_score',
+        'administration_score',
+        // Weighted
+        'dpl_weighted_score',
+        'village_weighted_score',
+        'lppm_weighted_score',
+        'total_score',
+        'letter_grade',
+        'dpl_graded_by',
+        'dpl_graded_at',
+        'village_graded_by',
+        'village_graded_at',
+        'admin_graded_by',
+        'admin_graded_at',
+        'evidence_file',
+        'verification_token',
+        'is_finalized',
+    ];
 
     protected $table = 'nilai_kkn';
 

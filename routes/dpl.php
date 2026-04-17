@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Dpl;
+use App\Http\Controllers\WorkshopController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,8 +23,8 @@ Route::middleware(['role:dpl'])->prefix('dpl')->name('dpl.')->group(function () 
 
     // Workshop Registration (PRD FR-01)
     Route::prefix('workshops')->name('workshops.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\WorkshopController::class, 'index'])->name('index');
-        Route::post('/{workshop}/register', [\App\Http\Controllers\WorkshopController::class, 'register'])->name('register');
+        Route::get('/', [WorkshopController::class, 'index'])->name('index');
+        Route::post('/{workshop}/register', [WorkshopController::class, 'register'])->name('register');
     });
 
     // ─── FASE: PELAKSANAAN (execution) ────────────────────────────────

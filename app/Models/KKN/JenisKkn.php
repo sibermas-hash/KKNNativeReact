@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class JenisKkn extends Model
 {
-
     protected $table = 'jenis_kkn';
 
     protected $connection = 'kkn';

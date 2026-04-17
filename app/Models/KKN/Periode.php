@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Cache;
 
 class Periode extends Model
 {
-
     use HasFactory, SoftDeletes;
 
     protected $table = 'periode';

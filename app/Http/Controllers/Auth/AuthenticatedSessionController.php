@@ -65,7 +65,7 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         \Log::info('Login Attempt Started', ['login' => $request->input('login')]);
-        
+
         // Ensure session is started and regenerate token for security
         if (! $request->session()->isStarted()) {
             $request->session()->start();
@@ -80,7 +80,7 @@ class AuthenticatedSessionController extends Controller
 
         // Verify captcha hash existence and strict TTL enforcement
         if (! $captchaHash || $this->captchaExpired($request) || ! $this->verifyCaptchaAnswer($userAnswer, $captchaHash)) {
-            \Log::warning('Login Captcha Failed', ['userAnswer' => $userAnswer, 'hash_exists' => (bool)$captchaHash]);
+            \Log::warning('Login Captcha Failed', ['userAnswer' => $userAnswer, 'hash_exists' => (bool) $captchaHash]);
             $this->refreshCaptcha($request);
 
             return back()->withErrors([
@@ -108,7 +108,7 @@ class AuthenticatedSessionController extends Controller
             $request->session()->regenerateToken();
 
             return back()->withErrors([
-                'login' => 'Gagal masuk ke sistem. Silakan coba lagi. ' . $e->getMessage(),
+                'login' => 'Gagal masuk ke sistem. Silakan coba lagi. '.$e->getMessage(),
             ])->withInput($request->except('password', 'captcha_answer'));
         }
 
@@ -121,20 +121,24 @@ class AuthenticatedSessionController extends Controller
 
         if ($user->hasRole(['superadmin', 'admin', 'faculty_admin'])) {
             \Log::info('Redirecting to admin dashboard');
+
             return redirect()->intended(route('admin.dashboard'));
         }
 
         if ($user->hasRole('dpl')) {
             \Log::info('Redirecting to DPL dashboard');
+
             return redirect()->intended(route('dpl.dashboard', absolute: false));
         }
 
         if ($user->hasRole('student')) {
             \Log::info('Redirecting to student dashboard');
+
             return redirect()->intended(route('student.dashboard', absolute: false));
         }
 
         \Log::warning('User has no matching roles, redirecting to home', ['user_id' => $user->id]);
+
         return redirect()->intended('/');
     }
 

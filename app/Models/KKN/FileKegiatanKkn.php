@@ -15,12 +15,12 @@ class FileKegiatanKkn extends Model
     protected $table = 'file_kegiatan_kkn';
 
     protected $fillable = [
-    'kegiatan_kkn_id',
-    'file_path',
-    'file_name',
-    'file_type',
-    'file_size',
-];
+        'kegiatan_kkn_id',
+        'file_path',
+        'file_name',
+        'file_type',
+        'file_size',
+    ];
 
     protected $casts = ['file_size' => 'integer'];
 

@@ -26,16 +26,16 @@ export const EnrollmentBriefing = ({
   supportsSelfService,
 }: EnrollmentBriefingProps) => {
   return (
-    <div className="p-10 rounded-[3rem] bg-white border border-emerald-100/60 shadow-md sticky top-12 space-y-10">
-      <div className="flex items-center gap-5 border-b border-emerald-50 pb-8">
-        <div className="h-14 w-14 bg-emerald-600 rounded-[1.5rem] flex items-center justify-center text-white shadow-xl shadow-emerald-200">
+    <div className="p-10 rounded-[3rem] bg-white border border-gray-200/60 shadow-md sticky top-12 space-y-10">
+      <div className="flex items-center gap-5 border-b border-[#f3f4f6] pb-8">
+        <div className="h-14 w-14 bg-[#16a34a] rounded-[1.5rem] flex items-center justify-center text-white shadow-xl shadow-emerald-200">
           <ShieldCheck size={28} strokeWidth={2.5} />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-emerald-950 uppercase tracking-widest">
+          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">
             Enrollment Briefing
           </h3>
-          <p className="text-[12px] font-bold text-emerald-950 uppercase mt-1 opacity-70">
+          <p className="text-xs font-bold text-gray-900 uppercase mt-1 opacity-70">
             Review & Deploy
           </p>
         </div>
@@ -58,14 +58,14 @@ export const EnrollmentBriefing = ({
           icon={Activity}
         />
 
-        <div className="pt-6 border-t border-emerald-50 space-y-4">
+        <div className="pt-6 border-t border-[#f3f4f6] space-y-4">
           <div className="flex justify-between items-center">
-            <span className="text-[12px] font-bold text-emerald-950 uppercase tracking-[0.3em]">
+            <span className="text-xs font-bold text-gray-900 uppercase tracking-[0.3em]">
               Integrity Status
             </span>
             <span
               className={clsx(
-                'text-[12px] font-bold uppercase tracking-widest',
+                'text-xs font-bold uppercase tracking-widest',
                 readyToRegister ? 'text-emerald-600' : 'text-rose-600',
               )}
             >
@@ -76,7 +76,7 @@ export const EnrollmentBriefing = ({
             <motion.div
               animate={{ x: [0, -5, 5, 0] }}
               transition={{ repeat: Infinity, duration: 2 }}
-              className="p-4 rounded-2xl bg-rose-50 border border-rose-100 flex items-start gap-4"
+              className="p-4 rounded-xl bg-rose-50 border border-rose-100 flex items-start gap-4"
             >
               <AlertCircle size={18} className="text-rose-600 shrink-0 mt-0.5" />
               <p className="text-xs font-bold text-rose-900 leading-normal uppercase">
@@ -93,7 +93,7 @@ export const EnrollmentBriefing = ({
         className={clsx(
           'w-full py-6 rounded-[2rem] text-xs font-bold uppercase tracking-[0.3em] shadow-2xl transition-all relative overflow-hidden group flex items-center justify-center gap-4',
           canSubmit && !formProcessing
-            ? 'bg-emerald-600 text-white shadow-emerald-200 hover:bg-emerald-700 hover:-translate-y-2 active:scale-95'
+            ? 'bg-[#16a34a] text-white shadow-emerald-200 hover:bg-[#15803d] hover:-translate-y-2 active:scale-95'
             : 'bg-emerald-50/60 text-emerald-400 cursor-not-allowed',
         )}
       >
@@ -119,8 +119,8 @@ export const EnrollmentBriefing = ({
       </button>
 
       {!supportsSelfService && (
-        <div className="text-center p-4 bg-amber-50 rounded-2xl border border-amber-100">
-          <p className="text-xs font-bold text-amber-600 uppercase tracking-[0.2em] leading-relaxed">
+        <div className="text-center p-4 bg-amber-50 rounded-xl border border-amber-100">
+          <p className="text-xs font-bold text-amber-600 uppercase tracking-widest leading-relaxed">
             LPPM MANAGED SCHEME: SELEKSI INTERNAL AKTIF
           </p>
         </div>

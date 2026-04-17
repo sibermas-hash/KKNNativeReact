@@ -17,7 +17,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DailyReportController extends Controller
 {
@@ -178,7 +177,7 @@ class DailyReportController extends Controller
         ]);
     }
 
-    public function downloadFile(FileKegiatanKkn $fileKegiatan): StreamedResponse
+    public function downloadFile(FileKegiatanKkn $fileKegiatan): mixed
     {
         $groupIds = $this->assignedGroupIds();
         $fileKegiatan->loadMissing('kegiatan');
@@ -189,13 +188,31 @@ class DailyReportController extends Controller
             'Anda tidak memiliki akses ke lampiran ini.'
         );
 
-        $disk = Storage::disk('local')->exists($fileKegiatan->file_path)
-            ? 'local'
-            : (Storage::disk('public')->exists($fileKegiatan->file_path) ? 'public' : null);
+        $defaultDisk = config('filesystems.default');
+        $foundDisk = null;
 
-        abort_if($disk === null, 404, 'File lampiran tidak ditemukan.');
+        // Check disks in order
+        foreach (['local', 'public', $defaultDisk] as $diskName) {
+            if (Storage::disk($diskName)->exists($fileKegiatan->file_path)) {
+                $foundDisk = $diskName;
+                break;
+            }
+        }
 
-        return Storage::disk($disk)->download($fileKegiatan->file_path, $fileKegiatan->file_name ?: basename($fileKegiatan->file_path));
+        abort_if($foundDisk === null, 404, 'File lampiran tidak ditemukan.');
+
+        $disk = Storage::disk($foundDisk);
+
+        // If it's a local disk, use download response
+        if (in_array($foundDisk, ['local', 'public'])) {
+            return $disk->download(
+                $fileKegiatan->file_path,
+                $fileKegiatan->file_name ?: basename($fileKegiatan->file_path)
+            );
+        }
+
+        // For Cloud Storage (S3/R2), use a secure temporary URL
+        return redirect()->away($disk->temporaryUrl($fileKegiatan->file_path, now()->addMinutes(30)));
     }
 
     /**
@@ -212,25 +229,40 @@ class DailyReportController extends Controller
             'Anda tidak memiliki akses ke lampiran ini.'
         );
 
-        $disk = Storage::disk('local')->exists($fileKegiatan->file_path)
-            ? 'local'
-            : (Storage::disk('public')->exists($fileKegiatan->file_path) ? 'public' : null);
+        $defaultDisk = config('filesystems.default');
+        $foundDisk = null;
 
-        abort_if($disk === null, 404, 'File lampiran tidak ditemukan.');
-
-        $mimeType = Storage::disk($disk)->mimeType($fileKegiatan->file_path);
-        $stream = Storage::disk($disk)->readStream($fileKegiatan->file_path);
-
-        return response()->stream(function () use ($stream) {
-            fpassthru($stream);
-            if (is_resource($stream)) {
-                fclose($stream);
+        foreach (['local', 'public', $defaultDisk] as $diskName) {
+            if (Storage::disk($diskName)->exists($fileKegiatan->file_path)) {
+                $foundDisk = $diskName;
+                break;
             }
-        }, 200, [
-            'Content-Type' => $mimeType,
-            'Content-Disposition' => 'inline',
-            'Cache-Control' => 'public, max-age=86400',
-        ]);
+        }
+
+        abort_if($foundDisk === null, 404, 'File lampiran tidak ditemukan.');
+
+        $disk = Storage::disk($foundDisk);
+
+        // If it's a local disk, stream the file
+        if (in_array($foundDisk, ['local', 'public'])) {
+            $mimeType = $disk->mimeType($fileKegiatan->file_path);
+            $stream = $disk->readStream($fileKegiatan->file_path);
+
+            return response()->stream(function () use ($stream) {
+                fpassthru($stream);
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+            }, 200, [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => 'inline',
+                'Cache-Control' => 'public, max-age=86400',
+            ]);
+        }
+
+        // For Cloud Storage (S3/R2), redirect to the cloud URL
+        // Images can usually be displayed directly via temporaryUrl
+        return redirect()->away($disk->temporaryUrl($fileKegiatan->file_path, now()->addMinutes(30)));
     }
 
     public function approve(KegiatanKkn $dailyReport): RedirectResponse

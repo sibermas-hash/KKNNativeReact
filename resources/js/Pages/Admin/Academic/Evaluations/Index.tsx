@@ -1,26 +1,20 @@
 import AppLayout from '@/Layouts/AppLayout';
 import type { PageProps } from '@/types';
 import { 
-  Star, 
-  Trophy,
-  GraduationCap,
-  BarChart3,
-  Zap,
-  ShieldCheck,
-  Activity,
-  Binary,
-  Clock,
-  RefreshCw,
-  Search,
-  ChevronRight,
-  ArrowRight,
-  Target,
-  SearchCode
+  ShieldCheck, 
+  Activity, 
+  RefreshCw, 
+  Zap, 
+  Search, 
+  ChevronRight, 
+  FileText,
+  Filter,
+  Users
 } from 'lucide-react';
 import { clsx } from 'clsx';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { Pagination } from '@/Components/ui';
-import { motion } from 'framer-motion';
+import { useState } from 'react';
 
 interface EvaluationItem { criterion: string; score: number; weight: number; }
 interface EvaluationData {
@@ -35,172 +29,138 @@ interface PaginatedData {
 interface Props extends PageProps { evaluations: PaginatedData; }
 
 export default function EvaluationsIndex({ evaluations }: Props) {
+  const [search, setSearch] = useState('');
+
+  const handleSearch = () => {
+    router.get(route('evaluasi.index'), { search }, { preserveState: true, replace: true });
+  };
+
   return (
-    <AppLayout title="Audit Monitoring Evaluasi Akademik">
-      <Head title="Monitoring Evaluasi" />
+    <AppLayout title="Monitoring Evaluasi">
 
-      <div className="max-w-[1600px] mx-auto space-y-12 pb-24 font-sans px-4 sm:px-6 lg:px-8 text-emerald-950">
-        
-        {/* --- PREMIUM HEADER --- */}
-        <div className="space-y-6 pt-12">
-           <div className="flex items-center gap-3 text-emerald-600">
-              <Star size={20} />
-              <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-80">Direktori Kinerja Mahasiswa</span>
-           </div>
-           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-              <div className="space-y-2">
-                <h1 className="text-4xl font-black text-emerald-950 tracking-tighter leading-none">
-                  Monitoring <span className="text-emerald-500">Evaluasi.</span>
-                </h1>
-                <p className="text-sm font-semibold text-emerald-700/80 tracking-tight leading-relaxed max-w-2xl mt-4">
-                  Analisis audit hasil evaluasi lapangan yang diinput oleh DPL dan Mitra Desa. Pantau kualitas distribusi nilai secara real-time berdasarkan matriks kinerja akademik yang telah ditetapkan.
-                </p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans transition-all">
+        {/* Header Sederhana Sesuai Patokan Gold Standard */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 border-b border-gray-200/50 pb-8">
+          <div className="space-y-1">
+            <h1 className="text-xl font-bold text-gray-900">Monitoring Evaluasi.</h1>
+            <p className="text-xs text-gray-900/40 font-black uppercase tracking-widest">Pusat pemeriksaan hasil penilaian lapangan DPL & Mitra</p>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <div className="px-4 py-2 bg-[#e8f5ee] border border-gray-200/60 rounded-lg flex items-center gap-4">
+              <div className="flex flex-col text-right">
+                <span className="text-[9px] font-black text-gray-900/30 uppercase tracking-widest mb-1">Total Laporan</span>
+                <span className="text-sm font-bold text-gray-900 leading-none">{evaluations.meta?.total || 0} Data</span>
               </div>
-              <div className="shrink-0">
-                  <div className="h-20 px-10 bg-emerald-600 border-2 border-emerald-500 rounded-[2rem] flex items-center gap-8 text-white shadow-2xl shadow-emerald-100">
-                    <div className="flex flex-col">
-                      <span className="text-[9px] font-black text-emerald-100 uppercase tracking-widest leading-none mb-2">Populasi Evaluasi</span>
-                      <span className="text-2xl font-black text-white tabular-nums leading-none tracking-tight">{evaluations.meta?.total?.toLocaleString('id-ID') || 0} DATA</span>
-                    </div>
-                    <div className="w-px h-10 bg-white/20" />
-                    <Trophy size={28} className="text-white drop-shadow-lg" />
-                  </div>
-              </div>
-           </div>
+              <Activity size={18} className="text-[#1a7a4a] opacity-40 ml-2" />
+            </div>
+          </div>
         </div>
 
-        {/* --- STATS OVERVIEW --- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-           <MetricCard label="Audit Aktif" value="SIAP" icon={ShieldCheck} desc="Siklus 2026/2027" />
-           <MetricCard label="Integritas Nilai" value="TERVERIFIKASI" icon={Activity} desc="Sesuai Rubrik" />
-           <MetricCard label="Sinkronisasi" value="REAL-TIME" icon={RefreshCw} desc="Database Utama" />
-           <MetricCard label="Aktivitas" value="TINGGI" icon={Zap} desc="Periode Grading" />
+        {/* Statistik Minimalis */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <MiniStat icon={ShieldCheck} label="Status Audit" value="Aktif" />
+          <MiniStat icon={Activity} label="Keaslian Data" value="Terverifikasi" />
+          <MiniStat icon={RefreshCw} label="Koneksi Sistem" value="Normal" />
+          <MiniStat icon={Zap} label="Alur Kerja" value="Stabil" />
         </div>
 
-        {/* --- DATA TABLE CARD --- */}
-        <section className="bg-white border-2 border-emerald-50 rounded-[3rem] shadow-sm overflow-hidden flex flex-col">
-           <div className="px-10 py-10 bg-emerald-50/20 border-b-2 border-emerald-50 flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                 <div className="h-16 w-16 bg-white rounded-[1.5rem] border-2 border-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm">
-                    <Binary size={32} strokeWidth={2.5} />
-                 </div>
-                 <div className="flex flex-col">
-                    <h3 className="text-xl font-black text-emerald-950 uppercase tracking-tight leading-none mb-1.5">Aliran Nilai Evaluasi</h3>
-                    <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest leading-none">Pusat Audit Parameter Akademik Terpadu</p>
-                 </div>
-              </div>
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden min-h-[500px]">
+          {/* Toolbar Toolbar Sederhana Patokan */}
+          <div className="p-4 border-b border-[#f3f4f6]/50 bg-emerald-50/10 flex items-center justify-between gap-4">
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-900/20" />
+              <input 
+                type="text" 
+                value={search} 
+                onChange={(e) => setSearch(e.target.value)} 
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder="Cari NIM atau Nama Mahasiswa..." 
+                className="w-full h-9 pl-9 pr-4 bg-white border border-gray-200/60 rounded-lg text-xs font-bold text-gray-900 placeholder:text-gray-900/20 focus:border-[#f3f4f6]0 outline-none transition-all"
+              />
+            </div>
+            <button onClick={handleSearch} className="h-9 px-6 bg-[#e8f5ee] border border-gray-200 text-[#1a7a4a] hover:bg-[#16a34a] hover:text-white text-xs font-black uppercase tracking-widest rounded-lg transition-all">
+              Cari Data
+            </button>
+          </div>
 
-              <div className="relative w-full md:w-96">
-                <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-500" strokeWidth={3} />
-                <input 
-                  type="text" 
-                  placeholder="CARI NAMA ATAU KELOMPOK..." 
-                  className="w-full h-14 pl-14 pr-6 bg-white border-2 border-emerald-50 rounded-2xl text-[11px] font-black text-emerald-950 focus:border-emerald-500 outline-none transition-all placeholder:text-emerald-200 uppercase tracking-widest shadow-sm"
-                />
-              </div>
-           </div>
-
-           <div className="overflow-x-auto min-h-[500px]">
-             <table className="min-w-full text-left border-collapse whitespace-nowrap">
-               <thead className="bg-emerald-50/50 text-emerald-950 border-b border-emerald-100">
-                 <tr>
-                   <th className="px-10 py-6 text-[10px] font-black uppercase tracking-widest">Identitas Peserta [MAHASISWA]</th>
-                   <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest">Penugasan Wilayah</th>
-                   <th className="px-8 py-6 text-center text-[10px] font-black uppercase tracking-widest">Evaluator Resmi</th>
-                   <th className="px-8 py-6 text-center text-[10px] font-black uppercase tracking-widest">Skor Metrik</th>
-                   <th className="px-8 py-6 text-center text-[10px] font-black uppercase tracking-widest">Grade Kualifikasi</th>
-                   <th className="px-10 py-6 text-right text-[10px] font-black uppercase tracking-widest">Aksi</th>
-                 </tr>
-               </thead>
-               <tbody className="divide-y divide-emerald-50 font-sans">
-                 {evaluations.data.length === 0 ? (
-                    <EmptyState />
-                 ) : (
-                   evaluations.data.map((ev) => (
-                    <tr key={ev.id} className="group hover:bg-emerald-50/30 transition-all">
-                      <td className="px-10 py-8">
-                        <div className="flex items-center gap-5">
-                          <div className="h-12 w-12 bg-emerald-100 text-emerald-700 border-2 border-emerald-50 rounded-[1.25rem] flex items-center justify-center font-black text-sm group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-sm">
-                             {ev.student_name.charAt(0)}
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-[13px] font-black text-emerald-950 uppercase tracking-tight leading-tight mb-2 group-hover:text-emerald-700 transition-colors">{ev.student_name}</span>
-                            <span className="text-[9px] font-black text-emerald-500 tracking-[0.2em] uppercase leading-none font-mono">HASHID: #{ev.id.toString().padStart(6, '0')}</span>
-                          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-emerald-50/20 border-b border-gray-200/50">
+                  <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest">Identitas Mahasiswa</th>
+                  <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest">Penempatan</th>
+                  <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest text-center">Penilai</th>
+                  <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest text-center">Skor Akhir</th>
+                  <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest text-center">Hasil Huruf</th>
+                  <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest text-right">Rincian</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#f3f4f6]/60">
+                {evaluations.data.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-32 text-center text-gray-900/20">
+                      <div className="flex flex-col items-center gap-2">
+                        <FileText size={40} />
+                        <span className="text-xs font-black uppercase tracking-widest">Belum ada data penilaian</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  evaluations.data.map((ev) => (
+                    <tr key={ev.id} className="hover:bg-gray-50/20 transition-all group">
+                      <td className="px-8 py-5">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-gray-900 uppercase leading-none mb-1.5">{ev.student_name}</span>
+                          <span className="text-xs text-gray-900/40 font-black tabular-nums tracking-wider uppercase leading-none">NO LOG: #{ev.id.toString().padStart(5, '0')}</span>
                         </div>
                       </td>
-                      <td className="px-8 py-8">
-                        <div className="flex items-center gap-3">
-                           <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-200" />
-                           <span className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">{ev.group_name.toUpperCase()}</span>
+                      <td className="px-8 py-5 text-xs font-bold text-gray-900/80">
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 opacity-60" />
+                            <span className="uppercase leading-none tracking-tight">{ev.group_name}</span>
+                          </div>
+                          <span className="text-[9px] text-gray-900/40 font-black uppercase tracking-widest">Lokasi Lapangan</span>
                         </div>
                       </td>
-                      <td className="px-8 py-8 text-center text-center">
+                      <td className="px-8 py-5 text-center">
                         <div className="flex flex-col items-center">
-                          <span className="text-[11px] font-black text-emerald-950 uppercase leading-none mb-1.5">{ev.evaluator_name}</span>
-                          <span className="px-3 py-1 bg-white border-2 border-emerald-50 rounded-lg text-[9px] font-black text-emerald-400 uppercase tracking-widest shadow-sm">{ev.evaluator_type}</span>
+                          <span className="text-xs font-bold text-gray-900 leading-none mb-1.5">{ev.evaluator_name}</span>
+                          <span className="text-[9px] font-black text-gray-900/40 uppercase bg-[#e8f5ee] px-2 py-0.5 rounded border border-gray-200/50">{ev.evaluator_type}</span>
                         </div>
                       </td>
-                      <td className="px-8 py-8 text-center">
-                        <span className="text-2xl font-black text-emerald-950 tabular-nums tracking-tighter group-hover:text-emerald-700 transition-colors">
-                           {ev.total_score != null ? ev.total_score.toFixed(1) : '0.0'}
+                      <td className="px-8 py-5 text-center">
+                        <span className="text-base font-bold text-gray-900 tabular-nums leading-none">
+                          {ev.total_score != null ? Number(ev.total_score).toFixed(1) : '0.0'}
                         </span>
                       </td>
-                      <td className="px-8 py-8 text-center">
-                        <div className="flex justify-center">
-                          <div className={clsx(
-                             'h-12 w-12 flex items-center justify-center rounded-2xl font-black text-xl transition-all shadow-lg border-2', 
-                             ev.grade?.includes('A') ? 'bg-emerald-600 border-emerald-500 text-white shadow-emerald-100' : 
-                             ev.grade?.includes('B') ? 'bg-emerald-50 border-emerald-100 text-emerald-800 shadow-emerald-50' : 
-                             'bg-white border-emerald-100 text-emerald-600'
-                          )}>
-                             {ev.grade ?? '-'}
-                          </div>
-                        </div>
+                      <td className="px-8 py-5 text-center">
+                        <span className={clsx(
+                          "inline-flex h-8 px-3 items-center justify-center rounded-lg text-xs font-black border transition-all shadow-sm",
+                          ev.grade?.startsWith('A') ? 'bg-[#16a34a] text-white border-emerald-600' : 'bg-white text-gray-900/20 border-[#f3f4f6]'
+                        )}>
+                          {ev.grade ?? '-'}
+                        </span>
                       </td>
-                      <td className="px-10 py-8 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
-                           <button className="h-10 px-5 bg-white border-2 border-emerald-50 text-emerald-950 hover:bg-emerald-950 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-90 flex items-center gap-3">
-                              RINCIAN <ChevronRight size={14} strokeWidth={3} />
-                           </button>
-                        </div>
+                      <td className="px-8 py-5 text-right">
+                        <button className="h-9 px-4 bg-[#e8f5ee] text-[#1a7a4a] hover:bg-[#16a34a] hover:text-white border border-gray-200 text-xs font-black uppercase tracking-widest rounded-xl shadow-sm transition-all opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0">
+                          Buka Detail
+                        </button>
                       </td>
                     </tr>
-                   ))
-                 )}
-               </tbody>
-             </table>
-           </div>
-
-           {/* PAGINATION */}
-           <div className="px-10 py-8 border-t-2 border-emerald-50 bg-emerald-50/30 flex items-center justify-between">
-              <span className="text-[10px] font-black text-emerald-700 uppercase tracking-[0.2em]">
-                 Data Halaman <strong className="text-emerald-950 text-xs tabular-nums tracking-tight">{evaluations.meta?.current_page || 1}</strong> Per <strong className="text-emerald-950 text-xs tabular-nums tracking-tight">{evaluations.meta?.last_page || 1}</strong> Otoritas
-              </span>
-              {evaluations.meta && <Pagination meta={evaluations.meta as any} />}
-           </div>
-        </section>
-
-        {/* --- GOVERNANCE FOOTER --- */}
-        <div className="bg-emerald-950 rounded-[3rem] p-12 text-white relative overflow-hidden shadow-2xl border border-emerald-800 group/governance">
-          <div className="absolute top-0 right-0 p-12 opacity-10 rotate-12 -mr-32 -mt-32 transition-transform group-hover/governance:rotate-45 duration-1000">
-            <BarChart3 size={500} strokeWidth={0.5} />
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-12 relative z-10">
-            <div className="space-y-6 flex-1">
-              <div className="flex items-center gap-6">
-                <div className="h-20 w-20 bg-emerald-900/50 rounded-[1.5rem] flex items-center justify-center shrink-0 border border-emerald-800 shadow-inner group-hover/governance:scale-110 transition-transform">
-                  <GraduationCap size={40} className="text-emerald-400" strokeWidth={2.5} />
-                </div>
-                <div className="flex flex-col">
-                  <h3 className="text-2xl font-black uppercase tracking-tight leading-none mb-1">Integritas Audit Akademik</h3>
-                  <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.3em] opacity-80">Protokol Penjaminan Mutu Evaluasi</span>
-                </div>
-              </div>
-              <p className="text-[12px] font-bold text-emerald-400/80 uppercase tracking-widest leading-relaxed max-w-4xl">
-                 Seluruh matriks penilaian yang terdata dalam sistem ini telah melewati validasi parameter SIKKKN UIN SAIZU. Administrator dilarang mengubah skor tanpa dasar Berita Acara (BA) resmi. Setiap aktivitas intervensi nilai akan terekam dalam log audit transparan untuk menjamin keabsahan yudisium KKN.
-              </p>
-            </div>
+
+          {/* Footer Info (Gold Standard) */}
+          <div className="px-8 py-4 bg-emerald-50/10 border-t border-[#f3f4f6]/50 flex items-center justify-between">
+            <span className="text-xs font-black text-gray-900/20 uppercase tracking-widest leading-none">
+              Pusat Data Evaluasi | Audit Penilaian KKN
+            </span>
+            {evaluations.meta && <Pagination meta={evaluations.meta as any} />}
           </div>
         </div>
       </div>
@@ -208,36 +168,16 @@ export default function EvaluationsIndex({ evaluations }: Props) {
   );
 }
 
-function MetricCard({ label, value, icon: Icon, type, desc }: { label: string; value: any; icon: any; type?: 'success' | 'danger'; desc: string }) {
+function MiniStat({ icon: Icon, label, value }: { icon: any, label: string, value: string | number }) {
   return (
-    <div className="bg-white border-2 border-emerald-50 rounded-[2rem] p-6 flex items-center gap-5 shadow-sm hover:border-emerald-100 transition-all group overflow-hidden relative">
-      <div className={clsx("h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all shadow-sm border-2", 
-        type === 'success' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
-        type === 'danger' ? 'bg-rose-50 text-rose-500 border-rose-100' : 'bg-emerald-50 text-emerald-400 border-emerald-50'
-      )}>
-        <Icon size={24} strokeWidth={2.5} />
+    <div className="p-4 bg-white border border-gray-200/60 rounded-xl flex items-center gap-4 shadow-sm group hover:border-emerald-300 transition-all">
+      <div className="h-10 w-10 bg-[#e8f5ee] rounded-xl flex items-center justify-center text-[#1a7a4a] shrink-0 group-hover:rotate-6 transition-transform">
+        <Icon size={18} />
       </div>
-      <div className="flex flex-col relative z-20">
-        <span className="text-[10px] font-black text-emerald-400 tracking-[0.2em] uppercase leading-none mb-3">{label}</span>
-        <span className="text-2xl font-black text-emerald-950 tracking-tighter leading-none group-hover:text-emerald-700 transition-colors uppercase mb-1.5">{value}</span>
-        <p className="text-[9px] font-black text-emerald-300 uppercase tracking-widest opacity-60 leading-none">{desc}</p>
+      <div className="flex flex-col min-w-0">
+        <span className="text-[9px] font-black text-gray-900/30 uppercase tracking-widest leading-none mb-1.5">{label}</span>
+        <span className="text-lg font-bold text-gray-900 tabular-nums leading-none tracking-tight uppercase">{value}</span>
       </div>
     </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <tr>
-      <td colSpan={6} className="px-10 py-32 text-center">
-          <div className="flex flex-col items-center justify-center gap-4">
-            <div className="h-24 w-24 bg-emerald-50 rounded-[2.5rem] flex items-center justify-center text-emerald-100 mb-2">
-              <SearchCode size={48} strokeWidth={1} />
-            </div>
-            <span className="text-sm font-black text-emerald-950 uppercase tracking-[0.2em]">Audit Evaluasi Nihil</span>
-            <p className="text-[11px] font-black text-emerald-400 uppercase tracking-widest leading-none opacity-60">Belum ditemukan entri evaluasi resmi dari DPL maupun Mitra dalam sistem.</p>
-          </div>
-      </td>
-    </tr>
   );
 }

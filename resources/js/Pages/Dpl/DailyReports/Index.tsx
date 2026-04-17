@@ -74,7 +74,7 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
 
     const statusColors: Record<string, string> = {
         submitted: 'bg-amber-50 text-amber-700 ring-amber-100',
-        approved: 'bg-emerald-50 text-emerald-700 ring-emerald-100',
+        approved: 'bg-emerald-50 text-gray-700 ring-emerald-100',
         revision: 'bg-rose-50 text-rose-700 ring-rose-100',
     };
 
@@ -90,14 +90,14 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
 
             <div className="max-w-[1600px] mx-auto space-y-8 pb-20 font-sans">
                 {/* Header Section */}
-                <div className="bg-white rounded-[2.5rem] border border-emerald-100/60 shadow-sm p-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative overflow-hidden">
+                <div className="bg-white rounded-[2.5rem] border border-gray-200/60 shadow-sm p-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full -mr-32 -mt-32 opacity-20 blur-3xl" />
                     <div className="relative space-y-3">
-                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100/50 text-emerald-700 text-sm font-bold font-semibold uppercase text-xs ring-1 ring-emerald-200">
+                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100/50 text-gray-700 text-sm font-bold font-semibold uppercase text-xs ring-1 ring-emerald-200">
                              Monitoring Progres
                         </span>
                         <h1 className="text-2xl font-[900] text-black tracking-tight">Logbook Mahasiswa</h1>
-                        <p className="text-emerald-950 font-medium max-w-xl">Pantau dan verifikasi aktivitas harian mahasiswa bimbingan Bapak secara real-time.</p>
+                        <p className="text-gray-900 font-medium max-w-xl">Pantau dan verifikasi aktivitas harian mahasiswa bimbingan Bapak secara real-time.</p>
                     </div>
                     
                     <div className="relative flex items-center gap-4">
@@ -119,8 +119,8 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
                 {/* Multi-Group Tabs (Workspace Per Desa) */}
                 <div className="space-y-4">
                     <div className="flex items-center gap-2 mb-2 ml-4">
-                        <MapPin size={16} className="text-emerald-950" />
-                        <h3 className="text-xs font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold">Pilih Wilayah Bimbingan</h3>
+                        <MapPin size={16} className="text-gray-900" />
+                        <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider text-xs font-semibold">Pilih Wilayah Bimbingan</h3>
                     </div>
                     <div className="flex flex-wrap gap-4 px-2">
                         <button
@@ -129,7 +129,7 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
                                 "h-16 px-8 rounded-3xl font-bold text-sm transition-all flex items-center gap-4 border-2",
                                 groupIdFilter === '' 
                                     ? "bg-emerald-600 border-emerald-600 text-white shadow-xl shadow-emerald-200" 
-                                    : "bg-white border-emerald-100/60 text-emerald-950 hover:border-emerald-200 hover:text-emerald-600"
+                                    : "bg-white border-gray-200/60 text-gray-900 hover:border-emerald-200 hover:text-emerald-600"
                             )}
                         >
                             <LayoutGrid size={20} /> Antrian Semua Desa
@@ -143,12 +143,12 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
                                     "h-16 px-8 rounded-3xl font-bold text-sm transition-all flex items-center gap-4 border-2 relative",
                                     groupIdFilter === group.id.toString()
                                         ? "bg-emerald-900 border-emerald-900 text-white shadow-xl shadow-slate-200" 
-                                        : "bg-white border-emerald-100/60 text-emerald-950 hover:border-emerald-200 hover:text-emerald-600 shadow-sm"
+                                        : "bg-white border-gray-200/60 text-gray-900 hover:border-emerald-200 hover:text-emerald-600 shadow-sm"
                                 )}
                             >
                                 <div className={clsx(
                                     "p-2 rounded-xl shrink-0 transition-colors",
-                                    groupIdFilter === group.id.toString() ? "bg-white/10 text-white" : "bg-emerald-50/30 text-emerald-950"
+                                    groupIdFilter === group.id.toString() ? "bg-white/10 text-white" : "bg-emerald-50/30 text-gray-900"
                                 )}>
                                     <MapPin size={18} strokeWidth={2.5} />
                                 </div>
@@ -164,8 +164,8 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
                 </div>
 
                 {/* Filters & Content Area */}
-                <div className="bg-white rounded-xl border border-emerald-100/60 shadow-xl overflow-hidden min-h-[600px] flex flex-col">
-                    <div className="px-6 py-8 border-b border-emerald-100/60 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-emerald-50/30/30">
+                <div className="bg-white rounded-xl border border-gray-200/60 shadow-xl overflow-hidden min-h-[600px] flex flex-col">
+                    <div className="px-6 py-8 border-b border-gray-200/60 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-emerald-50/30/30">
                         <div className="flex flex-wrap items-center gap-2">
                             {['', 'submitted', 'approved', 'revision'].map((s) => (
                                 <button
@@ -175,7 +175,7 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
                                         "h-10 px-6 rounded-xl text-xs font-bold transition-all",
                                         statusFilter === s 
                                             ? "bg-emerald-900 text-white shadow-lg" 
-                                            : "bg-white text-emerald-950 hover:text-black hover:bg-white/80 border border-emerald-100/60"
+                                            : "bg-white text-gray-900 hover:text-black hover:bg-white/80 border border-gray-200/60"
                                     )}
                                 >
                                     {s === '' ? 'Semua Status' : statusLabels[s]}
@@ -183,7 +183,7 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
                             ))}
                         </div>
                         
-                        <div className="flex items-center gap-4 bg-white p-1 rounded-2xl border border-emerald-100/60 shadow-inner w-full md:w-auto">
+                        <div className="flex items-center gap-4 bg-white p-1 rounded-2xl border border-gray-200/60 shadow-inner w-full md:w-auto">
                             <div className="pl-4 text-slate-300"><Search size={18} /></div>
                             <input 
                                 type="text" 
@@ -196,13 +196,13 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
                     <div className="flex-1 overflow-x-auto overflow-y-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-emerald-50/30/50 border-b border-emerald-100/60">
-                                    <th className="px-6 py-5 text-sm font-bold text-emerald-950 font-semibold uppercase text-xs">Waktu & Judul Kegiatan</th>
-                                    <th className="px-6 py-5 text-sm font-bold text-emerald-950 font-semibold uppercase text-xs">Identitas Mahasiswa</th>
-                                    <th className="px-6 py-5 text-sm font-bold text-emerald-950 font-semibold uppercase text-xs text-center">Wilayah / Desa</th>
-                                    <th className="px-6 py-5 text-sm font-bold text-emerald-950 font-semibold uppercase text-xs text-center">AI Audit</th>
-                                    <th className="px-6 py-5 text-sm font-bold text-emerald-950 font-semibold uppercase text-xs text-center">Status</th>
-                                    <th className="px-6 py-5 text-sm font-bold text-emerald-950 font-semibold uppercase text-xs text-right">Opsi</th>
+                                <tr className="bg-emerald-50/30/50 border-b border-gray-200/60">
+                                    <th className="px-6 py-5 text-sm font-bold text-gray-900 font-semibold uppercase text-xs">Waktu & Judul Kegiatan</th>
+                                    <th className="px-6 py-5 text-sm font-bold text-gray-900 font-semibold uppercase text-xs">Identitas Mahasiswa</th>
+                                    <th className="px-6 py-5 text-sm font-bold text-gray-900 font-semibold uppercase text-xs text-center">Wilayah / Desa</th>
+                                    <th className="px-6 py-5 text-sm font-bold text-gray-900 font-semibold uppercase text-xs text-center">AI Audit</th>
+                                    <th className="px-6 py-5 text-sm font-bold text-gray-900 font-semibold uppercase text-xs text-center">Status</th>
+                                    <th className="px-6 py-5 text-sm font-bold text-gray-900 font-semibold uppercase text-xs text-right">Opsi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
@@ -210,13 +210,13 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
                                     <tr key={report.id} className="hover:bg-emerald-50/30/80 transition-all group">
                                         <td className="px-6 py-6">
                                             <div className="flex items-center gap-4">
-                                                <div className="h-12 w-12 rounded-2xl bg-white border border-emerald-100/60 shadow-sm flex flex-col items-center justify-center shrink-0">
-                                                    <p className="text-sm font-bold text-emerald-950 uppercase leading-none mb-1">{report.date.split(' ')[1]}</p>
+                                                <div className="h-12 w-12 rounded-2xl bg-white border border-gray-200/60 shadow-sm flex flex-col items-center justify-center shrink-0">
+                                                    <p className="text-sm font-bold text-gray-900 uppercase leading-none mb-1">{report.date.split(' ')[1]}</p>
                                                     <p className="text-sm font-bold text-black leading-none">{report.date.split(' ')[0]}</p>
                                                 </div>
                                                 <div className="space-y-1">
                                                     <p className="text-sm font-extrabold text-black line-clamp-1">{report.title}</p>
-                                                    <div className="flex items-center gap-2 text-sm font-bold text-emerald-950">
+                                                    <div className="flex items-center gap-2 text-sm font-bold text-gray-900">
                                                         <FileText size={12} /> Logbook Entry
                                                     </div>
                                                 </div>
@@ -224,17 +224,17 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
                                         </td>
                                         <td className="px-6 py-6">
                                             <div className="flex items-center gap-3">
-                                                <div className="h-10 w-10 rounded-full bg-emerald-50/60 flex items-center justify-center text-emerald-950 text-xs font-bold shrink-0">
+                                                <div className="h-10 w-10 rounded-full bg-emerald-50/60 flex items-center justify-center text-gray-900 text-xs font-bold shrink-0">
                                                     {report.student.name.charAt(0)}
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-bold text-black">{report.student.name}</p>
-                                                    <p className="text-sm font-bold text-emerald-950 font-bold text-center mt-0.5">{report.student.nim}</p>
+                                                    <p className="text-sm font-bold text-gray-900 font-bold text-center mt-0.5">{report.student.nim}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-6 text-center">
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50/30 text-emerald-950 text-sm font-bold uppercase ring-1 ring-slate-200">
+                                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50/30 text-gray-900 text-sm font-bold uppercase ring-1 ring-slate-200">
                                                 <MapPin size={10} strokeWidth={3} /> {report.group.name}
                                             </span>
                                         </td>
@@ -243,7 +243,7 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
                                                 <div className="flex flex-col items-center gap-1 group/ai cursor-help relative">
                                                     <div className={clsx(
                                                         "h-8 px-3 rounded-lg flex items-center gap-2 border-2 transition-all",
-                                                        report.ai_analysis.abcd_compliance >= 8 ? "bg-emerald-50 border-emerald-100 text-emerald-600" :
+                                                        report.ai_analysis.abcd_compliance >= 8 ? "bg-emerald-50 border-gray-200 text-emerald-600" :
                                                         report.ai_analysis.abcd_compliance >= 5 ? "bg-amber-50 border-amber-100 text-amber-600" :
                                                         "bg-rose-50 border-rose-100 text-rose-600"
                                                     )}>
@@ -282,7 +282,7 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
                                         <td className="px-6 py-6 text-right">
                                             <Link 
                                                 href={route('dpl.daily-reports.show', report.id)}
-                                                className="h-11 px-6 rounded-xl bg-white border border-emerald-100/60 text-emerald-950 hover:text-emerald-600 hover:border-emerald-200 font-bold text-xs transition-all inline-flex items-center gap-2 shadow-sm active:scale-95 group-hover:bg-emerald-50"
+                                                className="h-11 px-6 rounded-xl bg-white border border-gray-200/60 text-gray-900 hover:text-emerald-600 hover:border-emerald-200 font-bold text-xs transition-all inline-flex items-center gap-2 shadow-sm active:scale-95 group-hover:bg-emerald-50"
                                             >
                                                 Periksa <ArrowRight size={14} strokeWidth={3} />
                                             </Link>
@@ -309,8 +309,8 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
 
                     {/* Pagination - Full Clean Style */}
                     {reports.total > 15 && (
-                        <div className="px-6 py-8 border-t border-emerald-100/60 flex items-center justify-between bg-emerald-50/30/10">
-                            <p className="text-xs font-bold text-emerald-950 font-semibold uppercase text-xs">
+                        <div className="px-6 py-8 border-t border-gray-200/60 flex items-center justify-between bg-emerald-50/30/10">
+                            <p className="text-xs font-bold text-gray-900 font-semibold uppercase text-xs">
                                 Menampilkan <span className="text-black font-bold">{reports.data.length}</span> dari <span className="text-black font-bold">{reports.total}</span> Laporan
                             </p>
                             <div className="flex items-center gap-2">
@@ -321,7 +321,7 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
                                         dangerouslySetInnerHTML={{ __html: link.label ?? '' }}
                                         className={clsx(
                                             "h-10 min-w-[40px] px-3 flex items-center justify-center rounded-xl text-xs font-bold transition-all",
-                                            link.active ? "bg-emerald-900 text-white shadow-lg" : "bg-white border border-emerald-100/60 text-emerald-950 hover:border-emerald-200 hover:text-emerald-600"
+                                            link.active ? "bg-emerald-900 text-white shadow-lg" : "bg-white border border-gray-200/60 text-gray-900 hover:border-emerald-200 hover:text-emerald-600"
                                         )}
                                     />
                                 ))}

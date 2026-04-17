@@ -29,16 +29,16 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   hasParentPermission,
 }) => {
   return (
-    <div className="p-12 rounded-[3.5rem] bg-white border border-emerald-100/60 shadow-sm space-y-12 relative overflow-hidden">
-      <div className="flex items-center gap-6 border-b border-emerald-50 pb-8">
-        <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-inner">
+    <div className="p-12 rounded-[3.5rem] bg-white border border-gray-200/60 shadow-sm space-y-12 relative overflow-hidden">
+      <div className="flex items-center gap-6 border-b border-[#f3f4f6] pb-8">
+        <div className="h-12 w-12 rounded-xl bg-[#e8f5ee] text-emerald-600 flex items-center justify-center shadow-inner">
           <FileText size={24} strokeWidth={2.5} />
         </div>
         <div>
-          <h3 className="text-xs font-bold text-emerald-950 uppercase tracking-[0.4em]">
+          <h3 className="text-xs font-bold text-gray-900 uppercase tracking-[0.4em]">
             Data Ingestion
           </h3>
-          <p className="text-[12px] font-bold text-emerald-950 uppercase mt-1 opacity-70">
+          <p className="text-xs font-bold text-gray-900 uppercase mt-1 opacity-70">
             Verify administrative dossiers
           </p>
         </div>
@@ -48,11 +48,11 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
         {/* HEALTH DATA */}
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <label className="text-[12px] font-bold text-emerald-950 uppercase tracking-widest">
+            <label className="text-xs font-bold text-gray-900 uppercase tracking-widest">
               Medical Clearance
             </label>
             {student_academic?.has_health_certificate && (
-              <span className="text-[12px] font-bold text-emerald-600 uppercase flex items-center gap-1">
+              <span className="text-xs font-bold text-emerald-600 uppercase flex items-center gap-1">
                 <ShieldCheck size={12} /> Exists
               </span>
             )}
@@ -68,11 +68,11 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
         {/* GUARDIAN DATA */}
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <label className="text-[12px] font-bold text-emerald-950 uppercase tracking-widest">
+            <label className="text-xs font-bold text-gray-900 uppercase tracking-widest">
               Parent Permission
             </label>
             {student_academic?.has_parent_permission && (
-              <span className="text-[12px] font-bold text-emerald-600 uppercase flex items-center gap-1">
+              <span className="text-xs font-bold text-emerald-600 uppercase flex items-center gap-1">
                 <ShieldCheck size={12} /> Exists
               </span>
             )}
@@ -87,7 +87,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-8 border-t border-emerald-50">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-8 border-t border-[#f3f4f6]">
           <RequirementNode
             label="FISIK"
             ok={hasHealthCertificate}

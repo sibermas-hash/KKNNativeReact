@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { router, Head, Link } from '@inertiajs/react';
+import { router, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import {
-  Users, Search, ArrowRightLeft, MapPin, AlertTriangle, UserCircle, Activity, Database, Zap, Filter, FileDigit
+  Search, ArrowRightLeft, MapPin, AlertTriangle, UserCircle, Zap, Filter
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Pagination, Button } from '@/Components/ui';
@@ -19,7 +19,7 @@ interface Student {
     id: number;
     nama_kelompok: string;
     code: string;
-    location?: { district_name: string; village_name: string | null; regency_name: string };
+    lokasi?: { district_name: string; village_name: string | null; regency_name: string };
   };
   status: string;
 }
@@ -82,165 +82,171 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
   };
 
   return (
-    <>
-      <Head title="Manajemen Mutasi Peserta" />
+    <AppLayout title="Transfer Peserta">
+      <Head title="Manajemen Mutasi Peserta | KKN UIN SAIZU" />
 
-      <div className="max-w-[1600px] mx-auto space-y-12 pb-24 font-sans text-emerald-950">
-        {/* --- PREMIUM HEADER --- */}
-        <div className="bg-white rounded-[2.5rem] border border-emerald-100 p-8 lg:p-12 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-50/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none transition-transform group-hover:scale-110 duration-700" />
+      <div className="max-w-[1600px] mx-auto space-y-8 pb-24 font-sans px-4 sm:px-6 lg:px-8">
+        
+        {/* HEADER SECTION IN CLEAN EMERALD */}
+        <div className="bg-white border-2 border-[#f3f4f6] rounded-[2rem] p-8 relative overflow-hidden flex flex-col md:flex-row items-start justify-between gap-8 group">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gray-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none transition-transform group-hover:scale-110 duration-1000" />
           
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12 relative z-10">
-            <div className="space-y-6 max-w-3xl">
-              <div className="flex items-center gap-3">
-                 <div className="h-2 w-12 bg-emerald-600 rounded-full" />
-                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-600 opacity-80">Movement & Logic</span>
-              </div>
-              
-              <div className="space-y-4">
-                <h1 className="text-4xl lg:text-5xl font-black text-emerald-950 tracking-tighter uppercase leading-none">
-                  Mutasi <span className="text-emerald-500">&</span> <br />
-                  <span className="text-emerald-600">Perpindahan.</span>
-                </h1>
-                <p className="text-sm font-bold text-emerald-900/70 leading-relaxed max-w-xl">
-                  Protokol administrasi untuk memindahkan personil KKN lintas kelompok atau siklus periode secara real-time dengan validasi otomatis terhadap kapasitas dan kuota sistem.
-                </p>
-              </div>
+          <div className="relative z-10 flex gap-6 items-start">
+            <div className="h-20 w-20 bg-[#16a34a] rounded-xl flex items-center justify-center text-white shadow-xl shadow-emerald-600/20 shrink-0">
+              <ArrowRightLeft size={36} strokeWidth={2.5} />
             </div>
+            <div className="space-y-2">
+              <span className="text-xs font-black text-[#1a7a4a] uppercase tracking-widest bg-[#e8f5ee] px-3 py-1 rounded-full inset-ring-1 inset-ring-emerald-100/50 w-fit">
+                Operasi Basis Data
+              </span>
+              <h1 className="text-3xl font-black text-gray-900 tracking-tight leading-none uppercase">
+                Mutasi Peserta 
+              </h1>
+              <p className="text-sm font-bold text-gray-700 max-w-xl leading-relaxed">
+                Protokol administrasi instan untuk menggeser penempatan personil KKN lintas kelompok atau siklus periode secara aman dan akurat.
+              </p>
+            </div>
+          </div>
 
-            <div className="grid grid-cols-2 gap-4">
-               <div className="bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100 flex flex-col items-center justify-center text-center">
-                  <span className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-1">Total Peserta</span>
-                  <span className="text-3xl font-black text-emerald-950 tracking-tighter tabular-nums">{students.meta.total}</span>
-               </div>
-               <div className="bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100 flex flex-col items-center justify-center text-center">
-                  <Zap size={24} className="text-emerald-500 mb-2" />
-                  <span className="text-xs font-black text-emerald-900 uppercase tracking-widest">Auto Validated</span>
-               </div>
+          <div className="relative z-10 hidden md:flex items-center gap-6 bg-[#e8f5ee] px-8 py-6 rounded-[2rem] shrink-0 border border-gray-200">
+            <div className="flex flex-col text-right">
+              <span className="text-xs font-black text-[#1a7a4a] uppercase tracking-widest mb-1">Total Peserta Valid</span>
+              <span className="text-4xl font-black text-gray-900 leading-none">{students.meta.total.toLocaleString('id-ID')}</span>
+            </div>
+            <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center text-[#1a7a4a] border border-gray-200 shadow-sm shrink-0">
+              <Zap size={24} strokeWidth={3} />
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* --- LEFT: SEARCH & SELECTION (GLASS CARD) --- */}
-          <div className="lg:col-span-4 flex flex-col bg-white border border-emerald-100 rounded-[2.5rem] shadow-sm overflow-hidden h-[800px]">
-            <div className="p-8 border-b border-emerald-50 flex flex-col gap-6">
-              <h3 className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.3em] flex items-center gap-2">
-                <Search size={14} strokeWidth={3} />
-                Filter Identitas
-              </h3>
+          {/* --- LEFT COLUMN: SEARCH & SELECTION (1/3 LAYOUT) --- */}
+          <div className="lg:col-span-4 flex flex-col bg-white border border-gray-200 rounded-xl overflow-hidden h-[800px] shadow-sm">
+            <div className="p-6 border-b border-[#f3f4f6] bg-white">
               <form onSubmit={handleSearch} className="relative group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-400 group-focus-within:text-emerald-600 transition-colors" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#1a7a4a] group-focus-within:text-[#1a7a4a] transition-colors" />
                 <input 
-                  type="text" 
+                  type="text"
                   value={search} 
                   onChange={(e) => setSearch(e.target.value)} 
-                  className="w-full h-14 pl-12 pr-6 bg-emerald-50/30 border-2 border-transparent rounded-2xl text-xs font-bold focus:border-emerald-200 focus:bg-white transition-all outline-none uppercase tracking-wider" 
-                  placeholder="NIM / NAMA MAHASISWA..." 
+                  className="w-full h-14 pl-12 pr-6 bg-gray-50 border-2 border-[#f3f4f6] rounded-xl text-xs font-bold text-gray-900 uppercase tracking-wider focus:border-emerald-300 focus:bg-white placeholder:text-gray-600 transition-all outline-none"
+                  placeholder="CARI NIM / NAMA MAHASISWA..."
                 />
               </form>
             </div>
             
-            <div className="flex-1 overflow-y-auto divide-y divide-emerald-50 custom-scrollbar p-4">
+            <div className="flex-1 overflow-y-auto divide-y divide-[#f3f4f6] custom-scrollbar p-6">
               {students.data.map(s => (
                 <button 
                   key={s.id} 
                   onClick={() => setSelectedStudent(s)} 
                   className={clsx(
-                    'w-full p-6 text-left transition-all duration-300 flex flex-col gap-2 rounded-2xl mb-2', 
+                    'w-full p-5 text-left transition-all duration-300 flex flex-col gap-2 rounded-xl mb-3', 
                     selectedStudent?.id === s.id 
-                      ? 'bg-emerald-950 text-white shadow-xl shadow-emerald-950/20 translate-x-2' 
-                      : 'hover:bg-emerald-50 text-emerald-950 hover:translate-x-1'
+                    ? 'bg-[#16a34a] text-white shadow-xl shadow-emerald-900/20 translate-x-2' 
+                    : 'bg-white hover:bg-gray-50 border border-[#f3f4f6] text-gray-900 hover:translate-x-1'
                   )}
                 >
-                  <span className={clsx('text-xs font-black uppercase tracking-widest', selectedStudent?.id === s.id ? 'text-emerald-400' : 'text-emerald-600')}>
+                  <span className={clsx('text-xs font-black uppercase tracking-widest', selectedStudent?.id === s.id ? 'text-gray-500' : 'text-[#1a7a4a]')}>
                     {s.mahasiswa.nim}
                   </span>
                   <div className="flex flex-col">
-                    <span className="text-sm font-black uppercase tracking-tight leading-tight">
+                    <span className="text-sm font-bold leading-tight uppercase">
                       {s.mahasiswa.nama}
                     </span>
-                    <span className={clsx('text-[11px] font-bold mt-1 opacity-60 uppercase tracking-widest', selectedStudent?.id === s.id ? 'text-emerald-100' : 'text-emerald-900')}>
-                      {s.kelompok?.nama_kelompok || s.kelompok?.code || 'BELUM DITEMPATKAN'}
+                    <span className={clsx('text-xs font-bold mt-2 uppercase tracking-widest', selectedStudent?.id === s.id ? 'text-gray-700' : 'text-[#1a7a4a]')}>
+                      {s.kelompok?.nama_kelompok || s.kelompok?.code ? (
+                        <>Posisi: <span className="font-extrabold">{s.kelompok.nama_kelompok || s.kelompok.code}</span></>
+                      ) : (
+                        <span className="text-amber-500 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">BELUM DITEMPATKAN</span>
+                      )}
                     </span>
                   </div>
                 </button>
               ))}
               {students.data.length === 0 && (
-                <div className="py-24 flex flex-col items-center justify-center text-center px-10">
-                  <UserCircle size={64} className="text-emerald-100 mb-6" strokeWidth={1} />
-                  <p className="text-[11px] font-black text-emerald-900/40 uppercase tracking-[0.2em]">Data Null</p>
+                <div className="py-24 flex flex-col items-center justify-center text-center">
+                  <UserCircle size={48} className="text-gray-700 mb-4" strokeWidth={1.5} />
+                  <span className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1">Data Kosong</span>
+                  <p className="text-xs font-bold text-gray-600">Peserta tidak ditemukan.</p>
                 </div>
               )}
             </div>
 
-            <div className="p-4 border-t border-emerald-50 bg-white">
+            <div className="p-4 border-t border-[#f3f4f6] bg-gray-50 flex justify-center">
               <Pagination meta={students.meta} />
             </div>
           </div>
 
-          {/* --- RIGHT: SURGICAL FORM --- */}
-          <div className="lg:col-span-8 flex flex-col h-full min-h-[800px]">
+          {/* --- RIGHT COLUMN: SURGICAL FORM (2/3 LAYOUT) --- */}
+          <div className="lg:col-span-8 flex flex-col min-h-[800px]">
             {selectedStudent ? (
-              <div className="bg-white border-2 border-emerald-950 rounded-[3rem] shadow-2xl overflow-hidden flex flex-col h-full animate-in fade-in slide-in-from-right-10 duration-500">
+              <div className="bg-white border-2 border-[#f3f4f6] rounded-xl overflow-hidden flex flex-col h-full animate-in fade-in slide-in-from-right-10 duration-500 shadow-sm">
+                
                 {/* Panel Header */}
-                <div className="px-10 py-8 bg-emerald-950 border-b border-emerald-900 flex items-center justify-between">
+                <div className="px-10 py-8 bg-emerald-950 flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 bg-emerald-800 rounded-xl flex items-center justify-center text-emerald-400 shadow-inner">
-                      <ArrowRightLeft size={20} strokeWidth={2.5} />
+                    <div className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center text-[#1a7a4a]">
+                      <ArrowRightLeft size={24} strokeWidth={2.5} />
                     </div>
                     <div>
-                      <h2 className="text-xs font-black text-emerald-500 uppercase tracking-[0.3em]">Protokol Mutasi</h2>
-                      <h3 className="text-lg font-black text-white uppercase tracking-tight">Konfigurasi Tujuan</h3>
+                      <h2 className="text-xs font-black text-[#1a7a4a] uppercase tracking-widest">Sistem Mutasi Terpadu</h2>
+                      <h3 className="text-xl font-black text-white uppercase tracking-tight">Konfigurasi Tujuan Penempatan</h3>
                     </div>
                   </div>
                   <button 
                     onClick={() => setSelectedStudent(null)} 
-                    className="h-10 px-4 bg-emerald-900 text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-lg hover:bg-emerald-800 transition-colors"
+                    className="h-10 px-5 bg-white/10 text-white text-xs font-bold tracking-widest uppercase rounded-lg hover:bg-white hover:text-gray-900 transition-all border border-white/20"
                   >
                     Batal Pilih
                   </button>
                 </div>
 
-                <div className="flex-1 p-10 space-y-12">
+                <div className="flex-1 p-10 space-y-10">
                   {/* Current Status Box */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="p-8 border-2 border-emerald-50 rounded-3xl flex flex-col gap-3 relative overflow-hidden group">
-                       <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><UserCircle size={80} /></div>
-                       <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em]">Identitas Terpilih</span>
-                       <div>
-                         <strong className="text-2xl font-black text-emerald-950 leading-none block uppercase tracking-tighter tabular-nums">{selectedStudent.mahasiswa.nama}</strong>
-                         <span className="text-sm font-bold text-emerald-600 block mt-1 tracking-widest">{selectedStudent.mahasiswa.nim}</span>
-                       </div>
+                    <div className="p-8 border-2 border-[#f3f4f6] rounded-xl flex flex-col gap-3 relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity text-gray-900 border"><UserCircle size={100} /></div>
+                      <span className="text-xs font-black text-[#1a7a4a] uppercase tracking-widest relative z-10">Identitas Terpilih</span>
+                      <div className="relative z-10">
+                        <strong className="text-2xl font-black text-gray-900 uppercase shrink-0 leading-none block">{selectedStudent.mahasiswa.nama}</strong>
+                        <span className="text-xs font-bold text-[#1a7a4a] block mt-2 uppercase tracking-widest">{selectedStudent.mahasiswa.nim}</span>
+                      </div>
                     </div>
-                    <div className="p-8 bg-emerald-50/30 border-2 border-emerald-50 rounded-3xl flex flex-col gap-3 relative overflow-hidden group">
-                       <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><MapPin size={80} /></div>
-                       <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em]">Repositori Saat Ini</span>
-                       <div>
-                         <strong className="text-2xl font-black text-emerald-950 leading-none block uppercase tracking-tighter underline underline-offset-8 decoration-emerald-200">
-                           {selectedStudent.kelompok?.nama_kelompok || selectedStudent.kelompok?.code || 'NA'}
-                         </strong>
-                         <span className="text-[11px] font-bold text-emerald-600 block mt-2 uppercase tracking-wide">
-                           {selectedStudent.kelompok?.location 
-                             ? `${selectedStudent.kelompok.location.village_name || '-'}, ${selectedStudent.kelompok.location.district_name}` 
-                             : 'DISTRIK TIDAK TERDEFINISI'}
-                         </span>
-                       </div>
+                    <div className="p-8 bg-gray-50 border-2 border-gray-200 rounded-xl flex flex-col gap-3 relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-[#1a7a4a]"><MapPin size={100} strokeWidth={1} /></div>
+                      <span className="text-xs font-black text-[#1a7a4a] uppercase tracking-widest relative z-10">Penempatan Saat Ini</span>
+                      <div className="relative z-10">
+                        <strong className="text-2xl font-black text-[#1a7a4a] leading-none block uppercase">
+                          {selectedStudent.kelompok?.nama_kelompok || selectedStudent.kelompok?.code || 'BELUM DITEMPATKAN'}
+                        </strong>
+                        <span className="text-xs font-bold text-[#1a7a4a] block mt-3 uppercase tracking-widest">
+                          {selectedStudent.kelompok?.lokasi 
+                            ? `${selectedStudent.kelompok.lokasi.village_name || '-'}, ${selectedStudent.kelompok.lokasi.district_name}` 
+                            : 'DISTRIK TIDAK TERDEFINISI'}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
                   {/* Transfer Form Inputs */}
-                  <div className="space-y-10 pt-4">
+                  <div className="space-y-8 bg-white rounded-xl border-2 border-[#f3f4f6] p-8 shadow-sm">
+                    <div className="border-b border-[#f3f4f6] pb-6 mb-6">
+                        <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                        <Filter size={16} className="text-[#1a7a4a]"/>
+                        Parameter Relokasi Baru
+                        </h3>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-3">
-                        <label className="text-[11px] font-black text-emerald-950 uppercase tracking-[0.2em] flex items-center gap-2">
-                          <Filter size={14} className="text-emerald-500" />
-                          Target Siklus Periode
+                        <label className="text-xs font-bold text-gray-900 uppercase tracking-widest flex items-center gap-2">
+                          <TargetIcon /> Target Siklus Periode
                         </label>
                         <select 
                           value={targetPeriodId} 
                           onChange={(e) => { setTargetPeriodId(e.target.value); setTargetGroupId(''); fetchGroups(e.target.value); }} 
-                          className="w-full h-14 px-5 rounded-2xl bg-emerald-50/50 border-2 border-transparent focus:border-emerald-500 focus:bg-white text-sm font-black uppercase tracking-widest transition-all outline-none appearance-none"
+                          className="w-full h-14 px-5 rounded-xl bg-gray-50 border border-transparent focus:border-emerald-300 focus:bg-white text-sm font-bold text-gray-900 transition-all outline-none appearance-none"
                         >
                           <option value="">-- SELEKSI PERIODE --</option>
                           {targetPeriods.map(p => <option key={p.id} value={p.id}>{p.name} ({p.periode})</option>)}
@@ -248,17 +254,16 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
                       </div>
                       
                       <div className="space-y-3">
-                        <label className="text-[11px] font-black text-emerald-950 uppercase tracking-[0.2em] flex items-center gap-2">
-                          <MapPin size={14} className="text-emerald-500" />
-                          Unit Kelompok Tujuan
+                        <label className="text-xs font-bold text-gray-900 uppercase tracking-widest flex items-center gap-2">
+                          <MapPin size={14} className="text-[#1a7a4a]" /> Unit Kelompok Tujuan
                         </label>
                         <select 
                           value={targetGroupId} 
                           onChange={(e) => setTargetGroupId(e.target.value)} 
                           disabled={!targetPeriodId || isLoadingGroups} 
-                          className="w-full h-14 px-5 rounded-2xl bg-emerald-50/50 border-2 border-transparent focus:border-emerald-500 focus:bg-white text-sm font-black uppercase tracking-widest transition-all outline-none appearance-none disabled:opacity-40"
+                          className="w-full h-14 px-5 rounded-xl bg-gray-50 border border-transparent focus:border-emerald-300 focus:bg-white text-sm font-bold text-gray-900 transition-all outline-none appearance-none disabled:opacity-40"
                         >
-                          <option value="">{isLoadingGroups ? 'LOADED...' : '-- SELEKSI UNIT (OPSIONAL) --'}</option>
+                          <option value="">{isLoadingGroups ? 'LOADING...' : '-- SELEKSI UNIT (OPSIONAL) --'}</option>
                           {groups.filter(g => g.id !== selectedStudent.kelompok?.id).map(g => (
                             <option key={g.id} value={g.id.toString()}>
                               {g.nama} {g.available !== null ? `(${g.available} SLOT SISA)` : ''}
@@ -268,57 +273,60 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
                       </div>
                     </div>
 
-                    <div className="space-y-3">
-                      <label className="text-[11px] font-black text-emerald-950 uppercase tracking-[0.2em] flex items-center gap-2">
-                        <Filter size={14} className="text-emerald-500" strokeWidth={3} />
-                        Klausa Justifikasi Mutasi
+                    <div className="space-y-3 pt-4">
+                      <label className="text-xs font-bold text-gray-900 uppercase tracking-widest flex items-center gap-2">
+                        <AlertTriangle size={14} className="text-amber-500" strokeWidth={3} /> Alasan / Justifikasi Mutasi
                       </label>
                       <textarea 
                         value={reason} 
                         onChange={(e) => setReason(e.target.value)} 
-                        placeholder="INPUT ALASAN PERPINDAHAN UNTUK AUDIT LOG..." 
+                        placeholder="INPUT ALASAN PERPINDAHAN UNTUK AUDIT LOG..."
                         rows={4} 
-                        className="w-full p-6 rounded-[2rem] bg-emerald-50/50 border-2 border-transparent focus:border-emerald-500 focus:bg-white text-sm font-bold transition-all outline-none uppercase tracking-widest shadow-inner placeholder:text-emerald-900/30" 
+                        className="w-full p-6 rounded-xl bg-gray-50 border border-transparent focus:border-emerald-300 focus:bg-white text-sm font-bold text-gray-900 transition-all outline-none placeholder:text-gray-600"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Footer Actions */}
-                <div className="px-10 py-10 bg-emerald-50 border-t-2 border-emerald-100/50 flex flex-col sm:flex-row items-center justify-between gap-6">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100">
-                      <AlertTriangle size={20} />
+                <div className="px-10 py-6 bg-gray-50 border-t-2 border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-6">
+                  <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-[#1a7a4a] shadow-sm border border-gray-200">
+                      <Zap size={20} />
                     </div>
-                    <span className="text-[10px] font-black text-emerald-900 uppercase tracking-widest max-w-[200px] leading-relaxed">
-                      Operasi ini permanen dan akan terekam dalam log riwayat.
+                    <span className="text-xs font-bold text-[#1a7a4a] max-w-[250px] leading-relaxed uppercase tracking-wider">
+                      Operasi ini bersifat langsung dan akan tercatat permanen di dalam log audit kelayakan.
                     </span>
                   </div>
                   <Button 
                     onClick={handleTransfer} 
                     disabled={!targetPeriodId || !reason.trim()} 
-                    className="h-16 px-12 bg-emerald-600 hover:bg-emerald-950 text-white rounded-[1.5rem] font-black uppercase text-[11px] tracking-[0.2em] shadow-2xl shadow-emerald-600/30 active:scale-95 transition-all w-full sm:w-auto"
+                    className="h-14 px-10 bg-[#16a34a] hover:bg-[#15803d] text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-sm transform hover:scale-[1.02] active:scale-95 transition-all outline-none"
                   >
-                    Luncurkan Mutasi Peserta
+                    Luncurkan Mutasi
                   </Button>
                 </div>
               </div>
             ) : (
-              <div className="flex-1 flex flex-col bg-emerald-50/30 border-2 border-dashed border-emerald-100 rounded-[3rem] items-center justify-center p-20 text-center h-full group">
-                <div className="h-32 w-32 bg-white rounded-[3rem] shadow-xl border border-emerald-100 flex items-center justify-center mb-10 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
-                  <ArrowRightLeft size={48} className="text-emerald-300 group-hover:text-emerald-500 transition-colors" strokeWidth={1.5} />
+              <div className="flex-1 flex flex-col bg-gray-50/50 border-2 border-dashed border-gray-200 rounded-xl items-center justify-center p-20 text-center h-full group transition-all hover:bg-gray-50">
+                <div className="h-32 w-32 bg-white rounded-[2rem] shadow-sm border border-[#f3f4f6] flex items-center justify-center mb-10 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700">
+                  <ArrowRightLeft size={48} className="text-gray-600 group-hover:text-[#1a7a4a] transition-colors" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-2xl font-black text-emerald-950 uppercase tracking-tight mb-4 italic">Seleksi Buffer</h3>
-                <p className="text-sm font-bold text-emerald-900/40 max-w-sm uppercase tracking-widest leading-loose">
-                  Gunakan panel kriteria di sebelah kiri untuk memuat entitas peserta. Pratinjau formulir mutasi akan diaktifkan setelah seleksi.
+                <h3 className="text-2xl font-black text-gray-900 mb-4 uppercase tracking-tight">Kondisi Siaga</h3>
+                <p className="text-xs font-bold text-gray-700 max-w-sm leading-relaxed uppercase tracking-widest">
+                  Silakan seleksi identitas peserta dari kolom sebelah kiri untuk mengaktifkan antarmuka protokol perpindahan dan mutasi.
                 </p>
               </div>
             )}
           </div>
         </div>
       </div>
-    </>
+    </AppLayout>
   );
 }
 
-StudentTransfer.layout = AppLayout.layout;
+function TargetIcon() {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#1a7a4a]"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+    )
+}

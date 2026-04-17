@@ -31,7 +31,7 @@ export default function Pagination({ meta }: PaginationProps) {
             'inline-flex items-center justify-center h-9 px-3 text-xs font-medium transition-all border rounded-lg',
             active
                 ? 'bg-primary-500 border-primary-500 text-white shadow-sm'
-                : 'bg-white border-emerald-100/60 text-emerald-700 hover:bg-primary-50 hover:border-primary-300',
+                : 'bg-white border-gray-200/60 text-gray-700 hover:bg-primary-50 hover:border-primary-300',
             disabled && 'opacity-40 cursor-not-allowed pointer-events-none'
         );
     };
@@ -84,7 +84,7 @@ export default function Pagination({ meta }: PaginationProps) {
 
 export function PageInfo({ meta }: { meta: PaginationMeta }) {
     return (
-        <div className="text-xs font-medium text-emerald-950">
+        <div className="text-xs font-medium text-gray-900">
             Menampilkan {meta.from || 0} - {meta.to || 0} dari {meta.total} data
         </div>
     );

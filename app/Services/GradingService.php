@@ -9,12 +9,11 @@ use App\Jobs\FinalizeMassScoresJob;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\KonfigurasiPenilaian;
 use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\MonitoringDpl;
 use App\Models\KKN\NilaiKkn;
 use App\Services\KKN\GradeConversionService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-
-use App\Models\KKN\MonitoringDpl;
 
 class GradingService
 {

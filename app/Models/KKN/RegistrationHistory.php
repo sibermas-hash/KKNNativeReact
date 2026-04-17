@@ -16,15 +16,15 @@ class RegistrationHistory extends Model
     protected $table = 'registration_histories';
 
     protected $fillable = [
-    'peserta_kkn_id',
-    'from_period_id',
-    'to_period_id',
-    'from_group_id',
-    'to_group_id',
-    'reason',
-    'processed_by',
-    'processed_at',
-];
+        'peserta_kkn_id',
+        'from_period_id',
+        'to_period_id',
+        'from_group_id',
+        'to_group_id',
+        'reason',
+        'processed_by',
+        'processed_at',
+    ];
 
     protected $casts = ['processed_at' => 'datetime'];
 

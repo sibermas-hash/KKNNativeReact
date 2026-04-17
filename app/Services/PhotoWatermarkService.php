@@ -6,6 +6,8 @@ namespace App\Services;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 
@@ -13,14 +15,27 @@ class PhotoWatermarkService
 {
     /**
      * Apply watermark to a photo.
+     * Supports both local and cloud storage by using temporary files.
      */
     public function apply(string $path, array $metadata): bool
     {
         try {
-            $manager = new ImageManager(new Driver);
-            $fullPath = Storage::disk('local')->path($path);
+            $disk = Storage::disk(config('filesystems.default'));
 
-            $image = $manager->read($fullPath);
+            if (! $disk->exists($path)) {
+                return false;
+            }
+
+            $manager = new ImageManager(new Driver);
+
+            // Create a temporary file to work with (especially important for Cloud Storage)
+            $tempPath = storage_path('app/temp-'.Str::random(10).'.jpg');
+
+            // Get the file content and put it in temp
+            file_put_contents($tempPath, $disk->get($path));
+
+            // Load from temp
+            $image = $manager->read($tempPath);
 
             $text = sprintf(
                 "NIM: %s\nTime: %s\nLoc: %s, %s",
@@ -44,11 +59,24 @@ class PhotoWatermarkService
                 $font->valign('top');
             });
 
-            $image->save();
+            // Save the processed image back to temp
+            $image->save($tempPath);
+
+            // Upload the processed image back to the storage disk
+            $disk->put($path, file_get_contents($tempPath));
+
+            // Cleanup temp file
+            if (file_exists($tempPath)) {
+                unlink($tempPath);
+            }
 
             return true;
         } catch (\Exception $e) {
             \Log::error('Watermark failed: '.$e->getMessage());
+
+            if (isset($tempPath) && file_exists($tempPath)) {
+                unlink($tempPath);
+            }
 
             return false;
         }

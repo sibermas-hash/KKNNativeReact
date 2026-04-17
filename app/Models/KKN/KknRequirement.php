@@ -14,13 +14,13 @@ class KknRequirement extends Model
     protected $table = 'kkn_requirements';
 
     protected $fillable = [
-    'name',
-    'column_name',
-    'operator',
-    'expected_value',
-    'error_message',
-    'is_active',
-];
+        'name',
+        'column_name',
+        'operator',
+        'expected_value',
+        'error_message',
+        'is_active',
+    ];
 
     protected $casts = ['is_active' => 'boolean'];
 

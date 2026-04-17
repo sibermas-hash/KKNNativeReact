@@ -21,7 +21,7 @@ class CertificateService
             'mahasiswa.user',
             'kelompok.periode',
             'kelompok.lokasi',
-            'kelompok.dpl.user',
+            'kelompok.dosen.user',
         ]);
 
         $mahasiswaModel = $score->mahasiswa;
@@ -38,6 +38,18 @@ class CertificateService
         $periode = $kelompok->periode;
         if (! $periode) {
             throw new RuntimeException('Data periode untuk kelompok ini tidak ditemukan');
+        }
+
+        if ($score->total_score < 70) {
+            throw new RuntimeException('Sertifikat hanya diterbitkan untuk nilai minimal B (70)');
+        }
+
+        $laporanApproved = \App\Models\KKN\LaporanAkhir::where('kelompok_id', $kelompok->id)
+            ->where('status', 'approved')
+            ->exists();
+
+        if (! $laporanApproved) {
+            throw new RuntimeException('Laporan akhir belum disetujui untuk kelompok ini');
         }
 
         // Load Dynamic Configs

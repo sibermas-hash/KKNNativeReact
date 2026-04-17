@@ -11,10 +11,10 @@ class FakultasFactory extends Factory
 
     public function definition(): array
     {
-        $sequence = (string) $this->faker->unique()->numberBetween(1, 99);
+        $sequence = (string) $this->faker->unique()->numberBetween(1, 999999);
 
         return [
-            'code' => 'F'.str_pad($sequence, 2, '0', STR_PAD_LEFT),
+            'code' => 'F'.$this->faker->unique()->numberBetween(100000, 999999),
             'nama' => 'Fakultas '.$this->faker->unique()->word(),
         ];
     }

@@ -180,9 +180,8 @@ class ReportController extends Controller
 
         $disk = Storage::disk($diskName);
 
-        // If it's a local disk, use file response (preview)
         if (in_array($diskName, ['local', 'public'])) {
-            return response()->file($disk->path($path));
+            return response()->download($disk->path($path), $report->file_name);
         }
 
         // For Cloud Storage (S3/R2), use a secure temporary URL

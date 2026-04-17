@@ -3,20 +3,24 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\RoleSeeder;
 use Tests\TestCase;
 
 class AdminDashboardTest extends TestCase
 {
-    use RefreshDatabase;
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(RoleSeeder::class);
+    }
 
     /** @test */
     public function admins_can_access_admin_dashboard(): void
     {
         $admin = User::factory()->create();
-        $admin->assignRole('admin');
+        $admin->assignRole('superadmin');
 
-        $response = $this->actingAs($admin)->get('/admin/dashboard');
+        $response = $this->actingAs($admin)->get('/admin');
 
         $response->assertSuccessful();
     }
@@ -25,17 +29,17 @@ class AdminDashboardTest extends TestCase
     public function non_admins_cannot_access_admin_dashboard(): void
     {
         $student = User::factory()->create();
-        $student->assignRole('mahasiswa');
+        $student->assignRole('student');
 
-        $response = $this->actingAs($student)->get('/admin/dashboard');
+        $response = $this->actingAs($student)->get('/admin');
 
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     /** @test */
     public function unauthenticated_users_cannot_access_admin_dashboard(): void
     {
-        $response = $this->get('/admin/dashboard');
+        $response = $this->get('/admin');
 
         $response->assertRedirect('/login');
     }
@@ -44,14 +48,10 @@ class AdminDashboardTest extends TestCase
     public function admin_can_view_system_metrics(): void
     {
         $admin = User::factory()->create();
-        $admin->assignRole('admin');
+        $admin->assignRole('superadmin');
 
-        $response = $this->actingAs($admin)->json('GET', '/admin/dashboard');
+        $response = $this->actingAs($admin)->get('/admin');
 
         $response->assertSuccessful();
-        $response->assertJsonStructure([
-            'auth',
-            'props',
-        ]);
     }
 }

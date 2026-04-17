@@ -73,6 +73,7 @@ export default [
       ...jsxA11yRecommended.rules,
       'no-undef': 'off',
       'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
       'react/jsx-filename-extension': [1, { extensions: ['.tsx'] }],
       'import/extensions': [
         'error',

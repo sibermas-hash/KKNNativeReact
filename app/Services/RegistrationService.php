@@ -173,17 +173,15 @@ class RegistrationService
 
                             // If it's in a rejected state, allow resubmission
                             if ($existing->status === 'rejected') {
-                                $existing->fill([
-                                    'status' => 'pending',
-                                    'notes' => $notes,
-                                    'kelompok_id' => null,
-                                    'approved_at' => null,
-                                    'approved_by' => null,
-                                    'joined_group_at' => null,
-                                    'group_locked_until' => null,
-                                    'resubmitted_at' => now(),
-                                    'revision_count' => (int) ($existing->revision_count ?? 0) + 1,
-                                ]);
+                                $existing->status = 'pending';
+                                $existing->notes = $notes;
+                                $existing->kelompok_id = null;
+                                $existing->approved_at = null;
+                                $existing->approved_by = null;
+                                $existing->joined_group_at = null;
+                                $existing->group_locked_until = null;
+                                $existing->resubmitted_at = now();
+                                $existing->revision_count = (int) ($existing->revision_count ?? 0) + 1;
                                 $existing->save();
                             } else {
                                 throw ValidationException::withMessages([
@@ -199,17 +197,15 @@ class RegistrationService
                         'period_id' => 'Status pendaftaran Anda pada periode ini tidak mengizinkan perubahan kelompok.',
                     ]);
                 } elseif ($existing->status === 'rejected') {
-                    $existing->fill([
-                        'status' => 'pending',
-                        'notes' => $notes,
-                        'kelompok_id' => null,
-                        'approved_at' => null,
-                        'approved_by' => null,
-                        'joined_group_at' => null,
-                        'group_locked_until' => null,
-                        'resubmitted_at' => now(),
-                        'revision_count' => (int) ($existing->revision_count ?? 0) + 1,
-                    ]);
+                    $existing->status = 'pending';
+                    $existing->notes = $notes;
+                    $existing->kelompok_id = null;
+                    $existing->approved_at = null;
+                    $existing->approved_by = null;
+                    $existing->joined_group_at = null;
+                    $existing->group_locked_until = null;
+                    $existing->resubmitted_at = now();
+                    $existing->revision_count = (int) ($existing->revision_count ?? 0) + 1;
                     $existing->save();
                 } else {
                     $existing->notes = $notes;

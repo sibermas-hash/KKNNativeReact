@@ -14,7 +14,7 @@ class Fakultas extends Model
 
     protected $connection = 'kkn';
 
-    protected $fillable = ['nama', 'kode', 'master_id'];
+    protected $fillable = ['nama', 'code', 'master_id'];
 
     use HasFactory;
 

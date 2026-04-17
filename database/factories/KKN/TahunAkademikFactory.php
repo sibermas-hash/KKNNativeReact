@@ -11,7 +11,7 @@ class TahunAkademikFactory extends Factory
 
     public function definition(): array
     {
-        $startYear = $this->faker->numberBetween(2020, 2030);
+        $startYear = $this->faker->unique()->numberBetween(2000, 2099);
 
         return [
             'year' => $startYear.'/'.($startYear + 1),

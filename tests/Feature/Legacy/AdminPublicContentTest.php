@@ -26,7 +26,7 @@ class AdminPublicContentTest extends TestCase
             ->get('/admin/konten-publik/profil')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Content/Profile')
+                ->component('Admin/Website/Content/Profile')
                 ->has('content')
                 ->where('content.about', 'Lembaga Penelitian dan Pengabdian kepada Masyarakat (LPPM) UIN Profesor Kiai Haji Saifuddin Zuhri Purwokerto.')
             );
@@ -38,7 +38,7 @@ class AdminPublicContentTest extends TestCase
         $admin->assignRole('superadmin');
 
         $this->actingAs($admin)
-            ->post('/admin/konten-publik/profil', [
+            ->patch('/admin/konten-publik/profil', [
                 'about' => 'Profil terbaru LPPM untuk halaman publik.',
                 'visi' => 'Visi terbaru.',
                 'misi' => 'Misi terbaru.',
@@ -57,7 +57,7 @@ class AdminPublicContentTest extends TestCase
         $admin->assignRole('superadmin');
 
         $this->actingAs($admin)
-            ->post('/admin/konten-publik/skema', [
+            ->patch('/admin/konten-publik/skema', [
                 'title' => 'Skema KKN Pilihan.',
                 'intro' => 'Pengantar baru untuk halaman skema.',
                 'schemes' => [

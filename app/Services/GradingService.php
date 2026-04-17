@@ -141,9 +141,9 @@ class GradingService
 
         // Update score record
         NilaiKkn::where('id', $score->id)->update([
-            'dpl_weighted_score' => round($aWeighted, 2),
-            'village_weighted_score' => round($bWeighted, 2),
-            'lppm_weighted_score' => round($cWeighted, 2),
+            'dpl_weighted_score' => round($aRaw, 2),
+            'village_weighted_score' => round($bRaw, 2),
+            'lppm_weighted_score' => round($cRaw, 2),
             'total_score' => round($totalScore, 2),
             'letter_grade' => $gradeData['grade'],
             // Sync legacy fields

@@ -4,12 +4,12 @@ namespace Tests\Unit\Services;
 
 use App\Models\KKN\Periode;
 use App\Services\PeriodContextService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Tests\TestCase;
 
 class PeriodContextServiceTest extends TestCase
 {
-    use RefreshDatabase;
+
 
     private PeriodContextService $service;
 

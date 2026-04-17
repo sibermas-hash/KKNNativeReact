@@ -207,7 +207,7 @@ export default function RegistrationShow({ registration }: Props) {
                       <div className="flex items-center gap-4 shrink-0 ml-4">
                         <StatusTag status={doc.status || 'pending'} />
                         <a 
-                          href={`/admin/pendaftaran/berkas/unduh?path=${doc.file_path}`} target="_blank"
+                          href={`/admin/pendaftaran/berkas/unduh?path=${doc.file_path}`} target="_blank" rel="noopener noreferrer"
                           className="h-8 px-3 bg-white border border-gray-200 text-[#1a7a4a] text-xs font-black uppercase rounded-lg hover:bg-emerald-950 hover:text-white transition-all no-underline flex items-center gap-2 shadow-sm"
                         >
                           Lihat <ExternalLink size={12} />

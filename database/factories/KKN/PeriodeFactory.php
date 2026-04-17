@@ -50,4 +50,25 @@ class PeriodeFactory extends Factory
             'registration_end' => Carbon::now()->addWeek()->toDateString(),
         ]);
     }
+
+    public function registration(): static
+    {
+        return $this->active()->state([
+            'current_phase' => 'registration',
+        ]);
+    }
+
+    public function execution(): static
+    {
+        return $this->active()->state([
+            'current_phase' => 'execution',
+        ]);
+    }
+
+    public function grading(): static
+    {
+        return $this->active()->state([
+            'current_phase' => 'grading',
+        ]);
+    }
 }

@@ -48,6 +48,8 @@ class StudentBpjsProfileTest extends TestCase
             'program_id' => $program->id,
             'birth_place' => 'Banyumas',
             'birth_date' => '2003-04-01',
+            'gender' => 'P',
+            'shirt_size' => 'M',
         ]);
 
         $this->actingAs($user)
@@ -60,7 +62,7 @@ class StudentBpjsProfileTest extends TestCase
                 ->where('student.mother_name', 'Ibu Profil')
                 ->where('student.faculty', 'Fakultas Dakwah')
                 ->where('student.program', 'Komunikasi Penyiaran Islam')
-                ->where('student.bpjs_complete', true)
+                ->where('student.biodata_complete', true)
                 ->where('student.domicile_complete', true)
                 ->where('student.domicile_verified', true)
             );
@@ -85,7 +87,7 @@ class StudentBpjsProfileTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->put(route('profile.update'), [
+            ->patch(route('profile.update'), [
                 'name' => 'Mahasiswa Update BPJS',
                 'phone' => '081355577799',
                 'address' => 'Jl. Jenderal Soedirman No. 88',

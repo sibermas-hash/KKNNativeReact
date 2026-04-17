@@ -15,7 +15,7 @@ class Prodi extends Model
 
     protected $connection = 'kkn';
 
-    protected $fillable = ['faculty_id', 'nama', 'kode', 'jenjang', 'master_id'];
+    protected $fillable = ['faculty_id', 'nama', 'code', 'jenjang', 'master_id'];
 
     protected $casts = ['faculty_id' => 'integer'];
 

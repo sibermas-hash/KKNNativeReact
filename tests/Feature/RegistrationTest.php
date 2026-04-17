@@ -39,6 +39,9 @@ class RegistrationTest extends TestCase
             'birth_place' => 'Purwokerto',
             'birth_date' => '2003-01-11',
             'gender' => 'L',
+            'shirt_size' => 'L',
+            'sks_completed' => 110,
+            'sks_completed' => 110,
             'health_certificate_path' => 'files/health.pdf',
             'parent_permission_path' => 'files/parent.pdf',
         ]);
@@ -74,6 +77,9 @@ class RegistrationTest extends TestCase
             'mother_name' => 'Nur Hidayah',
             'birth_place' => 'Cilacap',
             'birth_date' => '2003-02-12',
+            'gender' => 'L',
+            'shirt_size' => 'L',
+            'sks_completed' => 110,
         ]);
 
         $period = Periode::factory()->active()->create();
@@ -124,6 +130,9 @@ class RegistrationTest extends TestCase
             'mother_name' => 'Khadijah',
             'birth_place' => 'Purbalingga',
             'birth_date' => '2003-03-13',
+            'gender' => 'L',
+            'shirt_size' => 'L',
+            'sks_completed' => 110,
         ]);
 
         $period = Periode::factory()->active()->create();
@@ -164,17 +173,22 @@ class RegistrationTest extends TestCase
     public function test_student_is_redirected_to_profile_when_bpjs_biodata_is_incomplete(): void
     {
         $user = User::factory()->create([
-            'phone' => null,
+            'phone' => '081234567890',
             'address' => null,
         ]);
         $user->assignRole('student');
 
         Mahasiswa::factory()->create([
             'user_id' => $user->id,
+            'nama' => 'Test Student',
+            'gender' => 'L',
+            'health_certificate_path' => 'files/health.pdf',
+            'parent_permission_path' => 'files/parent.pdf',
             'nik' => null,
             'mother_name' => null,
             'birth_place' => null,
             'birth_date' => null,
+            'sks_completed' => 110,
         ]);
 
         $period = Periode::factory()->active()->create();
@@ -216,10 +230,15 @@ class RegistrationTest extends TestCase
 
         Mahasiswa::factory()->create([
             'user_id' => $user->id,
+            'nama' => 'Test Student',
+            'gender' => 'L',
+            'health_certificate_path' => 'files/health.pdf',
+            'parent_permission_path' => 'files/parent.pdf',
             'nik' => '3301010101010014',
             'mother_name' => 'Maryam',
             'birth_place' => 'Banjarnegara',
             'birth_date' => '2003-04-14',
+            'sks_completed' => 110,
         ]);
 
         $period = Periode::factory()->active()->create();

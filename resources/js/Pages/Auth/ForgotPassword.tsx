@@ -61,7 +61,7 @@ export default function ForgotPassword({
                     <a
                         href={support_whatsapp_link}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className="flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700"
                     >
                         <MessageCircle className="h-5 w-5" />

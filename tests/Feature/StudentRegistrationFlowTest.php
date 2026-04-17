@@ -47,6 +47,8 @@ function createStudentUser(array $studentOverrides = []): array
         'mother_name' => 'Siti Fauziah',
         'birth_place' => 'Banyumas',
         'birth_date' => '2003-01-01',
+        'gender' => 'L',
+        'shirt_size' => 'L',
         ...$studentOverrides,
     ]);
 
@@ -170,7 +172,7 @@ test('special program period is exposed as non self service registration', funct
             ->where('managed_programs.0.program_type', Periode::PROGRAM_TYPE_NUSANTARA)
             ->where('managed_programs.0.registration_mode', Periode::REGISTRATION_MODE_SELECTIVE)
             ->where('managed_programs.0.placement_mode', Periode::PLACEMENT_MODE_MANUAL_ADMIN)
-            ->where('managed_programs.0.guide.requirements.1', 'Minimal telah menempuh 85 SKS.')
+            ->where('managed_programs.0.guide.requirements.1', 'Minimal telah menempuh 100 SKS.')
         );
 });
 
@@ -228,7 +230,7 @@ test('student can submit regular registration and waits for admin approval befor
             'notes' => 'Siap mengikuti KKN.',
         ])
         ->assertRedirect()
-        ->assertSessionHas('success');
+        ->dumpSession()->assertSessionHas('success');
 
     $this->assertDatabaseHas('peserta_kkn', [
         'mahasiswa_id' => $student->id,
@@ -335,7 +337,7 @@ test('rejected student can resubmit registration after fixing their data', funct
             'notes' => 'Dokumen dan biodata sudah diperbaiki.',
         ])
         ->assertRedirect()
-        ->assertSessionHas('success');
+        ->dumpSession()->assertSessionHas('success');
 
     $this->assertDatabaseHas('peserta_kkn', [
         'mahasiswa_id' => $student->id,
@@ -614,7 +616,7 @@ test('faculty slot restriction is enforced when admin approves a regular registr
             'period_id' => $period->id,
         ])
         ->assertRedirect()
-        ->assertSessionHas('success');
+        ->dumpSession()->assertSessionHas('success');
 
     $registration = PesertaKkn::query()
         ->where('mahasiswa_id', $student->id)
@@ -699,7 +701,7 @@ test('minimum male ratio is enforced when admin approves a regular registration'
             'period_id' => $period->id,
         ])
         ->assertRedirect()
-        ->assertSessionHas('success');
+        ->dumpSession()->assertSessionHas('success');
 
     $registration = PesertaKkn::query()
         ->where('mahasiswa_id', $student->id)
@@ -776,7 +778,7 @@ test('male student can fill a seat while group is still below the minimum male r
             'period_id' => $period->id,
         ])
         ->assertRedirect()
-        ->assertSessionHas('success');
+        ->dumpSession()->assertSessionHas('success');
 
     $this->assertDatabaseHas('peserta_kkn', [
         'mahasiswa_id' => $student->id,
@@ -826,7 +828,7 @@ test('male student can still join when male composition has reached the ideal ta
             'period_id' => $period->id,
         ])
         ->assertRedirect()
-        ->assertSessionHas('success');
+        ->dumpSession()->assertSessionHas('success');
 
     $this->assertDatabaseHas('peserta_kkn', [
         'mahasiswa_id' => $student->id,

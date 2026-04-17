@@ -59,6 +59,7 @@ class GroupManagementWorkflowTest extends TestCase
             'faculty_id' => $faculty->id,
             'program_id' => $program->id,
             'gender' => 'L',
+            'shirt_size' => 'L',
         ]);
 
         return compact('user', 'mahasiswa');
@@ -109,7 +110,7 @@ class GroupManagementWorkflowTest extends TestCase
             ->assertRedirect(route('admin.dpl.penugasan'));
 
         $group->refresh();
-        expect($group->dpl_id)->toBe($dosen->id);
+        expect($group->dosen()->where('dosen_id', $dosen->id)->exists())->toBeTrue();
     }
 
     public function test_students_are_assigned_to_group(): void
@@ -402,11 +403,12 @@ class GroupManagementWorkflowTest extends TestCase
         }
 
         // Admin views group details
-        $this->actingAs($admin)
+        $response = $this->actingAs($admin)
             ->get(route('admin.kelompok.show', $group))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Groups/Show')
+            ->assertOk();
+        
+        $response->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Operational/Groups/Show')
                 ->where('group.nama_kelompok', 'Kelompok Mawar')
                 ->has('members')
             );
@@ -432,7 +434,7 @@ class GroupManagementWorkflowTest extends TestCase
             ->get(route('admin.kelompok.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Groups/Index')
+                ->component('Admin/Operational/Groups/Index')
                 ->has('groups.data', 3)
             );
     }
@@ -460,7 +462,7 @@ class GroupManagementWorkflowTest extends TestCase
             ->get(route('admin.kelompok.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Groups/Index')
+                ->component('Admin/Operational/Groups/Index')
                 ->where('groups.data.0.main_lecturer.name', $dosen->nama)
             );
     }

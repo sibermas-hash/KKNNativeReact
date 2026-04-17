@@ -89,15 +89,20 @@ class StudentOperationalPagesTest extends TestCase
 
     public function test_dpl_evaluation_create_redirects_to_index_page(): void
     {
+        $period = \App\Models\KKN\Periode::factory()->grading()->create();
+
         $dplUser = User::factory()->create([
             'username' => 'dpl_eval_redirect',
             'email' => 'dpl-eval-redirect@example.test',
         ]);
         $dplUser->assignRole('dpl');
 
-        Dosen::factory()->create([
+        $dosen = Dosen::factory()->create([
             'user_id' => $dplUser->id,
         ]);
+
+        $group = KelompokKkn::factory()->create(['period_id' => $period->id]);
+        $group->dosen()->attach($dosen->id, ['role' => 'Ketua']);
 
         $this->actingAs($dplUser)
             ->get(route('dpl.evaluations.create'))

@@ -118,12 +118,14 @@ class EvaluationController extends Controller
         // LARAVEL 13 OPTIMIZATION: Concurrency for Parallel AI Data Fetching
         $studentIds = $groups->flatMap(fn ($g) => $g->peserta->pluck('mahasiswa_id'))->filter()->unique()->values();
 
-        $aiPerformanceData = Concurrency::run(
-            $studentIds->map(fn ($id) => fn () => [
+        $tasks = [];
+        foreach ($studentIds as $id) {
+            $tasks[] = fn () => [
                 'id' => $id,
                 'data' => $this->gradingService->getAiPerformanceSummary((int) $id),
-            ])->toArray()
-        );
+            ];
+        }
+        $aiPerformanceData = Concurrency::run($tasks);
         $aiLookup = collect($aiPerformanceData)->pluck('data', 'id');
 
         return Inertia::render('Dpl/Evaluations/Index', [

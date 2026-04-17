@@ -100,7 +100,7 @@ export default function StudentPoskoEdit({ isLeader, group, posko }: Props) {
  <a
  href={posko.gmaps_link}
  target="_blank"
- rel="noreferrer"
+ rel="noopener noreferrer"
  className="mt-4 inline-flex items-center rounded-lg border border-gray-200/60 px-4 py-2 text-sm font-medium text-gray-700 hover:border-primary hover:text-primary"
  >
  Buka Google Maps

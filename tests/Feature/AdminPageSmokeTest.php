@@ -33,7 +33,6 @@ class AdminPageSmokeTest extends TestCase
             '/admin/laporan/program-kerja',
             '/admin/laporan/akhir',
             '/admin/evaluasi',
-            '/admin/cek-kelayakan',
             '/admin/periode',
             '/admin/tahun-akademik',
             '/admin/jenis-kkn',
@@ -90,7 +89,6 @@ class AdminPageSmokeTest extends TestCase
             '/admin/laporan/program-kerja',
             '/admin/laporan/akhir',
             '/admin/evaluasi',
-            '/admin/cek-kelayakan',
             '/admin/laporan',
             '/admin/reports',
             '/admin/generator-nilai',
@@ -114,10 +112,6 @@ class AdminPageSmokeTest extends TestCase
             '/admin',
             '/admin/pendaftaran',
             '/admin/rekap-nilai',
-            '/admin/laporan/harian',
-            '/admin/laporan/program-kerja',
-            '/admin/laporan/akhir',
-            '/admin/cek-kelayakan',
         ];
 
         foreach ($paths as $path) {

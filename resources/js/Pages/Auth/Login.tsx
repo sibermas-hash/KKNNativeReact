@@ -181,6 +181,7 @@ export default function Login() {
                   <User size={16} />
                 </div>
                 <input
+                  data-testid="login-identifier"
                   type="text"
                   value={data.login}
                   onChange={(e) => setData('login', e.target.value)}
@@ -203,6 +204,7 @@ export default function Login() {
                   <Lock size={16} />
                 </div>
                 <input
+                  data-testid="login-password"
                   type={showPassword ? 'text' : 'password'}
                   value={data.password}
                   onChange={(e) => setData('password', e.target.value)}
@@ -229,7 +231,7 @@ export default function Login() {
               <div className="flex gap-2">
                 <div className="flex-1 h-12 bg-white border border-gray-200/60 rounded-xl px-4 flex items-center justify-between">
                   <span className="text-xs font-bold text-gray-900 tabular-nums uppercase">
-                    {activeCaptchaQuestion}{' '}
+                    <span data-testid="login-captcha-question">{activeCaptchaQuestion}</span>{' '}
                     <span className="text-primary-600 font-bold ml-1">=</span>
                   </span>
                   <button
@@ -243,6 +245,7 @@ export default function Login() {
                   </button>
                 </div>
                 <input
+                  data-testid="login-captcha-answer"
                   type="text"
                   inputMode="numeric"
                   value={data.captcha_answer}
@@ -272,6 +275,7 @@ export default function Login() {
           {/* Submit */}
           <motion.div variants={itemVariants} className="pt-2">
             <button
+              data-testid="login-submit"
               type="submit"
               disabled={processing}
               className="w-full h-12 bg-primary-600 text-white rounded-xl flex items-center justify-center gap-2 group hover:bg-green-800 transition-all shadow-lg shadow-green-100 active:scale-[0.98] disabled:opacity-50"

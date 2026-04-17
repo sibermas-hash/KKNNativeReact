@@ -9,21 +9,33 @@ use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\SystemSetting;
+use Illuminate\Support\Collection;
 
 class EligibilityService
 {
+    /**
+     * Local cache to prevent N+1 queries for the same metadata during a single request.
+     */
+    protected ?Periode $activePeriod = null;
+    protected ?array $cachedSettings = null;
+
     /**
      * Check if a student is eligible to register for KKN
      */
     public function checkEligibility(Mahasiswa $mahasiswa, ?int $periodeId = null, array $preloadedData = []): array
     {
-        $periode = $preloadedData['periode'] ?? Periode::find($periodeId) ?? Periode::getActivePeriod();
+        // 1. Resolve Periode (Use preloaded -> then cached -> then DB)
+        $periode = $preloadedData['periode'] 
+            ?? ($periodeId ? Periode::with('jenisKkn')->find($periodeId) : $this->getActivePeriod());
+
+        // 2. Resolve Settings
+        $settings = $preloadedData['settings'] ?? $this->getSettings();
 
         $checks = [
             'registration_window' => $this->checkRegistrationWindow($periode),
             'no_prior_completion' => $this->checkNoPriorCompletion($mahasiswa, $preloadedData['completed_ids'] ?? null),
-            'min_sks' => $this->checkMinimumSKS($mahasiswa, $periode, $preloadedData['settings'] ?? []),
-            'min_gpa' => $this->checkMinimumGPA($mahasiswa, $periode, $preloadedData['settings'] ?? []),
+            'min_sks' => $this->checkMinimumSKS($mahasiswa, $periode, $settings),
+            'min_gpa' => $this->checkMinimumGPA($mahasiswa, $periode, $settings),
             'bta_ppi' => $this->checkBtaPpi($mahasiswa),
             'program_prodi' => $this->checkProgramProdiRestriction($mahasiswa, $periode),
             'personal_status' => $this->checkPersonalStatusMandate($mahasiswa, $periode),
@@ -33,7 +45,7 @@ class EligibilityService
 
         // Apply dispensasi bypass — override failed checks if student has active dispensasi
         $bypassed = $preloadedData['dispensations'][$mahasiswa->nim]
-            ?? DispensasiKkn::getBypassedRequirements($mahasiswa->nim, $periodeId);
+            ?? DispensasiKkn::getBypassedRequirements($mahasiswa->nim, $periode?->id);
 
         $hasDispensasi = ! empty($bypassed);
 
@@ -72,7 +84,7 @@ class EligibilityService
     private function checkRegistrationWindow(?Periode $periode): array
     {
         if (! $periode) {
-            return ['passed' => false, 'key' => 'no_active_period', 'message' => 'Tidak ada periode KKN aktif'];
+            return ['passed' => false, 'key' => 'registration_window', 'message' => 'Tidak ada periode KKN aktif'];
         }
 
         $now = now();
@@ -112,11 +124,12 @@ class EligibilityService
     /**
      * Check minimum SKS requirement
      */
-    private function checkMinimumSKS(Mahasiswa $mahasiswa, ?Periode $periode = null): array
+    private function checkMinimumSKS(Mahasiswa $mahasiswa, ?Periode $periode, array $settings): array
     {
         // Prioritaskan dari Master Data Jenis KKN (jika ada)
-        $minSks = $periode?->jenisKkn?->min_sks
-                ?? SystemSetting::get('min_sks_registration', 100);
+        $minSks = (int) ($periode?->jenisKkn?->min_sks
+                ?? $settings['min_sks_registration']
+                ?? 100);
 
         $hasEnoughSks = ($mahasiswa->sks_completed ?? 0) >= $minSks;
 
@@ -132,18 +145,17 @@ class EligibilityService
     }
 
     /**
-     * Check minimum GPA requirement (optional)
+     * Check minimum GPA requirement
      */
-    private function checkMinimumGPA(Mahasiswa $mahasiswa, ?Periode $periode = null): array
+    private function checkMinimumGPA(Mahasiswa $mahasiswa, ?Periode $periode, array $settings): array
     {
         // Prioritaskan dari Master Data Jenis KKN (jika ada)
         $minGpa = $periode?->jenisKkn ? (float) $periode->jenisKkn->min_gpa : null;
-        $isDynamic = $minGpa !== null && $minGpa > 0;
+        
+        if ($minGpa === null || $minGpa <= 0) {
+            $enableGpa = filter_var($settings['enable_gpa_requirement'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-        if (! $isDynamic) {
-            $minGpaEnabled = SystemSetting::get('enable_gpa_requirement', false);
-
-            if (! $minGpaEnabled) {
+            if (! $enableGpa) {
                 return [
                     'passed' => true,
                     'key' => 'min_gpa',
@@ -152,10 +164,10 @@ class EligibilityService
                 ];
             }
 
-            $minGpa = SystemSetting::get('min_gpa_registration', 2.00);
+            $minGpa = (float) ($settings['min_gpa_registration'] ?? 2.00);
         }
 
-        $studentGpa = $mahasiswa->gpa ?? 0;
+        $studentGpa = (float) ($mahasiswa->gpa ?? 0);
         $hasEnoughGpa = $studentGpa >= $minGpa;
 
         return [
@@ -175,7 +187,7 @@ class EligibilityService
      */
     private function checkBtaPpi(Mahasiswa $mahasiswa): array
     {
-        $passed = $mahasiswa->is_bta_ppi_passed ?? false;
+        $passed = (bool) ($mahasiswa->is_bta_ppi_passed ?? false);
 
         return [
             'passed' => $passed,
@@ -196,8 +208,13 @@ class EligibilityService
         $kknTypeLabel = strtolower($periode->jenisKkn->name);
 
         if (str_contains($kknTypeLabel, 'zakat')) {
-            $mahasiswa->loadMissing('prodi');
             $prodiName = strtolower($mahasiswa->prodi?->nama ?? '');
+            
+            // Re-check if relation missing
+            if (empty($prodiName) && ! $mahasiswa->relationLoaded('prodi')) {
+                $prodiName = strtolower($mahasiswa->prodi()->first()?->nama ?? '');
+            }
+
             $isMazawa = str_contains($prodiName, 'zakat') || str_contains($prodiName, 'mazawa');
 
             return [
@@ -220,12 +237,12 @@ class EligibilityService
             return ['passed' => true, 'key' => 'personal_status', 'message' => 'N/A'];
         }
 
-        $specialPrograms = ['nusantara', 'internasional', 'kolaborasi', 'tematik', 'katana', 'zakat'];
+        $specialKeywords = ['nusantara', 'internasional', 'kolaborasi', 'tematik', 'katana', 'zakat'];
         $kknTypeLabel = strtolower($periode->jenisKkn->name);
 
         $isSpecial = false;
-        foreach ($specialPrograms as $program) {
-            if (str_contains($kknTypeLabel, $program)) {
+        foreach ($specialKeywords as $word) {
+            if (str_contains($kknTypeLabel, $word)) {
                 $isSpecial = true;
                 break;
             }
@@ -233,9 +250,10 @@ class EligibilityService
 
         if ($isSpecial) {
             return [
-                'passed' => true, // Notice only, manual verification by Admin later
+                'passed' => true, // Notice only, as system doesn't track marriage/pregnancy yet
                 'key' => 'personal_status',
                 'message' => 'WAJIB: Belum Menikah & Tidak Sedang Hamil/Menyusui (Khusus Perempuan)',
+                'is_warning' => true,
             ];
         }
 
@@ -254,11 +272,11 @@ class EligibilityService
         return [
             'passed' => $allDocs,
             'key' => 'documents',
-            'message' => $allDocs
-                ? 'Dokumen lengkap'
-                : 'Dokumen tidak lengkap',
-            'has_health_certificate' => $hasHealthCert,
-            'has_parent_permission' => $hasParentPerm,
+            'message' => $allDocs ? 'Dokumen lengkap' : 'Dokumen tidak lengkap',
+            'details' => [
+                'health_certificate' => $hasHealthCert,
+                'parent_permission' => $hasParentPerm,
+            ]
         ];
     }
 
@@ -284,23 +302,48 @@ class EligibilityService
     }
 
     /**
+     * Get metadata for active period (Cached)
+     */
+    private function getActivePeriod(): ?Periode
+    {
+        if ($this->activePeriod === null) {
+            $this->activePeriod = Periode::getActivePeriod();
+        }
+        return $this->activePeriod;
+    }
+
+    /**
+     * Get system settings (Cached)
+     */
+    private function getSettings(): array
+    {
+        if ($this->cachedSettings === null) {
+            $this->cachedSettings = SystemSetting::pluck('value', 'config_key')->toArray();
+        }
+        return $this->cachedSettings;
+    }
+
+    /**
      * Get all eligible students for a period
      */
-    public function getEligibleStudents(?int $periodeId = null, ?int $facultyId = null)
+    public function getEligibleStudents(?int $periodeId = null, ?int $facultyId = null): array
     {
-        $periode = $periodeId ? Periode::with('jenisKkn')->find($periodeId) : Periode::getActivePeriod();
+        $periode = $periodeId ? Periode::with('jenisKkn')->find($periodeId) : $this->getActivePeriod();
+        $settings = $this->getSettings();
 
+        // Optimized Query with eager loading
         $query = Mahasiswa::with(['user', 'prodi.fakultas', 'fakultas']);
 
         if ($facultyId) {
             $query->where('faculty_id', $facultyId);
         }
 
+        // For large datasets, consider using chunking or cursor, but for now we optimize memory via eager load
         $students = $query->get();
         $studentIds = $students->pluck('id')->toArray();
         $studentNims = $students->pluck('nim')->toArray();
 
-        // BATCH PRE-LOADING: Avoid N+1 queries in loop
+        // BATCH PRE-LOADING: Core optimization to avoid N+1 queries in the loop below
         $completedIds = PesertaKkn::whereIn('mahasiswa_id', $studentIds)
             ->where('status', 'completed')
             ->pluck('mahasiswa_id')
@@ -320,8 +363,6 @@ class EligibilityService
             ->groupBy('nim')
             ->map(fn ($items) => $items->flatMap(fn ($i) => $i->bypassed_requirements ?? [])->filter()->unique()->values()->toArray())
             ->toArray();
-
-        $settings = SystemSetting::pluck('value', 'config_key')->toArray();
 
         $preloadedData = [
             'periode' => $periode,

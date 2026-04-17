@@ -5,6 +5,9 @@ Dokumen ini dipakai untuk uji terima sistem dari sudut pandang pengguna nyata. J
 Rujukan tambahan untuk file ekspor dan template:
 - lihat [Panduan Output Operasional](/Users/macm4/Documents/Projek/KKN/kknuinsaizu/docs/PANDUAN_OUTPUT_OPERASIONAL.md)
 - lihat [Checklist Readiness Produksi](/Users/macm4/Documents/Projek/KKN/kknuinsaizu/docs/CHECKLIST_READINESS_PRODUKSI.md)
+- lihat [Runbook Alpha Beta Testing](/Users/macm4/Documents/Projek/KKN/kknuinsaizu/docs/RUNBOOK_ALPHA_BETA_TESTING.md)
+- lihat [Template Laporan Bug](/Users/macm4/Documents/Projek/KKN/kknuinsaizu/docs/TEMPLATE_LAPORAN_BUG.md)
+- lihat [Strategi Automated Testing](/Users/macm4/Documents/Projek/KKN/kknuinsaizu/docs/STRATEGI_AUTOMATED_TESTING.md)
 
 ## Prasyarat Umum
 

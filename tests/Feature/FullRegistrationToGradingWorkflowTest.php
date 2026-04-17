@@ -29,6 +29,22 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
     {
         parent::setUp();
         $this->seed(RoleSeeder::class);
+        \Illuminate\Support\Facades\Storage::fake(config('filesystems.default'));
+
+        // Mock AI Agent to avoid external API calls during tests
+        $this->mock(\App\Ai\Agents\ActivityReviewerAgent::class, function ($mock) {
+            $structuredResponse = \Mockery::mock(\Laravel\Ai\Responses\StructuredAgentResponse::class);
+            $structuredResponse->shouldReceive('toArray')->andReturn([
+                'summary' => 'Ringkasan kegiatan simulasi.',
+                'abcd_compliance' => 10,
+                'quality_score' => 10,
+                'feedback' => 'Bagus, lanjutkan.',
+                'flagged' => false,
+                'tags' => ['Simulasi'],
+            ]);
+
+            $mock->shouldReceive('prompt')->andReturn($structuredResponse);
+        });
     }
 
     private function createAdminUser(): User
@@ -80,6 +96,10 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
             'faculty_id' => $faculty->id,
             'program_id' => $program->id,
             'gender' => 'L',
+            'shirt_size' => 'L',
+            'is_bta_ppi_passed' => true,
+            'sks_completed' => 110,
+            'gpa' => 3.5,
         ]);
 
         return compact('user', 'mahasiswa', 'faculty', 'program');
@@ -134,6 +154,17 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         $period = Periode::where('name', 'KKN Reguler 2026')->firstOrFail();
         expect($period->is_active)->toBeTrue();
 
+        // Admin switches phase to REGISTRATION
+        $this->actingAs($admin)
+            ->post(route('admin.dashboard.switch-phase'), [
+                'target' => 'registration',
+                'period_id' => $period->id,
+            ])
+            ->assertRedirect();
+        
+        $period->refresh();
+        expect($period->current_phase)->toBe('registration');
+
         // ── Step 2: Student registers for KKN ─────────────────────────
         ['user' => $studentUser, 'mahasiswa' => $mahasiswa] = $this->createStudentUser();
 
@@ -152,9 +183,11 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         ]);
 
         $this->actingAs($studentUser)
-            ->post(route('student.registration.store'), [
+            ->postJson(route('student.registration.store'), [
                 'period_id' => $period->id,
                 'notes' => 'Siap mengikuti KKN.',
+                'health_certificate' => \Illuminate\Http\UploadedFile::fake()->create('health.pdf', 500),
+                'parent_permission' => \Illuminate\Http\UploadedFile::fake()->create('permission.pdf', 500),
             ])
             ->assertRedirect()
             ->assertSessionHas('success');
@@ -206,6 +239,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         expect($group->dpl_id)->toBe($dosen->id);
 
         // ── Step 5: Student submits daily report ──────────────────────
+        $period->update(['current_phase' => 'execution']);
         $this->ensureWorkshopCompleted($studentUser);
 
         PoskoKelompok::create([
@@ -231,6 +265,9 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
                 'gps_accuracy' => '18.50',
                 'captured_at' => now()->toIso8601String(),
                 'location_source' => 'gps',
+                'category' => 'program_unggulan',
+                'abcd_stage' => 'discovery',
+                'files' => [\Illuminate\Http\UploadedFile::fake()->image('test.jpg')]
             ])
             ->assertCreated()
             ->assertJson(['message' => 'Laporan harian berhasil dikirim.']);
@@ -258,6 +295,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
                 'objectives' => 'Meningkatkan kesadaran masyarakat tentang pendidikan.',
                 'target_participants' => 50,
                 'budget' => 500000,
+                'kategori' => 'unggulan',
             ])
             ->assertRedirect();
 
@@ -267,6 +305,21 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         ], 'kkn');
 
         // ── Step 8: DPL evaluates student ─────────────────────────────
+        $period->update(['current_phase' => 'grading']);
+
+        // DPL performs 2 monitoring visits (Business rule: min 2 visits before grading)
+        for ($i = 1; $i <= 2; $i++) {
+            $this->actingAs($dplUser)
+                ->post(route('dpl.monitoring.store'), [
+                    'kelompok_id' => $group->id,
+                    'tanggal_kunjungan' => now()->subDays(5 - $i)->format('Y-m-d'),
+                    'permasalahan' => 'Permasalahan monitoring ke-' . $i . '. Semua berjalan lancar namun butuh motivasi tambahan untuk program kerja unggulan.',
+                    'solusi' => 'Solusi monitoring ke-' . $i . '. Memberikan arahan dan motivasi kepada mahasiswa agar tetap semangat menjalankan proker.',
+                    'catatan_tambahan' => 'Catatan monitoring ke-' . $i,
+                ])
+                ->assertRedirect();
+        }
+
         SystemSetting::set('group_male_min_ratio', '20');
         SystemSetting::set('group_male_target_ratio', '30');
 
@@ -352,7 +405,9 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
     {
         ['user' => $studentUser, 'mahasiswa' => $mahasiswa] = $this->createStudentUser();
 
-        $period = Periode::factory()->active()->create();
+        $period = Periode::factory()->active()->create([
+            'current_phase' => 'execution',
+        ]);
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
             'period_id' => $period->id,
@@ -382,7 +437,11 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
                 'gps_accuracy' => '18.50',
                 'captured_at' => now()->toIso8601String(),
                 'location_source' => 'gps',
+                'category' => 'program_unggulan',
+                'abcd_stage' => 'discovery',
+                'files' => [\Illuminate\Http\UploadedFile::fake()->image('test.jpg')]
             ])
+            ->dumpSession()
             ->assertForbidden();
     }
 
@@ -391,7 +450,9 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         ['user' => $dplUser, 'dosen' => $dosen] = $this->createDplUser();
         ['user' => $studentUser, 'mahasiswa' => $mahasiswa] = $this->createStudentUser();
 
-        $period = Periode::factory()->active()->create();
+        $period = Periode::factory()->active()->create([
+            'current_phase' => 'execution'
+        ]);
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
             'period_id' => $period->id,
@@ -444,7 +505,11 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
                 'gps_accuracy' => '18.50',
                 'captured_at' => now()->toIso8601String(),
                 'location_source' => 'gps',
+                'category' => 'program_unggulan',
+                'abcd_stage' => 'discovery',
+                'files' => [\Illuminate\Http\UploadedFile::fake()->image('test.jpg')]
             ])
+            ->dumpSession()
             ->assertCreated();
 
         $report = KegiatanKkn::firstOrFail();

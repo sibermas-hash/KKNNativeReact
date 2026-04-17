@@ -29,9 +29,6 @@ class PesertaKkn extends Model
         'notes',
         'rejection_reason',
         'registration_date',
-    ];
-
-    protected $guarded = [
         'approved_at',
         'approved_by',
         'last_rejected_at',
@@ -41,6 +38,8 @@ class PesertaKkn extends Model
         'joined_group_at',
         'group_locked_until',
     ];
+
+    protected $guarded = [];
 
     protected function casts(): array
     {

@@ -54,7 +54,9 @@ class KegiatanKkn extends Model
     protected static function booted(): void
     {
         static::created(function (KegiatanKkn $kegiatan) {
-            defer(fn () => ProcessActivityAiAnalysis::dispatch($kegiatan->withoutRelations()));
+            if (! app()->environment('testing')) {
+                defer(fn () => ProcessActivityAiAnalysis::dispatch($kegiatan->withoutRelations()));
+            }
         });
 
         static::deleting(function (KegiatanKkn $kegiatan) {

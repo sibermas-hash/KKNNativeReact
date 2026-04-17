@@ -416,7 +416,7 @@ export default function DplDailyReportShow({ report }: Props) {
                                         <a
                                             href={`https://www.google.com/maps?q=${report.latitude},${report.longitude}`}
                                             target="_blank"
-                                            rel="noreferrer"
+                                            rel="noopener noreferrer"
                                             className="w-full h-10 rounded-xl bg-emerald-900 text-white text-sm font-bold font-semibold uppercase text-xs flex items-center justify-center gap-2 hover:bg-emerald-600 transition-all"
                                         >
                                             Buka di Google Maps <ExternalLink size={12} />

@@ -30,6 +30,8 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(RegistrationRepositoryInterface::class, RegistrationRepository::class);
+
+        Gate::policy(NilaiKkn::class, \App\Policies\KknScorePolicy::class);
     }
 
     /**

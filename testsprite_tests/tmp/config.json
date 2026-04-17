@@ -1,0 +1,17 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:8000",
+  "executionArgs": {
+    "projectName": "kknuinsaizu",
+    "projectPath": "/Users/macm4/Documents/Projek/KKN/kknuinsaizu",
+    "testIds": [],
+    "additionalInstruction": "",
+    "serverMode": "development",
+    "envs": {
+      "API_KEY": "sk-user-ap0K6FcwmXpGakpH2i1_bBot5FAfh4LJlbtvM2rOs9GviXw6aXg-G9NRd1-U_YriinNGIqfcQyMjyQ6J4gDUoAJibdTvWRe9HvhMbK2tWwCN7omelPmWh6F4JI_Y6fTYGL0"
+    }
+  },
+  "serverPort": 55247
+}

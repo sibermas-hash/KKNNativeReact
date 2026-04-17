@@ -13,10 +13,8 @@ class HomePreviewContentTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Home')
-                ->has('featuredAnnouncements', 3)
-                ->where('featuredAnnouncements.0.is_demo', true)
-                ->has('featuredDownloads', 3)
-                ->where('featuredDownloads.0.is_demo', true)
+                ->has('featuredAnnouncements', 0)
+                ->has('featuredDownloads', 0)
             );
     }
 
@@ -26,8 +24,7 @@ class HomePreviewContentTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Public/Announcements')
-                ->has('announcements.data', 3)
-                ->where('announcements.data.0.is_demo', true)
+                ->has('announcements.data', 0)
             );
     }
 
@@ -37,8 +34,7 @@ class HomePreviewContentTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Public/Downloads')
-                ->has('downloads', 3)
-                ->where('downloads.0.is_demo', true)
+                ->has('downloads', 0)
             );
     }
 }

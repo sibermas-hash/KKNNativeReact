@@ -10,6 +10,7 @@ use App\Models\KKN\PesertaKkn;
 use App\Services\AuditService;
 use App\Services\AutomaticGroupPlacementService;
 use App\Services\GroupSelectionService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
@@ -159,6 +160,27 @@ class RegistrationApprovalService
         }
 
         return $totalCount;
+    }
+
+    /**
+     * Reject a single registration.
+     */
+    public function reject(PesertaKkn $registration, string $reason, int $rejectedBy): void
+    {
+        DB::transaction(function () use ($registration, $reason, $rejectedBy) {
+            $registration->update([
+                'status' => 'rejected',
+                'rejection_reason' => $reason,
+                'last_rejected_at' => now(),
+                'last_rejected_by' => $rejectedBy,
+            ]);
+
+            AuditService::log(
+                'REGISTRATION_REJECTION',
+                "Pendaftaran ditolak. Alasan: {$reason}",
+                $registration
+            );
+        });
     }
 
     /**

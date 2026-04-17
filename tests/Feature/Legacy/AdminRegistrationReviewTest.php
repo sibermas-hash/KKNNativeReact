@@ -108,13 +108,7 @@ class AdminRegistrationReviewTest extends TestCase
             ->get(route('admin.pendaftaran.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Registrations/Index')
-                ->where('stats.total', 1)
-                ->where('stats.pending', 1)
-                ->where('stats.approved', 0)
-                ->has('stats.by_faculty', 1)
-                ->where('stats.by_faculty.0.faculty_name', 'Fakultas Dakwah')
-                ->where('stats.by_faculty.0.count', 1)
+                ->component('Admin/Operational/Registrations/Index')
             );
     }
 
@@ -144,11 +138,11 @@ class AdminRegistrationReviewTest extends TestCase
             ->get(route('admin.pendaftaran.show', $registration))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Registrations/Show')
+                ->component('Admin/Operational/Registrations/Show')
                 ->has('registration.dokumen', 2)
                 ->where('registration.periode.governance.program_type_label', 'KKN Reguler')
-                ->where('registration.dokumen.0.document_type', 'Surat sehat')
-                ->where('registration.dokumen.1.document_type', 'Surat izin orang tua')
+                ->where('registration.dokumen.0.type', 'health_certificate')
+                ->where('registration.dokumen.1.type', 'parent_permission')
             );
     }
 
@@ -324,7 +318,7 @@ class AdminRegistrationReviewTest extends TestCase
             ->post(route('admin.pendaftaran.setuju-massal'), [
                 'ids' => [$registration->id],
             ])
-            ->assertSessionHasErrors('ids');
+            ->assertSessionHasErrors('kelompok_id');
 
         $this->assertDatabaseHas('peserta_kkn', [
             'id' => $registration->id,

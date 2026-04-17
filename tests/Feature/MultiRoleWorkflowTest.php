@@ -25,6 +25,22 @@ class MultiRoleWorkflowTest extends TestCase
     {
         parent::setUp();
         $this->seed(RoleSeeder::class);
+        \Illuminate\Support\Facades\Storage::fake(config('filesystems.default'));
+
+        // Mock AI Agent to avoid external API calls during tests
+        $this->mock(\App\Ai\Agents\ActivityReviewerAgent::class, function ($mock) {
+            $structuredResponse = \Mockery::mock(\Laravel\Ai\Responses\StructuredAgentResponse::class);
+            $structuredResponse->shouldReceive('toArray')->andReturn([
+                'summary' => 'Ringkasan kegiatan simulasi.',
+                'abcd_compliance' => 10,
+                'quality_score' => 10,
+                'feedback' => 'Bagus, lanjutkan.',
+                'flagged' => false,
+                'tags' => ['Simulasi'],
+            ]);
+
+            $mock->shouldReceive('prompt')->andReturn($structuredResponse);
+        });
     }
 
     private function createSuperadmin(): User
@@ -70,6 +86,7 @@ class MultiRoleWorkflowTest extends TestCase
             'faculty_id' => $faculty->id,
             'program_id' => $program->id,
             'gender' => 'L',
+            'shirt_size' => 'L',
         ]);
 
         return compact('user', 'mahasiswa');
@@ -144,7 +161,7 @@ class MultiRoleWorkflowTest extends TestCase
             ->get(route('admin.kelompok.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Groups/Index')
+                ->component('Admin/Operational/Groups/Index')
             );
     }
 
@@ -193,7 +210,9 @@ class MultiRoleWorkflowTest extends TestCase
     {
         ['user' => $dplUser, 'dosen' => $dosen] = $this->createDplUser();
 
-        $period = Periode::factory()->active()->create();
+        $period = Periode::factory()->active()->create([
+            'current_phase' => 'execution'
+        ]);
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
             'period_id' => $period->id,
@@ -251,6 +270,9 @@ class MultiRoleWorkflowTest extends TestCase
                 'gps_accuracy' => '18.50',
                 'captured_at' => now()->toIso8601String(),
                 'location_source' => 'gps',
+                'category' => 'program_unggulan',
+                'abcd_stage' => 'discovery',
+                'files' => [\Illuminate\Http\UploadedFile::fake()->image('test.jpg')]
             ])
             ->assertCreated();
 
@@ -278,7 +300,9 @@ class MultiRoleWorkflowTest extends TestCase
         ['user' => $studentUser1, 'mahasiswa' => $mahasiswa1] = $this->createStudentUser($faculty, $program);
         ['user' => $studentUser2, 'mahasiswa' => $mahasiswa2] = $this->createStudentUser($faculty, $program);
 
-        $period = Periode::factory()->active()->create();
+        $period = Periode::factory()->active()->create([
+            'current_phase' => 'execution'
+        ]);
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
             'period_id' => $period->id,
@@ -323,6 +347,9 @@ class MultiRoleWorkflowTest extends TestCase
                 'gps_accuracy' => '18.50',
                 'captured_at' => now()->toIso8601String(),
                 'location_source' => 'gps',
+                'category' => 'program_unggulan',
+                'abcd_stage' => 'discovery',
+                'files' => [\Illuminate\Http\UploadedFile::fake()->image('test.jpg')]
             ])
             ->assertCreated();
 
@@ -338,6 +365,9 @@ class MultiRoleWorkflowTest extends TestCase
                 'gps_accuracy' => '18.50',
                 'captured_at' => now()->toIso8601String(),
                 'location_source' => 'gps',
+                'category' => 'program_unggulan',
+                'abcd_stage' => 'discovery',
+                'files' => [\Illuminate\Http\UploadedFile::fake()->image('test.jpg')]
             ])
             ->assertCreated();
 
@@ -409,7 +439,9 @@ class MultiRoleWorkflowTest extends TestCase
         ['user' => $dplUser1, 'dosen' => $dosen1] = $this->createDplUser();
         ['user' => $dplUser2, 'dosen' => $dosen2] = $this->createDplUser();
 
-        $period = Periode::factory()->active()->create();
+        $period = Periode::factory()->active()->create([
+            'current_phase' => 'execution'
+        ]);
         $location = Lokasi::factory()->create();
 
         $group1 = KelompokKkn::factory()->create([
@@ -480,6 +512,9 @@ class MultiRoleWorkflowTest extends TestCase
                 'gps_accuracy' => '18.50',
                 'captured_at' => now()->toIso8601String(),
                 'location_source' => 'gps',
+                'category' => 'program_unggulan',
+                'abcd_stage' => 'discovery',
+                'files' => [\Illuminate\Http\UploadedFile::fake()->image('test.jpg')]
             ])
             ->assertCreated();
 

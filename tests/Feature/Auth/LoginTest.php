@@ -3,12 +3,26 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class LoginTest extends TestCase
 {
-    use RefreshDatabase;
+    /**
+     * Set up captcha session so login can proceed.
+     */
+    private function withCaptchaSession(): self
+    {
+        $answer = 42;
+        $hash = hash_hmac('sha256', (string) $answer, config('app.key'));
+
+        session([
+            'captcha_hash' => $hash,
+            'captcha_question' => 'Berapa hasil 20 + 22?',
+            'captcha_generated_at' => now()->timestamp,
+        ]);
+
+        return $this;
+    }
 
     /** @test */
     public function users_can_login(): void
@@ -17,13 +31,17 @@ class LoginTest extends TestCase
             'username' => 'testuser',
             'password' => bcrypt('password'),
         ]);
+        $user->assignRole('superadmin');
+
+        $this->withCaptchaSession();
 
         $response = $this->post('/login', [
-            'username' => 'testuser',
+            'login' => 'testuser',
             'password' => 'password',
+            'captcha_answer' => '42',
         ]);
 
-        $response->assertRedirect('/dashboard');
+        $response->assertRedirect('/admin');
         $this->assertAuthenticatedAs($user);
     }
 
@@ -35,9 +53,12 @@ class LoginTest extends TestCase
             'password' => bcrypt('password'),
         ]);
 
-        $response = $this->post('/login', [
-            'username' => 'testuser',
+        $this->withCaptchaSession();
+
+        $response = $this->from('/login')->post('/login', [
+            'login' => 'testuser',
             'password' => 'wrong-password',
+            'captcha_answer' => '42',
         ]);
 
         $response->assertRedirect('/login');

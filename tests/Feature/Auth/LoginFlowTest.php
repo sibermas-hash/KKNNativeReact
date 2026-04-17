@@ -26,7 +26,7 @@ it('allows a local user to log in with username and captcha', function () {
             'remember' => false,
         ]);
 
-    $response->assertRedirect('/dashboard');
+    $response->assertRedirect('/admin');
     $this->assertAuthenticatedAs($user);
 });
 
@@ -49,7 +49,7 @@ it('allows a student to log in using nim as username', function () {
             'remember' => false,
         ]);
 
-    $response->assertRedirect('/dashboard');
+    $response->assertRedirect('/mahasiswa');
     $this->assertAuthenticatedAs($user);
 });
 

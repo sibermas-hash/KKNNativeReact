@@ -28,7 +28,7 @@ trait RefreshPostgresDatabase
                 DB::connection($connectionName)->getPdo()->exec('DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;');
             } catch (\Throwable $e) {
                 // Schema reset failed, try plain migrate:fresh instead
-                $this->artisan('migrate:fresh', ['--database' => $connectionName, '--force' => true]);
+                $this->artisan('migrate:fresh', ['--database' => $connectionName, '--force' => true, '--no-seed' => true]);
                 $this->app[Kernel::class]->setArtisan(null);
                 return;
             }
@@ -38,13 +38,8 @@ trait RefreshPostgresDatabase
             $this->runCuratedPostgresMigrations($connectionName);
             $this->app[Kernel::class]->setArtisan(null);
 
-            if ($this->shouldSeed()) {
-                $this->artisan('db:seed', [
-                    '--database' => $connectionName,
-                    '--class' => $this->seeder() ?: null,
-                ]);
-                $this->app[Kernel::class]->setArtisan(null);
-            }
+            // Share connections so seeders (triggered by TestCase or manually) use the same PDO
+            $this->shareTestingConnections();
 
             return;
         }
@@ -55,10 +50,58 @@ trait RefreshPostgresDatabase
     protected function afterRefreshingDatabase()
     {
         $this->shareTestingConnections();
+
+        // Our custom migration path bypasses migrate:fresh --seed,
+        // so we must run the configured seeder ourselves.
+        if ($this->shouldSeed()) {
+            $seeder = $this->seeder();
+            if ($seeder) {
+                $this->artisan('db:seed', ['--class' => $seeder, '--no-interaction' => true]);
+            } else {
+                $this->artisan('db:seed', ['--no-interaction' => true]);
+            }
+            $this->app[\Illuminate\Contracts\Console\Kernel::class]->setArtisan(null);
+        }
+    }
+
+    /**
+     * Override to ensure PDO is shared before transactions start.
+     */
+    protected function beginDatabaseTransaction()
+    {
+        $this->shareTestingConnections();
+        
+        // Call the trait's beginDatabaseTransaction (from DatabaseTransactions/RefreshDatabase)
+        // We can't use parent:: because it's a trait. 
+        // We'll just implement the core logic here to be sure.
+        
+        $database = $this->app->make('db');
+
+        foreach ($this->connectionsToTransact() as $name) {
+            $connection = $database->connection($name);
+            $dispatcher = $connection->getEventDispatcher();
+            $connection->unsetEventDispatcher();
+            $connection->beginTransaction();
+            $connection->setEventDispatcher($dispatcher);
+        }
+
+        $this->beforeApplicationDestroyed(function () use ($database) {
+            foreach ($this->connectionsToTransact() as $name) {
+                $connection = $database->connection($name);
+                $dispatcher = $connection->getEventDispatcher();
+                $connection->unsetEventDispatcher();
+                $connection->rollBack();
+                $connection->setEventDispatcher($dispatcher);
+                $connection->disconnect();
+            }
+        });
     }
 
     protected function connectionsToTransact()
     {
+        // ONLY transact the default connection. 
+        // Since pgsql, kkn, and master share the same PDO, 
+        // transacting pgsql will transact ALL of them.
         return [config('database.default')];
     }
 

@@ -31,11 +31,11 @@ class ProgramsCrudTest extends TestCase
 
     public function test_index_returns_200(): void
     {
-        $response = $this->actingAs($this->admin)->get('/admin/programs');
+        $response = $this->actingAs($this->admin)->get(route('admin.prodi.index'));
 
         $response->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Programs/Index')
+                ->component('Admin/Academic/Programs/Index')
                 ->where('syncInfo.mode', 'sync-only')
                 ->where('syncInfo.source', 'Master Mahasiswa')
             );
@@ -45,9 +45,9 @@ class ProgramsCrudTest extends TestCase
     {
         $faculty = Fakultas::factory()->create();
 
-        $response = $this->actingAs($this->admin)->post('/admin/programs', [
+        $response = $this->actingAs($this->admin)->post(route('admin.prodi.store'), [
             'faculty_id' => $faculty->id,
-            'name' => 'Test Program',
+            'nama' => 'Test Program',
         ]);
 
         $response->assertSessionHas('error', 'Data program studi mengikuti sinkronisasi master mahasiswa dan tidak dapat diubah manual.');
@@ -63,9 +63,9 @@ class ProgramsCrudTest extends TestCase
             'nama' => 'Before Update',
         ]);
 
-        $response = $this->actingAs($this->admin)->put("/admin/programs/{$program->id}", [
+        $response = $this->actingAs($this->admin)->put(route('admin.prodi.update', $program), [
             'faculty_id' => $faculty->id,
-            'name' => 'After Update',
+            'nama' => 'After Update',
         ]);
 
         $response->assertSessionHas('error', 'Data program studi mengikuti sinkronisasi master mahasiswa dan tidak dapat diubah manual.');
@@ -83,7 +83,7 @@ class ProgramsCrudTest extends TestCase
             'nama' => 'To Delete',
         ]);
 
-        $response = $this->actingAs($this->admin)->delete("/admin/programs/{$program->id}");
+        $response = $this->actingAs($this->admin)->delete(route('admin.prodi.destroy', $program));
 
         $response->assertSessionHas('error', 'Data program studi mengikuti sinkronisasi master mahasiswa dan tidak dapat diubah manual.');
         $this->assertNotNull(Prodi::find($program->id), 'Program should not be deleted manually');

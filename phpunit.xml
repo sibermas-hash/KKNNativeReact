@@ -40,6 +40,7 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+        <env name="FILESYSTEM_DISK" value="local"/>
         <env name="DB_KKN_HOST" value="127.0.0.1"/>
         <env name="DB_KKN_PORT" value="5432"/>
         <env name="DB_KKN_DATABASE" value="kkn_test"/>

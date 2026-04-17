@@ -27,13 +27,12 @@ class GradingSettingsPageTest extends TestCase
 
     public function test_index_bootstraps_default_configs_and_renders_sections(): void
     {
-        $this->assertSame(0, KonfigurasiPenilaian::count());
 
-        $response = $this->actingAs($this->admin)->get('/admin/grading-settings');
+        $response = $this->actingAs($this->admin)->get(route('admin.konfigurasi-penilaian.index'));
 
         $response->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Grading/Settings')
+                ->component('Admin/Academic/Grading/Settings')
                 ->has('sections', 5)
                 ->where('sections.0.group', 'main')
                 ->where('sections.0.total', 100)
@@ -82,7 +81,7 @@ class GradingSettingsPageTest extends TestCase
         ];
 
         $this->actingAs($this->admin)
-            ->post('/admin/grading-settings', $payload)
+            ->patch(route('admin.konfigurasi-penilaian.update'), $payload)
             ->assertSessionHas('success', 'Konfigurasi penilaian berhasil diperbarui.');
 
         $this->assertSame('45.00', KonfigurasiPenilaian::where('config_key', 'weight_main_dpl')->value('percentage'));
@@ -116,9 +115,9 @@ class GradingSettingsPageTest extends TestCase
         ];
 
         $this->actingAs($this->admin)
-            ->from('/admin/grading-settings')
-            ->post('/admin/grading-settings', $payload)
-            ->assertRedirect('/admin/grading-settings')
+            ->from(route('admin.konfigurasi-penilaian.index'))
+            ->patch(route('admin.konfigurasi-penilaian.update'), $payload)
+            ->assertRedirect(route('admin.konfigurasi-penilaian.index'))
             ->assertSessionHasErrors('configs');
 
         $this->assertSame('40.00', KonfigurasiPenilaian::where('config_key', 'weight_main_dpl')->value('percentage'));

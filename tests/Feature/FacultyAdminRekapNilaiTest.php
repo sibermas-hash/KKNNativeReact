@@ -132,7 +132,7 @@ class FacultyAdminRekapNilaiTest extends TestCase
     {
         $faculty = Fakultas::factory()->create(['nama' => 'Fakultas Ekspor']);
         $program = Prodi::factory()->create(['faculty_id' => $faculty->id, 'nama' => 'Ekspor Data']);
-        $period = Periode::factory()->active()->create(['name' => 'Periode Ekspor Aktif']);
+        $period = Periode::factory()->grading()->create(['name' => 'Periode Ekspor Aktif']);
 
         $this->createScoreRecord($faculty, $program, $period, 'Mahasiswa Ekspor', '240099');
 
@@ -146,7 +146,7 @@ class FacultyAdminRekapNilaiTest extends TestCase
     {
         $faculty = Fakultas::factory()->create(['nama' => 'Fakultas Ledger']);
         $program = Prodi::factory()->create(['faculty_id' => $faculty->id, 'nama' => 'Ledger Data']);
-        $period = Periode::factory()->active()->create(['name' => 'Periode Ledger Aktif']);
+        $period = Periode::factory()->grading()->create(['name' => 'Periode Ledger Aktif']);
 
         $this->createScoreRecord($faculty, $program, $period, 'Mahasiswa Ledger', '240199');
 

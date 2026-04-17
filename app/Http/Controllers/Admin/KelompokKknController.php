@@ -212,22 +212,23 @@ class KelompokKknController extends Controller
         ]);
     }
 
-    public function show(KelompokKkn $kelompokKkn): Response
+    public function show($id): Response
     {
+        $kelompok = KelompokKkn::findOrFail($id);
         Gate::authorize('manage-groups');
 
         // Manual Faculty Scoping for detail view
         $user = auth()->user();
         if ($user && $user->hasRole('faculty_admin') && $user->faculty_id) {
-            $kelompokKkn->load('lokasi');
-            $hasParticipantFromFaculty = $kelompokKkn->peserta()->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $user->faculty_id))->exists();
+            $kelompok->load('lokasi');
+            $hasParticipantFromFaculty = $kelompok->peserta()->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $user->faculty_id))->exists();
 
-            if ($kelompokKkn->lokasi?->faculty_id !== $user->faculty_id && ! $hasParticipantFromFaculty) {
+            if ($kelompok->lokasi?->faculty_id !== $user->faculty_id && ! $hasParticipantFromFaculty) {
                 abort(403, 'Anda tidak memiliki akses ke kelompok ini.');
             }
         }
 
-        $kelompokKkn->load([
+        $kelompok->load([
             'periode',
             'lokasi',
             'dosen',
@@ -238,8 +239,8 @@ class KelompokKknController extends Controller
         ]);
 
         return Inertia::render('Admin/Operational/Groups/Show', [
-            'group' => $kelompokKkn,
-            'members' => $kelompokKkn->peserta->values(),
+            'group' => $kelompok,
+            'members' => $kelompok->peserta->values(),
         ]);
     }
 
@@ -351,8 +352,9 @@ class KelompokKknController extends Controller
         return back()->with($import->errors === [] ? 'success' : 'warning', $message);
     }
 
-    public function update(Request $request, KelompokKkn $kelompokKkn): RedirectResponse
+    public function update(Request $request, $id): RedirectResponse
     {
+        $kelompok = KelompokKkn::findOrFail($id);
         Gate::authorize('manage-groups');
 
         $this->prepareMutationPayload($request);
@@ -389,7 +391,7 @@ class KelompokKknController extends Controller
                 }
 
                 // Cek kuota, abaikan jika dosen tersebut memang sudah ada di kelompok ini (update)
-                $isAlreadyInGroup = $kelompokKkn->dosen()->where('dosen_id', $l['id'])->exists();
+                $isAlreadyInGroup = $kelompok->dosen()->where('dosen_id', $l['id'])->exists();
                 if (! $isAlreadyInGroup && ! $dplPeriod->hasCapacity()) {
                     return back()->withErrors(['lecturers' => "Dosen {$dplPeriod->dosen->nama} sudah mencapai batas maksimal kelompok."])->withInput();
                 }
@@ -400,7 +402,7 @@ class KelompokKknController extends Controller
             }
         }
 
-        $kelompokKkn->update([
+        $kelompok->update([
             'period_id' => $validated['period_id'],
             'location_id' => $validated['location_id'],
             'nama_kelompok' => $validated['name'],
@@ -414,23 +416,24 @@ class KelompokKknController extends Controller
             foreach ($validated['lecturers'] as $l) {
                 $syncData[$l['id']] = ['role' => $l['role']];
             }
-            $kelompokKkn->dosen()->sync($syncData);
-            $kelompokKkn->syncKetuaFlatColumns();
+            $kelompok->dosen()->sync($syncData);
+            $kelompok->syncKetuaFlatColumns();
         }
 
         return redirect()->route('admin.kelompok.index')->with('success', 'Kelompok berhasil diperbarui.');
     }
 
-    public function destroy(KelompokKkn $kelompokKkn): RedirectResponse
+    public function destroy($id): RedirectResponse
     {
+        $kelompok = KelompokKkn::findOrFail($id);
         Gate::authorize('manage-groups');
 
         // Prevent deletion if group has active participants
-        if ($kelompokKkn->peserta()->whereIn('status', ['pending', 'approved', 'document_submitted'])->exists()) {
+        if ($kelompok->peserta()->whereIn('status', ['pending', 'approved', 'document_submitted'])->exists()) {
             return redirect()->route('admin.kelompok.index')->with('error', 'Kelompok masih memiliki peserta aktif. Pindahkan atau tolak semua peserta terlebih dahulu.');
         }
 
-        $kelompokKkn->delete();
+        $kelompok->delete();
 
         return redirect()->route('admin.kelompok.index')->with('success', 'Kelompok berhasil dihapus.');
     }

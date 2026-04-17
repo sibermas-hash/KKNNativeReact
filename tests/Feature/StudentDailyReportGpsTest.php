@@ -5,12 +5,15 @@ namespace Tests\Feature;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\PoskoKelompok;
 use App\Models\KKN\Workshop;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class StudentDailyReportGpsTest extends TestCase
@@ -24,11 +27,14 @@ class StudentDailyReportGpsTest extends TestCase
 
     public function test_student_can_submit_daily_report_with_gps_metadata_inside_allowed_radius(): void
     {
+        Storage::fake('local');
         [$user, $mahasiswa, $group] = $this->createStudentContext();
 
         $this->actingAs($user)
             ->post(route('student.laporan-harian.store'), [
                 'date' => now()->toDateString(),
+                'category' => 'program_unggulan',
+                'abcd_stage' => 'discovery',
                 'title' => 'Kegiatan Posyandu Desa',
                 'activity' => 'Pendampingan kegiatan posyandu di balai desa.',
                 'reflection' => 'Koordinasi dengan kader berjalan baik.',
@@ -39,6 +45,9 @@ class StudentDailyReportGpsTest extends TestCase
                 'gps_accuracy' => '18.50',
                 'captured_at' => now()->toIso8601String(),
                 'location_source' => 'gps',
+                'files' => [
+                    UploadedFile::fake()->image('bukti1.jpg', 640, 480),
+                ],
             ])
             ->assertRedirect(route('student.laporan-harian.index'))
             ->assertSessionHasNoErrors();
@@ -54,12 +63,15 @@ class StudentDailyReportGpsTest extends TestCase
 
     public function test_student_cannot_submit_daily_report_outside_allowed_radius(): void
     {
+        Storage::fake('local');
         [$user] = $this->createStudentContext();
 
         $this->from(route('student.laporan-harian.create'))
             ->actingAs($user)
             ->post(route('student.laporan-harian.store'), [
                 'date' => now()->toDateString(),
+                'category' => 'program_unggulan',
+                'abcd_stage' => 'discovery',
                 'title' => 'Laporan di luar wilayah',
                 'activity' => 'Mahasiswa mencoba mengirim dari lokasi yang jauh.',
                 'location_name' => 'Lokasi Tidak Valid',
@@ -68,6 +80,9 @@ class StudentDailyReportGpsTest extends TestCase
                 'gps_accuracy' => '22.00',
                 'captured_at' => now()->toIso8601String(),
                 'location_source' => 'gps',
+                'files' => [
+                    UploadedFile::fake()->image('bukti1.jpg', 640, 480),
+                ],
             ])
             ->assertRedirect(route('student.laporan-harian.create'))
             ->assertSessionHasErrors('latitude');
@@ -75,11 +90,14 @@ class StudentDailyReportGpsTest extends TestCase
 
     public function test_student_can_submit_daily_report_via_json_sync_channel(): void
     {
+        Storage::fake('local');
         [$user] = $this->createStudentContext();
 
         $this->actingAs($user)
             ->postJson(route('student.laporan-harian.store'), [
                 'date' => now()->toDateString(),
+                'category' => 'shilaturrahmi',
+                'abcd_stage' => 'discovery',
                 'title' => 'Sinkronisasi Offline',
                 'activity' => 'Laporan ini dikirim ulang dari antrean offline.',
                 'location_name' => 'Posko Kelompok',
@@ -88,6 +106,9 @@ class StudentDailyReportGpsTest extends TestCase
                 'gps_accuracy' => '15.00',
                 'captured_at' => now()->toIso8601String(),
                 'location_source' => 'gps',
+                'files' => [
+                    UploadedFile::fake()->image('bukti1.jpg', 640, 480),
+                ],
             ])
             ->assertCreated()
             ->assertJson([
@@ -108,6 +129,10 @@ class StudentDailyReportGpsTest extends TestCase
         static $counter = 0;
         $counter++;
 
+        $period = Periode::factory()->execution()->create([
+            'name' => "Period for GPS Test {$counter}",
+        ]);
+
         $user = User::factory()->create([
             'username' => "student_daily_gps_{$counter}",
             'email' => "student_daily_gps_{$counter}@test.com",
@@ -124,6 +149,7 @@ class StudentDailyReportGpsTest extends TestCase
         ]);
 
         $group = KelompokKkn::factory()->create([
+            'period_id' => $period->id,
             'location_id' => $location->id,
         ]);
 

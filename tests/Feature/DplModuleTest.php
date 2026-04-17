@@ -47,7 +47,7 @@ class DplModuleTest extends TestCase
         $student = Mahasiswa::factory()->create();
         $student->user->assignRole('student');
 
-        $period = Periode::factory()->active()->create();
+        $period = Periode::factory()->grading()->create();
         $group = KelompokKkn::factory()->create([
             'period_id' => $period->id,
             'location_id' => Lokasi::factory(),
@@ -256,6 +256,25 @@ class DplModuleTest extends TestCase
     public function test_dpl_manual_evaluation_updates_dpl_component_in_unified_score(): void
     {
         $context = $this->createDplScenario();
+
+        \App\Models\KKN\MonitoringDpl::create([
+            'dpl_id' => $context['dosen']->id,
+            'kelompok_id' => $context['group']->id,
+            'periode_id' => $context['period']->id,
+            'tanggal_kunjungan' => now()->subDays(2),
+            'permasalahan' => 'Tidak ada',
+            'solusi' => 'Baik',
+            'catatan_tambahan' => 'Lanjutkan',
+        ]);
+        \App\Models\KKN\MonitoringDpl::create([
+            'dpl_id' => $context['dosen']->id,
+            'kelompok_id' => $context['group']->id,
+            'periode_id' => $context['period']->id,
+            'tanggal_kunjungan' => now()->subDay(),
+            'permasalahan' => 'Tidak ada',
+            'solusi' => 'Baik',
+            'catatan_tambahan' => 'Lanjutkan',
+        ]);
 
         $this->actingAs($context['dplUser'])
             ->post(route('dpl.evaluations.store'), [

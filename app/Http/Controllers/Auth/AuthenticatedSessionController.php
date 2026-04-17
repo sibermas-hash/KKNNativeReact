@@ -215,13 +215,19 @@ class AuthenticatedSessionController extends Controller
     /**
      * Verify captcha answer using constant-time comparison.
      */
-    private function verifyCaptchaAnswer(?string $userAnswer, string $captchaHash): bool
+    private function verifyCaptchaAnswer(string|int|null $userAnswer, string $captchaHash): bool
     {
-        if ($userAnswer === null || ! is_numeric($userAnswer)) {
+        if ($userAnswer === null) {
             return false;
         }
 
-        $userHash = $this->hashCaptchaAnswer((int) $userAnswer);
+        $normalizedAnswer = is_string($userAnswer) ? trim($userAnswer) : (string) $userAnswer;
+
+        if ($normalizedAnswer === '' || ! is_numeric($normalizedAnswer)) {
+            return false;
+        }
+
+        $userHash = $this->hashCaptchaAnswer((int) $normalizedAnswer);
 
         return hash_equals($captchaHash, $userHash);
     }

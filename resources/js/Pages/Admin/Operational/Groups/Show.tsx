@@ -394,7 +394,8 @@ export default function GroupShow({ group, members = [] }: Props) {
  <a 
  href={group.posko.gmaps_link} 
  target="_blank"
- className="h-14 w-full bg-[#16a34a] hover:bg-white hover:text-gray-900 rounded-xl flex items-center justify-center gap-4 text-xs font-semibold shadow-sm shadow-emerald-900/50 transition-all active:scale-95 no-underline relative z-10" rel="noreferrer"
+ rel="noopener noreferrer"
+ className="h-14 w-full bg-[#16a34a] hover:bg-white hover:text-gray-900 rounded-xl flex items-center justify-center gap-4 text-xs font-semibold shadow-sm shadow-emerald-900/50 transition-all active:scale-95 no-underline relative z-10"
  >
  <ArrowRight size={18} strokeWidth={3} /> BUKA GOOGLE MAPS
  </a>

@@ -8,7 +8,6 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 
 class PhotoWatermarkService
@@ -41,8 +40,8 @@ class PhotoWatermarkService
                 "NIM: %s\nTime: %s\nLoc: %s, %s",
                 $metadata['nim'],
                 Carbon::parse($metadata['captured_at'])->format('d M Y H:i:s'),
-                round($metadata['latitude'], 5),
-                round($metadata['longitude'], 5)
+                round((float) $metadata['latitude'], 5),
+                round((float) $metadata['longitude'], 5)
             );
 
             // Add background rectangle for readability

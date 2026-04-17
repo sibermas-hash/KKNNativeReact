@@ -90,18 +90,18 @@ class HomeController extends Controller
     {
         return Inertia::render('Public/Schemes', [
             'content' => [
-                'title' => 'Skema Pelaksanaan KKN UIN Saizu',
-                'intro' => 'Sistem Informasi Manajemen memberikan fleksibilitas untuk berbagai jenis pengabdian masyarakat.',
-                'items' => [
+                'title' => SystemSetting::get('site_schemes_title', 'Skema Pelaksanaan KKN UIN Saizu'),
+                'intro' => SystemSetting::get('site_schemes_intro', 'Sistem Informasi Manajemen memberikan fleksibilitas untuk berbagai jenis pengabdian masyarakat.'),
+                'items' => json_decode((string) SystemSetting::get('site_schemes_items', '[]'), true) ?: [
                     [
                         'id' => 1,
-                        'name' => 'KKN Reguler',
+                        'title' => 'KKN Reguler',
                         'description' => 'Program pengabdian masyarakat yang dilakukan secara berkala sesuai kalender akademik.',
                         'is_active' => true,
                     ],
                     [
                         'id' => 2,
-                        'name' => 'KKN Tematik',
+                        'title' => 'KKN Tematik',
                         'description' => 'Program KKN yang berfokus pada tema tertentu sesuai dengan kebutuhan masyarakat atau instansi.',
                         'is_active' => true,
                     ],

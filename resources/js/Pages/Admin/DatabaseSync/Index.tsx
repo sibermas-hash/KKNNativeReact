@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Head, router, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Pagination } from '@/Components/ui';
+import { Button, Pagination } from '@/Components/ui';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -23,7 +23,6 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
-import { Button } from '@/Components/ui';
 
 interface SyncLog {
   id: number;

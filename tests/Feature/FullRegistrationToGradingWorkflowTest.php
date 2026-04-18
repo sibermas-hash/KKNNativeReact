@@ -1,5 +1,8 @@
 <?php
 
+use App\Ai\Agents\ActivityReviewerAgent;
+use App\Enums\AbcdStage;
+use App\Enums\LogbookCategory;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\DplPeriod;
 use App\Models\KKN\Fakultas;
@@ -20,6 +23,9 @@ use App\Models\KKN\TahunAkademik;
 use App\Models\KKN\Workshop;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Laravel\Ai\Responses\StructuredAgentResponse;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -29,11 +35,11 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
     {
         parent::setUp();
         $this->seed(RoleSeeder::class);
-        \Illuminate\Support\Facades\Storage::fake(config('filesystems.default'));
+        Storage::fake(config('filesystems.default'));
 
         // Mock AI Agent to avoid external API calls during tests
-        $this->mock(\App\Ai\Agents\ActivityReviewerAgent::class, function ($mock) {
-            $structuredResponse = \Mockery::mock(\Laravel\Ai\Responses\StructuredAgentResponse::class);
+        $this->mock(ActivityReviewerAgent::class, function ($mock) {
+            $structuredResponse = Mockery::mock(StructuredAgentResponse::class);
             $structuredResponse->shouldReceive('toArray')->andReturn([
                 'summary' => 'Ringkasan kegiatan simulasi.',
                 'abcd_compliance' => 10,
@@ -72,7 +78,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
     private function createStudentUser(array $overrides = []): array
     {
         $faculty = Fakultas::factory()->create();
-        $program = Prodi::factory()->create(['faculty_id' => $faculty->id]);
+        $program = Prodi::factory()->create(['fakultas_id' => $faculty->id]);
 
         $user = User::factory()->create(array_merge([
             'phone' => '081234567890',
@@ -93,8 +99,8 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
             'mother_name' => 'Siti Fauziah',
             'birth_place' => 'Banyumas',
             'birth_date' => '2003-01-01',
-            'faculty_id' => $faculty->id,
-            'program_id' => $program->id,
+            'fakultas_id' => $faculty->id,
+            'prodi_id' => $program->id,
             'gender' => 'L',
             'shirt_size' => 'L',
             'is_bta_ppi_passed' => true,
@@ -129,6 +135,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
 
     public function test_full_registration_to_grading_workflow(): void
     {
+        $this->withoutExceptionHandling();
         // ── Step 1: Admin creates period ──────────────────────────────
         $admin = $this->createAdminUser();
 
@@ -158,10 +165,10 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         $this->actingAs($admin)
             ->post(route('admin.dashboard.switch-phase'), [
                 'target' => 'registration',
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
             ])
             ->assertRedirect();
-        
+
         $period->refresh();
         expect($period->current_phase)->toBe('registration');
 
@@ -175,7 +182,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         ]);
 
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'nama_kelompok' => 'Kelompok Melati',
             'status' => 'active',
@@ -183,25 +190,25 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         ]);
 
         $this->actingAs($studentUser)
-            ->postJson(route('student.registration.store'), [
-                'period_id' => $period->id,
+            ->post(route('student.registration.store'), [
+                'periode_id' => $period->id,
                 'notes' => 'Siap mengikuti KKN.',
-                'health_certificate' => \Illuminate\Http\UploadedFile::fake()->create('health.pdf', 500),
-                'parent_permission' => \Illuminate\Http\UploadedFile::fake()->create('permission.pdf', 500),
+                'health_certificate' => UploadedFile::fake()->create('health.pdf', 500),
+                'parent_permission' => UploadedFile::fake()->create('permission.pdf', 500),
             ])
             ->assertRedirect()
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('peserta_kkn', [
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => null,
             'status' => 'pending',
         ], 'kkn');
 
         // ── Step 3: Admin approves registration ───────────────────────
         $registration = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
-            ->where('period_id', $period->id)
+            ->where('periode_id', $period->id)
             ->firstOrFail();
 
         $this->actingAs($admin)
@@ -223,15 +230,15 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
 
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $period->id,
-            'max_groups' => 5,
+            'periode_id' => $period->id,
+            'max_kelompok_kkn' => 5,
             'is_active' => true,
         ]);
 
         $this->actingAs($admin)
             ->from(route('admin.dpl.penugasan'))
             ->post(route('admin.dpl.tugaskan-kelompok', $group), [
-                'dpl_period_id' => $dplPeriod->id,
+                'dpl_periode_id' => $dplPeriod->id,
             ])
             ->assertRedirect(route('admin.dpl.penugasan'));
 
@@ -252,25 +259,24 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
             'uploaded_by' => $studentUser->id,
         ]);
 
+        $today = now()->toDateString();
         $this->actingAs($studentUser)
-            ->postJson(route('student.laporan-harian.store'), [
-                'date' => now()->toDateString(),
-                'title' => 'Kegiatan Posyandu Desa',
-                'activity' => 'Pendampingan kegiatan posyandu di balai desa.',
-                'reflection' => 'Koordinasi dengan kader berjalan baik.',
-                'output' => 'Data peserta posyandu dan dokumentasi kegiatan.',
-                'location_name' => 'Balai Desa',
-                'latitude' => '-7.42442000',
-                'longitude' => '109.23072000',
-                'gps_accuracy' => '18.50',
-                'captured_at' => now()->toIso8601String(),
+            ->post(route('student.laporan-harian.store'), [
+                'date' => $today,
+                'category' => LogbookCategory::SHILATURRAHMI->value,
+                'title' => 'Observasi Lapangan Hari 1',
+                'activity' => 'Melakukan pemetaan awal wilayah posko dan koordinasi dengan ketua RT.',
+                'latitude' => -7.4244,
+                'longitude' => 109.2307,
                 'location_source' => 'gps',
-                'category' => 'program_unggulan',
-                'abcd_stage' => 'discovery',
-                'files' => [\Illuminate\Http\UploadedFile::fake()->image('test.jpg')]
+                'location_name' => 'Posko Uji',
+                'captured_at' => now()->toDateTimeString(),
+                'abcd_stage' => AbcdStage::DISCOVERY->value,
+                'files' => [
+                    UploadedFile::fake()->image('activity.jpg'),
+                ],
             ])
-            ->assertCreated()
-            ->assertJson(['message' => 'Laporan harian berhasil dikirim.']);
+            ->assertRedirect(route('student.laporan-harian.index'));
 
         $dailyReport = KegiatanKkn::where('mahasiswa_id', $mahasiswa->id)
             ->where('kelompok_id', $group->id)
@@ -313,9 +319,9 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
                 ->post(route('dpl.monitoring.store'), [
                     'kelompok_id' => $group->id,
                     'tanggal_kunjungan' => now()->subDays(5 - $i)->format('Y-m-d'),
-                    'permasalahan' => 'Permasalahan monitoring ke-' . $i . '. Semua berjalan lancar namun butuh motivasi tambahan untuk program kerja unggulan.',
-                    'solusi' => 'Solusi monitoring ke-' . $i . '. Memberikan arahan dan motivasi kepada mahasiswa agar tetap semangat menjalankan proker.',
-                    'catatan_tambahan' => 'Catatan monitoring ke-' . $i,
+                    'permasalahan' => 'Permasalahan monitoring ke-'.$i.'. Semua berjalan lancar namun butuh motivasi tambahan untuk program kerja unggulan.',
+                    'solusi' => 'Solusi monitoring ke-'.$i.'. Memberikan arahan dan motivasi kepada mahasiswa agar tetap semangat menjalankan proker.',
+                    'catatan_tambahan' => 'Catatan monitoring ke-'.$i,
                 ])
                 ->assertRedirect();
         }
@@ -410,7 +416,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         ]);
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
         ]);
@@ -418,7 +424,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         // Register but do NOT approve
         PesertaKkn::factory()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
             'status' => 'pending',
         ]);
@@ -439,7 +445,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
                 'location_source' => 'gps',
                 'category' => 'program_unggulan',
                 'abcd_stage' => 'discovery',
-                'files' => [\Illuminate\Http\UploadedFile::fake()->image('test.jpg')]
+                'files' => [UploadedFile::fake()->image('test.jpg')],
             ])
             ->dumpSession()
             ->assertForbidden();
@@ -451,31 +457,31 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         ['user' => $studentUser, 'mahasiswa' => $mahasiswa] = $this->createStudentUser();
 
         $period = Periode::factory()->active()->create([
-            'current_phase' => 'execution'
+            'current_phase' => 'execution',
         ]);
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
         ]);
 
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
         ]);
 
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $period->id,
-            'max_groups' => 5,
+            'periode_id' => $period->id,
+            'max_kelompok_kkn' => 5,
             'is_active' => true,
         ]);
 
         $group->update([
             'dpl_id' => $dosen->id,
-            'dpl_period_id' => $dplPeriod->id,
+            'dpl_periode_id' => $dplPeriod->id,
         ]);
         $group->dosen()->syncWithoutDetaching([
             $dosen->id => ['role' => 'Ketua'],
@@ -507,7 +513,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
                 'location_source' => 'gps',
                 'category' => 'program_unggulan',
                 'abcd_stage' => 'discovery',
-                'files' => [\Illuminate\Http\UploadedFile::fake()->image('test.jpg')]
+                'files' => [UploadedFile::fake()->image('test.jpg')],
             ])
             ->dumpSession()
             ->assertCreated();

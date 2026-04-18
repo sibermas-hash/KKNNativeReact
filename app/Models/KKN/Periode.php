@@ -6,7 +6,6 @@ namespace App\Models\KKN;
 
 use App\Enums\KknType;
 use App\Services\KKN\PeriodeGovernanceService;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -86,7 +85,7 @@ class Periode extends Model
 
     private const CACHE_KEYS = [
         'active_period',
-        'default_period_id',
+        'default_periode_id',
         'available_periods',
     ];
 
@@ -227,22 +226,22 @@ class Periode extends Model
 
     public function kelompok(): HasMany
     {
-        return $this->hasMany(KelompokKkn::class, 'period_id');
+        return $this->hasMany(KelompokKkn::class, 'periode_id');
     }
 
     public function peserta(): HasMany
     {
-        return $this->hasMany(PesertaKkn::class, 'period_id');
+        return $this->hasMany(PesertaKkn::class, 'periode_id');
     }
 
     public function dplPeriods(): HasMany
     {
-        return $this->hasMany(DplPeriod::class, 'period_id');
+        return $this->hasMany(DplPeriod::class, 'periode_id');
     }
 
     public function dplKecamatanAssignments(): HasMany
     {
-        return $this->hasMany(DplKecamatanAssignment::class, 'period_id');
+        return $this->hasMany(DplKecamatanAssignment::class, 'periode_id');
     }
 
     private static function inferLegacyJenisEnum(KknType|string|null $legacyJenis = null): KknType

@@ -15,7 +15,7 @@ class AntrianKknFactory extends Factory
     {
         return [
             'mahasiswa_id' => Mahasiswa::factory(),
-            'period_id' => Periode::factory(),
+            'periode_id' => Periode::factory(),
             'posisi_antrian' => null,
             'status' => 'menunggu',
             'penalti_poin' => 0,

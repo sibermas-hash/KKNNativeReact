@@ -8,14 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('program_kerja', function (Blueprint $table) {
+        Schema::connection('kkn')->table('program_kerja', function (Blueprint $table) {
             $table->string('kategori', 30)->default('pendukung')->after('abcd_stage');
         });
     }
 
     public function down(): void
     {
-        Schema::table('program_kerja', function (Blueprint $table) {
+        Schema::connection('kkn')->table('program_kerja', function (Blueprint $table) {
             $table->dropColumn('kategori');
         });
     }

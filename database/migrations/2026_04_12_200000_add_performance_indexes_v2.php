@@ -12,10 +12,10 @@ return new class extends Migration
         $schema = Schema::connection('kkn');
 
         // 1. Mahasiswa: Index for faculty-based filtering and searches
-        $this->addIndexIfMissing($schema, 'mahasiswa', 'mahasiswa_faculty_program_idx', ['faculty_id', 'program_id']);
+        $this->addIndexIfMissing($schema, 'mahasiswa', 'mahasiswa_faculty_prodi_idx', ['fakultas_id', 'prodi_id']);
 
         // 2. Lokasi: Index for geographical scoping
-        $this->addIndexIfMissing($schema, 'lokasi', 'lokasi_faculty_district_idx', ['faculty_id', 'district_id']);
+        $this->addIndexIfMissing($schema, 'lokasi', 'lokasi_faculty_district_idx', ['fakultas_id', 'district_id']);
 
         // 3. Kelompok KKN: Index for location-based grouping
         $this->addIndexIfMissing($schema, 'kelompok_kkn', 'kelompok_location_status_idx', ['location_id', 'status']);
@@ -31,7 +31,7 @@ return new class extends Migration
     {
         $schema = Schema::connection('kkn');
 
-        $this->dropIndexIfExists($schema, 'mahasiswa', 'mahasiswa_faculty_program_idx');
+        $this->dropIndexIfExists($schema, 'mahasiswa', 'mahasiswa_faculty_prodi_idx');
         $this->dropIndexIfExists($schema, 'lokasi', 'lokasi_faculty_district_idx');
         $this->dropIndexIfExists($schema, 'kelompok_kkn', 'kelompok_location_status_idx');
         $this->dropIndexIfExists($schema, 'log_audit', 'log_audit_user_action_created_idx');

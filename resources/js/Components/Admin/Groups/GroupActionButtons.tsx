@@ -10,10 +10,10 @@ export const GroupActionButtons = ({ canManage, onOpenCreateForm }: GroupActionB
   return (
     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 pt-8">
       <div className="space-y-1">
-        <h1 className="text-4xl font-bold tracking-tight text-gray-900">
+        <h1 className="text-4xl font-bold tracking-tight text-emerald-950">
           Unit <span className="text-emerald-600">Pelaksana.</span>
         </h1>
-        <p className="text-sm font-medium text-gray-900 max-w-2xl">
+        <p className="text-sm font-medium text-emerald-950 max-w-2xl">
           Otoritas penempatan mahasiswa dan strategi distribusi wilayah kerja terpadu KKN UIN SAIZU.
         </p>
       </div>
@@ -21,7 +21,7 @@ export const GroupActionButtons = ({ canManage, onOpenCreateForm }: GroupActionB
       <div className="flex flex-wrap items-center gap-4 shrink-0">
         <Link
           href="/admin/kelompok/template"
-          className="h-11 px-6 bg-white border border-gray-200 text-emerald-600 rounded-xl font-bold transition-all hover:bg-gray-50 flex items-center gap-3 active:scale-95 text-xs uppercase tracking-widest"
+          className="h-11 px-6 bg-white border border-emerald-50 text-emerald-600 rounded-xl font-bold transition-all hover:bg-gray-50 flex items-center gap-3 active:scale-95 text-xs uppercase tracking-widest"
         >
           <Download size={18} />
           Format Impor

@@ -6,6 +6,7 @@ use App\Models\KKN\Dosen;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Laporan;
 use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
@@ -89,7 +90,7 @@ class StudentOperationalPagesTest extends TestCase
 
     public function test_dpl_evaluation_create_redirects_to_index_page(): void
     {
-        $period = \App\Models\KKN\Periode::factory()->grading()->create();
+        $period = Periode::factory()->grading()->create();
 
         $dplUser = User::factory()->create([
             'username' => 'dpl_eval_redirect',
@@ -101,7 +102,7 @@ class StudentOperationalPagesTest extends TestCase
             'user_id' => $dplUser->id,
         ]);
 
-        $group = KelompokKkn::factory()->create(['period_id' => $period->id]);
+        $group = KelompokKkn::factory()->create(['periode_id' => $period->id]);
         $group->dosen()->attach($dosen->id, ['role' => 'Ketua']);
 
         $this->actingAs($dplUser)
@@ -165,7 +166,7 @@ class StudentOperationalPagesTest extends TestCase
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $mahasiswa->id,
             'kelompok_id' => $group->id,
-            'period_id' => $group->period_id,
+            'periode_id' => $group->periode_id,
             'role' => 'Anggota',
         ]);
 

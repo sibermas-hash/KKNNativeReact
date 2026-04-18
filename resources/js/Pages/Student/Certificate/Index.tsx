@@ -62,7 +62,7 @@ export default function CertificateIndex({
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-8 max-w-xl">
               <div className="flex items-center gap-4">
-                <div className="h-10 w-10 rounded-xl bg-emerald-500 flex items-center justify-center text-black">
+                <div className="h-10 w-10 rounded-xl bg-emerald-500 flex items-center justify-center text-emerald-950">
                   <Award size={20} strokeWidth={3} />
                 </div>
                 <div className="h-px w-12 bg-emerald-500/30" />
@@ -74,7 +74,7 @@ export default function CertificateIndex({
                 <h1 className="text-2xl md:text-2xl font-bold tracking-tighter uppercase leading-[0.9]">
                   E-Sertifikat <span className="text-[#1a7a4a]">Pengabdian.</span>
                 </h1>
-                <p className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs leading-relaxed opacity-80">
+                <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs leading-relaxed opacity-80">
                   Dokumen resmi tanda kelulusan dan kontribusi nyata Anda dalam program KKN UIN
                   Saizu.
                 </p>
@@ -99,9 +99,9 @@ export default function CertificateIndex({
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className="rounded-xl bg-white border border-gray-200/60 p-12 shadow-sm"
+              className="rounded-xl bg-white border border-emerald-50/60 p-12 shadow-sm"
             >
-              <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider text-xs font-semibold mb-12 flex items-center gap-3">
+              <h2 className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold mb-12 flex items-center gap-3">
                 <Fingerprint size={16} /> Clearance Protocol
               </h2>
 
@@ -157,7 +157,7 @@ export default function CertificateIndex({
 
           {/* --- ACTION CONSULE --- */}
           <div className="lg:col-span-2">
-            <div className="sticky top-10 rounded-xl bg-white border border-gray-200/60 overflow-hidden shadow-2xl shadow-slate-200/50">
+            <div className="sticky top-10 rounded-xl bg-white border border-emerald-50/60 overflow-hidden shadow-2xl shadow-slate-200/50">
               <div className="p-12 text-center space-y-10">
                 <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider text-xs font-semibold">
                   System Outcome
@@ -167,12 +167,12 @@ export default function CertificateIndex({
                   <div className="space-y-10">
                     <div className="relative mx-auto h-32 w-32 flex items-center justify-center">
                       <div className="absolute inset-0 bg-emerald-500 rounded-full blur-[40px] opacity-20 animate-pulse" />
-                      <div className="h-28 w-28 items-center justify-center rounded-full bg-emerald-500 text-black ring-8 ring-emerald-500/5 z-10 flex">
+                      <div className="h-28 w-28 items-center justify-center rounded-full bg-emerald-500 text-emerald-950 ring-8 ring-emerald-500/5 z-10 flex">
                         <Verified size={48} strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <p className="text-3xl font-bold text-black font-bold text-center">
+                      <p className="text-3xl font-bold text-emerald-950 font-bold text-center">
                         Approved.
                       </p>
                       <p className="text-sm font-bold text-[#1a7a4a] uppercase tracking-wider text-xs font-semibold">
@@ -202,7 +202,7 @@ export default function CertificateIndex({
                         Awaiting Authorization
                       </p>
                     </div>
-                    <div className="h-10 w-full flex items-center justify-center gap-4 rounded-xl bg-emerald-50/30 text-slate-300 border border-gray-200/60">
+                    <div className="h-10 w-full flex items-center justify-center gap-4 rounded-xl bg-emerald-50/30 text-slate-300 border border-emerald-50/60">
                       <span className="text-xs font-bold font-semibold uppercase text-xs">
                         Locked Area
                       </span>
@@ -220,7 +220,7 @@ export default function CertificateIndex({
               {eligible && score && (
                 <div className="bg-emerald-700 px-6 py-6 space-y-6">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-gray-900 uppercase tracking-wider text-xs font-semibold">
+                    <span className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold">
                       Score Matrix
                     </span>
                     <span className="text-2xl font-bold text-white tracking-tighter">
@@ -228,11 +228,11 @@ export default function CertificateIndex({
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-gray-900 uppercase tracking-wider text-xs font-semibold">
+                    <span className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold">
                       Final Grade
                     </span>
                     <div className="px-5 py-2 bg-emerald-500 rounded-[1rem] shadow-lg shadow-emerald-500/20">
-                      <span className="text-sm font-bold text-black">{score.letter_grade}</span>
+                      <span className="text-sm font-bold text-emerald-950">{score.letter_grade}</span>
                     </div>
                   </div>
                 </div>
@@ -261,14 +261,14 @@ function CheckItem({
       <div className="shrink-0 mt-1">
         {status === 'success' ? (
           <div className="h-10 w-10 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-xl shadow-emerald-500/20">
-            <ShieldCheck className="h-6 w-6 text-black" strokeWidth={3} />
+            <ShieldCheck className="h-6 w-6 text-emerald-950" strokeWidth={3} />
           </div>
         ) : status === 'failed' ? (
           <div className="h-10 w-10 rounded-2xl bg-rose-500 flex items-center justify-center shadow-xl shadow-rose-500/20">
             <XCircle className="h-6 w-6 text-white" strokeWidth={3} />
           </div>
         ) : (
-          <div className="h-10 w-10 rounded-2xl bg-emerald-50/30 flex items-center justify-center border-2 border-gray-200/60">
+          <div className="h-10 w-10 rounded-2xl bg-emerald-50/30 flex items-center justify-center border-2 border-emerald-50/60">
             <Clock className="h-6 w-6 text-slate-300" strokeWidth={3} />
           </div>
         )}
@@ -277,12 +277,12 @@ function CheckItem({
         <p
           className={clsx(
             'text-sm font-bold font-semibold uppercase text-xs transition-colors',
-            status === 'success' ? 'text-black' : 'text-gray-900',
+            status === 'success' ? 'text-emerald-950' : 'text-emerald-950',
           )}
         >
           {label}
         </p>
-        <p className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs leading-relaxed opacity-60 group-hover:opacity-100 transition-opacity">
+        <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs leading-relaxed opacity-60 group-hover:opacity-100 transition-opacity">
           {desc}
         </p>
       </div>

@@ -145,11 +145,11 @@ class JenisKknController extends Controller
             ->pluck('count', 'status');
 
         $registrations = PesertaKkn::with([
-            'mahasiswa:id,user_id,nim,nama,faculty_id,program_id',
+            'mahasiswa:id,user_id,nim,nama,fakultas_id,prodi_id',
             'mahasiswa.user:id,name,email,phone',
             'mahasiswa.fakultas:id,nama',
             'periode:id,name,periode',
-            'kelompok:id,period_id,nama_kelompok,code',
+            'kelompok:id,periode_id,nama_kelompok,code',
         ])
             ->whereHas('periode', fn ($q) => $q->where('jenis_kkn_id', $jenisKkn->id))
             ->when($request->search, function ($q, $s) {

@@ -119,9 +119,9 @@ class PeriodeService
             foreach ($groups as $group) {
                 DB::transaction(function () use ($group, $newPeriod) {
                     $newGroup = $group->replicate();
-                    $newGroup->period_id = $newPeriod->id;
+                    $newGroup->periode_id = $newPeriod->id;
                     $newGroup->dpl_id = null;
-                    $newGroup->dpl_period_id = null;
+                    $newGroup->dpl_periode_id = null;
                     $newGroup->status = 'draft';
                     $newGroup->code = $this->generateUniqueGroupCode();
                     $newGroup->token = $this->generateUniqueGroupToken();

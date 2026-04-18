@@ -149,7 +149,7 @@ class StudentDailyReportGpsTest extends TestCase
         ]);
 
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
         ]);
 
@@ -166,7 +166,7 @@ class StudentDailyReportGpsTest extends TestCase
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $mahasiswa->id,
             'kelompok_id' => $group->id,
-            'period_id' => $group->period_id,
+            'periode_id' => $group->periode_id,
             'role' => 'Anggota',
         ]);
 

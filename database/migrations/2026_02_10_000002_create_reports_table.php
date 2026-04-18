@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('reports', function (Blueprint $table) {
+        Schema::connection('kkn')->create('laporan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('group_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->unsignedBigInteger('kelompok_id')->nullable()->index();
 
             $table->enum('type', [
                 'final_report',
@@ -43,7 +43,7 @@ return new class extends Migration
             ])->default('draft');
 
             $table->text('feedback')->nullable();
-            $table->foreignId('reviewed_by')->nullable()->constrained('users');
+            $table->unsignedBigInteger('reviewed_by')->nullable()->index();
             $table->timestamp('submitted_at')->nullable();
             $table->timestamp('reviewed_at')->nullable();
 
@@ -51,7 +51,7 @@ return new class extends Migration
             $table->softDeletes();
 
             $table->index(['user_id', 'type']);
-            $table->index(['group_id', 'status']);
+            $table->index(['kelompok_id', 'status']);
         });
     }
 
@@ -60,6 +60,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('reports');
+        Schema::dropIfExists('laporan');
     }
 };

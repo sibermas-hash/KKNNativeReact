@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Tests\Concerns\RefreshPostgresDatabase;
 
@@ -12,7 +13,7 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         if (method_exists($this, 'shareTestingConnections')) {
             $this->shareTestingConnections();
         }
@@ -32,6 +33,6 @@ abstract class TestCase extends BaseTestCase
      */
     protected function seeder()
     {
-        return \Database\Seeders\RoleSeeder::class;
+        return RoleSeeder::class;
     }
 }

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('peserta_kkn', function (Blueprint $table) {
-            $table->index(['period_id', 'mahasiswa_id', 'status'], 'peserta_kkn_hot_path_composite_idx');
+            $table->index(['periode_id', 'mahasiswa_id', 'status'], 'peserta_kkn_hot_path_composite_idx');
         });
 
         Schema::table('kegiatan_kkn', function (Blueprint $table) {

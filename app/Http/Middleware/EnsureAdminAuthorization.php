@@ -266,10 +266,9 @@ class EnsureAdminAuthorization
 
         // Ensure user is authenticated
         if (! $user) {
-            if ($request->expectsJson()) {
-                abort(401, 'Unauthenticated.');
-            }
-            return redirect()->guest(route('login'));
+            throw new \Illuminate\Auth\AuthenticationException(
+                'Unauthenticated.', [], route('login')
+            );
         }
 
         // Check if user has any admin role

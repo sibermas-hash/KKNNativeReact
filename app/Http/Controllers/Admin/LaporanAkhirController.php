@@ -24,11 +24,11 @@ class LaporanAkhirController extends Controller
 
         $user = auth()->user();
         $isFacultyAdmin = $user?->hasRole('faculty_admin');
-        $facultyId = $isFacultyAdmin ? $user?->faculty_id : null;
+        $facultyId = $isFacultyAdmin ? $user?->fakultas_id : null;
 
         $reports = LaporanAkhir::with(['mahasiswa', 'kelompok'])
             ->when($status, fn ($q) => $q->where('status', $status))
-            ->when($facultyId, fn ($q) => $q->whereHas('mahasiswa', fn ($m) => $m->where('faculty_id', $facultyId)))
+            ->when($facultyId, fn ($q) => $q->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $facultyId)))
             ->orderByDesc('submitted_at')
             ->paginate(15)
             ->withQueryString();

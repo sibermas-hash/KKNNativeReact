@@ -14,18 +14,18 @@ return new class extends Migration
         $this->convertMasterIdToString('dosen');
 
         if (Schema::hasTable('mahasiswa')) {
-            DB::statement('ALTER TABLE mahasiswa ALTER COLUMN faculty_id DROP NOT NULL');
-            DB::statement('ALTER TABLE mahasiswa ALTER COLUMN program_id DROP NOT NULL');
+            DB::statement('ALTER TABLE mahasiswa ALTER COLUMN fakultas_id DROP NOT NULL');
+            DB::statement('ALTER TABLE mahasiswa ALTER COLUMN prodi_id DROP NOT NULL');
         }
     }
 
     public function down(): void
     {
         if (Schema::hasTable('mahasiswa')) {
-            DB::statement('UPDATE mahasiswa SET faculty_id = (SELECT id FROM fakultas ORDER BY id LIMIT 1) WHERE faculty_id IS NULL');
-            DB::statement('UPDATE mahasiswa SET program_id = (SELECT id FROM prodi ORDER BY id LIMIT 1) WHERE program_id IS NULL');
-            DB::statement('ALTER TABLE mahasiswa ALTER COLUMN faculty_id SET NOT NULL');
-            DB::statement('ALTER TABLE mahasiswa ALTER COLUMN program_id SET NOT NULL');
+            DB::statement('UPDATE mahasiswa SET fakultas_id = (SELECT id FROM fakultas ORDER BY id LIMIT 1) WHERE fakultas_id IS NULL');
+            DB::statement('UPDATE mahasiswa SET prodi_id = (SELECT id FROM prodi ORDER BY id LIMIT 1) WHERE prodi_id IS NULL');
+            DB::statement('ALTER TABLE mahasiswa ALTER COLUMN fakultas_id SET NOT NULL');
+            DB::statement('ALTER TABLE mahasiswa ALTER COLUMN prodi_id SET NOT NULL');
         }
 
         $this->convertMasterIdToBigInt('dosen');

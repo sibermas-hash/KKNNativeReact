@@ -60,15 +60,15 @@ class DummyKKN56Seeder extends Seeder
         // STEP 1.5: PRODI
         // ═══════════════════════════════════════════════════
         $prodiList = [
-            ['id' => 1, 'faculty_id' => 1, 'nama' => 'Pendidikan Agama Islam', 'code' => 'PAI'],
-            ['id' => 2, 'faculty_id' => 1, 'nama' => 'Pendidikan Bahasa Arab', 'code' => 'PBA'],
-            ['id' => 3, 'faculty_id' => 2, 'nama' => 'Ekonomi Syariah', 'code' => 'ES'],
-            ['id' => 4, 'faculty_id' => 4, 'nama' => 'Hukum Keluarga Islam', 'code' => 'HKI'],
-            ['id' => 5, 'faculty_id' => 5, 'nama' => 'Komunikasi Penyiaran Islam', 'code' => 'KPI'],
+            ['id' => 1, 'fakultas_id' => 1, 'nama' => 'Pendidikan Agama Islam', 'code' => 'PAI'],
+            ['id' => 2, 'fakultas_id' => 1, 'nama' => 'Pendidikan Bahasa Arab', 'code' => 'PBA'],
+            ['id' => 3, 'fakultas_id' => 2, 'nama' => 'Ekonomi Syariah', 'code' => 'ES'],
+            ['id' => 4, 'fakultas_id' => 4, 'nama' => 'Hukum Keluarga Islam', 'code' => 'HKI'],
+            ['id' => 5, 'fakultas_id' => 5, 'nama' => 'Komunikasi Penyiaran Islam', 'code' => 'KPI'],
         ];
         foreach ($prodiList as $p) {
             DB::table('prodi')->updateOrInsert(['id' => $p['id']], [
-                'faculty_id' => $p['faculty_id'],
+                'fakultas_id' => $p['fakultas_id'],
                 'nama' => $p['nama'], 'code' => $p['code'],
                 'created_at' => now(), 'updated_at' => now(),
             ]);
@@ -200,7 +200,7 @@ class DummyKKN56Seeder extends Seeder
             }
             DB::table('dosen')->updateOrInsert(['user_id' => $userId], [
                 'nip' => $nip, 'nama' => "Dr. DPL Simulator $i, M.Ag",
-                'faculty_id' => ($i % 5) + 1,
+                'fakultas_id' => ($i % 5) + 1,
                 'created_at' => now(), 'updated_at' => now(),
             ]);
             $dplUser = User::find($userId);
@@ -228,8 +228,8 @@ class DummyKKN56Seeder extends Seeder
             }
             DB::table('mahasiswa')->updateOrInsert(['user_id' => $userId], [
                 'nim' => $nim, 'nama' => "Mahasiswa Dummy $i",
-                'faculty_id' => ($i % 5) + 1,
-                'program_id' => ($i % 5) + 1,
+                'fakultas_id' => ($i % 5) + 1,
+                'prodi_id' => ($i % 5) + 1,
                 'batch_year' => 2021,
                 'sks_completed' => rand(100, 140),
                 'gpa' => number_format(rand(300, 400) / 100, 2),
@@ -258,8 +258,8 @@ class DummyKKN56Seeder extends Seeder
                     // In this seeder, Mahasiswa table is linked via user_id, but the PK might be different.
                     // Let's check Mahasiswa table PK.
                     'mahasiswa_id' => DB::table('mahasiswa')->where('user_id', $userId)->value('id'),
-                    'period_id' => $periods[0]['academic_year_id'], // This is wrong, should be period ID
-                    'period_id' => DB::table('periode')->where('name', $periods[0]['name'])->value('id'),
+                    'periode_id' => $periods[0]['academic_year_id'], // This is wrong, should be period ID
+                    'periode_id' => DB::table('periode')->where('name', $periods[0]['name'])->value('id'),
                     'registration_date' => now()->subDays(rand(1, 10)),
                     'status' => $i <= 10 ? 'pending' : ($i <= 30 ? 'approved' : 'rejected'),
                     'created_at' => now(), 'updated_at' => now(),

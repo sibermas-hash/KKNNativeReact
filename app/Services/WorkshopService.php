@@ -38,7 +38,7 @@ class WorkshopService
         ];
 
         if (Workshop::supportsPeriodAssignment()) {
-            $payload['periode_id'] = $data['period_id'] ?? null;
+            $payload['periode_id'] = $data['periode_id'] ?? null;
         }
 
         return Workshop::create($payload);
@@ -59,7 +59,7 @@ class WorkshopService
             }
 
             $workshop->update([
-                ...(Workshop::supportsPeriodAssignment() ? ['periode_id' => $data['period_id'] ?? $workshop->periode_id] : []),
+                ...(Workshop::supportsPeriodAssignment() ? ['periode_id' => $data['periode_id'] ?? $workshop->periode_id] : []),
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
                 'workshop_date' => $data['workshop_date'],

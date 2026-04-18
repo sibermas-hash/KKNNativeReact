@@ -11,7 +11,7 @@ return new class extends Migration
      *
      * Tables that need soft deletes for audit trail:
      * - kegiatan_kkn (daily activity logs)
-     * - program_kerja (work programs)
+     * - program_kerja (work prodi)
      * - nilai_kkn (grades/scores)
      * - absensi_harian (daily attendance)
      * - monitoring_dpl (DPL monitoring logs)

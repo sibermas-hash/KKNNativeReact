@@ -140,20 +140,20 @@ export default function StudentDashboard({
                 {studentFirstName.charAt(0)}
               </div>
               <div className="space-y-0.5">
-                <h1 className="text-lg font-bold text-gray-900 tracking-tight">
+                <h1 className="text-lg font-bold text-emerald-950 tracking-tight">
                   Halo, <span className="text-emerald-600">{studentFirstName}!</span>
                 </h1>
-                <p className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+                <p className="text-sm font-bold text-emerald-950 uppercase tracking-wider">
                   NIM: {student.nim || '-'}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
+            <div className="flex items-center gap-3 bg-emerald-50/50 p-3 rounded-xl border border-emerald-50">
               <div className="text-right">
-                <p className="text-sm font-bold text-gray-900 uppercase leading-none mb-1">
+                <p className="text-sm font-bold text-emerald-950 uppercase leading-none mb-1">
                   Status Keanggotaan
                 </p>
-                <p className="text-sm font-bold text-gray-900 uppercase">
+                <p className="text-sm font-bold text-emerald-950 uppercase">
                   {isApproved
                     ? 'Peserta Aktif'
                     : isPending
@@ -166,7 +166,7 @@ export default function StudentDashboard({
               <div
                 className={clsx(
                   'h-8 w-8 rounded-lg flex items-center justify-center',
-                  isApproved ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-gray-900',
+                  isApproved ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-emerald-950',
                 )}
               >
                 {isApproved ? <BadgeCheck size={16} /> : <Lock size={16} />}
@@ -181,7 +181,7 @@ export default function StudentDashboard({
                 <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
                   <Target size={16} />
                 </div>
-                <h2 className="text-sm font-bold text-gray-900 uppercase tracking-tight">
+                <h2 className="text-sm font-bold text-emerald-950 uppercase tracking-tight">
                   Progres Pengabdian
                 </h2>
               </div>
@@ -203,7 +203,7 @@ export default function StudentDashboard({
                     className={clsx(
                       'flex flex-col gap-2 p-3 rounded-xl border transition-all text-center md:text-left',
                       phase.isCompleted
-                        ? 'bg-emerald-50 border-gray-200'
+                        ? 'bg-emerald-50 border-emerald-50'
                         : phase.isActive
                           ? 'bg-white border-[#f3f4f6]0 shadow-sm'
                           : 'bg-gray-50 border-slate-50',
@@ -215,8 +215,8 @@ export default function StudentDashboard({
                         phase.isCompleted
                           ? 'bg-emerald-600 text-white'
                           : phase.isActive
-                            ? 'bg-emerald-100 text-gray-700'
-                            : 'bg-slate-200 text-gray-900',
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : 'bg-slate-200 text-emerald-950',
                       )}
                     >
                       {phase.isCompleted ? <CheckCircle size={12} /> : phase.id}
@@ -226,13 +226,13 @@ export default function StudentDashboard({
                         className={clsx(
                           'text-sm font-bold leading-none mb-0.5',
                           phase.isActive || phase.isCompleted
-                            ? 'text-gray-900'
-                            : 'text-gray-900',
+                            ? 'text-emerald-950'
+                            : 'text-emerald-950',
                         )}
                       >
                         {phase.label}
                       </p>
-                      <p className="text-sm font-semibold text-gray-900 uppercase">
+                      <p className="text-sm font-bold text-emerald-950 uppercase">
                         {phase.desc}
                       </p>
                     </div>
@@ -245,18 +245,18 @@ export default function StudentDashboard({
           {/* --- MAIN CONTENT --- */}
           {!isGroupPinned ? (
             <div className="bg-white rounded-xl border border-dashed border-slate-300 p-10 text-center space-y-4">
-              <div className="h-12 w-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-slate-300 border border-gray-200">
+              <div className="h-12 w-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-slate-300 border border-emerald-50">
                 <MapPin size={24} />
               </div>
               <div className="space-y-1">
-                <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">
+                <h3 className="text-lg font-bold text-emerald-950 uppercase tracking-tight">
                   {isRejected
                     ? 'Perbaikan Data Diperlukan'
                     : isPending
                       ? 'Sedang Memverifikasi Berkas'
                       : 'Mulai Pendaftaran KKN'}
                 </h3>
-                <p className="text-xs text-gray-900 max-w-md mx-auto leading-relaxed">
+                <p className="text-xs font-bold text-emerald-950 max-w-md mx-auto leading-relaxed">
                   {isRejected
                     ? registration?.rejection_reason || 'Mohon periksa kembali dokumen.'
                     : isPending
@@ -329,18 +329,18 @@ export default function StudentDashboard({
 
                 {/* Grade Alert */}
                 {grade?.is_finalized && (
-                  <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex items-center justify-between gap-4">
+                  <div className="bg-white border border-emerald-50 rounded-xl p-6 shadow-sm flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center border border-gray-200">
+                      <div className="h-10 w-10 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center border border-emerald-50">
                         <BadgeCheck size={20} />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-emerald-600 font-semibold uppercase text-xs mb-0.5">
+                        <p className="text-sm font-bold text-emerald-600 uppercase text-xs mb-0.5">
                           Nilai Sertifikasi
                         </p>
-                        <p className="text-2xl font-bold text-gray-900">
+                        <p className="text-2xl font-bold text-emerald-950">
                           {grade.letter}{' '}
-                          <span className="text-sm font-bold text-gray-900">
+                          <span className="text-sm font-bold text-emerald-950">
                             ({grade.score?.toFixed(2)})
                           </span>
                         </p>
@@ -359,8 +359,8 @@ export default function StudentDashboard({
 
               {/* Sidebar Menu */}
               <div className="space-y-4">
-                <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
-                  <h3 className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs mb-4 flex items-center gap-2">
+                <div className="bg-white rounded-xl border border-emerald-50 p-5 shadow-sm">
+                  <h3 className="text-sm font-bold text-emerald-950 uppercase text-xs mb-4 flex items-center gap-2">
                     <LayoutGrid size={12} className="text-emerald-600" />
                     Navigasi
                   </h3>
@@ -384,16 +384,16 @@ export default function StudentDashboard({
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
-                  <h3 className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs mb-3">
+                <div className="bg-emerald-50/50 rounded-xl p-5 border border-emerald-50">
+                  <h3 className="text-sm font-bold text-emerald-950 uppercase text-xs mb-3">
                     Informasi
                   </h3>
                   <div className="space-y-2">
-                    <div className="flex gap-2 text-sm font-semibold text-gray-600 leading-tight">
+                    <div className="flex gap-2 text-sm font-bold text-emerald-900 leading-tight">
                       <div className="h-1 w-1 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                       <p>Logbook wajib divalidasi DPL dalam 72 jam.</p>
                     </div>
-                    <div className="flex gap-2 text-sm font-semibold text-gray-600 leading-tight">
+                    <div className="flex gap-2 text-sm font-bold text-emerald-900 leading-tight">
                       <div className="h-1 w-1 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                       <p>Pastikan NIK data diri sesuai KTP (Biodata).</p>
                     </div>
@@ -414,7 +414,7 @@ function StatBox({ icon: Icon, label, value, color = 'emerald' }: DashboardStatP
     blue: 'bg-blue-50 text-blue-600',
   };
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex items-center gap-4">
+    <div className="bg-white rounded-xl border border-emerald-50 p-4 shadow-sm flex items-center gap-4">
       <div
         className={clsx(
           'h-10 w-10 rounded-lg flex items-center justify-center border',
@@ -424,10 +424,10 @@ function StatBox({ icon: Icon, label, value, color = 'emerald' }: DashboardStatP
         <Icon size={18} />
       </div>
       <div>
-        <p className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs leading-none mb-1">
+        <p className="text-sm font-bold text-emerald-950 uppercase text-xs leading-none mb-1">
           {label}
         </p>
-        <p className="text-lg font-bold text-gray-900">{value}</p>
+        <p className="text-lg font-bold text-emerald-950">{value}</p>
       </div>
     </div>
   );
@@ -437,13 +437,13 @@ function QuickLink({ href, icon: Icon, label }: DashboardQuickLinkProps) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-2.5 p-3 rounded-xl hover:bg-emerald-50 text-gray-600 hover:text-gray-700 transition-all group font-bold text-sm uppercase"
+      className="flex items-center gap-2.5 p-3 rounded-xl hover:bg-emerald-50 text-emerald-900 hover:text-emerald-950 transition-all group font-bold text-sm uppercase"
     >
-      <Icon size={16} className="text-slate-300 group-hover:text-emerald-600 transition-colors" />
+      <Icon size={16} className="text-emerald-200 group-hover:text-emerald-600 transition-colors" />
       {label}
       <ArrowRight
         size={12}
-        className="ml-auto text-slate-200 group-hover:text-[#1a7a4a] transition-all group-hover:translate-x-1"
+        className="ml-auto text-emerald-100 group-hover:text-emerald-950 transition-all group-hover:translate-x-1"
       />
     </Link>
   );

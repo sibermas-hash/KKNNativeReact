@@ -99,7 +99,7 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
     <AppLayout title="Audit Kualifikasi Akademik">
       <Head title="Audit Kualifikasi KKN" />
 
-      <div className="max-w-7xl mx-auto space-y-8 pb-24 text-gray-900">
+      <div className="max-w-7xl mx-auto space-y-8 pb-24 text-emerald-950">
         
         <PageHeader 
           title="Audit Kualifikasi."
@@ -114,19 +114,19 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
         >
           <button
             onClick={handleExport}
-            className="h-12 px-6 bg-white border-2 border-gray-200 hover:border-emerald-600 text-gray-900 rounded-xl font-bold text-xs transition-all flex items-center gap-3 active:scale-95 shadow-sm uppercase tracking-wider"
+            className="h-12 px-6 bg-white border-2 border-emerald-50 hover:border-emerald-600 text-emerald-950 rounded-xl font-bold text-xs transition-all flex items-center gap-3 active:scale-95 shadow-sm uppercase tracking-wider"
           >
             <Download size={16} strokeWidth={2.5} /> Ekspor Hasil Audit
           </button>
         </PageHeader>
 
         {/* --- INFO BANNER --- */}
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 flex gap-4 items-start shadow-sm mb-6">
-          <div className="h-10 w-10 bg-white rounded-xl border border-gray-200 flex items-center justify-center shrink-0 text-[#1a7a4a] shadow-sm">
+        <div className="bg-gray-50 border border-emerald-50 rounded-xl p-5 flex gap-4 items-start shadow-sm mb-6">
+          <div className="h-10 w-10 bg-white rounded-xl border border-emerald-50 flex items-center justify-center shrink-0 text-[#1a7a4a] shadow-sm">
             <Info size={20} strokeWidth={2.5} />
           </div>
           <div className="space-y-1">
-            <p className="text-xs font-bold text-gray-900 leading-relaxed uppercase tracking-wide">Kebijakan Kelayakan</p>
+            <p className="text-xs font-bold text-emerald-950 leading-relaxed uppercase tracking-wide">Kebijakan Kelayakan</p>
             <p className="text-xs font-semibold text-[#1a7a4a]/80 leading-relaxed">
               Status <span className="font-bold">"LAYAK"</span> diberikan jika mahasiswa telah melewati ambang batas: SKS &ge; 100, IPK &ge; 2.0, dan Lulus BTA-PPI. Audit ini dilakukan secara otomatis untuk mempermudah monitoring sebelum pendaftaran dibuka.
             </p>
@@ -160,7 +160,7 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
                 onClick={() => setShowFilters(!showFilters)}
                 className={clsx(
                   "h-11 px-5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all border-2",
-                  showFilters ? "bg-[#16a34a] border-emerald-600 text-white" : "bg-white border-gray-200 text-gray-900 hover:border-emerald-600"
+                  showFilters ? "bg-[#16a34a] border-emerald-600 text-white" : "bg-white border-emerald-50 text-emerald-950 hover:border-emerald-600"
                 )}
               >
                 <Filter size={14} strokeWidth={2.5} />
@@ -176,8 +176,8 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
           }
           footer={
             <div className="flex items-center justify-between">
-              <span className="text-xs font-extrabold text-gray-900/40 uppercase tracking-widest">
-                Halaman <strong className="text-gray-900 tabular-nums">{pagination.current_page}</strong> dari {pagination.last_page}
+              <span className="text-xs font-extrabold text-emerald-950/40 uppercase tracking-widest">
+                Halaman <strong className="text-emerald-950 tabular-nums">{pagination.current_page}</strong> dari {pagination.last_page}
               </span>
               <Pagination meta={{ 
                 current_page: pagination.current_page, 
@@ -195,43 +195,43 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
           {showFilters && (
             <div className="p-6 bg-emerald-50/20 border-b-2 border-[#f3f4f6] grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-top-2 duration-300">
               <div className="space-y-2">
-                <label className="text-xs font-extrabold text-gray-900 uppercase tracking-widest pl-1">Periode Program</label>
+                <label className="text-xs font-extrabold text-emerald-950 uppercase tracking-widest pl-1">Periode Program</label>
                 <div className="relative group">
                   <select 
                     value={periodId} 
                     onChange={e => setPeriodId(e.target.value)} 
-                    className="w-full h-11 pl-4 pr-10 rounded-xl border-2 border-[#f3f4f6] bg-white text-xs font-bold text-gray-900 focus:border-emerald-600 appearance-none transition-all"
+                    className="w-full h-11 pl-4 pr-10 rounded-xl border-2 border-[#f3f4f6] bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 appearance-none transition-all"
                   >
                     <option value="">SEMUA PERIODE</option>
                     {periods.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>)}
                   </select>
-                  <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none group-focus-within:rotate-180 transition-transform" strokeWidth={3} />
+                  <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform" strokeWidth={3} />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-extrabold text-gray-900 uppercase tracking-widest pl-1">Fakultas / Satker</label>
+                <label className="text-xs font-extrabold text-emerald-950 uppercase tracking-widest pl-1">Fakultas / Satker</label>
                 <div className="relative group">
                   <select 
                     value={facultyId} 
                     onChange={e => setFacultyId(e.target.value)} 
-                    className="w-full h-11 pl-4 pr-10 rounded-xl border-2 border-[#f3f4f6] bg-white text-xs font-bold text-gray-900 focus:border-emerald-600 appearance-none transition-all"
+                    className="w-full h-11 pl-4 pr-10 rounded-xl border-2 border-[#f3f4f6] bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 appearance-none transition-all"
                   >
                     <option value="">SEMUA FAKULTAS</option>
                     {faculties.map(f => <option key={f.id} value={f.id}>{f.name.toUpperCase()}</option>)}
                   </select>
-                  <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none group-focus-within:rotate-180 transition-transform" strokeWidth={3} />
+                  <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform" strokeWidth={3} />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-extrabold text-gray-900 uppercase tracking-widest pl-1">Status Kelayakan</label>
+                <label className="text-xs font-extrabold text-emerald-950 uppercase tracking-widest pl-1">Status Kelayakan</label>
                 <div className="flex h-11 bg-gray-100 p-1 rounded-xl">
                   <button 
                     onClick={() => setShowEligible(true)} 
                     className={clsx(
                       "flex-1 rounded-lg text-xs font-extrabold transition-all tracking-wider",
-                      showEligible ? "bg-white text-[#1a7a4a] shadow-sm" : "text-gray-600 hover:text-gray-900"
+                      showEligible ? "bg-white text-[#1a7a4a] shadow-sm" : "text-emerald-800 hover:text-emerald-950"
                     )}
                   >
                     LAYAK
@@ -240,7 +240,7 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
                     onClick={() => setShowEligible(false)} 
                     className={clsx(
                       "flex-1 rounded-lg text-xs font-extrabold transition-all tracking-wider",
-                      !showEligible ? "bg-white text-rose-600 shadow-sm" : "text-gray-600 hover:text-gray-900"
+                      !showEligible ? "bg-white text-rose-600 shadow-sm" : "text-emerald-800 hover:text-emerald-950"
                     )}
                   >
                     GAGAL
@@ -249,7 +249,7 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
               </div>
 
               <div className="md:col-span-3 flex justify-end">
-                <button onClick={resetFilters} className="text-xs font-extrabold text-gray-900/30 hover:text-rose-600 uppercase tracking-widest transition-colors">Reset Filter</button>
+                <button onClick={resetFilters} className="text-xs font-extrabold text-emerald-950/30 hover:text-rose-600 uppercase tracking-widest transition-colors">Reset Filter</button>
               </div>
             </div>
           )}
@@ -263,14 +263,14 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
               <PremiumTableRow key={s.mahasiswa_id}>
                 <PremiumTableCell>
                   <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-[#e8f5ee] text-[#1a7a4a] flex items-center justify-center text-xs font-bold border border-gray-200">
+                    <div className="h-10 w-10 rounded-lg bg-[#e8f5ee] text-[#1a7a4a] flex items-center justify-center text-xs font-bold border border-emerald-50">
                       {s.nama.charAt(0)}
                     </div>
                     <div className="flex flex-col gap-1">
-                      <span className="text-xs font-bold text-gray-900 leading-tight uppercase tracking-tight">{s.nama}</span>
+                      <span className="text-xs font-bold text-emerald-950 leading-tight uppercase tracking-tight">{s.nama}</span>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-[#1a7a4a] font-mono tracking-wider">{s.nim}</span>
-                        <span className="text-xs font-extrabold text-gray-900/30 uppercase tracking-wide truncate max-w-[120px]">{s.mahasiswa?.prodi?.nama || 'PRODI'}</span>
+                        <span className="text-xs font-extrabold text-emerald-950/30 uppercase tracking-wide truncate max-w-[120px]">{s.mahasiswa?.prodi?.nama || 'PRODI'}</span>
                       </div>
                     </div>
                   </div>
@@ -279,11 +279,11 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
                   <div className="flex flex-col items-center gap-1.5">
                     <span className={clsx(
                       "text-xs font-extrabold px-3 py-1 rounded-lg border tabular-nums tracking-wider leading-none", 
-                      s.sks_completed >= 100 ? 'bg-[#e8f5ee] border-gray-200 text-[#1a7a4a]' : 'bg-rose-50 border-rose-100 text-rose-600'
+                      s.sks_completed >= 100 ? 'bg-[#e8f5ee] border-emerald-50 text-[#1a7a4a]' : 'bg-rose-50 border-rose-100 text-rose-600'
                     )}>
                       {s.sks_completed} SKS
                     </span>
-                    <span className="text-xs font-bold text-gray-900/30 font-mono leading-none">IPK: {s.gpa ? Number(s.gpa).toFixed(2) : '-'}</span>
+                    <span className="text-xs font-bold text-emerald-950/30 font-mono leading-none">IPK: {s.gpa ? Number(s.gpa).toFixed(2) : '-'}</span>
                   </div>
                 </PremiumTableCell>
                 <PremiumTableCell align="center">
@@ -291,10 +291,10 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
                 </PremiumTableCell>
                 <PremiumTableCell align="center">
                   <div className="flex items-center justify-center gap-2">
-                    <div title="KES" className={clsx("h-7 w-7 rounded-lg border-2 flex items-center justify-center transition-all", s.has_health_certificate ? 'bg-[#e8f5ee] border-gray-200 text-[#1a7a4a]' : 'bg-gray-50 border-gray-100 text-gray-500')}>
+                    <div title="KES" className={clsx("h-7 w-7 rounded-lg border-2 flex items-center justify-center transition-all", s.has_health_certificate ? 'bg-[#e8f5ee] border-emerald-50 text-[#1a7a4a]' : 'bg-gray-50 border-gray-100 text-emerald-700')}>
                       {s.has_health_certificate ? <CheckCircle2 size={14} strokeWidth={3} /> : <AlertTriangle size={14} strokeWidth={2.5} />}
                     </div>
-                    <div title="IZIN" className={clsx("h-7 w-7 rounded-lg border-2 flex items-center justify-center transition-all", s.has_parent_permission ? 'bg-[#e8f5ee] border-gray-200 text-[#1a7a4a]' : 'bg-gray-50 border-gray-100 text-gray-500')}>
+                    <div title="IZIN" className={clsx("h-7 w-7 rounded-lg border-2 flex items-center justify-center transition-all", s.has_parent_permission ? 'bg-[#e8f5ee] border-emerald-50 text-[#1a7a4a]' : 'bg-gray-50 border-gray-100 text-emerald-700')}>
                       {s.has_parent_permission ? <CheckCircle2 size={14} strokeWidth={3} /> : <AlertTriangle size={14} strokeWidth={2.5} />}
                     </div>
                   </div>
@@ -305,7 +305,7 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
                 <PremiumTableCell align="right">
                   <Link 
                     href={`/admin/mahasiswa/${s.mahasiswa_id}`} 
-                    className="h-9 px-4 inline-flex items-center justify-center bg-white text-gray-900 hover:bg-emerald-900 hover:text-white border-2 border-[#f3f4f6] rounded-xl text-xs font-extrabold transition-all active:scale-95 uppercase tracking-widest shadow-sm shadow-emerald-900/5"
+                    className="h-9 px-4 inline-flex items-center justify-center bg-white text-emerald-950 hover:bg-emerald-900 hover:text-white border-2 border-[#f3f4f6] rounded-xl text-xs font-extrabold transition-all active:scale-95 uppercase tracking-widest shadow-sm shadow-emerald-900/5"
                   >
                     Profil <ArrowRight size={14} className="ml-2" strokeWidth={3} />
                   </Link>
@@ -322,8 +322,8 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
               <RefreshCw size={20} strokeWidth={2.5} />
             </div>
             <div className="space-y-1">
-              <h4 className="text-xs font-extrabold text-gray-900 uppercase tracking-wider leading-none mb-1">Update Real-time</h4>
-              <p className="text-xs font-bold text-gray-700 leading-relaxed">Data disinkronkan langsung dari Master Data Akademik.</p>
+              <h4 className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider leading-none mb-1">Update Real-time</h4>
+              <p className="text-xs font-bold text-emerald-800 leading-relaxed">Data disinkronkan langsung dari Master Data Akademik.</p>
             </div>
           </div>
           <div className="flex gap-4 p-6 bg-white border-2 border-[#f3f4f6] rounded-xl shadow-sm">
@@ -331,8 +331,8 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
               <RefreshCw size={20} strokeWidth={2.5} />
             </div>
             <div className="space-y-1">
-              <h4 className="text-xs font-extrabold text-gray-900 uppercase tracking-wider leading-none mb-1">Integrasi SIAKAD</h4>
-              <p className="text-xs font-bold text-gray-700 leading-relaxed">Validasi SKS dan IPK menggunakan data resmi universitas.</p>
+              <h4 className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider leading-none mb-1">Integrasi SIAKAD</h4>
+              <p className="text-xs font-bold text-emerald-800 leading-relaxed">Validasi SKS dan IPK menggunakan data resmi universitas.</p>
             </div>
           </div>
           <div className="flex gap-4 p-6 bg-white border-2 border-[#f3f4f6] rounded-xl shadow-sm">
@@ -340,8 +340,8 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
               <RefreshCw size={20} strokeWidth={2.5} />
             </div>
             <div className="space-y-1">
-              <h4 className="text-xs font-extrabold text-gray-900 uppercase tracking-wider leading-none mb-1">SOP Kelayakan</h4>
-              <p className="text-xs font-bold text-gray-700 leading-relaxed">Parameter kelaikan sesuai Pedoman KKN 2026/2027.</p>
+              <h4 className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider leading-none mb-1">SOP Kelayakan</h4>
+              <p className="text-xs font-bold text-emerald-800 leading-relaxed">Parameter kelaikan sesuai Pedoman KKN 2026/2027.</p>
             </div>
           </div>
         </div>

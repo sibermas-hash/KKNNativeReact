@@ -11,17 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('faculties', function (Blueprint $table) {
+        Schema::table('fakultas', function (Blueprint $table) {
             $table->unsignedBigInteger('master_id')->nullable();
             $table->timestamp('master_synced_at')->nullable();
         });
 
-        Schema::table('lecturers', function (Blueprint $table) {
+        Schema::table('dosen', function (Blueprint $table) {
             $table->unsignedBigInteger('master_id')->nullable();
             $table->timestamp('master_synced_at')->nullable();
         });
 
-        Schema::table('students', function (Blueprint $table) {
+        Schema::table('mahasiswa', function (Blueprint $table) {
             $table->unsignedBigInteger('master_id')->nullable();
             $table->timestamp('master_synced_at')->nullable();
         });
@@ -32,15 +32,15 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('faculties', function (Blueprint $table) {
+        Schema::table('fakultas', function (Blueprint $table) {
             $table->dropColumn(['master_id', 'master_synced_at']);
         });
 
-        Schema::table('lecturers', function (Blueprint $table) {
+        Schema::table('dosen', function (Blueprint $table) {
             $table->dropColumn(['master_id', 'master_synced_at']);
         });
 
-        Schema::table('students', function (Blueprint $table) {
+        Schema::table('mahasiswa', function (Blueprint $table) {
             $table->dropColumn(['master_id', 'master_synced_at']);
         });
     }

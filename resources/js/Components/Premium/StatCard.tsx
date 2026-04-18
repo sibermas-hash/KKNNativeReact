@@ -26,7 +26,7 @@ const StatCard: React.FC<StatCardProps> = ({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-center gap-4 hover:border-gray-300 transition-colors">
+    <div className="bg-white border border-emerald-50 rounded-xl p-5 flex items-center gap-4 hover:border-gray-300 transition-colors">
       <div className={clsx(
         "h-11 w-11 rounded-lg flex items-center justify-center shrink-0",
         iconVariants[variant]
@@ -34,9 +34,9 @@ const StatCard: React.FC<StatCardProps> = ({
         <Icon size={20} strokeWidth={2} />
       </div>
       <div className="flex flex-col">
-        <span className="text-xs font-medium text-gray-700 leading-none mb-1">{label}</span>
+        <span className="text-xs font-medium text-emerald-800 leading-none mb-1">{label}</span>
         <div className="flex items-baseline gap-2">
-          <span className="text-xl font-bold text-gray-900 tabular-nums leading-none">{value}</span>
+          <span className="text-xl font-bold text-emerald-950 tabular-nums leading-none">{value}</span>
           {trend && <span className="text-xs font-semibold text-[#16a34a]">{trend}</span>}
         </div>
       </div>

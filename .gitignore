@@ -26,8 +26,6 @@
 /playwright-report
 /test-results
 /blob-report
-/storage/*.key
-/storage/pail
 /vendor
 Homestead.json
 Homestead.yaml
@@ -36,7 +34,7 @@ cloudflared.exe
 connect_server.bat
 
 # Debug/deployment scripts
-check_local_master.php
+check_local_master_master.php
 deploy_seeder.exp
 list_master_api_tables.php
 list_master_tables.php
@@ -68,3 +66,63 @@ public/downloads/*.apk
 *.key
 *.cert
 docker-compose.override.yml
+
+# Laravel storage (logs, cache, sessions, uploads)
+/storage/app/public/*
+!/storage/app/public/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/data/*
+!/storage/framework/data/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/testing/*
+!/storage/framework/testing/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/logs/*
+!/storage/logs/.gitignore
+
+# Laravel bootstrap
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+
+# Composer/vendor
+/vendor/
+
+# Node packages
+/node_modules/
+
+# Environment files (already listed but reinforced)
+.env
+.env.*
+!.env.example
+!.env.staging
+
+# IDE
+/.idea/
+/.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+/public/build/
+/public/hot
+
+# Coverage
+/coverage/
+.phpunit.cache/
+
+# Data files - CSV/Excel with student data
+/DataKKN*.csv
+/data-*.csv
+data/
+exports/
+imports/
+uploads/
+*.sql

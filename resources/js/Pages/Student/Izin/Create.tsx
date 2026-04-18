@@ -25,16 +25,16 @@ export default function StudentIzinCreate() {
                 <div className="flex items-center gap-4">
                     <Link
                         href={route('student.izin.index')}
-                        className="inline-flex items-center gap-2.5 px-4 py-2 bg-white border border-gray-200/60 rounded-xl text-xs font-bold text-gray-900 hover:border-[#f3f4f6]0 hover:text-emerald-600 transition-all shadow-sm"
+                        className="inline-flex items-center gap-2.5 px-4 py-2 bg-white border border-emerald-50/60 rounded-xl text-xs font-bold text-emerald-950 hover:border-[#f3f4f6]0 hover:text-emerald-600 transition-all shadow-sm"
                     >
                         <ArrowLeft className="h-3.5 w-3.5" /> KEMBALI KE DAFTAR IZIN
                     </Link>
                 </div>
 
-                <section className="rounded-[2.5rem] border border-gray-200/60 bg-white p-12 shadow-sm">
+                <section className="rounded-[2.5rem] border border-emerald-50/60 bg-white p-12 shadow-sm">
                     <div className="space-y-2 mb-12">
-                        <h1 className="text-3xl font-bold text-black tracking-tight uppercase">Ajukan Izin <span className="text-[#1a7a4a]">Meninggalkan.</span></h1>
-                        <p className="text-xs font-bold text-gray-900 font-semibold uppercase text-xs">
+                        <h1 className="text-3xl font-bold text-emerald-950 tracking-tight uppercase">Ajukan Izin <span className="text-[#1a7a4a]">Meninggalkan.</span></h1>
+                        <p className="text-xs font-bold text-emerald-950 font-semibold uppercase text-xs">
                             Permohonan izin akan diverifikasi oleh Dosen Pembimbing Lapangan.
                         </p>
                     </div>
@@ -102,7 +102,7 @@ export default function StudentIzinCreate() {
                             </Button>
                             <Link
                                 href={route('student.izin.index')}
-                                className="text-sm font-bold text-gray-900 hover:text-gray-900 transition-colors font-semibold uppercase text-xs px-6"
+                                className="text-sm font-bold text-emerald-950 hover:text-emerald-950 transition-colors font-semibold uppercase text-xs px-6"
                             >
                                 Batalkan
                             </Link>

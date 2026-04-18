@@ -3,7 +3,6 @@
 namespace Tests\Concerns;
 
 use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase as LaravelRefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
@@ -22,25 +21,11 @@ trait RefreshPostgresDatabase
             } catch (\Throwable $e) {
                 // Database likely already exists
             }
-
-            try {
-                DB::connection($connectionName)->getPdo()->exec('DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;');
-            } catch (\Throwable $e) {
-                $this->artisan('migrate:fresh', ['--database' => $connectionName, '--force' => true, '--no-seed' => true]);
-                $this->app[Kernel::class]->setArtisan(null);
-                $this->shareTestingConnections();
-                return;
-            }
-
-            $this->app[Kernel::class]->setArtisan(null);
-            $this->runCuratedPostgresMigrations($connectionName);
-            $this->app[Kernel::class]->setArtisan(null);
-
-            $this->shareTestingConnections();
-            return;
         }
 
-        $this->artisan('migrate:fresh', $this->migrateFreshUsing());
+        $this->artisan('migrate:fresh', ['--database' => $connectionName, '--force' => true]);
+        $this->app[Kernel::class]->setArtisan(null);
+        $this->shareTestingConnections();
     }
 
     protected function afterRefreshingDatabase()
@@ -54,14 +39,14 @@ trait RefreshPostgresDatabase
             } else {
                 $this->artisan('db:seed', ['--no-interaction' => true]);
             }
-            $this->app[\Illuminate\Contracts\Console\Kernel::class]->setArtisan(null);
+            $this->app[Kernel::class]->setArtisan(null);
         }
     }
 
     protected function beginDatabaseTransaction()
     {
         $this->shareTestingConnections();
-        
+
         $database = $this->app->make('db');
 
         foreach ($this->connectionsToTransact() as $name) {
@@ -106,19 +91,24 @@ trait RefreshPostgresDatabase
         }
 
         $defaultConnectionName = (string) config('database.default');
+        $defaultConfig = config("database.connections.{$defaultConnectionName}");
         $defaultConnection = DB::connection($defaultConnectionName);
-        
-        // Force the application container to return the SAME connection instance
-        // for 'kkn' and 'master' as the default one during testing.
+
         foreach (['kkn', 'master'] as $connectionName) {
-            $this->app->instance("db.connection.{$connectionName}", $defaultConnection);
+            config(["database.connections.{$connectionName}" => $defaultConfig]);
+            DB::purge($connectionName);
+            $conn = DB::connection($connectionName);
+            $conn->setPdo($defaultConnection->getPdo());
+            $conn->setReadPdo($defaultConnection->getReadPdo());
         }
     }
 
     private function ensurePostgresDatabaseExists(array $connectionConfig): void
     {
         $database = (string) ($connectionConfig['database'] ?? '');
-        if ($database === '') return;
+        if ($database === '') {
+            return;
+        }
 
         foreach ($this->maintenanceDatabaseCandidates($connectionConfig) as $maintenanceDatabase) {
             try {
@@ -129,8 +119,11 @@ trait RefreshPostgresDatabase
                 if (! $statement->fetchColumn()) {
                     $pdo->exec(sprintf('CREATE DATABASE "%s"', str_replace('"', '""', $database)));
                 }
+
                 return;
-            } catch (\Throwable $e) { continue; }
+            } catch (\Throwable $e) {
+                continue;
+            }
         }
     }
 
@@ -138,6 +131,7 @@ trait RefreshPostgresDatabase
     {
         $targetDatabase = (string) ($connectionConfig['database'] ?? 'kkn_test');
         $baseDatabase = preg_replace('/_test$/', '', $targetDatabase) ?: 'kkn';
+
         return array_values(array_unique(array_filter(['postgres', $baseDatabase, 'template1'])));
     }
 
@@ -154,6 +148,9 @@ trait RefreshPostgresDatabase
 
     private function runCuratedPostgresMigrations(string $connectionName): void
     {
+        $this->artisan('migrate:install', ['--database' => $connectionName]);
+        $this->app[Kernel::class]->setArtisan(null);
+
         foreach ($this->orderedMigrationPaths() as $path) {
             $this->artisan('migrate', ['--database' => $connectionName, '--path' => $path, '--realpath' => true, '--force' => true]);
             $this->app[Kernel::class]->setArtisan(null);
@@ -170,9 +167,10 @@ trait RefreshPostgresDatabase
             '2026_02_06_180348_create_personal_access_tokens_table.php',
             '2026_02_06_180353_create_permission_tables.php',
             '2026_02_06_183854_create_telescope_entries_table.php',
-            '2026_04_12_000010_create_kkn_core_tables.php',
+            '2026_01_01_000000_create_kkn_core_tables.php',
         ];
         $priorityPaths = collect($prioritized)->map(fn (string $file) => database_path("migrations/{$file}"))->filter(fn (string $path) => file_exists($path));
+
         return $priorityPaths->merge($allPaths->reject(fn (string $path) => in_array(basename($path), $prioritized, true)))->values()->all();
     }
 }

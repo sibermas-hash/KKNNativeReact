@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('work_programs', function (Blueprint $table) {
+        Schema::connection('kkn')->table('program_kerja', function (Blueprint $table) {
             $table->json('sdg_goals')->nullable()->after('description');
         });
     }
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('work_programs', function (Blueprint $table) {
+        Schema::connection('kkn')->table('program_kerja', function (Blueprint $table) {
             $table->dropColumn('sdg_goals');
         });
     }

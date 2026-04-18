@@ -66,7 +66,7 @@ class DplTestSeeder extends Seeder
                 ['code' => $pData['code']],
                 [
                     'nama' => $pData['nama'],
-                    'faculty_id' => $fakultasMap[$pData['faculty_code']],
+                    'fakultas_id' => $fakultasMap[$pData['faculty_code']],
                 ]
             );
             $prodiMap[$pData['code']] = $prodi->id;
@@ -75,9 +75,9 @@ class DplTestSeeder extends Seeder
         // 4. Create Lokasi (Kecamatan)
         $this->command->info('📍 Creating Lokasi...');
         $lokasiData = [
-            ['village_name' => 'Karangmangu', 'district_name' => 'Banyumas', 'regency_name' => 'Banyumas', 'district_id' => '3302010'],
-            ['village_name' => 'Ajibarang', 'district_name' => 'Ajibarang', 'regency_name' => 'Banyumas', 'district_id' => '3302020'],
-            ['village_name' => 'Purwokerto', 'district_name' => 'Purwokerto Timur', 'regency_name' => 'Banyumas', 'district_id' => '3302030'],
+            ['village_name' => 'Karangmangu', 'district_name' => 'Banyumas', 'regency_name' => 'Banyumas', 'kecamatan_id' => '3302010'],
+            ['village_name' => 'Ajibarang', 'district_name' => 'Ajibarang', 'regency_name' => 'Banyumas', 'kecamatan_id' => '3302020'],
+            ['village_name' => 'Purwokerto', 'district_name' => 'Purwokerto Timur', 'regency_name' => 'Banyumas', 'kecamatan_id' => '3302030'],
         ];
 
         $lokasiMap = [];
@@ -110,11 +110,11 @@ class DplTestSeeder extends Seeder
         // 6. Create Dosen (DPL)
         $this->command->info('👨‍🏫 Creating Dosen...');
         $dosenData = [
-            ['nip' => '198001012005011001', 'nama' => 'Dr. Ahmad Fauzi, M.Pd', 'faculty_id' => $fakultasMap['FTIK']],
-            ['nip' => '198502022006041002', 'nama' => 'Siti Nurhaliza, M.Pd', 'faculty_id' => $fakultasMap['FTIK']],
-            ['nip' => '199003032007011003', 'nama' => 'Budi Santoso, M.E.I', 'faculty_id' => $fakultasMap['FEB']],
-            ['nip' => '199104042008012004', 'nama' => 'Dewi Lestari, M.H.I', 'faculty_id' => $fakultasMap['FSH']],
-            ['nip' => '198805052009011005', 'nama' => 'Rudi Hermawan, M.Pd', 'faculty_id' => $fakultasMap['FTIK']],
+            ['nip' => '198001012005011001', 'nama' => 'Dr. Ahmad Fauzi, M.Pd', 'fakultas_id' => $fakultasMap['FTIK']],
+            ['nip' => '198502022006041002', 'nama' => 'Siti Nurhaliza, M.Pd', 'fakultas_id' => $fakultasMap['FTIK']],
+            ['nip' => '199003032007011003', 'nama' => 'Budi Santoso, M.E.I', 'fakultas_id' => $fakultasMap['FEB']],
+            ['nip' => '199104042008012004', 'nama' => 'Dewi Lestari, M.H.I', 'fakultas_id' => $fakultasMap['FSH']],
+            ['nip' => '198805052009011005', 'nama' => 'Rudi Hermawan, M.Pd', 'fakultas_id' => $fakultasMap['FTIK']],
         ];
 
         $dosenMap = [];
@@ -123,7 +123,7 @@ class DplTestSeeder extends Seeder
                 ['nip' => $dData['nip']],
                 [
                     'nama' => $dData['nama'],
-                    'faculty_id' => $dData['faculty_id'],
+                    'fakultas_id' => $dData['fakultas_id'],
                     'master_synced_at' => now(),
                 ]
             );
@@ -137,7 +137,7 @@ class DplTestSeeder extends Seeder
                     'email' => Str::slug($dData['nama']).'@uinsaizu.ac.id',
                     'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', Str::random(32))),
                     'is_active' => true,
-                    'faculty_id' => $dData['faculty_id'],
+                    'fakultas_id' => $dData['fakultas_id'],
                 ]
             );
 
@@ -161,10 +161,10 @@ class DplTestSeeder extends Seeder
                 ['code' => $kData['code']],
                 [
                     'nama_kelompok' => $kData['nama'],
-                    'period_id' => $periode->id,
-                    'location_id' => $lokasiMap[$kData['district']],
+                    'periode_id' => $periode->id,
+                    'lokasi_id' => $lokasiMap[$kData['district']],
                     'dpl_id' => null,
-                    'dpl_period_id' => null,
+                    'dpl_periode_id' => null,
                     'capacity' => $kData['capacity'],
                     'status' => 'draft',
                     'token' => strtoupper(Str::random(8)),

@@ -75,19 +75,19 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans transition-all pb-20">
         
         {/* HEADER SECTION (Gold Standard) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 border-b border-gray-200/50 pb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 border-b border-emerald-50/50 pb-8">
           <div className="space-y-1">
-            <h1 className="text-xl font-bold text-gray-900">Program Kerja Mahasiswa.</h1>
-            <p className="text-xs text-gray-900/40 font-black uppercase tracking-widest">
+            <h1 className="text-xl font-bold text-emerald-950">Program Kerja Mahasiswa.</h1>
+            <p className="text-xs text-emerald-950/40 font-black uppercase tracking-widest">
               Pusat pemantauan kegiatan pengabdian mahasiswa di lapangan
             </p>
           </div>
           
           <div className="flex items-center gap-3">
-            <div className="px-4 py-2 bg-[#e8f5ee] border border-gray-200/60 rounded-lg flex items-center gap-4">
+            <div className="px-4 py-2 bg-[#e8f5ee] border border-emerald-50/60 rounded-lg flex items-center gap-4">
               <div className="flex flex-col text-right">
-                <span className="text-[9px] font-black text-gray-900/20 uppercase tracking-widest mb-0.5">Jumlah Data</span>
-                <span className="text-xs font-black text-gray-900 uppercase leading-none">
+                <span className="text-[9px] font-black text-emerald-950/20 uppercase tracking-widest mb-0.5">Jumlah Data</span>
+                <span className="text-xs font-black text-emerald-950 uppercase leading-none">
                   {workPrograms.meta.total.toLocaleString('id-ID')} Data
                 </span>
               </div>
@@ -97,7 +97,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
         </div>
 
         {/* --- SDG DISTRIBUTION PANEL (Premium Edition) --- */}
-        <div className="bg-white border border-gray-200 rounded-xl mb-8 p-6 shadow-sm overflow-hidden relative">
+        <div className="bg-white border border-emerald-50 rounded-xl mb-8 p-6 shadow-sm overflow-hidden relative">
           <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
             <Target size={120} />
           </div>
@@ -105,8 +105,8 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
           <div className="flex items-center gap-2 mb-6 border-b border-[#f3f4f6] pb-4">
              <div className="h-6 w-1 bg-emerald-500 rounded-full" />
              <div className="flex flex-col">
-               <span className="text-xs font-black text-gray-900 uppercase tracking-widest">Distribusi Peta SDGs Global</span>
-               <span className="text-[10px] text-gray-500 mt-0.5">Arahkan kursor (hover) ke nomor SDG untuk melihat detail tujuan</span>
+               <span className="text-xs font-black text-emerald-950 uppercase tracking-widest">Distribusi Peta SDGs Global</span>
+               <span className="text-[10px] text-emerald-700 mt-0.5">Arahkan kursor (hover) ke nomor SDG untuk melihat detail tujuan</span>
              </div>
           </div>
 
@@ -116,11 +116,11 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
                 const count = sdg_distribution ? (sdg_distribution[sdg as keyof typeof sdg_distribution] || 0) : 0;
                 return (
                   <div key={sdg} className="relative flex flex-col items-center group">
-                    <div className="w-16 h-20 bg-gray-50 border border-gray-200/60 rounded-xl p-3 flex flex-col justify-between transition-all group-hover:bg-[#16a34a] group-hover:border-emerald-600">
+                    <div className="w-16 h-20 bg-gray-50 border border-emerald-50/60 rounded-xl p-3 flex flex-col justify-between transition-all group-hover:bg-[#16a34a] group-hover:border-emerald-600">
                       <div className="h-1 bg-rose-500 w-full rounded-full" />
                       <div className="text-center">
-                        <span className="text-[8px] font-black text-gray-900/30 uppercase tracking-tighter block group-hover:text-emerald-100">SDG {sdg}</span>
-                        <span className="text-sm font-bold text-gray-900 group-hover:text-white">{count}</span>
+                        <span className="text-[8px] font-black text-emerald-950/30 uppercase tracking-tighter block group-hover:text-emerald-100">SDG {sdg}</span>
+                        <span className="text-sm font-bold text-emerald-950 group-hover:text-white">{count}</span>
                       </div>
                     </div>
                     
@@ -140,12 +140,12 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
         </div>
 
         {/* --- DATA TABLE CARD (Gold Standard) --- */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[500px]">
+        <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[500px]">
           {/* TOOLBAR Sederhana */}
           <div className="px-6 py-4 border-b border-[#f3f4f6]/50 bg-emerald-50/10 flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <FileText size={16} className="text-[#1a7a4a]" />
-              <h3 className="text-xs font-black text-gray-900 uppercase tracking-widest">Daftar Kegiatan Mahasiswa</h3>
+              <h3 className="text-xs font-black text-emerald-950 uppercase tracking-widest">Daftar Kegiatan Mahasiswa</h3>
             </div>
             
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
@@ -157,15 +157,15 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
                   onChange={(e) => setSearch(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleFilterChange('search', search)}
                   placeholder="Cari program cerdas (AI) ..." 
-                  className="w-full md:w-64 h-9 pl-9 pr-8 bg-white border border-gray-200/60 rounded-lg text-xs font-bold text-gray-900 placeholder:text-gray-900/20 focus:border-[#f3f4f6]0 outline-none transition-all shadow-sm"
+                  className="w-full md:w-64 h-9 pl-9 pr-8 bg-white border border-emerald-50/60 rounded-lg text-xs font-bold text-emerald-950 placeholder:text-black/20 focus:border-[#f3f4f6]0 outline-none transition-all shadow-sm"
                 />
-                <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-700" />
               </div>
               
               <select 
                 value={filters.status} 
                 onChange={(e) => handleFilterChange('status', e.target.value)}
-                className="h-9 px-3 bg-white border border-gray-200 rounded-lg text-[9px] font-black text-gray-900 uppercase tracking-widest outline-none focus:border-[#f3f4f6]0 shadow-sm"
+                className="h-9 px-3 bg-white border border-emerald-50 rounded-lg text-[9px] font-black text-emerald-950 uppercase tracking-widest outline-none focus:border-[#f3f4f6]0 shadow-sm"
               >
                 <option value="all">Semua Kondisi</option>
                 <option value="approved">Disetujui</option>
@@ -178,17 +178,17 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-emerald-50/20 border-b border-gray-200/50">
-                  <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest">Judul Program & ID</th>
-                  <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest">Unit / Kelompok</th>
-                  <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest text-center">Kondisi</th>
-                  <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest text-right">Aksi</th>
+                <tr className="bg-emerald-50/20 border-b border-emerald-50/50">
+                  <th className="px-8 py-4 text-xs font-black text-emerald-950 uppercase tracking-widest">Judul Program & ID</th>
+                  <th className="px-8 py-4 text-xs font-black text-emerald-950 uppercase tracking-widest">Unit / Kelompok</th>
+                  <th className="px-8 py-4 text-xs font-black text-emerald-950 uppercase tracking-widest text-center">Kondisi</th>
+                  <th className="px-8 py-4 text-xs font-black text-emerald-950 uppercase tracking-widest text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f3f4f6]/60 font-sans">
                 {workPrograms.data.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="py-32 text-center text-gray-900/10">
+                    <td colSpan={4} className="py-32 text-center text-emerald-950/10">
                       <div className="flex flex-col items-center gap-2">
                         <Activity size={40} />
                         <span className="text-xs font-black uppercase tracking-widest">Data laporan tidak ditemukan</span>
@@ -200,16 +200,16 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
                     <tr key={proker.id} className="hover:bg-gray-50/20 transition-all group">
                       <td className="px-8 py-5">
                         <div className="flex flex-col">
-                          <span className="text-xs font-bold text-gray-900 uppercase leading-normal line-clamp-1 mb-1">{proker.title}</span>
-                          <span className="text-[9px] text-gray-900/40 font-black tabular-nums tracking-wider uppercase">PROKER: #{proker.proker_id}</span>
+                          <span className="text-xs font-bold text-emerald-950 uppercase leading-normal line-clamp-1 mb-1">{proker.title}</span>
+                          <span className="text-[9px] text-emerald-950/40 font-black tabular-nums tracking-wider uppercase">PROKER: #{proker.proker_id}</span>
                         </div>
                       </td>
                       <td className="px-8 py-5">
                         <div className="flex flex-col">
-                          <span className="text-xs font-bold text-gray-900 leading-none mb-1.5 uppercase">{proker.group_name}</span>
+                          <span className="text-xs font-bold text-emerald-950 leading-none mb-1.5 uppercase">{proker.group_name}</span>
                           <div className="flex items-center gap-1.5">
                             <MapPin size={10} className="text-[#1a7a4a] opacity-40 shrink-0" />
-                            <span className="text-xs text-gray-900/40 font-black uppercase tracking-tight truncate">{proker.location}</span>
+                            <span className="text-xs text-emerald-950/40 font-black uppercase tracking-tight truncate">{proker.location}</span>
                           </div>
                         </div>
                       </td>
@@ -217,14 +217,14 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
                         <span className={clsx(
                           "inline-flex px-3 py-1 rounded-lg text-[9px] font-black uppercase border transition-all",
                           proker.status === 'approved' ? "bg-[#e8f5ee] text-[#1a7a4a] border-emerald-200" : 
-                          proker.status === 'pending' ? "bg-white text-gray-900/20 border-[#f3f4f6]" : 
+                          proker.status === 'pending' ? "bg-white text-emerald-950/20 border-[#f3f4f6]" : 
                           "bg-rose-50 text-rose-600 border-rose-200"
                         )}>
                           {proker.status === 'approved' ? 'Disetujui' : proker.status === 'pending' ? 'Diajukan' : 'Revisi'}
                         </span>
                       </td>
                       <td className="px-8 py-5 text-right">
-                         <button className="h-8 w-8 rounded-lg border border-gray-200 flex items-center justify-center text-[#1a7a4a] hover:bg-[#16a34a] hover:text-white transition-all ml-auto opacity-0 group-hover:opacity-100 shadow-sm translate-x-2 group-hover:translate-x-0">
+                         <button className="h-8 w-8 rounded-lg border border-emerald-50 flex items-center justify-center text-[#1a7a4a] hover:bg-[#16a34a] hover:text-white transition-all ml-auto opacity-0 group-hover:opacity-100 shadow-sm translate-x-2 group-hover:translate-x-0">
                            <ChevronRight size={14} />
                          </button>
                       </td>
@@ -236,7 +236,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
           </div>
 
           <div className="px-8 py-4 border-t border-[#f3f4f6]/50 bg-emerald-50/10 flex items-center justify-between mt-auto">
-            <span className="text-xs font-black text-gray-900/20 uppercase tracking-widest">
+            <span className="text-xs font-black text-emerald-950/20 uppercase tracking-widest">
               Laporan Real-Time | Informasi Kegiatan Terkini
             </span>
             <Pagination meta={workPrograms.meta} />

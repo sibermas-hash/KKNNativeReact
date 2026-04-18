@@ -167,24 +167,24 @@ export default function PeriodsIndex({
 
  <div className="max-w-7xl mx-auto space-y-6 sm:px-6 lg:px-8 font-sans pb-12">
  {/* HEADER SECTION */}
- <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-gray-200 pt-6">
+ <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-emerald-50 pt-6">
  <div className="space-y-1">
  <div className="flex items-center gap-2">
  <Clock size={16} className="text-[#1a7a4a]"/>
- <span className="text-sm font-medium text-gray-700">Operasional Sistem</span>
+ <span className="text-sm font-medium text-emerald-800">Operasional Sistem</span>
  </div>
- <h1 className="text-2xl font-bold text-gray-900 leading-tight">Manajemen Periode</h1>
- <p className="text-sm text-gray-700 max-w-2xl mt-1">
+ <h1 className="text-2xl font-bold text-emerald-950 leading-tight">Manajemen Periode</h1>
+ <p className="text-sm text-emerald-800 max-w-2xl mt-1">
  Pengaturan linimasa pendaftaran, jadwal pelaksanaan, dan transisi fase KKN.
  </p>
  </div>
  
  <div className="flex items-center gap-4 shrink-0">
- <div className="px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm flex items-center gap-3">
+ <div className="px-4 py-2 bg-white border border-emerald-50 rounded-lg shadow-sm flex items-center gap-3">
  <Database size={18} className="text-[#1a7a4a]"/>
  <div className="flex flex-col">
- <span className="text-xs font-medium text-gray-700">Total Periode</span>
- <span className="text-sm font-semibold text-gray-900">{(periods.meta?.total || 0).toLocaleString()} Data</span>
+ <span className="text-xs font-medium text-emerald-800">Total Periode</span>
+ <span className="text-sm font-semibold text-emerald-950">{(periods.meta?.total || 0).toLocaleString()} Data</span>
  </div>
  </div>
  <button
@@ -198,32 +198,32 @@ export default function PeriodsIndex({
  </div>
 
  {/* LIST DATA */}
- <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
- <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+ <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden flex flex-col">
+ <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div className="flex items-center gap-3 w-full sm:w-auto">
- <div className="h-8 w-8 bg-white border border-gray-200 text-gray-700 rounded flex items-center justify-center shadow-sm">
+ <div className="h-8 w-8 bg-white border border-emerald-50 text-emerald-800 rounded flex items-center justify-center shadow-sm">
  <Clock size={16} />
  </div>
  <h3 className="text-sm font-semibold text-[#1f2937]">Daftar Periode</h3>
  </div>
  <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
  <div className="relative w-full sm:w-64">
- <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600"/>
+ <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-800"/>
  <input
  type="text"
  placeholder="Cari..."
  value={search}
  onChange={(e) => setSearch(e.target.value)}
- className="w-full h-9 pl-9 pr-3 bg-white border border-gray-300 rounded-md text-sm text-gray-900 focus:border-[#1a7a4a] focus:ring-[#1a7a4a] shadow-sm"
+ className="w-full h-9 pl-9 pr-3 bg-white border border-gray-300 rounded-md text-sm text-emerald-950 focus:border-[#1a7a4a] focus:ring-[#1a7a4a] shadow-sm"
  />
  </div>
  <div className="w-full sm:w-48">
  <select
  value={filterJenisId}
  onChange={(e) => setFilterJenisId(e.target.value)}
- className="w-full h-9 bg-white border border-gray-300 rounded-md text-sm text-gray-900 focus:border-[#1a7a4a] focus:ring-[#1a7a4a] shadow-sm"
+ className="w-full h-9 bg-white border border-gray-300 rounded-md text-sm text-emerald-950 focus:border-[#1a7a4a] focus:ring-[#1a7a4a] shadow-sm"
  >
- <option value="">Semua Skema</option>
+ <option value="">Semua Jenis KKN</option>
  {jenisKkn.map((j) => (
  <option key={j.id} value={String(j.id)}>{j.name}</option>
  ))}
@@ -236,19 +236,19 @@ export default function PeriodsIndex({
  <table className="min-w-full divide-y divide-gray-200">
  <thead className="bg-gray-50">
  <tr>
- <th className="px-6 py-3 text-left text-xs font-medium text-gray-700">Nama Periode</th>
- <th className="px-6 py-3 text-left text-xs font-medium text-gray-700">Tahun Akademik</th>
- <th className="px-6 py-3 text-left text-xs font-medium text-gray-700">Jadwal Pendaftaran</th>
- <th className="px-6 py-3 text-center text-xs font-medium text-gray-700">Fase</th>
- <th className="px-6 py-3 text-center text-xs font-medium text-gray-700">Status Publikasi</th>
- <th className="px-6 py-3 text-right text-xs font-medium text-gray-700">Aksi</th>
+ <th className="px-6 py-3 text-left text-xs font-medium text-emerald-800">Nama Periode</th>
+ <th className="px-6 py-3 text-left text-xs font-medium text-emerald-800">Tahun Akademik</th>
+ <th className="px-6 py-3 text-left text-xs font-medium text-emerald-800">Jadwal Pendaftaran</th>
+ <th className="px-6 py-3 text-center text-xs font-medium text-emerald-800">Fase</th>
+ <th className="px-6 py-3 text-center text-xs font-medium text-emerald-800">Status Publikasi</th>
+ <th className="px-6 py-3 text-right text-xs font-medium text-emerald-800">Aksi</th>
  </tr>
  </thead>
  <tbody className="bg-white divide-y divide-gray-200">
  {periods.data.length === 0 ? (
  <tr>
- <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-700">
- <Clock className="mx-auto h-12 w-12 text-gray-500 mb-3"strokeWidth={1} />
+ <td colSpan={6} className="px-6 py-12 text-center text-sm text-emerald-800">
+ <Clock className="mx-auto h-12 w-12 text-emerald-700 mb-3"strokeWidth={1} />
  Tidak ada data periode yang ditemukan.
  </td>
  </tr>
@@ -257,17 +257,17 @@ export default function PeriodsIndex({
  <tr key={period.id} className="hover:bg-gray-50 transition-colors">
  <td className="px-6 py-4">
  <div className="flex flex-col">
- <span className="text-sm font-semibold text-gray-900">{period.name}</span>
- <span className="text-xs text-gray-700 mt-0.5">{period.program_type_label || 'Reguler'} • {period.jenis || 'Umum'}</span>
+ <span className="text-sm font-semibold text-emerald-950">{period.name}</span>
+ <span className="text-xs text-emerald-800 mt-0.5">{period.program_type_label || 'Reguler'} • {period.jenis || 'Umum'}</span>
  </div>
  </td>
- <td className="px-6 py-4 text-sm text-gray-700">
+ <td className="px-6 py-4 text-sm text-emerald-800">
  {period.academic_year?.year || '-'}
  </td>
  <td className="px-6 py-4">
  <div className="flex flex-col gap-1">
- <span className="text-sm text-gray-900">{formatDate(period.registration_start)}</span>
- <span className="text-xs text-gray-700">s/d {formatDate(period.registration_end)}</span>
+ <span className="text-sm text-emerald-950">{formatDate(period.registration_start)}</span>
+ <span className="text-xs text-emerald-800">s/d {formatDate(period.registration_end)}</span>
  </div>
  </td>
  <td className="px-6 py-4 text-center">
@@ -276,7 +276,7 @@ export default function PeriodsIndex({
  </span>
  </td>
  <td className="px-6 py-4 whitespace-nowrap text-center">
- <span className={clsx("inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium", period.is_active ?"bg-[#e8f5ee] text-gray-700":"bg-gray-100 text-[#1f2937]")}>
+ <span className={clsx("inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium", period.is_active ?"bg-[#e8f5ee] text-emerald-800":"bg-gray-100 text-[#1f2937]")}>
  {period.is_active ? 'Aktif' : 'Draft'}
  </span>
  </td>
@@ -284,21 +284,21 @@ export default function PeriodsIndex({
  <div className="flex items-center justify-end gap-2">
  <Link
  href={`/admin/periode/${period.id}`}
- className="p-1.5 text-[#1a7a4a] hover:text-[#1f2937] bg-white border border-gray-200 hover:bg-gray-50 rounded-md transition-colors"
+ className="p-1.5 text-[#1a7a4a] hover:text-[#1f2937] bg-white border border-emerald-50 hover:bg-gray-50 rounded-md transition-colors"
  title="Detail"
  >
  Eksplorasi
  </Link>
  <button
  onClick={() => setDuplicating(period)}
- className="p-1.5 text-gray-700 hover:text-gray-900 bg-white border border-gray-200 hover:bg-gray-50 rounded-md transition-colors"
+ className="p-1.5 text-emerald-800 hover:text-emerald-950 bg-white border border-emerald-50 hover:bg-gray-50 rounded-md transition-colors"
  title="Duplikasi"
  >
  <Copy size={16} />
  </button>
  <button
  onClick={() => startEdit(period)}
- className="p-1.5 text-blue-600 hover:text-blue-900 bg-white border border-gray-200 hover:bg-gray-50 rounded-md transition-colors"
+ className="p-1.5 text-blue-600 hover:text-blue-900 bg-white border border-emerald-50 hover:bg-gray-50 rounded-md transition-colors"
  title="Edit"
  >
  <Edit2 size={16} />
@@ -306,7 +306,7 @@ export default function PeriodsIndex({
  <button
  onClick={() => setDeleting(period)}
  disabled={!period.can_delete}
- className="p-1.5 text-rose-600 hover:text-rose-900 bg-white border border-gray-200 hover:bg-rose-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+ className="p-1.5 text-rose-600 hover:text-rose-900 bg-white border border-emerald-50 hover:bg-rose-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
  title="Hapus"
  >
  <Trash2 size={16} />
@@ -320,8 +320,8 @@ export default function PeriodsIndex({
  </table>
  </div>
 
- <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between flex-col md:flex-row gap-4">
- <span className="text-xs text-gray-700">
+ <div className="px-6 py-4 border-t border-emerald-50 bg-gray-50 flex items-center justify-between flex-col md:flex-row gap-4">
+ <span className="text-xs text-emerald-800">
  Menampilkan <strong>{periods.data.length}</strong> dari <strong>{periods.meta?.total || 0}</strong> periode
  </span>
  {periods.meta && <Pagination meta={periods.meta} />}
@@ -331,56 +331,56 @@ export default function PeriodsIndex({
 
  {/* FORM MODAL */}
  <Modal show={showForm} onClose={cancelForm} maxWidth="4xl">
- <div className="bg-white rounded-xl shadow-sm border border-gray-200">
- <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
- <h3 className="text-lg font-medium text-gray-900">{editing ? 'Edit Periode' : 'Tambah Periode Baru'}</h3>
- <button onClick={cancelForm} className="text-gray-600 hover:text-gray-700"><X size={20} /></button>
+ <div className="bg-white rounded-xl shadow-sm border border-emerald-50">
+ <div className="px-6 py-4 border-b border-emerald-50 flex items-center justify-between">
+ <h3 className="text-lg font-medium text-emerald-950">{editing ? 'Edit Periode' : 'Tambah Periode Baru'}</h3>
+ <button onClick={cancelForm} className="text-emerald-800 hover:text-emerald-800"><X size={20} /></button>
  </div>
 
  <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
  <div className="space-y-4">
- <h4 className="text-sm font-semibold text-gray-900 border-b border-gray-200 pb-2">Informasi Dasar</h4>
+ <h4 className="text-sm font-semibold text-emerald-950 border-b border-emerald-50 pb-2">Informasi Dasar</h4>
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  <FormSelect id="academic_year_id"label="Tahun Akademik"value={form.data.academic_year_id} onChange={(e) => form.setData('academic_year_id', e.target.value)} options={academicYears.map((y) => ({ value: String(y.id), label: y.year }))} required error={form.errors.academic_year_id} />
  <FormInput id="periode"label="Periode (Angka)"type="number"value={form.data.periode} onChange={(e) => form.setData('periode', e.target.value)} placeholder="Misal: 1"required error={form.errors.periode} />
- <FormSelect id="jenis_kkn_id"label="Skema KKN"value={form.data.jenis_kkn_id} onChange={(e) => form.setData('jenis_kkn_id', e.target.value)} options={programOptions?.types || []} required error={form.errors.jenis_kkn_id} />
+ <FormSelect id="jenis_kkn_id"label="Jenis KKN"value={form.data.jenis_kkn_id} onChange={(e) => form.setData('jenis_kkn_id', e.target.value)} options={programOptions?.types || []} required error={form.errors.jenis_kkn_id} />
  <FormInput id="kuota"label="Kuota Peserta"type="number"value={form.data.kuota} onChange={(e) => form.setData('kuota', e.target.value)} required error={form.errors.kuota} />
  </div>
 
  {form.data.program_type === 'tematik' && (
- <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg mt-2">
+ <div className="p-4 bg-gray-50 border border-emerald-50 rounded-lg mt-2">
  <FormSelect id="program_subtype"label="Lokasi/Tema"value={form.data.program_subtype} onChange={(e) => form.setData('program_subtype', e.target.value)} options={programOptions?.subtypes || []} error={form.errors.program_subtype} />
  </div>
  )}
  </div>
 
  <div className="space-y-4 pt-2">
- <h4 className="text-sm font-semibold text-gray-900 border-b border-gray-200 pb-2">Penjadwalan</h4>
+ <h4 className="text-sm font-semibold text-emerald-950 border-b border-emerald-50 pb-2">Penjadwalan</h4>
  
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-2">
  <FormSelect id="current_phase"label="Fase Saat Ini"value={form.data.current_phase} onChange={(e) => form.setData('current_phase', e.target.value)} options={[{ value: 'upcoming', label: 'Belum Dimulai' }, { value: 'registration', label: 'Pendaftaran' }, { value: 'placement', label: 'Penempatan' }, { value: 'execution', label: 'Pelaksanaan' }, { value: 'grading', label: 'Penilaian' }, { value: 'finished', label: 'Selesai' }]} required error={form.errors.current_phase} />
  
  <div className="flex flex-col">
- <label className="text-sm font-medium text-gray-700 mb-1">Status Publikasi</label>
+ <label className="text-sm font-medium text-emerald-800 mb-1">Status Publikasi</label>
  <div className="flex items-center h-[38px]">
  <input id="is_active"type="checkbox"checked={form.data.is_active} onChange={(e) => form.setData('is_active', e.target.checked)} className="focus:ring-[#1a7a4a] h-4 w-4 text-[#1a7a4a] border-gray-300 rounded"/>
- <label htmlFor="is_active"className="ml-2 block text-sm text-gray-900">
+ <label htmlFor="is_active"className="ml-2 block text-sm text-emerald-950">
  {form.data.is_active ? 'Aktif (Dapat Dilihat Publik)' : 'Draft (Hanya Admin)'}
  </label>
  </div>
  </div>
  </div>
 
- <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 border border-emerald-50 rounded-lg">
  <div>
- <h5 className="text-xs font-semibold text-gray-700 mb-3">Masa Pendaftaran</h5>
+ <h5 className="text-xs font-semibold text-emerald-800 mb-3">Masa Pendaftaran</h5>
  <div className="space-y-3">
  <FormInput id="registration_start"label="Pendaftaran Dibuka"type="date"value={form.data.registration_start} onChange={(e) => form.setData('registration_start', e.target.value)} required error={form.errors.registration_start} />
  <FormInput id="registration_end"label="Pendaftaran Ditutup"type="date"value={form.data.registration_end} onChange={(e) => form.setData('registration_end', e.target.value)} required error={form.errors.registration_end} />
  </div>
  </div>
  <div>
- <h5 className="text-xs font-semibold text-gray-700 mb-3">Masa Pelaksanaan</h5>
+ <h5 className="text-xs font-semibold text-emerald-800 mb-3">Masa Pelaksanaan</h5>
  <div className="space-y-3">
  <FormInput id="start_date"label="Penerjunan"type="date"value={form.data.start_date} onChange={(e) => form.setData('start_date', e.target.value)} required error={form.errors.start_date} />
  <FormInput id="end_date"label="Penarikan"type="date"value={form.data.end_date} onChange={(e) => form.setData('end_date', e.target.value)} required error={form.errors.end_date} />
@@ -389,8 +389,8 @@ export default function PeriodsIndex({
  </div>
  </div>
 
- <div className="pt-4 border-t border-gray-200 flex justify-end gap-3">
- <button type="button"onClick={cancelForm} className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1a7a4a]">Batal</button>
+ <div className="pt-4 border-t border-emerald-50 flex justify-end gap-3">
+ <button type="button"onClick={cancelForm} className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-emerald-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1a7a4a]">Batal</button>
  <button type="submit"disabled={form.processing} className="inline-flex justify-center items-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#16a34a] hover:bg-[#15803d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1a7a4a] disabled:opacity-50">
  {form.processing ? <RefreshCw size={16} className="animate-spin mr-2"/> : <CheckCircle2 size={16} className="mr-2"/>}
  {editing ? 'Simpan' : 'Tambah Periode'}

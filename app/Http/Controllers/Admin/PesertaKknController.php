@@ -47,21 +47,21 @@ class PesertaKknController extends Controller
         $status = $approvedOnly ? 'approved' : $this->normalizeStatus($request->input('status'));
 
         $query = PesertaKkn::with([
-            'mahasiswa:id,user_id,nim,nama,faculty_id,program_id,nik,mother_name,gpa,is_bta_ppi_passed,sks_completed,health_certificate_path,parent_permission_path',
+            'mahasiswa:id,user_id,nim,nama,fakultas_id,prodi_id,nik,mother_name,gpa,is_bta_ppi_passed,sks_completed,health_certificate_path,parent_permission_path',
             'mahasiswa.user:id,name,email,address,phone',
             'mahasiswa.fakultas:id,code,nama',
-            'mahasiswa.prodi:id,code,nama,faculty_id',
+            'mahasiswa.prodi:id,code,nama,fakultas_id',
             'mahasiswa.prodi.fakultas:id,code,nama',
             'periode:id,periode,name,program_type,program_subtype,registration_mode,placement_mode,start_date,end_date',
-            'kelompok:id,period_id,nama_kelompok,code',
+            'kelompok:id,periode_id,nama_kelompok,code',
             'dokumen:id,peserta_kkn_id,document_type',
         ])
             ->when($request->input('search'), fn ($query, $search) => $query->search($search))
             ->when($status, fn ($query, $value) => $query->where('status', $value))
-            ->when($request->input('period_id'), fn ($query, $periodId) => $query->where('period_id', $periodId));
+            ->when($request->input('periode_id'), fn ($query, $periodId) => $query->where('periode_id', $periodId));
 
         // Use centralized Faculty Scoping service
-        return FacultyScopeService::apply($query, 'mahasiswa.faculty_id');
+        return FacultyScopeService::apply($query, 'mahasiswa.fakultas_id');
     }
 
     /**
@@ -135,25 +135,25 @@ class PesertaKknController extends Controller
             'filters' => [
                 'search' => $request->input('search'),
                 'status' => $this->normalizeStatus($request->input('status')),
-                'period_id' => $request->input('period_id'),
+                'periode_id' => $request->input('periode_id'),
             ],
             'stats' => Inertia::defer(function () {
                 $statsQuery = FacultyScopeService::apply(
                     PesertaKkn::query()
-                        ->selectRaw('mahasiswa.faculty_id, COUNT(*) as count')
+                        ->selectRaw('mahasiswa.fakultas_id, COUNT(*) as count')
                         ->join('mahasiswa', 'peserta_kkn.mahasiswa_id', '=', 'mahasiswa.id')
-                        ->leftJoin('fakultas', 'mahasiswa.faculty_id', '=', 'fakultas.id')
+                        ->leftJoin('fakultas', 'mahasiswa.fakultas_id', '=', 'fakultas.id')
                         ->selectRaw('COALESCE(fakultas.nama, \'Tidak Diketahui\') as faculty_name')
-                        ->groupBy('mahasiswa.faculty_id', 'fakultas.nama')
+                        ->groupBy('mahasiswa.fakultas_id', 'fakultas.nama')
                         ->orderByDesc('count'),
-                    'mahasiswa.faculty_id'
+                    'mahasiswa.fakultas_id'
                 );
 
                 return [
-                    'total' => FacultyScopeService::apply(PesertaKkn::query(), 'mahasiswa.faculty_id')->count(),
-                    'pending' => FacultyScopeService::apply(PesertaKkn::query()->where('status', 'pending'), 'mahasiswa.faculty_id')->count(),
-                    'approved' => FacultyScopeService::apply(PesertaKkn::query()->where('status', 'approved'), 'mahasiswa.faculty_id')->count(),
-                    'rejected' => FacultyScopeService::apply(PesertaKkn::query()->where('status', 'rejected'), 'mahasiswa.faculty_id')->count(),
+                    'total' => FacultyScopeService::apply(PesertaKkn::query(), 'mahasiswa.fakultas_id')->count(),
+                    'pending' => FacultyScopeService::apply(PesertaKkn::query()->where('status', 'pending'), 'mahasiswa.fakultas_id')->count(),
+                    'approved' => FacultyScopeService::apply(PesertaKkn::query()->where('status', 'approved'), 'mahasiswa.fakultas_id')->count(),
+                    'rejected' => FacultyScopeService::apply(PesertaKkn::query()->where('status', 'rejected'), 'mahasiswa.fakultas_id')->count(),
                     'by_faculty' => $statsQuery->get()->map(fn ($row) => [
                         'faculty_name' => $row->faculty_name,
                         'count' => $row->count,
@@ -161,8 +161,8 @@ class PesertaKknController extends Controller
                 ];
             }),
             'byTypeStats' => Inertia::defer(fn () => PesertaKkn::query()
-                ->join('periode', 'peserta_kkn.period_id', '=', 'periode.id')
-                ->selectRaw('periode.id as period_id, periode.name as period_name, periode.program_type, periode.kuota')
+                ->join('periode', 'peserta_kkn.periode_id', '=', 'periode.id')
+                ->selectRaw('periode.id as periode_id, periode.name as period_name, periode.program_type, periode.kuota')
                 ->selectRaw('COUNT(*) as total_pendaftar')
                 ->selectRaw("SUM(CASE WHEN peserta_kkn.status = 'pending' THEN 1 ELSE 0 END) as pending")
                 ->selectRaw("SUM(CASE WHEN peserta_kkn.status = 'approved' THEN 1 ELSE 0 END) as approved")
@@ -171,7 +171,7 @@ class PesertaKknController extends Controller
                 ->orderBy('periode.id')
                 ->get()
                 ->map(fn ($row) => [
-                    'period_id' => $row->period_id,
+                    'periode_id' => $row->periode_id,
                     'jenis' => $row->period_name,
                     'program_type' => $row->program_type,
                     'kuota' => (int) $row->kuota,
@@ -200,7 +200,7 @@ class PesertaKknController extends Controller
             $validated['ids'],
             auth()->id(),
             auth()->user()->hasRole('faculty_admin'),
-            auth()->user()->faculty_id,
+            auth()->user()->fakultas_id,
         );
 
         return redirect()->back()->with('success', "{$count} pendaftaran berhasil disetujui.");
@@ -223,7 +223,7 @@ class PesertaKknController extends Controller
             $validated['notes'],
             auth()->id(),
             auth()->user()->hasRole('faculty_admin'),
-            auth()->user()->faculty_id,
+            auth()->user()->fakultas_id,
         );
 
         return redirect()->back()->with('success', "{$count} pendaftaran ditolak.");
@@ -368,8 +368,8 @@ class PesertaKknController extends Controller
     ): RedirectResponse {
         // Faculty scope verification
         if (auth()->user()->hasRole('faculty_admin')) {
-            $studentFacultyId = $registration->mahasiswa?->faculty_id;
-            if ($studentFacultyId !== auth()->user()->faculty_id) {
+            $studentFacultyId = $registration->mahasiswa?->fakultas_id;
+            if ($studentFacultyId !== auth()->user()->fakultas_id) {
                 return redirect()->back()->withErrors(['error' => 'Anda hanya dapat mengubah ketua kelompok untuk mahasiswa di fakultas Anda.']);
             }
         }

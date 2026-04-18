@@ -16,10 +16,10 @@ export function MetricItem({ label, value, icon: Icon, className }: MetricItemPr
                 <Icon size={22} strokeWidth={2} />
              </div>
              <div className="text-center">
-                <p className="text-3xl font-bold text-gray-900 tabular-nums">
+                <p className="text-3xl font-bold text-emerald-950 tabular-nums">
                     {value?.toLocaleString('id-ID') || '-'}
                 </p>
-                <p className="text-xs font-medium text-gray-700 mt-1">{label}</p>
+                <p className="text-xs font-medium text-emerald-800 mt-1">{label}</p>
              </div>
         </div>
     );

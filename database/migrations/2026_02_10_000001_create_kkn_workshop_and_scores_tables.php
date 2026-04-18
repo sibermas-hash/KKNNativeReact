@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         // Workshops Table
-        Schema::create('workshops', function (Blueprint $table) {
+        Schema::create('workshop', function (Blueprint $table) {
             $table->id();
             $table->string('title');
             $table->text('description')->nullable();
@@ -27,10 +27,10 @@ return new class extends Migration
         });
 
         // Workshop Participants Table
-        Schema::create('workshop_participants', function (Blueprint $table) {
+        Schema::create('peserta_workshop', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('workshop_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('workshop_id')->constrained('workshop')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamp('registered_at')->useCurrent();
             $table->enum('attendance_status', ['registered', 'attended', 'absent', 'excused'])->default('registered');
             $table->timestamp('checked_in_at')->nullable();
@@ -42,10 +42,10 @@ return new class extends Migration
         });
 
         // KKN Scores Table (Tiered Grading)
-        Schema::create('kkn_scores', function (Blueprint $table) {
+        Schema::create('nilai_kkn', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('group_id')->constrained()->onDelete('cascade');
+            $table->foreignId('mahasiswa_id')->constrained('users')->onDelete('cascade');
+            $table->unsignedBigInteger('kelompok_id')->nullable()->index();
 
             // DPL Scores (70% total weight usually)
             $table->decimal('execution_score', 5, 2)->nullable(); // 40%
@@ -68,7 +68,7 @@ return new class extends Migration
             $table->timestamp('village_graded_at')->nullable();
 
             $table->timestamps();
-            $table->unique(['student_id', 'group_id']);
+            $table->unique(['mahasiswa_id', 'kelompok_id']);
         });
     }
 
@@ -77,8 +77,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('kkn_scores');
-        Schema::dropIfExists('workshop_participants');
-        Schema::dropIfExists('workshops');
+        Schema::dropIfExists('nilai_kkn');
+        Schema::dropIfExists('peserta_workshop');
+        Schema::dropIfExists('workshop');
     }
 };

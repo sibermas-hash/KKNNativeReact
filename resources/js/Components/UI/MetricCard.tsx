@@ -21,11 +21,11 @@ export function MetricCard({
   className 
 }: MetricCardProps) {
   const colorMap: Record<string, string> = {
-    emerald: 'bg-[#e8f5ee] text-emerald-600 border-gray-200 shadow-emerald-50',
+    emerald: 'bg-[#e8f5ee] text-emerald-600 border-emerald-50 shadow-emerald-50',
     sky: 'bg-sky-50 text-sky-600 border-sky-100 shadow-sky-50',
     amber: 'bg-amber-50 text-amber-600 border-amber-100 shadow-amber-50',
     rose: 'bg-rose-50 text-rose-600 border-rose-100 shadow-rose-50',
-    slate: 'bg-gray-50 text-gray-900 border-gray-200/60 shadow-emerald-900/5',
+    slate: 'bg-gray-50 text-emerald-950 border-emerald-50/60 shadow-emerald-900/5',
   };
 
   const isLoading = value === undefined || value === null;
@@ -33,7 +33,7 @@ export function MetricCard({
 
   return (
     <div className={clsx(
-      "bg-white border border-gray-200/50 rounded-xl p-6 space-y-6 hover:shadow-xl hover:shadow-emerald-900/5 transition-all group relative overflow-hidden active:scale-[0.98]",
+      "bg-white border border-emerald-50/50 rounded-xl p-6 space-y-6 hover:shadow-xl hover:shadow-emerald-900/5 transition-all group relative overflow-hidden active:scale-[0.98]",
       className
     )}>
       <div className="flex items-center justify-between relative z-10">
@@ -44,15 +44,15 @@ export function MetricCard({
           <Icon size={20} />
         </div>
         {desc && (
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{desc}</span>
+          <span className="text-xs font-bold text-emerald-700 uppercase tracking-widest">{desc}</span>
         )}
       </div>
       <div className="space-y-1 relative z-10">
-        <p className="text-xs font-bold text-gray-700/40 uppercase tracking-widest leading-none mb-1">{label}</p>
+        <p className="text-xs font-bold text-emerald-800/40 uppercase tracking-widest leading-none mb-1">{label}</p>
         {isLoading ? (
-          <Loader2 className="w-6 h-6 animate-spin text-gray-700" />
+          <Loader2 className="w-6 h-6 animate-spin text-emerald-800" />
         ) : (
-          <p className="text-3xl font-bold text-gray-900 tracking-tighter tabular-nums leading-none uppercase">
+          <p className="text-3xl font-bold text-emerald-950 tracking-tighter tabular-nums leading-none uppercase">
             {typeof value === 'number' ? value.toLocaleString('id-ID') : value}
           </p>
         )}
@@ -63,7 +63,7 @@ export function MetricCard({
 
 export function MetricCardSkeleton() {
   return (
-    <div className="bg-white border border-gray-200/50 rounded-xl p-6 space-y-6 animate-pulse">
+    <div className="bg-white border border-emerald-50/50 rounded-xl p-6 space-y-6 animate-pulse">
       <div className="flex items-center justify-between">
         <div className="h-12 w-12 rounded-xl bg-[#e8f5ee] border border-[#f3f4f6]/50" />
         <div className="h-2 w-16 bg-[#e8f5ee] rounded" />

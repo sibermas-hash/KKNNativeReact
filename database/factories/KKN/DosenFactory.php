@@ -17,8 +17,7 @@ class DosenFactory extends Factory
             'user_id' => User::factory(),
             'nip' => $this->faker->unique()->numerify('################'),
             'nama' => $this->faker->name(),
-            'faculty_id' => Fakultas::factory(),
-            'phone' => $this->faker->phoneNumber(),
+            'fakultas_id' => Fakultas::factory(),
         ];
     }
 }

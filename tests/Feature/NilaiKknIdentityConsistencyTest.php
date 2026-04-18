@@ -54,7 +54,7 @@ class NilaiKknIdentityConsistencyTest extends TestCase
 
         $faculty = Fakultas::factory()->create(['nama' => 'Fakultas Teknik']);
         $program = Prodi::factory()->create([
-            'faculty_id' => $faculty->id,
+            'fakultas_id' => $faculty->id,
             'nama' => 'Teknik Informatika',
         ]);
         $period = Periode::factory()->create(['name' => 'KKN 2026']);
@@ -62,19 +62,19 @@ class NilaiKknIdentityConsistencyTest extends TestCase
         [$studentUser, $mahasiswa] = $this->createStudentWithDivergedIds($faculty, $program, 'Mahasiswa Uji', '240999');
 
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
         ]);
 
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
         ]);
 
         $score = NilaiKkn::create([
-            'user_id' => $studentUser->id,
+            'user_id' => $mahasiswa->user_id,
             'kelompok_id' => $group->id,
-            'final_report_score' => 88,
+            'total_score' => 85,
             'execution_score' => 86,
             'article_score' => 84,
             'discipline_score' => 90,
@@ -96,16 +96,11 @@ class NilaiKknIdentityConsistencyTest extends TestCase
             'mahasiswa_id' => $mahasiswa->id,
             'kelompok_id' => $group->id,
             'title' => 'Laporan Akhir Mahasiswa Uji',
-            'file_path' => 'laporan/uji.pdf',
-            'file_name' => 'uji.pdf',
             'status' => 'approved',
-            'submitted_at' => now(),
-            'reviewed_at' => now(),
-            'score' => 90,
         ]);
 
         $this->actingAs($superadmin)
-            ->get(route('admin.rekap-nilai.index', ['period_id' => $period->id]))
+            ->get(route('admin.rekap-nilai.index', ['periode_id' => $period->id]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Academic/GradeReports/Index')
@@ -115,10 +110,10 @@ class NilaiKknIdentityConsistencyTest extends TestCase
                 ->where('scores.0.nim', '240999')
             );
 
-        $this->from(route('admin.rekap-nilai.index', ['period_id' => $period->id]))
+        $this->from(route('admin.rekap-nilai.index', ['periode_id' => $period->id]))
             ->actingAs($superadmin)
             ->patch(route('admin.grade-reports.finalisasi', $score))
-            ->assertRedirect(route('admin.rekap-nilai.index', ['period_id' => $period->id]));
+            ->assertRedirect(route('admin.rekap-nilai.index', ['periode_id' => $period->id]));
 
         $this->assertDatabaseHas('nilai_kkn', [
             'id' => $score->id,
@@ -134,7 +129,7 @@ class NilaiKknIdentityConsistencyTest extends TestCase
     ): array {
         $faculty ??= Fakultas::factory()->create();
         $program ??= Prodi::factory()->create([
-            'faculty_id' => $faculty->id,
+            'fakultas_id' => $faculty->id,
         ]);
 
         $studentUser = User::factory()->create([
@@ -149,8 +144,8 @@ class NilaiKknIdentityConsistencyTest extends TestCase
             'user_id' => $studentUser->id,
             'nama' => $name,
             'nim' => $nim,
-            'faculty_id' => $faculty->id,
-            'program_id' => $program->id,
+            'fakultas_id' => $faculty->id,
+            'prodi_id' => $program->id,
         ]);
 
         return [$studentUser, $mahasiswa];

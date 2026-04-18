@@ -44,7 +44,7 @@ class CekAbsensiHarian extends Command
             $this->info("\nMemeriksa periode: {$period->name}");
 
             // Ambil semua mahasiswa yang terdaftar aktif di periode ini
-            $mahasiswaIds = PesertaKkn::where('period_id', $period->id)
+            $mahasiswaIds = PesertaKkn::where('periode_id', $period->id)
                 ->where('status', 'approved')
                 ->pluck('mahasiswa_id');
 
@@ -56,7 +56,7 @@ class CekAbsensiHarian extends Command
                 }
 
                 $kelompokId = PesertaKkn::where('mahasiswa_id', $mahasiswaId)
-                    ->where('period_id', $period->id)
+                    ->where('periode_id', $period->id)
                     ->value('kelompok_id');
 
                 // Cek apakah sudah ada absensi untuk tanggal ini

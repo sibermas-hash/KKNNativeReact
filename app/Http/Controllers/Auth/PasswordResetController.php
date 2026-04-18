@@ -65,11 +65,22 @@ class PasswordResetController extends Controller
     }
 
     /**
-     * Redirect users to the admin-assisted reset channel.
+     * Send a password reset link to the user.
      */
     public function sendResetLink(Request $request): RedirectResponse
     {
-        return back()->with('status', 'Reset password dilakukan melalui admin. Hubungi admin melalui WhatsApp dengan menyertakan username, NIM, atau NIP Anda.');
+        $request->validate(['email' => 'required|email']);
+
+        // We will send the password reset link to this user. Once it has been sent
+        // we will redirect the user back to this home view with a success message.
+        // Finally, we'll send out a proper response based on the result.
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        return $status === Password::RESET_LINK_SENT
+            ? back()->with('status', __($status))
+            : back()->withErrors(['email' => [__($status)]]);
     }
 
     /**

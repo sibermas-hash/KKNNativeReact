@@ -77,14 +77,14 @@ class BiodataPesertaExport implements FromQuery, ShouldAutoSize, WithHeadings, W
             $no,
             $mhs?->nama ?? '-',
             $mhs?->nim ?? '-',
-            $mhs?->nik ?? '-',
+            $this->formatNik($mhs?->nik),
             $mhs?->birth_place ?? '-',
             $mhs?->birth_date ? Carbon::parse($mhs->birth_date)->format('d-m-Y') : '-',
             match ($mhs?->gender) {
                 'L' => 'Laki-laki', 'P' => 'Perempuan', default => '-'
             },
             $mhs?->mother_name ?? '-',
-            $user?->phone ?? '-',
+            $this->formatPhone($user?->phone),
             $user?->address ?? '-',
             $user?->domicile_village_name ?? '-',
             $user?->domicile_district_name ?? '-',
@@ -103,6 +103,36 @@ class BiodataPesertaExport implements FromQuery, ShouldAutoSize, WithHeadings, W
                 default => ucfirst((string) $row->status),
             },
         ];
+    }
+
+    private function formatNik(?string $nik): string
+    {
+        if (empty($nik)) {
+            return '-';
+        }
+
+        $digitsOnly = preg_replace('/[^0-9]/', '', $nik);
+
+        if (strlen($digitsOnly) !== 16) {
+            return '-';
+        }
+
+        return $digitsOnly;
+    }
+
+    private function formatPhone(?string $phone): string
+    {
+        if (empty($phone)) {
+            return '-';
+        }
+
+        $digitsOnly = preg_replace('/[^0-9]/', '', $phone);
+
+        if (strlen($digitsOnly) < 10 || strlen($digitsOnly) > 15) {
+            return '-';
+        }
+
+        return $digitsOnly;
     }
 
     public function styles(Worksheet $sheet): array

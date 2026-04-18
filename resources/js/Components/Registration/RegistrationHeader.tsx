@@ -16,7 +16,7 @@ export const RegistrationHeader: React.FC<RegistrationHeaderProps> = ({ readyToR
   return (
     <motion.section
       variants={itemVariants}
-      className="relative rounded-[4rem] bg-[#e8f5ee] border border-gray-200 p-12 lg:p-20 text-bg-[#e8f5ee] shadow-lg group"
+      className="relative rounded-[4rem] bg-[#e8f5ee] border border-emerald-50 p-12 lg:p-20 text-bg-[#e8f5ee] shadow-lg group"
     >
       <div className="absolute top-0 right-0 h-full w-1/2 bg-[#16a34a] opacity-5 -skew-x-12 translate-x-1/4 pointer-events-none" />
       <div className="absolute -bottom-24 -left-24 h-64 w-64 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
@@ -36,7 +36,7 @@ export const RegistrationHeader: React.FC<RegistrationHeaderProps> = ({ readyToR
               </p>
             </div>
           </div>
-          <p className="text-base font-bold text-gray-900 leading-relaxed uppercase tracking-wider opacity-80 max-w-xl">
+          <p className="text-base font-bold text-emerald-950 leading-relaxed uppercase tracking-wider opacity-80 max-w-xl">
             Pilih skema KKN dan lengkapi prasyarat operasional. Database akan memproses
             penempatan berdasarkan kualifikasi akademik dan domisili terverifikasi.
           </p>
@@ -63,7 +63,7 @@ export const RegistrationHeader: React.FC<RegistrationHeaderProps> = ({ readyToR
               </div>
             </div>
             <div className="h-px bg-white/10" />
-            <p className="text-xs font-bold text-gray-900 uppercase tracking-wide leading-relaxed px-2">
+            <p className="text-xs font-bold text-emerald-950 uppercase tracking-wide leading-relaxed px-2">
               Sistem hanya menerima aplikasi dari mahasiswa yang telah memenuhi syarat SKS,
               BTA-PPI, dan kesehatan dokumen.
             </p>

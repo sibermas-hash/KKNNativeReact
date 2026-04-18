@@ -90,21 +90,21 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
           )}
 
           {/* HEADER */}
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-gray-200 pt-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-emerald-50 pt-6">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <Link href="/admin/mahasiswa" className="text-gray-600 hover:text-[#1a7a4a] transition-colors flex items-center gap-1.5 text-sm">
+                <Link href="/admin/mahasiswa" className="text-emerald-800 hover:text-[#1a7a4a] transition-colors flex items-center gap-1.5 text-sm">
                   <ArrowLeft size={15} /> Direktori Mahasiswa
                 </Link>
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 leading-tight">{mahasiswa.nama}</h1>
-              <p className="text-sm text-gray-700">NIM: <strong className="text-gray-700">{mahasiswa.nim}</strong> · Angkatan <strong className="text-gray-700">{mahasiswa.batch_year || '—'}</strong></p>
+              <h1 className="text-2xl font-bold text-emerald-950 leading-tight">{mahasiswa.nama}</h1>
+              <p className="text-sm text-emerald-800">NIM: <strong className="text-emerald-800">{mahasiswa.nim}</strong> · Angkatan <strong className="text-emerald-800">{mahasiswa.batch_year || '—'}</strong></p>
             </div>
             {account && (
               <div className="flex items-center gap-3 shrink-0">
                 <button
                   onClick={() => setConfirmReset(true)}
-                  className="h-10 px-4 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium shadow-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
+                  className="h-10 px-4 bg-white border border-gray-300 text-emerald-800 rounded-lg text-sm font-medium shadow-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
                 >
                   <KeyRound size={15} /> Reset Password
                 </button>
@@ -113,7 +113,7 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
                   className={clsx(
                     "h-10 px-4 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2 transition-colors",
                     account.is_active 
-                      ? "bg-white border border-gray-300 text-gray-700 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-700" 
+                      ? "bg-white border border-gray-300 text-emerald-800 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-700" 
                       : "bg-[#16a34a] text-white hover:bg-[#15803d] shadow-none"
                   )}
                 >
@@ -127,8 +127,8 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
             {/* LEFT: BIODATA */}
             <div className="lg:col-span-2 space-y-6">
               {/* PROFIL AKADEMIK */}
-              <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
+              <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
+                <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-2">
                   <GraduationCap size={16} className="text-[#1a7a4a]"/>
                   <h2 className="text-sm font-semibold text-[#1f2937]">Profil Akademik</h2>
                 </div>
@@ -146,46 +146,46 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
               </div>
 
               {/* KELAYAKAN */}
-              <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
+              <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
+                <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-2">
                   <ShieldCheck size={16} className="text-[#1a7a4a]"/>
                   <h2 className="text-sm font-semibold text-[#1f2937]">Kelayakan KKN</h2>
                 </div>
                 <div className="p-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div className="p-4 rounded-lg bg-gray-50 border border-gray-200 text-center space-y-1">
-                    <p className="text-2xl font-bold text-gray-900 tabular-nums">{mahasiswa.sks_completed ?? 0}</p>
-                    <p className="text-xs text-gray-700 font-medium">SKS Selesai</p>
+                  <div className="p-4 rounded-lg bg-gray-50 border border-emerald-50 text-center space-y-1">
+                    <p className="text-2xl font-bold text-emerald-950 tabular-nums">{mahasiswa.sks_completed ?? 0}</p>
+                    <p className="text-xs text-emerald-800 font-medium">SKS Selesai</p>
                   </div>
-                  <div className="p-4 rounded-lg bg-gray-50 border border-gray-200 text-center space-y-1">
-                    <p className="text-2xl font-bold text-gray-900 tabular-nums">{Number(mahasiswa.gpa ?? 0).toFixed(2)}</p>
-                    <p className="text-xs text-gray-700 font-medium">IPK</p>
+                  <div className="p-4 rounded-lg bg-gray-50 border border-emerald-50 text-center space-y-1">
+                    <p className="text-2xl font-bold text-emerald-950 tabular-nums">{Number(mahasiswa.gpa ?? 0).toFixed(2)}</p>
+                    <p className="text-xs text-emerald-800 font-medium">IPK</p>
                   </div>
                   <div className={clsx(
                     "p-4 rounded-lg border text-center space-y-1.5 col-span-2 flex flex-col items-center justify-center",
-                    mahasiswa.is_bta_ppi_passed ? 'bg-gray-50 border-gray-200' : 'bg-rose-50 border-rose-100'
+                    mahasiswa.is_bta_ppi_passed ? 'bg-gray-50 border-emerald-50' : 'bg-rose-50 border-rose-100'
                   )}>
                     <div className="flex items-center justify-center gap-2">
                       {mahasiswa.is_bta_ppi_passed
-                        ? <><CheckCircle2 size={18} className="text-[#1a7a4a]"/><p className="text-sm font-bold text-gray-800">Lulus BTA-PPI</p></>
+                        ? <><CheckCircle2 size={18} className="text-[#1a7a4a]"/><p className="text-sm font-bold text-emerald-950">Lulus BTA-PPI</p></>
                         : <><XCircle size={18} className="text-rose-600"/><p className="text-sm font-bold text-rose-800">Belum Lulus BTA-PPI</p></>
                       }
                     </div>
-                    <p className="text-xs text-gray-700 uppercase tracking-wider font-bold text-center">Prasyarat Utama</p>
+                    <p className="text-xs text-emerald-800 uppercase tracking-wider font-bold text-center">Prasyarat Utama</p>
                   </div>
                 </div>
               </div>
 
               {/* PENDAFTARAN */}
-              <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
+              <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
+                <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-2">
                   <ClipboardList size={16} className="text-[#1a7a4a]"/>
                   <h2 className="text-sm font-semibold text-[#1f2937]">Status Pendaftaran</h2>
                 </div>
                 {registration ? (
                   <div className="p-5 grid grid-cols-2 sm:grid-cols-3 gap-6">
                     <div>
-                      <p className="text-xs text-gray-700 mb-1.5">Status Saat Ini</p>
-                      <span className={clsx("inline-flex items-center px-3 py-1 rounded-full text-xs font-bold", STATUS_BADGE[registration.status] || 'bg-gray-100 text-gray-700')}>
+                      <p className="text-xs text-emerald-800 mb-1.5">Status Saat Ini</p>
+                      <span className={clsx("inline-flex items-center px-3 py-1 rounded-full text-xs font-bold", STATUS_BADGE[registration.status] || 'bg-gray-100 text-emerald-800')}>
                         {STATUS_LABEL[registration.status] || registration.status}
                       </span>
                     </div>
@@ -206,15 +206,15 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
                 ) : (
                   <div className="p-8 text-center">
                     <ClipboardList className="mx-auto h-10 w-10 text-gray-200 mb-2" strokeWidth={1.5} />
-                    <p className="text-sm text-gray-700 font-medium">Mahasiswa ini belum melakukan pendaftaran KKN.</p>
+                    <p className="text-sm text-emerald-800 font-medium">Mahasiswa ini belum melakukan pendaftaran KKN.</p>
                   </div>
                 )}
               </div>
 
               {/* KELOMPOK */}
               {group && (
-                <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                  <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
+                <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
+                  <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-2">
                     <Users size={16} className="text-[#1a7a4a]"/>
                     <h2 className="text-sm font-semibold text-[#1f2937]">Penempatan Kelompok</h2>
                   </div>
@@ -236,15 +236,15 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
             {/* RIGHT SIDEBAR */}
             <div className="space-y-6">
               {/* AKUN */}
-              <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
+              <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
+                <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-2">
                   <ShieldCheck size={16} className="text-[#1a7a4a]"/>
                   <h2 className="text-sm font-semibold text-[#1f2937]">Hak Akses & Akun</h2>
                 </div>
                 {account ? (
                   <div className="p-5 space-y-4">
                     <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-                      <span className="text-xs font-medium text-gray-700">Status Akun</span>
+                      <span className="text-xs font-medium text-emerald-800">Status Akun</span>
                       <span className={clsx(
                         "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase", 
                         account.is_active ? "bg-[#e8f5ee] text-[#1a7a4a] border border-emerald-200" : "bg-rose-50 text-rose-700 border border-rose-200"
@@ -267,15 +267,15 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
                 ) : (
                   <div className="p-8 text-center">
                     <XCircle className="mx-auto h-8 w-8 text-gray-200 mb-2" strokeWidth={1.5} />
-                    <p className="text-xs text-gray-700 font-medium leading-relaxed">Akun sistem belum diinisialisasi melalui sinkronisasi master.</p>
+                    <p className="text-xs text-emerald-800 font-medium leading-relaxed">Akun sistem belum diinisialisasi melalui sinkronisasi master.</p>
                   </div>
                 )}
               </div>
 
               {/* DISPENSASI */}
               {dispensasi.length > 0 && (
-                <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                  <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
+                <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
+                  <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-2">
                     <ShieldCheck size={16} className="text-amber-500"/>
                     <h2 className="text-sm font-semibold text-[#1f2937]">Dispensasi Khusus</h2>
                   </div>
@@ -283,13 +283,13 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
                     {dispensasi.map(d => (
                       <div key={d.id} className="p-5 space-y-3">
                         <p className="text-sm font-bold text-[#1f2937] leading-tight">{d.alasan}</p>
-                        <p className="text-xs font-medium text-gray-700 uppercase">Periode: {d.periode?.name || 'Semua'} · {d.created_at}</p>
+                        <p className="text-xs font-medium text-emerald-800 uppercase">Periode: {d.periode?.name || 'Semua'} · {d.created_at}</p>
                         <div className="flex flex-wrap gap-1.5 pt-1">
                           {(d.bypassed_requirements || []).map(r => (
                             <span key={r} className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-100 rounded text-xs font-bold uppercase">{r.replace('_', ' ')}</span>
                           ))}
                         </div>
-                        <p className="text-xs text-gray-600 font-medium">Otorisator: <span className="text-gray-700">{d.granted_by}</span></p>
+                        <p className="text-xs text-emerald-800 font-medium">Otorisator: <span className="text-emerald-800">{d.granted_by}</span></p>
                       </div>
                     ))}
                   </div>
@@ -331,8 +331,8 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
 function InfoField({ label, value, mono = false, span }: { label: string; value: string; mono?: boolean; span?: number }) {
   return (
     <div className={span ? `col-span-${span}` : undefined}>
-      <p className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-1 opacity-70">{label}</p>
-      <p className={clsx("text-sm text-gray-900 font-semibold break-words", mono && "font-mono tracking-tight")}>{value}</p>
+      <p className="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-1 opacity-70">{label}</p>
+      <p className={clsx("text-sm text-emerald-950 font-semibold break-words", mono && "font-mono tracking-tight")}>{value}</p>
     </div>
   );
 }

@@ -157,7 +157,7 @@ class SyncDosenJob implements ShouldQueue
                 [
                     'user_id' => $user->id,
                     'nama' => $data['nama'] ?? $data['name'] ?? 'Unknown',
-                    'faculty_id' => $facultyId,
+                    'fakultas_id' => $facultyId,
                     'phone' => $data['phone'] ?? $data['telepon'] ?? null,
                     'gender' => $data['gender'] ?? $data['jenis_kelamin'] ?? 'L',
                     'birth_date' => $data['birth_date'] ?? $data['tanggal_lahir'] ?? null,

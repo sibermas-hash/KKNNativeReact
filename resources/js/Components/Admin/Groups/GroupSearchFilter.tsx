@@ -37,19 +37,19 @@ export const GroupSearchFilter = ({
   const activeFilterCount = (search ? 1 : 0) + (periodId ? 1 : 0) + (status ? 1 : 0);
 
   return (
-    <div className="bg-white border border-gray-200/50 rounded-xl overflow-hidden shadow-sm">
+    <div className="bg-white border border-emerald-50/50 rounded-xl overflow-hidden shadow-sm">
       <div className="p-4 flex flex-col lg:flex-row items-center gap-4">
         <div className="flex-1 w-full relative">
           <Search
             size={20}
-            className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-600"
+            className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-800"
           />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleApply()}
-            className="w-full h-12 pl-16 pr-6 bg-emerald-50/10 border border-gray-200/30 rounded-xl text-sm font-bold text-gray-900 focus:bg-white focus:border-[#f3f4f6]0 transition-all outline-none placeholder:text-gray-900/20"
+            className="w-full h-12 pl-16 pr-6 bg-emerald-50/10 border border-emerald-50/30 rounded-xl text-sm font-bold text-emerald-950 focus:bg-white focus:border-[#f3f4f6]0 transition-all outline-none placeholder:text-black/20"
             placeholder="Cari Kelompok, Lokasi, atau Pembimbing..."
           />
         </div>
@@ -60,7 +60,7 @@ export const GroupSearchFilter = ({
               'h-12 px-6 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-all border',
               showFilters
                 ? 'bg-[#16a34a] text-white border-emerald-600'
-                : 'bg-white text-gray-600 hover:text-emerald-600 hover:border-emerald-200'
+                : 'bg-white text-emerald-800 hover:text-emerald-600 hover:border-emerald-200'
             )}
           >
             <Filter size={18} /> 
@@ -81,19 +81,19 @@ export const GroupSearchFilter = ({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="bg-gray-50 border-t border-gray-200/50 overflow-hidden"
+            className="bg-gray-50 border-t border-emerald-50/50 overflow-hidden"
           >
             <div className="p-8 space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-900 uppercase tracking-widest ml-1 flex items-center gap-2">
+                    <label className="text-xs font-bold text-emerald-950 uppercase tracking-widest ml-1 flex items-center gap-2">
                        <Layers size={14} className="text-[#1a7a4a]" /> Sesi Akademik
                     </label>
                     <div className="relative group/select">
                       <select
                         value={periodId}
                         onChange={(e) => setPeriodId(e.target.value)}
-                        className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-white text-xs font-bold text-gray-900 outline-none transition-all focus:border-[#f3f4f6]0 appearance-none pr-10 cursor-pointer uppercase tracking-tight"
+                        className="w-full h-11 px-4 rounded-xl border border-emerald-50 bg-white text-xs font-bold text-emerald-950 outline-none transition-all focus:border-[#f3f4f6]0 appearance-none pr-10 cursor-pointer uppercase tracking-tight"
                       >
                         <option value="">Semua Periode</option>
                         {(periods || []).map((p) => (
@@ -104,19 +104,19 @@ export const GroupSearchFilter = ({
                       </select>
                       <ChevronDown
                         size={14}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-900 uppercase tracking-widest ml-1 flex items-center gap-2">
+                    <label className="text-xs font-bold text-emerald-950 uppercase tracking-widest ml-1 flex items-center gap-2">
                        <RefreshCw size={14} className="text-[#1a7a4a]" /> Status Operasional
                     </label>
                     <div className="relative group/select">
                       <select
                         value={status}
                         onChange={(e) => setStatus(e.target.value)}
-                        className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-white text-xs font-bold text-gray-900 outline-none transition-all focus:border-[#f3f4f6]0 appearance-none pr-10 cursor-pointer uppercase tracking-tight"
+                        className="w-full h-11 px-4 rounded-xl border border-emerald-50 bg-white text-xs font-bold text-emerald-950 outline-none transition-all focus:border-[#f3f4f6]0 appearance-none pr-10 cursor-pointer uppercase tracking-tight"
                       >
                         <option value="">Semua Status</option>
                         <option value="draft">Draft / Persiapan</option>
@@ -125,15 +125,15 @@ export const GroupSearchFilter = ({
                       </select>
                       <ChevronDown
                         size={14}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none"
                       />
                     </div>
                   </div>
                 </div>
-                <div className="flex justify-end gap-6 pt-6 border-t border-gray-200/50">
+                <div className="flex justify-end gap-6 pt-6 border-t border-emerald-50/50">
                   <button
                     onClick={handleReset}
-                    className="text-xs font-bold text-gray-900 hover:text-rose-600 transition-colors uppercase tracking-widest flex items-center gap-2"
+                    className="text-xs font-bold text-emerald-950 hover:text-rose-600 transition-colors uppercase tracking-widest flex items-center gap-2"
                   >
                     Atur Ulang
                   </button>

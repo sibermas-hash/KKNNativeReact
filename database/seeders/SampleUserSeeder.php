@@ -31,7 +31,7 @@ class SampleUserSeeder extends Seeder
         ]);
 
         $program = Program::first() ?? Program::create([
-            'faculty_id' => $faculty->id,
+            'fakultas_id' => $faculty->id,
             'code' => 'P00',
             'nama' => 'Program Umum',
         ]);
@@ -56,8 +56,8 @@ class SampleUserSeeder extends Seeder
             [
                 'nim' => '202600001',
                 'nama' => $studentUser->name,
-                'faculty_id' => $faculty->id,
-                'program_id' => $program->id,
+                'fakultas_id' => $faculty->id,
+                'prodi_id' => $program->id,
                 'batch_year' => 2026,
                 'gender' => 'L',
                 'sks_completed' => 100,
@@ -92,7 +92,7 @@ class SampleUserSeeder extends Seeder
             [
                 'nip' => '198600001',
                 'nama' => $lecturerUser->name,
-                'faculty_id' => $faculty->id,
+                'fakultas_id' => $faculty->id,
             ]
         );
 

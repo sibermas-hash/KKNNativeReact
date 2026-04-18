@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $hasAbility = Schema::hasColumn('audit_logs', 'ability');
-        $hasDescription = Schema::hasColumn('audit_logs', 'description');
+        $hasAbility = Schema::hasColumn('log_audit', 'ability');
+        $hasDescription = Schema::hasColumn('log_audit', 'description');
 
         if ($hasAbility && $hasDescription) {
             return;
         }
 
-        Schema::table('audit_logs', function (Blueprint $table) use ($hasAbility, $hasDescription) {
+        Schema::table('log_audit', function (Blueprint $table) use ($hasAbility, $hasDescription) {
             if (! $hasAbility) {
                 $table->string('ability')->nullable();
             }
@@ -33,14 +33,14 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $hasAbility = Schema::hasColumn('audit_logs', 'ability');
-        $hasDescription = Schema::hasColumn('audit_logs', 'description');
+        $hasAbility = Schema::hasColumn('log_audit', 'ability');
+        $hasDescription = Schema::hasColumn('log_audit', 'description');
 
         if (! $hasAbility && ! $hasDescription) {
             return;
         }
 
-        Schema::table('audit_logs', function (Blueprint $table) use ($hasAbility, $hasDescription) {
+        Schema::table('log_audit', function (Blueprint $table) use ($hasAbility, $hasDescription) {
             if ($hasAbility) {
                 $table->dropColumn('ability');
             }

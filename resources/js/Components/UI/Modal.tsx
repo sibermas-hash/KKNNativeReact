@@ -57,13 +57,13 @@ export default function Modal({ children, show, maxWidth = 'md', onClose, title 
                             >
                                 <div className="flex items-center justify-between mb-4">
                                     {title && (
-                                        <Dialog.Title className="text-lg font-semibold text-gray-900">
+                                        <Dialog.Title className="text-lg font-semibold text-emerald-950">
                                             {title}
                                         </Dialog.Title>
                                     )}
                                     <button
                                         onClick={onClose}
-                                        className="p-1 text-gray-900 hover:text-gray-900 hover:bg-gray-50/60 rounded"
+                                        className="p-1 text-emerald-950 hover:text-emerald-950 hover:bg-gray-50/60 rounded"
                                     >
                                         <X className="h-5 w-5" />
                                     </button>

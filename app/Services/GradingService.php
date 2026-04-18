@@ -239,7 +239,7 @@ class GradingService
      */
     public function dispatchMassFinalization(int $periodId): void
     {
-        $total = NilaiKkn::whereHas('kelompok', fn ($q) => $q->where('period_id', $periodId))
+        $total = NilaiKkn::whereHas('kelompok', fn ($q) => $q->where('periode_id', $periodId))
             ->where('is_finalized', false)
             ->whereNotNull('total_score')
             ->count();

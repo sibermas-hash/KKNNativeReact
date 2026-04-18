@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('daily_reports', function (Blueprint $table) {
+        Schema::table('kegiatan_kkn', function (Blueprint $table) {
             $table->text('reflection')->nullable()->after('activity');
         });
     }
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('daily_reports', function (Blueprint $table) {
+        Schema::table('kegiatan_kkn', function (Blueprint $table) {
             $table->dropColumn('reflection');
         });
     }

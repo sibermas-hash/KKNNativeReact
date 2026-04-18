@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\KKN;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
 class DatabaseSyncLog extends Model
@@ -35,7 +36,7 @@ class DatabaseSyncLog extends Model
      */
     public function syncedBy()
     {
-        return $this->belongsTo(\App\Models\User::class, 'synced_by');
+        return $this->belongsTo(User::class, 'synced_by');
     }
 
     /**

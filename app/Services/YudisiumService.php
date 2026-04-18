@@ -15,7 +15,7 @@ class YudisiumService
     public function prosesYudisiumPeriode(int $periodeId): array
     {
         $baseQuery = NilaiKkn::whereHas('kelompok', function ($query) use ($periodeId) {
-            $query->where('period_id', $periodeId);
+            $query->where('periode_id', $periodeId);
         })->where('is_finalized', true);
 
         return [
@@ -52,7 +52,7 @@ class YudisiumService
     public function generateRekapYudisium(int $periodeId): array
     {
         $baseQuery = NilaiKkn::whereHas('kelompok', function ($query) use ($periodeId) {
-            $query->where('period_id', $periodeId);
+            $query->where('periode_id', $periodeId);
         })->where('is_finalized', true);
 
         $stats = $this->prosesYudisiumPeriode($periodeId);

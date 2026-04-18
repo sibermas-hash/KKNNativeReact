@@ -48,7 +48,7 @@ export default function QualityAuditIndex({ reports, stats }: Props) {
  <AppLayout title="Audit Kualitas & Integritas Aktivitas">
  <Head title="Audit Aktivitas"/>
 
- <div className="max-w-[1600px] mx-auto space-y-12 pb-24 font-sans px-4 sm:px-6 lg:px-8 text-gray-900">
+ <div className="max-w-[1600px] mx-auto space-y-12 pb-24 font-sans px-4 sm:px-6 lg:px-8 text-emerald-950">
  
  {/* --- PREMIUM HEADER --- */}
  <div className="space-y-6 pt-12">
@@ -58,17 +58,17 @@ export default function QualityAuditIndex({ reports, stats }: Props) {
  </div>
  <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
  <div className="space-y-2">
- <h1 className="text-4xl font-semibold text-gray-900 er leading-none">
+ <h1 className="text-4xl font-semibold text-emerald-950 er leading-none">
  Audit <span className="text-[#1a7a4a]">Integritas.</span>
  </h1>
- <p className="text-sm font-semibold text-gray-700 leading-relaxed max-w-2xl mt-4">
+ <p className="text-sm font-semibold text-emerald-800 leading-relaxed max-w-2xl mt-4">
  Pemindaian otomatis kualitas pelaporan dan kejujuran data aktivitas lapangan. Identifikasi anomali transmisi laporan untuk memastikan validitas output pengabdian.
  </p>
  </div>
  <div className="shrink-0">
  <div className="h-20 px-10 bg-[#16a34a] border border-[#1a7a4a] rounded-xl flex items-center gap-8 text-white shadow-sm shadow-none">
  <div className="flex flex-col">
- <span className="text-xs font-semibold text-gray-700 leading-none mb-2">Laporan Berisiko</span>
+ <span className="text-xs font-semibold text-emerald-800 leading-none mb-2">Laporan Berisiko</span>
  <span className="text-2xl font-semibold text-white tabular-nums leading-none">{stats.high_risk_count} ENTITAS</span>
  </div>
  <div className="w-px h-10 bg-white/20"/>
@@ -87,27 +87,27 @@ export default function QualityAuditIndex({ reports, stats }: Props) {
  </div>
 
  {/* --- DATA TABLE CARD --- */}
- <section className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
- <div className="px-10 py-10 bg-gray-50 border-b-2 border-gray-200 flex items-center justify-between">
+ <section className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden flex flex-col">
+ <div className="px-10 py-10 bg-gray-50 border-b-2 border-emerald-50 flex items-center justify-between">
  <div className="flex items-center gap-6">
- <div className="h-16 w-16 bg-white rounded-xl border border-gray-200 flex items-center justify-center text-[#1a7a4a] shadow-sm">
+ <div className="h-16 w-16 bg-white rounded-xl border border-emerald-50 flex items-center justify-center text-[#1a7a4a] shadow-sm">
  <ScanLine size={32} className="animate-pulse"strokeWidth={2.5} />
  </div>
  <div className="flex flex-col">
- <h3 className="text-xl font-semibold text-gray-900 leading-none mb-1.5">Scanner Integritas</h3>
- <p className="text-xs font-bold text-gray-700 leading-none">Identifikasi Anomali Pelaporan Secara Otomatis</p>
+ <h3 className="text-xl font-semibold text-emerald-950 leading-none mb-1.5">Scanner Integritas</h3>
+ <p className="text-xs font-bold text-emerald-800 leading-none">Identifikasi Anomali Pelaporan Secara Otomatis</p>
  </div>
  </div>
 
- <div className="flex items-center gap-2 px-6 py-2 bg-white border border-gray-200 rounded-xl shadow-sm">
+ <div className="flex items-center gap-2 px-6 py-2 bg-white border border-emerald-50 rounded-xl shadow-sm">
  <div className="h-2 w-2 rounded-full bg-gray-500 animate-pulse shadow-sm shadow-none"/>
- <span className="text-xs font-semibold text-gray-900">SENTINEL_ACTIVE</span>
+ <span className="text-xs font-semibold text-emerald-950">SENTINEL_ACTIVE</span>
  </div>
  </div>
 
  <div className="overflow-x-auto min-h-[500px]">
  <table className="min-w-full text-left border-collapse whitespace-nowrap">
- <thead className="bg-gray-50 text-gray-900 border-b border-gray-200">
+ <thead className="bg-gray-50 text-emerald-950 border-b border-emerald-50">
  <tr>
  <th className="px-10 py-6 text-xs font-semibold">Identitas Peserta & Unit</th>
  <th className="px-8 py-6 text-xs font-semibold">Rincian Transmisi Laporan</th>
@@ -129,22 +129,22 @@ export default function QualityAuditIndex({ reports, stats }: Props) {
  <div className="flex items-center gap-5">
  <div className={clsx(
 "h-12 w-12 rounded-xl flex items-center justify-center font-semibold text-sm border shadow-sm transition-all group-hover:bg-[#16a34a] group-hover:text-white group-hover:border-emerald-600",
- r.risk_level === 'HIGH' ? 'bg-rose-50 border-rose-100 text-rose-500' : 'bg-[#e8f5ee] border-gray-200 text-gray-700'
+ r.risk_level === 'HIGH' ? 'bg-rose-50 border-rose-100 text-rose-500' : 'bg-[#e8f5ee] border-emerald-50 text-emerald-800'
  )}>
  {r.user_name.charAt(0)}
  </div>
  <div className="flex flex-col">
- <span className="text-sm font-semibold text-gray-900 leading-tight group-hover:text-gray-700 transition-colors max-w-[200px] truncate mb-2">{r.user_name}</span>
- <span className="text-xs font-semibold text-gray-700 opacity-60 leading-none">{r.group_name}</span>
+ <span className="text-sm font-semibold text-emerald-950 leading-tight group-hover:text-emerald-800 transition-colors max-w-[200px] truncate mb-2">{r.user_name}</span>
+ <span className="text-xs font-semibold text-emerald-800 opacity-60 leading-none">{r.group_name}</span>
  </div>
  </div>
  </td>
  <td className="px-8 py-8">
  <div className="flex flex-col gap-2">
- <span className="text-xs font-semibold text-gray-700 leading-tight max-w-[300px] truncate">{r.title}</span>
+ <span className="text-xs font-semibold text-emerald-800 leading-tight max-w-[300px] truncate">{r.title}</span>
  <div className="flex items-center gap-2">
- <Clock size={12} className="text-gray-600"strokeWidth={3} />
- <span className="text-xs font-semibold text-gray-600 font-mono">{r.submitted_at}</span>
+ <Clock size={12} className="text-emerald-800"strokeWidth={3} />
+ <span className="text-xs font-semibold text-emerald-800 font-mono">{r.submitted_at}</span>
  </div>
  </div>
  </td>
@@ -164,14 +164,14 @@ export default function QualityAuditIndex({ reports, stats }: Props) {
  'h-12 w-12 inline-flex items-center justify-center rounded-xl text-sm font-semibold border transition-all shadow-sm', 
  r.risk_score >= 70 ? 'bg-rose-600 text-white border-rose-500 shadow-rose-200' : 
  r.risk_score >= 30 ? 'bg-amber-50 border-amber-100 text-amber-500 shadow-amber-50' : 
- 'bg-white border-gray-200 text-[#1a7a4a] shadow-emerald-50'
+ 'bg-white border-emerald-50 text-[#1a7a4a] shadow-emerald-50'
  )}>
  {r.risk_score}
  </div>
  </td>
  <td className="px-10 py-8 text-right whitespace-nowrap">
  <div className="flex items-center justify-end opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
- <button className="h-10 px-5 bg-white border border-gray-200 text-gray-900 hover:bg-white hover:text-white rounded-xl text-xs font-semibold transition-all active:scale-95 shadow-sm">
+ <button className="h-10 px-5 bg-white border border-emerald-50 text-emerald-950 hover:bg-white hover:text-white rounded-xl text-xs font-semibold transition-all active:scale-95 shadow-sm">
  AUDIT_DETAIL <ArrowRight size={14} className="ml-2"strokeWidth={3} />
  </button>
  </div>
@@ -184,9 +184,9 @@ export default function QualityAuditIndex({ reports, stats }: Props) {
  </div>
 
  {/* PAGINATION */}
- <div className="px-10 py-8 border-t-2 border-gray-200 bg-gray-50 flex items-center justify-between">
- <span className="text-xs font-semibold text-gray-700">
- Data Halaman <strong className="text-gray-900 text-xs tabular-nums">{reports.meta.current_page}</strong> Per <strong className="text-gray-900 text-xs tabular-nums">{(reports.meta.total || 0).toLocaleString('id-ID')}</strong> Entitas Terdeteksi
+ <div className="px-10 py-8 border-t-2 border-emerald-50 bg-gray-50 flex items-center justify-between">
+ <span className="text-xs font-semibold text-emerald-800">
+ Data Halaman <strong className="text-emerald-950 text-xs tabular-nums">{reports.meta.current_page}</strong> Per <strong className="text-emerald-950 text-xs tabular-nums">{(reports.meta.total || 0).toLocaleString('id-ID')}</strong> Entitas Terdeteksi
  </span>
  <Pagination meta={reports.meta} />
  </div>
@@ -198,11 +198,11 @@ export default function QualityAuditIndex({ reports, stats }: Props) {
  <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12 -mr-12 -mt-12 group-hover/audit:rotate-45 transition-transform duration-1000"><Activity size={200} /></div>
  <div className="flex items-center gap-8 relative z-10">
  <div className="h-16 w-16 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center shrink-0">
- <ShieldCheck size={32} className="text-gray-700"strokeWidth={2.5} />
+ <ShieldCheck size={32} className="text-emerald-800"strokeWidth={2.5} />
  </div>
  <div className="space-y-1">
  <h4 className="text-lg font-semibold leading-none">Integritas Sentinel</h4>
- <p className="text-xs font-bold text-gray-600 leading-relaxed">Pemindaian kejujuran otomatis berjalan secara real-time pada setiap transmisi data pelaporan mahasiswa.</p>
+ <p className="text-xs font-bold text-emerald-800 leading-relaxed">Pemindaian kejujuran otomatis berjalan secara real-time pada setiap transmisi data pelaporan mahasiswa.</p>
  </div>
  </div>
  </div>
@@ -210,10 +210,10 @@ export default function QualityAuditIndex({ reports, stats }: Props) {
  <div className="bg-[#16a34a] rounded-xl p-10 text-white flex items-center justify-between relative overflow-hidden group/meta shadow-sm border border-[#1a7a4a]">
  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.2),transparent)]"/>
  <div className="space-y-4 relative z-10">
- <h4 className="text-xs font-semibold text-gray-900 text-gray-500">System Surveillance Metadata</h4>
+ <h4 className="text-xs font-semibold text-emerald-950 text-emerald-700">System Surveillance Metadata</h4>
  <div className="flex flex-col">
  <span className="text-3xl font-semibold er italic text-white">KERNELS_NOMINAL</span>
- <span className="text-xs font-semibold text-gray-600 opacity-70">Security Registry Secured</span>
+ <span className="text-xs font-semibold text-emerald-800 opacity-70">Security Registry Secured</span>
  </div>
  </div>
  <div className="flex items-center gap-4 relative z-10">
@@ -229,14 +229,14 @@ export default function QualityAuditIndex({ reports, stats }: Props) {
 
 function MetricCard({ label, value, icon: Icon, desc }: { label: string; value: string; icon: any; desc: string }) {
  return (
- <div className="bg-white border border-gray-200 rounded-xl p-6 flex items-center gap-5 shadow-sm hover:border-gray-200 transition-all group overflow-hidden relative">
- <div className="h-14 w-14 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all shadow-sm border bg-gray-50 text-[#1a7a4a] border-gray-200">
+ <div className="bg-white border border-emerald-50 rounded-xl p-6 flex items-center gap-5 shadow-sm hover:border-emerald-50 transition-all group overflow-hidden relative">
+ <div className="h-14 w-14 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all shadow-sm border bg-gray-50 text-[#1a7a4a] border-emerald-50">
  <Icon size={24} strokeWidth={2.5} />
  </div>
  <div className="flex flex-col relative z-20">
- <span className="text-xs font-semibold text-gray-700 leading-none mb-3">{label}</span>
- <span className="text-2xl font-semibold text-gray-900 er leading-none group-hover:text-gray-700 transition-colors mb-1.5">{value}</span>
- <p className="text-xs font-semibold text-gray-600 opacity-60 leading-none">{desc}</p>
+ <span className="text-xs font-semibold text-emerald-800 leading-none mb-3">{label}</span>
+ <span className="text-2xl font-semibold text-emerald-950 er leading-none group-hover:text-emerald-800 transition-colors mb-1.5">{value}</span>
+ <p className="text-xs font-semibold text-emerald-800 opacity-60 leading-none">{desc}</p>
  </div>
  </div>
  );
@@ -247,11 +247,11 @@ function EmptyState() {
  <tr>
  <td colSpan={10} className="px-10 py-32 text-center">
  <div className="flex flex-col items-center justify-center gap-4">
- <div className="h-24 w-24 bg-gray-50 rounded-xl flex items-center justify-center text-gray-700 mb-2">
+ <div className="h-24 w-24 bg-gray-50 rounded-xl flex items-center justify-center text-emerald-800 mb-2">
  <SearchCode size={48} strokeWidth={1} />
  </div>
- <span className="text-sm font-semibold text-gray-900">Audit Aktivitas Nihil</span>
- <p className="text-xs font-semibold text-gray-700 leading-none opacity-60">Tidak ditemukan indikasi risiko pelaporan untuk saat ini.</p>
+ <span className="text-sm font-semibold text-emerald-950">Audit Aktivitas Nihil</span>
+ <p className="text-xs font-semibold text-emerald-800 leading-none opacity-60">Tidak ditemukan indikasi risiko pelaporan untuk saat ini.</p>
  </div>
  </td>
  </tr>

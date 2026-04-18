@@ -58,7 +58,7 @@ export default function StudentIzinIndex({ izins, akumulasiTanpaKeterangan }: Pr
     },
     disetujui: {
       bg: 'bg-emerald-50',
-      text: 'text-gray-700',
+      text: 'text-emerald-800',
       ring: 'ring-emerald-200/50',
       dot: 'bg-emerald-500',
     },
@@ -91,21 +91,21 @@ export default function StudentIzinIndex({ izins, akumulasiTanpaKeterangan }: Pr
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div className="space-y-8 max-w-2xl">
               <div className="flex items-center gap-4">
-                <div className="h-16 w-16 bg-emerald-100 rounded-xl flex items-center justify-center text-gray-700 shadow-sm">
+                <div className="h-16 w-16 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-800 shadow-sm">
                   <ShieldAlert size={32} strokeWidth={2.5} />
                 </div>
                 <div className="space-y-1">
                   <h4 className="text-sm font-bold text-emerald-600 uppercase tracking-wider text-xs font-semibold">
                     Section 04 / Clearance Protocol
                   </h4>
-                  <h1 className="text-2xl md:text-2xl font-bold text-black tracking-tighter uppercase leading-[0.85]">
+                  <h1 className="text-2xl md:text-2xl font-bold text-emerald-950 tracking-tighter uppercase leading-[0.85]">
                     Otorisasi <br /> <span className="text-emerald-600">Izin Lokasi.</span>
                   </h1>
                 </div>
               </div>
-              <p className="text-lg font-bold text-gray-900 tracking-tight leading-relaxed">
+              <p className="text-lg font-bold text-emerald-950 tracking-tight leading-relaxed">
                 Kelola mobilitas dan status kehadiran Anda secara transparan. <br />
-                <span className="text-black">
+                <span className="text-emerald-950">
                   "Disiplin adalah fondasi pengabdian yang bermartabat."
                 </span>
               </p>
@@ -162,12 +162,12 @@ export default function StudentIzinIndex({ izins, akumulasiTanpaKeterangan }: Pr
           </div>
 
           {/* Quick Stats */}
-          <div className="bg-emerald-50 rounded-[3.5rem] p-12 border border-gray-200 flex flex-col justify-between group">
+          <div className="bg-emerald-50 rounded-[3.5rem] p-12 border border-emerald-50 flex flex-col justify-between group">
             <div className="h-16 w-16 bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
               <Activity size={28} strokeWidth={2.5} />
             </div>
             <div className="space-y-2">
-              <h4 className="text-2xl font-bold text-black tracking-tighter uppercase leading-none">
+              <h4 className="text-2xl font-bold text-emerald-950 tracking-tighter uppercase leading-none">
                 {izins.data.length}
               </h4>
               <p className="text-sm font-bold text-emerald-600 uppercase tracking-wider text-xs font-semibold">
@@ -181,7 +181,7 @@ export default function StudentIzinIndex({ izins, akumulasiTanpaKeterangan }: Pr
         <div className="space-y-10">
           <div className="flex items-center justify-between px-4">
             <div className="flex items-center gap-4">
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider text-xs font-semibold">
+              <h3 className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold">
                 Clearance History
               </h3>
               <div className="h-px w-24 bg-emerald-50/60" />
@@ -199,23 +199,23 @@ export default function StudentIzinIndex({ izins, akumulasiTanpaKeterangan }: Pr
                 <motion.div
                   key={izin.id}
                   variants={cardVariants}
-                  className="bg-white rounded-xl border border-gray-200/60 p-10 lg:p-12 shadow-sm hover:shadow-2xl transition-all duration-500 relative flex flex-col xl:flex-row gap-6 group"
+                  className="bg-white rounded-xl border border-emerald-50/60 p-10 lg:p-12 shadow-sm hover:shadow-2xl transition-all duration-500 relative flex flex-col xl:flex-row gap-6 group"
                 >
                   {/* Period Nodal */}
                   <div className="xl:w-64 shrink-0 space-y-6">
-                    <div className="p-8 bg-emerald-50/30 rounded-xl border border-gray-200/60 group-hover:border-emerald-200 transition-colors">
-                      <p className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs mb-4">
+                    <div className="p-8 bg-emerald-50/30 rounded-xl border border-emerald-50/60 group-hover:border-emerald-200 transition-colors">
+                      <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs mb-4">
                         Duration: {izin.durasi_hari} Days
                       </p>
                       <div className="space-y-1">
-                        <p className="text-lg font-bold text-black tracking-tight uppercase">
+                        <p className="text-lg font-bold text-emerald-950 tracking-tight uppercase">
                           {new Date(izin.tanggal_mulai).toLocaleDateString('id-ID', {
                             day: 'numeric',
                             month: 'short',
                           })}
                         </p>
                         <div className="h-4 w-px bg-slate-200 ml-4 my-1" />
-                        <p className="text-lg font-bold text-black tracking-tight uppercase">
+                        <p className="text-lg font-bold text-emerald-950 tracking-tight uppercase">
                           {new Date(izin.tanggal_kembali).toLocaleDateString('id-ID', {
                             day: 'numeric',
                             month: 'short',
@@ -245,8 +245,8 @@ export default function StudentIzinIndex({ izins, akumulasiTanpaKeterangan }: Pr
                       <h4 className="text-sm font-bold text-emerald-600 uppercase tracking-wider text-xs font-semibold">
                         Justification Log
                       </h4>
-                      <div className="p-8 bg-emerald-50/30 border border-gray-200/60 rounded-xl relative group/reason">
-                        <p className="text-sm font-bold text-gray-900 leading-relaxed uppercase tracking-tight">
+                      <div className="p-8 bg-emerald-50/30 border border-emerald-50/60 rounded-xl relative group/reason">
+                        <p className="text-sm font-bold text-emerald-950 leading-relaxed uppercase tracking-tight">
                           "{izin.alasan}"
                         </p>
                         <FileText
@@ -258,10 +258,10 @@ export default function StudentIzinIndex({ izins, akumulasiTanpaKeterangan }: Pr
 
                     <div className="flex flex-wrap items-center gap-6">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-lg bg-emerald-50/60 flex items-center justify-center text-gray-900">
+                        <div className="h-8 w-8 rounded-lg bg-emerald-50/60 flex items-center justify-center text-emerald-950">
                           <MapPin size={14} />
                         </div>
-                        <span className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs">
+                        <span className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs">
                           {izin.kelompok.nama_kelompok}
                         </span>
                       </div>
@@ -278,10 +278,10 @@ export default function StudentIzinIndex({ izins, akumulasiTanpaKeterangan }: Pr
                     </div>
 
                     {izin.catatan_dpl && (
-                      <div className="p-8 bg-gray-50 border border-gray-200/50 rounded-xl">
+                      <div className="p-8 bg-gray-50 border border-emerald-50/50 rounded-xl">
                         <div className="flex items-center gap-3 mb-4">
                           <History size={14} className="text-emerald-600" />
-                          <span className="text-sm font-bold text-gray-700 font-semibold uppercase text-xs">
+                          <span className="text-sm font-bold text-emerald-800 font-semibold uppercase text-xs">
                             DPL Feedback Protocol
                           </span>
                         </div>
@@ -294,13 +294,13 @@ export default function StudentIzinIndex({ izins, akumulasiTanpaKeterangan }: Pr
                 </motion.div>
               ))
             ) : (
-              <div className="py-32 flex flex-col items-center gap-8 text-center bg-emerald-50/30 rounded-xl border border-dashed border-gray-200/60">
+              <div className="py-32 flex flex-col items-center gap-8 text-center bg-emerald-50/30 rounded-xl border border-dashed border-emerald-50/60">
                 <FileText size={80} className="text-slate-200" strokeWidth={1} />
                 <div className="space-y-2">
                   <h4 className="text-2xl font-bold text-slate-300 font-bold text-center">
                     Zero Clearance Issued
                   </h4>
-                  <p className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs">
+                  <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs">
                     Anda belum memiliki riwayat pengajuan izin lokasi.
                   </p>
                 </div>
@@ -323,7 +323,7 @@ export default function StudentIzinIndex({ izins, akumulasiTanpaKeterangan }: Pr
                     'h-14 min-w-[56px] px-5 flex items-center justify-center rounded-2xl text-sm font-bold tracking-widest uppercase transition-all',
                     link.active
                       ? 'bg-emerald-600 text-white shadow-2xl shadow-emerald-200'
-                      : 'bg-white border border-gray-200/60 text-gray-900 hover:text-emerald-600 hover:border-emerald-200 shadow-sm',
+                      : 'bg-white border border-emerald-50/60 text-emerald-950 hover:text-emerald-600 hover:border-emerald-200 shadow-sm',
                   )}
                 />
               ))}

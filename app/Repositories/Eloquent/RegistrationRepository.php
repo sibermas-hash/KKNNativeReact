@@ -13,7 +13,7 @@ class RegistrationRepository implements RegistrationRepositoryInterface
     {
         return PesertaKkn::query()
             ->where('mahasiswa_id', $mahasiswaId)
-            ->where('period_id', $periodeId)
+            ->where('periode_id', $periodeId)
             ->first();
     }
 

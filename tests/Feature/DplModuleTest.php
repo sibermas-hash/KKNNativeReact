@@ -11,6 +11,7 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\MonitoringDpl;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
@@ -49,7 +50,7 @@ class DplModuleTest extends TestCase
 
         $period = Periode::factory()->grading()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => Lokasi::factory(),
             'dpl_id' => $dosen->id,
         ]);
@@ -59,7 +60,7 @@ class DplModuleTest extends TestCase
 
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $student->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
             'role' => 'Ketua',
         ]);
@@ -123,15 +124,15 @@ class DplModuleTest extends TestCase
 
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $context['dosen']->id,
-            'period_id' => $context['period']->id,
+            'periode_id' => $context['period']->id,
             'max_groups' => 5,
             'is_active' => true,
         ]);
 
         DplKecamatanAssignment::create([
-            'dpl_period_id' => $dplPeriod->id,
+            'dpl_periode_id' => $dplPeriod->id,
             'dosen_id' => $context['dosen']->id,
-            'period_id' => $context['period']->id,
+            'periode_id' => $context['period']->id,
             'district_id' => $context['group']->lokasi->district_id,
             'district_name' => $context['group']->lokasi->district_name,
             'regency_name' => $context['group']->lokasi->regency_name,
@@ -257,7 +258,7 @@ class DplModuleTest extends TestCase
     {
         $context = $this->createDplScenario();
 
-        \App\Models\KKN\MonitoringDpl::create([
+        MonitoringDpl::create([
             'dpl_id' => $context['dosen']->id,
             'kelompok_id' => $context['group']->id,
             'periode_id' => $context['period']->id,
@@ -266,7 +267,7 @@ class DplModuleTest extends TestCase
             'solusi' => 'Baik',
             'catatan_tambahan' => 'Lanjutkan',
         ]);
-        \App\Models\KKN\MonitoringDpl::create([
+        MonitoringDpl::create([
             'dpl_id' => $context['dosen']->id,
             'kelompok_id' => $context['group']->id,
             'periode_id' => $context['period']->id,

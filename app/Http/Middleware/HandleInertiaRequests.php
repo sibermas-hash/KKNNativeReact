@@ -44,9 +44,9 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         if ($request->wantsJson() && ! $request->header('X-Inertia')) {
-             // If they want JSON but didn't send X-Inertia, they probably want the raw props.
-             // However, Inertia middleware usually handles this. 
-             // We'll just ensure it doesn't return the full HTML.
+            // If they want JSON but didn't send X-Inertia, they probably want the raw props.
+            // However, Inertia middleware usually handles this.
+            // We'll just ensure it doesn't return the full HTML.
         }
         $user = $request->user();
         $studentRegistrationLocked = false;

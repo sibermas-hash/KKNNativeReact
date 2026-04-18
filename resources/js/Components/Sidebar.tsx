@@ -238,17 +238,17 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
  
       <aside
         className={clsx(
-          'fixed inset-y-0 left-0 z-50 w-60 bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 w-60 bg-white border-r border-emerald-50 flex flex-col transition-transform duration-300 lg:translate-x-0',
           open ? 'translate-x-0 shadow-xl' : '-translate-x-full',
         )}
       >
         {/* LOGO AREA */}
-        <div className="h-16 px-5 flex items-center gap-3 border-b border-gray-200">
+        <div className="h-16 px-5 flex items-center gap-3 border-b border-emerald-50">
           <div className="h-12 w-12 bg-[#1a7a4a] rounded-full flex items-center justify-center shadow-sm shrink-0">
             <img src="/images/logo_kkn.png" alt="Logo" className="h-6 w-6 object-contain brightness-0 invert" />
           </div>
           <div>
-            <h1 className="text-sm font-bold text-gray-900 leading-tight">KKN UIN SAIZU</h1>
+            <h1 className="text-sm font-bold text-emerald-950 leading-tight">KKN UIN SAIZU</h1>
             <p className="text-xs font-semibold text-[#1a7a4a] mt-0.5">
               Portal Administrasi
             </p>
@@ -263,7 +263,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         >
           {navGroups.map((group, groupIdx) => (
             <div key={group.title} className={clsx(groupIdx > 0 && 'mt-6')}>
-              <h3 className="px-4 mb-2 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <h3 className="px-4 mb-2 text-xs font-semibold text-emerald-800 uppercase tracking-wider">
                 {group.title}
               </h3>
               <div className="space-y-0.5">
@@ -303,7 +303,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                         'flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-all duration-200',
                         isActive
                           ? 'bg-[#e8f5ee] text-[#1a7a4a] font-semibold'
-                          : 'text-gray-900 hover:bg-gray-50 font-medium',
+                          : 'text-emerald-950 hover:bg-gray-50 font-medium',
                       )}
                     >
                       <item.icon
@@ -311,7 +311,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                           'h-5 w-5 shrink-0',
                           isActive
                             ? 'text-[#1a7a4a]'
-                            : 'text-gray-700',
+                            : 'text-emerald-800',
                         )}
                         strokeWidth={isActive ? 2.5 : 2}
                       />
@@ -327,7 +327,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         </nav>
  
         {/* USER PROFILE SECTION */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-emerald-50">
           <Link
             href={safeRoute('profile.show')}
             preserveScroll
@@ -337,10 +337,10 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               <UserCircle size={20} strokeWidth={2} />
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-semibold text-gray-900 truncate">
+              <span className="text-xs font-semibold text-emerald-950 truncate">
                 Pengaturan Profil
               </span>
-              <span className="text-xs font-medium text-gray-700 mt-0.5">
+              <span className="text-xs font-medium text-emerald-800 mt-0.5">
                 Akun & Sistem
               </span>
             </div>

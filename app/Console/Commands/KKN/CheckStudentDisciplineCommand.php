@@ -52,7 +52,7 @@ class CheckStudentDisciplineCommand extends Command
             $this->info("Mengecek periode: {$period->name}");
 
             // 2. Cari mahasiswa yang terdaftar di periode ini (status approved)
-            $participants = PesertaKkn::where('period_id', $period->id)
+            $participants = PesertaKkn::where('periode_id', $period->id)
                 ->where('status', 'approved')
                 ->with(['mahasiswa.user', 'kelompok.dpl.user'])
                 ->get();

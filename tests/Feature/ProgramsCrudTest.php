@@ -46,7 +46,7 @@ class ProgramsCrudTest extends TestCase
         $faculty = Fakultas::factory()->create();
 
         $response = $this->actingAs($this->admin)->post(route('admin.prodi.store'), [
-            'faculty_id' => $faculty->id,
+            'fakultas_id' => $faculty->id,
             'nama' => 'Test Program',
         ]);
 
@@ -58,13 +58,13 @@ class ProgramsCrudTest extends TestCase
     {
         $faculty = Fakultas::factory()->create();
         $program = Prodi::create([
-            'faculty_id' => $faculty->id,
+            'fakultas_id' => $faculty->id,
             'code' => 'PRD1',
             'nama' => 'Before Update',
         ]);
 
         $response = $this->actingAs($this->admin)->put(route('admin.prodi.update', $program), [
-            'faculty_id' => $faculty->id,
+            'fakultas_id' => $faculty->id,
             'nama' => 'After Update',
         ]);
 
@@ -78,7 +78,7 @@ class ProgramsCrudTest extends TestCase
     {
         $faculty = Fakultas::factory()->create();
         $program = Prodi::create([
-            'faculty_id' => $faculty->id,
+            'fakultas_id' => $faculty->id,
             'code' => 'PRD2',
             'nama' => 'To Delete',
         ]);

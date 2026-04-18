@@ -45,7 +45,7 @@ class EvaluasiPolicy extends BasePolicy
         }
 
         if ($user->hasRole('faculty_admin')) {
-            return (int) ($evaluation->mahasiswa?->faculty_id ?? 0) === (int) ($user->faculty_id ?? 0);
+            return (int) ($evaluation->mahasiswa?->fakultas_id ?? 0) === (int) ($user->fakultas_id ?? 0);
         }
 
         return false;

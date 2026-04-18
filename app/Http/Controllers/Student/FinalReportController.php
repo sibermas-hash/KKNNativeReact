@@ -21,8 +21,10 @@ class FinalReportController extends Controller
     {
         if ($allowedSignatures === null) {
             $allowedSignatures = [
-                'pdf' => [0x25, 0x50, 0x44], // %PD
-                'docx' => [0x50, 0x4B, 0x03, 0x04], // PK (ZIP)
+                'pdf' => [0x25, 0x50, 0x44], // %PDF
+                'zip_or_docx' => [0x50, 0x4B, 0x03, 0x04], // PK.. (DOCX/ZIP)
+                'jpg' => [0xFF, 0xD8, 0xFF], // JPEG
+                'png' => [0x89, 0x50, 0x4E, 0x47], // PNG
             ];
         }
 
@@ -41,9 +43,9 @@ class FinalReportController extends Controller
                 }
             }
 
-            abort_if(! $valid, 422, 'File format tidak valid atau tidak sesuai dengan type yang dideklarasikan.');
+            abort_if(! $valid, 422, 'Format file '.$file->getClientOriginalName().' tidak valid atau terdeteksi manipulasi ekstensi.');
         } catch (\Exception $e) {
-            abort(422, 'Gagal memvalidasi file.');
+            abort(422, 'Gagal memvalidasi integritas file.');
         }
     }
 
@@ -72,12 +74,6 @@ class FinalReportController extends Controller
 
         abort_if(! $pendaftaran || ! $pendaftaran->kelompok_id, 403, 'Anda belum terdaftar dalam kelompok.');
 
-        // Check if report already exists for this group (safety net)
-        $existing = LaporanAkhir::where('kelompok_id', $pendaftaran->kelompok_id)->exists();
-        if ($existing) {
-            return redirect()->back()->with('error', 'Laporan akhir untuk kelompok Anda sudah diunggah oleh anggota lain.');
-        }
-
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:300'],
             'abstract' => ['nullable', 'string'],
@@ -91,40 +87,43 @@ class FinalReportController extends Controller
             'poster_3' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
         ]);
 
-        $file = $request->file('file');
-        $this->validateFileMagicBytes($file);
-        $path = $file->storeAs('final-reports', Str::uuid().'.'.$file->getClientOriginalExtension(), 'local');
+        return \DB::transaction(function () use ($request, $validated, $pendaftaran, $mahasiswa) {
+            // Re-check existence within transaction to prevent race conditions
+            $existing = LaporanAkhir::where('kelompok_id', $pendaftaran->kelompok_id)->lockForUpdate()->exists();
+            if ($existing) {
+                return redirect()->back()->with('error', 'Laporan akhir untuk kelompok Anda sudah diunggah oleh anggota lain.');
+            }
 
-        $article1Path = null;
-        if ($request->hasFile('article_1')) {
-            $this->validateFileMagicBytes($request->file('article_1'));
-            $article1Path = $request->file('article_1')->storeAs('final-reports', Str::uuid().'.'.$request->file('article_1')->getClientOriginalExtension(), 'local');
-        }
+            $file = $request->file('file');
+            $this->validateFileMagicBytes($file);
+            $path = $file->storeAs('final-reports', Str::uuid().'.'.$file->getClientOriginalExtension(), 'local');
 
-        $article2Path = null;
-        if ($request->hasFile('article_2')) {
-            $this->validateFileMagicBytes($request->file('article_2'));
-            $article2Path = $request->file('article_2')->storeAs('final-reports', Str::uuid().'.'.$request->file('article_2')->getClientOriginalExtension(), 'local');
-        }
+            $article1Path = null;
+            if ($request->hasFile('article_1')) {
+                $this->validateFileMagicBytes($request->file('article_1'));
+                $article1Path = $request->file('article_1')->storeAs('final-reports/articles', Str::uuid().'.'.$request->file('article_1')->getClientOriginalExtension(), 'local');
+            }
 
-        $poster1Path = null;
-        if ($request->hasFile('poster_1')) {
-            $poster1Path = $request->file('poster_1')->storeAs('final-reports/posters', Str::uuid().'.'.$request->file('poster_1')->getClientOriginalExtension(), 'local');
-        }
+            $article2Path = null;
+            if ($request->hasFile('article_2')) {
+                $this->validateFileMagicBytes($request->file('article_2'));
+                $article2Path = $request->file('article_2')->storeAs('final-reports/articles', Str::uuid().'.'.$request->file('article_2')->getClientOriginalExtension(), 'local');
+            }
 
-        $poster2Path = null;
-        if ($request->hasFile('poster_2')) {
-            $poster2Path = $request->file('poster_2')->storeAs('final-reports/posters', Str::uuid().'.'.$request->file('poster_2')->getClientOriginalExtension(), 'local');
-        }
+            $posterPaths = [];
+            foreach (['poster_1', 'poster_2', 'poster_3'] as $key) {
+                if ($request->hasFile($key)) {
+                    $this->validateFileMagicBytes($request->file($key), [
+                        'pdf' => [0x25, 0x50, 0x44],
+                        'jpg' => [0xFF, 0xD8, 0xFF],
+                        'png' => [0x89, 0x50, 0x4E, 0x47],
+                    ]);
+                    $posterPaths[$key] = $request->file($key)->storeAs('final-reports/posters', Str::uuid().'.'.$request->file($key)->getClientOriginalExtension(), 'local');
+                }
+            }
 
-        $poster3Path = null;
-        if ($request->hasFile('poster_3')) {
-            $poster3Path = $request->file('poster_3')->storeAs('final-reports/posters', Str::uuid().'.'.$request->file('poster_3')->getClientOriginalExtension(), 'local');
-        }
-
-        LaporanAkhir::updateOrCreate(
-            ['kelompok_id' => $pendaftaran->kelompok_id],
-            [
+            LaporanAkhir::create([
+                'kelompok_id' => $pendaftaran->kelompok_id,
                 'mahasiswa_id' => $mahasiswa->id,
                 'title' => $validated['title'],
                 'abstract' => $validated['abstract'] ?? null,
@@ -134,15 +133,15 @@ class FinalReportController extends Controller
                 'file_name' => Str::limit($file->getClientOriginalName(), 255),
                 'article_1_path' => $article1Path,
                 'article_2_path' => $article2Path,
-                'poster_1_path' => $poster1Path,
-                'poster_2_path' => $poster2Path,
-                'poster_3_path' => $poster3Path,
+                'poster_1_path' => $posterPaths['poster_1'] ?? null,
+                'poster_2_path' => $posterPaths['poster_2'] ?? null,
+                'poster_3_path' => $posterPaths['poster_3'] ?? null,
                 'status' => 'submitted',
                 'submitted_at' => now(),
-            ],
-        );
+            ]);
 
-        return redirect()->route('student.dashboard')
-            ->with('success', 'Laporan akhir kelompok berhasil dikirim.');
+            return redirect()->route('student.dashboard')
+                ->with('success', 'Laporan akhir kelompok berhasil dikirim.');
+        });
     }
 }

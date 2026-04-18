@@ -17,7 +17,7 @@ export default function PremiumCard({
     return (
         <div 
             className={clsx(
-                "relative overflow-hidden bg-white border border-gray-200 rounded-xl",
+                "relative overflow-hidden bg-white border border-emerald-50 rounded-xl",
                 hoverEffect && "transition-all duration-200 hover:border-gray-300 group",
                 className
             )}

@@ -37,11 +37,11 @@ export default function DplMonitoringIndex({ monitorings, groups }: Props) {
             <Head title="Monitoring DPL" />
 
             <div className="space-y-8">
-                <section className="rounded-lg border border-gray-200/60 bg-white p-8">
+                <section className="rounded-lg border border-emerald-50/60 bg-white p-8">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
-                            <h1 className="text-2xl font-semibold text-black">Monitoring Kunjungan DPL</h1>
-                            <p className="mt-2 text-sm text-gray-900">
+                            <h1 className="text-2xl font-semibold text-emerald-950">Monitoring Kunjungan DPL</h1>
+                            <p className="mt-2 text-sm text-emerald-950">
                                 Pantau hasil kunjungan dan permasalahan yang ditemukan di kelompok bimbingan.
                             </p>
                         </div>
@@ -55,8 +55,8 @@ export default function DplMonitoringIndex({ monitorings, groups }: Props) {
                 </section>
 
                 {/* Ringkasan per Kelompok */}
-                <section className="rounded-lg border border-gray-200/60 bg-white p-6">
-                    <h2 className="text-lg font-semibold text-black mb-4 flex items-center gap-2">
+                <section className="rounded-lg border border-emerald-50/60 bg-white p-6">
+                    <h2 className="text-lg font-semibold text-emerald-950 mb-4 flex items-center gap-2">
                         <BarChart3 className="h-5 w-5 text-emerald-600" />
                         Ringkasan Monitoring per Kelompok
                     </h2>
@@ -64,22 +64,22 @@ export default function DplMonitoringIndex({ monitorings, groups }: Props) {
                         {groups.map((group) => (
                             <div
                                 key={group.id}
-                                className="rounded-lg border border-gray-200/60 bg-emerald-50/30 p-4 hover:bg-white hover:border-emerald-300 transition-colors"
+                                className="rounded-lg border border-emerald-50/60 bg-emerald-50/30 p-4 hover:bg-white hover:border-emerald-300 transition-colors"
                             >
                                 <div className="flex items-center gap-2 mb-2">
-                                    <MapPin className="h-4 w-4 text-gray-900" />
-                                    <span className="text-sm font-semibold text-black">{group.nama}</span>
+                                    <MapPin className="h-4 w-4 text-emerald-950" />
+                                    <span className="text-sm font-semibold text-emerald-950">{group.nama}</span>
                                 </div>
                                 {group.periode && (
-                                    <p className="text-xs text-gray-900 mb-3">{group.periode}</p>
+                                    <p className="text-xs text-emerald-950 mb-3">{group.periode}</p>
                                 )}
-                                <div className="flex items-center justify-between text-xs text-gray-900">
-                                    <span>Total: <strong className="text-black">{group.total_monitoring}</strong> kunjungan</span>
-                                    <span>Terakhir: <strong className="text-black">{group.terakhir_monitoring}</strong></span>
+                                <div className="flex items-center justify-between text-xs text-emerald-950">
+                                    <span>Total: <strong className="text-emerald-950">{group.total_monitoring}</strong> kunjungan</span>
+                                    <span>Terakhir: <strong className="text-emerald-950">{group.terakhir_monitoring}</strong></span>
                                 </div>
                                 <Link
                                     href={route('dpl.monitoring.create', { kelompok_id: group.id })}
-                                    className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-gray-700"
+                                    className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-800"
                                 >
                                     Tambah monitoring <ChevronRight className="h-3 w-3" />
                                 </Link>
@@ -88,22 +88,22 @@ export default function DplMonitoringIndex({ monitorings, groups }: Props) {
                         {groups.length === 0 && (
                             <div className="col-span-full flex flex-col items-center justify-center py-8 text-center">
                                 <MapPin className="h-8 w-8 text-slate-300" />
-                                <p className="mt-2 text-sm text-gray-900">Belum ada kelompok bimbingan.</p>
+                                <p className="mt-2 text-sm text-emerald-950">Belum ada kelompok bimbingan.</p>
                             </div>
                         )}
                     </div>
                 </section>
 
                 {/* Riwayat Monitoring */}
-                <section className="rounded-lg border border-gray-200/60 bg-white">
-                    <div className="border-b border-gray-200/60 px-6 py-4">
-                        <h2 className="text-lg font-semibold text-black">Riwayat Monitoring</h2>
+                <section className="rounded-lg border border-emerald-50/60 bg-white">
+                    <div className="border-b border-emerald-50/60 px-6 py-4">
+                        <h2 className="text-lg font-semibold text-emerald-950">Riwayat Monitoring</h2>
                     </div>
 
                     {monitorings.data.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-16 text-center">
                             <FileText className="h-12 w-12 text-slate-300" />
-                            <p className="mt-4 text-sm text-gray-900">Belum ada laporan monitoring.</p>
+                            <p className="mt-4 text-sm text-emerald-950">Belum ada laporan monitoring.</p>
                         </div>
                     ) : (
                         <div className="divide-y divide-emerald-100/60">
@@ -116,14 +116,14 @@ export default function DplMonitoringIndex({ monitorings, groups }: Props) {
                                         <div className="flex-1 space-y-2">
                                             <div className="flex items-center justify-between">
                                                 <div>
-                                                    <span className="text-sm font-semibold text-black">{m.kelompok.nama_kelompok}</span>
+                                                    <span className="text-sm font-semibold text-emerald-950">{m.kelompok.nama_kelompok}</span>
                                                     {m.periode && (
-                                                        <span className="ml-2 text-xs text-gray-900 bg-emerald-50/60 rounded px-2 py-0.5">
+                                                        <span className="ml-2 text-xs text-emerald-950 bg-emerald-50/60 rounded px-2 py-0.5">
                                                             {m.periode.name}
                                                         </span>
                                                     )}
                                                 </div>
-                                                <span className="text-xs text-gray-900">
+                                                <span className="text-xs text-emerald-950">
                                                     {new Date(m.tanggal_kunjungan).toLocaleDateString('id-ID', {
                                                         day: 'numeric',
                                                         month: 'long',
@@ -132,16 +132,16 @@ export default function DplMonitoringIndex({ monitorings, groups }: Props) {
                                                 </span>
                                             </div>
                                             <div className="space-y-1 text-sm">
-                                                <p className="text-gray-700">
-                                                    <span className="font-medium text-gray-900">Permasalahan:</span>{' '}
+                                                <p className="text-emerald-800">
+                                                    <span className="font-medium text-emerald-950">Permasalahan:</span>{' '}
                                                     {m.permasalahan}
                                                 </p>
-                                                <p className="text-gray-700">
-                                                    <span className="font-medium text-gray-900">Solusi:</span>{' '}
+                                                <p className="text-emerald-800">
+                                                    <span className="font-medium text-emerald-950">Solusi:</span>{' '}
                                                     {m.solusi}
                                                 </p>
                                                 {m.catatan_tambahan && (
-                                                    <p className="text-xs text-gray-900 ">
+                                                    <p className="text-xs text-emerald-950 ">
                                                         Catatan: {m.catatan_tambahan}
                                                     </p>
                                                 )}

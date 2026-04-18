@@ -45,7 +45,7 @@ class MasterDataSeeder extends Seeder
                 Program::firstOrCreate(
                     ['code' => $programData['code']],
                     [
-                        'faculty_id' => $faculty->id,
+                        'fakultas_id' => $faculty->id,
                         'nama' => $programData['name'],
                     ]
                 );

@@ -36,28 +36,28 @@ export default function DplMonitoringCreate({ groups, selectedGroupId }: Props) 
                 <div className="flex items-center gap-4">
                     <Link
                         href={route('dpl.monitoring.index')}
-                        className="inline-flex items-center gap-2 text-sm text-gray-900 hover:text-gray-700"
+                        className="inline-flex items-center gap-2 text-sm font-bold text-emerald-950 hover:text-emerald-600 uppercase italic"
                     >
                         <ArrowLeft className="h-4 w-4" /> Kembali ke Monitoring
                     </Link>
                 </div>
 
-                <section className="rounded-lg border border-gray-200/60 bg-white p-8">
-                    <h1 className="text-2xl font-semibold text-black mb-2">Form Laporan Monitoring</h1>
-                    <p className="text-sm text-gray-900 mb-8">
+                <section className="rounded-xl border border-emerald-50 bg-white p-8">
+                    <h1 className="text-2xl font-bold text-emerald-950 uppercase italic mb-2">Form Laporan Monitoring</h1>
+                    <p className="text-sm font-bold text-emerald-950 uppercase tracking-wider mb-8">
                         Catat hasil kunjungan monitoring ke kelompok bimbingan Anda.
                     </p>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label htmlFor="kelompok_id" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="kelompok_id" className="block text-sm font-bold text-emerald-950 uppercase mb-1">
                                 Kelompok <span className="text-rose-500">*</span>
                             </label>
                             <select
                                 id="kelompok_id"
                                 value={data.kelompok_id}
                                 onChange={(e) => setData('kelompok_id', e.target.value)}
-                                className="w-full rounded-lg border border-gray-200/60 px-4 py-2 text-sm text-gray-700 focus:border-[#f3f4f6]0 focus:ring-[#1a7a4a]"
+                                className="w-full rounded-xl border border-emerald-50 px-4 py-3 text-sm font-bold text-emerald-950 focus:border-emerald-600 focus:ring-emerald-100 transition-all bg-emerald-50/20"
                                 required
                             >
                                 <option value="">-- Pilih Kelompok --</option>
@@ -74,7 +74,7 @@ export default function DplMonitoringCreate({ groups, selectedGroupId }: Props) 
                         </div>
 
                         <div>
-                            <label htmlFor="tanggal_kunjungan" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="tanggal_kunjungan" className="block text-sm font-bold text-emerald-950 uppercase mb-1">
                                 Tanggal Kunjungan <span className="text-rose-500">*</span>
                             </label>
                             <input
@@ -82,7 +82,7 @@ export default function DplMonitoringCreate({ groups, selectedGroupId }: Props) 
                                 id="tanggal_kunjungan"
                                 value={data.tanggal_kunjungan}
                                 onChange={(e) => setData('tanggal_kunjungan', e.target.value)}
-                                className="w-full rounded-lg border border-gray-200/60 px-4 py-2 text-sm text-gray-700 focus:border-[#f3f4f6]0 focus:ring-[#1a7a4a]"
+                                className="w-full rounded-xl border border-emerald-50 px-4 py-3 text-sm font-bold text-emerald-950 focus:border-emerald-600 focus:ring-emerald-100 transition-all bg-emerald-50/20"
                                 required
                             />
                             {errors.tanggal_kunjungan && (
@@ -91,7 +91,7 @@ export default function DplMonitoringCreate({ groups, selectedGroupId }: Props) 
                         </div>
 
                         <div>
-                            <label htmlFor="permasalahan" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="permasalahan" className="block text-sm font-bold text-emerald-950 uppercase mb-1">
                                 Permasalahan <span className="text-rose-500">*</span>
                             </label>
                             <textarea
@@ -99,7 +99,7 @@ export default function DplMonitoringCreate({ groups, selectedGroupId }: Props) 
                                 rows={4}
                                 value={data.permasalahan}
                                 onChange={(e) => setData('permasalahan', e.target.value)}
-                                className="w-full rounded-lg border border-gray-200/60 px-4 py-2 text-sm text-gray-700 focus:border-[#f3f4f6]0 focus:ring-[#1a7a4a]"
+                                className="w-full rounded-xl border border-emerald-50 px-4 py-3 text-sm font-bold text-emerald-950 focus:border-emerald-600 focus:ring-emerald-100 transition-all bg-emerald-50/20 placeholder:text-black"
                                 placeholder="Jelaskan permasalahan yang ditemukan di lapangan..."
                                 required
                             />
@@ -109,7 +109,7 @@ export default function DplMonitoringCreate({ groups, selectedGroupId }: Props) 
                         </div>
 
                         <div>
-                            <label htmlFor="solusi" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="solusi" className="block text-sm font-bold text-emerald-950 uppercase mb-1">
                                 Solusi <span className="text-rose-500">*</span>
                             </label>
                             <textarea
@@ -117,7 +117,7 @@ export default function DplMonitoringCreate({ groups, selectedGroupId }: Props) 
                                 rows={4}
                                 value={data.solusi}
                                 onChange={(e) => setData('solusi', e.target.value)}
-                                className="w-full rounded-lg border border-gray-200/60 px-4 py-2 text-sm text-gray-700 focus:border-[#f3f4f6]0 focus:ring-[#1a7a4a]"
+                                className="w-full rounded-xl border border-emerald-50 px-4 py-3 text-sm font-bold text-emerald-950 focus:border-emerald-600 focus:ring-emerald-100 transition-all bg-emerald-50/20 placeholder:text-black"
                                 placeholder="Jelaskan solusi atau tindak yang telah dilakukan..."
                                 required
                             />
@@ -127,7 +127,7 @@ export default function DplMonitoringCreate({ groups, selectedGroupId }: Props) 
                         </div>
 
                         <div>
-                            <label htmlFor="catatan_tambahan" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="catatan_tambahan" className="block text-sm font-medium text-emerald-800 mb-1">
                                 Catatan Tambahan
                             </label>
                             <textarea
@@ -135,7 +135,7 @@ export default function DplMonitoringCreate({ groups, selectedGroupId }: Props) 
                                 rows={2}
                                 value={data.catatan_tambahan}
                                 onChange={(e) => setData('catatan_tambahan', e.target.value)}
-                                className="w-full rounded-lg border border-gray-200/60 px-4 py-2 text-sm text-gray-700 focus:border-[#f3f4f6]0 focus:ring-[#1a7a4a]"
+                                className="w-full rounded-lg border border-emerald-50/60 px-4 py-2 text-sm text-emerald-800 focus:border-[#f3f4f6]0 focus:ring-[#1a7a4a]"
                                 placeholder="Catatan tambahan (opsional)..."
                             />
                             {errors.catatan_tambahan && (
@@ -143,18 +143,18 @@ export default function DplMonitoringCreate({ groups, selectedGroupId }: Props) 
                             )}
                         </div>
 
-                        <div className="flex items-center gap-4 pt-4 border-t border-gray-200/60">
+                        <div className="flex items-center gap-4 pt-4 border-t border-emerald-50">
                             <button
                                 type="submit"
                                 disabled={processing}
-                                className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+                                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-8 py-3 text-sm font-bold uppercase text-white hover:bg-emerald-700 transition-all disabled:opacity-50 shadow-lg shadow-emerald-200"
                             >
                                 <Save className="h-4 w-4" />
                                 {processing ? 'Menyimpan...' : 'Simpan Monitoring'}
                             </button>
                             <Link
                                 href={route('dpl.monitoring.index')}
-                                className="text-sm text-gray-900 hover:text-gray-700"
+                                className="text-sm font-bold text-emerald-950 hover:text-emerald-600 uppercase italic"
                             >
                                 Batal
                             </Link>

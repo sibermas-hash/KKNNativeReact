@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
@@ -55,7 +56,8 @@ class ProfileController extends Controller
     {
         $user = auth()->user()->loadMissing(['mahasiswa.fakultas', 'mahasiswa.prodi']);
         $student = $user->mahasiswa;
-
+        // dd($user);
+        Log::info('user : ' . json_encode($user, JSON_PRETTY_PRINT));
         $requiredBiodataFields = [
             'nik' => $student?->nik,
             'mother_name' => $student?->mother_name,
@@ -245,5 +247,43 @@ class ProfileController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Password berhasil diubah.');
+    }
+
+    /**
+     * Check if NIK is already used by another user.
+     */
+    public function checkNik(Request $request)
+    {
+        $nik = $request->query('nik', '');
+
+        if (strlen($nik) !== 16 || !ctype_digit($nik)) {
+            return response()->json(['valid' => false, 'message' => 'NIK harus 16 digit angka']);
+        }
+
+        $currentUserId = auth()->id();
+
+        $exists = DB::table('mahasiswa')
+            ->where('nik', $nik)
+            ->where('user_id', '!=', $currentUserId)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'NIK ini sudah digunakan oleh pengguna lain'
+            ]);
+        }
+
+        return response()->json(['valid' => true, 'message' => 'NIK tersedia']);
+    }
+
+    public function passwordChange(): Response
+    {
+        $user = auth()->user();
+
+        return Inertia::render('Profile/PasswordChange', [
+            'user' => $user->only(['id', 'name', 'email', 'username', 'must_change_password']),
+            'mustChangePassword' => $user->must_change_password,
+        ]);
     }
 }

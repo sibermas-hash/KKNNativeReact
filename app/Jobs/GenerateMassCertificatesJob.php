@@ -36,11 +36,11 @@ class GenerateMassCertificatesJob implements ShouldQueue
         Log::info("Starting background certificate generation for Period ID: {$this->periodId}");
 
         $query = NilaiKkn::whereHas('kelompok', function ($q) {
-            $q->where('period_id', $this->periodId);
+            $q->where('periode_id', $this->periodId);
         })->where('is_finalized', true);
 
-        if (! empty($this->filters['faculty_id'])) {
-            $query->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $this->filters['faculty_id']));
+        if (! empty($this->filters['fakultas_id'])) {
+            $query->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $this->filters['fakultas_id']));
         }
 
         if (! empty($this->filters['kelompok_id'])) {

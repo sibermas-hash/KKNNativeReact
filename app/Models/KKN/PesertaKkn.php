@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Models\KKN;
 
 use App\Models\User;
-
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,7 +22,7 @@ class PesertaKkn extends Model
 
     protected $fillable = [
         'mahasiswa_id',
-        'period_id',
+        'periode_id',
         'kelompok_id',
         'status',
         'role',
@@ -62,7 +61,7 @@ class PesertaKkn extends Model
 
     public function periode(): BelongsTo
     {
-        return $this->belongsTo(Periode::class, 'period_id');
+        return $this->belongsTo(Periode::class, 'periode_id');
     }
 
     public function kelompok(): BelongsTo

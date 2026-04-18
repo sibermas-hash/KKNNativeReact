@@ -10,7 +10,7 @@ return new class extends Migration
     {
         $workshopTable = Schema::connection('kkn')->hasTable('workshop')
             ? 'workshop'
-            : (Schema::connection('kkn')->hasTable('workshops') ? 'workshops' : null);
+            : (Schema::connection('kkn')->hasTable('workshop') ? 'workshop' : null);
 
         if ($workshopTable) {
             Schema::connection('kkn')->table($workshopTable, function (Blueprint $table) use ($workshopTable) {
@@ -45,7 +45,7 @@ return new class extends Migration
     {
         $workshopTable = Schema::connection('kkn')->hasTable('workshop')
             ? 'workshop'
-            : (Schema::connection('kkn')->hasTable('workshops') ? 'workshops' : null);
+            : (Schema::connection('kkn')->hasTable('workshop') ? 'workshop' : null);
 
         if ($workshopTable) {
             Schema::connection('kkn')->table($workshopTable, function (Blueprint $table) use ($workshopTable) {

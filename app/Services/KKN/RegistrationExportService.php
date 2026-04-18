@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\KKN;
 
 use App\Exports\BiodataPesertaExport;
+use App\Exports\BpjsParticipantExport;
 use App\Exports\PesertaKknExport;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -49,7 +50,7 @@ class RegistrationExportService
     public function exportBpjs($query): BinaryFileResponse
     {
         return Excel::download(
-            new \App\Exports\BpjsParticipantExport($query),
+            new BpjsParticipantExport($query),
             'peserta-bpjs-kkn.xlsx'
         );
     }

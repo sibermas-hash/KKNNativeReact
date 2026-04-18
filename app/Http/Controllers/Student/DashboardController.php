@@ -46,7 +46,7 @@ class DashboardController extends Controller
 
             if ($activePeriodId) {
                 $registrationModel = (clone $registrationQuery)
-                    ->where('period_id', $activePeriodId)
+                    ->where('periode_id', $activePeriodId)
                     ->latest('created_at')
                     ->first();
             }

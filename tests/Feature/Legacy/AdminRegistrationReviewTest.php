@@ -46,7 +46,7 @@ class AdminRegistrationReviewTest extends TestCase
 
         $registration = PesertaKkn::factory()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'status' => 'pending',
             'notes' => 'Saya siap mengikuti KKN dan sudah melengkapi berkas.',
         ]);
@@ -73,7 +73,7 @@ class AdminRegistrationReviewTest extends TestCase
         $period = Periode::factory()->active()->create();
 
         $facultyScopedAdmin = User::factory()->create([
-            'faculty_id' => $facultyA->id,
+            'fakultas_id' => $facultyA->id,
         ]);
         $facultyScopedAdmin->assignRole('superadmin');
         $facultyScopedAdmin->assignRole('faculty_admin');
@@ -82,25 +82,25 @@ class AdminRegistrationReviewTest extends TestCase
         $studentAUser->assignRole('student');
         $studentAMahasiswa = Mahasiswa::factory()->create([
             'user_id' => $studentAUser->id,
-            'faculty_id' => $facultyA->id,
+            'fakultas_id' => $facultyA->id,
         ]);
 
         $studentBUser = User::factory()->create();
         $studentBUser->assignRole('student');
         $studentBMahasiswa = Mahasiswa::factory()->create([
             'user_id' => $studentBUser->id,
-            'faculty_id' => $facultyB->id,
+            'fakultas_id' => $facultyB->id,
         ]);
 
         PesertaKkn::factory()->create([
             'mahasiswa_id' => $studentAMahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'status' => 'pending',
         ]);
 
         PesertaKkn::factory()->create([
             'mahasiswa_id' => $studentBMahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'status' => 'approved',
         ]);
 
@@ -130,7 +130,7 @@ class AdminRegistrationReviewTest extends TestCase
 
         $registration = PesertaKkn::factory()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'status' => 'approved',
         ]);
 
@@ -175,7 +175,7 @@ class AdminRegistrationReviewTest extends TestCase
         ]);
 
         KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'status' => 'active',
             'location_id' => Lokasi::factory()->create([
                 'village_name' => 'Desa Asal',
@@ -185,7 +185,7 @@ class AdminRegistrationReviewTest extends TestCase
         ]);
 
         $eligibleGroup = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'status' => 'active',
             'location_id' => Lokasi::factory()->create([
                 'village_name' => 'Desa Penempatan',
@@ -196,7 +196,7 @@ class AdminRegistrationReviewTest extends TestCase
 
         $registration = PesertaKkn::factory()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => null,
             'status' => 'pending',
         ]);
@@ -230,12 +230,12 @@ class AdminRegistrationReviewTest extends TestCase
 
         $registration = PesertaKkn::factory()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'status' => 'pending',
         ]);
 
         $foreignGroup = KelompokKkn::factory()->create([
-            'period_id' => $otherPeriod->id,
+            'periode_id' => $otherPeriod->id,
             'status' => 'active',
         ]);
 
@@ -265,13 +265,13 @@ class AdminRegistrationReviewTest extends TestCase
 
         $period = Periode::factory()->active()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'status' => 'active',
         ]);
 
         $registration = PesertaKkn::factory()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'status' => 'pending',
         ]);
 
@@ -303,13 +303,13 @@ class AdminRegistrationReviewTest extends TestCase
         $period = Periode::factory()->active()->create();
         $otherPeriod = Periode::factory()->create();
         $foreignGroup = KelompokKkn::factory()->create([
-            'period_id' => $otherPeriod->id,
+            'periode_id' => $otherPeriod->id,
             'status' => 'active',
         ]);
 
         $registration = PesertaKkn::factory()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $foreignGroup->id,
             'status' => 'pending',
         ]);

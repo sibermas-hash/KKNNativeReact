@@ -20,8 +20,14 @@ import {
   History,
   Terminal,
   ChevronRight,
-  ArrowUpRight
+  ArrowUpRight,
+  Search,
+  Filter
 } from 'lucide-react';
+import PageHeader from '@/Components/Premium/PageHeader';
+import StatCard from '@/Components/Premium/StatCard';
+import ContentPanel from '@/Components/Premium/ContentPanel';
+import PremiumTable, { PremiumTableCell, PremiumTableRow } from '@/Components/Premium/PremiumTable';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
 
 interface SyncLog {
@@ -87,73 +93,65 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
 
   return (
     <AppLayout title="Monitoring Database">
+      <Head title="Monitoring Database" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans transition-all">
         
-        {/* HEADER SECTION (Gold Standard) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 border-b border-gray-200/50 pb-8">
-          <div className="space-y-1">
-            <h1 className="text-xl font-bold text-gray-900">Monitoring Database.</h1>
-            <p className="text-xs text-gray-900/40 font-black uppercase tracking-widest">
-              Pusat sinkronisasi data dari sistem utama UIN SAIZU
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-3">
-             <div className={clsx(
-               "px-4 py-2 bg-white border rounded-lg flex items-center gap-3",
-               isHealthy ? "border-gray-200" : "border-rose-100"
-             )}>
-                <div className="flex flex-col">
-                  <span className="text-[9px] font-black text-gray-900/20 uppercase tracking-widest mb-0.5">Kondisi Sistem</span>
-                  <span className={clsx("text-xs font-black uppercase leading-none", isHealthy ? "text-[#1a7a4a]" : "text-rose-600")}>
-                    {isHealthy ? 'Normal' : 'Gangguan'}
-                  </span>
-                </div>
-                {isHealthy ? <CheckCircle2 size={18} className="text-[#1a7a4a] opacity-40 ml-1" /> : <ShieldAlert size={18} className="text-rose-500 opacity-40 ml-1" />}
-             </div>
-          </div>
-        </div>
+        {/* HEADER SECTION (Gold Standard Aligned) */}
+        <PageHeader
+          title="Monitoring Database"
+          subtitle="Pusat sinkronisasi data dari sistem utama UIN SAIZU untuk memastikan integritas data akademik."
+          icon={Database}
+          groupLabel="Operasional Sistem"
+          stats={{
+            label: "Kondisi Sistem",
+            value: isHealthy ? 'NORMAL' : 'GANGGUAN',
+            icon: isHealthy ? CheckCircle2 : ShieldAlert
+          }}
+        />
 
-        {/* CONNECTION STATUS GRID (MiniStats) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <MiniStat 
+        {/* CONNECTION STATUS GRID */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 mb-8">
+          <StatCard 
             icon={HardDrive} 
             label="Data Aplikasi" 
             value={health.kkn.status === 'connected' ? 'AKTIF' : 'TERPUTUS'} 
-            ping={health.kkn.latency_ms} 
+            variant={health.kkn.status === 'connected' ? 'success' : 'danger'}
+            trend={health.kkn.latency_ms ? `${health.kkn.latency_ms}ms` : undefined}
           />
-          <MiniStat 
+          <StatCard 
             icon={Server} 
             label="Data Pusat (SIKAD)" 
             value={health.master.status === 'connected' ? 'AKTIF' : 'TERPUTUS'} 
-            ping={health.master.latency_ms} 
+            variant={health.master.status === 'connected' ? 'success' : 'danger'}
+            trend={health.master.latency_ms ? `${health.master.latency_ms}ms` : undefined}
           />
-          <MiniStat 
+          <StatCard 
             icon={Cpu} 
             label="Kecepatan Sistem" 
             value={health.redis.status === 'connected' ? 'AKTIF' : 'TERPUTUS'} 
-            ping={health.redis.latency_ms} 
+            variant={health.redis.status === 'connected' ? 'success' : 'danger'}
+            trend={health.redis.latency_ms ? `${health.redis.latency_ms}ms` : undefined}
           />
-          <MiniStat 
+          <StatCard 
             icon={Network} 
             label="Layanan Koneksi" 
             value={apiHealth.api_status === 'OK' ? 'AKTIF' : 'NONAKTIF'} 
+            variant={apiHealth.api_status === 'OK' ? 'success' : 'warning'}
           />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* LEFT COLUMN (Actions) */}
           <div className="space-y-6 lg:col-span-1">
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-6">
-                <Terminal size={16} className="text-[#1a7a4a]" />
-                <h3 className="text-xs font-black text-gray-900 uppercase tracking-widest">Perbarui Data Mandiri</h3>
-              </div>
-              
+            <ContentPanel
+              title="Perbarui Data Mandiri"
+              description="Sinkronisasi manual dari sistem pusat."
+              icon={Terminal}
+            >
               <div className="space-y-4">
-                <p className="text-xs text-gray-900/50 leading-relaxed font-medium">
-                  Gunakan tombol di bawah untuk menyegarkan data langsung dari sistem pusat jika ada perubahan terbaru di SIKAD.
+                <p className="text-xs text-emerald-800 leading-relaxed font-medium bg-emerald-50/30 p-3 rounded-lg border border-emerald-50">
+                  Gunakan kontrol di bawah untuk memaksa pembaruan data jika terjadi keterlambatan sinkronisasi otomatis.
                 </p>
                 
                 <div className="grid grid-cols-1 gap-2">
@@ -162,47 +160,47 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
                       key={type}
                       onClick={() => handleManualSync(type.toLowerCase())}
                       disabled={isSyncing !== null}
-                      className="flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-[#16a34a] hover:text-white border border-gray-200 text-gray-900 transition-all rounded-xl group disabled:opacity-50"
+                      className="flex items-center justify-between px-4 py-3 bg-white hover:bg-[#1a7a4a] hover:text-white border border-emerald-50 text-emerald-950 shadow-sm transition-all rounded-xl group disabled:opacity-50"
                     >
                       <div className="flex items-center gap-3">
                         <RefreshCw size={14} className={clsx(isSyncing === type.toLowerCase() ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-500")} />
-                        <span className="text-xs font-black uppercase tracking-widest">Segarkan {translateEntityType(type)}</span>
+                        <span className="text-xs font-bold uppercase tracking-wider">Segarkan {translateEntityType(type)}</span>
                       </div>
                       {isSyncing === type.toLowerCase() ? (
-                        <RefreshCw size={14} className="animate-spin text-gray-600" />
+                        <RefreshCw size={14} className="animate-spin" />
                       ) : (
-                        <ChevronRight size={14} className="text-gray-500 group-hover:translate-x-1 transition-transform" />
+                        <ChevronRight size={14} className="text-emerald-700/50 group-hover:text-white group-hover:translate-x-1 transition-all" />
                       )}
                     </button>
                   ))}
                 </div>
               </div>
-            </div>
+            </ContentPanel>
 
             <div className="bg-emerald-950 text-white rounded-xl p-6 relative overflow-hidden shadow-lg shadow-emerald-900/20">
               <div className="absolute top-0 right-0 p-6 opacity-10">
                 <Zap size={100} />
               </div>
               <div className="relative z-10 space-y-4">
-               <div className="h-8 w-8 bg-white/10 rounded-lg flex items-center justify-center">
-                  <Activity size={18} className="text-gray-600" />
+               <div className="h-9 w-9 bg-white/10 rounded-lg flex items-center justify-center">
+                  <Activity size={20} className="text-emerald-400" />
                </div>
                 <div>
-                  <h4 className="text-xs font-black uppercase tracking-widest text-[#1a7a4a]">Statistik Hari Ini</h4>
-                  <div className="flex items-end gap-2 mt-1">
-                    <span className="text-3xl font-bold tabular-nums leading-none">{dashboard.summary.success_rate_today}%</span>
-                    <span className="text-xs font-black uppercase tracking-widest text-[#1a7a4a] mb-1">Berhasil</span>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Efisiensi Hari Ini</h4>
+                  <div className="flex items-end gap-2">
+                    <span className="text-4xl font-bold tabular-nums leading-none">{dashboard.summary.success_rate_today}%</span>
+                    <span className="text-xs font-medium text-emerald-400 mb-1 uppercase tracking-wider">Suksestrate</span>
                   </div>
                 </div>
                 
                 <div className="pt-4 border-t border-white/10 grid grid-cols-2 gap-4">
                   <div>
-                    <span className="text-[9px] font-black uppercase tracking-widest text-white/40 block mb-1">Pembaruan</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-white/40 block mb-1">Total Sesi</span>
                     <span className="text-sm font-bold tabular-nums">{dashboard.summary.total_today} Kali</span>
                   </div>
                   <div>
                     <span className="text-[9px] font-black uppercase tracking-widest text-white/40 block mb-1">Gagal</span>
-                    <span className={clsx("text-sm font-bold tabular-nums", dashboard.summary.failed_today > 0 ? "text-rose-400" : "text-[#1a7a4a]")}>
+                    <span className={clsx("text-sm font-bold tabular-nums", dashboard.summary.failed_today > 0 ? "text-rose-400" : "text-emerald-400")}>
                       {dashboard.summary.failed_today} Sesi
                     </span>
                   </div>
@@ -212,132 +210,88 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
           </div>
 
           {/* RIGHT COLUMN (Logs) */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[500px]">
-              <div className="px-6 py-4 border-b border-[#f3f4f6]/50 bg-emerald-50/10 flex items-center justify-between gap-4">
+          <div className="lg:col-span-2">
+            <ContentPanel
+              title="Riwayat Pembaruan Data"
+              description="Catatan terperinci aktivitas sinkronisasi."
+              icon={History}
+              padding={false}
+              headerAction={
                 <div className="flex items-center gap-2">
-                  <History size={16} className="text-[#1a7a4a]" />
-                  <h3 className="text-xs font-black text-gray-900 uppercase tracking-widest">Riwayat Pembaruan Data</h3>
+                  <div className="relative">
+                    <Filter size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-emerald-800" />
+                    <select 
+                      value={filters.entity_type} 
+                      onChange={(e) => handleFilterChange('entity_type', e.target.value)}
+                      className="h-8 pl-8 pr-8 bg-white border border-emerald-100 rounded-lg text-xs font-semibold text-emerald-950 outline-none focus:border-emerald-500 shadow-sm appearance-none"
+                    >
+                      <option value="all">Semua Jenis Data</option>
+                      {entityTypes.map(et => (
+                        <option key={et.entity_type} value={et.entity_type}>
+                          {translateEntityType(et.entity_type)}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronRight size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 rotate-90 text-emerald-800 pointer-events-none" />
+                  </div>
                 </div>
-                
-                <div className="flex items-center gap-2">
-                  <select 
-                    value={filters.entity_type} 
-                    onChange={(e) => handleFilterChange('entity_type', e.target.value)}
-                    className="h-8 px-3 bg-white border border-gray-200 rounded-lg text-[9px] font-black text-gray-900 uppercase tracking-widest outline-none focus:border-[#f3f4f6]0 shadow-sm"
-                  >
-                    <option value="all">Semua Data</option>
-                    {entityTypes.map(et => (
-                      <option key={et.entity_type} value={et.entity_type}>
-                        {translateEntityType(et.entity_type)}
-                      </option>
-                    ))}
-                  </select>
+              }
+              footer={
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-emerald-800">
+                    Menampilkan <strong className="text-emerald-950">{logs.data.length}</strong> dari <strong className="text-emerald-950">{logs.meta.total}</strong> log
+                  </span>
+                  <Pagination meta={logs.meta} />
                 </div>
-              </div>
-
-              <div className="overflow-x-auto flex-1">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-emerald-50/20 border-b border-gray-200/50">
-                      <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest">Jenis Data & Kode</th>
-                      <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest text-center">Hasil</th>
-                      <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest">Keterangan Perubahan</th>
-                      <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#f3f4f6]/60">
-                    {logs.data.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="py-32 text-center">
-                          <div className="flex flex-col items-center gap-2 opacity-20">
-                             <SearchCode size={40} className="text-gray-900" />
-                             <span className="text-xs font-black uppercase tracking-widest">Data Sinkronisasi Bersih</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : (
-                      logs.data.map((log) => (
-                        <tr key={log.id} className="hover:bg-gray-50/20 transition-all group">
-                          <td className="px-8 py-5">
-                            <div className="flex flex-col">
-                              <span className="text-xs font-bold text-gray-900 uppercase leading-none mb-1.5">{translateEntityType(log.entity_type)}</span>
-                              <span className="text-xs text-gray-900/40 font-black tabular-nums tracking-widest uppercase leading-none">ID: {log.entity_id || '-'}</span>
-                            </div>
-                          </td>
-                          <td className="px-8 py-5 text-center">
-                            <span className={clsx(
-                              "inline-flex px-3 py-1 rounded-lg text-[9px] font-black uppercase border transition-all",
-                              log.status === 'success' ? "bg-[#e8f5ee] text-[#1a7a4a] border-emerald-200" : 
-                              log.status === 'failed' ? "bg-rose-50 text-rose-600 border-rose-200" : 
-                              "bg-amber-50 text-amber-600 border-amber-200"
-                            )}>
-                              {log.status === 'success' ? 'Berhasil' : log.status === 'failed' ? 'Gagal' : 'Proses'}
-                            </span>
-                          </td>
-                          <td className="px-8 py-5">
-                            <div className="flex flex-col max-w-xs">
-                              <span className="text-xs font-bold text-gray-900/70 line-clamp-1 leading-normal">
-                                {log.error_message || 'Data berhasil disinkronkan tanpa kendala.'}
-                              </span>
-                              <span className="text-[9px] text-gray-900/30 font-black uppercase tabular-nums tracking-wider mt-1.5">{log.created_at}</span>
-                            </div>
-                          </td>
-                          <td className="px-8 py-5 text-right">
-                             <Link 
-                                href={route('admin.database-sync.show', log.id)} 
-                                className="h-8 w-8 rounded-lg border border-gray-200 flex items-center justify-center text-[#1a7a4a] hover:bg-[#16a34a] hover:text-white transition-all ml-auto opacity-0 group-hover:opacity-100"
-                              >
-                               <ArrowUpRight size={14} />
-                             </Link>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="px-8 py-4 border-t border-[#f3f4f6]/50 bg-emerald-50/10 flex items-center justify-between">
-                <span className="text-xs font-black text-gray-900/20 uppercase tracking-widest leading-none">
-                  Catatan Sistem | Total {logs.meta.total} Sesi Log Terdaftar
-                </span>
-                <Pagination meta={logs.meta} />
-              </div>
-            </div>
+              }
+            >
+              <PremiumTable
+                headers={['Jenis Data', 'Status', 'Keterangan', 'Aksi']}
+                isEmpty={logs.data.length === 0}
+                emptyText="Belum ada riwayat sinkronisasi untuk periode ini."
+              >
+                {logs.data.map((log) => (
+                  <PremiumTableRow key={log.id} className="group">
+                    <PremiumTableCell>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-emerald-950 uppercase text-[11px] mb-1">{translateEntityType(log.entity_type)}</span>
+                        <span className="text-[10px] text-emerald-800/60 font-mono tracking-wider italic">ID: {log.entity_id || '-'}</span>
+                      </div>
+                    </PremiumTableCell>
+                    <PremiumTableCell align="center">
+                      <span className={clsx(
+                        "inline-flex px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border",
+                        log.status === 'success' ? "bg-emerald-50 text-emerald-700 border-emerald-200" : 
+                        log.status === 'failed' ? "bg-rose-50 text-rose-700 border-rose-200" : 
+                        "bg-amber-50 text-amber-700 border-amber-200"
+                      )}>
+                        {log.status === 'success' ? 'BERHASIL' : log.status === 'failed' ? 'GAGAL' : 'PROSES'}
+                      </span>
+                    </PremiumTableCell>
+                    <PremiumTableCell>
+                      <div className="flex flex-col max-w-[200px] sm:max-w-xs">
+                        <span className="text-xs text-emerald-900 font-medium line-clamp-1 leading-normal mb-1">
+                          {log.error_message || 'Sinkronisasi berhasil diselesaikan.'}
+                        </span>
+                        <span className="text-[9px] text-emerald-800/50 font-bold uppercase tabular-nums tracking-wider">{log.created_at}</span>
+                      </div>
+                    </PremiumTableCell>
+                    <PremiumTableCell align="right">
+                      <Link 
+                        href={route('admin.database-sync.show', log.id)} 
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-100 text-emerald-700 bg-white hover:bg-emerald-700 hover:text-white hover:border-emerald-700 transition-all shadow-sm opacity-0 group-hover:opacity-100"
+                        title="Lihat Detail Log"
+                      >
+                        <ArrowUpRight size={14} strokeWidth={2.5} />
+                      </Link>
+                    </PremiumTableCell>
+                  </PremiumTableRow>
+                ))}
+              </PremiumTable>
+            </ContentPanel>
           </div>
         </div>
       </div>
     </AppLayout>
-  );
-}
-
-function MiniStat({ icon: Icon, label, value, ping }: { icon: any, label: string, value: string, ping?: number | null }) {
-  const isOk = value === 'AKTIF';
-  
-  return (
-    <div className="p-4 bg-white border border-gray-200 shadow-sm rounded-xl flex items-center gap-4 transition-all hover:border-emerald-300 group">
-      <div className={clsx(
-        "h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:rotate-6",
-        isOk ? "bg-[#e8f5ee] text-[#1a7a4a]" : "bg-rose-50 text-rose-600"
-      )}>
-        <Icon size={18} />
-      </div>
-      <div className="flex flex-col min-w-0">
-        <span className="text-[9px] font-black text-gray-900/30 uppercase tracking-widest leading-none mb-1.5">{label}</span>
-        <div className="flex items-center gap-2 mb-1">
-           <span className={clsx(
-             "h-1.5 w-1.5 rounded-full",
-             isOk ? "bg-emerald-500 animate-pulse" : "bg-rose-500"
-           )} />
-           <span className={clsx("text-sm font-black tabular-nums leading-none uppercase", isOk ? "text-gray-900" : "text-rose-600")}>
-             {value}
-           </span>
-        </div>
-        {ping !== undefined && (
-          <span className="text-[8px] font-black text-gray-900/20 uppercase tracking-tighter">Ping: {ping ? `${ping}ms` : 'N/A'}</span>
-        )}
-      </div>
-    </div>
   );
 }

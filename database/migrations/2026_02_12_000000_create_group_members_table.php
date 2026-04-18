@@ -10,12 +10,12 @@ return new class extends Migration
     {
         Schema::create('group_members', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('group_id')->constrained('groups')->cascadeOnDelete();
-            $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
+            $table->foreignId('kelompok_id')->constrained('kelompok_kkn')->cascadeOnDelete();
+            $table->foreignId('mahasiswa_id')->constrained('mahasiswa')->cascadeOnDelete();
             $table->string('role_in_group')->default('member');
             $table->timestamp('joined_at')->nullable();
             $table->timestamps();
-            $table->unique(['group_id', 'student_id']);
+            $table->unique(['kelompok_id', 'mahasiswa_id']);
         });
     }
 

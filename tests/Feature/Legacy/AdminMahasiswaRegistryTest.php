@@ -33,7 +33,7 @@ class AdminMahasiswaRegistryTest extends TestCase
     {
         $faculty = Fakultas::factory()->create(['nama' => 'Fakultas Tarbiyah']);
         $program = Prodi::factory()->create([
-            'faculty_id' => $faculty->id,
+            'fakultas_id' => $faculty->id,
             'nama' => 'Pendidikan Agama Islam',
         ]);
 
@@ -52,8 +52,8 @@ class AdminMahasiswaRegistryTest extends TestCase
             'nik' => '3301010101010001',
             'nama' => 'Mahasiswa Dengan Akun',
             'mother_name' => 'Siti Aminah',
-            'faculty_id' => $faculty->id,
-            'program_id' => $program->id,
+            'fakultas_id' => $faculty->id,
+            'prodi_id' => $program->id,
             'batch_year' => 2024,
             'gender' => 'L',
             'master_id' => 1001,
@@ -74,8 +74,8 @@ class AdminMahasiswaRegistryTest extends TestCase
             'nik' => '3301010101010002',
             'nama' => 'Mahasiswa Master Tetap Muncul',
             'mother_name' => 'Nur Hidayah',
-            'faculty_id' => $faculty->id,
-            'program_id' => $program->id,
+            'fakultas_id' => $faculty->id,
+            'prodi_id' => $program->id,
             'batch_year' => 2025,
             'gender' => 'P',
             'master_id' => 1002,
@@ -113,7 +113,7 @@ class AdminMahasiswaRegistryTest extends TestCase
     {
         $faculty = Fakultas::factory()->create(['nama' => 'Fakultas Dakwah']);
         $program = Prodi::factory()->create([
-            'faculty_id' => $faculty->id,
+            'fakultas_id' => $faculty->id,
             'nama' => 'Komunikasi Penyiaran Islam',
         ]);
 
@@ -132,8 +132,8 @@ class AdminMahasiswaRegistryTest extends TestCase
             'nik' => '3302010101010001',
             'nama' => 'Mahasiswa Filter',
             'mother_name' => 'Rohani',
-            'faculty_id' => $faculty->id,
-            'program_id' => $program->id,
+            'fakultas_id' => $faculty->id,
+            'prodi_id' => $program->id,
             'master_synced_at' => Carbon::parse('2026-04-03 10:00:00'),
         ]);
 
@@ -151,8 +151,8 @@ class AdminMahasiswaRegistryTest extends TestCase
             'nik' => '3302010101010002',
             'nama' => 'Mahasiswa Aktif',
             'mother_name' => 'Maryam',
-            'faculty_id' => $faculty->id,
-            'program_id' => $program->id,
+            'fakultas_id' => $faculty->id,
+            'prodi_id' => $program->id,
             'master_synced_at' => Carbon::parse('2026-04-04 10:00:00'),
         ]);
 

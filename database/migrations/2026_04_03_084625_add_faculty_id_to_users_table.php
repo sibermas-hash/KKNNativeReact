@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            if (! Schema::hasColumn('users', 'faculty_id')) {
-                $table->foreignId('faculty_id')
+            if (! Schema::hasColumn('users', 'fakultas_id')) {
+                $table->foreignId('fakultas_id')
                     ->nullable()
                     ->after('address')
                     ->constrained('fakultas')
@@ -22,8 +22,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            if (Schema::hasColumn('users', 'faculty_id')) {
-                $table->dropConstrainedForeignId('faculty_id');
+            if (Schema::hasColumn('users', 'fakultas_id')) {
+                $table->dropConstrainedForeignId('fakultas_id');
             }
         });
     }

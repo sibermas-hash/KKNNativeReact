@@ -71,7 +71,7 @@ test('student registration page exposes active periods and automatic placement c
     ]);
 
     $group = KelompokKkn::factory()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'location_id' => $location->id,
         'nama_kelompok' => 'Kelompok Melati',
         'status' => 'active',
@@ -84,12 +84,12 @@ test('student registration page exposes active periods and automatic placement c
 
     PesertaKkn::factory()->approved()->create([
         'mahasiswa_id' => $existingFemaleStudent->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => $group->id,
     ]);
 
     KelompokKkn::factory()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'status' => 'draft',
     ]);
 
@@ -106,7 +106,6 @@ test('student registration page exposes active periods and automatic placement c
             ->where('periods.0.placement_mode', Periode::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL)
             ->where('periods.0.guide.requirements.0', 'Lulus ujian BTA/PPI.')
             ->where('domicile_profile.is_complete', true)
-            ->where('bpjs_profile.is_complete', true)
             ->where('periods.0.kelompok.0.nama_kelompok', 'Kelompok Melati')
             ->where('periods.0.kelompok.0.peserta_count', 1)
             ->where('periods.0.kelompok.0.male_member_count', 0)
@@ -133,7 +132,7 @@ test('student registration page uses configurable male ratio settings', function
     ]);
 
     $group = KelompokKkn::factory()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'status' => 'active',
         'capacity' => 12,
     ]);
@@ -187,7 +186,7 @@ test('student registration page treats legacy bta status as passed for ui gating
     ]);
 
     KelompokKkn::factory()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'status' => 'active',
     ]);
 
@@ -206,7 +205,7 @@ test('student can submit regular registration and waits for admin approval befor
 
     $period = Periode::factory()->active()->create();
     $sameRegencyGroup = KelompokKkn::factory()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'status' => 'active',
         'location_id' => Lokasi::factory()->create([
             'village_name' => 'Desa Asal',
@@ -215,7 +214,7 @@ test('student can submit regular registration and waits for admin approval befor
         ])->id,
     ]);
     $group = KelompokKkn::factory()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'status' => 'active',
         'location_id' => Lokasi::factory()->create([
             'village_name' => 'Desa Penempatan',
@@ -226,7 +225,7 @@ test('student can submit regular registration and waits for admin approval befor
 
     $this->actingAs($user)
         ->post(route('student.registration.store'), [
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'notes' => 'Siap mengikuti KKN.',
         ])
         ->assertRedirect()
@@ -234,20 +233,20 @@ test('student can submit regular registration and waits for admin approval befor
 
     $this->assertDatabaseHas('peserta_kkn', [
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => null,
         'status' => 'pending',
     ], 'kkn');
 
     $this->assertDatabaseHas('antrian_kkn', [
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'status' => 'menunggu',
     ], 'kkn');
 
     $this->assertDatabaseMissing('peserta_kkn', [
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => $sameRegencyGroup->id,
     ], 'kkn');
 });
@@ -257,13 +256,13 @@ test('student with approved group registration is redirected away from registrat
 
     $period = Periode::factory()->active()->create();
     $group = KelompokKkn::factory()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'status' => 'active',
     ]);
 
     PesertaKkn::factory()->approved()->create([
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => $group->id,
     ]);
 
@@ -282,7 +281,7 @@ test('rejected registration exposes rejection reason for student follow up', fun
 
     PesertaKkn::factory()->create([
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'status' => 'rejected',
         'notes' => 'Catatan awal mahasiswa.',
         'rejection_reason' => 'Surat sehat kurang jelas dan alamat belum lengkap.',
@@ -303,7 +302,7 @@ test('rejected student can resubmit registration after fixing their data', funct
 
     $period = Periode::factory()->active()->create();
     $oldGroup = KelompokKkn::factory()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'status' => 'active',
         'location_id' => Lokasi::factory()->create([
             'village_name' => 'Desa Asal',
@@ -312,7 +311,7 @@ test('rejected student can resubmit registration after fixing their data', funct
         ])->id,
     ]);
     $newGroup = KelompokKkn::factory()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'status' => 'active',
         'location_id' => Lokasi::factory()->create([
             'village_name' => 'Desa Baru',
@@ -323,7 +322,7 @@ test('rejected student can resubmit registration after fixing their data', funct
 
     PesertaKkn::factory()->create([
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => $oldGroup->id,
         'status' => 'rejected',
         'notes' => 'Catatan awal mahasiswa.',
@@ -333,7 +332,7 @@ test('rejected student can resubmit registration after fixing their data', funct
 
     $this->actingAs($user)
         ->post(route('student.registration.store'), [
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'notes' => 'Dokumen dan biodata sudah diperbaiki.',
         ])
         ->assertRedirect()
@@ -341,7 +340,7 @@ test('rejected student can resubmit registration after fixing their data', funct
 
     $this->assertDatabaseHas('peserta_kkn', [
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => null,
         'status' => 'pending',
         'notes' => 'Dokumen dan biodata sudah diperbaiki.',
@@ -352,7 +351,7 @@ test('rejected student can resubmit registration after fixing their data', funct
     expect(
         PesertaKkn::query()
             ->where('mahasiswa_id', $student->id)
-            ->where('period_id', $period->id)
+            ->where('periode_id', $period->id)
             ->value('resubmitted_at')
     )->not->toBeNull();
 });
@@ -362,19 +361,19 @@ test('student with approved group registration cannot update or leave registrati
 
     $period = Periode::factory()->active()->create();
     $group = KelompokKkn::factory()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'status' => 'active',
     ]);
 
     PesertaKkn::factory()->approved()->create([
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => $group->id,
     ]);
 
     $this->actingAs($user)
         ->post(route('student.registration.store'), [
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
         ])
         ->assertRedirect(route('student.dashboard'))
         ->assertSessionHas('error');
@@ -406,7 +405,7 @@ test('student dashboard receives frontend friendly registration payload', functi
     ]);
 
     $group = KelompokKkn::factory()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'location_id' => $location->id,
         'dpl_id' => $lecturer->id,
         'nama_kelompok' => 'Kelompok Melati',
@@ -416,7 +415,7 @@ test('student dashboard receives frontend friendly registration payload', functi
 
     PesertaKkn::factory()->approved()->create([
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => $group->id,
     ]);
 
@@ -446,14 +445,14 @@ test('student dashboard prioritizes registration from the active period over new
     ]);
 
     $activeGroup = KelompokKkn::factory()->create([
-        'period_id' => $activePeriod->id,
+        'periode_id' => $activePeriod->id,
         'status' => 'active',
         'nama_kelompok' => 'Kelompok Aktif',
     ]);
 
     PesertaKkn::factory()->approved()->create([
         'mahasiswa_id' => $student->id,
-        'period_id' => $activePeriod->id,
+        'periode_id' => $activePeriod->id,
         'kelompok_id' => $activeGroup->id,
         'created_at' => now()->subDay(),
         'updated_at' => now()->subDay(),
@@ -461,7 +460,7 @@ test('student dashboard prioritizes registration from the active period over new
 
     PesertaKkn::factory()->create([
         'mahasiswa_id' => $student->id,
-        'period_id' => $oldPeriod->id,
+        'periode_id' => $oldPeriod->id,
         'status' => 'rejected',
         'rejection_reason' => 'Riwayat lama.',
         'created_at' => now(),
@@ -490,19 +489,19 @@ test('student dashboard scopes reports and grade to the registration group that 
     ]);
 
     $activeGroup = KelompokKkn::factory()->create([
-        'period_id' => $activePeriod->id,
+        'periode_id' => $activePeriod->id,
         'status' => 'active',
         'nama_kelompok' => 'Kelompok Aktif',
     ]);
     $oldGroup = KelompokKkn::factory()->create([
-        'period_id' => $oldPeriod->id,
+        'periode_id' => $oldPeriod->id,
         'status' => 'active',
         'nama_kelompok' => 'Kelompok Lama',
     ]);
 
     PesertaKkn::factory()->approved()->create([
         'mahasiswa_id' => $student->id,
-        'period_id' => $activePeriod->id,
+        'periode_id' => $activePeriod->id,
         'kelompok_id' => $activeGroup->id,
         'created_at' => now()->subDay(),
         'updated_at' => now()->subDay(),
@@ -510,7 +509,7 @@ test('student dashboard scopes reports and grade to the registration group that 
 
     PesertaKkn::factory()->approved()->create([
         'mahasiswa_id' => $student->id,
-        'period_id' => $oldPeriod->id,
+        'periode_id' => $oldPeriod->id,
         'kelompok_id' => $oldGroup->id,
         'created_at' => now(),
         'updated_at' => now(),
@@ -569,7 +568,7 @@ test('student dashboard scopes reports and grade to the registration group that 
 test('faculty slot restriction is enforced when admin approves a regular registration', function () {
     $facultyA = Fakultas::factory()->create(['nama' => 'Fakultas Syariah']);
     $programA = Prodi::factory()->create([
-        'faculty_id' => $facultyA->id,
+        'fakultas_id' => $facultyA->id,
         'nama' => 'Hukum Keluarga',
     ]);
     $facultyB = Fakultas::factory()->create(['nama' => 'Fakultas Dakwah']);
@@ -577,18 +576,18 @@ test('faculty slot restriction is enforced when admin approves a regular registr
     $admin->assignRole('superadmin');
 
     ['user' => $user, 'student' => $student] = createStudentUser([
-        'faculty_id' => $facultyA->id,
-        'program_id' => $programA->id,
+        'fakultas_id' => $facultyA->id,
+        'prodi_id' => $programA->id,
     ]);
 
     $otherStudent = Mahasiswa::factory()->create([
-        'faculty_id' => $facultyA->id,
-        'program_id' => $programA->id,
+        'fakultas_id' => $facultyA->id,
+        'prodi_id' => $programA->id,
     ]);
 
     $period = Periode::factory()->active()->create();
     $group = KelompokKkn::factory()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'capacity' => 2,
         'status' => 'active',
         'location_id' => Lokasi::factory()->create([
@@ -607,25 +606,25 @@ test('faculty slot restriction is enforced when admin approves a regular registr
 
     PesertaKkn::factory()->approved()->create([
         'mahasiswa_id' => $otherStudent->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => $group->id,
     ]);
 
     $this->actingAs($user)
         ->post(route('student.registration.store'), [
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
         ])
         ->assertRedirect()
         ->dumpSession()->assertSessionHas('success');
 
     $registration = PesertaKkn::query()
         ->where('mahasiswa_id', $student->id)
-        ->where('period_id', $period->id)
+        ->where('periode_id', $period->id)
         ->firstOrFail();
 
     $this->assertDatabaseHas('peserta_kkn', [
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'status' => 'pending',
         'kelompok_id' => null,
     ], 'kkn');
@@ -659,7 +658,7 @@ test('minimum male ratio is enforced when admin approves a regular registration'
 
     $period = Periode::factory()->active()->create();
     $group = KelompokKkn::factory()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'capacity' => 10,
         'status' => 'active',
         'location_id' => Lokasi::factory()->create([
@@ -671,17 +670,17 @@ test('minimum male ratio is enforced when admin approves a regular registration'
 
     PesertaKkn::factory()->approved()->create([
         'mahasiswa_id' => $existingMaleStudent->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => $group->id,
     ]);
     PesertaKkn::factory()->approved()->create([
         'mahasiswa_id' => $otherFemaleStudent->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => $group->id,
     ]);
     PesertaKkn::factory()->approved()->create([
         'mahasiswa_id' => $anotherFemaleStudent->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => $group->id,
     ]);
     foreach (range(1, 6) as $_) {
@@ -691,26 +690,26 @@ test('minimum male ratio is enforced when admin approves a regular registration'
 
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $femaleStudent->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
         ]);
     }
 
     $this->actingAs($user)
         ->post(route('student.registration.store'), [
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
         ])
         ->assertRedirect()
         ->dumpSession()->assertSessionHas('success');
 
     $registration = PesertaKkn::query()
         ->where('mahasiswa_id', $student->id)
-        ->where('period_id', $period->id)
+        ->where('periode_id', $period->id)
         ->firstOrFail();
 
     $this->assertDatabaseHas('peserta_kkn', [
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'status' => 'pending',
         'kelompok_id' => null,
     ], 'kkn');
@@ -741,24 +740,24 @@ test('male student can fill a seat while group is still below the minimum male r
 
     $period = Periode::factory()->active()->create();
     $group = KelompokKkn::factory()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'capacity' => 10,
         'status' => 'active',
     ]);
 
     PesertaKkn::factory()->approved()->create([
         'mahasiswa_id' => $existingMaleStudent->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => $group->id,
     ]);
     PesertaKkn::factory()->approved()->create([
         'mahasiswa_id' => $otherFemaleStudent->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => $group->id,
     ]);
     PesertaKkn::factory()->approved()->create([
         'mahasiswa_id' => $anotherFemaleStudent->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => $group->id,
     ]);
     foreach (range(1, 6) as $_) {
@@ -768,21 +767,21 @@ test('male student can fill a seat while group is still below the minimum male r
 
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $femaleStudent->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
         ]);
     }
 
     $this->actingAs($user)
         ->post(route('student.registration.store'), [
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
         ])
         ->assertRedirect()
         ->dumpSession()->assertSessionHas('success');
 
     $this->assertDatabaseHas('peserta_kkn', [
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => null,
         'status' => 'pending',
     ], 'kkn');
@@ -797,17 +796,17 @@ test('male student can still join when male composition has reached the ideal ta
 
     $period = Periode::factory()->active()->create();
     $group = KelompokKkn::factory()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'capacity' => 10,
         'status' => 'active',
     ]);
 
     PesertaKkn::factory()->count(3)->approved()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => $group->id,
     ]);
     PesertaKkn::factory()->count(6)->approved()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => $group->id,
     ]);
 
@@ -825,14 +824,14 @@ test('male student can still join when male composition has reached the ideal ta
 
     $this->actingAs($user)
         ->post(route('student.registration.store'), [
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
         ])
         ->assertRedirect()
         ->dumpSession()->assertSessionHas('success');
 
     $this->assertDatabaseHas('peserta_kkn', [
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => null,
         'status' => 'pending',
     ], 'kkn');
@@ -846,13 +845,13 @@ test('student with approved registration cannot leave group through registration
     ]);
 
     $group = KelompokKkn::factory()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'status' => 'active',
     ]);
 
     PesertaKkn::factory()->approved()->create([
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => $group->id,
         'joined_group_at' => now()->subHours(2),
         'group_locked_until' => now()->addHours(6),
@@ -860,7 +859,7 @@ test('student with approved registration cannot leave group through registration
 
     AntrianKkn::create([
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'status' => 'dalam_kelompok',
         'joined_at' => now()->subDay(),
     ]);
@@ -879,13 +878,13 @@ test('student with approved registration remains locked even after cooling perio
     ]);
 
     $group = KelompokKkn::factory()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'status' => 'active',
     ]);
 
     PesertaKkn::factory()->approved()->create([
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => $group->id,
         'joined_group_at' => now()->subDays(2),
         'group_locked_until' => now()->subHour(),
@@ -893,7 +892,7 @@ test('student with approved registration remains locked even after cooling perio
 
     AntrianKkn::create([
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'status' => 'dalam_kelompok',
         'joined_at' => now()->subDay(),
     ]);
@@ -905,13 +904,13 @@ test('student with approved registration remains locked even after cooling perio
 
     $this->assertDatabaseHas('peserta_kkn', [
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'kelompok_id' => $group->id,
     ], 'kkn');
 
     $this->assertDatabaseHas('antrian_kkn', [
         'mahasiswa_id' => $student->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'status' => 'dalam_kelompok',
     ], 'kkn');
 });

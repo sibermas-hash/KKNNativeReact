@@ -52,19 +52,19 @@ class DashboardStatisticsService
      */
     private function getSummaryStats(int $periodId, ?int $facultyId = null): array
     {
-        $studentQuery = PesertaKkn::where('period_id', $periodId);
-        $groupQuery = KelompokKkn::where('period_id', $periodId);
+        $studentQuery = PesertaKkn::where('periode_id', $periodId);
+        $groupQuery = KelompokKkn::where('periode_id', $periodId);
 
         // Optimasi: Gunakan query yang lebih spesifik untuk tabel besar (kegiatan_kkn)
         // Gunakan whereExists jika fakultas dispesifikasikan agar tidak melakukan join besar
         $reportQuery = KegiatanKkn::whereIn('kelompok_id', function ($sub) use ($periodId) {
-            $sub->select('id')->from('kelompok_kkn')->where('period_id', $periodId);
+            $sub->select('id')->from('kelompok_kkn')->where('periode_id', $periodId);
         });
 
         if ($facultyId) {
-            $studentQuery->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
-            $groupQuery->whereHas('peserta.mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
-            $reportQuery->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
+            $studentQuery->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
+            $groupQuery->whereHas('peserta.mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
+            $reportQuery->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
         }
 
         // Jalankan count secara independen untuk performa
@@ -78,11 +78,11 @@ class DashboardStatisticsService
         $unassignedStudents = $totalStudents - $assignedStudents;
 
         $poskoQuery = PoskoKelompok::whereIn('kelompok_id', function ($sub) use ($periodId) {
-            $sub->select('id')->from('kelompok_kkn')->where('period_id', $periodId);
+            $sub->select('id')->from('kelompok_kkn')->where('periode_id', $periodId);
         });
 
         if ($facultyId) {
-            $poskoQuery->whereHas('kelompok.peserta.mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
+            $poskoQuery->whereHas('kelompok.peserta.mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
         }
         $reportedPosko = $poskoQuery->count();
 
@@ -106,11 +106,11 @@ class DashboardStatisticsService
     {
         $query = PesertaKkn::query()
             ->select('status', DB::raw('COUNT(*) as count'))
-            ->where('period_id', $periodId);
+            ->where('periode_id', $periodId);
 
         if ($facultyId) {
             $query->join('mahasiswa', 'peserta_kkn.mahasiswa_id', '=', 'mahasiswa.id')
-                ->where('mahasiswa.faculty_id', $facultyId);
+                ->where('mahasiswa.fakultas_id', $facultyId);
         }
 
         return $query->groupBy('status')
@@ -126,14 +126,14 @@ class DashboardStatisticsService
         $query = NilaiKkn::query()
             ->select('letter_grade', DB::raw('COUNT(*) as count'))
             ->join('kelompok_kkn', 'nilai_kkn.kelompok_id', '=', 'kelompok_kkn.id')
-            ->where('kelompok_kkn.period_id', $periodId)
+            ->where('kelompok_kkn.periode_id', $periodId)
             ->where('nilai_kkn.is_finalized', true)
             ->whereNull('kelompok_kkn.deleted_at');
 
         if ($facultyId) {
             // Optimasi: Gunakan join ke tabel mahasiswa dengan filter fakultas
             $query->join('mahasiswa', 'nilai_kkn.user_id', '=', 'mahasiswa.user_id')
-                ->where('mahasiswa.faculty_id', $facultyId);
+                ->where('mahasiswa.fakultas_id', $facultyId);
         }
 
         return $query->groupBy('letter_grade')
@@ -156,12 +156,12 @@ class DashboardStatisticsService
             )
             ->join('dosen', 'kelompok_kkn.dpl_id', '=', 'dosen.id')
             ->leftJoin('peserta_kkn', 'kelompok_kkn.id', '=', 'peserta_kkn.kelompok_id')
-            ->where('kelompok_kkn.period_id', $periodId)
+            ->where('kelompok_kkn.periode_id', $periodId)
             ->whereNotNull('kelompok_kkn.dpl_id');
 
         if ($facultyId) {
             $query->join('mahasiswa', 'peserta_kkn.mahasiswa_id', '=', 'mahasiswa.id')
-                ->where('mahasiswa.faculty_id', $facultyId);
+                ->where('mahasiswa.fakultas_id', $facultyId);
         }
 
         return $query->groupBy('dosen.id', 'dosen.nama', 'dosen.nip')
@@ -176,12 +176,12 @@ class DashboardStatisticsService
     private function getSdgDistribution(int $periodId, ?int $facultyId = null): array
     {
         $query = ProgramKerja::whereHas('kelompok', function ($q) use ($periodId) {
-            $q->where('period_id', $periodId);
+            $q->where('periode_id', $periodId);
         })
             ->whereNotNull('sdg_goals');
 
         if ($facultyId) {
-            $query->whereHas('kelompok.peserta.mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
+            $query->whereHas('kelompok.peserta.mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
         }
 
         $rawSdgs = $query->select('sdg_goals')

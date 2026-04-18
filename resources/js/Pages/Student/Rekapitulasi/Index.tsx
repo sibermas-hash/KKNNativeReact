@@ -145,14 +145,14 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
                   <h4 className="text-sm font-bold text-emerald-600 uppercase tracking-wider text-xs font-semibold">
                     Section 05 / Financial Matrix
                   </h4>
-                  <h1 className="text-2xl md:text-2xl font-bold text-black tracking-tighter uppercase leading-[0.85]">
+                  <h1 className="text-2xl md:text-2xl font-bold text-emerald-950 tracking-tighter uppercase leading-[0.85]">
                     Rekap <br /> <span className="text-emerald-600">Kontribusi.</span>
                   </h1>
                 </div>
               </div>
-              <p className="text-lg font-bold text-gray-900 tracking-tight leading-relaxed">
+              <p className="text-lg font-bold text-emerald-950 tracking-tight leading-relaxed">
                 Dokumentasi kuantitatif dari inisiatif dan swadaya selama KKN. <br />
-                <span className="text-black">
+                <span className="text-emerald-950">
                   "Transparansi anggaran adalah wujud profesionalisme pengabdian."
                 </span>
               </p>
@@ -161,7 +161,7 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <Link
                 href={route('student.program-kerja.index')}
-                className="h-10 px-6 rounded-xl bg-white border border-gray-200/60 text-gray-900 hover:text-emerald-600 hover:border-emerald-200 font-bold text-sm transition-all flex items-center gap-4 uppercase tracking-wider text-xs font-semibold shadow-sm"
+                className="h-10 px-6 rounded-xl bg-white border border-emerald-50/60 text-emerald-950 hover:text-emerald-600 hover:border-emerald-200 font-bold text-sm transition-all flex items-center gap-4 uppercase tracking-wider text-xs font-semibold shadow-sm"
               >
                 <FileSpreadsheet size={18} /> Program Kerja
               </Link>
@@ -206,7 +206,7 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
 
         {/* --- FINANCIAL LEDGER MATRIX --- */}
         <form onSubmit={handleSubmit} className="space-y-12">
-          <div className="bg-white border border-gray-200/60 rounded-[3.5rem] overflow-hidden shadow-2xl shadow-slate-200/50">
+          <div className="bg-white border border-emerald-50/60 rounded-[3.5rem] overflow-hidden shadow-2xl shadow-slate-200/50">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -256,7 +256,7 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
                             type="text"
                             value={item.uraian_kegiatan}
                             onChange={(e) => updateItem(index, 'uraian_kegiatan', e.target.value)}
-                            className="w-full h-11 bg-transparent border-none p-0 text-sm font-bold text-black focus:ring-0 placeholder:text-slate-200 group-hover:text-gray-700 transition-colors uppercase tracking-tight"
+                            className="w-full h-11 bg-transparent border-none p-0 text-sm font-bold text-emerald-950 focus:ring-0 placeholder:text-slate-200 group-hover:text-emerald-800 transition-colors uppercase tracking-tight"
                             placeholder="Deskripsi kegiatan..."
                           />
                         </td>
@@ -268,13 +268,13 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
                               onChange={(e) =>
                                 updateItem(index, 'volume', parseInt(e.target.value) || 0)
                               }
-                              className="w-14 h-11 bg-emerald-50/30 border-none rounded-xl text-center text-sm font-bold text-black focus:ring-2 focus:ring-[#1a7a4a] font-mono"
+                              className="w-14 h-11 bg-emerald-50/30 border-none rounded-xl text-center text-sm font-bold text-emerald-950 focus:ring-2 focus:ring-[#1a7a4a] font-mono"
                             />
                             <input
                               type="text"
                               value={item.satuan}
                               onChange={(e) => updateItem(index, 'satuan', e.target.value)}
-                              className="w-20 h-11 bg-transparent border-none p-0 text-sm font-bold text-gray-900 font-semibold uppercase text-xs text-center"
+                              className="w-20 h-11 bg-transparent border-none p-0 text-sm font-bold text-emerald-950 font-semibold uppercase text-xs text-center"
                               placeholder="Satuan"
                             />
                           </div>
@@ -296,7 +296,7 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
                           onChange={(v) => updateItem(index, 'donatur_lain', v)}
                         />
                         <td className="px-8 py-6 text-right">
-                          <span className="text-sm font-bold text-black font-mono">
+                          <span className="text-sm font-bold text-emerald-950 font-mono">
                             {item.jumlah.toLocaleString()}
                           </span>
                         </td>
@@ -356,17 +356,17 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
               <div className="h-12 w-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100">
                 <Info size={24} />
               </div>
-              <p className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs leading-relaxed pt-1">
+              <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs leading-relaxed pt-1">
                 * Seluruh nilai moneter diinput dalam satuan ribuan rupiah (K). Misal: input{' '}
-                <span className="text-black font-mono">1.000</span> untuk mewakili{' '}
-                <span className="text-black">Rp 1.000.000</span>.
+                <span className="text-emerald-950 font-mono">1.000</span> untuk mewakili{' '}
+                <span className="text-emerald-950">Rp 1.000.000</span>.
               </p>
             </div>
 
             <div className="flex items-center gap-6">
               <Link
                 href={route('student.dashboard')}
-                className="text-sm font-bold text-gray-900 uppercase tracking-wider text-xs font-semibold hover:text-black transition-colors"
+                className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold hover:text-emerald-950 transition-colors"
               >
                 Abort Changes
               </Link>
@@ -406,14 +406,14 @@ function BentoCard({
       className={clsx(
         'p-10 rounded-xl border flex flex-col justify-between group transition-all h-64',
         highlight
-          ? 'bg-emerald-900 text-white border-gray-200/60 shadow-2xl'
-          : 'bg-white border-gray-200/60 hover:border-emerald-200 shadow-sm',
+          ? 'bg-emerald-900 text-white border-emerald-50/60 shadow-2xl'
+          : 'bg-white border-emerald-50/60 hover:border-emerald-200 shadow-sm',
       )}
     >
       <div
         className={clsx(
           'h-14 w-14 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform',
-          color === 'emerald' ? 'bg-emerald-50 text-emerald-600' : 'bg-emerald-50/30 text-gray-900',
+          color === 'emerald' ? 'bg-emerald-50 text-emerald-600' : 'bg-emerald-50/30 text-emerald-950',
         )}
       >
         <Icon size={26} strokeWidth={2.5} />
@@ -422,7 +422,7 @@ function BentoCard({
         <p
           className={clsx(
             'text-sm font-bold uppercase tracking-wider text-xs font-semibold mb-2',
-            color === 'emerald' ? 'text-[#1a7a4a]' : 'text-gray-900',
+            color === 'emerald' ? 'text-[#1a7a4a]' : 'text-emerald-950',
           )}
         >
           {label}
@@ -440,7 +440,7 @@ function LedgerInput({ value, onChange }: { value: number; onChange: (v: number)
         type="number"
         value={value}
         onChange={(e) => onChange(parseInt(e.target.value) || 0)}
-        className="w-24 h-11 bg-emerald-50/30 border-none rounded-xl text-right text-sm font-bold text-gray-700 focus:ring-2 focus:ring-[#1a7a4a] font-mono placeholder:opacity-20 translate-x-2"
+        className="w-24 h-11 bg-emerald-50/30 border-none rounded-xl text-right text-sm font-bold text-emerald-800 focus:ring-2 focus:ring-[#1a7a4a] font-mono placeholder:opacity-20 translate-x-2"
         placeholder="0"
       />
     </td>

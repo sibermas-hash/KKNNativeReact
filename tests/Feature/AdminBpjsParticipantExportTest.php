@@ -40,7 +40,7 @@ class AdminBpjsParticipantExportTest extends TestCase
 
         $faculty = Fakultas::factory()->create(['nama' => 'Fakultas Syariah']);
         $program = Prodi::factory()->create([
-            'faculty_id' => $faculty->id,
+            'fakultas_id' => $faculty->id,
             'nama' => 'Hukum Ekonomi Syariah',
         ]);
         $academicYear = TahunAkademik::factory()->create();
@@ -50,7 +50,7 @@ class AdminBpjsParticipantExportTest extends TestCase
         ]);
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'nama_kelompok' => 'Kelompok BPJS A',
         ]);
@@ -70,15 +70,15 @@ class AdminBpjsParticipantExportTest extends TestCase
             'nik' => '3303010101010001',
             'nama' => 'Mahasiswa BPJS',
             'mother_name' => 'Ibu BPJS',
-            'faculty_id' => $faculty->id,
-            'program_id' => $program->id,
+            'fakultas_id' => $faculty->id,
+            'prodi_id' => $program->id,
             'gpa' => 3.54,
             'sks_completed' => 144,
         ]);
 
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $approvedStudent->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
         ]);
 
@@ -97,13 +97,13 @@ class AdminBpjsParticipantExportTest extends TestCase
             'nik' => '3303010101010002',
             'nama' => 'Mahasiswa Pending',
             'mother_name' => 'Ibu Pending',
-            'faculty_id' => $faculty->id,
-            'program_id' => $program->id,
+            'fakultas_id' => $faculty->id,
+            'prodi_id' => $program->id,
         ]);
 
         PesertaKkn::factory()->create([
             'mahasiswa_id' => $pendingStudent->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
             'status' => 'pending',
         ]);

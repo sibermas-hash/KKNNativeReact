@@ -42,7 +42,7 @@ class GenerateBulkCertificatesJob implements ShouldQueue
                 ->whereHas('kelompok', fn ($q) => $q->where('periode_id', $this->periodeId));
 
             if ($this->facultyId) {
-                $query->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $this->facultyId));
+                $query->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $this->facultyId));
             }
 
             $nilaiRecords = $query->with(['mahasiswa.user', 'kelompok.periode', 'kelompok.lokasi'])->get();

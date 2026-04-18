@@ -1,5 +1,6 @@
 <?php
 
+use App\Ai\Agents\ActivityReviewerAgent;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\DplPeriod;
 use App\Models\KKN\Fakultas;
@@ -16,7 +17,10 @@ use App\Models\KKN\TahunAkademik;
 use App\Models\KKN\Workshop;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
+use Laravel\Ai\Responses\StructuredAgentResponse;
 use Tests\TestCase;
 
 class MultiRoleWorkflowTest extends TestCase
@@ -25,11 +29,11 @@ class MultiRoleWorkflowTest extends TestCase
     {
         parent::setUp();
         $this->seed(RoleSeeder::class);
-        \Illuminate\Support\Facades\Storage::fake(config('filesystems.default'));
+        Storage::fake(config('filesystems.default'));
 
         // Mock AI Agent to avoid external API calls during tests
-        $this->mock(\App\Ai\Agents\ActivityReviewerAgent::class, function ($mock) {
-            $structuredResponse = \Mockery::mock(\Laravel\Ai\Responses\StructuredAgentResponse::class);
+        $this->mock(ActivityReviewerAgent::class, function ($mock) {
+            $structuredResponse = Mockery::mock(StructuredAgentResponse::class);
             $structuredResponse->shouldReceive('toArray')->andReturn([
                 'summary' => 'Ringkasan kegiatan simulasi.',
                 'abcd_compliance' => 10,
@@ -54,7 +58,7 @@ class MultiRoleWorkflowTest extends TestCase
     private function createFacultyAdmin(Fakultas $faculty): User
     {
         $user = User::factory()->create([
-            'faculty_id' => $faculty->id,
+            'fakultas_id' => $faculty->id,
         ]);
         $user->assignRole('faculty_admin');
 
@@ -83,8 +87,8 @@ class MultiRoleWorkflowTest extends TestCase
 
         $mahasiswa = Mahasiswa::factory()->create([
             'user_id' => $user->id,
-            'faculty_id' => $faculty->id,
-            'program_id' => $program->id,
+            'fakultas_id' => $faculty->id,
+            'prodi_id' => $program->id,
             'gender' => 'L',
             'shirt_size' => 'L',
         ]);
@@ -144,7 +148,7 @@ class MultiRoleWorkflowTest extends TestCase
         // Superadmin creates groups
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'nama_kelompok' => 'Kelompok Mawar',
             'status' => 'active',
@@ -152,7 +156,7 @@ class MultiRoleWorkflowTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('kelompok_kkn', [
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'nama_kelompok' => 'Kelompok Mawar',
         ], 'kkn');
 
@@ -170,8 +174,8 @@ class MultiRoleWorkflowTest extends TestCase
         $facultyA = Fakultas::factory()->create(['nama' => 'Fakultas Tarbiyah']);
         $facultyB = Fakultas::factory()->create(['nama' => 'Fakultas Syariah']);
 
-        $programA = Prodi::factory()->create(['faculty_id' => $facultyA->id]);
-        $programB = Prodi::factory()->create(['faculty_id' => $facultyB->id]);
+        $programA = Prodi::factory()->create(['fakultas_id' => $facultyA->id]);
+        $programB = Prodi::factory()->create(['fakultas_id' => $facultyB->id]);
 
         $facultyAdmin = $this->createFacultyAdmin($facultyA);
 
@@ -183,20 +187,20 @@ class MultiRoleWorkflowTest extends TestCase
 
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
         ]);
 
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $studentA->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
         ]);
 
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $studentB->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
         ]);
 
@@ -211,11 +215,11 @@ class MultiRoleWorkflowTest extends TestCase
         ['user' => $dplUser, 'dosen' => $dosen] = $this->createDplUser();
 
         $period = Periode::factory()->active()->create([
-            'current_phase' => 'execution'
+            'current_phase' => 'execution',
         ]);
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
         ]);
@@ -223,26 +227,26 @@ class MultiRoleWorkflowTest extends TestCase
         // Assign DPL to group
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'max_groups' => 5,
             'is_active' => true,
         ]);
 
         $group->update([
             'dpl_id' => $dosen->id,
-            'dpl_period_id' => $dplPeriod->id,
+            'dpl_periode_id' => $dplPeriod->id,
         ]);
         $group->dosen()->syncWithoutDetaching([$dosen->id => ['role' => 'Ketua']]);
         $group->syncKetuaFlatColumns();
 
         // Create a student in this group
         $faculty = Fakultas::factory()->create();
-        $program = Prodi::factory()->create(['faculty_id' => $faculty->id]);
+        $program = Prodi::factory()->create(['fakultas_id' => $faculty->id]);
         ['user' => $studentUser, 'mahasiswa' => $mahasiswa] = $this->createStudentUser($faculty, $program);
 
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
         ]);
 
@@ -272,7 +276,7 @@ class MultiRoleWorkflowTest extends TestCase
                 'location_source' => 'gps',
                 'category' => 'program_unggulan',
                 'abcd_stage' => 'discovery',
-                'files' => [\Illuminate\Http\UploadedFile::fake()->image('test.jpg')]
+                'files' => [UploadedFile::fake()->image('test.jpg')],
             ])
             ->assertCreated();
 
@@ -295,30 +299,30 @@ class MultiRoleWorkflowTest extends TestCase
     public function test_student_sees_only_own_data(): void
     {
         $faculty = Fakultas::factory()->create();
-        $program = Prodi::factory()->create(['faculty_id' => $faculty->id]);
+        $program = Prodi::factory()->create(['fakultas_id' => $faculty->id]);
 
         ['user' => $studentUser1, 'mahasiswa' => $mahasiswa1] = $this->createStudentUser($faculty, $program);
         ['user' => $studentUser2, 'mahasiswa' => $mahasiswa2] = $this->createStudentUser($faculty, $program);
 
         $period = Periode::factory()->active()->create([
-            'current_phase' => 'execution'
+            'current_phase' => 'execution',
         ]);
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
         ]);
 
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $mahasiswa1->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
         ]);
 
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $mahasiswa2->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
         ]);
 
@@ -349,7 +353,7 @@ class MultiRoleWorkflowTest extends TestCase
                 'location_source' => 'gps',
                 'category' => 'program_unggulan',
                 'abcd_stage' => 'discovery',
-                'files' => [\Illuminate\Http\UploadedFile::fake()->image('test.jpg')]
+                'files' => [UploadedFile::fake()->image('test.jpg')],
             ])
             ->assertCreated();
 
@@ -367,7 +371,7 @@ class MultiRoleWorkflowTest extends TestCase
                 'location_source' => 'gps',
                 'category' => 'program_unggulan',
                 'abcd_stage' => 'discovery',
-                'files' => [\Illuminate\Http\UploadedFile::fake()->image('test.jpg')]
+                'files' => [UploadedFile::fake()->image('test.jpg')],
             ])
             ->assertCreated();
 
@@ -384,7 +388,7 @@ class MultiRoleWorkflowTest extends TestCase
         $superadmin = $this->createSuperadmin();
 
         $faculty = Fakultas::factory()->create();
-        $program = Prodi::factory()->create(['faculty_id' => $faculty->id]);
+        $program = Prodi::factory()->create(['fakultas_id' => $faculty->id]);
         ['user' => $studentUser, 'mahasiswa' => $mahasiswa] = $this->createStudentUser($faculty, $program);
 
         ['user' => $dplUser, 'dosen' => $dosen] = $this->createDplUser();
@@ -392,14 +396,14 @@ class MultiRoleWorkflowTest extends TestCase
         $period = Periode::factory()->active()->create();
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
         ]);
 
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
         ]);
 
@@ -440,18 +444,18 @@ class MultiRoleWorkflowTest extends TestCase
         ['user' => $dplUser2, 'dosen' => $dosen2] = $this->createDplUser();
 
         $period = Periode::factory()->active()->create([
-            'current_phase' => 'execution'
+            'current_phase' => 'execution',
         ]);
         $location = Lokasi::factory()->create();
 
         $group1 = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
         ]);
 
         $group2 = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
         ]);
@@ -459,32 +463,32 @@ class MultiRoleWorkflowTest extends TestCase
         // Assign DPL 1 to group 1
         $dplPeriod1 = DplPeriod::create([
             'dosen_id' => $dosen1->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'max_groups' => 5,
             'is_active' => true,
         ]);
-        $group1->update(['dpl_id' => $dosen1->id, 'dpl_period_id' => $dplPeriod1->id]);
+        $group1->update(['dpl_id' => $dosen1->id, 'dpl_periode_id' => $dplPeriod1->id]);
         $group1->dosen()->syncWithoutDetaching([$dosen1->id => ['role' => 'Ketua']]);
         $group1->syncKetuaFlatColumns();
 
         // Assign DPL 2 to group 2
         $dplPeriod2 = DplPeriod::create([
             'dosen_id' => $dosen2->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'max_groups' => 5,
             'is_active' => true,
         ]);
-        $group2->update(['dpl_id' => $dosen2->id, 'dpl_period_id' => $dplPeriod2->id]);
+        $group2->update(['dpl_id' => $dosen2->id, 'dpl_periode_id' => $dplPeriod2->id]);
         $group2->dosen()->syncWithoutDetaching([$dosen2->id => ['role' => 'Ketua']]);
         $group2->syncKetuaFlatColumns();
 
         $faculty = Fakultas::factory()->create();
-        $program = Prodi::factory()->create(['faculty_id' => $faculty->id]);
+        $program = Prodi::factory()->create(['fakultas_id' => $faculty->id]);
         ['user' => $studentUser, 'mahasiswa' => $mahasiswa] = $this->createStudentUser($faculty, $program);
 
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group1->id,
         ]);
 
@@ -514,7 +518,7 @@ class MultiRoleWorkflowTest extends TestCase
                 'location_source' => 'gps',
                 'category' => 'program_unggulan',
                 'abcd_stage' => 'discovery',
-                'files' => [\Illuminate\Http\UploadedFile::fake()->image('test.jpg')]
+                'files' => [UploadedFile::fake()->image('test.jpg')],
             ])
             ->assertCreated();
 

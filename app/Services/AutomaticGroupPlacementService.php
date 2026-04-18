@@ -23,7 +23,7 @@ class AutomaticGroupPlacementService
         $domicileRegency = $this->normalizeAdministrativeName($mahasiswa->user?->domicile_regency_name);
         if (blank($domicileRegency)) {
             throw ValidationException::withMessages([
-                'period_id' => 'Kabupaten domisili mahasiswa belum diisi. Lengkapi dan verifikasi alamat domisili terlebih dahulu di profil.',
+                'periode_id' => 'Kabupaten domisili mahasiswa belum diisi. Lengkapi dan verifikasi alamat domisili terlebih dahulu di profil.',
             ]);
         }
 
@@ -38,7 +38,7 @@ class AutomaticGroupPlacementService
                     $query->whereIn('status', GroupSelectionService::activeRegistrationStatuses());
                 },
             ])
-            ->where('period_id', $periodId)
+            ->where('periode_id', $periodId)
             ->where('status', 'active')
             ->whereHas('lokasi', function ($query) use ($domicileRegency) {
                 $query->whereNotNull('regency_name')
@@ -68,7 +68,7 @@ class AutomaticGroupPlacementService
         }
 
         throw ValidationException::withMessages([
-            'period_id' => 'Sistem belum menemukan kelompok yang tersedia di luar kabupaten asal Anda. Hubungi admin LPPM untuk penempatan manual.',
+            'periode_id' => 'Sistem belum menemukan kelompok yang tersedia di luar kabupaten asal Anda. Hubungi admin LPPM untuk penempatan manual.',
         ]);
     }
 

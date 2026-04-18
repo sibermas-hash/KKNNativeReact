@@ -394,7 +394,7 @@ PDF;
         );
         $programA = Prodi::firstOrCreate(
             ['code' => 'PDEMOA'],
-            ['faculty_id' => $facultyA->id, 'nama' => 'Program Demo A']
+            ['fakultas_id' => $facultyA->id, 'nama' => 'Program Demo A']
         );
 
         $facultyB = Fakultas::firstOrCreate(
@@ -403,7 +403,7 @@ PDF;
         );
         $programB = Prodi::firstOrCreate(
             ['code' => 'PDEMOB'],
-            ['faculty_id' => $facultyB->id, 'nama' => 'Program Demo B']
+            ['fakultas_id' => $facultyB->id, 'nama' => 'Program Demo B']
         );
 
         return [
@@ -523,7 +523,7 @@ PDF;
                 'email' => 'admin.demo@local.test',
                 'is_active' => true,
                 'password' => Hash::make('Password#123'),
-                'faculty_id' => null,
+                'fakultas_id' => null,
             ]
         );
 
@@ -541,7 +541,7 @@ PDF;
                 'email' => 'faculty.admin.demo@local.test',
                 'is_active' => true,
                 'password' => Hash::make('Password#123'),
-                'faculty_id' => $facultyData['faculty']->id,
+                'fakultas_id' => $facultyData['faculty']->id,
             ]
         );
 
@@ -564,7 +564,7 @@ PDF;
                 'email' => $email,
                 'is_active' => true,
                 'password' => Hash::make('Password#123'),
-                'faculty_id' => $faculty->id,
+                'fakultas_id' => $faculty->id,
             ]
         );
         $user->syncRoles(['dpl']);
@@ -574,7 +574,7 @@ PDF;
             [
                 'nip' => $nip,
                 'nama' => $name,
-                'faculty_id' => $faculty->id,
+                'fakultas_id' => $faculty->id,
             ]
         );
 
@@ -586,7 +586,7 @@ PDF;
         return DplPeriod::updateOrCreate(
             [
                 'dosen_id' => $dplData['dosen']->id,
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
             ],
             [
                 'max_groups' => 5,
@@ -607,14 +607,14 @@ PDF;
         $group = KelompokKkn::updateOrCreate(
             ['code' => $code],
             [
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
                 'location_id' => $location->id,
                 'nama_kelompok' => $name,
                 'token' => strtoupper(substr(md5($code), 0, 10)),
                 'capacity' => 10,
                 'status' => $status,
                 'dpl_id' => $dosen['dosen']->id,
-                'dpl_period_id' => $dplPeriod->id,
+                'dpl_periode_id' => $dplPeriod->id,
             ]
         );
 
@@ -642,7 +642,7 @@ PDF;
                 'email' => $email,
                 'is_active' => true,
                 'password' => Hash::make('Password#123'),
-                'faculty_id' => $faculty->id,
+                'fakultas_id' => $faculty->id,
             ]
         );
         $user->syncRoles(['student']);
@@ -652,8 +652,8 @@ PDF;
             [
                 'nim' => $nim,
                 'nama' => $name,
-                'faculty_id' => $faculty->id,
-                'program_id' => $program->id,
+                'fakultas_id' => $faculty->id,
+                'prodi_id' => $program->id,
                 'batch_year' => $batchYear,
                 'sks_completed' => 130,
                 'gpa' => 3.45,
@@ -678,7 +678,7 @@ PDF;
         return PesertaKkn::updateOrCreate(
             [
                 'mahasiswa_id' => $student->id,
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
             ],
             [
                 'kelompok_id' => $group->id,

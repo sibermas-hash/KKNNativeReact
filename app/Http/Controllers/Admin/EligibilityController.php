@@ -34,8 +34,8 @@ class EligibilityController extends Controller
         $user = auth()->user();
         $isFacultyAdmin = $user?->hasRole('faculty_admin');
 
-        $periodeId = $request->integer('period_id');
-        $facultyId = $isFacultyAdmin ? $user?->faculty_id : $request->integer('faculty_id');
+        $periodeId = $request->integer('periode_id');
+        $facultyId = $isFacultyAdmin ? $user?->fakultas_id : $request->integer('fakultas_id');
         $showEligible = $request->boolean('show_eligible', true);
 
         $result = $this->eligibilityService->getEligibleStudents($periodeId, $facultyId);
@@ -64,8 +64,8 @@ class EligibilityController extends Controller
                 'eligibility_rate' => $result['eligibility_rate'],
             ],
             'filters' => [
-                'period_id' => $periodeId,
-                'faculty_id' => $facultyId,
+                'periode_id' => $periodeId,
+                'fakultas_id' => $facultyId,
                 'show_eligible' => $showEligible,
             ],
             'periods' => $periods,
@@ -77,7 +77,7 @@ class EligibilityController extends Controller
     {
         Gate::authorize('manage-participants');
 
-        $periodeId = $request->integer('period_id');
+        $periodeId = $request->integer('periode_id');
         $result = $this->eligibilityService->checkEligibility($mahasiswa, $periodeId);
 
         return response()->json($result);
@@ -90,8 +90,8 @@ class EligibilityController extends Controller
         $user = auth()->user();
         $isFacultyAdmin = $user?->hasRole('faculty_admin');
 
-        $periodeId = $request->integer('period_id');
-        $facultyId = $isFacultyAdmin ? $user?->faculty_id : $request->integer('faculty_id');
+        $periodeId = $request->integer('periode_id');
+        $facultyId = $isFacultyAdmin ? $user?->fakultas_id : $request->integer('fakultas_id');
 
         $result = $this->eligibilityService->getEligibleStudents($periodeId, $facultyId);
 

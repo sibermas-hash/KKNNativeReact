@@ -33,7 +33,7 @@ class KelompokKknController extends Controller
             return $lecturers;
         }
 
-        $dplPeriodId = $request->input('dpl_period_id');
+        $dplPeriodId = $request->input('dpl_periode_id');
 
         if (! $dplPeriodId) {
             return [];
@@ -83,8 +83,8 @@ class KelompokKknController extends Controller
                         });
                 });
             })
-            ->when($request->input('period_id'), function ($query, $periodId) {
-                $query->where('period_id', $periodId);
+            ->when($request->input('periode_id'), function ($query, $periodId) {
+                $query->where('periode_id', $periodId);
             })
             ->when($request->input('jenis_kkn_id'), function ($query, $jenisId) {
                 $query->whereHas('periode', function ($q) use ($jenisId) {
@@ -98,10 +98,10 @@ class KelompokKknController extends Controller
         // Optimized Faculty Scoping for Groups:
         // Include groups where location belongs to the faculty OR has participants from the faculty
         $user = auth()->user();
-        if ($user && $user->hasRole('faculty_admin') && $user->faculty_id) {
+        if ($user && $user->hasRole('faculty_admin') && $user->fakultas_id) {
             $query->where(function ($q) use ($user) {
-                $q->whereHas('lokasi', fn ($loc) => $loc->where('faculty_id', $user->faculty_id))
-                    ->orWhereHas('peserta.mahasiswa', fn ($mhs) => $mhs->where('faculty_id', $user->faculty_id));
+                $q->whereHas('lokasi', fn ($loc) => $loc->where('fakultas_id', $user->fakultas_id))
+                    ->orWhereHas('peserta.mahasiswa', fn ($mhs) => $mhs->where('fakultas_id', $user->fakultas_id));
             });
         }
 
@@ -192,7 +192,7 @@ class KelompokKknController extends Controller
             'jenisKknOptions' => $jenisKknOptions,
             'locations' => $locations,
             'lecturers' => $lecturers,
-            'filters' => $request->only('search', 'period_id', 'jenis_kkn_id', 'status'),
+            'filters' => $request->only('search', 'periode_id', 'jenis_kkn_id', 'status'),
             'ui' => [
                 'can_manage' => Gate::allows('manage-groups'),
             ],
@@ -219,11 +219,11 @@ class KelompokKknController extends Controller
 
         // Manual Faculty Scoping for detail view
         $user = auth()->user();
-        if ($user && $user->hasRole('faculty_admin') && $user->faculty_id) {
+        if ($user && $user->hasRole('faculty_admin') && $user->fakultas_id) {
             $kelompok->load('lokasi');
-            $hasParticipantFromFaculty = $kelompok->peserta()->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $user->faculty_id))->exists();
+            $hasParticipantFromFaculty = $kelompok->peserta()->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $user->fakultas_id))->exists();
 
-            if ($kelompok->lokasi?->faculty_id !== $user->faculty_id && ! $hasParticipantFromFaculty) {
+            if ($kelompok->lokasi?->fakultas_id !== $user->fakultas_id && ! $hasParticipantFromFaculty) {
                 abort(403, 'Anda tidak memiliki akses ke kelompok ini.');
             }
         }
@@ -262,9 +262,9 @@ class KelompokKknController extends Controller
         $this->prepareMutationPayload($request);
 
         $validated = $request->validate([
-            'period_id' => ['required', 'exists:periode,id'],
+            'periode_id' => ['required', 'exists:periode,id'],
             'location_id' => ['required', 'exists:lokasi,id'],
-            'dpl_period_id' => ['nullable', 'exists:dpl_periods,id'],
+            'dpl_periode_id' => ['nullable', 'exists:dpl_periods,id'],
             'lecturers' => ['nullable', 'array'],
             'lecturers.*.id' => ['required', 'exists:dosen,id'],
             'lecturers.*.role' => ['required', 'in:Ketua,Anggota'],
@@ -282,7 +282,7 @@ class KelompokKknController extends Controller
                 }
 
                 $dplPeriod = DplPeriod::where('dosen_id', $l['id'])
-                    ->where('period_id', $validated['period_id'])
+                    ->where('periode_id', $validated['periode_id'])
                     ->where('is_active', true)
                     ->first();
 
@@ -303,7 +303,7 @@ class KelompokKknController extends Controller
         }
 
         $group = KelompokKkn::create([
-            'period_id' => $validated['period_id'],
+            'periode_id' => $validated['periode_id'],
             'location_id' => $validated['location_id'],
             'nama_kelompok' => $validated['name'],
             'capacity' => $validated['capacity'],
@@ -360,9 +360,9 @@ class KelompokKknController extends Controller
         $this->prepareMutationPayload($request);
 
         $validated = $request->validate([
-            'period_id' => ['required', 'exists:periode,id'],
+            'periode_id' => ['required', 'exists:periode,id'],
             'location_id' => ['required', 'exists:lokasi,id'],
-            'dpl_period_id' => ['nullable', 'exists:dpl_periods,id'],
+            'dpl_periode_id' => ['nullable', 'exists:dpl_periods,id'],
             'lecturers' => ['nullable', 'array'],
             'lecturers.*.id' => ['required', 'exists:dosen,id'],
             'lecturers.*.role' => ['required', 'in:Ketua,Anggota'],
@@ -380,7 +380,7 @@ class KelompokKknController extends Controller
                 }
 
                 $dplPeriod = DplPeriod::where('dosen_id', $l['id'])
-                    ->where('period_id', $validated['period_id'])
+                    ->where('periode_id', $validated['periode_id'])
                     ->where('is_active', true)
                     ->first();
 
@@ -403,7 +403,7 @@ class KelompokKknController extends Controller
         }
 
         $kelompok->update([
-            'period_id' => $validated['period_id'],
+            'periode_id' => $validated['periode_id'],
             'location_id' => $validated['location_id'],
             'nama_kelompok' => $validated['name'],
             'capacity' => $validated['capacity'],

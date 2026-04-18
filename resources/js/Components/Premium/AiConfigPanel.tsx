@@ -76,10 +76,10 @@ export default function AiConfigPanel({ settings }: AiConfigPanelProps) {
   return (
     <div className="space-y-8">
       {/* Toggle */}
-      <div className="flex items-center justify-between bg-gray-50 p-4 rounded-xl border border-gray-200">
+      <div className="flex items-center justify-between bg-gray-50 p-4 rounded-xl border border-emerald-50">
         <div>
-          <h4 className="text-sm font-bold text-gray-900">Aktifkan Bantuan AI</h4>
-          <p className="text-xs text-gray-600 mt-1">Nyalakan ini agar sistem dapat memberikan rekomendasi dan saran perbaikan otomatis.</p>
+          <h4 className="text-sm font-bold text-emerald-950">Aktifkan Bantuan AI</h4>
+          <p className="text-xs text-emerald-800 mt-1">Nyalakan ini agar sistem dapat memberikan rekomendasi dan saran perbaikan otomatis.</p>
         </div>
         <button
           type="button"
@@ -115,7 +115,7 @@ export default function AiConfigPanel({ settings }: AiConfigPanelProps) {
 
       {/* API Key */}
       <div className="space-y-3">
-        <label className="block text-sm font-bold text-gray-900">Kunci Akses (API Key) Gemini</label>
+        <label className="block text-sm font-bold text-emerald-950">Kunci Akses (API Key) Gemini</label>
         <div className="flex gap-3">
           <div className="relative flex-1">
             <input
@@ -134,7 +134,7 @@ export default function AiConfigPanel({ settings }: AiConfigPanelProps) {
             <button
               type="button"
               onClick={() => setShowKey(!showKey)}
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-emerald-500 hover:text-emerald-800"
             >
               {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -143,9 +143,9 @@ export default function AiConfigPanel({ settings }: AiConfigPanelProps) {
             type="button"
             onClick={testConnection}
             disabled={validationStatus === 'loading' || (!apiKey && !apiKeySetting?.config_value)}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#1a7a4a] focus:ring-offset-2 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-emerald-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#1a7a4a] focus:ring-offset-2 disabled:opacity-50"
           >
-            {validationStatus === 'loading' ? <RefreshCw className="h-4 w-4 animate-spin text-gray-500" /> : <Plug className="h-4 w-4 text-emerald-600" />}
+            {validationStatus === 'loading' ? <RefreshCw className="h-4 w-4 animate-spin text-emerald-700" /> : <Plug className="h-4 w-4 text-emerald-600" />}
             Cek Sambungan
           </button>
         </div>
@@ -164,7 +164,7 @@ export default function AiConfigPanel({ settings }: AiConfigPanelProps) {
           </div>
         )}
 
-        <p className="text-xs text-gray-500 mt-2">
+        <p className="text-xs text-emerald-700 mt-2">
           Kunci rahasia Anda akan disandikan dengan aman sebelum disimpan. Tidak ada yang bisa melihatnya secara langsung.
         </p>
       </div>

@@ -26,16 +26,16 @@ export const EnrollmentBriefing = ({
   supportsSelfService,
 }: EnrollmentBriefingProps) => {
   return (
-    <div className="p-10 rounded-[3rem] bg-white border border-gray-200/60 shadow-md sticky top-12 space-y-10">
+    <div className="p-10 rounded-[3rem] bg-white border border-emerald-50/60 shadow-md sticky top-12 space-y-10">
       <div className="flex items-center gap-5 border-b border-[#f3f4f6] pb-8">
         <div className="h-14 w-14 bg-[#16a34a] rounded-[1.5rem] flex items-center justify-center text-white shadow-xl shadow-emerald-200">
           <ShieldCheck size={28} strokeWidth={2.5} />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">
+          <h3 className="text-sm font-bold text-emerald-950 uppercase tracking-widest">
             Enrollment Briefing
           </h3>
-          <p className="text-xs font-bold text-gray-900 uppercase mt-1 opacity-70">
+          <p className="text-xs font-bold text-emerald-950 uppercase mt-1 opacity-70">
             Review & Deploy
           </p>
         </div>
@@ -60,7 +60,7 @@ export const EnrollmentBriefing = ({
 
         <div className="pt-6 border-t border-[#f3f4f6] space-y-4">
           <div className="flex justify-between items-center">
-            <span className="text-xs font-bold text-gray-900 uppercase tracking-[0.3em]">
+            <span className="text-xs font-bold text-emerald-950 uppercase tracking-[0.3em]">
               Integrity Status
             </span>
             <span

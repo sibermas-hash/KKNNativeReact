@@ -2,7 +2,9 @@
 
 use App\Models\User;
 use Spatie\Permission\Models\Role;
-use function Pest\Laravel\{actingAs, get};
+
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\get;
 
 test('home page is accessible', function () {
     get(route('home'))->assertOk();

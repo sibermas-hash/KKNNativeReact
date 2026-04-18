@@ -51,15 +51,15 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
     const dashboardHref = getDashboardRoute();
 
     return (
-        <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-emerald-100">
+        <div className="min-h-screen bg-white text-emerald-950 font-sans selection:bg-emerald-100">
             {/* NAVIGATION SIMPLE */}
-            <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200 h-16">
+            <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-emerald-50 h-16">
                 <div className="max-w-7xl mx-auto px-6 lg:px-8 h-full flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-3 no-underline group">
                         <div className="h-8 w-8 bg-emerald-50 rounded-lg flex items-center justify-center">
                             <img src="/images/logo_kkn.png" alt="Logo" className="h-6 w-6 object-contain" />
                         </div>
-                        <span className="text-sm font-bold text-gray-900 uppercase tracking-tight">KKN UIN SAIZU</span>
+                        <span className="text-sm font-bold text-emerald-950 uppercase tracking-tight">KKN UIN SAIZU</span>
                     </Link>
 
                     {/* Desktop Nav */}
@@ -68,7 +68,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                             <Link 
                                 key={item.label} 
                                 href={item.href} 
-                                className="text-xs font-bold text-gray-900 hover:text-[#1a7a4a] font-semibold uppercase text-xs no-underline transition-colors"
+                                className="text-xs font-bold text-emerald-950 hover:text-emerald-600 uppercase no-underline transition-colors"
                             >
                                 {item.label}
                             </Link>
@@ -82,7 +82,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                     </div>
 
                     {/* Mobile Toggle */}
-                    <button className="lg:hidden text-gray-900 p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                    <button className="lg:hidden text-emerald-950 p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
                         {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
                 </div>
@@ -102,13 +102,13 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                                 initial={{ opacity: 0, y: -10 }} 
                                 animate={{ opacity: 1, y: 0 }} 
                                 exit={{ opacity: 0, y: -10 }}
-                                className="absolute top-16 left-0 w-full bg-white border-b border-gray-200 p-6 flex flex-col gap-4 lg:hidden shadow-xl z-50"
+                                className="absolute top-16 left-0 w-full bg-white border-b border-emerald-50 p-6 flex flex-col gap-4 lg:hidden shadow-xl z-50"
                             >
                                 {navItems.map((item) => (
                                     <Link 
                                         key={item.label} 
                                         href={item.href} 
-                                        className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs no-underline"
+                                        className="text-sm font-bold text-emerald-950 uppercase no-underline"
                                         onClick={() => setIsMenuOpen(false)}
                                     >
                                         {item.label}
@@ -173,7 +173,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                         </div>
                     </div>
                 </div>
-                <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-12 mt-12 border-t border-emerald-900 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-700 font-bold uppercase tracking-wider text-xs font-semibold">
+                <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-12 mt-12 border-t border-emerald-900 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-bold uppercase tracking-widest text-emerald-600">
                     <span>&copy; {new Date().getFullYear()} LPPM UIN SAIZU PURWOKERTO</span>
                     <span>SISTEM INFORMASI MANAJEMEN KKN V4.0.2</span>
                 </div>

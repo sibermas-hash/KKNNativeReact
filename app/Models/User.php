@@ -12,6 +12,7 @@ use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\ProfilUser;
 use App\Models\KKN\ProgramKerja;
+use App\Notifications\Auth\ResetPasswordNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -41,7 +42,7 @@ class User extends Authenticatable
         'domicile_district_name',
         'domicile_regency_name',
         'address_verified_at',
-        'faculty_id',
+        'fakultas_id',
     ];
 
     protected $hidden = [
@@ -55,12 +56,22 @@ class User extends Authenticatable
         'must_change_password' => 'boolean',
         'password_changed_at' => 'datetime',
         'address_verified_at' => 'datetime',
-        'faculty_id' => 'integer',
+        'fakultas_id' => 'integer',
         'password' => 'hashed',
     ];
 
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, HasRoles, Notifiable;
+
+    /**
+     * Send the password reset notification.
+     *
+     * @param  string  $token
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
+    }
 
     /**
      * Password policy: Minimum 8 characters, mixed case, numbers, and symbols.
@@ -70,7 +81,7 @@ class User extends Authenticatable
 
     public function fakultas(): BelongsTo
     {
-        return $this->belongsTo(Fakultas::class, 'faculty_id');
+        return $this->belongsTo(Fakultas::class, 'fakultas_id');
     }
 
     public function mahasiswa(): HasOne

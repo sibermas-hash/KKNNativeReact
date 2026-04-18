@@ -26,7 +26,7 @@ class DailyReportAuthorizationTest extends TestCase
         $period = Periode::factory()->execution()->create();
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
         ]);
 
@@ -38,7 +38,7 @@ class DailyReportAuthorizationTest extends TestCase
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $mahasiswa->id,
             'kelompok_id' => $group->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
         ]);
 
         PoskoKelompok::create([
@@ -86,12 +86,12 @@ class DailyReportAuthorizationTest extends TestCase
         $student2->assignRole('student');
         Mahasiswa::factory()->create(['user_id' => $student2->id]);
 
-        $group = KelompokKkn::factory()->create(['period_id' => $period->id]);
+        $group = KelompokKkn::factory()->create(['periode_id' => $period->id]);
 
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $mhs1->id,
             'kelompok_id' => $group->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
         ]);
 
         // Student 2 is not in the group, so the create page should be forbidden

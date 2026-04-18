@@ -28,7 +28,7 @@ return new class extends Migration
             }
         });
 
-        // Backfill existing periods with defaults based on jenis
+        // Backfill existing periode with defaults based on jenis
         DB::table('periode')
             ->whereNull('program_type')
             ->orWhere('program_type', '')

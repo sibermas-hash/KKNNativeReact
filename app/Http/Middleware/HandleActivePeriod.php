@@ -29,8 +29,8 @@ class HandleActivePeriod
         }
 
         // If a period switch is requested via query parameter
-        if ($request->has('period_id')) {
-            $periodId = (int) $request->input('period_id');
+        if ($request->has('periode_id')) {
+            $periodId = (int) $request->input('periode_id');
             $user = auth()->user();
 
             try {
@@ -42,7 +42,7 @@ class HandleActivePeriod
                 // ISSUE-MIDDLEWARE-002 Fix: Log failure instead of silent fail
                 Log::warning('Period switch failed', [
                     'user_id' => $user->id ?? null,
-                    'period_id' => $periodId,
+                    'periode_id' => $periodId,
                     'error' => $e->getMessage(),
                 ]);
             }

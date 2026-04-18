@@ -54,7 +54,7 @@ class GradeExportService
             $period = Periode::with('tahunAkademik')->findOrFail($periodId);
             $pdf = Pdf::loadView('admin.exports.blanko_nilai_bulk_list', [
                 'students' => $students,
-                'period_id' => $periodId,
+                'periode_id' => $periodId,
                 'periode' => $period->name,
                 'tahun' => $period->tahunAkademik?->year ?? date('Y'),
             ]);

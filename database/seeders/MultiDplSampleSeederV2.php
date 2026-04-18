@@ -62,9 +62,9 @@ class MultiDplSampleSeederV2 extends Seeder
             ['village_code' => '001'],
             [
                 'village_name' => 'Desa Penari',
-                'district_id' => '01',
-                'regency_id' => '01',
-                'province_id' => '01',
+                'kecamatan_id' => '01',
+                'kabupaten_id' => '01',
+                'provinsi_id' => '01',
                 'capacity' => 10,
             ]
         );
@@ -79,7 +79,7 @@ class MultiDplSampleSeederV2 extends Seeder
             ['code' => 'TI'],
             [
                 'nama' => 'Teknik Informatika',
-                'faculty_id' => $fakultas->id,
+                'fakultas_id' => $fakultas->id,
             ]
         );
 
@@ -102,13 +102,13 @@ class MultiDplSampleSeederV2 extends Seeder
             [
                 'nama' => $uKetua->name,
                 'nip' => '198001012023011001',
-                'faculty_id' => $fakultas->id,
+                'fakultas_id' => $fakultas->id,
             ]
         );
 
         // DplPeriod Ketua
         DplPeriod::updateOrCreate(
-            ['dosen_id' => $dKetua->id, 'period_id' => $periode->id],
+            ['dosen_id' => $dKetua->id, 'periode_id' => $periode->id],
             ['max_groups' => 2, 'is_active' => true]
         );
 
@@ -130,13 +130,13 @@ class MultiDplSampleSeederV2 extends Seeder
             [
                 'nama' => $uAnggota->name,
                 'nip' => '199001012023011002',
-                'faculty_id' => $fakultas->id,
+                'fakultas_id' => $fakultas->id,
             ]
         );
 
         // DplPeriod Anggota
         DplPeriod::updateOrCreate(
-            ['dosen_id' => $dAnggota->id, 'period_id' => $periode->id],
+            ['dosen_id' => $dAnggota->id, 'periode_id' => $periode->id],
             ['max_groups' => 2, 'is_active' => true]
         );
 
@@ -144,8 +144,8 @@ class MultiDplSampleSeederV2 extends Seeder
         $group = KelompokKkn::updateOrCreate(
             ['nama_kelompok' => 'Kelompok 99 - Desa Penari'],
             [
-                'period_id' => $periode->id,
-                'location_id' => $lokasi->id,
+                'periode_id' => $periode->id,
+                'lokasi_id' => $lokasi->id,
                 'code' => 'KKN-Sample-99',
                 'capacity' => 20,
                 'status' => 'active',
@@ -181,8 +181,8 @@ class MultiDplSampleSeederV2 extends Seeder
                 [
                     'nim' => '2026'.str_pad($i, 4, '0', STR_PAD_LEFT),
                     'nama' => $uMhs->name,
-                    'faculty_id' => $fakultas->id,
-                    'program_id' => $prodi->id,
+                    'fakultas_id' => $fakultas->id,
+                    'prodi_id' => $prodi->id,
                     'batch_year' => 2023,
                     'gender' => ($i % 2 == 0) ? 'P' : 'L',
                 ]
@@ -195,7 +195,7 @@ class MultiDplSampleSeederV2 extends Seeder
                     'kelompok_id' => $group->id,
                 ],
                 [
-                    'period_id' => $periode->id,
+                    'periode_id' => $periode->id,
                     'status' => 'approved',
                     'registration_date' => now(),
                     'approved_at' => now(),

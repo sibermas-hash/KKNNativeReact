@@ -34,26 +34,26 @@ class FullLifecycleSimulationSeeder extends Seeder
 
         // Cleanup previous simulation data to avoid unique violations
         DB::table('nilai_kkn')->whereIn('kelompok_id', function ($query) use ($periode) {
-            $query->select('id')->from('kelompok_kkn')->where('period_id', $periode->id)->where('code', 'like', 'K56-%');
+            $query->select('id')->from('kelompok_kkn')->where('periode_id', $periode->id)->where('code', 'like', 'K56-%');
         })->delete();
 
         DB::table('kegiatan_kkn')->whereIn('kelompok_id', function ($query) use ($periode) {
-            $query->select('id')->from('kelompok_kkn')->where('period_id', $periode->id)->where('code', 'like', 'K56-%');
+            $query->select('id')->from('kelompok_kkn')->where('periode_id', $periode->id)->where('code', 'like', 'K56-%');
         })->delete();
 
         DB::table('program_kerja')->whereIn('kelompok_id', function ($query) use ($periode) {
-            $query->select('id')->from('kelompok_kkn')->where('period_id', $periode->id)->where('code', 'like', 'K56-%');
+            $query->select('id')->from('kelompok_kkn')->where('periode_id', $periode->id)->where('code', 'like', 'K56-%');
         })->delete();
 
-        DB::table('peserta_kkn')->where('period_id', $periode->id)->delete();
-        DB::table('kelompok_kkn')->where('period_id', $periode->id)->where('code', 'like', 'K56-%')->delete();
+        DB::table('peserta_kkn')->where('periode_id', $periode->id)->delete();
+        DB::table('kelompok_kkn')->where('periode_id', $periode->id)->where('code', 'like', 'K56-%')->delete();
 
         // 2. Buat 3 Kelompok
         $kelompokIds = [];
         foreach ($locations as $index => $loc) {
             $kelompokIds[] = DB::table('kelompok_kkn')->insertGetId([
-                'period_id' => $periode->id,
-                'location_id' => $loc->id,
+                'periode_id' => $periode->id,
+                'lokasi_id' => $loc->id,
                 'dpl_id' => $dosens[$index]->id,
                 'code' => 'K56-0'.($index + 1),
                 'nama_kelompok' => 'Kelompok 0'.($index + 1).' - '.$loc->village_name,
@@ -71,7 +71,7 @@ class FullLifecycleSimulationSeeder extends Seeder
 
             DB::table('peserta_kkn')->insert([
                 'mahasiswa_id' => $mhs->id,
-                'period_id' => $periode->id,
+                'periode_id' => $periode->id,
                 'kelompok_id' => $kelompokId,
                 'status' => 'approved',
                 'registration_date' => Carbon::now()->subDays(10),

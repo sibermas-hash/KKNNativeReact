@@ -16,11 +16,12 @@ use App\Notifications\KKN\RegistrationSubmittedNotification;
 use App\Services\KKN\KknRequirementService;
 use App\Services\RegistrationPortalService;
 use App\Services\RegistrationService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -143,8 +144,8 @@ class RegistrationController extends Controller
         RegistrationService $registrationService,
         RegistrationPortalService $registrationPortalService,
         KknRequirementService $requirementService
-    ): Response|RedirectResponse|\Illuminate\Http\JsonResponse {
-        \Log::info('RegistrationController@create hit. User: ' . ($request->user()?->username ?? 'null') . ' Request expects JSON: ' . ($request->wantsJson() ? 'YES' : 'NO'));
+    ): Response|RedirectResponse|JsonResponse {
+        \Log::info('RegistrationController@create hit. User: '.($request->user()?->username ?? 'null').' Request expects JSON: '.($request->wantsJson() ? 'YES' : 'NO'));
         $today = now()->toDateString();
         $mahasiswa = auth()->user()?->mahasiswa;
 
@@ -153,9 +154,10 @@ class RegistrationController extends Controller
                 return response()->json([
                     'eligible' => false,
                     'status' => 'locked',
-                    'message' => 'Pendaftaran Anda sudah dikunci.'
+                    'message' => 'Pendaftaran Anda sudah dikunci.',
                 ]);
             }
+
             return redirect()->route('student.dashboard')
                 ->with('info', 'Pendaftaran Anda sudah dikunci. Silakan lanjutkan aktivitas KKN melalui dasbor mahasiswa.');
         }
@@ -167,18 +169,18 @@ class RegistrationController extends Controller
         $registrations = $mahasiswa
             ? PesertaKkn::query()
                 ->where('mahasiswa_id', $mahasiswa->id)
-                ->whereIn('period_id', $periodIds)
+                ->whereIn('periode_id', $periodIds)
                 ->with(['kelompok.lokasi'])
                 ->get()
-                ->keyBy('period_id')
+                ->keyBy('periode_id')
             : collect();
 
         $queues = $mahasiswa
             ? AntrianKkn::query()
                 ->where('mahasiswa_id', $mahasiswa->id)
-                ->whereIn('period_id', $periodIds)
+                ->whereIn('periode_id', $periodIds)
                 ->get()
-                ->keyBy('period_id')
+                ->keyBy('periode_id')
             : collect();
 
         $periods = $periods
@@ -206,7 +208,7 @@ class RegistrationController extends Controller
 
         $firstPeriodId = (int) ($periods->first()['id'] ?? 0);
         $firstPeriod = $firstPeriodId ? Periode::find($firstPeriodId) : null;
-        
+
         $isEligible = (bool) ($mahasiswa && $firstPeriod ? ($requirementService->validate($mahasiswa, $firstPeriod) === []) : false);
 
         $responseProps = [
@@ -228,7 +230,7 @@ class RegistrationController extends Controller
                     'sks' => $mahasiswa->sks_completed,
                     'gpa' => $mahasiswa->gpa,
                     'bta_ppi' => $this->hasPassedBtaPpi($mahasiswa),
-                ]
+                ],
             ] : null,
             'eligible' => $isEligible,
             'registration' => ['eligible' => $isEligible],
@@ -258,18 +260,18 @@ class RegistrationController extends Controller
         StoreRegistrationRequest $request,
         RegistrationService $registrationService,
         KknRequirementService $requirementService
-    ): RedirectResponse|\Illuminate\Http\JsonResponse {
+    ): RedirectResponse|JsonResponse {
         $mahasiswa = $request->user()?->mahasiswa;
-        $periodId = (int) ($request->input('period_id') ?: 1);
+        $periodId = (int) ($request->input('periode_id') ?: 1);
 
         try {
             $period = Periode::query()->findOrFail($periodId);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             if (config('app.env') === 'local') {
                 $period = Periode::first() ?? new Periode(['id' => 1, 'name' => 'Test Period', 'is_active' => true]);
             } else {
                 if ($request->wantsJson() || $request->isJson()) {
-                    return response()->json(['message' => 'period id wajib diisi.', 'errors' => ['period_id' => ['period id wajib diisi.']]], 422);
+                    return response()->json(['message' => 'period id wajib diisi.', 'errors' => ['periode_id' => ['period id wajib diisi.']]], 422);
                 }
                 throw $e;
             }
@@ -280,11 +282,12 @@ class RegistrationController extends Controller
             if ($request->wantsJson()) {
                 return response()->json(['message' => $msg], 422);
             }
+
             return redirect()->back()->with('error', $msg);
         }
 
-        $existingRegistration = \App\Models\KKN\AntrianKkn::where('mahasiswa_id', $mahasiswa->id)
-            ->where('period_id', $period->id)
+        $existingRegistration = AntrianKkn::where('mahasiswa_id', $mahasiswa->id)
+            ->where('periode_id', $period->id)
             ->first();
 
         if ($existingRegistration) {
@@ -292,13 +295,14 @@ class RegistrationController extends Controller
                 return response()->json([
                     'message' => 'Berhasil daftar ulang (test mode)',
                     'registration_id' => $existingRegistration->id,
-                    'status' => 'pending'
+                    'status' => 'pending',
                 ], 201);
             }
             $msg = 'Pendaftaran Anda sudah dikunci.';
             if ($request->wantsJson() || $request->isJson()) {
                 return response()->json(['message' => $msg], 422);
             }
+
             return redirect()->back()->with('error', $msg);
         }
 
@@ -307,7 +311,8 @@ class RegistrationController extends Controller
             if ($request->wantsJson()) {
                 return response()->json(['message' => 'Lengkapi biodata peserta terlebih dahulu.'], 422);
             }
-            return redirect('/profil')->with('info', 'Lengkapi biodata peserta terlebih dahulu sebelum mendaftar KKN.');
+
+            return redirect()->route('profile.show')->with('error', 'Lengkapi biodata peserta terlebih dahulu sebelum mendaftar KKN.');
         }
 
         $domicileProfile = $this->domicileProfileSummary($request->user());
@@ -315,7 +320,8 @@ class RegistrationController extends Controller
             if ($request->wantsJson()) {
                 return response()->json(['message' => 'Lengkapi dan verifikasi alamat domisili.'], 422);
             }
-            return redirect()->route('profile.show')->with('info', 'Lengkapi dan verifikasi alamat domisili terlebih dahulu.');
+
+            return redirect()->route('profile.show')->with('error', 'Lengkapi dan verifikasi alamat domisili terlebih dahulu.');
         }
 
         if ($this->hasLockedRegistration($mahasiswa)) {
@@ -323,12 +329,13 @@ class RegistrationController extends Controller
                 return response()->json([
                     'message' => 'Berhasil daftar ulang (test mode locked)',
                     'registration_id' => 999,
-                    'status' => 'pending'
+                    'status' => 'pending',
                 ], 201);
             }
             if ($request->wantsJson()) {
                 return response()->json(['message' => 'Pendaftaran Anda sudah dikunci.'], 422);
             }
+
             return redirect()->route('student.dashboard')->with('error', 'Pendaftaran Anda sudah dikunci.');
         }
 
@@ -336,7 +343,8 @@ class RegistrationController extends Controller
             if ($request->wantsJson()) {
                 return response()->json(['message' => 'Periode tidak menggunakan pendaftaran mandiri.'], 422);
             }
-            return redirect()->back()->withErrors(['period_id' => 'Periode tidak menggunakan pendaftaran mandiri.']);
+
+            return redirect()->back()->withErrors(['periode_id' => 'Periode tidak menggunakan pendaftaran mandiri.']);
         }
 
         try {

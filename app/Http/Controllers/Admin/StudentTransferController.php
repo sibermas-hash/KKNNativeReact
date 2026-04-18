@@ -35,7 +35,7 @@ class StudentTransferController extends Controller
 
         $students = $periodId
             ? PesertaKkn::with(['mahasiswa.user', 'kelompok.lokasi', 'periode'])
-                ->where('period_id', $periodId)
+                ->where('periode_id', $periodId)
                 ->whereNotIn('status', ['rejected', 'pending'])
                 ->when($request->input('search'), fn ($q, $search) => $q->search($search))
                 ->orderBy('created_at', 'desc')
@@ -73,7 +73,7 @@ class StudentTransferController extends Controller
 
         $validated = $request->validate([
             'peserta_kkn_id' => 'required|exists:peserta_kkn,id',
-            'target_period_id' => 'required|exists:periode,id',
+            'target_periode_id' => 'required|exists:periode,id',
             'target_group_id' => 'nullable|exists:kelompok_kkn,id',
             'reason' => 'required|string|max:500',
         ]);
@@ -81,7 +81,7 @@ class StudentTransferController extends Controller
         try {
             $history = $this->transferService->transferStudent(
                 $validated['peserta_kkn_id'],
-                $validated['target_period_id'],
+                $validated['target_periode_id'],
                 $validated['target_group_id'] ?? null,
                 $validated['reason'],
                 auth()->id(),
@@ -102,7 +102,7 @@ class StudentTransferController extends Controller
     {
         Gate::authorize('transfer-students');
 
-        $currentPeriodId = $request->input('current_period_id');
+        $currentPeriodId = $request->input('current_periode_id');
 
         $periods = Periode::where('id', '!=', $currentPeriodId)
             ->orderBy('periode', 'desc')
@@ -110,8 +110,8 @@ class StudentTransferController extends Controller
             ->get(['id', 'periode', 'jenis', 'name', 'kuota']);
 
         $groups = [];
-        if ($request->has('target_period_id')) {
-            $groups = KelompokKkn::where('period_id', $request->input('target_period_id'))
+        if ($request->has('target_periode_id')) {
+            $groups = KelompokKkn::where('periode_id', $request->input('target_periode_id'))
                 ->withCount('peserta')
                 ->get(['id', 'nama_kelompok', 'code', 'capacity'])
                 ->map(function ($g) {

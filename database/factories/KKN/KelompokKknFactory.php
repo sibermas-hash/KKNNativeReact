@@ -15,7 +15,7 @@ class KelompokKknFactory extends Factory
     public function definition(): array
     {
         return [
-            'period_id' => Periode::factory(),
+            'periode_id' => Periode::factory(),
             'location_id' => Lokasi::factory(),
             'code' => strtoupper($this->faker->unique()->bothify('KKN-####')),
             'nama_kelompok' => 'Kelompok '.$this->faker->numberBetween(1, 100),

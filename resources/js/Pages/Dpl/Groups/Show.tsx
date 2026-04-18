@@ -56,7 +56,7 @@ export default function DplGroupShow({ group }: Props) {
  <Head title={`Kelompok ${group.code}`} />
 
  <div className="space-y-8">
- <section className="rounded-lg border border-gray-200/60 bg-white p-8">
+ <section className="rounded-lg border border-emerald-50/60 bg-white p-8">
  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
  <div>
  <div className="flex items-center gap-3">
@@ -64,13 +64,13 @@ export default function DplGroupShow({ group }: Props) {
  Kembali ke daftar kelompok
  </Link>
  </div>
- <h1 className="mt-3 text-2xl font-semibold text-black">
- {group.name} <span className="text-gray-900">({group.code})</span>
+ <h1 className="mt-3 text-2xl font-semibold text-emerald-950">
+ {group.name} <span className="text-emerald-950">({group.code})</span>
  </h1>
- <p className="mt-2 text-sm text-gray-900">
+ <p className="mt-2 text-sm text-emerald-950">
  {group.period_name} · {group.village_name}
  </p>
- {group.address ? <p className="text-sm text-gray-900">{group.address}</p> : null}
+ {group.address ? <p className="text-sm text-emerald-950">{group.address}</p> : null}
  </div>
  <StatusBadge status={group.status} />
  <div className="flex flex-col gap-2">
@@ -89,21 +89,21 @@ export default function DplGroupShow({ group }: Props) {
 
  <section className="grid gap-6 lg:grid-cols-[2fr,1fr]">
  <div className="space-y-6">
- <div className="rounded-lg border border-gray-200/60 bg-white p-6">
- <h2 className="text-lg font-semibold text-black">Anggota Kelompok</h2>
- <p className="mt-1 text-sm text-gray-900">
+ <div className="rounded-lg border border-emerald-50/60 bg-white p-6">
+ <h2 className="text-lg font-semibold text-emerald-950">Anggota Kelompok</h2>
+ <p className="mt-1 text-sm text-emerald-950">
  Kapasitas terisi {group.members.length} dari {group.capacity} mahasiswa.
  </p>
  <div className="mt-6 overflow-x-auto">
  <table className="min-w-full divide-y divide-emerald-100/60">
  <thead className="bg-emerald-50/30">
  <tr>
- <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900">Mahasiswa</th>
- <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900">Fakultas</th>
- <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900">Prodi</th>
- <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900">Peran</th>
- <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900">Status</th>
- <th className="px-4 py-3 text-right text-xs font-semibold text-gray-900 pr-10">Otoritas</th>
+ <th className="px-4 py-3 text-left text-xs font-semibold text-emerald-950">Mahasiswa</th>
+ <th className="px-4 py-3 text-left text-xs font-semibold text-emerald-950">Fakultas</th>
+ <th className="px-4 py-3 text-left text-xs font-semibold text-emerald-950">Prodi</th>
+ <th className="px-4 py-3 text-left text-xs font-semibold text-emerald-950">Peran</th>
+ <th className="px-4 py-3 text-left text-xs font-semibold text-emerald-950">Status</th>
+ <th className="px-4 py-3 text-right text-xs font-semibold text-emerald-950 pr-10">Otoritas</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-emerald-100/60">
@@ -111,12 +111,12 @@ export default function DplGroupShow({ group }: Props) {
  group.members.map((member) => (
  <tr key={member.id}>
  <td className="px-4 py-3">
- <p className="text-sm font-medium text-black">{member.student.name}</p>
- <p className="text-xs text-gray-900">{member.student.nim}</p>
+ <p className="text-sm font-medium text-emerald-950">{member.student.name}</p>
+ <p className="text-xs text-emerald-950">{member.student.nim}</p>
  </td>
- <td className="px-4 py-3 text-sm text-gray-900">{member.student.faculty_name}</td>
- <td className="px-4 py-3 text-sm text-gray-900">{member.student.program_name}</td>
- <td className="px-4 py-3 text-sm text-gray-900">{member.role || '-'}</td>
+ <td className="px-4 py-3 text-sm text-emerald-950">{member.student.faculty_name}</td>
+ <td className="px-4 py-3 text-sm text-emerald-950">{member.student.program_name}</td>
+ <td className="px-4 py-3 text-sm text-emerald-950">{member.role || '-'}</td>
  <td className="px-4 py-3">
  <StatusBadge status={member.status} />
  </td>
@@ -125,7 +125,7 @@ export default function DplGroupShow({ group }: Props) {
         <a 
             href={`/certificates/${member.nilai.id}/download`}
             target="_blank" rel="noopener noreferrer"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200/60 bg-white text-gray-900 hover:text-emerald-600 hover:border-emerald-600 transition-all shadow-sm"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-50/60 bg-white text-emerald-950 hover:text-emerald-600 hover:border-emerald-600 transition-all shadow-sm"
             title="Unduh Sertifikat"
         >
             <Download size={16} />
@@ -136,7 +136,7 @@ export default function DplGroupShow({ group }: Props) {
  ))
  ) : (
  <tr>
- <td colSpan={6} className="px-4 py-6 text-center text-sm text-gray-900">
+ <td colSpan={6} className="px-4 py-6 text-center text-sm text-emerald-950">
  Belum ada anggota terdaftar.
  </td>
  </tr>
@@ -146,36 +146,36 @@ export default function DplGroupShow({ group }: Props) {
  </div>
  </div>
 
- <div className="rounded-lg border border-gray-200/60 bg-white p-6">
- <h2 className="text-lg font-semibold text-black">Program Kerja</h2>
+ <div className="rounded-lg border border-emerald-50/60 bg-white p-6">
+ <h2 className="text-lg font-semibold text-emerald-950">Program Kerja</h2>
  <div className="mt-4 space-y-3">
  {group.work_programs.length > 0 ? (
  group.work_programs.map((program) => (
- <div key={program.id} className="flex items-center justify-between rounded-lg border border-gray-200/60 bg-emerald-50/30 px-4 py-3">
+ <div key={program.id} className="flex items-center justify-between rounded-lg border border-emerald-50/60 bg-emerald-50/30 px-4 py-3">
  <div>
- <p className="text-sm font-medium text-black">{program.title}</p>
+ <p className="text-sm font-medium text-emerald-950">{program.title}</p>
  </div>
  <StatusBadge status={program.status} />
  </div>
  ))
  ) : (
- <p className="text-sm text-gray-900">Belum ada program kerja untuk kelompok ini.</p>
+ <p className="text-sm text-emerald-950">Belum ada program kerja untuk kelompok ini.</p>
  )}
  </div>
  </div>
  </div>
 
  <aside className="space-y-6">
- <div className="rounded-lg border border-gray-200/60 bg-white p-6">
- <h2 className="text-lg font-semibold text-black">Data Posko</h2>
+ <div className="rounded-lg border border-emerald-50/60 bg-white p-6">
+ <h2 className="text-lg font-semibold text-emerald-950">Data Posko</h2>
  {group.posko ? (
  <div className="mt-4 space-y-4">
  <img
  src={group.posko.photo_url}
  alt="Foto posko"
- className="h-56 w-full rounded-lg border border-gray-200/60 object-cover"
+ className="h-56 w-full rounded-lg border border-emerald-50/60 object-cover"
  />
- <div className="rounded-lg border border-gray-200/60 bg-emerald-50/30 p-4 text-sm text-gray-900">
+ <div className="rounded-lg border border-emerald-50/60 bg-emerald-50/30 p-4 text-sm text-emerald-950">
  <p>Latitude: {group.posko.latitude}</p>
  <p>Longitude: {group.posko.longitude}</p>
  {group.posko.updated_at ? <p>Diperbarui: {group.posko.updated_at}</p> : null}
@@ -188,7 +188,7 @@ export default function DplGroupShow({ group }: Props) {
  </a>
  </div>
  ) : (
- <p className="mt-4 text-sm text-gray-900">Kelompok ini belum mengunggah data posko.</p>
+ <p className="mt-4 text-sm text-emerald-950">Kelompok ini belum mengunggah data posko.</p>
  )}
  </div>
  </aside>

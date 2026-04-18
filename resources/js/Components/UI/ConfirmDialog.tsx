@@ -30,7 +30,7 @@ export default function ConfirmDialog({
 
     return (
         <Modal show={isVisible} onClose={onClose} title={title} maxWidth="sm">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-emerald-950">
                     {message}
                 </p>
                 <div className="flex justify-end gap-3 mt-6">

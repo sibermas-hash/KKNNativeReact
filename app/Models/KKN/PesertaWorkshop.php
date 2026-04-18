@@ -56,7 +56,7 @@ class PesertaWorkshop extends Model
         }
 
         return $query->whereHas('workshop', function (Builder $workshopQuery) use ($periodId) {
-            $workshopQuery->where('period_id', $periodId);
+            $workshopQuery->where('periode_id', $periodId);
         });
     }
 }

@@ -29,7 +29,7 @@ export const FileDrop = ({
           'p-8 rounded-xl border-2 border-dashed transition-all flex flex-col items-center text-center gap-4',
           file
             ? 'border-[#f3f4f6]0 bg-emerald-50/30'
-            : 'border-gray-200/60 bg-emerald-50/30/50 group-hover/file:border-emerald-200 group-hover/file:bg-emerald-50/20',
+            : 'border-emerald-50/60 bg-emerald-50/30/50 group-hover/file:border-emerald-200 group-hover/file:bg-emerald-50/20',
           error && 'border-rose-500 bg-rose-50/30',
         )}
       >
@@ -49,10 +49,10 @@ export const FileDrop = ({
           )}
         </div>
         <div className="space-y-1">
-          <p className="text-sm font-bold text-black uppercase tracking-tight truncate max-w-[200px]">
+          <p className="text-sm font-bold text-emerald-950 uppercase tracking-tight truncate max-w-[200px]">
             {file ? file.name : error || label}
           </p>
-          <p className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs opacity-60">
+          <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs opacity-60">
             PDF/JPG MAX 2MB
           </p>
         </div>
@@ -60,7 +60,7 @@ export const FileDrop = ({
           <a
             href={templateUrl}
             onClick={(e) => e.stopPropagation()}
-            className="mt-2 text-sm font-bold text-emerald-600 hover:text-black uppercase tracking-wider text-xs font-semibold flex items-center gap-2 relative z-20"
+            className="mt-2 text-sm font-bold text-emerald-600 hover:text-emerald-950 uppercase tracking-wider text-xs font-semibold flex items-center gap-2 relative z-20"
           >
             GET TEMPLATE <Download size={10} strokeWidth={3} />
           </a>

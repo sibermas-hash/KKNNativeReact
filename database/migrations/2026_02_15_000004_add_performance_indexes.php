@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('peserta_kkn', function (Blueprint $table) {
-            $table->index(['period_id', 'status'], 'idx_peserta_period_status');
-            $table->index(['mahasiswa_id', 'period_id'], 'idx_peserta_mahasiswa_period');
+            $table->index(['periode_id', 'status'], 'idx_peserta_period_status');
+            $table->index(['mahasiswa_id', 'periode_id'], 'idx_peserta_mahasiswa_period');
         });
 
         Schema::table('kegiatan_kkn', function (Blueprint $table) {

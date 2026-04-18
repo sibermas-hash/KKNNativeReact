@@ -6,11 +6,7 @@ export type LoginCredentials = {
 };
 
 function solveCaptcha(expression: string): string {
-  const normalized = expression
-    .replace(/\s+/g, ' ')
-    .replace(/×/g, '*')
-    .replace(/x/gi, '*')
-    .trim();
+  const normalized = expression.replace(/\s+/g, ' ').replace(/×/g, '*').replace(/x/gi, '*').trim();
 
   const match = normalized.match(/(-?\d+)\s*([+\-*])\s*(-?\d+)/);
   if (!match) {
@@ -36,6 +32,16 @@ function solveCaptcha(expression: string): string {
 export async function loginThroughPortal(page: Page, credentials: LoginCredentials) {
   await page.goto('/login');
 
+  // Wait for page to be fully loaded
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForLoadState('networkidle');
+
+  // Wait for login form to be visible with explicit timeout
+  await page.waitForSelector('[data-testid="login-identifier"]', {
+    state: 'visible',
+    timeout: 15000,
+  });
+
   await expect(page.getByTestId('login-identifier')).toBeVisible();
   await expect(page.getByTestId('login-password')).toBeVisible();
   await expect(page.getByTestId('login-captcha-question')).toBeVisible();
@@ -47,6 +53,9 @@ export async function loginThroughPortal(page: Page, credentials: LoginCredentia
   await page.getByTestId('login-password').fill(credentials.password);
   await page.getByTestId('login-captcha-answer').fill(answer);
   await page.getByTestId('login-submit').click();
+
+  // Wait for navigation after login
+  await page.waitForLoadState('networkidle');
 }
 
 export async function loginAsAdmin(page: Page) {

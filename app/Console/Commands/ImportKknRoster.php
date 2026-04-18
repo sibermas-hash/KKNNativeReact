@@ -21,8 +21,8 @@ class ImportKknRoster extends Command
     protected $signature = 'kkn:import-roster 
         {file : Path to Excel file (Database Nilai KKN *.xlsx)}
         {--period= : Period ID (wajib diisi)}
-        {--faculty= : Default faculty_id (fallback)}
-        {--program= : Default program_id (fallback)}
+        {--faculty= : Default fakultas_id (fallback)}
+        {--program= : Default prodi_id (fallback)}
         {--password= : Default password for new users (default: random 12 chars)}';
 
     protected $description = 'Import roster KKN (kelompok, lokasi, DPL, mahasiswa) dari Excel';
@@ -91,7 +91,7 @@ class ImportKknRoster extends Command
                     ['code' => 'G'.$kelompok],
                     [
                         'nama_kelompok' => 'Kelompok '.$kelompok,
-                        'period_id' => $periodId,
+                        'periode_id' => $periodId,
                         'location_id' => $location->id,
                         'status' => 'draft',
                     ]
@@ -115,7 +115,7 @@ class ImportKknRoster extends Command
                     [
                         'nip' => 'DPL'.$dplUser->id,
                         'nama' => $dplName,
-                        'faculty_id' => $defaultFaculty,
+                        'fakultas_id' => $defaultFaculty,
                     ]
                 );
 
@@ -142,8 +142,8 @@ class ImportKknRoster extends Command
                     [
                         'user_id' => $studentUser->id,
                         'nama' => $nama,
-                        'faculty_id' => $defaultFaculty,
-                        'program_id' => $defaultProgram,
+                        'fakultas_id' => $defaultFaculty,
+                        'prodi_id' => $defaultProgram,
                         'batch_year' => 2026,
                         'gender' => $gender,
                         'university' => $pt,

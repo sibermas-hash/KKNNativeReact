@@ -31,19 +31,19 @@ export default function DosenIndex({ users, filters }: Props) {
 
       <div className="max-w-7xl mx-auto space-y-6 sm:px-6 lg:px-8 font-sans pb-12">
         {/* HEADER SECTION */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-gray-200 pt-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-emerald-50 pt-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-[#1a7a4a]">
               <Users size={16} />
-              <span className="text-sm font-medium text-gray-700">Manajemen Pengguna</span>
+              <span className="text-sm font-medium text-emerald-800">Manajemen Pengguna</span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 leading-tight">Direktori Dosen</h1>
-            <p className="text-sm text-gray-700 max-w-2xl mt-1">
+            <h1 className="text-2xl font-bold text-emerald-950 leading-tight">Direktori Dosen</h1>
+            <p className="text-sm text-emerald-800 max-w-2xl mt-1">
               Pengelolaan akun Dosen Pembimbing Lapangan (DPL) dan koordinator wilayah operasional KKN.
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <Link href="/admin/dosen/sinkron" className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 transition-colors">
+            <Link href="/admin/dosen/sinkron" className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-emerald-800 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 transition-colors">
               <RefreshCw size={15} /> Sinkronisasi
             </Link>
             <Link href="/admin/pengguna/buat?role=dpl" className="inline-flex items-center gap-2 px-4 py-2 bg-[#16a34a] text-white text-sm font-medium rounded-lg shadow-sm hover:bg-[#15803d] transition-colors">
@@ -76,8 +76,8 @@ export default function DosenIndex({ users, filters }: Props) {
                   <span className="text-xs font-semibold text-amber-700">Password Sementara Berhasil Diterbitkan</span>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-sm text-amber-900 font-medium">Username: <span className="font-bold underline">{flash.temporary_username}</span></span>
-                    <span className="text-gray-500">|</span>
-                    <span className="text-sm text-gray-800 font-bold">Password: <code className="bg-white px-1.5 py-0.5 rounded border border-amber-200 select-all">{flash.temporary_password}</code></span>
+                    <span className="text-emerald-700">|</span>
+                    <span className="text-sm text-emerald-950 font-bold">Password: <code className="bg-white px-1.5 py-0.5 rounded border border-amber-200 select-all">{flash.temporary_password}</code></span>
                   </div>
                 </div>
               </div>
@@ -89,20 +89,20 @@ export default function DosenIndex({ users, filters }: Props) {
         </AnimatePresence>
 
         {/* TABLE SECTION */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
-          <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden flex flex-col">
+          <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-[#1f2937]">
-              <Users size={16} className="text-gray-700" />
+              <Users size={16} className="text-emerald-800" />
               <h3 className="text-sm font-semibold">Daftar Akun DPL</h3>
             </div>
             <form onSubmit={handleSearch} className="relative w-full sm:w-80">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-600" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-800" />
               <input 
                 type="text" 
                 placeholder="Cari nama atau NIP..." 
                 value={search} 
                 onChange={e => setSearch(e.target.value)} 
-                className="w-full h-9 pl-9 pr-4 bg-white border border-gray-300 rounded-md text-sm text-gray-900 focus:border-[#f3f4f6]0 focus:ring-[#1a7a4a] shadow-sm"
+                className="w-full h-9 pl-9 pr-4 bg-white border border-gray-300 rounded-md text-sm text-emerald-950 focus:border-[#f3f4f6]0 focus:ring-[#1a7a4a] shadow-sm"
               />
             </form>
           </div>
@@ -111,16 +111,16 @@ export default function DosenIndex({ users, filters }: Props) {
             <table className="min-w-full divide-y divide-gray-200 text-left">
               <thead className="bg-white">
                 <tr>
-                  <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Profil Dosen</th>
-                  <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Afiliasi Institusi</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Status Akses</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">Aksi</th>
+                  <th className="px-6 py-3 text-xs font-medium text-emerald-800 uppercase tracking-wider">Profil Dosen</th>
+                  <th className="px-6 py-3 text-xs font-medium text-emerald-800 uppercase tracking-wider">Afiliasi Institusi</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-emerald-800 uppercase tracking-wider">Status Akses</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-emerald-800 uppercase tracking-wider">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
                 {users.data.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-12 text-center text-sm text-gray-700">
+                    <td colSpan={4} className="px-6 py-12 text-center text-sm text-emerald-800">
                       Tidak ada data dosen ditemukan.
                     </td>
                   </tr>
@@ -129,22 +129,22 @@ export default function DosenIndex({ users, filters }: Props) {
                     <tr key={user.id} className="hover:bg-gray-50 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="h-9 w-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 text-xs font-bold border border-gray-200">
+                          <div className="h-9 w-9 rounded-full bg-gray-100 flex items-center justify-center text-emerald-800 text-xs font-bold border border-emerald-50">
                             {user.name.charAt(0).toUpperCase()}
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-gray-900">{user.name}</span>
-                            <span className="text-xs font-mono text-gray-700">NIP: {user.dosen?.nip || '—'}</span>
+                            <span className="text-sm font-medium text-emerald-950">{user.name}</span>
+                            <span className="text-xs font-mono text-emerald-800">NIP: {user.dosen?.nip || '—'}</span>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-700">{user.dosen?.fakultas?.nama || 'Belum dipetakan'}</span>
+                        <span className="text-sm text-emerald-800">{user.dosen?.fakultas?.nama || 'Belum dipetakan'}</span>
                       </td>
                       <td className="px-6 py-4 text-center">
                         <span className={clsx(
                           "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase border",
-                          user.is_active ? "bg-[#e8f5ee] text-[#1a7a4a] border-gray-200" : "bg-rose-50 text-rose-700 border-rose-100"
+                          user.is_active ? "bg-[#e8f5ee] text-[#1a7a4a] border-emerald-50" : "bg-rose-50 text-rose-700 border-rose-100"
                         )}>
                           {user.is_active ? 'Aktif' : 'Nonaktif'}
                         </span>
@@ -153,7 +153,7 @@ export default function DosenIndex({ users, filters }: Props) {
                         <div className="flex items-center justify-end gap-2 text-right">
                           <button 
                             onClick={() => resetTemporaryPassword(user)} 
-                            className="p-1.5 text-gray-700 hover:text-[#1a7a4a] bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                            className="p-1.5 text-emerald-800 hover:text-[#1a7a4a] bg-white border border-emerald-50 rounded-md hover:bg-gray-50 transition-colors"
                             title="Reset Password"
                           >
                             <KeyRound size={16} />
@@ -173,8 +173,8 @@ export default function DosenIndex({ users, filters }: Props) {
             </table>
           </div>
 
-          <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
-            <span className="text-xs text-gray-700">
+          <div className="px-6 py-4 border-t border-emerald-50 bg-gray-50 flex items-center justify-between">
+            <span className="text-xs text-emerald-800">
               Halaman {users.meta.current_page} — Total {users.meta.total} dosen
             </span>
             <Pagination meta={users.meta} />
@@ -187,18 +187,18 @@ export default function DosenIndex({ users, filters }: Props) {
 
 function StatCard({ label, value, icon: Icon, color = 'slate', isText = false }: { label: string; value: number | string; icon: LucideIcon; color?: 'emerald' | 'slate'; isText?: boolean; }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-center justify-between shadow-sm">
+    <div className="bg-white border border-emerald-50 rounded-xl p-5 flex items-center justify-between shadow-sm">
       <div className="flex flex-col">
-        <span className="text-sm font-medium text-gray-700 mb-1">{label}</span>
+        <span className="text-sm font-medium text-emerald-800 mb-1">{label}</span>
         <div className="flex items-center gap-2">
-            <span className="text-2xl font-semibold text-gray-900 leading-none">
+            <span className="text-2xl font-semibold text-emerald-950 leading-none">
               {isText ? value : (typeof value === 'number' ? value.toLocaleString('id-ID') : value)}
             </span>
         </div>
       </div>
       <div className={clsx(
         "h-12 w-12 rounded-lg border flex items-center justify-center shrink-0 shadow-sm",
-        color === 'emerald' ? 'bg-[#e8f5ee] border-gray-200 text-[#1a7a4a]' : 'bg-gray-50 border-gray-100 text-gray-700'
+        color === 'emerald' ? 'bg-[#e8f5ee] border-emerald-50 text-[#1a7a4a]' : 'bg-gray-50 border-gray-100 text-emerald-800'
       )}>
         <Icon size={24} strokeWidth={1.5} />
       </div>

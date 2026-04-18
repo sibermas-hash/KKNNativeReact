@@ -33,7 +33,7 @@ class DplAssignmentService
             [
                 'dosen_id' => $dosen->id,
                 'dosen_nama' => $dosen->nama,
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
                 'period_name' => $period->name,
                 'max_groups' => $maxGroups,
                 'account_created' => $result['provisioning']['created'] ?? false,
@@ -95,7 +95,7 @@ class DplAssignmentService
 
         // Check if already active for period
         $dplPeriod = DplPeriod::where('dosen_id', $dosen->id)
-            ->where('period_id', $period->id)
+            ->where('periode_id', $period->id)
             ->first();
 
         $activation = $dplPeriod
@@ -116,7 +116,7 @@ class DplAssignmentService
             [
                 'dosen_id' => $dosen->id,
                 'dosen_nama' => $dosen->nama,
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
                 'period_name' => $period->name,
                 'district_id' => $district->district_id,
                 'district_name' => $district->district_name,
@@ -153,9 +153,9 @@ class DplAssignmentService
 
         DB::transaction(function () use ($dplPeriod) {
             // Clear any groups that still reference this DPL period
-            KelompokKkn::where('dpl_period_id', $dplPeriod->id)
+            KelompokKkn::where('dpl_periode_id', $dplPeriod->id)
                 ->update([
-                    'dpl_period_id' => null,
+                    'dpl_periode_id' => null,
                     'dpl_id' => null,
                 ]);
 
@@ -180,7 +180,7 @@ class DplAssignmentService
             "DPL {$dplPeriod->dosen->nama} dihapus dari periode {$dplPeriod->periode->name}",
             [
                 'dosen_id' => $dplPeriod->dosen_id,
-                'period_id' => $dplPeriod->period_id,
+                'periode_id' => $dplPeriod->periode_id,
             ],
             $adminId
         );

@@ -70,7 +70,7 @@ export default function StudentWorkshopIndex({ workshops = [], dpl_eligibility }
           <div className={clsx(
             "p-8 rounded-[2.5rem] border flex flex-col md:flex-row items-center gap-8 shadow-sm transition-all duration-500",
             dpl_eligibility.eligible 
-              ? "bg-white border-gray-200" 
+              ? "bg-white border-emerald-50" 
               : "bg-rose-50/50 border-rose-100"
           )}>
             <div className={clsx(
@@ -82,7 +82,7 @@ export default function StudentWorkshopIndex({ workshops = [], dpl_eligibility }
             <div className="flex-1 space-y-2 text-center md:text-left">
               <h3 className={clsx(
                 "text-lg font-black uppercase tracking-tight",
-                dpl_eligibility.eligible ? "text-gray-900" : "text-rose-900"
+                dpl_eligibility.eligible ? "text-emerald-950" : "text-rose-900"
               )}>
                 {dpl_eligibility.eligible ? 'Status Kelayakan: Memenuhi Syarat' : 'Belum Dapat Mendaftar'}
               </h3>
@@ -94,7 +94,7 @@ export default function StudentWorkshopIndex({ workshops = [], dpl_eligibility }
               </p>
             </div>
             {dpl_eligibility.eligible && (
-              <div className="px-6 py-2 bg-emerald-50 rounded-xl border border-gray-200 text-xs font-black text-emerald-600 uppercase tracking-widest animate-pulse">
+              <div className="px-6 py-2 bg-emerald-50 rounded-xl border border-emerald-50 text-xs font-black text-emerald-600 uppercase tracking-widest animate-pulse">
                 Terverifikasi
               </div>
             )}
@@ -104,7 +104,7 @@ export default function StudentWorkshopIndex({ workshops = [], dpl_eligibility }
         {/* WORKSHOP LIST */}
         <div className="space-y-6">
           <div className="flex items-center gap-4 px-4">
-            <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest">Jadwal Tersedia</h2>
+            <h2 className="text-sm font-black text-emerald-500 uppercase tracking-widest">Jadwal Tersedia</h2>
             <div className="h-px flex-1 bg-gray-100" />
           </div>
 
@@ -129,7 +129,7 @@ export default function StudentWorkshopIndex({ workshops = [], dpl_eligibility }
                         <div className="flex items-center gap-3">
                           <span className={clsx(
                             "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border",
-                            w.is_registered ? "bg-emerald-50 text-emerald-600 border-gray-200" : "bg-gray-50 text-gray-500 border-gray-100"
+                            w.is_registered ? "bg-emerald-50 text-emerald-600 border-emerald-50" : "bg-gray-50 text-emerald-700 border-gray-100"
                           )}>
                             {w.is_registered ? 'Terdaftar' : 'Tersedia'}
                           </span>
@@ -137,36 +137,36 @@ export default function StudentWorkshopIndex({ workshops = [], dpl_eligibility }
                             <span className="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-100">Penuh</span>
                           )}
                         </div>
-                        <h3 className="text-2xl font-black text-gray-900 tracking-tight uppercase leading-none">{w.title}</h3>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest line-clamp-1">{w.description || 'Tidak ada deskripsi tambahan.'}</p>
+                        <h3 className="text-2xl font-black text-emerald-950 tracking-tight uppercase leading-none">{w.title}</h3>
+                        <p className="text-xs font-bold text-emerald-500 uppercase tracking-widest line-clamp-1">{w.description || 'Tidak ada deskripsi tambahan.'}</p>
                       </div>
 
                       <div className="flex flex-wrap gap-x-8 gap-y-4">
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-emerald-50 group-hover:text-[#1a7a4a] transition-colors">
+                          <div className="h-10 w-10 rounded-2xl bg-gray-50 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-50 group-hover:text-[#1a7a4a] transition-colors">
                             <Calendar size={18} />
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Tanggal</span>
-                            <span className="text-xs font-black text-gray-700 uppercase">{w.date}</span>
+                            <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Tanggal</span>
+                            <span className="text-xs font-black text-emerald-800 uppercase">{w.date}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-emerald-50 group-hover:text-[#1a7a4a] transition-colors">
+                          <div className="h-10 w-10 rounded-2xl bg-gray-50 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-50 group-hover:text-[#1a7a4a] transition-colors">
                             <Clock size={18} />
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Waktu</span>
-                            <span className="text-xs font-black text-gray-700 uppercase">{w.time}</span>
+                            <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Waktu</span>
+                            <span className="text-xs font-black text-emerald-800 uppercase">{w.time}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-emerald-50 group-hover:text-[#1a7a4a] transition-colors">
+                          <div className="h-10 w-10 rounded-2xl bg-gray-50 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-50 group-hover:text-[#1a7a4a] transition-colors">
                             <MapPin size={18} />
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Lokasi</span>
-                            <span className="text-xs font-black text-gray-700 uppercase truncate max-w-[200px]">{w.location || 'LPPM'}</span>
+                            <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Lokasi</span>
+                            <span className="text-xs font-black text-emerald-800 uppercase truncate max-w-[200px]">{w.location || 'LPPM'}</span>
                           </div>
                         </div>
                       </div>
@@ -174,14 +174,14 @@ export default function StudentWorkshopIndex({ workshops = [], dpl_eligibility }
 
                     <div className="shrink-0 flex flex-col items-center md:items-end gap-4">
                       <div className="text-right hidden md:block">
-                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest block mb-1">Kapasitas</span>
-                        <div className="text-xl font-black text-gray-900 tabular-nums">
+                        <span className="text-xs font-black text-emerald-500 uppercase tracking-widest block mb-1">Kapasitas</span>
+                        <div className="text-xl font-black text-emerald-950 tabular-nums">
                           {w.registered} <span className="text-xs text-slate-300">/ {w.max_participants || '∞'}</span>
                         </div>
                       </div>
 
                       {w.is_registered ? (
-                        <div className="flex items-center gap-2 px-8 py-4 bg-emerald-50 text-emerald-600 rounded-2xl border border-gray-200">
+                        <div className="flex items-center gap-2 px-8 py-4 bg-emerald-50 text-emerald-600 rounded-2xl border border-emerald-50">
                           <CheckCircle2 size={18} strokeWidth={3} />
                           <span className="text-xs font-black uppercase tracking-widest">Sudah Terdaftar</span>
                         </div>

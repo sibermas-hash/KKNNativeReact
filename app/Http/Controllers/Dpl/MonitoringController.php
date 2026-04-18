@@ -96,7 +96,7 @@ class MonitoringController extends Controller
         MonitoringDpl::create([
             'dpl_id' => $dosen->id,
             'kelompok_id' => $validated['kelompok_id'],
-            'periode_id' => $kelompok->period_id,
+            'periode_id' => $kelompok->periode_id,
             'tanggal_kunjungan' => $validated['tanggal_kunjungan'],
             'permasalahan' => $validated['permasalahan'],
             'solusi' => $validated['solusi'],

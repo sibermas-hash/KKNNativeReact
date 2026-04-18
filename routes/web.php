@@ -3,11 +3,12 @@
 use App\Http\Controllers\AiAssistantController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\PasswordResetController;
-use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,9 +26,9 @@ use Illuminate\Support\Facades\Route;
 
 // Guest routes (login, password reset)
 if (config('app.env') === 'local') {
-    Route::post('/auth/login', function (\Illuminate\Http\Request $request) {
+    Route::post('/auth/login', function (Request $request) {
         return response()->json(['access_token' => 'student_test_token']);
-    })->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+    })->withoutMiddleware([VerifyCsrfToken::class]);
 }
 Route::middleware(['guest', 'kkn.throttle', 'disable.debugbar'])->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
@@ -65,6 +66,8 @@ Route::middleware(['auth', 'verified', 'disable.debugbar'])->group(function () {
     Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profil/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
     Route::patch('/profil/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::get('/profil/check-nik', [ProfileController::class, 'checkNik'])->name('profile.check-nik');
+    Route::get('/ganti-password', [ProfileController::class, 'passwordChange'])->name('profile.password-change');
 
     // Logout
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
@@ -80,4 +83,8 @@ Route::middleware(['auth', 'verified', 'disable.debugbar'])->group(function () {
         ->middleware('role:superadmin|dpl|student');
 });
 
-Route::get('/auto-login', function() { auth()->loginUsingId(1); return redirect('/admin/laporan/program-kerja'); });
+Route::get('/auto-login', function () {
+    auth()->loginUsingId(1);
+
+    return redirect('/admin/laporan/program-kerja');
+});

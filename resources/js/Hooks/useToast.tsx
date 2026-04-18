@@ -1,5 +1,5 @@
 import type { ReactNode} from 'react';
-import { createContext, useContext, useCallback, useState } from 'react';
+import { createContext, useContext, useCallback, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
 
@@ -45,7 +45,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     const warning = useCallback((message: string, duration?: number) => show(message, 'warning', duration), [show]);
     const info = useCallback((message: string, duration?: number) => show(message, 'info', duration), [show]);
 
-    const value: ToastContextType = { show, success, error, warning, info };
+    const value: ToastContextType = useMemo(() => ({ show, success, error, warning, info }), [show, success, error, warning, info]);
 
     return (
         <ToastContext.Provider value={value}>
@@ -90,7 +90,7 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
         success: {
             bg: 'bg-emerald-50 border-emerald-200',
             icon: <CheckCircle className="w-5 h-5 text-emerald-600" />,
-            text: 'text-black',
+            text: 'text-emerald-950',
             progress: 'bg-emerald-500',
         },
         error: {
@@ -129,7 +129,7 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
             </div>
             <button
                 onClick={() => onRemove(toast.id)}
-                className="flex-shrink-0 text-gray-900 hover:text-gray-600 transition-colors"
+                className="flex-shrink-0 text-emerald-950 hover:text-emerald-800 transition-colors"
                 aria-label="Tutup notifikasi"
             >
                 <X className="w-4 h-4" />

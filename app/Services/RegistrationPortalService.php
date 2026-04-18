@@ -48,7 +48,7 @@ class RegistrationPortalService
                 ->whereDate('registration_end', '>=', $today)
                 ->with([
                     'kelompok' => function ($query) {
-                        $query->select(['id', 'period_id', 'location_id', 'nama_kelompok', 'capacity', 'status'])
+                        $query->select(['id', 'periode_id', 'location_id', 'nama_kelompok', 'capacity', 'status'])
                             ->where('status', 'active')
                             ->with([
                                 'lokasi:id,village_name,district_name,regency_name',

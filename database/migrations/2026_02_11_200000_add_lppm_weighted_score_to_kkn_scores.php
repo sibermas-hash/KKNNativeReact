@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('kkn_scores', function (Blueprint $table) {
+        Schema::table('nilai_kkn', function (Blueprint $table) {
             $table->decimal('lppm_weighted_score', 5, 2)->nullable()->after('village_weighted_score');
         });
     }
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('kkn_scores', function (Blueprint $table) {
+        Schema::table('nilai_kkn', function (Blueprint $table) {
             $table->dropColumn('lppm_weighted_score');
         });
     }

@@ -63,7 +63,7 @@ class StressTestRegistrationCommand extends Command
             'nama' => "Fakultas Stress {$runToken}",
         ]);
         $program = Prodi::factory()->create([
-            'faculty_id' => $faculty->id,
+            'fakultas_id' => $faculty->id,
             'nama' => "Prodi Stress {$runToken}",
         ]);
         $location = Lokasi::factory()->create([
@@ -77,7 +77,7 @@ class StressTestRegistrationCommand extends Command
             'registration_end' => now()->addDay()->toDateString(),
         ]);
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'nama_kelompok' => "Kelompok Stress {$runToken}",
             'status' => 'active',
@@ -94,8 +94,8 @@ class StressTestRegistrationCommand extends Command
 
             $student = Mahasiswa::factory()->create([
                 'user_id' => $user->id,
-                'faculty_id' => $faculty->id,
-                'program_id' => $program->id,
+                'fakultas_id' => $faculty->id,
+                'prodi_id' => $program->id,
                 'gender' => 'L',
             ]);
 
@@ -116,7 +116,7 @@ class StressTestRegistrationCommand extends Command
         $fullGroupCount = $results->filter(fn (array $result) => str_contains((string) ($result['message'] ?? ''), 'Kelompok sudah penuh'))->count();
 
         $registeredCount = PesertaKkn::query()
-            ->where('period_id', $period->id)
+            ->where('periode_id', $period->id)
             ->where('kelompok_id', $group->id)
             ->whereIn('status', ['pending', 'document_submitted', 'approved'])
             ->count();
@@ -233,12 +233,12 @@ class StressTestRegistrationCommand extends Command
         Prodi $program,
         Fakultas $faculty,
     ): void {
-        PesertaKkn::query()->where('period_id', $period->id)->delete();
+        PesertaKkn::query()->where('periode_id', $period->id)->delete();
 
         $studentIds = $students->pluck('id');
         $userIds = $students->pluck('user_id');
 
-        AntrianKkn::query()->where('period_id', $period->id)->whereIn('mahasiswa_id', $studentIds)->delete();
+        AntrianKkn::query()->where('periode_id', $period->id)->whereIn('mahasiswa_id', $studentIds)->delete();
         Mahasiswa::query()->whereIn('id', $studentIds)->delete();
         User::query()->whereIn('id', $userIds)->delete();
 

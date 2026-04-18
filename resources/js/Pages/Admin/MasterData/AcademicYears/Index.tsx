@@ -138,7 +138,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
             >
               <form onSubmit={submit} className="space-y-5">
                 <div className="space-y-1.5">
-                  <label htmlFor="academic-year" className="block text-sm font-medium text-gray-900">
+                  <label htmlFor="academic-year" className="block text-sm font-medium text-emerald-950">
                     Tahun Akademik
                   </label>
                   <input
@@ -147,7 +147,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                     placeholder="Contoh: 2026/2027"
                     value={form.data.year}
                     onChange={(event) => form.setData('year', event.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none transition-all placeholder:text-gray-400"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 bg-white text-sm text-emerald-950 focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none transition-all placeholder:text-black"
                   />
                   {form.errors.year && (
                     <p className="text-xs text-red-500 mt-1">{form.errors.year}</p>
@@ -165,10 +165,10 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                     />
                   </div>
                   <div className="flex flex-col">
-                    <label htmlFor="is_active" className="text-sm font-semibold text-gray-900 cursor-pointer">
+                    <label htmlFor="is_active" className="text-sm font-semibold text-emerald-950 cursor-pointer">
                       Jadikan Aktif
                     </label>
-                    <p className="text-xs text-gray-700 mt-0.5">Otomatis diatur sebagai tahun ajaran berjalan.</p>
+                    <p className="text-xs text-emerald-800 mt-0.5">Otomatis diatur sebagai tahun ajaran berjalan.</p>
                   </div>
                 </div>
 
@@ -204,7 +204,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
               }
               footer={
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-700">
+                  <span className="text-xs text-emerald-800">
                     Menampilkan {rows.length} baris
                   </span>
                   {paginationMeta && <Pagination meta={paginationMeta} />}
@@ -213,16 +213,16 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
             >
               <table className="min-w-full">
                 <thead>
-                  <tr className="border-b-2 border-gray-200">
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Tahun Akademik</th>
-                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
+                  <tr className="border-b-2 border-emerald-50">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-emerald-800 uppercase tracking-wider">Tahun Akademik</th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-emerald-800 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-right text-xs font-semibold text-emerald-800 uppercase tracking-wider">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f3f4f6]">
                   {rows.length === 0 ? (
                     <tr>
-                      <td colSpan={3} className="px-6 py-16 text-center text-sm text-gray-700">
+                      <td colSpan={3} className="px-6 py-16 text-center text-sm text-emerald-800">
                         Belum ada data tahun akademik.
                       </td>
                     </tr>
@@ -230,7 +230,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                     rows.map((year) => (
                       <tr key={year.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4">
-                          <span className="text-base font-semibold text-gray-900">{year.year}</span>
+                          <span className="text-base font-semibold text-emerald-950">{year.year}</span>
                         </td>
                         <td className="px-6 py-4 text-center">
                           <StatusTag status={year.is_active ? 'Aktif' : 'Nonaktif'} />
@@ -239,7 +239,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => toggleStatus(year)}
-                              className="h-8 px-3.5 rounded-md text-sm font-medium border border-gray-300 text-gray-900 bg-white hover:bg-gray-50 transition-colors"
+                              className="h-8 px-3.5 rounded-md text-sm font-medium border border-gray-300 text-emerald-950 bg-white hover:bg-gray-50 transition-colors"
                             >
                               {year.is_active ? 'Nonaktifkan' : 'Aktifkan'}
                             </button>

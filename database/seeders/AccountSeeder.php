@@ -41,7 +41,7 @@ class AccountSeeder extends Seeder
         $this->command->info('Faculty seeded.');
 
         $this->command->info('Seeding program...');
-        $program = Program::firstOrCreate(['code' => 'PAI', 'faculty_id' => $faculty->id], [
+        $program = Program::firstOrCreate(['code' => 'PAI', 'fakultas_id' => $faculty->id], [
             'nama' => 'Pendidikan Agama Islam',
         ]);
         $this->command->info('Program seeded.');
@@ -68,8 +68,8 @@ class AccountSeeder extends Seeder
             [
                 'nim' => '214110001',
                 'nama' => 'Budi Mahasiswa',
-                'faculty_id' => $faculty->id,
-                'program_id' => $program->id,
+                'fakultas_id' => $faculty->id,
+                'prodi_id' => $program->id,
                 'batch_year' => 2021,
                 'gender' => 'L',
             ]
@@ -103,7 +103,7 @@ class AccountSeeder extends Seeder
             [
                 'nip' => '198501012024011',
                 'nama' => 'Dr. Ahmad Dosen, M.Pd.',
-                'faculty_id' => $faculty->id,
+                'fakultas_id' => $faculty->id,
             ]
         );
         $this->command->info('Lecturer profile created.');

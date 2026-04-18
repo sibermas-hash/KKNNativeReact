@@ -3,7 +3,8 @@
 use App\Models\KKN\SystemSetting;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
-use function Pest\Laravel\{actingAs, get, patch};
+
+use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web']);

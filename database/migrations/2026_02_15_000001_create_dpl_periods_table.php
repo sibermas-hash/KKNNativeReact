@@ -7,21 +7,21 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Create the dpl_periods pivot table.
-     * Allows a single Dosen (DPL) to be assigned to multiple KKN periods
-     * with a configurable maximum number of groups per period.
+     * Create the dpl_periode pivot table.
+     * Allows a single Dosen (DPL) to be assigned to multiple KKN periode
+     * with a configurable maximum number of kelompok_kkn per period.
      */
     public function up(): void
     {
-        Schema::create('dpl_periods', function (Blueprint $table) {
+        Schema::create('dpl_periode', function (Blueprint $table) {
             $table->id();
             $table->foreignId('dosen_id')->constrained('dosen')->onDelete('cascade');
-            $table->foreignId('period_id')->constrained('periode')->onDelete('cascade');
-            $table->integer('max_groups')->default(5);
+            $table->foreignId('periode_id')->constrained('periode')->onDelete('cascade');
+            $table->integer('max_kelompok_kkn')->default(5);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-            $table->unique(['dosen_id', 'period_id']);
+            $table->unique(['dosen_id', 'periode_id']);
         });
     }
 
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('dpl_periods');
+        Schema::dropIfExists('dpl_periode');
     }
 };

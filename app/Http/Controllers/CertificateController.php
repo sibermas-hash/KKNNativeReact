@@ -86,15 +86,15 @@ class CertificateController extends Controller
             ->with(['mahasiswa', 'kelompok.periode', 'kelompok.lokasi']);
 
         if ($isFacultyAdmin) {
-            $query->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $user->faculty_id));
+            $query->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $user->fakultas_id));
         }
 
         if ($request->filled('kelompok_id')) {
             $query->where('kelompok_id', $request->kelompok_id);
         }
 
-        if ($request->filled('period_id')) {
-            $query->whereHas('kelompok', fn ($q) => $q->where('period_id', $request->period_id));
+        if ($request->filled('periode_id')) {
+            $query->whereHas('kelompok', fn ($q) => $q->where('periode_id', $request->periode_id));
         }
 
         $scores = $query->get();

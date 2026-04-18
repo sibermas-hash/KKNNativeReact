@@ -49,7 +49,7 @@ class FinalizeMassScoresJob implements ShouldQueue
 
         // FIX C6: Use chunkById instead of chunk to prevent skipping/duplicating records
         NilaiKkn::whereHas('kelompok', function ($query) {
-            $query->where('period_id', $this->periodId);
+            $query->where('periode_id', $this->periodId);
         })
             ->where('is_finalized', false)
             ->whereNotNull('total_score')
@@ -131,7 +131,7 @@ class FinalizeMassScoresJob implements ShouldQueue
             'MASS_FINALIZE_COMPLETED',
             "Finalisasi massal selesai untuk Periode ID: {$this->periodId}. Total diproses: {$processed}, Berhasil: {$totalFinalized}, Gagal: {$failed}",
             null,
-            ['period_id' => $this->periodId],
+            ['periode_id' => $this->periodId],
             ['processed' => $processed, 'finalized' => $totalFinalized, 'failed' => $failed]
         );
 

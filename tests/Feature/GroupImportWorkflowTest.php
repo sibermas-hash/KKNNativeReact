@@ -43,7 +43,7 @@ test('superadmin can import groups and automatically create locations from the s
     ], 'kkn');
 
     $this->assertDatabaseHas('kelompok_kkn', [
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'code' => 'KKN-A1',
         'nama_kelompok' => 'Kelompok A1',
     ], 'kkn');
@@ -73,7 +73,7 @@ test('superadmin import groups updates matching location data when available', f
     ])->assertRedirect()->assertSessionHas('success');
 
     $this->assertDatabaseHas('kelompok_kkn', [
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'code' => 'KKN-A1',
         'nama_kelompok' => 'Kelompok A1',
         'capacity' => 12,

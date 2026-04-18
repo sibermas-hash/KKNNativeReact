@@ -8,19 +8,19 @@ def test_get_mahasiswa_pendaftaran_with_valid_token():
         "Accept": "application/json",
         "Authorization": "Bearer valid_student_token"
     }
+    timeout = 30
 
     try:
-        response = requests.get(url, headers=headers, timeout=30)
-        assert response.status_code == 200, f"Expected status code 200, got {response.status_code}"
+        response = requests.get(url, headers=headers, timeout=timeout)
+        # Assert status code 200
+        assert response.status_code == 200, f"Expected status code 200 but got {response.status_code}"
 
         json_data = response.json()
-        assert isinstance(json_data, dict), "Response JSON is not a dictionary"
-
-        # Check that eligibility info is present and eligible is boolean true or false
+        # eligibility info presence and type check
         assert "eligible" in json_data, "Response JSON missing 'eligible' field"
-        assert isinstance(json_data["eligible"], bool), "'eligible' field is not a boolean"
+        assert isinstance(json_data["eligible"], bool), "'eligible' field should be boolean"
 
     except requests.RequestException as e:
-        assert False, f"Request to {url} failed: {e}"
+        assert False, f"HTTP request failed: {e}"
 
 test_get_mahasiswa_pendaftaran_with_valid_token()

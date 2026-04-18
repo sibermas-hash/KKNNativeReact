@@ -65,7 +65,7 @@ class DispensasiController extends Controller
     {
         $validated = $request->validate([
             'nim' => ['required', 'string', 'max:20'],
-            'period_id' => ['nullable', 'exists:App\Models\KKN\Periode,id'],
+            'periode_id' => ['nullable', 'exists:App\Models\KKN\Periode,id'],
             'alasan' => ['required', 'string', 'max:500'],
             'bypassed_requirements' => ['nullable', 'array'],
             'bypassed_requirements.*' => ['string', 'in:min_sks,min_gpa,bta_ppi,documents,personal_status,program_prodi'],

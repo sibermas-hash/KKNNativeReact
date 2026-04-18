@@ -10,8 +10,8 @@ use App\Models\KKN\Lokasi;
 use App\Models\KKN\Periode;
 use App\Models\User;
 use App\Services\DplAssignmentService;
-use App\Services\DplProvisioningService;
 use App\Services\DplEligibilityService;
+use App\Services\DplProvisioningService;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Mockery;
@@ -72,7 +72,7 @@ class DplAssignmentServiceTest extends TestCase
         $this->assertTrue($result['assignment']->is_active);
         $this->assertSame(5, $result['assignment']->max_groups);
         $this->assertSame($dosen->id, $result['assignment']->dosen_id);
-        $this->assertSame($periode->id, $result['assignment']->period_id);
+        $this->assertSame($periode->id, $result['assignment']->periode_id);
     }
 
     public function test_activate_for_period_updates_existing_assignment(): void
@@ -83,7 +83,7 @@ class DplAssignmentServiceTest extends TestCase
 
         DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'max_groups' => 3,
             'is_active' => false,
         ]);
@@ -118,13 +118,13 @@ class DplAssignmentServiceTest extends TestCase
 
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'max_groups' => 5,
             'is_active' => false,
         ]);
 
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
         ]);
 
         $this->expectException(DomainException::class);
@@ -141,13 +141,13 @@ class DplAssignmentServiceTest extends TestCase
 
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $periodeA->id,
+            'periode_id' => $periodeA->id,
             'max_groups' => 5,
             'is_active' => true,
         ]);
 
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periodeB->id,
+            'periode_id' => $periodeB->id,
         ]);
 
         $this->expectException(DomainException::class);
@@ -164,25 +164,25 @@ class DplAssignmentServiceTest extends TestCase
 
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'max_groups' => 1,
             'is_active' => true,
         ]);
 
         // Create one group already assigned to this DPL
         KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
             'dpl_id' => $dosen->id,
-            'dpl_period_id' => $dplPeriod->id,
+            'dpl_periode_id' => $dplPeriod->id,
         ]);
 
         // Create another group not yet assigned
         $newGroup = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
             'dpl_id' => null,
-            'dpl_period_id' => null,
+            'dpl_periode_id' => null,
         ]);
 
         $this->expectException(DomainException::class);
@@ -199,16 +199,16 @@ class DplAssignmentServiceTest extends TestCase
 
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'max_groups' => 5,
             'is_active' => true,
         ]);
 
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
             'dpl_id' => null,
-            'dpl_period_id' => null,
+            'dpl_periode_id' => null,
         ]);
 
         $this->service->assignPrimaryGroup($dplPeriod, $kelompok);
@@ -216,7 +216,7 @@ class DplAssignmentServiceTest extends TestCase
         $kelompok->refresh();
 
         $this->assertSame($dosen->id, $kelompok->dpl_id);
-        $this->assertSame($dplPeriod->id, $kelompok->dpl_period_id);
+        $this->assertSame($dplPeriod->id, $kelompok->dpl_periode_id);
     }
 
     public function test_assign_primary_group_demotes_existing_ketua(): void
@@ -228,23 +228,23 @@ class DplAssignmentServiceTest extends TestCase
 
         $oldDplPeriod = DplPeriod::create([
             'dosen_id' => $oldDosen->id,
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'max_groups' => 5,
             'is_active' => true,
         ]);
 
         $newDplPeriod = DplPeriod::create([
             'dosen_id' => $newDosen->id,
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'max_groups' => 5,
             'is_active' => true,
         ]);
 
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
             'dpl_id' => $oldDosen->id,
-            'dpl_period_id' => $oldDplPeriod->id,
+            'dpl_periode_id' => $oldDplPeriod->id,
         ]);
 
         $kelompok->dosen()->attach($oldDosen->id, ['role' => 'Ketua']);
@@ -276,16 +276,16 @@ class DplAssignmentServiceTest extends TestCase
 
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'max_groups' => 1,
             'is_active' => true,
         ]);
 
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
             'dpl_id' => $dosen->id,
-            'dpl_period_id' => $dplPeriod->id,
+            'dpl_periode_id' => $dplPeriod->id,
         ]);
 
         // This should not throw even though at capacity, because it's the same assignment
@@ -302,7 +302,7 @@ class DplAssignmentServiceTest extends TestCase
 
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'max_groups' => 5,
             'is_active' => false,
         ]);
@@ -321,7 +321,7 @@ class DplAssignmentServiceTest extends TestCase
 
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'max_groups' => 5,
             'is_active' => true,
         ]);
@@ -335,7 +335,7 @@ class DplAssignmentServiceTest extends TestCase
         );
 
         $this->assertInstanceOf(DplKecamatanAssignment::class, $assignment);
-        $this->assertSame($periode->id, $assignment->period_id);
+        $this->assertSame($periode->id, $assignment->periode_id);
         $this->assertSame('32.01', $assignment->district_id);
         $this->assertSame('Test District', $assignment->district_name);
         $this->assertSame('Test Regency', $assignment->regency_name);
@@ -352,16 +352,16 @@ class DplAssignmentServiceTest extends TestCase
 
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'max_groups' => 5,
             'is_active' => true,
         ]);
 
         // Create initial assignment
         DplKecamatanAssignment::create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'district_id' => '32.01',
-            'dpl_period_id' => $dplPeriod->id,
+            'dpl_periode_id' => $dplPeriod->id,
             'dosen_id' => $dosen->id,
             'district_name' => 'Old District',
             'regency_name' => 'Old Regency',
@@ -389,7 +389,7 @@ class DplAssignmentServiceTest extends TestCase
 
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'max_groups' => 5,
             'is_active' => true,
         ]);

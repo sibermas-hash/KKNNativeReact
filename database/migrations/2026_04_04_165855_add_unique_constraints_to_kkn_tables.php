@@ -14,7 +14,7 @@ return new class extends Migration
         // Unique constraint: Mahasiswa hanya bisa daftar 1x per periode
         if (! Schema::hasIndex('peserta_kkn', 'unique_mahasiswa_periode')) {
             Schema::table('peserta_kkn', function (Blueprint $table) {
-                $table->unique(['mahasiswa_id', 'period_id'], 'unique_mahasiswa_periode');
+                $table->unique(['mahasiswa_id', 'periode_id'], 'unique_mahasiswa_periode');
             });
         }
 

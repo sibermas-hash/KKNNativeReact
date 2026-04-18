@@ -11,7 +11,7 @@ export const GovernanceProtocols = ({
 }: GovernanceProtocolsProps) => {
   return (
     <div className="p-12 rounded-[4rem] bg-bg-[#e8f5ee] text-white shadow-2xl relative overflow-hidden group">
-      <div className="absolute top-0 right-0 p-12 text-gray-900/10 group-hover:rotate-12 transition-transform duration-[2s]">
+      <div className="absolute top-0 right-0 p-12 text-emerald-950/10 group-hover:rotate-12 transition-transform duration-[2s]">
         <Lock size={180} />
       </div>
       <div className="relative z-10 grid gap-16 md:grid-cols-2">
@@ -25,7 +25,7 @@ export const GovernanceProtocols = ({
                 <div className="h-6 w-6 rounded-lg bg-bg-[#e8f5ee] border border-emerald-800 flex items-center justify-center shrink-0 mt-0.5 group-hover/li:bg-[#16a34a] transition-colors">
                   <Activity className="h-4 w-4 text-emerald-400 group-hover:text-white" />
                 </div>
-                <span className="text-sm font-bold text-gray-700/70 leading-relaxed uppercase tracking-tight">
+                <span className="text-sm font-bold text-emerald-800/70 leading-relaxed uppercase tracking-tight">
                   {item}
                 </span>
               </li>
@@ -42,7 +42,7 @@ export const GovernanceProtocols = ({
                 <div className="h-6 w-6 rounded-lg bg-bg-[#e8f5ee] border border-emerald-800 flex items-center justify-center shrink-0 mt-0.5 group-hover/li:bg-[#16a34a] transition-colors">
                   <Activity className="h-4 w-4 text-emerald-400 group-hover:text-white" />
                 </div>
-                <span className="text-sm font-bold text-gray-700/70 leading-relaxed uppercase tracking-tight">
+                <span className="text-sm font-bold text-emerald-800/70 leading-relaxed uppercase tracking-tight">
                   {item}
                 </span>
               </li>

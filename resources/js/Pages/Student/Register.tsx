@@ -199,7 +199,7 @@ export default function Register({
             <motion.section variants={itemVariants} className="space-y-8">
               <div className="flex items-center gap-6">
                 <div className="h-1 w-24 bg-emerald-600 rounded-full" />
-                <h3 className="text-xs font-bold text-black uppercase tracking-wider text-xs font-semibold">
+                <h3 className="text-xs font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold">
                   Managed Deployments
                 </h3>
               </div>
@@ -215,15 +215,15 @@ export default function Register({
           {periods.length === 0 ? (
             <motion.div
               variants={itemVariants}
-              className="p-20 text-center rounded-xl bg-white border border-dashed border-gray-200/60 group"
+              className="p-20 text-center rounded-xl bg-white border border-dashed border-emerald-50/60 group"
             >
-              <div className="h-12 w-24 bg-emerald-50/30 rounded-[2.5rem] mx-auto flex items-center justify-center border border-gray-200/60 mb-8 text-slate-300 group-hover:text-[#1a7a4a] group-hover:scale-110 transition-all">
+              <div className="h-12 w-24 bg-emerald-50/30 rounded-[2.5rem] mx-auto flex items-center justify-center border border-emerald-50/60 mb-8 text-slate-300 group-hover:text-[#1a7a4a] group-hover:scale-110 transition-all">
                 <FolderKanban size={48} />
               </div>
-              <h3 className="text-2xl font-bold text-black font-bold text-center mb-4">
+              <h3 className="text-2xl font-bold text-emerald-950 font-bold text-center mb-4">
                 No Active Enrollment Cycle
               </h3>
-              <p className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs leading-loose max-w-md mx-auto">
+              <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs leading-loose max-w-md mx-auto">
                 Pantau terus portal informasi LPPM untuk jadwal pendaftaran KKN Reguler Cycle
                 2026/2027.
               </p>
@@ -235,7 +235,7 @@ export default function Register({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-6">
                     <div className="h-1 w-24 bg-emerald-600 rounded-full" />
-                    <h2 className="text-xs font-bold text-black uppercase tracking-wider text-xs font-semibold">
+                    <h2 className="text-xs font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold">
                       Scheme Selection
                     </h2>
                   </div>
@@ -253,7 +253,7 @@ export default function Register({
                         'text-left p-10 rounded-xl border-2 transition-all duration-500 group relative overflow-hidden',
                         form.data.period_id === String(period.id)
                           ? 'border-[#f3f4f6]0 bg-white ring-8 ring-emerald-50 shadow-2xl'
-                          : 'border-slate-50 bg-white hover:border-gray-200 hover:shadow-xl',
+                          : 'border-slate-50 bg-white hover:border-emerald-50 hover:shadow-xl',
                       )}
                     >
                       <div className="flex justify-between items-start mb-8">
@@ -262,7 +262,7 @@ export default function Register({
                             'h-16 w-16 rounded-xl flex items-center justify-center transition-all',
                             form.data.period_id === String(period.id)
                               ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-200'
-                              : 'bg-emerald-50/30 text-gray-900 group-hover:bg-emerald-50 group-hover:text-emerald-600',
+                              : 'bg-emerald-50/30 text-emerald-950 group-hover:bg-emerald-50 group-hover:text-emerald-600',
                           )}
                         >
                           <FolderKanban size={28} strokeWidth={2.5} />
@@ -272,7 +272,7 @@ export default function Register({
                             className={clsx(
                               'px-5 py-2 rounded-2xl text-sm font-bold font-semibold uppercase text-xs',
                               period.registration.status === 'approved'
-                                ? 'bg-emerald-50 text-emerald-600 border border-gray-200'
+                                ? 'bg-emerald-50 text-emerald-600 border border-emerald-50'
                                 : 'bg-amber-50 text-amber-600 border border-amber-100',
                             )}
                           >
@@ -286,12 +286,12 @@ export default function Register({
                             'text-2xl font-bold tracking-tighter uppercase',
                             form.data.period_id === String(period.id)
                               ? 'text-bg-emerald-100'
-                              : 'text-black',
+                              : 'text-emerald-950',
                           )}
                         >
                           {period.nama}
                         </h3>
-                        <p className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs opacity-70">
+                        <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs opacity-70">
                           {period.program_type_label || period.jenis || 'KKN Scheme'} &bull;
                           Deadline: {period.registration_end}
                         </p>
@@ -339,7 +339,7 @@ export default function Register({
 
                       {/* PROTOCOLS & GOVERNANCE */}
                       <div className="p-12 rounded-xl bg-bg-emerald-50 text-white shadow-2xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-12 text-black/10 group-hover:rotate-12 transition-transform duration-[2s]">
+                        <div className="absolute top-0 right-0 p-12 text-emerald-950/10 group-hover:rotate-12 transition-transform duration-[2s]">
                           <Lock size={180} />
                         </div>
                         <div className="relative z-10 grid gap-16 md:grid-cols-2">
@@ -385,16 +385,16 @@ export default function Register({
 
                     {/* VALIDATION BRIEFING & SUBMISSION */}
                     <div className="space-y-8">
-                      <div className="p-10 rounded-xl bg-white border border-gray-200/60 shadow-md sticky top-12 space-y-10">
+                      <div className="p-10 rounded-xl bg-white border border-emerald-50/60 shadow-md sticky top-12 space-y-10">
                         <div className="flex items-center gap-5 border-b border-slate-50 pb-8">
                           <div className="h-14 w-14 bg-emerald-600 rounded-xl flex items-center justify-center text-white shadow-xl shadow-emerald-200">
                             <ShieldCheck size={28} strokeWidth={2.5} />
                           </div>
                           <div>
-                            <h3 className="text-sm font-bold text-black font-semibold uppercase text-xs">
+                            <h3 className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs">
                               Enrollment Briefing
                             </h3>
-                            <p className="text-sm font-bold text-gray-900 uppercase mt-1 opacity-70">
+                            <p className="text-sm font-bold text-emerald-950 uppercase mt-1 opacity-70">
                               Review & Deploy
                             </p>
                           </div>
@@ -419,7 +419,7 @@ export default function Register({
 
                           <div className="pt-6 border-t border-slate-50 space-y-4">
                             <div className="flex justify-between items-center">
-                              <span className="text-sm font-bold text-gray-900 uppercase tracking-wider text-xs font-semibold">
+                              <span className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold">
                                 Integrity Status
                               </span>
                               <span

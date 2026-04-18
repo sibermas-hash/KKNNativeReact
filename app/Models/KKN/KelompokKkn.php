@@ -22,7 +22,7 @@ class KelompokKkn extends Model
     protected $connection = 'kkn';
 
     protected $fillable = [
-        'period_id',
+        'periode_id',
         'location_id',
         'nama_kelompok',
         'code',
@@ -30,49 +30,25 @@ class KelompokKkn extends Model
         'capacity',
         'status',
         'dpl_id',
-        'dpl_period_id',
+        'dpl_periode_id',
         'poster_potensi_desa_path',
         'poster_potensi_desa_name',
         'poster_potensi_desa_type',
     ];
 
     protected $casts = [
-        'period_id' => 'integer',
+        'periode_id' => 'integer',
         'location_id' => 'integer',
         'dpl_id' => 'integer',
-        'dpl_period_id' => 'integer',
+        'dpl_periode_id' => 'integer',
         'capacity' => 'integer',
     ];
 
-    // Legacy Aliases using traditional accessors for codebase compatibility
-    public function getLokasiIdAttribute(): ?int
-    {
-        return $this->location_id;
-    }
-
-    public function setLokasiIdAttribute(?int $value): void
-    {
-        $this->location_id = $value;
-    }
-
-    public function getPeriodeIdAttribute(): ?int
-    {
-        return $this->period_id;
-    }
-
-    public function setPeriodeIdAttribute(?int $value): void
-    {
-        $this->period_id = $value;
-    }
-
-    public function getKetuaMahasiswaIdAttribute(): ?int
-    {
-        return null;
-    }
+    // Legacy Aliases removed as columns are now standardized
 
     public function periode(): BelongsTo
     {
-        return $this->belongsTo(Periode::class, 'period_id');
+        return $this->belongsTo(Periode::class, 'periode_id');
     }
 
     public function lokasi(): BelongsTo
@@ -154,7 +130,7 @@ class KelompokKkn extends Model
     }
 
     /**
-     * Sync flat dpl_id and dpl_period_id columns from pivot table data.
+     * Sync flat dpl_id and dpl_periode_id columns from pivot table data.
      * These legacy columns are kept for backward compatibility with queries
      * that filter via kelompok_kkn.dpl_id directly.
      */
@@ -164,18 +140,18 @@ class KelompokKkn extends Model
 
         if ($ketuaDpl) {
             $dplPeriod = DplPeriod::where('dosen_id', $ketuaDpl->id)
-                ->where('period_id', $this->period_id)
+                ->where('periode_id', $this->periode_id)
                 ->where('is_active', true)
                 ->first();
 
             $this->update([
                 'dpl_id' => $ketuaDpl->id,
-                'dpl_period_id' => $dplPeriod?->id,
+                'dpl_periode_id' => $dplPeriod?->id,
             ]);
         } else {
             $this->update([
                 'dpl_id' => null,
-                'dpl_period_id' => null,
+                'dpl_periode_id' => null,
             ]);
         }
     }

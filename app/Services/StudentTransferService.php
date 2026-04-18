@@ -36,10 +36,10 @@ class StudentTransferService
             // Record transfer history
             $history = RegistrationHistory::create([
                 'peserta_kkn_id' => $peserta->id,
-                'from_period_id' => $peserta->period_id,
-                'to_period_id' => $targetPeriod->id,
-                'from_group_id' => $peserta->kelompok_id,
-                'to_group_id' => $targetGroupId,
+                'from_periode_id' => $peserta->periode_id,
+                'to_periode_id' => $targetPeriod->id,
+                'from_kelompok_id' => $peserta->kelompok_id,
+                'to_kelompok_id' => $targetGroupId,
                 'reason' => $reason,
                 'processed_by' => $processedBy,
                 'processed_at' => now(),
@@ -47,7 +47,7 @@ class StudentTransferService
 
             // Update registration
             $peserta->update([
-                'period_id' => $targetPeriod->id,
+                'periode_id' => $targetPeriod->id,
                 'kelompok_id' => $targetGroupId,
                 'status' => 'transferred',
             ]);
@@ -70,7 +70,7 @@ class StudentTransferService
         }
 
         // Cannot transfer to same period
-        if ($peserta->period_id === $targetPeriod->id) {
+        if ($peserta->periode_id === $targetPeriod->id) {
             throw new \Exception('Tidak dapat memindahkan peserta ke periode yang sama.');
         }
 
@@ -83,7 +83,7 @@ class StudentTransferService
 
         // Check quota on target period
         if ($targetPeriod->kuota) {
-            $currentCount = PesertaKkn::where('period_id', $targetPeriod->id)
+            $currentCount = PesertaKkn::where('periode_id', $targetPeriod->id)
                 ->whereNotIn('status', ['rejected', 'transferred'])
                 ->count();
             if ($currentCount >= $targetPeriod->kuota) {
@@ -103,7 +103,7 @@ class StudentTransferService
         if ($targetGroupId) {
             $targetGroup = KelompokKkn::findOrFail($targetGroupId);
 
-            if ($targetGroup->period_id !== $targetPeriod->id) {
+            if ($targetGroup->periode_id !== $targetPeriod->id) {
                 throw new \Exception('Kelompok tujuan tidak berada di periode tujuan.');
             }
 

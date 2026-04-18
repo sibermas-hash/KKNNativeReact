@@ -77,19 +77,19 @@ export default function DplDashboard({
           className="flex flex-col md:flex-row md:items-center justify-between gap-4"
         >
           <div className="space-y-1">
-            <h1 className="text-lg font-bold text-gray-900 tracking-tight">
+            <h1 className="text-lg font-bold text-emerald-950 tracking-tight">
               Portal <span className="text-emerald-600">Bimbingan DPL</span>
             </h1>
-            <p className="text-gray-900 font-bold uppercase text-sm tracking-widest">
+            <p className="text-emerald-950 font-bold uppercase text-sm tracking-widest">
               Monitoring progres pengabdian & validasi logbook.
             </p>
           </div>
           <div className="flex items-center gap-3 bg-white border border-gray-100 p-3 rounded-xl shadow-sm">
             <div className="text-right">
-              <p className="text-sm font-bold text-gray-900 uppercase leading-none mb-1">
+              <p className="text-sm font-bold text-emerald-950 uppercase leading-none mb-1">
                 Status Akses
               </p>
-              <p className="text-sm font-bold text-gray-900 uppercase">Dosen Pembimbing</p>
+              <p className="text-sm font-bold text-emerald-950 uppercase">Dosen Pembimbing</p>
             </div>
             <div className="h-8 w-8 bg-emerald-600 text-white rounded-lg flex items-center justify-center shadow-lg shadow-emerald-100">
               <ShieldCheck size={16} />
@@ -122,7 +122,7 @@ export default function DplDashboard({
                 <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
                   <LayoutGrid size={16} />
                 </div>
-                <h2 className="text-xs font-bold text-gray-900 uppercase tracking-tight">
+                <h2 className="text-xs font-bold text-emerald-950 uppercase tracking-tight">
                   Kelompok Bimbingan
                 </h2>
               </div>
@@ -130,7 +130,7 @@ export default function DplDashboard({
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-gray-50/50">
-                  <tr className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs border-b border-slate-50">
+                  <tr className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs border-b border-slate-50">
                     <th className="px-6 py-3">Kode Unit</th>
                     <th className="px-6 py-3">Identitas Kelompok</th>
                     <th className="px-6 py-3">Lokasi Desa</th>
@@ -147,13 +147,13 @@ export default function DplDashboard({
                           </span>
                         </td>
                         <td className="px-6 py-3">
-                          <div className="text-xs font-bold text-gray-900">{group.name}</div>
-                          <div className="text-sm font-semibold text-gray-900 uppercase tracking-tight">
+                          <div className="text-xs font-bold text-emerald-950">{group.name}</div>
+                          <div className="text-sm font-semibold text-emerald-950 uppercase tracking-tight">
                             {group.period_name}
                           </div>
                         </td>
                         <td className="px-6 py-3">
-                          <div className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                          <div className="flex items-center gap-2 text-sm font-bold text-emerald-800">
                             <MapPin size={12} className="text-rose-500" />
                             {group.village_name}
                           </div>
@@ -161,7 +161,7 @@ export default function DplDashboard({
                         <td className="px-6 py-3 text-right">
                           <Link
                             href={`/dpl/kelompok/${group.id}`}
-                            className="inline-flex items-center gap-1 text-sm font-bold text-emerald-600 hover:text-gray-700 transition-colors uppercase tracking-wider"
+                            className="inline-flex items-center gap-1 text-sm font-bold text-emerald-600 hover:text-emerald-800 transition-colors uppercase tracking-wider"
                           >
                             Buka Panel
                             <ChevronRight size={12} />
@@ -172,7 +172,7 @@ export default function DplDashboard({
                   ) : (
                     <tr>
                       <td colSpan={4} className="px-8 py-16 text-center">
-                        <p className="text-sm font-bold text-gray-900 uppercase">
+                        <p className="text-sm font-bold text-emerald-950 uppercase">
                           Belum ada kelompok bimbingan
                         </p>
                       </td>
@@ -195,10 +195,10 @@ export default function DplDashboard({
                   <AlertTriangle size={16} />
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold text-gray-900 uppercase tracking-tight">
+                  <h2 className="text-sm font-bold text-emerald-950 uppercase tracking-tight">
                     Atensi Khusus
                   </h2>
-                  <p className="text-sm font-semibold text-gray-900 uppercase leading-none mt-1">
+                  <p className="text-sm font-semibold text-emerald-950 uppercase leading-none mt-1">
                     Inaktif {'>'} 72 Jam
                   </p>
                 </div>
@@ -214,10 +214,10 @@ export default function DplDashboard({
                         {student.name.charAt(0)}
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-gray-900 truncate max-w-[120px]">
+                        <p className="text-xs font-bold text-emerald-950 truncate max-w-[120px]">
                           {student.name}
                         </p>
-                        <p className="text-sm font-semibold text-gray-900 uppercase">
+                        <p className="text-sm font-semibold text-emerald-950 uppercase">
                           {student.nim}
                         </p>
                       </div>
@@ -242,7 +242,7 @@ export default function DplDashboard({
                 <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
                   <Activity size={16} />
                 </div>
-                <h2 className="text-sm font-bold text-gray-900 uppercase tracking-tight">
+                <h2 className="text-sm font-bold text-emerald-950 uppercase tracking-tight">
                   Tren Aktivitas
                 </h2>
               </div>
@@ -253,7 +253,7 @@ export default function DplDashboard({
                       key={item.date}
                       className="flex items-center justify-between py-1.5 border-b border-slate-50 last:border-0 hover:px-1 transition-all"
                     >
-                      <span className="text-sm font-bold text-gray-900 uppercase">
+                      <span className="text-sm font-bold text-emerald-950 uppercase">
                         {item.date}
                       </span>
                       <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-lg">
@@ -282,7 +282,7 @@ function StatBox({
   color = 'emerald',
 }: DashboardMetricProps & { title?: string; color?: string }) {
   const colors: ColorPalette = {
-    emerald: 'bg-emerald-50 text-emerald-600 border-gray-200',
+    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-50',
     amber: 'bg-amber-50 text-amber-600 border-amber-100',
     blue: 'bg-blue-50 text-blue-600 border-blue-100',
     rose: 'bg-rose-50 text-rose-600 border-rose-100',
@@ -298,10 +298,10 @@ function StatBox({
         <Icon size={16} />
       </div>
       <div>
-        <p className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-1">
+        <p className="text-sm font-bold text-emerald-950 uppercase tracking-wider mb-1">
           {title || value}
         </p>
-        <p className="text-lg font-bold text-gray-900 leading-none">{value}</p>
+        <p className="text-lg font-bold text-emerald-950 leading-none">{value}</p>
       </div>
     </div>
   );

@@ -12,13 +12,13 @@ return new class extends Migration
         $schema = Schema::connection($connection);
 
         $tables = [
-            'dosen' => ['nip', 'faculty_id', 'user_id'],
-            'mahasiswa' => ['nim', 'faculty_id', 'program_id', 'user_id'],
+            'dosen' => ['nip', 'fakultas_id', 'user_id'],
+            'mahasiswa' => ['nim', 'fakultas_id', 'prodi_id', 'user_id'],
             'periode' => ['academic_year_id', 'is_active'],
-            'kelompok_kkn' => ['period_id', 'location_id', 'dpl_id'],
+            'kelompok_kkn' => ['periode_id', 'lokasi_id', 'dpl_id'],
             'evaluasi' => ['mahasiswa_id', 'kelompok_id', 'evaluator_id'],
             'proposal' => ['kelompok_id', 'status'],
-            'workshop' => ['period_id'],
+            'workshop' => ['periode_id'],
         ];
 
         foreach ($tables as $table => $columns) {
@@ -45,13 +45,13 @@ return new class extends Migration
         $schema = Schema::connection($connection);
 
         $tables = [
-            'dosen' => ['nip', 'faculty_id', 'user_id'],
-            'mahasiswa' => ['nim', 'faculty_id', 'program_id', 'user_id'],
+            'dosen' => ['nip', 'fakultas_id', 'user_id'],
+            'mahasiswa' => ['nim', 'fakultas_id', 'prodi_id', 'user_id'],
             'periode' => ['academic_year_id', 'is_active'],
-            'kelompok_kkn' => ['period_id', 'location_id', 'dpl_id'],
+            'kelompok_kkn' => ['periode_id', 'lokasi_id', 'dpl_id'],
             'evaluasi' => ['mahasiswa_id', 'kelompok_id', 'evaluator_id'],
             'proposal' => ['kelompok_id', 'status'],
-            'workshop' => ['period_id'],
+            'workshop' => ['periode_id'],
         ];
 
         foreach ($tables as $table => $columns) {

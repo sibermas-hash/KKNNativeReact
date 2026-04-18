@@ -214,10 +214,10 @@ class PeriodeController extends Controller
         $periode->load(['tahunAkademik']);
 
         $stats = [
-            'total_students' => DB::connection('kkn')->table('peserta_kkn')->where('period_id', $periode->id)->count(),
-            'total_groups' => DB::connection('kkn')->table('kelompok_kkn')->where('period_id', $periode->id)->count(),
+            'total_students' => DB::connection('kkn')->table('peserta_kkn')->where('periode_id', $periode->id)->count(),
+            'total_groups' => DB::connection('kkn')->table('kelompok_kkn')->where('periode_id', $periode->id)->count(),
             'total_locations' => DB::connection('kkn')->table('kelompok_kkn')
-                ->where('period_id', $periode->id)
+                ->where('periode_id', $periode->id)
                 ->whereNotNull('location_id')
                 ->distinct('location_id')
                 ->count('location_id'),

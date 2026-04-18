@@ -38,7 +38,7 @@ class AdminDashboardPreviewTest extends TestCase
         $faculty = Fakultas::factory()->create();
 
         $facultyAdmin = User::factory()->create([
-            'faculty_id' => $faculty->id,
+            'fakultas_id' => $faculty->id,
         ]);
         $facultyAdmin->assignRole('faculty_admin');
 

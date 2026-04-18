@@ -4,13 +4,10 @@ namespace Tests\Unit\Services;
 
 use App\Models\KKN\Periode;
 use App\Services\PeriodContextService;
-
 use Tests\TestCase;
 
 class PeriodContextServiceTest extends TestCase
 {
-
-
     private PeriodContextService $service;
 
     protected function setUp(): void
@@ -20,7 +17,7 @@ class PeriodContextServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_can_get_active_period_id(): void
+    public function it_can_get_active_periode_id(): void
     {
         $periode = Periode::factory()->create(['is_active' => true]);
 
@@ -40,7 +37,7 @@ class PeriodContextServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_can_get_default_period_id(): void
+    public function it_can_get_default_periode_id(): void
     {
         $periode = Periode::factory()->create();
 

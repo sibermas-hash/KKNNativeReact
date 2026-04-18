@@ -41,7 +41,11 @@ class StudentSyncServiceTest extends TestCase
         $this->masterApiMock
             ->shouldReceive('yieldSyncMahasiswa')
             ->once()
-            ->andReturn((function() use ($mockStudents) { foreach($mockStudents as $s) yield $s; })());
+            ->andReturn((function () use ($mockStudents) {
+                foreach ($mockStudents as $s) {
+                    yield $s;
+                }
+            })());
 
         $result = $this->service->syncFromApi();
 
@@ -75,7 +79,11 @@ class StudentSyncServiceTest extends TestCase
         $this->masterApiMock
             ->shouldReceive('yieldSyncMahasiswa')
             ->once()
-            ->andReturn((function() use ($mockStudents) { foreach($mockStudents as $s) yield $s; })());
+            ->andReturn((function () use ($mockStudents) {
+                foreach ($mockStudents as $s) {
+                    yield $s;
+                }
+            })());
 
         Log::shouldReceive('warning')->andReturn(null);
 
@@ -174,7 +182,7 @@ class StudentSyncServiceTest extends TestCase
         $this->assertTrue($result);
 
         $mahasiswa = Mahasiswa::where('nim', '7777777777')->first();
-        $this->assertSame($fakultas->id, $mahasiswa->faculty_id);
+        $this->assertSame($fakultas->id, $mahasiswa->fakultas_id);
     }
 
     public function test_upsert_student_resolves_prodi_by_master_id(): void
@@ -198,7 +206,7 @@ class StudentSyncServiceTest extends TestCase
         $this->assertTrue($result);
 
         $mahasiswa = Mahasiswa::where('nim', '6666666666')->first();
-        $this->assertSame($prodi->id, $mahasiswa->program_id);
+        $this->assertSame($prodi->id, $mahasiswa->prodi_id);
     }
 
     public function test_upsert_student_logs_warning_for_unmapped_faculty(): void
@@ -222,7 +230,7 @@ class StudentSyncServiceTest extends TestCase
         $this->assertTrue($result);
 
         $mahasiswa = Mahasiswa::where('nim', '5555555555')->first();
-        $this->assertNull($mahasiswa->faculty_id);
+        $this->assertNull($mahasiswa->fakultas_id);
     }
 
     public function test_upsert_student_logs_warning_for_unmapped_prodi(): void
@@ -246,7 +254,7 @@ class StudentSyncServiceTest extends TestCase
         $this->assertTrue($result);
 
         $mahasiswa = Mahasiswa::where('nim', '4444444444')->first();
-        $this->assertNull($mahasiswa->program_id);
+        $this->assertNull($mahasiswa->prodi_id);
     }
 
     public function test_upsert_student_assigns_student_role(): void

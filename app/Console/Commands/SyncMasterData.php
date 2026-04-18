@@ -291,7 +291,7 @@ class SyncMasterData extends Command
                             'master_id' => (string) $empData['id'],
                             'user_id' => $user->id,
                             'nama' => $empData['nama'] ?? $empData['name'] ?? 'Unknown',
-                            'faculty_id' => $defaultFaculty?->id,
+                            'fakultas_id' => $defaultFaculty?->id,
                             'phone' => $empData['telepon'] ?? $empData['phone'] ?? null,
                             'gender' => $empData['jenis_kelamin'] ?? $empData['gender'] ?? 'L',
                             'birth_date' => $empData['tanggal_lahir'] ?? $empData['birth_date'] ?? null,
@@ -429,7 +429,7 @@ class SyncMasterData extends Command
                             [
                                 'code' => strtoupper(substr(Str::slug($prodiName), 0, 10)),
                                 'nama' => $prodiName,
-                                'faculty_id' => $defaultFaculty?->id,
+                                'fakultas_id' => $defaultFaculty?->id,
                                 'master_synced_at' => $now,
                             ]
                         );
@@ -472,8 +472,8 @@ class SyncMasterData extends Command
                             'master_id' => (string) $studData['id'],
                             'user_id' => $user->id,
                             'nama' => $studData['nama'] ?? $studData['name'] ?? 'Unknown',
-                            'faculty_id' => $facultyId ?? $defaultFaculty?->id,
-                            'program_id' => $prodiId,
+                            'fakultas_id' => $facultyId ?? $defaultFaculty?->id,
+                            'prodi_id' => $prodiId,
                             'batch_year' => $studData['angkatan'] ?? $studData['batch_year'] ?? date('Y'),
                             'gender' => $studData['jenis_kelamin'] ?? $studData['gender'] ?? 'L',
                             'birth_place' => $studData['tempat_lahir'] ?? $studData['birth_place'] ?? null,

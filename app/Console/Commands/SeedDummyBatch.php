@@ -2,27 +2,28 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use App\Models\KKN\Mahasiswa;
-use App\Models\KKN\PesertaKkn;
-use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\Lokasi;
-use App\Models\KKN\Periode;
-use App\Models\KKN\Fakultas;
-use App\Models\KKN\Prodi;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\DplPeriod;
-use App\Models\KKN\ProgramKerja;
+use App\Models\KKN\Fakultas;
 use App\Models\KKN\KegiatanKkn;
+use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\LaporanAkhir;
+use App\Models\KKN\Lokasi;
+use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\Periode;
+use App\Models\KKN\PesertaKkn;
+use App\Models\KKN\Prodi;
+use App\Models\KKN\ProgramKerja;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Hash;
 
 class SeedDummyBatch extends Command
 {
     protected $signature = 'kkn:seed-dummy-batch';
+
     protected $description = 'Seed a batch of varied dummy students for comprehensive system testing.';
 
     private array $students = [
@@ -125,14 +126,16 @@ class SeedDummyBatch extends Command
 
         // Prerequisites
         $periode = Periode::where('is_active', true)->first();
-        if (!$periode) {
+        if (! $periode) {
             $this->error('No active period found. Run kkn:generate-dummy first or create a period.');
+
             return;
         }
 
         $allFakultas = Fakultas::all();
         if ($allFakultas->isEmpty()) {
             $this->error('Fakultas master data is empty.');
+
             return;
         }
 
@@ -151,9 +154,9 @@ class SeedDummyBatch extends Command
         $this->newLine(2);
 
         // Summary table
-        $rows = collect($this->students)->map(fn($s) => [
+        $rows = collect($this->students)->map(fn ($s) => [
             $s['nim'], $s['nama'], $s['status_reg'],
-            $s['logbook_days'] . ' hari',
+            $s['logbook_days'].' hari',
             $s['has_final_report'] ? '✅' : '❌',
             $s['grade'] ?? '-',
         ])->toArray();
@@ -170,7 +173,7 @@ class SeedDummyBatch extends Command
     private function setupGroups(Periode $periode, Fakultas $fakultas): array
     {
         // Ensure periode has jenis_kkn_id and correct phase
-        if (!$periode->jenis_kkn_id) {
+        if (! $periode->jenis_kkn_id) {
             $periode->update(['jenis_kkn_id' => 1]);
         }
         $periode->update(['current_phase' => 'finished']);
@@ -181,11 +184,14 @@ class SeedDummyBatch extends Command
             ['name' => 'Dr. DPL Simulasi, M.Kom.', 'email' => 'dpl_dummy@uinsaizu.ac.id', 'password' => Hash::make('password'), 'is_active' => true]
         );
         if (method_exists($dplUser1, 'assignRole')) {
-            try { $dplUser1->assignRole('dpl'); } catch (\Exception $e) {}
+            try {
+                $dplUser1->assignRole('dpl');
+            } catch (\Exception $e) {
+            }
         }
         $dosen1 = Dosen::firstOrCreate(
             ['user_id' => $dplUser1->id],
-            ['nip' => '198001012005011001', 'nama' => 'Dr. DPL Simulasi, M.Kom.', 'faculty_id' => $fakultas->id, 'gender' => 'L']
+            ['nip' => '198001012005011001', 'nama' => 'Dr. DPL Simulasi, M.Kom.', 'fakultas_id' => $fakultas->id, 'gender' => 'L']
         );
 
         // DPL 2
@@ -194,20 +200,23 @@ class SeedDummyBatch extends Command
             ['name' => 'Hj. Aminah, S.Pd., M.Pd.', 'email' => 'dpl_dummy2@uinsaizu.ac.id', 'password' => Hash::make('password'), 'is_active' => true]
         );
         if (method_exists($dplUser2, 'assignRole')) {
-            try { $dplUser2->assignRole('dpl'); } catch (\Exception $e) {}
+            try {
+                $dplUser2->assignRole('dpl');
+            } catch (\Exception $e) {
+            }
         }
         $dosen2 = Dosen::firstOrCreate(
             ['user_id' => $dplUser2->id],
-            ['nip' => '197505152003122002', 'nama' => 'Hj. Aminah, S.Pd., M.Pd.', 'faculty_id' => $fakultas->id, 'gender' => 'P']
+            ['nip' => '197505152003122002', 'nama' => 'Hj. Aminah, S.Pd., M.Pd.', 'fakultas_id' => $fakultas->id, 'gender' => 'P']
         );
 
         // DplPeriod (assignment DPL ke Periode)
         $dp1 = DplPeriod::firstOrCreate(
-            ['dosen_id' => $dosen1->id, 'period_id' => $periode->id],
+            ['dosen_id' => $dosen1->id, 'periode_id' => $periode->id],
             ['max_groups' => 5, 'is_active' => true]
         );
         $dp2 = DplPeriod::firstOrCreate(
-            ['dosen_id' => $dosen2->id, 'period_id' => $periode->id],
+            ['dosen_id' => $dosen2->id, 'periode_id' => $periode->id],
             ['max_groups' => 5, 'is_active' => true]
         );
 
@@ -221,18 +230,18 @@ class SeedDummyBatch extends Command
             ['regency_name' => 'Kabupaten Fiktif', 'district_name' => 'Kecamatan Uji', 'address' => 'Jl. Merdeka No. 17', 'capacity' => 10]
         );
 
-        // Groups with dpl_period_id
+        // Groups with dpl_periode_id
         $kelompok1 = KelompokKkn::firstOrCreate(
             ['nama_kelompok' => 'Kelompok 99 - Simulasi'],
-            ['period_id' => $periode->id, 'location_id' => $lokasi1->id, 'dpl_id' => $dosen1->id, 'dpl_period_id' => $dp1->id, 'status' => 'active', 'capacity' => 15, 'code' => 'KLP-99', 'token' => 'TOKEN99']
+            ['periode_id' => $periode->id, 'location_id' => $lokasi1->id, 'dpl_id' => $dosen1->id, 'dpl_periode_id' => $dp1->id, 'status' => 'active', 'capacity' => 15, 'code' => 'KLP-99', 'token' => 'TOKEN99']
         );
-        $kelompok1->update(['dpl_period_id' => $dp1->id]); // Ensure it's always set
+        $kelompok1->update(['dpl_periode_id' => $dp1->id]); // Ensure it's always set
 
         $kelompok2 = KelompokKkn::firstOrCreate(
             ['nama_kelompok' => 'Kelompok 100 - Harapan'],
-            ['period_id' => $periode->id, 'location_id' => $lokasi2->id, 'dpl_id' => $dosen2->id, 'dpl_period_id' => $dp2->id, 'status' => 'active', 'capacity' => 10, 'code' => 'KLP-100', 'token' => 'TOKEN100']
+            ['periode_id' => $periode->id, 'location_id' => $lokasi2->id, 'dpl_id' => $dosen2->id, 'dpl_periode_id' => $dp2->id, 'status' => 'active', 'capacity' => 10, 'code' => 'KLP-100', 'token' => 'TOKEN100']
         );
-        $kelompok2->update(['dpl_period_id' => $dp2->id]); // Ensure it's always set
+        $kelompok2->update(['dpl_periode_id' => $dp2->id]); // Ensure it's always set
 
         // Work programs for group 1
         ProgramKerja::firstOrCreate(['title' => 'Edukasi Literasi Digital Desa'],
@@ -256,21 +265,24 @@ class SeedDummyBatch extends Command
     private function createStudent(array $data, Periode $periode, $allFakultas, array $groups): void
     {
         $fakultas = $allFakultas->random();
-        $prodi = Prodi::where('faculty_id', $fakultas->id)->first() ?? Prodi::first();
+        $prodi = Prodi::where('fakultas_id', $fakultas->id)->first() ?? Prodi::first();
 
         // User
         $user = User::firstOrCreate(
             ['username' => $data['nim']],
             [
                 'name' => $data['nama'],
-                'email' => $data['nim'] . '@students.uinsaizu.ac.id',
+                'email' => $data['nim'].'@students.uinsaizu.ac.id',
                 'password' => Hash::make('password'),
                 'is_active' => true,
-                'phone' => '0812' . rand(10000000, 99999999),
+                'phone' => '0812'.rand(10000000, 99999999),
             ]
         );
         if (method_exists($user, 'assignRole')) {
-            try { $user->assignRole('student'); } catch (\Exception $e) {}
+            try {
+                $user->assignRole('student');
+            } catch (\Exception $e) {
+            }
         }
 
         // Mahasiswa
@@ -278,11 +290,11 @@ class SeedDummyBatch extends Command
             ['user_id' => $user->id],
             [
                 'nim' => $data['nim'],
-                'nik' => '330101' . rand(1000000000, 9999999999),
+                'nik' => '330101'.rand(1000000000, 9999999999),
                 'nama' => $data['nama'],
                 'gender' => $data['gender'],
-                'faculty_id' => $fakultas->id,
-                'program_id' => $prodi->id,
+                'fakultas_id' => $fakultas->id,
+                'prodi_id' => $prodi->id,
                 'batch_year' => 2022,
                 'sks_completed' => rand(110, 130),
                 'total_sks' => 144,
@@ -299,7 +311,7 @@ class SeedDummyBatch extends Command
         $kelompokId = ($kelompokNum > 0 && isset($groups[$kelompokNum])) ? $groups[$kelompokNum]->id : null;
 
         PesertaKkn::updateOrCreate(
-            ['mahasiswa_id' => $mahasiswa->id, 'period_id' => $periode->id],
+            ['mahasiswa_id' => $mahasiswa->id, 'periode_id' => $periode->id],
             [
                 'kelompok_id' => $kelompokId,
                 'status' => $data['status_reg'],
@@ -319,7 +331,7 @@ class SeedDummyBatch extends Command
                 KegiatanKkn::updateOrCreate(
                     ['mahasiswa_id' => $mahasiswa->id, 'kelompok_id' => $kelompokId, 'date' => $date->format('Y-m-d')],
                     [
-                        'title' => "Kegiatan Hari ke-" . ($i + 1),
+                        'title' => 'Kegiatan Hari ke-'.($i + 1),
                         'activity' => $activityText,
                         'reflection' => 'Kegiatan berjalan lancar. Masyarakat menyambut dengan antusias.',
                         'output' => 'Target harian tercapai sesuai rencana.',
@@ -335,10 +347,10 @@ class SeedDummyBatch extends Command
             LaporanAkhir::updateOrCreate(
                 ['mahasiswa_id' => $mahasiswa->id, 'kelompok_id' => $kelompokId],
                 [
-                    'title' => 'Laporan Akhir KKN - ' . $data['nama'],
+                    'title' => 'Laporan Akhir KKN - '.$data['nama'],
                     'abstract' => 'Laporan ini merangkum seluruh kegiatan pengabdian masyarakat berbasis ABCD selama pelaksanaan KKN.',
-                    'file_path' => 'dummy/reports/laporan-' . $data['nim'] . '.pdf',
-                    'file_name' => 'Laporan_Akhir_' . str_replace(' ', '_', $data['nama']) . '.pdf',
+                    'file_path' => 'dummy/reports/laporan-'.$data['nim'].'.pdf',
+                    'file_name' => 'Laporan_Akhir_'.str_replace(' ', '_', $data['nama']).'.pdf',
                     'status' => 'approved',
                     'submitted_at' => now()->subDays(5),
                     'reviewed_at' => now()->subDays(2),

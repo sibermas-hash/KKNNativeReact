@@ -40,7 +40,7 @@ function createApprovedStudentContext(string $role = 'Anggota'): array
 
     $registration = PesertaKkn::factory()->approved()->create([
         'mahasiswa_id' => $student->id,
-        'period_id' => $group->period_id,
+        'periode_id' => $group->periode_id,
         'kelompok_id' => $group->id,
         'role' => $role,
     ]);

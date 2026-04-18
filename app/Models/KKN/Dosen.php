@@ -25,8 +25,7 @@ class Dosen extends Model
         'gender',
         'is_cpns',
         'is_tugas_belajar',
-        'faculty_id',
-        'phone',
+        'fakultas_id',
         'master_id',
         'master_synced_at',
     ];
@@ -46,7 +45,7 @@ class Dosen extends Model
 
     public function fakultas(): BelongsTo
     {
-        return $this->belongsTo(Fakultas::class, 'faculty_id');
+        return $this->belongsTo(Fakultas::class, 'fakultas_id');
     }
 
     // Relationship: A lecturer can supervise multiple groups (Many-to-Many via pivot)
@@ -85,7 +84,7 @@ class Dosen extends Model
     public function canTakeMoreGroups(int $periodId): bool
     {
         $dplPeriod = $this->dplPeriods()
-            ->where('period_id', $periodId)
+            ->where('periode_id', $periodId)
             ->where('is_active', true)
             ->first();
 
@@ -102,9 +101,9 @@ class Dosen extends Model
     public function scopeAvailableForPeriod($query, int $periodId)
     {
         return $query->whereHas('dplPeriods', function ($q) use ($periodId) {
-            $q->where('period_id', $periodId)
+            $q->where('periode_id', $periodId)
                 ->where('is_active', true)
-                ->whereRaw('max_groups > (SELECT COUNT(*) FROM kelompok_kkn WHERE dpl_period_id = dpl_periods.id AND deleted_at IS NULL)');
+                ->whereRaw('max_kelompok_kkn > (SELECT COUNT(*) FROM kelompok_kkn WHERE dpl_periode_id = dpl_periode.id AND deleted_at IS NULL)');
         });
     }
 }

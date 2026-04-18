@@ -36,10 +36,10 @@ class DplAssignmentService
         $assignment = DplPeriod::updateOrCreate(
             [
                 'dosen_id' => $dosen->id,
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
             ],
             [
-                'max_groups' => $maxGroups,
+                'max_kelompok_kkn' => $maxGroups,
                 'is_active' => true,
             ],
         );
@@ -56,11 +56,11 @@ class DplAssignmentService
             throw new DomainException('Penugasan DPL untuk periode tersebut sudah tidak aktif.');
         }
 
-        if ($group->period_id !== $dplPeriod->period_id) {
-            throw new DomainException('Kelompok dan DPL harus berada di periode yang sama.');
+        if ($group->periode_id !== $dplPeriod->periode_id) {
+            throw new \Exception('Kelompok dan DPL berada pada periode yang berbeda.');
         }
 
-        $isCurrentAssignment = $group->dpl_period_id === $dplPeriod->id;
+        $isCurrentAssignment = $group->dpl_periode_id === $dplPeriod->id;
         if (! $isCurrentAssignment && ! $dplPeriod->hasCapacity()) {
             throw new DomainException('DPL sudah mencapai batas maksimum kelompok untuk periode ini.');
         }
@@ -75,7 +75,7 @@ class DplAssignmentService
             // Sync flat columns for simple reporting/queries
             $group->update([
                 'dpl_id' => $dplPeriod->dosen_id,
-                'dpl_period_id' => $dplPeriod->id,
+                'dpl_periode_id' => $dplPeriod->id,
             ]);
 
             // Sync pivot table for multiple DPL support
@@ -98,11 +98,11 @@ class DplAssignmentService
 
         return DplKecamatanAssignment::updateOrCreate(
             [
-                'period_id' => $dplPeriod->period_id,
-                'district_id' => $districtId,
+                'periode_id' => $dplPeriod->periode_id,
+                'kecamatan_id' => $districtId,
             ],
             [
-                'dpl_period_id' => $dplPeriod->id,
+                'dpl_periode_id' => $dplPeriod->id,
                 'dosen_id' => $dplPeriod->dosen_id,
                 'district_name' => $districtName,
                 'regency_name' => $regencyName,

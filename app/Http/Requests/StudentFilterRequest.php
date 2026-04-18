@@ -18,8 +18,8 @@ class StudentFilterRequest extends FormRequest
         return [
             'search' => ['nullable', 'string', 'max:100'],
             'status' => ['nullable', 'string', 'in:pending,approved,rejected,transferred,completed'],
-            'faculty_id' => ['nullable', 'integer', 'exists:fakultas,id'],
-            'program_id' => ['nullable', 'integer'],
+            'fakultas_id' => ['nullable', 'integer', 'exists:fakultas,id'],
+            'prodi_id' => ['nullable', 'integer'],
             'group_id' => ['nullable', 'integer', 'exists:kelompok_kkn,id'],
             'gender' => ['nullable', 'string', 'in:L,P'],
             'has_group' => ['nullable', 'boolean'],

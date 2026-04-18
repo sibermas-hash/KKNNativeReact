@@ -18,7 +18,7 @@ export const ManagedDeployments = ({ managed_programs }: ManagedDeploymentsProps
     <motion.section variants={itemVariants} className="space-y-8">
       <div className="flex items-center gap-6">
         <div className="h-1 w-24 bg-[#16a34a] rounded-full" />
-        <h3 className="text-xs font-bold text-gray-900 uppercase tracking-[0.4em]">
+        <h3 className="text-xs font-bold text-emerald-950 uppercase tracking-[0.4em]">
           Managed Deployments
         </h3>
       </div>

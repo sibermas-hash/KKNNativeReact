@@ -13,17 +13,17 @@ class DplPeriod extends Model
 {
     protected $connection = 'kkn';
 
-    protected $table = 'dpl_periods';
+    protected $table = 'dpl_periode';
 
     protected $fillable = [
         'dosen_id',
-        'period_id',
-        'max_groups',
+        'periode_id',
+        'max_kelompok_kkn',
         'is_active',
     ];
 
     protected $casts = [
-        'max_groups' => 'integer',
+        'max_kelompok_kkn' => 'integer',
         'is_active' => 'boolean',
     ];
 
@@ -36,12 +36,12 @@ class DplPeriod extends Model
 
     public function periode(): BelongsTo
     {
-        return $this->belongsTo(Periode::class, 'period_id');
+        return $this->belongsTo(Periode::class, 'periode_id');
     }
 
     public function kelompok(): HasMany
     {
-        return $this->hasMany(KelompokKkn::class, 'dpl_period_id');
+        return $this->hasMany(KelompokKkn::class, 'dpl_periode_id');
     }
 
     /**
@@ -49,7 +49,7 @@ class DplPeriod extends Model
      */
     public function getRemainingSlots(): int
     {
-        return max(0, $this->max_groups - $this->kelompok()->count());
+        return max(0, $this->max_kelompok_kkn - $this->kelompok()->count());
     }
 
     /**

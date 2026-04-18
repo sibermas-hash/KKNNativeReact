@@ -19,12 +19,12 @@ class GetStudentStats
     public function handle(int $periodId): array
     {
         return [
-            'total_registrants' => PesertaKkn::where('period_id', $periodId)->count(),
-            'approved' => PesertaKkn::where('period_id', $periodId)->where('status', 'approved')->count(),
-            'pending' => PesertaKkn::where('period_id', $periodId)->where('status', 'pending')->count(),
-            'faculty_distribution' => PesertaKkn::where('period_id', $periodId)
+            'total_registrants' => PesertaKkn::where('periode_id', $periodId)->count(),
+            'approved' => PesertaKkn::where('periode_id', $periodId)->where('status', 'approved')->count(),
+            'pending' => PesertaKkn::where('periode_id', $periodId)->where('status', 'pending')->count(),
+            'faculty_distribution' => PesertaKkn::where('periode_id', $periodId)
                 ->join('mahasiswa', 'peserta_kkn.mahasiswa_id', '=', 'mahasiswa.id')
-                ->join('fakultas', 'mahasiswa.faculty_id', '=', 'fakultas.id')
+                ->join('fakultas', 'mahasiswa.fakultas_id', '=', 'fakultas.id')
                 ->select('fakultas.nama as faculty', DB::raw('count(*) as count'))
                 ->groupBy('fakultas.nama')
                 ->get()

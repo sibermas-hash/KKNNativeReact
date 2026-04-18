@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::connection('kkn')->table('lokasi', function (Blueprint $table) {
-            if (! Schema::connection('kkn')->hasColumn('lokasi', 'faculty_id')) {
-                $table->foreignId('faculty_id')
+            if (! Schema::connection('kkn')->hasColumn('lokasi', 'fakultas_id')) {
+                $table->foreignId('fakultas_id')
                     ->nullable()
                     ->constrained('fakultas')
                     ->nullOnDelete();
@@ -21,8 +21,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::connection('kkn')->table('lokasi', function (Blueprint $table) {
-            if (Schema::connection('kkn')->hasColumn('lokasi', 'faculty_id')) {
-                $table->dropConstrainedForeignId('faculty_id');
+            if (Schema::connection('kkn')->hasColumn('lokasi', 'fakultas_id')) {
+                $table->dropConstrainedForeignId('fakultas_id');
             }
         });
     }

@@ -36,11 +36,11 @@ return new class extends Migration
 
         // Define Basic Permissions for RBAC
         $permissions = [
-            'manage-evaluations',
-            'view-reports',
+            'manage-evaluasi',
+            'view-laporan',
             'review-activities',
-            'manage-registrations',
-            'create-reports',
+            'manage-peserta_kkn',
+            'create-laporan',
             'view-grades',
         ];
 
@@ -51,16 +51,16 @@ return new class extends Migration
         // Assign Permissions to DPL
         $dpl = Role::where('name', 'dpl')->first();
         $dpl?->syncPermissions([
-            'manage-evaluations',
-            'view-reports',
+            'manage-evaluasi',
+            'view-laporan',
             'review-activities',
         ]);
 
         // Assign Permissions to Student
         $student = Role::where('name', 'student')->first();
         $student?->syncPermissions([
-            'manage-registrations',
-            'create-reports',
+            'manage-peserta_kkn',
+            'create-laporan',
             'view-grades',
         ]);
     }

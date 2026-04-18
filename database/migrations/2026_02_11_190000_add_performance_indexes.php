@@ -18,59 +18,59 @@ return new class extends Migration
     public function up(): void
     {
         // KKN Scores - critical for grade lookups
-        Schema::table('kkn_scores', function (Blueprint $table) {
-            $table->index(['student_id', 'group_id'], 'idx_kkn_scores_student_group');
-            $table->index('is_finalized', 'idx_kkn_scores_finalized');
+        Schema::table('nilai_kkn', function (Blueprint $table) {
+            $table->index(['mahasiswa_id', 'kelompok_id'], 'idx_nilai_kkn_student_group');
+            $table->index('is_finalized', 'idx_nilai_kkn_finalized');
         });
 
         // Daily Reports - DPL approval workflow
-        Schema::table('daily_reports', function (Blueprint $table) {
-            $table->index(['group_id', 'status'], 'idx_daily_reports_group_status');
-            $table->index(['student_id', 'status'], 'idx_daily_reports_student_status');
-            $table->index('date', 'idx_daily_reports_date');
+        Schema::table('kegiatan_kkn', function (Blueprint $table) {
+            $table->index(['kelompok_id', 'status'], 'idx_kegiatan_kkn_group_status');
+            $table->index(['mahasiswa_id', 'status'], 'idx_kegiatan_kkn_student_status');
+            $table->index('date', 'idx_kegiatan_kkn_date');
         });
 
         // Registrations - student period lookups
-        Schema::table('registrations', function (Blueprint $table) {
-            $table->index(['student_id', 'period_id'], 'idx_registrations_student_period');
-            $table->index('status', 'idx_registrations_status');
+        Schema::table('peserta_kkn', function (Blueprint $table) {
+            $table->index(['mahasiswa_id', 'periode_id'], 'idx_peserta_kkn_student_period');
+            $table->index('status', 'idx_peserta_kkn_status');
         });
 
         // Evaluations - student group lookups
-        Schema::table('evaluations', function (Blueprint $table) {
-            $table->index(['student_id', 'group_id'], 'idx_evaluations_student_group');
+        Schema::table('evaluasi', function (Blueprint $table) {
+            $table->index(['mahasiswa_id', 'kelompok_id'], 'idx_evaluasi_student_group');
         });
 
         // Groups - period lookups for filtered views
-        Schema::table('groups', function (Blueprint $table) {
-            $table->index(['period_id', 'status'], 'idx_groups_period_status');
+        Schema::table('kelompok_kkn', function (Blueprint $table) {
+            $table->index(['periode_id', 'status'], 'idx_kelompok_kkn_period_status');
         });
     }
 
     public function down(): void
     {
-        Schema::table('kkn_scores', function (Blueprint $table) {
-            $table->dropIndex('idx_kkn_scores_student_group');
-            $table->dropIndex('idx_kkn_scores_finalized');
+        Schema::table('nilai_kkn', function (Blueprint $table) {
+            $table->dropIndex('idx_nilai_kkn_student_group');
+            $table->dropIndex('idx_nilai_kkn_finalized');
         });
 
-        Schema::table('daily_reports', function (Blueprint $table) {
-            $table->dropIndex('idx_daily_reports_group_status');
-            $table->dropIndex('idx_daily_reports_student_status');
-            $table->dropIndex('idx_daily_reports_date');
+        Schema::table('kegiatan_kkn', function (Blueprint $table) {
+            $table->dropIndex('idx_kegiatan_kkn_group_status');
+            $table->dropIndex('idx_kegiatan_kkn_student_status');
+            $table->dropIndex('idx_kegiatan_kkn_date');
         });
 
-        Schema::table('registrations', function (Blueprint $table) {
-            $table->dropIndex('idx_registrations_student_period');
-            $table->dropIndex('idx_registrations_status');
+        Schema::table('peserta_kkn', function (Blueprint $table) {
+            $table->dropIndex('idx_peserta_kkn_student_period');
+            $table->dropIndex('idx_peserta_kkn_status');
         });
 
-        Schema::table('evaluations', function (Blueprint $table) {
-            $table->dropIndex('idx_evaluations_student_group');
+        Schema::table('evaluasi', function (Blueprint $table) {
+            $table->dropIndex('idx_evaluasi_student_group');
         });
 
-        Schema::table('groups', function (Blueprint $table) {
-            $table->dropIndex('idx_groups_period_status');
+        Schema::table('kelompok_kkn', function (Blueprint $table) {
+            $table->dropIndex('idx_kelompok_kkn_period_status');
         });
     }
 };

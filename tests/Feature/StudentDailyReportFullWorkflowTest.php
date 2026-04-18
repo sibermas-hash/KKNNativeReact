@@ -42,7 +42,7 @@ class StudentDailyReportFullWorkflowTest extends TestCase
     private function createStudentInGroup(KelompokKkn $group, Periode $period): array
     {
         $faculty = Fakultas::factory()->create();
-        $program = Prodi::factory()->create(['faculty_id' => $faculty->id]);
+        $program = Prodi::factory()->create(['fakultas_id' => $faculty->id]);
 
         $user = User::factory()->create([
             'phone' => '081234567890',
@@ -52,14 +52,14 @@ class StudentDailyReportFullWorkflowTest extends TestCase
 
         $mahasiswa = Mahasiswa::factory()->create([
             'user_id' => $user->id,
-            'faculty_id' => $faculty->id,
-            'program_id' => $program->id,
+            'fakultas_id' => $faculty->id,
+            'prodi_id' => $program->id,
             'gender' => 'L',
         ]);
 
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
         ]);
 
@@ -118,7 +118,7 @@ class StudentDailyReportFullWorkflowTest extends TestCase
             'longitude' => 109.23070000,
         ]);
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
         ]);
@@ -173,7 +173,7 @@ class StudentDailyReportFullWorkflowTest extends TestCase
             'longitude' => 109.23070000,
         ]);
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
         ]);
@@ -216,21 +216,21 @@ class StudentDailyReportFullWorkflowTest extends TestCase
         $period = Periode::factory()->execution()->create();
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
         ]);
 
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'max_groups' => 5,
             'is_active' => true,
         ]);
 
         $group->update([
             'dpl_id' => $dosen->id,
-            'dpl_period_id' => $dplPeriod->id,
+            'dpl_periode_id' => $dplPeriod->id,
         ]);
         $group->dosen()->syncWithoutDetaching([$dosen->id => ['role' => 'Ketua']]);
         $group->syncKetuaFlatColumns();
@@ -282,21 +282,21 @@ class StudentDailyReportFullWorkflowTest extends TestCase
         $period = Periode::factory()->execution()->create();
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
         ]);
 
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'max_groups' => 5,
             'is_active' => true,
         ]);
 
         $group->update([
             'dpl_id' => $dosen->id,
-            'dpl_period_id' => $dplPeriod->id,
+            'dpl_periode_id' => $dplPeriod->id,
         ]);
         $group->dosen()->syncWithoutDetaching([$dosen->id => ['role' => 'Ketua']]);
         $group->syncKetuaFlatColumns();
@@ -354,21 +354,21 @@ class StudentDailyReportFullWorkflowTest extends TestCase
         $period = Periode::factory()->execution()->create();
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
         ]);
 
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'max_groups' => 5,
             'is_active' => true,
         ]);
 
         $group->update([
             'dpl_id' => $dosen->id,
-            'dpl_period_id' => $dplPeriod->id,
+            'dpl_periode_id' => $dplPeriod->id,
         ]);
         $group->dosen()->syncWithoutDetaching([$dosen->id => ['role' => 'Ketua']]);
         $group->syncKetuaFlatColumns();
@@ -428,21 +428,21 @@ class StudentDailyReportFullWorkflowTest extends TestCase
         $period = Periode::factory()->execution()->create();
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
         ]);
 
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'max_groups' => 5,
             'is_active' => true,
         ]);
 
         $group->update([
             'dpl_id' => $dosen->id,
-            'dpl_period_id' => $dplPeriod->id,
+            'dpl_periode_id' => $dplPeriod->id,
         ]);
         $group->dosen()->syncWithoutDetaching([$dosen->id => ['role' => 'Ketua']]);
         $group->syncKetuaFlatColumns();
@@ -496,7 +496,7 @@ class StudentDailyReportFullWorkflowTest extends TestCase
             'longitude' => 109.23070000,
         ]);
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
         ]);

@@ -19,7 +19,7 @@ const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
                     <label 
                         htmlFor={id} 
                         className={clsx(
-                            "text-xs font-bold text-gray-900 uppercase tracking-widest pl-1",
+                            "text-xs font-bold text-emerald-950 uppercase tracking-widest pl-1",
                             isHorizontal && "sm:min-w-[180px] sm:text-right sm:mt-3"
                         )}
                     >
@@ -33,12 +33,12 @@ const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
                         id={id}
                         rows={rest.rows ?? 4}
                         className={clsx(
-                            'w-full rounded-xl border border-gray-200/60 bg-white px-4 py-2.5 text-sm text-gray-900 transition-all placeholder:text-gray-900 resize-none',
+                            'w-full rounded-xl border border-emerald-50/60 bg-white px-4 py-2.5 text-sm text-emerald-950 transition-all placeholder:text-black resize-none',
                             'focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20',
                             error
                                 ? 'border-rose-500 focus:ring-rose-500/20'
                                 : 'hover:border-emerald-300',
-                            rest.disabled && 'bg-gray-50 text-gray-900 cursor-not-allowed border-gray-200/60',
+                            rest.disabled && 'bg-gray-50 text-emerald-950 cursor-not-allowed border-emerald-50/60',
                             className,
                         )}
                         {...rest}

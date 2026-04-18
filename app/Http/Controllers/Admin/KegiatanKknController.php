@@ -31,7 +31,7 @@ class KegiatanKknController extends Controller
             ->when($status, fn ($q) => $q->where('status', $status));
 
         // Centralized faculty scoping
-        $paginator = FacultyScopeService::apply($query, 'mahasiswa.faculty_id')
+        $paginator = FacultyScopeService::apply($query, 'mahasiswa.fakultas_id')
             ->orderByDesc('date')
             ->paginate(15)
             ->withQueryString();

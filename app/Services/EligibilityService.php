@@ -9,7 +9,6 @@ use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\SystemSetting;
-use Illuminate\Support\Collection;
 
 class EligibilityService
 {
@@ -17,6 +16,7 @@ class EligibilityService
      * Local cache to prevent N+1 queries for the same metadata during a single request.
      */
     protected ?Periode $activePeriod = null;
+
     protected ?array $cachedSettings = null;
 
     /**
@@ -33,14 +33,14 @@ class EligibilityService
                     [
                         'key' => 'min_sks',
                         'passed' => false,
-                        'message' => '[SKS requirement failure] - SKS tidak mencukupi (0/100)'
-                    ]
-                ]
+                        'message' => '[SKS requirement failure] - SKS tidak mencukupi (0/100)',
+                    ],
+                ],
             ];
         }
 
         // 1. Resolve Periode (Use preloaded -> then cached -> then DB)
-        $periode = $preloadedData['periode'] 
+        $periode = $preloadedData['periode']
             ?? ($periodeId ? Periode::with('jenisKkn')->find($periodeId) : $this->getActivePeriod());
 
         // 2. Resolve Settings
@@ -166,7 +166,7 @@ class EligibilityService
     {
         // Prioritaskan dari Master Data Jenis KKN (jika ada)
         $minGpa = $periode?->jenisKkn ? (float) $periode->jenisKkn->min_gpa : null;
-        
+
         if ($minGpa === null || $minGpa <= 0) {
             $enableGpa = filter_var($settings['enable_gpa_requirement'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
@@ -224,7 +224,7 @@ class EligibilityService
 
         if (str_contains($kknTypeLabel, 'zakat')) {
             $prodiName = strtolower($mahasiswa->prodi?->nama ?? '');
-            
+
             // Re-check if relation missing
             if (empty($prodiName) && ! $mahasiswa->relationLoaded('prodi')) {
                 $prodiName = strtolower($mahasiswa->prodi()->first()?->nama ?? '');
@@ -291,7 +291,7 @@ class EligibilityService
             'details' => [
                 'health_certificate' => $hasHealthCert,
                 'parent_permission' => $hasParentPerm,
-            ]
+            ],
         ];
     }
 
@@ -304,7 +304,7 @@ class EligibilityService
             ? isset($preloadedIds[$mahasiswa->id])
             : PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
                 ->whereIn('status', ['pending', 'approved'])
-                ->when($currentPeriodeId, fn ($q) => $q->where('period_id', '!=', $currentPeriodeId))
+                ->when($currentPeriodeId, fn ($q) => $q->where('periode_id', '!=', $currentPeriodeId))
                 ->exists();
 
         return [
@@ -324,6 +324,7 @@ class EligibilityService
         if ($this->activePeriod === null) {
             $this->activePeriod = Periode::getActivePeriod();
         }
+
         return $this->activePeriod;
     }
 
@@ -335,6 +336,7 @@ class EligibilityService
         if ($this->cachedSettings === null) {
             $this->cachedSettings = SystemSetting::pluck('value', 'config_key')->toArray();
         }
+
         return $this->cachedSettings;
     }
 
@@ -350,7 +352,7 @@ class EligibilityService
         $query = Mahasiswa::with(['user', 'prodi.fakultas', 'fakultas']);
 
         if ($facultyId) {
-            $query->where('faculty_id', $facultyId);
+            $query->where('fakultas_id', $facultyId);
         }
 
         // For large datasets, consider using chunking or cursor, but for now we optimize memory via eager load
@@ -366,13 +368,13 @@ class EligibilityService
 
         $activeRegIds = PesertaKkn::whereIn('mahasiswa_id', $studentIds)
             ->whereIn('status', ['pending', 'approved'])
-            ->when($periodeId, fn ($q) => $q->where('period_id', '!=', $periodeId))
+            ->when($periodeId, fn ($q) => $q->where('periode_id', '!=', $periodeId))
             ->pluck('mahasiswa_id')
             ->toArray();
 
         $dispensations = DispensasiKkn::whereIn('nim', $studentNims)
             ->where(function ($q) use ($periodeId) {
-                $q->whereNull('period_id')->orWhere('period_id', $periodeId);
+                $q->whereNull('periode_id')->orWhere('periode_id', $periodeId);
             })
             ->get()
             ->groupBy('nim')

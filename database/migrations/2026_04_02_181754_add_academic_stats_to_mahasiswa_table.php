@@ -14,7 +14,7 @@ return new class extends Migration
 
         Schema::table('mahasiswa', function (Blueprint $table) {
             if (! Schema::hasColumn('mahasiswa', 'sks_completed')) {
-                $table->integer('sks_completed')->default(0)->after('program_id');
+                $table->integer('sks_completed')->default(0)->after('prodi_id');
             }
 
             if (! Schema::hasColumn('mahasiswa', 'gpa')) {

@@ -39,7 +39,7 @@ class RegistrationService
      * 6. Commit transaction
      * 7. Release cache lock
      *
-     * The unique constraint on (mahasiswa_id, period_id) added in C14 provides
+     * The unique constraint on (mahasiswa_id, periode_id) added in C14 provides
      * a final safety net against race conditions.
      *
      * @param  Mahasiswa  $mahasiswa  The student registering.
@@ -56,8 +56,8 @@ class RegistrationService
     {
         // Headless testing bypass for TC002 stability
         if (config('app.env') === 'local' && request()->header('X-Test-Force-Register')) {
-            \App\Models\KKN\PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
-                ->where('period_id', $periodeId)
+            PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
+                ->where('periode_id', $periodeId)
                 ->forceDelete();
         }
 
@@ -74,12 +74,12 @@ class RegistrationService
                 $now = now();
                 if ($periode->registration_start && $now->lt($periode->registration_start)) {
                     throw ValidationException::withMessages([
-                        'period_id' => 'Pendaftaran untuk periode ini belum dibuka.',
+                        'periode_id' => 'Pendaftaran untuk periode ini belum dibuka.',
                     ]);
                 }
                 if ($periode->registration_end && $now->gt($periode->registration_end)) {
                     throw ValidationException::withMessages([
-                        'period_id' => 'Pendaftaran untuk periode ini sudah ditutup.',
+                        'periode_id' => 'Pendaftaran untuk periode ini sudah ditutup.',
                     ]);
                 }
 
@@ -91,7 +91,7 @@ class RegistrationService
 
                 if ($hasCompleted) {
                     throw ValidationException::withMessages([
-                        'period_id' => 'Pendaftaran ditolak. Anda sudah dinyatakan LULUS KKN pada periode sebelumnya.',
+                        'periode_id' => 'Pendaftaran ditolak. Anda sudah dinyatakan LULUS KKN pada periode sebelumnya.',
                     ]);
                 }
 
@@ -100,22 +100,22 @@ class RegistrationService
                 if (! $eligibility['is_eligible']) {
                     $reason = $eligibility['issues'][0]['message'] ?? 'Anda belum memenuhi syarat akademik untuk mengikuti periode KKN ini.';
                     throw ValidationException::withMessages([
-                        'period_id' => $reason,
+                        'periode_id' => $reason,
                     ]);
                 }
 
                 // 3. DOCUMENT FILTER: Cek keberadaan Surat Sehat & Izin Orang Tua
                 if (! $mahasiswa->health_certificate_path || ! $mahasiswa->parent_permission_path) {
                     throw ValidationException::withMessages([
-                        'period_id' => 'Pendaftaran ditolak. Anda wajib mengunggah Surat Keterangan Sehat dan Surat Izin Orang Tua terlebih dahulu.',
+                        'periode_id' => 'Pendaftaran ditolak. Anda wajib mengunggah Surat Keterangan Sehat dan Surat Izin Orang Tua terlebih dahulu.',
                     ]);
                 }
 
                 // 4. FACULTY FILTER: Cek apakah mahasiswa sesuai dengan fakultas lokasi (jika dibatasi)
                 if ($kelompokId) {
                     $kelompok = KelompokKkn::query()->with('lokasi')->findOrFail($kelompokId);
-                    if ($kelompok->lokasi?->faculty_id && $mahasiswa->faculty_id && $kelompok->lokasi->faculty_id !== $mahasiswa->faculty_id) {
-                        $facultyName = Fakultas::find($kelompok->lokasi->faculty_id)?->nama ?? 'Fakultas Lain';
+                    if ($kelompok->lokasi?->fakultas_id && $mahasiswa->fakultas_id && $kelompok->lokasi->fakultas_id !== $mahasiswa->fakultas_id) {
+                        $facultyName = Fakultas::find($kelompok->lokasi->fakultas_id)?->nama ?? 'Fakultas Lain';
                         throw ValidationException::withMessages([
                             'kelompok_id' => "Kelompok ini khusus untuk mahasiswa {$facultyName}. Anda berasal dari fakultas yang berbeda.",
                         ]);
@@ -125,20 +125,20 @@ class RegistrationService
                 // 5. ACTIVE FILTER: Cek apakah sedang mengikuti KKN di periode lain (Status Approved/Pending)
                 $activeInOtherPeriod = PesertaKkn::query()
                     ->where('mahasiswa_id', $mahasiswa->id)
-                    ->where('period_id', '!=', $periodeId)
+                    ->where('periode_id', '!=', $periodeId)
                     ->whereIn('status', ['pending', 'approved'])
                     ->exists();
 
                 if ($activeInOtherPeriod) {
                     throw ValidationException::withMessages([
-                        'period_id' => 'Anda masih memiliki pendaftaran aktif di periode KKN lain. Harap selesaikan atau batalkan pendaftaran tersebut terlebih dahulu.',
+                        'periode_id' => 'Anda masih memiliki pendaftaran aktif di periode KKN lain. Harap selesaikan atau batalkan pendaftaran tersebut terlebih dahulu.',
                     ]);
                 }
 
                 $existing = PesertaKkn::query()
                     ->withTrashed() // FIX POIN B: Check trashed records too
                     ->where('mahasiswa_id', $mahasiswa->id)
-                    ->where('period_id', $periodeId)
+                    ->where('periode_id', $periodeId)
                     ->lockForUpdate()
                     ->first();
 
@@ -154,10 +154,10 @@ class RegistrationService
                 if (! $existing) {
                     try {
                         // FIX C12 & C14: Wrap in try-catch to handle unique constraint violation gracefully
-                        // The unique constraint on (mahasiswa_id, period_id) prevents race condition duplicates
+                        // The unique constraint on (mahasiswa_id, periode_id) prevents race condition duplicates
                         $existing = $this->registrations->create([
                             'mahasiswa_id' => $mahasiswa->id,
-                            'period_id' => $periodeId,
+                            'periode_id' => $periodeId,
                             'kelompok_id' => null,
                             'notes' => $notes,
                             'status' => 'pending',
@@ -170,7 +170,7 @@ class RegistrationService
                             $existing = PesertaKkn::query()
                                 ->withTrashed()
                                 ->where('mahasiswa_id', $mahasiswa->id)
-                                ->where('period_id', $periodeId)
+                                ->where('periode_id', $periodeId)
                                 ->lockForUpdate()
                                 ->firstOrFail();
 
@@ -192,7 +192,7 @@ class RegistrationService
                                 $existing->save();
                             } else {
                                 throw ValidationException::withMessages([
-                                    'period_id' => 'Anda sudah memiliki pendaftaran aktif untuk periode ini.',
+                                    'periode_id' => 'Anda sudah memiliki pendaftaran aktif untuk periode ini.',
                                 ]);
                             }
                         } else {
@@ -201,7 +201,7 @@ class RegistrationService
                     }
                 } elseif ($existing->status === 'completed') {
                     throw ValidationException::withMessages([
-                        'period_id' => 'Status pendaftaran Anda pada periode ini tidak mengizinkan perubahan kelompok.',
+                        'periode_id' => 'Status pendaftaran Anda pada periode ini tidak mengizinkan perubahan kelompok.',
                     ]);
                 } elseif ($existing->status === 'rejected') {
                     $existing->status = 'pending';
@@ -230,7 +230,7 @@ class RegistrationService
                 }
 
                 $kelompok = KelompokKkn::query()
-                    ->where('period_id', $periode->id)
+                    ->where('periode_id', $periode->id)
                     ->where('status', 'active')
                     ->findOrFail($kelompokId);
 
@@ -253,13 +253,13 @@ class RegistrationService
             return $this->runAtomically(function () use ($mahasiswa, $periodeId) {
                 $registration = PesertaKkn::query()
                     ->where('mahasiswa_id', $mahasiswa->id)
-                    ->where('period_id', $periodeId)
+                    ->where('periode_id', $periodeId)
                     ->lockForUpdate()
                     ->first();
 
                 if (! $registration) {
                     throw ValidationException::withMessages([
-                        'period_id' => 'Pendaftaran periode ini tidak ditemukan.',
+                        'periode_id' => 'Pendaftaran periode ini tidak ditemukan.',
                     ]);
                 }
 

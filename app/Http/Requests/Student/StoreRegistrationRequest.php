@@ -18,7 +18,7 @@ class StoreRegistrationRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'period_id' => [
+            'periode_id' => [
                 'required',
             ],
             'health_certificate' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'],
@@ -27,13 +27,13 @@ class StoreRegistrationRequest extends FormRequest
         ];
 
         if (config('app.env') !== 'local') {
-            $rules['period_id'][] = 'numeric';
+            $rules['periode_id'][] = 'numeric';
         }
 
         // Strict validation for non-local environments
         if (config('app.env') !== 'local' && config('app.env') !== 'testing') {
-            $rules['period_id'][] = 'exists:kkn.periode,id';
-            $rules['period_id'][] = Rule::exists('kkn.periode', 'id')->where(function ($query) {
+            $rules['periode_id'][] = 'exists:kkn.periode,id';
+            $rules['periode_id'][] = Rule::exists('kkn.periode', 'id')->where(function ($query) {
                 $query->where('is_active', true)
                     ->whereDate('registration_start', '<=', now())
                     ->whereDate('registration_end', '>=', now());
@@ -51,7 +51,7 @@ class StoreRegistrationRequest extends FormRequest
                 $sks = $req->input('sks_completed') ?? $req->input('credits_completed') ?? $req->input('sks') ?? 110;
                 $gpa = $req->input('gpa') ?? 3.5;
                 $prereq = $req->input('prerequisites_completed') ?? $req->input('prerequisites') ?? true;
-                
+
                 if ((int) $sks < 110) {
                     $validator->errors()->add('sks', 'SKS minimum 110');
                     $validator->errors()->add('sks_completed', 'SKS minimum 110');
@@ -59,7 +59,7 @@ class StoreRegistrationRequest extends FormRequest
                 if ((float) $gpa < 2.5) {
                     $validator->errors()->add('gpa', 'GPA minimum 2.5');
                 }
-                if (!$prereq) {
+                if (! $prereq) {
                     $validator->errors()->add('prerequisites', 'Prerequisites required');
                     $validator->errors()->add('prerequisites_completed', 'Prerequisites required');
                 }
@@ -70,8 +70,8 @@ class StoreRegistrationRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'period_id.required' => 'Periode KKN wajib dipilih.',
-            'period_id.exists' => 'Periode KKN tidak valid atau sudah ditutup.',
+            'periode_id.required' => 'Periode KKN wajib dipilih.',
+            'periode_id.exists' => 'Periode KKN tidak valid atau sudah ditutup.',
         ];
     }
 }

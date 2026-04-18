@@ -36,7 +36,7 @@ class GroupSelectionService
             ->lockForUpdate()
             ->findOrFail($registration->id);
 
-        $queue = $this->ensureQueue($mahasiswa, $registration->period_id, true);
+        $queue = $this->ensureQueue($mahasiswa, $registration->periode_id, true);
         $period = $registration->periode()->lockForUpdate()->firstOrFail();
         $groupIdsToLock = collect([$registration->kelompok_id, $kelompokId])
             ->filter()
@@ -45,7 +45,7 @@ class GroupSelectionService
             ->values();
 
         $lockedGroups = KelompokKkn::query()
-            ->where('period_id', $registration->period_id)
+            ->where('periode_id', $registration->periode_id)
             ->whereIn('id', $groupIdsToLock)
             ->orderBy('id')
             ->lockForUpdate()
@@ -130,7 +130,7 @@ class GroupSelectionService
             ->lockForUpdate()
             ->first();
 
-        $queue = $this->ensureQueue($mahasiswa, $registration->period_id, true);
+        $queue = $this->ensureQueue($mahasiswa, $registration->periode_id, true);
 
         $registration->fill([
             'kelompok_id' => null,
@@ -151,7 +151,7 @@ class GroupSelectionService
     {
         $query = AntrianKkn::query()
             ->where('mahasiswa_id', $mahasiswa->id)
-            ->where('period_id', $periodeId);
+            ->where('periode_id', $periodeId);
 
         if ($lock) {
             $query->lockForUpdate();
@@ -165,7 +165,7 @@ class GroupSelectionService
 
         return AntrianKkn::create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $periodeId,
+            'periode_id' => $periodeId,
             'status' => 'menunggu',
             'joined_at' => now(),
         ]);
@@ -285,7 +285,7 @@ class GroupSelectionService
             ->whereIn('status', self::ACTIVE_REGISTRATION_STATUSES)
             ->when($excludingRegistrationId, fn ($query, $id) => $query->where('id', '!=', $id))
             ->with([
-                'mahasiswa:id,faculty_id,program_id,gender',
+                'mahasiswa:id,fakultas_id,prodi_id,gender',
             ])
             ->lockForUpdate()
             ->get([
@@ -413,8 +413,8 @@ class GroupSelectionService
     private function matchesRule(SlotTerkunci $rule, Mahasiswa $mahasiswa): bool
     {
         return match ($rule->tipe_slot) {
-            'fakultas' => $rule->fakultas_id !== null && (int) $rule->fakultas_id === (int) $mahasiswa->faculty_id,
-            'prodi' => $rule->prodi_id !== null && (int) $rule->prodi_id === (int) $mahasiswa->program_id,
+            'fakultas' => $rule->fakultas_id !== null && (int) $rule->fakultas_id === (int) $mahasiswa->fakultas_id,
+            'prodi' => $rule->prodi_id !== null && (int) $rule->prodi_id === (int) $mahasiswa->prodi_id,
             default => false,
         };
     }

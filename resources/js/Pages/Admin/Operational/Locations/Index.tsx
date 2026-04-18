@@ -92,14 +92,14 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
       <div className="max-w-7xl mx-auto space-y-6 font-sans pb-12">
         
         {/* PAGE HEADER */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-gray-200">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-emerald-50">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <MapPin size={14} className="text-gray-700" />
-              <span className="text-sm font-medium text-gray-700">Data Master Sistem</span>
+              <MapPin size={14} className="text-emerald-800" />
+              <span className="text-sm font-medium text-emerald-800">Data Master Sistem</span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 leading-tight">Lokasi Penugasan</h1>
-            <p className="text-sm text-gray-700 max-w-2xl leading-relaxed">
+            <h1 className="text-2xl font-bold text-emerald-950 leading-tight">Lokasi Penugasan</h1>
+            <p className="text-sm text-emerald-800 max-w-2xl leading-relaxed">
               Data induk wilayah desa/kelurahan sebagai titik penempatan peserta KKN.
             </p>
           </div>
@@ -108,12 +108,12 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
             {workflow.primary_source === 'groups_import' && (
               <button
                 onClick={() => router.get(workflow.groups_import_url)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-emerald-800 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
               >
                 <Activity size={16} /> Sinkronisasi Kelompok
               </button>
             )}
-            <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+            <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-emerald-800 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
               <Download size={16} /> Unduh Data
             </button>
           </div>
@@ -123,23 +123,23 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
           
           {/* LEFT: FORM PANEL (1/3) */}
           <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-              <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+            <div className="bg-white border border-emerald-50 rounded-xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-emerald-50 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="h-8 w-8 bg-[#e8f5ee] rounded-lg flex items-center justify-center text-[#1a7a4a]">
                     {editingLocation ? <Pencil size={16} /> : <Plus size={16} />}
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-gray-900">
+                    <h3 className="text-sm font-bold text-emerald-950">
                       {editingLocation ? 'Edit Lokasi' : 'Tambah Lokasi'}
                     </h3>
-                    <p className="text-xs text-gray-700">
+                    <p className="text-xs text-emerald-800">
                       {editingLocation ? 'Perbarui data wilayah yang ada' : 'Registrasi wilayah baru'}
                     </p>
                   </div>
                 </div>
                 {editingLocation && (
-                  <button onClick={cancelEdit} className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-700 hover:text-[#ef4444] hover:bg-red-50 transition-colors">
+                  <button onClick={cancelEdit} className="h-8 w-8 rounded-lg flex items-center justify-center text-emerald-800 hover:text-[#ef4444] hover:bg-red-50 transition-colors">
                     <X size={16} />
                   </button>
                 )}
@@ -147,12 +147,12 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
               
               <form onSubmit={submitForm} className="p-5 space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Nama Desa/Kelurahan <span className="text-[#ef4444]">*</span></label>
+                  <label className="block text-sm font-medium text-emerald-800 mb-1.5">Nama Desa/Kelurahan <span className="text-[#ef4444]">*</span></label>
                   <input
                     type="text"
                     value={form.data.village_name}
                     onChange={(e) => form.setData('village_name', e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none transition-all"
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-emerald-950 placeholder:text-black focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none transition-all"
                     placeholder="Contoh: Karangklesem"
                     required
                   />
@@ -161,23 +161,23 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Kecamatan <span className="text-[#ef4444]">*</span></label>
+                    <label className="block text-sm font-medium text-emerald-800 mb-1.5">Kecamatan <span className="text-[#ef4444]">*</span></label>
                     <input
                       type="text"
                       value={form.data.district_name}
                       onChange={(e) => form.setData('district_name', e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none transition-all"
+                      className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-emerald-950 placeholder:text-black focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none transition-all"
                       placeholder="Nama Kec."
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Kab/Kota <span className="text-[#ef4444]">*</span></label>
+                    <label className="block text-sm font-medium text-emerald-800 mb-1.5">Kab/Kota <span className="text-[#ef4444]">*</span></label>
                     <input
                       type="text"
                       value={form.data.regency_name}
                       onChange={(e) => form.setData('regency_name', e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none transition-all"
+                      className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-emerald-950 placeholder:text-black focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none transition-all"
                       placeholder="Nama Kab."
                       required
                     />
@@ -186,23 +186,23 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Kode BPS</label>
+                    <label className="block text-sm font-medium text-emerald-800 mb-1.5">Kode BPS</label>
                     <input
                       type="text"
                       value={form.data.village_code}
                       onChange={(e) => form.setData('village_code', e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none transition-all font-mono"
+                      className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-emerald-950 placeholder:text-black focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none transition-all font-mono"
                       placeholder="Misal: 33.02.XX"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Kapasitas <span className="text-[#ef4444]">*</span></label>
+                    <label className="block text-sm font-medium text-emerald-800 mb-1.5">Kapasitas <span className="text-[#ef4444]">*</span></label>
                     <input
                       type="number"
                       min="0"
                       value={form.data.capacity}
                       onChange={(e) => form.setData('capacity', e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 text-center focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none transition-all tabular-nums"
+                      className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-emerald-950 text-center focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none transition-all tabular-nums"
                       required
                     />
                   </div>
@@ -221,53 +221,53 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
 
             {/* INLINE METRICS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+              <div className="bg-white border border-emerald-50 rounded-xl p-4 flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-[#e8f5ee] text-[#1a7a4a]">
                   <Building2 size={18} />
                 </div>
                 <div>
-                  <p className="text-xl font-bold text-gray-900 tabular-nums">{summary.total_locations}</p>
-                  <p className="text-xs font-medium text-gray-700">Desa Terdaftar</p>
+                  <p className="text-xl font-bold text-emerald-950 tabular-nums">{summary.total_locations}</p>
+                  <p className="text-xs font-medium text-emerald-800">Desa Terdaftar</p>
                 </div>
               </div>
-              <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+              <div className="bg-white border border-emerald-50 rounded-xl p-4 flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-[#e8f5ee] text-[#1a7a4a]">
                   <MapPinned size={18} />
                 </div>
                 <div>
-                  <p className="text-xl font-bold text-gray-900 tabular-nums">{summary.assigned_groups}</p>
-                  <p className="text-xs font-medium text-gray-700">Unit Kelompok</p>
+                  <p className="text-xl font-bold text-emerald-950 tabular-nums">{summary.assigned_groups}</p>
+                  <p className="text-xs font-medium text-emerald-800">Unit Kelompok</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+            <div className="bg-white border border-emerald-50 rounded-xl p-4 flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-[#e8f5ee] text-[#1a7a4a]">
                 <House size={18} />
               </div>
               <div>
-                <p className="text-xl font-bold text-gray-900 tabular-nums">{summary.reported_posko} Rumah</p>
-                <p className="text-xs font-medium text-gray-700">Posko Terlapor</p>
+                <p className="text-xl font-bold text-emerald-950 tabular-nums">{summary.reported_posko} Rumah</p>
+                <p className="text-xs font-medium text-emerald-800">Posko Terlapor</p>
               </div>
             </div>
           </div>
 
           {/* RIGHT: TABLE PANEL (2/3) */}
           <div className="lg:col-span-2">
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+            <div className="bg-white border border-emerald-50 rounded-xl overflow-hidden">
               
-              <div className="px-5 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="px-5 py-4 border-b border-emerald-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900">Daftar Wilayah</h3>
-                  <p className="text-xs text-gray-700">Total: {locations.meta.total} entri data</p>
+                  <h3 className="text-sm font-bold text-emerald-950">Daftar Wilayah</h3>
+                  <p className="text-xs text-emerald-800">Total: {locations.meta.total} entri data</p>
                 </div>
                 <div className="relative w-full sm:w-64">
-                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-700"/>
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-800"/>
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full h-10 pl-9 pr-3 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none transition-all"
+                    className="w-full h-10 pl-9 pr-3 bg-white border border-gray-300 rounded-lg text-sm text-emerald-950 placeholder:text-black focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none transition-all"
                     placeholder="Cari desa atau kecamatan..."
                   />
                 </div>
@@ -276,12 +276,12 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
               <div className="overflow-x-auto">
                 <table className="min-w-full">
                   <thead>
-                    <tr className="border-b-2 border-gray-200">
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Desa/Kelurahan</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Kecamatan & Kabupaten</th>
-                      <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Kode BPS</th>
-                      <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Kapasitas</th>
-                      <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
+                    <tr className="border-b-2 border-emerald-50">
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-emerald-800 uppercase tracking-wider">Desa/Kelurahan</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-emerald-800 uppercase tracking-wider">Kecamatan & Kabupaten</th>
+                      <th className="px-6 py-3 text-center text-xs font-semibold text-emerald-800 uppercase tracking-wider">Kode BPS</th>
+                      <th className="px-6 py-3 text-center text-xs font-semibold text-emerald-800 uppercase tracking-wider">Kapasitas</th>
+                      <th className="px-6 py-3 text-right text-xs font-semibold text-emerald-800 uppercase tracking-wider">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#f3f4f6]">
@@ -289,8 +289,8 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
                       <tr>
                         <td colSpan={5} className="px-6 py-16 text-center">
                           <MapPin size={32} className="mx-auto text-[#d1d5db] mb-3" />
-                          <p className="text-sm font-medium text-gray-700">Data Lokasi Kosong</p>
-                          <p className="text-xs text-gray-700 mt-1">Silakan tambah baru atau impor dari data kelompok.</p>
+                          <p className="text-sm font-medium text-emerald-800">Data Lokasi Kosong</p>
+                          <p className="text-xs text-emerald-800 mt-1">Silakan tambah baru atau impor dari data kelompok.</p>
                         </td>
                       </tr>
                     ) : (
@@ -298,26 +298,26 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
                         <tr key={l.id} className="hover:bg-gray-50 transition-colors group/row">
                           <td className="px-6 py-4">
                             <div className="flex flex-col">
-                              <span className="text-base font-semibold text-gray-900">{l.village_name}</span>
-                              <span className="text-xs text-gray-700 mt-0.5">{l.full_name || '-'}</span>
+                              <span className="text-base font-semibold text-emerald-950">{l.village_name}</span>
+                              <span className="text-xs text-emerald-800 mt-0.5">{l.full_name || '-'}</span>
                             </div>
                           </td>
                           <td className="px-6 py-4 align-top">
                             <div className="flex flex-col">
-                              <span className="text-sm font-medium text-gray-900">{l.district_name || '-'}</span>
-                              <span className="text-xs text-gray-700 mt-0.5">{l.regency_name || '-'}</span>
+                              <span className="text-sm font-medium text-emerald-950">{l.district_name || '-'}</span>
+                              <span className="text-xs text-emerald-800 mt-0.5">{l.regency_name || '-'}</span>
                             </div>
                           </td>
                           <td className="px-6 py-4 align-top text-center">
-                            <span className="text-xs font-mono bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded">
+                            <span className="text-xs font-mono bg-gray-100 text-emerald-800 px-1.5 py-0.5 rounded">
                               {l.village_code || 'NON-BPS'}
                             </span>
                           </td>
                           <td className="px-6 py-4 align-top">
                             <div className="flex flex-col gap-1.5 w-24 mx-auto">
                               <div className="flex justify-between text-xs font-medium">
-                                <span className="text-gray-900">{l.groups_count} Kel.</span>
-                                <span className="text-gray-700">/ {l.capacity ?? 0}</span>
+                                <span className="text-emerald-950">{l.groups_count} Kel.</span>
+                                <span className="text-emerald-800">/ {l.capacity ?? 0}</span>
                               </div>
                               <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                 <div 
@@ -329,7 +329,7 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
                           </td>
                           <td className="px-6 py-4 text-right align-top">
                             <div className="flex items-center justify-end gap-2">
-                              <button onClick={() => openEditForm(l)} className="h-8 w-8 flex items-center justify-center text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors" title="Edit">
+                              <button onClick={() => openEditForm(l)} className="h-8 w-8 flex items-center justify-center text-emerald-800 hover:text-emerald-950 hover:bg-gray-50 rounded-md transition-colors" title="Edit">
                                 <Pencil size={15} />
                               </button>
                               <button 
@@ -350,8 +350,8 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
               </div>
 
               {locations.meta && (locations.meta.last_page ?? 0) > 1 && (
-                <div className="px-5 py-3 border-t border-gray-200 flex items-center justify-between">
-                  <span className="text-xs text-gray-700">Menampilkan {locations.data.length} dari {locations.meta.total} baris</span>
+                <div className="px-5 py-3 border-t border-emerald-50 flex items-center justify-between">
+                  <span className="text-xs text-emerald-800">Menampilkan {locations.data.length} dari {locations.meta.total} baris</span>
                   <Pagination meta={locations.meta} />
                 </div>
               )}

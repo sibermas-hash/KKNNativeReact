@@ -62,7 +62,7 @@ class DashboardStatisticsServiceTest extends TestCase
         $periode = Periode::factory()->create();
 
         PesertaKkn::factory()->count(3)->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'status' => 'pending',
         ]);
 
@@ -78,7 +78,7 @@ class DashboardStatisticsServiceTest extends TestCase
         $lokasi = Lokasi::factory()->create();
 
         KelompokKkn::factory()->count(2)->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
@@ -92,7 +92,7 @@ class DashboardStatisticsServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
@@ -104,7 +104,7 @@ class DashboardStatisticsServiceTest extends TestCase
         ]);
         PesertaKkn::factory()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'kelompok_id' => $kelompok->id,
         ]);
 
@@ -118,17 +118,17 @@ class DashboardStatisticsServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
         PesertaKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'kelompok_id' => $kelompok->id,
         ]);
 
         PesertaKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'kelompok_id' => null,
         ]);
 
@@ -152,12 +152,12 @@ class DashboardStatisticsServiceTest extends TestCase
         $periode = Periode::factory()->create();
 
         PesertaKkn::factory()->count(2)->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'status' => 'pending',
         ]);
 
         PesertaKkn::factory()->count(3)->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'status' => 'approved',
         ]);
 
@@ -182,11 +182,11 @@ class DashboardStatisticsServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompokA = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
         $kelompokB = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
@@ -214,7 +214,7 @@ class DashboardStatisticsServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
@@ -247,13 +247,13 @@ class DashboardStatisticsServiceTest extends TestCase
         $lokasi = Lokasi::factory()->create();
 
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
             'dpl_id' => $dosen->id,
         ]);
 
         PesertaKkn::factory()->count(3)->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'kelompok_id' => $kelompok->id,
         ]);
 
@@ -279,7 +279,7 @@ class DashboardStatisticsServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
@@ -319,7 +319,7 @@ class DashboardStatisticsServiceTest extends TestCase
         $this->assertFalse(Cache::has($cacheKey));
     }
 
-    public function test_clear_cache_with_faculty_id(): void
+    public function test_clear_cache_with_fakultas_id(): void
     {
         $periode = Periode::factory()->create();
         $facultyId = 5;
@@ -349,30 +349,30 @@ class DashboardStatisticsServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $fakultas = Fakultas::factory()->create();
         $program = Prodi::factory()->create([
-            'faculty_id' => $fakultas->id,
+            'fakultas_id' => $fakultas->id,
         ]);
         $otherFaculty = Fakultas::factory()->create();
         $otherProgram = Prodi::factory()->create([
-            'faculty_id' => $otherFaculty->id,
+            'fakultas_id' => $otherFaculty->id,
         ]);
 
         $mahasiswaWithFaculty = Mahasiswa::factory()->create([
-            'faculty_id' => $fakultas->id,
-            'program_id' => $program->id,
+            'fakultas_id' => $fakultas->id,
+            'prodi_id' => $program->id,
         ]);
 
         $mahasiswaOtherFaculty = Mahasiswa::factory()->create([
-            'faculty_id' => $otherFaculty->id,
-            'program_id' => $otherProgram->id,
+            'fakultas_id' => $otherFaculty->id,
+            'prodi_id' => $otherProgram->id,
         ]);
 
         PesertaKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'mahasiswa_id' => $mahasiswaWithFaculty->id,
         ]);
 
         PesertaKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'mahasiswa_id' => $mahasiswaOtherFaculty->id,
         ]);
 
@@ -390,7 +390,7 @@ class DashboardStatisticsServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
@@ -408,7 +408,7 @@ class DashboardStatisticsServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 

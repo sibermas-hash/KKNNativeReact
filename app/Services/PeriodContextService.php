@@ -12,7 +12,7 @@ class PeriodContextService
 {
     private const CACHE_PREFIX = 'period_context:';
 
-    private const SESSION_KEY = 'active_period_id';
+    private const SESSION_KEY = 'active_periode_id';
 
     private const SESSION_DATA_KEY = 'active_period_data';
 
@@ -105,7 +105,7 @@ class PeriodContextService
      */
     public function getDefaultPeriodId(): ?int
     {
-        return Cache::remember('default_period_id', 3600, function () {
+        return Cache::remember('default_periode_id', 3600, function () {
             return Periode::where('is_active', true)
                 ->orderBy('periode', 'desc')
                 ->value('id');

@@ -30,7 +30,7 @@ export default function AiAssistant() {
       <AnimatePresence>
         {isOpen && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-            className="mb-4 w-80 h-[400px] bg-white rounded-xl border border-gray-200 flex flex-col overflow-hidden"
+            className="mb-4 w-80 h-[400px] bg-white rounded-xl border border-emerald-50 flex flex-col overflow-hidden"
             style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
             <div className="p-4 bg-[#16a34a] text-white flex justify-between items-center">
               <span className="text-sm font-bold">Saizu AI</span>
@@ -39,16 +39,16 @@ export default function AiAssistant() {
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#fafafa]">
               {messages.map((m, i) => (
                 <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`p-2.5 rounded-lg text-xs max-w-[80%] ${m.role === 'user' ? 'bg-[#16a34a] text-white' : 'bg-white border border-gray-200 text-gray-900'}`}>
+                  <div className={`p-2.5 rounded-lg text-xs max-w-[80%] ${m.role === 'user' ? 'bg-[#16a34a] text-white' : 'bg-white border border-emerald-50 text-emerald-950'}`}>
                     {m.text}
                   </div>
                 </div>
               ))}
               {loading && <Loader2 size={16} className="animate-spin text-[#16a34a]" />}
             </div>
-            <div className="p-3 border-t border-gray-200 flex gap-2 bg-white">
+            <div className="p-3 border-t border-emerald-50 flex gap-2 bg-white">
               <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()}
-                className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2 focus:border-[#16a34a] focus:ring-1 focus:ring-[#16a34a] outline-none text-gray-900 placeholder:text-gray-400" placeholder="Tanya sesuatu..." />
+                className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2 focus:border-[#16a34a] focus:ring-1 focus:ring-[#16a34a] outline-none text-emerald-950 placeholder:text-black" placeholder="Tanya sesuatu..." />
               <button onClick={send} className="p-2.5 bg-[#16a34a] text-white rounded-lg hover:bg-[#15803d] transition-colors">
                 <Send size={14} />
               </button>

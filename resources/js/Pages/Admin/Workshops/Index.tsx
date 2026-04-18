@@ -152,7 +152,7 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
     <AppLayout title="Workshop & Pembekalan">
       <Head title="Workshop & Pembekalan" />
       
-      <div className="max-w-7xl mx-auto space-y-8 pb-24 font-sans text-gray-900">
+      <div className="max-w-7xl mx-auto space-y-8 pb-24 font-sans text-emerald-950">
         
         <PageHeader 
           title="Workshop & Pembekalan"
@@ -208,29 +208,29 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
         >
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 p-6">
             {filteredWorkshops.length === 0 ? (
-              <div className="md:col-span-2 xl:col-span-3 py-24 flex flex-col items-center justify-center bg-gray-50 border border-dashed border-gray-200 rounded-xl">
-                <Layers size={48} className="text-gray-500 mb-4" strokeWidth={1} />
-                <p className="text-sm font-semibold text-gray-600">Tidak ada agenda aktif ditemukan.</p>
+              <div className="md:col-span-2 xl:col-span-3 py-24 flex flex-col items-center justify-center bg-gray-50 border border-dashed border-emerald-50 rounded-xl">
+                <Layers size={48} className="text-emerald-700 mb-4" strokeWidth={1} />
+                <p className="text-sm font-semibold text-emerald-800">Tidak ada agenda aktif ditemukan.</p>
               </div>
             ) : (
               filteredWorkshops.map((w) => (
-                <div key={w.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm flex flex-col hover:border-emerald-300 transition-colors">
+                <div key={w.id} className="bg-white rounded-xl border border-emerald-50 overflow-hidden shadow-sm flex flex-col hover:border-emerald-300 transition-colors">
                   <div className="p-6 flex-1 space-y-4">
                     <div className="flex justify-between items-start">
                       <StatusTag status={w.status === 'scheduled' ? 'active' : 'inactive'} label={w.status === 'scheduled' ? 'AKTIF' : 'DRAFT'} />
-                      <div className="text-xs font-bold text-gray-600 uppercase tabular-nums">ID: {w.id}</div>
+                      <div className="text-xs font-bold text-emerald-800 uppercase tabular-nums">ID: {w.id}</div>
                     </div>
 
                     <div className="space-y-2">
-                      <h3 className="text-sm font-bold text-gray-900 leading-tight">
+                      <h3 className="text-sm font-bold text-emerald-950 leading-tight">
                         {w.title}
                       </h3>
                       <div className="flex flex-col gap-1.5">
-                        <div className="flex items-center gap-2 text-gray-700 font-medium text-xs">
+                        <div className="flex items-center gap-2 text-emerald-800 font-medium text-xs">
                           <Calendar size={14} className="text-[#1a7a4a]" />
                           {w.date}
                         </div>
-                        <div className="flex items-center gap-2 text-gray-700 font-medium text-xs">
+                        <div className="flex items-center gap-2 text-emerald-800 font-medium text-xs">
                           <MapPin size={14} className="text-[#1a7a4a]" />
                           <span className="truncate">{w.location || '—'}</span>
                         </div>
@@ -239,10 +239,10 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
 
                     <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
                       <div className="flex flex-col">
-                        <span className="text-xs font-bold text-gray-600 uppercase leading-none mb-1">Pendaftar</span>
+                        <span className="text-xs font-bold text-emerald-800 uppercase leading-none mb-1">Pendaftar</span>
                         <div className="flex items-baseline gap-1">
-                          <span className="text-sm font-bold text-gray-900">{w.registered}</span>
-                          <span className="text-xs font-medium text-gray-600">/ {w.max_participants || '∞'}</span>
+                          <span className="text-sm font-bold text-emerald-950">{w.registered}</span>
+                          <span className="text-xs font-medium text-emerald-800">/ {w.max_participants || '∞'}</span>
                         </div>
                       </div>
                       <div className="h-2 w-24 bg-gray-100 rounded-full overflow-hidden">
@@ -256,26 +256,26 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
                       <>
                         <button 
                           onClick={() => handleEdit(w)} 
-                          className="h-8 w-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-700 hover:text-[#1a7a4a] transition-colors"
+                          className="h-8 w-8 rounded-lg border border-emerald-50 bg-white flex items-center justify-center text-emerald-800 hover:text-[#1a7a4a] transition-colors"
                         >
                           <Pencil size={14} />
                         </button>
                         <button 
                           onClick={() => setConfirmCancel(w.id)} 
-                          className="h-8 w-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-700 hover:text-rose-600 transition-colors"
+                          className="h-8 w-8 rounded-lg border border-emerald-50 bg-white flex items-center justify-center text-emerald-800 hover:text-rose-600 transition-colors"
                         >
                           <Trash2 size={14} />
                         </button>
                         <button 
                           onClick={() => { setSelectedWorkshop(w); setShowParticipants(true); }}
-                          className="h-8 px-4 bg-white border border-gray-200 text-[#1a7a4a] rounded-lg text-xs font-bold hover:bg-gray-50"
+                          className="h-8 px-4 bg-white border border-emerald-50 text-[#1a7a4a] rounded-lg text-xs font-bold hover:bg-gray-50"
                         >
                           Manifes
                         </button>
                       </>
                     ) : isParticipant && (
                       w.is_registered ? (
-                        <div className="h-8 px-4 rounded-lg bg-[#e8f5ee] border border-gray-200 flex items-center gap-2 text-[#1a7a4a] font-bold text-xs uppercase">
+                        <div className="h-8 px-4 rounded-lg bg-[#e8f5ee] border border-emerald-50 flex items-center gap-2 text-[#1a7a4a] font-bold text-xs uppercase">
                           <CheckCircle2 size={12} /> {w.attendance_status === 'attended' ? 'HADIR' : 'TERDAFTAR'}
                         </div>
                       ) : (
@@ -298,21 +298,21 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
 
       {/* FORM MODAL */}
       <Modal show={showForm} onClose={() => setShowForm(false)} title={selectedWorkshop ?"Edit Agenda":"Tambah Agenda Baru"} maxWidth="xl">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 font-sans text-gray-900">
-          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
+        <div className="bg-white rounded-xl shadow-sm border border-emerald-50 font-sans text-emerald-950">
+          <div className="px-6 py-4 border-b border-emerald-50 flex items-center justify-between bg-gray-50">
             <div className="flex items-center gap-3">
               <div className="h-8 w-8 bg-[#16a34a] text-white rounded-lg flex items-center justify-center">
                 <GraduationCap size={18} />
               </div>
               <h3 className="text-sm font-bold uppercase tracking-tight">Data Konfigurasi Agenda</h3>
             </div>
-            <button onClick={() => setShowForm(false)} className="text-gray-600 hover:text-gray-700"><Plus className="rotate-45" size={20} /></button>
+            <button onClick={() => setShowForm(false)} className="text-emerald-800 hover:text-emerald-800"><Plus className="rotate-45" size={20} /></button>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1 col-span-full">
-                <label className="text-xs font-bold text-gray-700 uppercase tracking-widest pl-1">Judul Agenda</label>
+                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">Judul Agenda</label>
                 <div className="relative">
                   <SearchInput 
                     placeholder="Contoh: Workshop Pembekalan Angkatan 57..." 
@@ -325,66 +325,66 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-700 uppercase tracking-widest pl-1">Tanggal</label>
+                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">Tanggal</label>
                 <input 
                   type="date"
                   value={data.workshop_date}
                   onChange={(e) => setData('workshop_date', e.target.value)}
-                  className="w-full h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 focus:border-[#f3f4f6]0 outline-none transition-all"
+                  className="w-full h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-emerald-950 focus:border-[#f3f4f6]0 outline-none transition-all"
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-700 uppercase tracking-widest pl-1">Kuota Maksimal</label>
+                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">Kuota Maksimal</label>
                 <input 
                   type="number"
                   value={data.max_participants}
                   onChange={(e) => setData('max_participants', e.target.value)}
-                  className="w-full h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 focus:border-[#f3f4f6]0 outline-none transition-all"
+                  className="w-full h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-emerald-950 focus:border-[#f3f4f6]0 outline-none transition-all"
                   placeholder="0" required
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-700 uppercase tracking-widest pl-1">Waktu Mulai</label>
+                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">Waktu Mulai</label>
                 <input 
                   type="time"
                   value={data.start_time}
                   onChange={(e) => setData('start_time', e.target.value)}
-                  className="w-full h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 focus:border-[#f3f4f6]0 outline-none transition-all"
+                  className="w-full h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-emerald-950 focus:border-[#f3f4f6]0 outline-none transition-all"
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-700 uppercase tracking-widest pl-1">Waktu Selesai</label>
+                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">Waktu Selesai</label>
                 <input 
                   type="time"
                   value={data.end_time}
                   onChange={(e) => setData('end_time', e.target.value)}
-                  className="w-full h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 focus:border-[#f3f4f6]0 outline-none transition-all"
+                  className="w-full h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-emerald-950 focus:border-[#f3f4f6]0 outline-none transition-all"
                   required
                 />
               </div>
 
               <div className="space-y-1 col-span-full">
-                <label className="text-xs font-bold text-gray-700 uppercase tracking-widest pl-1">Lokasi</label>
+                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">Lokasi</label>
                 <input 
                   type="text"
                   value={data.location}
                   onChange={(e) => setData('location', e.target.value)}
-                  className="w-full h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-900 focus:border-[#f3f4f6]0 outline-none transition-all"
+                  className="w-full h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-emerald-950 focus:border-[#f3f4f6]0 outline-none transition-all"
                   placeholder="Contoh: Auditorium Lt. 3..." required
                 />
               </div>
             </div>
 
-            <div className="pt-4 border-t border-gray-200 flex items-center justify-end gap-3">
+            <div className="pt-4 border-t border-emerald-50 flex items-center justify-end gap-3">
               <button 
                 type="button"
                 onClick={() => setShowForm(false)} 
-                className="text-xs font-bold text-gray-700 hover:text-rose-600 transition-colors"
+                className="text-xs font-bold text-emerald-800 hover:text-rose-600 transition-colors"
               >
                 Batal
               </button>
@@ -400,13 +400,13 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
         </div>
       </Modal>      {/* PARTICIPANTS MODAL */}
       <Modal show={showParticipants} onClose={() => setShowParticipants(false)} title="Manifes Kehadiran Peserta" maxWidth="5xl">
-        <div className="max-h-[85vh] flex flex-col font-sans bg-white text-gray-900">
+        <div className="max-h-[85vh] flex flex-col font-sans bg-white text-emerald-950">
           <div className="p-8 border-b-2 border-[#f3f4f6] bg-gray-50 flex items-center justify-between">
             <div className="space-y-1">
               <h3 className="text-xl font-black uppercase tracking-tight">Peserta <span className="text-[#1a7a4a]">Terdata.</span></h3>
               <p className="text-xs font-extrabold text-[#1a7a4a] uppercase tracking-widest">{selectedWorkshop?.title}</p>
             </div>
-            <button onClick={() => setShowParticipants(false)} className="h-10 w-10 bg-white border-2 border-[#f3f4f6] text-gray-900 hover:bg-rose-500 hover:text-white rounded-xl flex items-center justify-center transition-all active:scale-95">
+            <button onClick={() => setShowParticipants(false)} className="h-10 w-10 bg-white border-2 border-[#f3f4f6] text-emerald-950 hover:bg-rose-500 hover:text-white rounded-xl flex items-center justify-center transition-all active:scale-95">
               <Plus className="rotate-45" size={24} />
             </button>
           </div>
@@ -421,11 +421,11 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
                 <PremiumTableRow key={p.id}>
                   <PremiumTableCell>
                     <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-xl bg-[#e8f5ee] flex items-center justify-center text-[#1a7a4a] font-black border-2 border-gray-200 uppercase">
+                      <div className="h-10 w-10 rounded-xl bg-[#e8f5ee] flex items-center justify-center text-[#1a7a4a] font-black border-2 border-emerald-50 uppercase">
                         {p.name.charAt(0)}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-bold text-gray-900 group-hover:text-[#1a7a4a] transition-colors uppercase tracking-tight">{p.name}</span>
+                        <span className="text-sm font-bold text-emerald-950 group-hover:text-[#1a7a4a] transition-colors uppercase tracking-tight">{p.name}</span>
                         <span className="text-xs font-bold text-[#1a7a4a]/40 tabular-nums lowercase">{p.email || 'system@uinsaizu.ac.id'}</span>
                       </div>
                     </div>
@@ -435,11 +435,11 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
                   </PremiumTableCell>
                   <PremiumTableCell align="right">
                     {p.certificate_generated ? (
-                      <span className="inline-flex items-center gap-2 text-xs font-black text-[#1a7a4a] bg-[#e8f5ee] px-3 py-1.5 rounded-lg border-2 border-gray-200 shadow-sm tracking-widest uppercase">
+                      <span className="inline-flex items-center gap-2 text-xs font-black text-[#1a7a4a] bg-[#e8f5ee] px-3 py-1.5 rounded-lg border-2 border-emerald-50 shadow-sm tracking-widest uppercase">
                         <CheckCircle2 size={12} strokeWidth={3} /> TERBIT
                       </span>
                     ) : (
-                      <span className="text-xs font-black text-gray-900/20 uppercase tracking-widest">BELUM</span>
+                      <span className="text-xs font-black text-emerald-950/20 uppercase tracking-widest">BELUM</span>
                     )}
                   </PremiumTableCell>
                 </PremiumTableRow>
@@ -448,8 +448,8 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
           </div>
 
           <div className="p-6 bg-emerald-50/10 border-t-2 border-[#f3f4f6] flex items-center justify-between">
-            <span className="text-xs font-black text-gray-900/20 uppercase tracking-widest">{selectedWorkshop?.participants?.length || 0} DATA TEREKAM</span>
-            <button onClick={() => setShowParticipants(false)} className="h-11 px-8 bg-white border-2 border-[#f3f4f6] text-gray-900 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-gray-50 transition-all active:scale-95 shadow-sm">Tutup Manifes</button>
+            <span className="text-xs font-black text-emerald-950/20 uppercase tracking-widest">{selectedWorkshop?.participants?.length || 0} DATA TEREKAM</span>
+            <button onClick={() => setShowParticipants(false)} className="h-11 px-8 bg-white border-2 border-[#f3f4f6] text-emerald-950 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-gray-50 transition-all active:scale-95 shadow-sm">Tutup Manifes</button>
           </div>
         </div>
       </Modal>

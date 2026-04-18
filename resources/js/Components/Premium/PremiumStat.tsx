@@ -24,8 +24,8 @@ export default function PremiumStat({ label, value, icon: Icon, highlight = fals
                     <Icon size={22} strokeWidth={2} />
                 </div>
                 <div>
-                    <p className="text-2xl font-bold text-gray-900 tabular-nums leading-tight">{value ?? 0}</p>
-                    <p className="text-xs font-medium text-gray-700 mt-0.5">{label}</p>
+                    <p className="text-2xl font-bold text-emerald-950 tabular-nums leading-tight">{value ?? 0}</p>
+                    <p className="text-xs font-medium text-emerald-800 mt-0.5">{label}</p>
                 </div>
             </div>
         </PremiumCard>

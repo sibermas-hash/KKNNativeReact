@@ -78,7 +78,7 @@ class FakeStudentRegistrationSeeder extends Seeder
             PesertaKkn::updateOrCreate(
                 [
                     'mahasiswa_id' => $mahasiswa->id,
-                    'period_id' => $period->id,
+                    'periode_id' => $period->id,
                 ],
                 [
                     'status' => 'pending',

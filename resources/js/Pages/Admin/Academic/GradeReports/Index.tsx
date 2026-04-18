@@ -114,15 +114,15 @@ export default function RekapNilaiIndex({
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans transition-all">
         {/* Header Sederhana Sesuai Patokan Gold Standard */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 border-b border-gray-200/50 pb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 border-b border-emerald-50/50 pb-8">
           <div className="space-y-1">
-            <h1 className="text-xl font-bold text-gray-900">Rekapitulasi Nilai.</h1>
-            <p className="text-xs text-gray-900/40 font-black uppercase tracking-widest">Pusat pemeriksaan nilai akhir KKN mahasiswa</p>
+            <h1 className="text-xl font-bold text-emerald-950">Rekapitulasi Nilai.</h1>
+            <p className="text-xs text-emerald-950/40 font-black uppercase tracking-widest">Pusat pemeriksaan nilai akhir KKN mahasiswa</p>
           </div>
           
           <div className="flex flex-wrap items-center gap-2">
             {canExport && (
-              <Button onClick={() => exportWithPath('ekspor')} variant="outline" className="h-9 border-gray-200 text-gray-900 hover:bg-gray-50 text-xs font-black uppercase tracking-widest px-4">
+              <Button onClick={() => exportWithPath('ekspor')} variant="outline" className="h-9 border-emerald-50 text-emerald-950 hover:bg-gray-50 text-xs font-black uppercase tracking-widest px-4">
                 <FileSpreadsheet size={16} className="mr-2 opacity-30" /> Ekspor Data
               </Button>
             )}
@@ -151,35 +151,35 @@ export default function RekapNilaiIndex({
         )}
 
         {/* --- DATA TABLE CARD (Gold Standard) --- */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden min-h-[500px]">
+        <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden min-h-[500px]">
           {/* Toolbar Toolbar Sederhana Sesuai Patokan */}
           <div className="p-4 border-b border-[#f3f4f6]/50 bg-emerald-50/10 flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="relative w-full md:w-80">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-900/20" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-950/20" />
               <input 
                 type="text" 
                 value={search} 
                 onChange={(e) => setSearch(e.target.value)} 
                 onKeyDown={(e) => e.key === 'Enter' && applyFilters()}
                 placeholder="Cari NIM atau Nama..." 
-                className="w-full h-9 pl-9 pr-4 bg-white border border-gray-200/60 rounded-lg text-xs font-bold text-gray-900 placeholder:text-gray-900/20 focus:border-[#f3f4f6]0 outline-none transition-all"
+                className="w-full h-9 pl-9 pr-4 bg-white border border-emerald-50/60 rounded-lg text-xs font-bold text-emerald-950 placeholder:text-black/20 focus:border-[#f3f4f6]0 outline-none transition-all"
               />
             </div>
             
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-              <select value={periodId} onChange={(e) => { setPeriodId(e.target.value); router.get(route('admin.grade-reports.index'), { period_id: e.target.value }, { preserveState: true }); }} className="h-9 px-3 bg-white border border-gray-200/60 rounded-lg text-xs font-black text-gray-900 uppercase tracking-wider outline-none">
+              <select value={periodId} onChange={(e) => { setPeriodId(e.target.value); router.get(route('admin.grade-reports.index'), { period_id: e.target.value }, { preserveState: true }); }} className="h-9 px-3 bg-white border border-emerald-50/60 rounded-lg text-xs font-black text-emerald-950 uppercase tracking-wider outline-none">
                 <option value="">Pilih Periode</option>
                 {periods.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
-              <select value={facultyId} onChange={(e) => setFacultyId(e.target.value)} disabled={!!lockedFaculty} className="h-9 px-3 bg-white border border-gray-200/60 rounded-lg text-xs font-black text-gray-900 uppercase tracking-wider outline-none max-w-[150px]">
+              <select value={facultyId} onChange={(e) => setFacultyId(e.target.value)} disabled={!!lockedFaculty} className="h-9 px-3 bg-white border border-emerald-50/60 rounded-lg text-xs font-black text-emerald-950 uppercase tracking-wider outline-none max-w-[150px]">
                 <option value="">Fakultas</option>
                 {faculties.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
               </select>
-              <select value={huruf} onChange={(e) => setHuruf(e.target.value)} className="h-9 px-3 bg-white border border-gray-200/60 rounded-lg text-xs font-black text-gray-900 uppercase tracking-wider outline-none">
+              <select value={huruf} onChange={(e) => setHuruf(e.target.value)} className="h-9 px-3 bg-white border border-emerald-50/60 rounded-lg text-xs font-black text-emerald-950 uppercase tracking-wider outline-none">
                 <option value="">Nilai Huruf</option>
                 {['A','B','C','D','E'].map(h => <option key={h} value={h}>{h}</option>)}
               </select>
-              <Button onClick={() => applyFilters()} className="h-9 px-4 bg-[#e8f5ee] border border-gray-200 text-[#1a7a4a] hover:bg-[#e8f5ee] text-xs font-black uppercase tracking-widest">
+              <Button onClick={() => applyFilters()} className="h-9 px-4 bg-[#e8f5ee] border border-emerald-50 text-[#1a7a4a] hover:bg-[#e8f5ee] text-xs font-black uppercase tracking-widest">
                 Terapkan
               </Button>
             </div>
@@ -188,12 +188,12 @@ export default function RekapNilaiIndex({
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-emerald-50/20 border-b border-gray-200/50">
-                  <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest">Identitas Mahasiswa</th>
-                  <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest">Lokasi & Prodi</th>
-                  <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest text-center">Skor Akhir</th>
-                  <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest text-center">Status Berkas</th>
-                  <th className="px-8 py-4 text-xs font-black text-gray-900 uppercase tracking-widest text-right">Tindakan</th>
+                <tr className="bg-emerald-50/20 border-b border-emerald-50/50">
+                  <th className="px-8 py-4 text-xs font-black text-emerald-950 uppercase tracking-widest">Identitas Mahasiswa</th>
+                  <th className="px-8 py-4 text-xs font-black text-emerald-950 uppercase tracking-widest">Lokasi & Prodi</th>
+                  <th className="px-8 py-4 text-xs font-black text-emerald-950 uppercase tracking-widest text-center">Skor Akhir</th>
+                  <th className="px-8 py-4 text-xs font-black text-emerald-950 uppercase tracking-widest text-center">Status Berkas</th>
+                  <th className="px-8 py-4 text-xs font-black text-emerald-950 uppercase tracking-widest text-right">Tindakan</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f3f4f6]/60 font-sans">
@@ -201,38 +201,38 @@ export default function RekapNilaiIndex({
                   <tr key={grade.id} className="hover:bg-gray-50/20 transition-all group">
                     <td className="px-8 py-5">
                       <div className="flex flex-col">
-                        <span className="text-sm font-bold text-gray-900 uppercase leading-none mb-1.5">{grade.name}</span>
-                        <span className="text-xs text-gray-900/40 font-black tabular-nums tracking-wider uppercase leading-none">NIM: {grade.nim}</span>
+                        <span className="text-sm font-bold text-emerald-950 uppercase leading-none mb-1.5">{grade.name}</span>
+                        <span className="text-xs text-emerald-950/40 font-black tabular-nums tracking-wider uppercase leading-none">NIM: {grade.nim}</span>
                       </div>
                     </td>
-                    <td className="px-8 py-5 text-xs font-bold text-gray-900/80">
+                    <td className="px-8 py-5 text-xs font-bold text-emerald-950/80">
                       <div className="flex flex-col">
                         <span className="uppercase leading-none mb-1.5">{grade.group_name}</span>
-                        <span className="text-xs text-gray-900/40 font-black uppercase tracking-tight">{grade.prodi}</span>
+                        <span className="text-xs text-emerald-950/40 font-black uppercase tracking-tight">{grade.prodi}</span>
                       </div>
                     </td>
                     <td className="px-8 py-5 text-center">
                       <div className="flex flex-col items-center">
-                        <span className="text-base font-bold text-gray-900 tabular-nums leading-none mb-1.5">{Number(grade.final_grade_value || 0).toFixed(2)}</span>
+                        <span className="text-base font-bold text-emerald-950 tabular-nums leading-none mb-1.5">{Number(grade.final_grade_value || 0).toFixed(2)}</span>
                         <span className="text-[9px] font-black text-white bg-[#16a34a] px-2 py-0.5 rounded shadow-sm">{grade.final_grade_letter || '-'}</span>
                       </div>
                     </td>
                     <td className="px-8 py-5 text-center">
                       <span className={clsx(
                         "inline-flex px-3 py-1 rounded-lg text-[9px] font-black uppercase border transition-all",
-                        grade.is_locked ? "bg-[#e8f5ee] text-[#1a7a4a] border-emerald-200" : "bg-white text-gray-900/10 border-[#f3f4f6]"
+                        grade.is_locked ? "bg-[#e8f5ee] text-[#1a7a4a] border-emerald-200" : "bg-white text-emerald-950/10 border-[#f3f4f6]"
                       )}>{grade.is_locked ? 'DIKUNCI' : 'DRAF'}</span>
                     </td>
                     <td className="px-8 py-5 text-right">
                       <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                         {grade.can_finalize && !grade.is_locked ? (
-                          <button onClick={() => handleFinalize(grade.score_id!)} className="h-9 px-5 bg-[#e8f5ee] text-[#1a7a4a] hover:bg-[#16a34a] hover:text-white border border-gray-200 text-xs font-black uppercase tracking-widest rounded-xl shadow-sm transition-all">
+                          <button onClick={() => handleFinalize(grade.score_id!)} className="h-9 px-5 bg-[#e8f5ee] text-[#1a7a4a] hover:bg-[#16a34a] hover:text-white border border-emerald-50 text-xs font-black uppercase tracking-widest rounded-xl shadow-sm transition-all">
                             Validasi
                           </button>
                         ) : grade.is_locked ? (
                           <ShieldCheck size={18} className="text-[#1a7a4a] opacity-30" />
                         ) : (
-                          <Activity size={16} className="text-gray-900/10" />
+                          <Activity size={16} className="text-emerald-950/10" />
                         )}
                       </div>
                     </td>
@@ -244,7 +244,7 @@ export default function RekapNilaiIndex({
           
           {/* Footer Info (Gold Standard) */}
           <div className="px-8 py-4 bg-emerald-50/10 border-t border-[#f3f4f6]/50 flex items-center justify-between">
-            <span className="text-xs font-black text-gray-900/20 uppercase tracking-widest leading-none">
+            <span className="text-xs font-black text-emerald-950/20 uppercase tracking-widest leading-none">
               Repositori Nilai | Total {scores?.length || 0} Mahasiswa Terdaftar
             </span>
           </div>
@@ -256,13 +256,13 @@ export default function RekapNilaiIndex({
 
 function MiniStat({ icon: Icon, label, value }: { icon: any, label: string, value: string | number }) {
   return (
-    <div className="p-4 bg-white border border-gray-200/60 rounded-xl flex items-center gap-4 shadow-sm group hover:border-emerald-300 transition-all">
+    <div className="p-4 bg-white border border-emerald-50/60 rounded-xl flex items-center gap-4 shadow-sm group hover:border-emerald-300 transition-all">
       <div className="h-10 w-10 bg-[#e8f5ee] rounded-xl flex items-center justify-center text-[#1a7a4a] shrink-0 group-hover:rotate-6 transition-transform">
         <Icon size={18} />
       </div>
       <div className="flex flex-col min-w-0">
-        <span className="text-[9px] font-black text-gray-900/30 uppercase tracking-widest leading-none mb-1.5">{label}</span>
-        <span className="text-lg font-bold text-gray-900 tabular-nums leading-none tracking-tight">{value}</span>
+        <span className="text-[9px] font-black text-emerald-950/30 uppercase tracking-widest leading-none mb-1.5">{label}</span>
+        <span className="text-lg font-bold text-emerald-950 tabular-nums leading-none tracking-tight">{value}</span>
       </div>
     </div>
   );

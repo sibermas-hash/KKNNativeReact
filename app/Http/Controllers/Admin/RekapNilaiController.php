@@ -45,16 +45,16 @@ class RekapNilaiController extends Controller
             ->orderByDesc('start_date')
             ->orderByDesc('id')
             ->get(['id', 'name']);
-        $periodeId = $request->integer('period_id', $activePeriod?->id ?? $periods->first()?->id);
+        $periodeId = $request->integer('periode_id', $activePeriod?->id ?? $periods->first()?->id);
 
         $facultyScopeId = $user->hasRole('faculty_admin')
-            ? ($user->faculty_id ?: -1)
-            : $request->integer('faculty_id');
+            ? ($user->fakultas_id ?: -1)
+            : $request->integer('fakultas_id');
 
         $filters = [
             'search' => $request->string('search')->toString() ?: null,
-            'period_id' => $periodeId,
-            'faculty_id' => $facultyScopeId,
+            'periode_id' => $periodeId,
+            'fakultas_id' => $facultyScopeId,
             'kelompok_id' => $request->integer('kelompok_id'),
             'huruf' => $request->string('huruf')->toString() ?: null,
         ];
@@ -108,7 +108,7 @@ class RekapNilaiController extends Controller
         }
 
         $rows = $this->repo->getRekapNilai($periodeId, [
-            'faculty_id' => $request->input('faculty_id'),
+            'fakultas_id' => $request->input('fakultas_id'),
             'kelompok_id' => $request->input('kelompok_id'),
             'search' => $request->input('search'),
             'huruf' => $request->input('huruf'),
@@ -130,10 +130,10 @@ class RekapNilaiController extends Controller
         $this->authorize('bulkFinalize', NilaiKkn::class);
 
         $validated = $request->validate([
-            'period_id' => 'required|exists:periode,id',
+            'periode_id' => 'required|exists:periode,id',
         ]);
 
-        $this->grading->dispatchMassFinalization($validated['period_id']);
+        $this->grading->dispatchMassFinalization($validated['periode_id']);
 
         return back()->with('info', 'Proses finalisasi massal telah dimulai di latar belakang.');
     }
@@ -183,7 +183,7 @@ class RekapNilaiController extends Controller
     public function getFinalizeProgress(Request $request)
     {
         $this->authorize('bulkFinalize', NilaiKkn::class);
-        $periodId = $request->integer('period_id');
+        $periodId = $request->integer('periode_id');
 
         $progress = Cache::get("finalize_progress_{$periodId}");
 
@@ -209,8 +209,8 @@ class RekapNilaiController extends Controller
     {
         $this->authorize('export', NilaiKkn::class);
 
-        $periodeId = $request->integer('period_id');
-        $filters = $request->only(['faculty_id', 'kelompok_id']);
+        $periodeId = $request->integer('periode_id');
+        $filters = $request->only(['fakultas_id', 'kelompok_id']);
 
         GenerateMassCertificatesJob::dispatch(
             $periodeId,
@@ -224,7 +224,7 @@ class RekapNilaiController extends Controller
     public function getCertificateProgress(Request $request)
     {
         $this->authorize('export', NilaiKkn::class);
-        $periodId = $request->integer('period_id');
+        $periodId = $request->integer('periode_id');
         $adminId = auth()->id();
 
         $cacheKey = "cert_progress_{$periodId}_{$adminId}";
@@ -318,17 +318,17 @@ class RekapNilaiController extends Controller
         $this->authorize('bulkFinalize', NilaiKkn::class);
 
         $validated = $request->validate([
-            'period_id' => 'required|exists:periode,id',
-            'faculty_id' => 'nullable|exists:fakultas,id',
+            'periode_id' => 'required|exists:periode,id',
+            'fakultas_id' => 'nullable|exists:fakultas,id',
         ]);
 
         $query = NilaiKkn::whereHas('kelompok', function ($q) use ($validated) {
-            $q->where('period_id', $validated['period_id']);
+            $q->where('periode_id', $validated['periode_id']);
         })->whereNull('admin_locked_at');
 
-        if ($validated['faculty_id']) {
+        if ($validated['fakultas_id']) {
             $query->whereHas('mahasiswa', function ($q) use ($validated) {
-                $q->where('faculty_id', $validated['faculty_id']);
+                $q->where('fakultas_id', $validated['fakultas_id']);
             });
         }
 
@@ -345,17 +345,17 @@ class RekapNilaiController extends Controller
         $this->authorize('bulkFinalize', NilaiKkn::class);
 
         $validated = $request->validate([
-            'period_id' => 'required|exists:periode,id',
-            'faculty_id' => 'nullable|exists:fakultas,id',
+            'periode_id' => 'required|exists:periode,id',
+            'fakultas_id' => 'nullable|exists:fakultas,id',
         ]);
 
         $query = NilaiKkn::whereHas('kelompok', function ($q) use ($validated) {
-            $q->where('period_id', $validated['period_id']);
+            $q->where('periode_id', $validated['periode_id']);
         })->whereNotNull('admin_locked_at');
 
-        if ($validated['faculty_id']) {
+        if ($validated['fakultas_id']) {
             $query->whereHas('mahasiswa', function ($q) use ($validated) {
-                $q->where('faculty_id', $validated['faculty_id']);
+                $q->where('fakultas_id', $validated['fakultas_id']);
             });
         }
 
@@ -372,7 +372,7 @@ class RekapNilaiController extends Controller
         $this->authorize('export', NilaiKkn::class);
 
         $validated = $request->validate([
-            'faculty_id' => 'nullable|exists:fakultas,id',
+            'fakultas_id' => 'nullable|exists:fakultas,id',
         ]);
 
         $periodeId = $this->resolveRequestedPeriodId($request);
@@ -382,7 +382,7 @@ class RekapNilaiController extends Controller
         }
 
         $rows = $this->repo->getRekapNilai($periodeId, [
-            'faculty_id' => $validated['faculty_id'] ?? null,
+            'fakultas_id' => $validated['fakultas_id'] ?? null,
             'search' => $request->input('search'),
             'huruf' => $request->input('huruf'),
         ]);
@@ -449,7 +449,7 @@ class RekapNilaiController extends Controller
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        $facultyId = $validated['faculty_id'] ?? null;
+        $facultyId = $validated['fakultas_id'] ?? null;
         $facultyName = $facultyId ? Fakultas::find($facultyId)?->nama : 'Semua';
         $filename = "Ledger_Nilai_KKN_{$periode->name}_{$facultyName}_".date('Y-m-d_His').'.xlsx';
         $writer = new Xlsx($spreadsheet);
@@ -476,7 +476,7 @@ class RekapNilaiController extends Controller
 
     private function resolveRequestedPeriodId(Request $request): ?int
     {
-        $requestedPeriodId = $request->integer('period_id');
+        $requestedPeriodId = $request->integer('periode_id');
 
         if ($requestedPeriodId > 0) {
             return $requestedPeriodId;

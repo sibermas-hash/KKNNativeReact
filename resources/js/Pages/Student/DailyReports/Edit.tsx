@@ -168,7 +168,7 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
 
       <div className="mx-auto max-w-5xl space-y-10 pb-20">
         {/* --- HEADER --- */}
-        <section className="rounded-[2.5rem] border border-gray-200/60 bg-white p-10 lg:p-12 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-8">
+        <section className="rounded-[2.5rem] border border-emerald-50/60 bg-white p-10 lg:p-12 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div className="space-y-2">
             <div className="flex items-center gap-4 text-emerald-600 mb-2">
               <Link
@@ -181,17 +181,17 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                 Kembali ke Daftar
               </span>
             </div>
-            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tighter uppercase leading-none">
+            <h1 className="text-3xl font-extrabold text-emerald-950 tracking-tighter uppercase leading-none">
               Ubah Laporan
             </h1>
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm font-medium text-emerald-950">
               ID Laporan: <span className="text-emerald-600 font-bold">#{report.id}</span>
             </p>
           </div>
 
-          <div className="px-6 py-4 rounded-xl bg-emerald-50/30 border border-gray-200/60 flex items-center gap-4">
-            <Calendar size={20} className="text-gray-900" />
-            <p className="text-sm font-bold uppercase text-gray-900 tracking-widest">
+          <div className="px-6 py-4 rounded-xl bg-emerald-50/30 border border-emerald-50/60 flex items-center gap-4">
+            <Calendar size={20} className="text-emerald-950" />
+            <p className="text-sm font-bold uppercase text-emerald-950 tracking-widest">
               {new Date(report.date).toLocaleDateString('id-ID', { dateStyle: 'long' })}
             </p>
           </div>
@@ -200,7 +200,7 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
         <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* --- MAIN FORM --- */}
           <div className="lg:col-span-2 space-y-10">
-            <div className="rounded-[2.5rem] border border-gray-200/60 bg-white p-10 lg:p-12 shadow-sm space-y-8">
+            <div className="rounded-[2.5rem] border border-emerald-50/60 bg-white p-10 lg:p-12 shadow-sm space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <FormInput
                   type="date"
@@ -209,7 +209,7 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                   value={form.data.date}
                   onChange={(e) => form.setData('date', e.target.value)}
                   error={form.errors.date}
-                  className="rounded-2xl bg-emerald-50/30/50 border-gray-200/60 py-4 font-bold text-gray-700"
+                  className="rounded-2xl bg-emerald-50/30/50 border-emerald-50/60 py-4 font-bold text-emerald-800"
                 />
                 <FormInput
                   label="Lokasi Spesifik"
@@ -217,7 +217,7 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                   value={form.data.location_name}
                   onChange={(e) => form.setData('location_name', e.target.value)}
                   error={form.errors.location_name}
-                  className="rounded-2xl bg-emerald-50/30/50 border-gray-200/60 py-4 font-bold text-gray-700"
+                  className="rounded-2xl bg-emerald-50/30/50 border-emerald-50/60 py-4 font-bold text-emerald-800"
                 />
               </div>
 
@@ -227,7 +227,7 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                 value={form.data.title}
                 onChange={(e) => form.setData('title', e.target.value)}
                 error={form.errors.title}
-                className="rounded-2xl bg-emerald-50/30/50 border-gray-200/60 py-4 font-bold text-gray-700"
+                className="rounded-2xl bg-emerald-50/30/50 border-emerald-50/60 py-4 font-bold text-emerald-800"
               />
 
               <FormSelect
@@ -236,7 +236,7 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                 value={form.data.abcd_stage}
                 onChange={(e) => form.setData('abcd_stage', e.target.value)}
                 error={form.errors.abcd_stage}
-                className="rounded-2xl bg-emerald-50/30/50 border-gray-200/60 py-4 font-bold text-gray-700"
+                className="rounded-2xl bg-emerald-50/30/50 border-emerald-50/60 py-4 font-bold text-emerald-800"
               >
                 <option value="">-- PILIH TAHAPAN --</option>
                 <option value="Discovery">Discovery</option>
@@ -253,15 +253,15 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                 value={form.data.activity}
                 onChange={(e) => form.setData('activity', e.target.value)}
                 error={form.errors.activity}
-                className="rounded-2xl bg-emerald-50/30/50 border-gray-200/60 py-4 font-medium"
+                className="rounded-2xl bg-emerald-50/30/50 border-emerald-50/60 py-4 font-medium"
               />
 
               {/* --- FILE INFO --- */}
               {files.length > 0 && (
-                <div className="p-6 rounded-2xl bg-gray-50 border border-gray-200 flex items-start gap-4">
+                <div className="p-6 rounded-2xl bg-gray-50 border border-emerald-50 flex items-start gap-4">
                   <FileText size={20} className="text-emerald-600 shrink-0 mt-1" />
                   <div>
-                    <p className="text-sm font-bold text-gray-700 font-semibold uppercase text-xs leading-none mb-3">
+                    <p className="text-sm font-bold text-emerald-800 font-semibold uppercase text-xs leading-none mb-3">
                       Dokumentasi Tersimpan
                     </p>
                     <ul className="space-y-1">
@@ -279,7 +279,7 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
               )}
 
               <div className="space-y-4 pt-6 border-t border-slate-50">
-                <label className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs ml-1">
+                <label className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs ml-1">
                   Tambah Foto Baru (Opsional)
                 </label>
                 <input
@@ -287,9 +287,9 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                   multiple
                   accept="image/*"
                   onChange={(e) => form.setData('files', Array.from(e.target.files ?? []))}
-                  className="block w-full rounded-2xl border border-gray-200/60 bg-emerald-50/30/50 px-5 py-4 text-xs font-bold text-gray-900 file:mr-4 file:rounded-xl file:border-0 file:bg-emerald-600 file:px-4 file:py-2 file:text-sm file:font-bold file:text-white file:uppercase file:tracking-widest"
+                  className="block w-full rounded-2xl border border-emerald-50/60 bg-emerald-50/30/50 px-5 py-4 text-xs font-bold text-emerald-950 file:mr-4 file:rounded-xl file:border-0 file:bg-emerald-600 file:px-4 file:py-2 file:text-sm file:font-bold file:text-white file:uppercase file:tracking-widest"
                 />
-                <p className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs px-2">
+                <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs px-2">
                   Unggahan baru akan ditambahkan ke dokumentasi sebelumnya.
                 </p>
               </div>
@@ -298,9 +298,9 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
 
           {/* --- RIGHT: GEO & ACTION --- */}
           <div className="lg:col-span-1 space-y-10">
-            <section className="rounded-xl border border-gray-200/60 bg-white p-8 shadow-sm space-y-8 sticky top-6">
+            <section className="rounded-xl border border-emerald-50/60 bg-white p-8 shadow-sm space-y-8 sticky top-6">
               <div className="space-y-4">
-                <h2 className="text-xs font-bold text-gray-900 font-semibold uppercase text-xs flex items-center gap-3">
+                <h2 className="text-xs font-bold text-emerald-950 font-semibold uppercase text-xs flex items-center gap-3">
                   <div className="h-2 w-2 rounded-full bg-blue-500" />
                   Geolokasi Presisi
                 </h2>
@@ -316,7 +316,7 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                     className={clsx(
                       'p-4 rounded-xl text-sm font-bold tracking-tight border',
                       locationFeedback.type === 'success'
-                        ? 'bg-emerald-50 border-gray-200 text-gray-700'
+                        ? 'bg-emerald-50 border-emerald-50 text-emerald-800'
                         : 'bg-rose-50 border-rose-100 text-rose-700',
                     )}
                   >
@@ -336,7 +336,7 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
               </button>
 
               <div className="pt-8 border-t border-slate-50 space-y-4">
-                <div className="flex items-start gap-3 p-4 bg-emerald-50/30 rounded-2xl border border-gray-200/60 text-gray-900">
+                <div className="flex items-start gap-3 p-4 bg-emerald-50/30 rounded-2xl border border-emerald-50/60 text-emerald-950">
                   <Info size={18} className="shrink-0" />
                   <p className="text-sm font-bold uppercase tracking-wider leading-relaxed">
                     Perubahan data GPS akan disimpan sebagai tanda anda benar-benar melakukan revisi
@@ -371,14 +371,14 @@ function GeoInfoItem({
   color?: 'slate' | 'emerald';
 }) {
   return (
-    <div className="bg-emerald-50/30/50 border border-gray-200/60 p-4 rounded-xl">
-      <p className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs leading-none mb-2">
+    <div className="bg-emerald-50/30/50 border border-emerald-50/60 p-4 rounded-xl">
+      <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs leading-none mb-2">
         {label}
       </p>
       <p
         className={clsx(
           'text-xs font-bold tracking-tight leading-none',
-          color === 'emerald' ? 'text-emerald-600' : 'text-gray-900',
+          color === 'emerald' ? 'text-emerald-600' : 'text-emerald-950',
         )}
       >
         {value}

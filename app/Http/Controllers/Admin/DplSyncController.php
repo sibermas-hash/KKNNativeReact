@@ -159,7 +159,7 @@ class DplSyncController extends Controller
                             'nama' => $name,
                             'birth_date' => $dosen['birth_date'] ?? $dosen['tanggal_lahir'] ?? null,
                             'gender' => $dosen['gender'] ?? $dosen['jenis_kelamin'] ?? null,
-                            'faculty_id' => $facultyId,
+                            'fakultas_id' => $facultyId,
                             'phone' => $dosen['phone'] ?? $dosen['telepon'] ?? $dosen['no_hp'] ?? null,
                             'is_cpns' => str_contains(strtoupper($dosen['status_pegawai'] ?? $dosen['employment_status'] ?? ''), 'CPNS'),
                             'is_tugas_belajar' => str_contains(strtoupper($dosen['status_aktif'] ?? $dosen['active_status'] ?? 'AKTIF'), 'TUGAS BELAJAR'),

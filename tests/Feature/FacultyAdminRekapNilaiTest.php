@@ -42,14 +42,14 @@ class FacultyAdminRekapNilaiTest extends TestCase
             'email' => 'admin-fakultas@example.test',
             'password' => 'Password#123',
             'role' => 'faculty_admin',
-            'faculty_id' => $faculty->id,
+            'fakultas_id' => $faculty->id,
         ]);
 
         $response->assertRedirect('/admin/pengguna');
 
         $user = User::where('username', 'admin_fak_tarbiyah')->firstOrFail();
 
-        $this->assertSame($faculty->id, $user->faculty_id);
+        $this->assertSame($faculty->id, $user->fakultas_id);
         $this->assertTrue($user->hasRole('faculty_admin'));
     }
 
@@ -57,8 +57,8 @@ class FacultyAdminRekapNilaiTest extends TestCase
     {
         $facultyA = Fakultas::factory()->create(['nama' => 'Fakultas Dakwah']);
         $facultyB = Fakultas::factory()->create(['nama' => 'Fakultas Syariah']);
-        $programA = Prodi::factory()->create(['faculty_id' => $facultyA->id, 'nama' => 'Komunikasi']);
-        $programB = Prodi::factory()->create(['faculty_id' => $facultyB->id, 'nama' => 'Hukum']);
+        $programA = Prodi::factory()->create(['fakultas_id' => $facultyA->id, 'nama' => 'Komunikasi']);
+        $programB = Prodi::factory()->create(['fakultas_id' => $facultyB->id, 'nama' => 'Hukum']);
         $period = Periode::factory()->create(['name' => 'KKN 2026']);
 
         $this->createScoreRecord($facultyA, $programA, $period, 'Mahasiswa Dakwah', '240001');
@@ -66,13 +66,13 @@ class FacultyAdminRekapNilaiTest extends TestCase
 
         $facultyAdmin = User::factory()->create([
             'username' => 'admin_fakultas',
-            'faculty_id' => $facultyA->id,
+            'fakultas_id' => $facultyA->id,
         ]);
         $facultyAdmin->assignRole('faculty_admin');
 
         $response = $this->actingAs($facultyAdmin)->get(route('admin.grade-reports.index', [
-            'period_id' => $period->id,
-            'faculty_id' => $facultyB->id,
+            'periode_id' => $period->id,
+            'fakultas_id' => $facultyB->id,
         ]));
 
         $response->assertOk()
@@ -94,18 +94,18 @@ class FacultyAdminRekapNilaiTest extends TestCase
     public function test_faculty_admin_cannot_export_or_finalize_scores(): void
     {
         $faculty = Fakultas::factory()->create(['nama' => 'Fakultas Ushuluddin']);
-        $program = Prodi::factory()->create(['faculty_id' => $faculty->id, 'nama' => 'Aqidah']);
+        $program = Prodi::factory()->create(['fakultas_id' => $faculty->id, 'nama' => 'Aqidah']);
         $period = Periode::factory()->create(['name' => 'KKN 2025']);
         $score = $this->createScoreRecord($faculty, $program, $period, 'Mahasiswa Ushuluddin', '240003');
 
         $facultyAdmin = User::factory()->create([
             'username' => 'faculty_viewer',
-            'faculty_id' => $faculty->id,
+            'fakultas_id' => $faculty->id,
         ]);
         $facultyAdmin->assignRole('faculty_admin');
 
         $this->actingAs($facultyAdmin)
-            ->get('/admin/grade-reports/ekspor?period_id='.$period->id)
+            ->get('/admin/grade-reports/ekspor?periode_id='.$period->id)
             ->assertForbidden();
 
         $this->actingAs($facultyAdmin)
@@ -119,7 +119,7 @@ class FacultyAdminRekapNilaiTest extends TestCase
 
         $facultyAdmin = User::factory()->create([
             'username' => 'faculty_redirect',
-            'faculty_id' => $faculty->id,
+            'fakultas_id' => $faculty->id,
         ]);
         $facultyAdmin->assignRole('faculty_admin');
 
@@ -135,7 +135,7 @@ class FacultyAdminRekapNilaiTest extends TestCase
     public function test_superadmin_can_export_rekap_using_active_period_when_filter_is_omitted(): void
     {
         $faculty = Fakultas::factory()->create(['nama' => 'Fakultas Ekspor']);
-        $program = Prodi::factory()->create(['faculty_id' => $faculty->id, 'nama' => 'Ekspor Data']);
+        $program = Prodi::factory()->create(['fakultas_id' => $faculty->id, 'nama' => 'Ekspor Data']);
         $period = Periode::factory()->grading()->create(['name' => 'Periode Ekspor Aktif']);
 
         $this->createScoreRecord($faculty, $program, $period, 'Mahasiswa Ekspor', '240099');
@@ -149,7 +149,7 @@ class FacultyAdminRekapNilaiTest extends TestCase
     public function test_superadmin_can_export_ledger_using_active_period_when_filter_is_omitted(): void
     {
         $faculty = Fakultas::factory()->create(['nama' => 'Fakultas Ledger']);
-        $program = Prodi::factory()->create(['faculty_id' => $faculty->id, 'nama' => 'Ledger Data']);
+        $program = Prodi::factory()->create(['fakultas_id' => $faculty->id, 'nama' => 'Ledger Data']);
         $period = Periode::factory()->grading()->create(['name' => 'Periode Ledger Aktif']);
 
         $this->createScoreRecord($faculty, $program, $period, 'Mahasiswa Ledger', '240199');
@@ -177,17 +177,17 @@ class FacultyAdminRekapNilaiTest extends TestCase
             'user_id' => $studentUser->id,
             'nama' => $studentName,
             'nim' => $nim,
-            'faculty_id' => $faculty->id,
-            'program_id' => $program->id,
+            'fakultas_id' => $faculty->id,
+            'prodi_id' => $program->id,
         ]);
 
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
         ]);
 
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
         ]);
 

@@ -46,7 +46,7 @@ class GroupManagementWorkflowTest extends TestCase
     private function createStudentUser(): array
     {
         $faculty = Fakultas::factory()->create();
-        $program = Prodi::factory()->create(['faculty_id' => $faculty->id]);
+        $program = Prodi::factory()->create(['fakultas_id' => $faculty->id]);
 
         $user = User::factory()->create([
             'phone' => '081234567890',
@@ -56,8 +56,8 @@ class GroupManagementWorkflowTest extends TestCase
 
         $mahasiswa = Mahasiswa::factory()->create([
             'user_id' => $user->id,
-            'faculty_id' => $faculty->id,
-            'program_id' => $program->id,
+            'fakultas_id' => $faculty->id,
+            'prodi_id' => $program->id,
             'gender' => 'L',
             'shirt_size' => 'L',
         ]);
@@ -76,7 +76,7 @@ class GroupManagementWorkflowTest extends TestCase
         // Assign DPL to period first
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'max_groups' => 5,
             'is_active' => true,
         ]);
@@ -85,9 +85,9 @@ class GroupManagementWorkflowTest extends TestCase
         $this->actingAs($admin)
             ->from(route('admin.kelompok.index'))
             ->post(route('admin.kelompok.store'), [
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
                 'location_id' => $location->id,
-                'dpl_period_id' => $dplPeriod->id,
+                'dpl_periode_id' => $dplPeriod->id,
                 'nama_kelompok' => 'Kelompok Anggrek',
                 'capacity' => 12,
                 'status' => 'active',
@@ -96,7 +96,7 @@ class GroupManagementWorkflowTest extends TestCase
 
         $group = KelompokKkn::where('nama_kelompok', 'Kelompok Anggrek')->firstOrFail();
 
-        expect($group->period_id)->toBe($period->id)
+        expect($group->periode_id)->toBe($period->id)
             ->and($group->location_id)->toBe($location->id)
             ->and($group->capacity)->toBe(12)
             ->and($group->status)->toBe('active');
@@ -105,7 +105,7 @@ class GroupManagementWorkflowTest extends TestCase
         $this->actingAs($admin)
             ->from(route('admin.dpl.penugasan'))
             ->post(route('admin.dpl.tugaskan-kelompok', $group), [
-                'dpl_period_id' => $dplPeriod->id,
+                'dpl_periode_id' => $dplPeriod->id,
             ])
             ->assertRedirect(route('admin.dpl.penugasan'));
 
@@ -125,7 +125,7 @@ class GroupManagementWorkflowTest extends TestCase
         ]);
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
             'capacity' => 10,
@@ -137,13 +137,13 @@ class GroupManagementWorkflowTest extends TestCase
 
         $registration1 = PesertaKkn::factory()->create([
             'mahasiswa_id' => $mahasiswa1->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'status' => 'pending',
         ]);
 
         $registration2 = PesertaKkn::factory()->create([
             'mahasiswa_id' => $mahasiswa2->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'status' => 'pending',
         ]);
 
@@ -191,7 +191,7 @@ class GroupManagementWorkflowTest extends TestCase
         $period = Periode::factory()->active()->create();
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
             'capacity' => 2, // Very limited capacity
@@ -203,7 +203,7 @@ class GroupManagementWorkflowTest extends TestCase
 
             $registration = PesertaKkn::factory()->create([
                 'mahasiswa_id' => $mahasiswa->id,
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
                 'kelompok_id' => $group->id,
                 'status' => 'pending',
             ]);
@@ -218,7 +218,7 @@ class GroupManagementWorkflowTest extends TestCase
 
         $extraRegistration = PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $extraStudent->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
         ]);
 
         $this->actingAs($admin)
@@ -248,7 +248,7 @@ class GroupManagementWorkflowTest extends TestCase
         $period = Periode::factory()->active()->create();
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
         ]);
@@ -258,14 +258,14 @@ class GroupManagementWorkflowTest extends TestCase
 
         $registration1 = PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $mahasiswa1->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
             'role' => 'Anggota',
         ]);
 
         $registration2 = PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $mahasiswa2->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
             'role' => 'Anggota',
         ]);
@@ -298,7 +298,7 @@ class GroupManagementWorkflowTest extends TestCase
         $location = Lokasi::factory()->create();
 
         $emptyGroup = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'draft',
         ]);
@@ -320,7 +320,7 @@ class GroupManagementWorkflowTest extends TestCase
         $location = Lokasi::factory()->create();
 
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
         ]);
@@ -329,7 +329,7 @@ class GroupManagementWorkflowTest extends TestCase
 
         PesertaKkn::factory()->approved()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'kelompok_id' => $group->id,
         ]);
 
@@ -350,7 +350,7 @@ class GroupManagementWorkflowTest extends TestCase
         $period = Periode::factory()->active()->create();
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'nama_kelompok' => 'Kelompok Lama',
             'capacity' => 10,
@@ -363,7 +363,7 @@ class GroupManagementWorkflowTest extends TestCase
         $this->actingAs($admin)
             ->from(route('admin.kelompok.index'))
             ->put(route('admin.kelompok.update', $group), [
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
                 'location_id' => $newLocation->id,
                 'nama_kelompok' => 'Kelompok Baru',
                 'capacity' => 15,
@@ -385,7 +385,7 @@ class GroupManagementWorkflowTest extends TestCase
         $period = Periode::factory()->active()->create();
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'nama_kelompok' => 'Kelompok Mawar',
             'status' => 'active',
@@ -397,7 +397,7 @@ class GroupManagementWorkflowTest extends TestCase
 
             PesertaKkn::factory()->approved()->create([
                 'mahasiswa_id' => $mahasiswa->id,
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
                 'kelompok_id' => $group->id,
             ]);
         }
@@ -406,12 +406,12 @@ class GroupManagementWorkflowTest extends TestCase
         $response = $this->actingAs($admin)
             ->get(route('admin.kelompok.show', $group))
             ->assertOk();
-        
+
         $response->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Operational/Groups/Show')
-                ->where('group.nama_kelompok', 'Kelompok Mawar')
-                ->has('members')
-            );
+            ->component('Admin/Operational/Groups/Show')
+            ->where('group.nama_kelompok', 'Kelompok Mawar')
+            ->has('members')
+        );
     }
 
     public function test_group_list_page_shows_all_groups(): void
@@ -423,7 +423,7 @@ class GroupManagementWorkflowTest extends TestCase
 
         for ($i = 0; $i < 3; $i++) {
             KelompokKkn::factory()->create([
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
                 'location_id' => $location->id,
                 'nama_kelompok' => "Kelompok {$i}",
                 'status' => 'active',
@@ -447,7 +447,7 @@ class GroupManagementWorkflowTest extends TestCase
         $period = Periode::factory()->active()->create();
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'nama_kelompok' => 'Kelompok Melati',
             'status' => 'active',
@@ -474,21 +474,21 @@ class GroupManagementWorkflowTest extends TestCase
         $period = Periode::factory()->active()->create();
         $location = Lokasi::factory()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $location->id,
             'status' => 'active',
         ]);
 
         $dplPeriod = DplPeriod::create([
             'dosen_id' => $dosen->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'max_groups' => 5,
             'is_active' => true,
         ]);
 
         $group->update([
             'dpl_id' => $dosen->id,
-            'dpl_period_id' => $dplPeriod->id,
+            'dpl_periode_id' => $dplPeriod->id,
         ]);
         $group->dosen()->syncWithoutDetaching([$dosen->id => ['role' => 'Ketua']]);
         $group->syncKetuaFlatColumns();

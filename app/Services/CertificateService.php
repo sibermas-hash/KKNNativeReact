@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\KKN\KonfigurasiSertifikat;
+use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\NilaiKkn;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
@@ -44,7 +45,7 @@ class CertificateService
             throw new RuntimeException('Sertifikat hanya diterbitkan untuk nilai minimal B (70)');
         }
 
-        $laporanApproved = \App\Models\KKN\LaporanAkhir::where('kelompok_id', $kelompok->id)
+        $laporanApproved = LaporanAkhir::where('kelompok_id', $kelompok->id)
             ->where('status', 'approved')
             ->exists();
 

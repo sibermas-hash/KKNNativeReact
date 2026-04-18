@@ -121,23 +121,23 @@ export default function RegistrationShow({ registration }: Props) {
     <AppLayout title="Detail Pendaftaran">
       <Head title={`Pendaftaran: ${registration.mahasiswa?.nama || '-'}`} />
 
-      <div className="max-w-7xl mx-auto space-y-6 sm:px-6 lg:px-8 font-sans pb-12 text-gray-900">
+      <div className="max-w-7xl mx-auto space-y-6 sm:px-6 lg:px-8 font-sans pb-12 text-emerald-950">
         
         {/* BREADCRUMB HEADER */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-gray-200 pt-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-emerald-50 pt-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <ShieldCheck size={16} className="text-[#1a7a4a]"/>
-              <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">Audit & Otorisasi</span>
+              <span className="text-xs font-bold text-emerald-800 uppercase tracking-widest">Audit & Otorisasi</span>
             </div>
-            <h1 className="text-2xl font-black text-gray-900 leading-tight">Detail Pendaftaran.</h1>
+            <h1 className="text-2xl font-black text-emerald-950 leading-tight">Detail Pendaftaran.</h1>
           </div>
           
           <div className="flex items-center gap-4 shrink-0">
              <StatusTag status={registration.status} />
              <Link
                 href="/admin/pendaftaran"
-                className="h-9 px-4 bg-white border border-gray-300 text-gray-700 text-xs font-black uppercase tracking-widest rounded-lg transition-all active:scale-95 no-underline flex items-center gap-2 shadow-sm"
+                className="h-9 px-4 bg-white border border-gray-300 text-emerald-800 text-xs font-black uppercase tracking-widest rounded-lg transition-all active:scale-95 no-underline flex items-center gap-2 shadow-sm"
               >
                 <ArrowLeft size={14} strokeWidth={2.5} /> Kembali
               </Link>
@@ -160,7 +160,7 @@ export default function RegistrationShow({ registration }: Props) {
               <div className="flex flex-col md:flex-row gap-8 items-start py-2">
                 {/* PHOTO - COMPACT SQUARE */}
                 <div className="shrink-0">
-                  <div className="h-32 w-32 rounded-xl bg-gray-50 border border-gray-200 overflow-hidden shadow-sm relative group">
+                  <div className="h-32 w-32 rounded-xl bg-gray-50 border border-emerald-50 overflow-hidden shadow-sm relative group">
                     {getAvatarUrl() ? (
                       <img src={getAvatarUrl() ?? undefined} alt="Avatar" className="h-full w-full object-cover transition-transform group-hover:scale-110" />
                     ) : (
@@ -200,15 +200,15 @@ export default function RegistrationShow({ registration }: Props) {
                           <FileText size={16} />
                         </div>
                         <div className="flex flex-col overflow-hidden">
-                          <span className="text-xs font-black text-gray-900 uppercase tracking-tight truncate">{doc.document_type || 'Berkas'}</span>
-                          <span className="text-xs text-gray-600 font-mono truncate">{doc.file_name}</span>
+                          <span className="text-xs font-black text-emerald-950 uppercase tracking-tight truncate">{doc.document_type || 'Berkas'}</span>
+                          <span className="text-xs text-emerald-800 font-mono truncate">{doc.file_name}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 shrink-0 ml-4">
                         <StatusTag status={doc.status || 'pending'} />
                         <a 
                           href={`/admin/pendaftaran/berkas/unduh?path=${doc.file_path}`} target="_blank" rel="noopener noreferrer"
-                          className="h-8 px-3 bg-white border border-gray-200 text-[#1a7a4a] text-xs font-black uppercase rounded-lg hover:bg-emerald-950 hover:text-white transition-all no-underline flex items-center gap-2 shadow-sm"
+                          className="h-8 px-3 bg-white border border-emerald-50 text-[#1a7a4a] text-xs font-black uppercase rounded-lg hover:bg-emerald-950 hover:text-white transition-all no-underline flex items-center gap-2 shadow-sm"
                         >
                           Lihat <ExternalLink size={12} />
                         </a>
@@ -216,7 +216,7 @@ export default function RegistrationShow({ registration }: Props) {
                     </div>
                   ))
                 ) : (
-                  <div className="p-12 text-center text-xs font-bold text-gray-600 uppercase tracking-widest">Belum ada berkas pendukung.</div>
+                  <div className="p-12 text-center text-xs font-bold text-emerald-800 uppercase tracking-widest">Belum ada berkas pendukung.</div>
                 )}
               </div>
             </ContentPanel>
@@ -249,7 +249,7 @@ export default function RegistrationShow({ registration }: Props) {
                           </button>
                           <button
                             onClick={() => setShowRejectForm(true)}
-                            className="w-full h-10 border border-gray-200 text-rose-600 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-rose-50 transition-colors"
+                            className="w-full h-10 border border-emerald-50 text-rose-600 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-rose-50 transition-colors"
                           >
                             Tolak / Revisi
                           </button>
@@ -268,21 +268,21 @@ export default function RegistrationShow({ registration }: Props) {
                             required placeholder="Tulis alasan penolakan..."
                             value={rejectForm.data.notes}
                             onChange={(e) => rejectForm.setData('notes', e.target.value)}
-                            className="w-full h-24 p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:ring-[#1a7a4a] focus:border-[#f3f4f6]0 outline-none transition-all placeholder:text-gray-400"
+                            className="w-full h-24 p-3 bg-gray-50 border border-emerald-50 rounded-xl text-xs font-bold text-emerald-950 focus:ring-[#1a7a4a] focus:border-[#f3f4f6]0 outline-none transition-all placeholder:text-black"
                           />
                           <div className="flex gap-2">
-                            <button type="button" onClick={() => setShowRejectForm(false)} className="flex-1 h-9 bg-gray-100 text-gray-700 text-[9px] font-black uppercase rounded-lg">Batal</button>
+                            <button type="button" onClick={() => setShowRejectForm(false)} className="flex-1 h-9 bg-gray-100 text-emerald-800 text-[9px] font-black uppercase rounded-lg">Batal</button>
                             <button type="submit" disabled={rejectForm.processing} className="flex-[2] h-9 bg-rose-600 text-white text-[9px] font-black uppercase tracking-widest rounded-lg">Kirim Penolakan</button>
                           </div>
                         </motion.form>
                       )
                     ) : (
-                       <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
+                       <div className="p-4 bg-gray-50 border border-emerald-50 rounded-xl space-y-3">
                          <div className="flex items-center justify-between">
-                            <span className="text-[9px] font-black text-gray-900/40 uppercase tracking-widest">Keputusan Akhir</span>
+                            <span className="text-[9px] font-black text-emerald-950/40 uppercase tracking-widest">Keputusan Akhir</span>
                             <StatusTag status={registration.status} />
                          </div>
-                         <p className="text-xs font-bold text-gray-900 italic leading-relaxed">
+                         <p className="text-xs font-bold text-emerald-950 italic leading-relaxed">
                            "{registration.status === 'rejected' ? registration.rejection_reason : (registration.notes || 'REGISTRASI DINYATAKAN VALID.')}"
                          </p>
                        </div>
@@ -300,13 +300,13 @@ export default function RegistrationShow({ registration }: Props) {
 
 function CompactStat({ label, value, icon: Icon }: { label: string; value: any; icon: any }) {
   return (
-    <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm flex items-center gap-4 hover:border-gray-200 transition-colors group">
+    <div className="bg-white border border-emerald-50 p-4 rounded-xl shadow-sm flex items-center gap-4 hover:border-emerald-50 transition-colors group">
        <div className="h-10 w-10 bg-[#e8f5ee] text-[#1a7a4a] rounded-lg flex items-center justify-center shrink-0 shadow-inner group-hover:scale-110 transition-transform">
          <Icon size={18} strokeWidth={3} />
        </div>
        <div className="flex flex-col overflow-hidden">
-         <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">{label}</span>
-         <span className="text-xs font-black text-gray-900 truncate"title={value}>{value}</span>
+         <span className="text-[9px] font-black text-emerald-800 uppercase tracking-widest mb-0.5">{label}</span>
+         <span className="text-xs font-black text-emerald-950 truncate"title={value}>{value}</span>
        </div>
     </div>
   );
@@ -315,8 +315,8 @@ function CompactStat({ label, value, icon: Icon }: { label: string; value: any; 
 function SimpleItem({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">{label}</span>
-      <span className="text-xs font-black text-gray-900 uppercase leading-snug">{value || '-'}</span>
+      <span className="text-[9px] font-black text-emerald-800 uppercase tracking-widest mb-0.5">{label}</span>
+      <span className="text-xs font-black text-emerald-950 uppercase leading-snug">{value || '-'}</span>
     </div>
   );
 }
@@ -324,7 +324,7 @@ function SimpleItem({ label, value }: { label: string; value?: string | null }) 
 function StatusItem({ label, value, isValid }: { label: string; value: string; isValid: boolean }) {
   return (
     <div className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl">
-      <span className="text-xs font-black text-gray-700 uppercase tracking-tight">{label}</span>
+      <span className="text-xs font-black text-emerald-800 uppercase tracking-tight">{label}</span>
       <div className="flex items-center gap-2">
         <span className={clsx("text-xs font-black", isValid ? "text-[#1a7a4a]" : "text-rose-600")}>{value}</span>
         {isValid ? <CheckCircle size={14} className="text-[#1a7a4a]" strokeWidth={3} /> : <AlertCircle size={14} className="text-rose-400" strokeWidth={3} />}

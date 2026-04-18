@@ -28,7 +28,7 @@ class DplScopeService
     {
         return $this->coordinatorAssignments($dosen)->map(function (DplKecamatanAssignment $assignment) {
             $groups = KelompokKkn::query()
-                ->where('period_id', $assignment->period_id)
+                ->where('periode_id', $assignment->periode_id)
                 ->whereHas('lokasi', function ($query) use ($assignment) {
                     $query->where('district_id', $assignment->district_id);
                 })

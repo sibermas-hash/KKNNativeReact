@@ -11,6 +11,7 @@ use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\Workshop;
 use App\Models\User;
+use App\Services\DplEligibilityService;
 use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -24,7 +25,7 @@ class AdminDplAssignmentTest extends TestCase
         Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web']);
         Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
 
-        $this->mock(\App\Services\DplEligibilityService::class, function ($mock) {
+        $this->mock(DplEligibilityService::class, function ($mock) {
             $mock->shouldReceive('isQualifiedForDpl')->andReturn([
                 'eligible' => true,
                 'reason' => 'Mocked eligible',
@@ -40,7 +41,7 @@ class AdminDplAssignmentTest extends TestCase
         Dosen::factory()->create();
         $period = Periode::factory()->active()->create();
         KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => Lokasi::factory(),
         ]);
 
@@ -76,21 +77,21 @@ class AdminDplAssignmentTest extends TestCase
             ->from(route('admin.dpl.penugasan'))
             ->post(route('admin.dpl.tugaskan-periode'), [
                 'dosen_id' => $dosen->id,
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
                 'max_groups' => 3,
             ])
             ->assertRedirect(route('admin.dpl.penugasan'));
 
         $this->assertDatabaseHas('dpl_periods', [
             'dosen_id' => $dosen->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'max_groups' => 3,
             'is_active' => true,
         ], 'kkn');
 
         $dplPeriodId = DplPeriod::query()
             ->where('dosen_id', $dosen->id)
-            ->where('period_id', $period->id)
+            ->where('periode_id', $period->id)
             ->value('id');
 
         $user = User::query()->where('username', $dosen->nip)->first();
@@ -125,7 +126,7 @@ class AdminDplAssignmentTest extends TestCase
         ]);
         $period = Periode::factory()->active()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => $district->id,
         ]);
 
@@ -133,43 +134,43 @@ class AdminDplAssignmentTest extends TestCase
             ->from(route('admin.dpl.penugasan'))
             ->post(route('admin.dpl.tugaskan-periode'), [
                 'dosen_id' => $dosen->id,
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
                 'max_groups' => 3,
             ])
             ->assertRedirect(route('admin.dpl.penugasan'));
 
         $dplPeriodId = DplPeriod::query()
             ->where('dosen_id', $dosen->id)
-            ->where('period_id', $period->id)
+            ->where('periode_id', $period->id)
             ->value('id');
 
         $this->actingAs($admin)
             ->from(route('admin.dpl.penugasan'))
             ->post(route('admin.dpl.tugaskan-kelompok', $group), [
-                'dpl_period_id' => $dplPeriodId,
+                'dpl_periode_id' => $dplPeriodId,
             ])
             ->assertRedirect(route('admin.dpl.penugasan'));
 
         $this->assertDatabaseHas('kelompok_kkn', [
             'id' => $group->id,
             'dpl_id' => $dosen->id,
-            'dpl_period_id' => $dplPeriodId,
+            'dpl_periode_id' => $dplPeriodId,
         ], 'kkn');
 
         $this->actingAs($admin)
             ->from(route('admin.dpl.penugasan'))
             ->post(route('admin.dpl.tugaskan-wilayah'), [
                 'dosen_id' => $dosen->id,
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
                 'district_id' => '3301010',
                 'max_groups' => 3,
             ])
             ->assertRedirect(route('admin.dpl.penugasan'));
 
         $this->assertDatabaseHas('dpl_kecamatan_assignments', [
-            'dpl_period_id' => $dplPeriodId,
+            'dpl_periode_id' => $dplPeriodId,
             'dosen_id' => $dosen->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'district_id' => '3301010',
             'district_name' => 'Kecamatan Demo',
             'is_active' => true,
@@ -183,7 +184,7 @@ class AdminDplAssignmentTest extends TestCase
 
         $period = Periode::factory()->active()->create();
         KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'location_id' => Lokasi::factory(),
         ]);
 
@@ -195,7 +196,7 @@ class AdminDplAssignmentTest extends TestCase
     public function test_workshop_pass_flag_is_scoped_to_selected_period(): void
     {
         if (! Workshop::supportsPeriodAssignment()) {
-            $this->markTestSkipped('Schema workshop saat ini belum mendukung period_id.');
+            $this->markTestSkipped('Schema workshop saat ini belum mendukung periode_id.');
         }
 
         $admin = User::factory()->create();
@@ -211,7 +212,7 @@ class AdminDplAssignmentTest extends TestCase
         ]);
 
         $oldWorkshop = Workshop::query()->create([
-            'period_id' => $periodOld->id,
+            'periode_id' => $periodOld->id,
             'title' => 'Workshop Lama',
             'workshop_date' => now()->addDay()->toDateString(),
             'status' => 'scheduled',
@@ -226,7 +227,7 @@ class AdminDplAssignmentTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->get(route('admin.dpl.penugasan', ['period_id' => $periodActive->id]))
+            ->get(route('admin.dpl.penugasan', ['periode_id' => $periodActive->id]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Operational/Dpl/Assignment')

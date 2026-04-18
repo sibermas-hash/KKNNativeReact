@@ -11,7 +11,7 @@ return new class extends Migration
     {
         $schema = Schema::connection('kkn');
 
-        $this->addIndexIfMissing($schema, 'kelompok_kkn', 'kelompok_kkn_period_status_idx', ['period_id', 'status']);
+        $this->addIndexIfMissing($schema, 'kelompok_kkn', 'kelompok_kkn_period_status_idx', ['periode_id', 'status']);
         $this->addIndexIfMissing($schema, 'periode', 'periode_active_registration_window_idx', ['is_active', 'registration_start', 'registration_end']);
         $this->addIndexIfMissing($schema, 'peserta_kkn', 'peserta_kkn_mahasiswa_status_idx', ['mahasiswa_id', 'status']);
     }

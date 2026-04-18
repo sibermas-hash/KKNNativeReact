@@ -67,14 +67,14 @@ export default function UsersIndex({ users = { data: [], meta: { total: 0, curre
 
       <div className="max-w-7xl mx-auto space-y-6 sm:px-6 lg:px-8 font-sans pb-12">
         {/* HEADER SECTION */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-gray-200 pt-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-emerald-50 pt-6">
           <div className="space-y-1">
              <div className="flex items-center gap-2">
                 <KeyRound size={16} className="text-[#1a7a4a]" />
-                <span className="text-sm font-medium text-gray-700">Administrasi Keamanan</span>
+                <span className="text-sm font-medium text-emerald-800">Administrasi Keamanan</span>
              </div>
-             <h1 className="text-2xl font-bold text-gray-900 leading-tight">Manajemen Akses Sistem</h1>
-             <p className="text-sm text-gray-700 mt-1">
+             <h1 className="text-2xl font-bold text-emerald-950 leading-tight">Manajemen Akses Sistem</h1>
+             <p className="text-sm text-emerald-800 mt-1">
                 Registri kredensial dan pengelolaan hak akses tingkat civitas akademika KKN.
              </p>
           </div>
@@ -106,8 +106,8 @@ export default function UsersIndex({ users = { data: [], meta: { total: 0, curre
                   <span className="text-xs font-semibold text-amber-700">Password Sementara Berhasil Diterbitkan</span>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-sm text-amber-900 font-medium">Username: <span className="font-bold underline">{flash.temporary_username}</span></span>
-                    <span className="text-gray-500">|</span>
-                    <span className="text-sm text-gray-800 font-bold">Password: <code className="bg-white px-1.5 py-0.5 rounded border border-amber-200 select-all">{flash.temporary_password}</code></span>
+                    <span className="text-emerald-700">|</span>
+                    <span className="text-sm text-emerald-950 font-bold">Password: <code className="bg-white px-1.5 py-0.5 rounded border border-amber-200 select-all">{flash.temporary_password}</code></span>
                   </div>
                 </div>
               </div>
@@ -122,19 +122,19 @@ export default function UsersIndex({ users = { data: [], meta: { total: 0, curre
         </AnimatePresence>
 
         {/* TABLE SECTION */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
-          <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden flex flex-col">
+          <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-[#1f2937]">
-              <UsersIcon size={16} className="text-gray-700" />
+              <UsersIcon size={16} className="text-emerald-800" />
               <h3 className="text-sm font-semibold">Daftar Akun Pengguna</h3>
             </div>
             <form onSubmit={handleSearch} className="relative w-full sm:w-80">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-600" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-800" />
               <input 
                 type="text"
                 value={search} 
                 onChange={(e) => setSearch(e.target.value)} 
-                className="w-full h-9 pl-9 pr-4 bg-white border border-gray-300 rounded-md text-sm text-gray-900 focus:border-[#f3f4f6]0 focus:ring-[#1a7a4a] shadow-sm"
+                className="w-full h-9 pl-9 pr-4 bg-white border border-gray-300 rounded-md text-sm text-emerald-950 focus:border-[#f3f4f6]0 focus:ring-[#1a7a4a] shadow-sm"
                 placeholder="Cari nama, email, username..."
               />
             </form>
@@ -144,16 +144,16 @@ export default function UsersIndex({ users = { data: [], meta: { total: 0, curre
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-white">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Informasi Pengguna</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Hak Akses</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Verifikasi</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">Aksi</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-emerald-800 uppercase tracking-wider">Informasi Pengguna</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-emerald-800 uppercase tracking-wider">Hak Akses</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-emerald-800 uppercase tracking-wider">Verifikasi</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-emerald-800 uppercase tracking-wider">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
                 {(!users?.data || users.data.length === 0) ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-12 text-center text-sm text-gray-700">
+                    <td colSpan={4} className="px-6 py-12 text-center text-sm text-emerald-800">
                        Tidak ada data pengguna ditemukan.
                     </td>
                   </tr>
@@ -162,12 +162,12 @@ export default function UsersIndex({ users = { data: [], meta: { total: 0, curre
                     <tr key={user.id} className="hover:bg-gray-50 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="h-9 w-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 text-sm font-bold border border-gray-200">
+                          <div className="h-9 w-9 rounded-full bg-gray-100 flex items-center justify-center text-emerald-800 text-sm font-bold border border-emerald-50">
                             {user.name?.charAt(0) || '?'}
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-gray-900">{user.name}</span>
-                            <span className="text-xs text-gray-700">@{user.username} · {user.email || 'No Email'}</span>
+                            <span className="text-sm font-medium text-emerald-950">{user.name}</span>
+                            <span className="text-xs text-emerald-800">@{user.username} · {user.email || 'No Email'}</span>
                           </div>
                         </div>
                       </td>
@@ -175,8 +175,8 @@ export default function UsersIndex({ users = { data: [], meta: { total: 0, curre
                         <span className={clsx(
                           "inline-flex px-2 py-0.5 rounded text-xs font-bold uppercase border",
                           user.roles?.[0]?.toLowerCase() === 'superadmin' 
-                            ? "bg-[#e8f5ee] text-[#1a7a4a] border-gray-200" 
-                            : "bg-gray-50 text-gray-700 border-gray-200"
+                            ? "bg-[#e8f5ee] text-[#1a7a4a] border-emerald-50" 
+                            : "bg-gray-50 text-emerald-800 border-emerald-50"
                         )}>
                           {user.roles?.[0] || 'Member'}
                         </span>
@@ -188,7 +188,7 @@ export default function UsersIndex({ users = { data: [], meta: { total: 0, curre
                             <span className="text-xs font-bold uppercase">Verified</span>
                           </div>
                         ) : (
-                          <div className="flex items-center justify-center gap-1.5 text-gray-600">
+                          <div className="flex items-center justify-center gap-1.5 text-emerald-800">
                             <ShieldQuestion size={14} />
                             <span className="text-xs font-bold uppercase">Pending</span>
                           </div>
@@ -198,7 +198,7 @@ export default function UsersIndex({ users = { data: [], meta: { total: 0, curre
                         <div className="flex items-center justify-end gap-2">
                           <button 
                             onClick={() => resetTemporaryPassword(user)} 
-                            className="p-1.5 text-gray-700 hover:text-[#1a7a4a] bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                            className="p-1.5 text-emerald-800 hover:text-[#1a7a4a] bg-white border border-emerald-50 rounded-md hover:bg-gray-50 transition-colors"
                             title="Reset Password"
                           >
                             <KeyRound size={16} />
@@ -208,7 +208,7 @@ export default function UsersIndex({ users = { data: [], meta: { total: 0, curre
                             disabled={user.roles?.[0]?.toLowerCase() !== 'student'} 
                             className={clsx(
                               'p-1.5 border rounded-md transition-colors disabled:opacity-20', 
-                              user.is_active ? 'text-gray-700 hover:text-rose-600 bg-white border-gray-200 hover:bg-rose-50' : 'text-rose-600 bg-rose-50 border-rose-200'
+                              user.is_active ? 'text-emerald-800 hover:text-rose-600 bg-white border-emerald-50 hover:bg-rose-50' : 'text-rose-600 bg-rose-50 border-rose-200'
                             )} 
                             title={user.is_active ? 'Kunci Akun' : 'Buka Kunci'}
                           >
@@ -229,8 +229,8 @@ export default function UsersIndex({ users = { data: [], meta: { total: 0, curre
             </table>
           </div>
 
-          <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
-            <span className="text-xs text-gray-700">
+          <div className="px-6 py-4 border-t border-emerald-50 bg-gray-50 flex items-center justify-between">
+            <span className="text-xs text-emerald-800">
               Total {users?.meta?.total ?? 0} akun aktif ditemukan
             </span>
             {users?.meta && <Pagination meta={users.meta} />}

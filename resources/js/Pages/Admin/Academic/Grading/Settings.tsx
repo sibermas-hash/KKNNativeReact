@@ -68,10 +68,10 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans transition-all">
         
         {/* Header Sederhana Sesuai Patokan Gold Standard */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 border-b border-gray-200/50 pb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 border-b border-emerald-50/50 pb-8">
           <div className="space-y-1">
-            <h1 className="text-xl font-bold text-gray-900 uppercase">Matriks Penilaian.</h1>
-            <p className="text-xs text-gray-900/40 font-black uppercase tracking-widest">
+            <h1 className="text-xl font-bold text-emerald-950 uppercase">Matriks Penilaian.</h1>
+            <p className="text-xs text-emerald-950/40 font-black uppercase tracking-widest">
               Distribusi bobot komponen nilai KKN UIN SAIZU
             </p>
           </div>
@@ -81,11 +81,11 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
               <select 
                 value={filters.kkn_type} 
                 onChange={(e) => handleTypeChange(e.target.value)} 
-                className="h-9 pl-3 pr-8 bg-white border border-gray-200 rounded-lg text-xs font-black text-gray-900 uppercase tracking-widest outline-none focus:border-[#f3f4f6]0 appearance-none cursor-pointer"
+                className="h-9 pl-3 pr-8 bg-white border border-emerald-50 rounded-lg text-xs font-black text-emerald-950 uppercase tracking-widest outline-none focus:border-[#f3f4f6]0 appearance-none cursor-pointer"
               >
                 {programOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label.toUpperCase()}</option>)}
               </select>
-              <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-900/20 pointer-events-none" />
+              <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-emerald-950/20 pointer-events-none" />
             </div>
 
             <Button 
@@ -121,16 +121,16 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
             const groupTotal = getGroupTotal(section.group);
             const isValid = isGroupValid(section.group);
             return (
-              <div key={section.group} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
+              <div key={section.group} className="bg-white border border-emerald-50 rounded-xl overflow-hidden shadow-sm flex flex-col">
                 {/* Panel Header */}
-                <div className="px-8 py-4 bg-emerald-50/20 border-b border-gray-200/50 flex items-center justify-between">
+                <div className="px-8 py-4 bg-emerald-50/20 border-b border-emerald-50/50 flex items-center justify-between">
                   <div className="flex flex-col">
-                    <span className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1">{section.title}</span>
+                    <span className="text-xs font-black text-emerald-950 uppercase tracking-widest mb-1">{section.title}</span>
                     <span className="text-[9px] font-bold text-[#1a7a4a]/60 uppercase">Konfigurasi {section.group}</span>
                   </div>
                   <div className={clsx(
                     "flex flex-col items-end px-3 py-1 rounded-lg border",
-                    isValid ? "bg-white border-gray-200 text-gray-900" : "bg-rose-50 border-rose-200 text-rose-600 animate-pulse"
+                    isValid ? "bg-white border-emerald-50 text-emerald-950" : "bg-rose-50 border-rose-200 text-rose-600 animate-pulse"
                   )}>
                     <span className="text-[8px] font-black uppercase tracking-tighter opacity-40 leading-none">Total</span>
                     <span className="text-sm font-black tabular-nums leading-none">{groupTotal}%</span>
@@ -145,8 +145,8 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
                         <tr key={item.id} className="group hover:bg-gray-50/10 transition-all duration-300">
                           <td className="px-8 py-5">
                             <div className="flex flex-col gap-1.5">
-                              <span className="text-sm font-bold text-gray-900 uppercase leading-none">{item.label}</span>
-                              <span className="text-xs font-bold text-gray-900/30 uppercase tracking-tight leading-none truncate max-w-[200px]">
+                              <span className="text-sm font-bold text-emerald-950 uppercase leading-none">{item.label}</span>
+                              <span className="text-xs font-bold text-emerald-950/30 uppercase tracking-tight leading-none truncate max-w-[200px]">
                                 {item.description}
                               </span>
                             </div>
@@ -158,7 +158,7 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
                                 step="1"
                                 value={data.configs?.find(c => c.id === item.id)?.percentage ?? 0} 
                                 onChange={e => updatePercentage(item.id, e.target.value)} 
-                                className="w-full h-9 bg-white border border-gray-200 rounded-lg text-center text-sm font-black text-gray-900 focus:border-[#f3f4f6]0 outline-none transition-all tabular-nums shadow-sm"
+                                className="w-full h-9 bg-white border border-emerald-50 rounded-lg text-center text-sm font-black text-emerald-950 focus:border-[#f3f4f6]0 outline-none transition-all tabular-nums shadow-sm"
                               />
                             </div>
                           </td>
@@ -170,7 +170,7 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
 
                 {/* Section Footer */}
                 <div className="px-8 py-3 bg-emerald-50/10 border-t border-[#f3f4f6]/50">
-                   <p className="text-[9px] font-bold text-gray-900/20 uppercase tracking-widest">Parameter Aktif</p>
+                   <p className="text-[9px] font-bold text-emerald-950/20 uppercase tracking-widest">Parameter Aktif</p>
                 </div>
               </div>
             );
@@ -178,17 +178,17 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
         </div>
 
         {/* Global Footer Notes Sesuai Standar */}
-        <div className="mt-12 p-8 bg-emerald-50/20 border border-gray-200 rounded-xl flex items-start gap-6 relative overflow-hidden">
+        <div className="mt-12 p-8 bg-emerald-50/20 border border-emerald-50 rounded-xl flex items-start gap-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-5">
-            <ShieldCheck size={160} className="text-gray-900" />
+            <ShieldCheck size={160} className="text-emerald-950" />
           </div>
-          <div className="h-12 w-12 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center justify-center text-[#1a7a4a] shrink-0">
+          <div className="h-12 w-12 bg-white rounded-xl shadow-sm border border-emerald-50 flex items-center justify-center text-[#1a7a4a] shrink-0">
             <Zap size={24} />
           </div>
           <div className="space-y-4 relative z-10">
             <div>
-              <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-1.5">Otoritas Validasi Akademik</h4>
-              <p className="text-xs font-bold text-gray-900/50 uppercase leading-relaxed max-w-4xl">
+              <h4 className="text-sm font-black text-emerald-950 uppercase tracking-widest mb-1.5">Otoritas Validasi Akademik</h4>
+              <p className="text-xs font-bold text-emerald-950/50 uppercase leading-relaxed max-w-4xl">
                 Matriks konfigurasi ini merupakan basis logika inti kalkulasi nilai otomatis pada sistem KKN UIN SAIZU. 
                 Segala penyesuaian akan berdampak masif pada seluruh data angkatan aktif. 
                 <span className="text-[#1a7a4a] ml-1">PASTIKAN TOTAL KONFIGURASI ADALAH 100% UNTUK MENJAGA INTEGRITAS DATA.</span>
@@ -203,7 +203,7 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
 
 function MiniStat({ icon: Icon, label, value, variant = 'default' }: { icon: any, label: string, value: string | number, variant?: 'default' | 'success' | 'danger' }) {
   return (
-    <div className="p-4 bg-white border border-gray-200/60 rounded-xl flex items-center gap-4 shadow-sm group hover:border-emerald-300 transition-all">
+    <div className="p-4 bg-white border border-emerald-50/60 rounded-xl flex items-center gap-4 shadow-sm group hover:border-emerald-300 transition-all">
       <div className={clsx(
         "h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:rotate-6",
         variant === 'success' ? 'bg-[#e8f5ee] text-[#1a7a4a]' : 
@@ -212,10 +212,10 @@ function MiniStat({ icon: Icon, label, value, variant = 'default' }: { icon: any
         <Icon size={18} />
       </div>
       <div className="flex flex-col min-w-0">
-        <span className="text-[9px] font-black text-gray-900/30 uppercase tracking-widest leading-none mb-1.5">{label}</span>
+        <span className="text-[9px] font-black text-emerald-950/30 uppercase tracking-widest leading-none mb-1.5">{label}</span>
         <span className={clsx(
           "text-sm font-black tabular-nums leading-none tracking-wider uppercase",
-          variant === 'danger' ? 'text-rose-600' : 'text-gray-900'
+          variant === 'danger' ? 'text-rose-600' : 'text-emerald-950'
         )}>{value}</span>
       </div>
     </div>

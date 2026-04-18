@@ -5,19 +5,20 @@ TIMEOUT = 30
 
 def test_get_api_v1_periods_without_token():
     url = f"{BASE_URL}/api/v1/periods"
+    headers = {
+        "Accept": "application/json"
+    }
     try:
-        response = requests.get(url, timeout=TIMEOUT)
+        response = requests.get(url, headers=headers, timeout=TIMEOUT)
     except requests.RequestException as e:
         assert False, f"Request failed: {e}"
-
     assert response.status_code == 401, f"Expected status code 401, got {response.status_code}"
+    # Optionally check response content for unauthorized message
     try:
-        json_data = response.json()
+        data = response.json()
+        assert "error" in data or "message" in data or "detail" in data or data == {}
     except ValueError:
-        json_data = None
-
-    # Optionally check for an error message or specific response structure indicating unauthorized
-    if json_data:
-        assert "error" in json_data or "message" in json_data or "detail" in json_data, "Unauthorized response missing error/message/detail field"
+        # Response is not JSON, which is also acceptable for 401
+        pass
 
 test_get_api_v1_periods_without_token()

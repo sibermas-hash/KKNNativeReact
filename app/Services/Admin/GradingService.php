@@ -82,7 +82,7 @@ class GradingService
     public function exportLedger(int $periodeId, ?int $facultyId = null, ?string $search = null, ?string $huruf = null): BinaryFileResponse
     {
         $rows = $this->repo->getRekapNilai($periodeId, [
-            'faculty_id' => $facultyId,
+            'fakultas_id' => $facultyId,
             'search' => $search,
             'huruf' => $huruf,
         ]);

@@ -12,18 +12,18 @@ export default function GuestLayout({ children, title }: GuestLayoutProps) {
             <Head title={title ? `${title} | KKN UIN SAIZU` : 'Login | KKN UIN SAIZU'} />
 
             <div className="w-full max-w-sm">
-                <div className="bg-white rounded-3xl shadow-xl shadow-emerald-200/50 border border-gray-200 p-8 md:p-10">
+                <div className="bg-white rounded-3xl shadow-xl shadow-emerald-200/50 border border-emerald-50 p-8 md:p-10">
                     {children}
                 </div>
 
                 <div className="mt-8 text-center">
                     <Link
                         href={route('home')}
-                        className="text-sm font-medium text-gray-900 hover:text-green-700 transition-colors flex items-center justify-center gap-2"
+                        className="text-sm font-bold text-emerald-950 hover:text-emerald-600 transition-colors flex items-center justify-center gap-2"
                     >
                         &larr; Kembali ke Beranda
                     </Link>
-                    <p className="mt-4 text-sm font-bold text-emerald-300 font-semibold uppercase text-xs">
+                    <p className="mt-4 text-xs font-bold text-emerald-800 uppercase tracking-widest">
                         &copy; {new Date().getFullYear()} LPPM UIN Saizu
                     </p>
                 </div>

@@ -84,7 +84,7 @@ class RegistrationTest extends TestCase
 
         $period = Periode::factory()->active()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'status' => 'active',
             'location_id' => Lokasi::factory()->create([
                 'village_name' => 'Desa Penempatan',
@@ -100,14 +100,14 @@ class RegistrationTest extends TestCase
         $response = $this->actingAs($user)
             ->from(route('student.registration.create'))
             ->post(route('student.registration.store'), [
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
             ]);
 
         $response->assertRedirect();
 
         $this->assertDatabaseHas('peserta_kkn', [
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'status' => 'pending',
         ], 'kkn');
     }
@@ -137,7 +137,7 @@ class RegistrationTest extends TestCase
 
         $period = Periode::factory()->active()->create();
         $group = KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'status' => 'active',
             'location_id' => Lokasi::factory()->create([
                 'village_name' => 'Desa Penempatan',
@@ -152,19 +152,19 @@ class RegistrationTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('student.registration.store'), [
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
             ]);
 
         // Attempt duplicate registration
         $response = $this->actingAs($user)
             ->from(route('student.registration.create'))
             ->post(route('student.registration.store'), [
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
             ]);
 
         // Should only have one registration record
         $count = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
-            ->where('period_id', $period->id)
+            ->where('periode_id', $period->id)
             ->count();
 
         $this->assertSame(1, $count);
@@ -199,7 +199,7 @@ class RegistrationTest extends TestCase
 
         $response = $this->actingAs($user)
             ->post(route('student.registration.store'), [
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
             ]);
 
         $response
@@ -243,7 +243,7 @@ class RegistrationTest extends TestCase
 
         $period = Periode::factory()->active()->create();
         KelompokKkn::factory()->create([
-            'period_id' => $period->id,
+            'periode_id' => $period->id,
             'status' => 'active',
             'location_id' => Lokasi::factory()->create([
                 'village_name' => 'Desa Penempatan',
@@ -254,7 +254,7 @@ class RegistrationTest extends TestCase
 
         $response = $this->actingAs($user)
             ->post(route('student.registration.store'), [
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
             ]);
 
         $response

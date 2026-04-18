@@ -14,7 +14,7 @@ class EnsurePasswordChanged
     {
         $user = $request->user();
 
-        if (! $user || ! $user->must_change_password || config('app.env') === 'local') {
+        if (! $user || ! $user->must_change_password) {
             return $next($request);
         }
 

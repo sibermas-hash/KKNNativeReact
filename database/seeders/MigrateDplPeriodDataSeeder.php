@@ -17,10 +17,10 @@ class MigrateDplPeriodDataSeeder extends Seeder
     {
         $this->command->info('Starting DPL Period data migration...');
 
-        // Get all unique dpl_id + period_id combinations from existing groups
+        // Get all unique dpl_id + periode_id combinations from existing groups
         $existingAssignments = DB::connection('kkn')
             ->table('kelompok_kkn')
-            ->select('dpl_id', 'period_id')
+            ->select('dpl_id', 'periode_id')
             ->whereNotNull('dpl_id')
             ->whereNull('deleted_at')
             ->distinct()
@@ -32,14 +32,14 @@ class MigrateDplPeriodDataSeeder extends Seeder
         foreach ($existingAssignments as $assignment) {
             // Count how many groups this DPL has in this period
             $groupCount = KelompokKkn::where('dpl_id', $assignment->dpl_id)
-                ->where('period_id', $assignment->period_id)
+                ->where('periode_id', $assignment->periode_id)
                 ->count();
 
             // Create DplPeriod if it doesn't exist
             $dplPeriod = DplPeriod::firstOrCreate(
                 [
                     'dosen_id' => $assignment->dpl_id,
-                    'period_id' => $assignment->period_id,
+                    'periode_id' => $assignment->periode_id,
                 ],
                 [
                     'max_groups' => max(5, $groupCount + 2), // Allow some room
@@ -55,9 +55,9 @@ class MigrateDplPeriodDataSeeder extends Seeder
 
             // Update groups to reference the dpl_period
             KelompokKkn::where('dpl_id', $assignment->dpl_id)
-                ->where('period_id', $assignment->period_id)
-                ->whereNull('dpl_period_id')
-                ->update(['dpl_period_id' => $dplPeriod->id]);
+                ->where('periode_id', $assignment->periode_id)
+                ->whereNull('dpl_periode_id')
+                ->update(['dpl_periode_id' => $dplPeriod->id]);
         }
 
         $this->command->info("Migration complete: {$created} created, {$skipped} already existed.");

@@ -1,103 +1,132 @@
-import { useForm, Link } from '@inertiajs/react';
-import type { FormEventHandler } from 'react';
-import type { AuthResetPasswordErrors } from '@/types';
+import { useForm, Link, Head } from '@inertiajs/react';
+import { FormEvent } from 'react';
 import GuestLayout from '@/Layouts/GuestLayout';
+import { KeyRound, ShieldCheck, ArrowRight, Loader2, Mail } from 'lucide-react';
 
 interface Props {
-  token: string;
-  email?: string;
+    token: string;
+    email?: string;
 }
 
 export default function ResetPassword({ token, email }: Props) {
-  const { data, setData, post, processing, errors } = useForm<{
-    token: string;
-    email: string;
-    password: string;
-    password_confirmation: string;
-  }>({
-    token: token,
-    email: email || '',
-    password: '',
-    password_confirmation: '',
-  });
+    const { data, setData, post, processing, errors } = useForm({
+        token: token,
+        email: email || '',
+        password: '',
+        password_confirmation: '',
+    });
 
-  const submit: FormEventHandler = (event) => {
-    event.preventDefault();
-    post('/reset-password');
-  };
+    const submit = (e: FormEvent) => {
+        e.preventDefault();
+        post(route('password.update'));
+    };
 
-  return (
-    <GuestLayout title="Atur Ulang Kata Sandi">
-      <p className="text-sm text-gray-900 mb-6">
-        Masukkan kata sandi baru Anda. Pastikan kata sandi kuat dengan kombinasi huruf besar, kecil,
-        angka, dan simbol.
-      </p>
+    return (
+        <GuestLayout title="Atur Ulang Kata Sandi">
+            <Head title="Atur Ulang Kata Sandi" />
 
-      <form onSubmit={submit} className="space-y-5">
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            NIM / Username
-          </label>
-          <input
-            id="email"
-            type="text"
-            value={data.email}
-            onChange={(e) => setData('email', e.target.value)}
-            className="w-full border border-gray-200/60 rounded-lg px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-lime-500"
-            autoComplete="username"
-          />
-          {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
-        </div>
+            <div className="space-y-6">
+                <div className="text-center space-y-2">
+                    <h1 className="text-2xl font-bold text-emerald-950">Buat Kata Sandi Baru</h1>
+                    <p className="text-sm text-emerald-800 px-4">
+                        Silakan masukkan alamat email Anda dan tentukan kata sandi baru yang kuat untuk mengamankan akun Anda.
+                    </p>
+                </div>
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-            Kata Sandi Baru
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={data.password}
-            onChange={(e) => setData('password', e.target.value)}
-            className="w-full border border-gray-200/60 rounded-lg px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#1a7a4a] focus:border-[#f3f4f6]0"
-            autoComplete="new-password"
-          />
-          <p className="mt-1 text-xs text-gray-900">
-            Minimal 8 karakter, mengandung huruf besar, kecil, angka, dan simbol.
-          </p>
-          {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
-        </div>
+                <form onSubmit={submit} className="space-y-5">
+                    <div>
+                        <label htmlFor="email" className="block text-xs font-bold text-emerald-800 uppercase tracking-widest ml-1 mb-2">
+                            Alamat Email
+                        </label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-emerald-500">
+                                <Mail size={18} />
+                            </div>
+                            <input
+                                id="email"
+                                type="email"
+                                name="email"
+                                value={data.email}
+                                className="block w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-emerald-50 rounded-xl text-emerald-950 text-sm focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                                onChange={(e) => setData('email', e.target.value)}
+                                required
+                            />
+                        </div>
+                        {errors.email && (
+                            <p className="mt-2 text-xs font-medium text-rose-500 ml-1">{errors.email}</p>
+                        )}
+                    </div>
 
-        <div>
-          <label
-            htmlFor="password_confirmation"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Konfirmasi Kata Sandi Baru
-          </label>
-          <input
-            id="password_confirmation"
-            type="password"
-            value={data.password_confirmation}
-            onChange={(e) => setData('password_confirmation', e.target.value)}
-            className="w-full border border-gray-200/60 rounded-lg px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#1a7a4a] focus:border-[#f3f4f6]0"
-            autoComplete="new-password"
-          />
-        </div>
+                    <div>
+                        <label htmlFor="password" className="block text-xs font-bold text-emerald-800 uppercase tracking-widest ml-1 mb-2">
+                            Kata Sandi Baru
+                        </label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-emerald-500">
+                                <KeyRound size={18} />
+                            </div>
+                            <input
+                                id="password"
+                                type="password"
+                                name="password"
+                                value={data.password}
+                                className="block w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-emerald-50 rounded-xl text-emerald-950 text-sm focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                                onChange={(e) => setData('password', e.target.value)}
+                                required
+                                autoComplete="new-password"
+                            />
+                        </div>
+                        <p className="mt-2 text-[10px] text-emerald-700 font-medium ml-1">
+                            Minimal 8 karakter, mengandung huruf besar, kecil, angka, dan simbol.
+                        </p>
+                        {errors.password && (
+                            <p className="mt-2 text-xs font-medium text-rose-500 ml-1">{errors.password}</p>
+                        )}
+                    </div>
 
-        <button
-          type="submit"
-          disabled={processing}
-          className="w-full py-3 px-4 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {processing ? 'Menyimpan...' : 'Atur Ulang Kata Sandi'}
-        </button>
+                    <div>
+                        <label htmlFor="password_confirmation" className="block text-xs font-bold text-emerald-800 uppercase tracking-widest ml-1 mb-2">
+                            Konfirmasi Kata Sandi
+                        </label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-emerald-500">
+                                <ShieldCheck size={18} />
+                            </div>
+                            <input
+                                id="password_confirmation"
+                                type="password"
+                                name="password_confirmation"
+                                value={data.password_confirmation}
+                                className="block w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-emerald-50 rounded-xl text-emerald-950 text-sm focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                                onChange={(e) => setData('password_confirmation', e.target.value)}
+                                required
+                                autoComplete="new-password"
+                            />
+                        </div>
+                    </div>
 
-        <div className="text-center">
-          <Link href="/login" className="text-sm text-emerald-600 hover:text-gray-700">
-            ← Kembali ke halaman masuk
-          </Link>
-        </div>
-      </form>
-    </GuestLayout>
-  );
+                    <button
+                        type="submit"
+                        disabled={processing}
+                        className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 disabled:opacity-50"
+                    >
+                        {processing ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                        ) : (
+                            <>
+                                Simpan Kata Sandi
+                                <ArrowRight size={18} />
+                            </>
+                        )}
+                    </button>
+                </form>
+
+                <div className="text-center pt-2">
+                    <Link href="/login" className="text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors">
+                        ← Kembali ke Halaman Masuk
+                    </Link>
+                </div>
+            </div>
+        </GuestLayout>
+    );
 }

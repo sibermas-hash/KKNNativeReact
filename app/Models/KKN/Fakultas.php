@@ -20,11 +20,11 @@ class Fakultas extends Model
 
     public function prodi(): HasMany
     {
-        return $this->hasMany(Prodi::class, 'faculty_id');
+        return $this->hasMany(Prodi::class, 'fakultas_id');
     }
 
     public function mahasiswa(): HasMany
     {
-        return $this->hasMany(Mahasiswa::class, 'faculty_id');
+        return $this->hasMany(Mahasiswa::class, 'fakultas_id');
     }
 }

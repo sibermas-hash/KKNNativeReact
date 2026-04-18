@@ -74,7 +74,7 @@ class PeriodPolicy extends BasePolicy
         }
 
         return $dosen->dplPeriods()
-            ->where('period_id', $period->id)
+            ->where('periode_id', $period->id)
             ->where('is_active', true)
             ->exists();
     }

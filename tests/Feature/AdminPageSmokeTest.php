@@ -110,7 +110,7 @@ class AdminPageSmokeTest extends TestCase
     {
         $faculty = Fakultas::factory()->create();
         $user = User::factory()->create([
-            'faculty_id' => $faculty->id,
+            'fakultas_id' => $faculty->id,
         ]);
         $user->assignRole('faculty_admin');
 

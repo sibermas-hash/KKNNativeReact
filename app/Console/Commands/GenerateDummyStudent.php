@@ -2,23 +2,22 @@
 
 namespace App\Console\Commands;
 
+use App\Models\KKN\Dosen;
+use App\Models\KKN\Fakultas;
+use App\Models\KKN\KegiatanKkn;
+use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\LaporanAkhir;
+use App\Models\KKN\Lokasi;
+use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\Periode;
+use App\Models\KKN\PesertaKkn;
+use App\Models\KKN\Prodi;
+use App\Models\KKN\ProgramKerja;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
-use App\Models\User;
-use App\Models\KKN\Mahasiswa;
-use App\Models\KKN\PesertaKkn;
-use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\Lokasi;
-use App\Models\KKN\Periode;
-use App\Models\KKN\Fakultas;
-use App\Models\KKN\Prodi;
-use App\Models\KKN\Dosen;
-use App\Models\KKN\ProgramKerja;
-use App\Models\KKN\KegiatanKkn;
-use App\Models\KKN\LaporanAkhir;
-use App\Models\KKN\NilaiKkn;
-use Carbon\Carbon;
 
 class GenerateDummyStudent extends Command
 {
@@ -42,30 +41,32 @@ class GenerateDummyStudent extends Command
     public function handle()
     {
         $nim = $this->option('nim');
-        
+
         $this->info("Starting Dummy Student Generation for NIM: {$nim}");
 
         // 1. Get Active Period
         $periode = Periode::where('is_active', true)->first();
-        if (!$periode) {
+        if (! $periode) {
             // Let's create a dummy period if none exists
             $periode = Periode::create([
                 'name' => 'Periode KKN Dummy 2026',
                 'is_active' => true,
-                'current_phase' => 'finished'
+                'current_phase' => 'finished',
             ]);
-            $this->warn("No active period found. Created a dummy period.");
+            $this->warn('No active period found. Created a dummy period.');
         }
 
         // 2. Setup Master Data (Faculty & Program)
         $fakultas = Fakultas::first();
-        if (!$fakultas) {
-            $this->error("Fakultas master data is empty. Please seed master data first.");
+        if (! $fakultas) {
+            $this->error('Fakultas master data is empty. Please seed master data first.');
+
             return;
         }
-        $prodi = Prodi::where('faculty_id', $fakultas->id)->first() ?? Prodi::first();
-        if (!$prodi) {
-            $this->error("Prodi master data is empty. Please seed master data first.");
+        $prodi = Prodi::where('fakultas_id', $fakultas->id)->first() ?? Prodi::first();
+        if (! $prodi) {
+            $this->error('Prodi master data is empty. Please seed master data first.');
+
             return;
         }
 
@@ -90,11 +91,11 @@ class GenerateDummyStudent extends Command
             ['user_id' => $user->id],
             [
                 'nim' => $nim,
-                'nik' => '330101' . rand(1000000000, 9999999999),
+                'nik' => '330101'.rand(1000000000, 9999999999),
                 'nama' => 'Budi Simulasi KKN',
                 'gender' => 'L',
-                'faculty_id' => $fakultas->id,
-                'program_id' => $prodi->id,
+                'fakultas_id' => $fakultas->id,
+                'prodi_id' => $prodi->id,
                 'batch_year' => 2022,
                 'sks_completed' => 120,
                 'total_sks' => 144,
@@ -122,7 +123,7 @@ class GenerateDummyStudent extends Command
             [
                 'nip' => '198001012005011001',
                 'nama' => 'Dr. DPL Simulasi, M.Kom.',
-                'faculty_id' => $fakultas->id,
+                'fakultas_id' => $fakultas->id,
                 'gender' => 'L',
             ]
         );
@@ -140,7 +141,7 @@ class GenerateDummyStudent extends Command
         $kelompok = KelompokKkn::firstOrCreate(
             ['nama_kelompok' => 'Kelompok 99 - Simulasi'],
             [
-                'period_id' => $periode->id,
+                'periode_id' => $periode->id,
                 'location_id' => $lokasi->id,
                 'dpl_id' => $dosen->id,
                 'status' => 'active',
@@ -152,7 +153,7 @@ class GenerateDummyStudent extends Command
 
         // 5. Setup Registration & Plotting
         $peserta = PesertaKkn::updateOrCreate(
-            ['mahasiswa_id' => $mahasiswa->id, 'period_id' => $periode->id],
+            ['mahasiswa_id' => $mahasiswa->id, 'periode_id' => $periode->id],
             [
                 'kelompok_id' => $kelompok->id,
                 'status' => 'approved',
@@ -162,7 +163,7 @@ class GenerateDummyStudent extends Command
         );
 
         // 6. Setup Work Programs (Program Kerja)
-        $this->info("Generating Work Programs...");
+        $this->info('Generating Work Programs...');
         $proker1 = ProgramKerja::firstOrCreate(
             ['title' => 'Edukasi Literasi Digital Desa'],
             [
@@ -192,11 +193,11 @@ class GenerateDummyStudent extends Command
         );
 
         // 7. Setup Daily Logs (Logbook)
-        $this->info("Generating 30 Days of Daily Logs...");
+        $this->info('Generating 30 Days of Daily Logs...');
         $startDate = Carbon::now()->subDays(30);
         for ($i = 0; $i < 30; $i++) {
             $date = $startDate->copy()->addDays($i);
-            
+
             KegiatanKkn::updateOrCreate(
                 [
                     'mahasiswa_id' => $mahasiswa->id,
@@ -204,7 +205,7 @@ class GenerateDummyStudent extends Command
                     'date' => $date->format('Y-m-d'),
                 ],
                 [
-                    'title' => "Kegiatan KKN Hari ke-" . ($i + 1),
+                    'title' => 'Kegiatan KKN Hari ke-'.($i + 1),
                     'activity' => 'Melaksanakan program kerja rutin dan observasi sosial di desa bersama aparat terkait.',
                     'reflection' => 'Berjalan lancar, masyarakat antusias.',
                     'output' => 'Tercapainya target harian sesuai jadwal.',
@@ -215,7 +216,7 @@ class GenerateDummyStudent extends Command
         }
 
         // 8. Setup Final Report (Laporan Akhir)
-        $this->info("Generating Final Report...");
+        $this->info('Generating Final Report...');
         LaporanAkhir::updateOrCreate(
             ['mahasiswa_id' => $mahasiswa->id, 'kelompok_id' => $kelompok->id],
             [
@@ -231,7 +232,7 @@ class GenerateDummyStudent extends Command
         );
 
         // 9. Setup Grading (NilaiKkn)
-        $this->info("Generating Final Grades...");
+        $this->info('Generating Final Grades...');
         NilaiKkn::updateOrCreate(
             ['user_id' => $user->id, 'kelompok_id' => $kelompok->id],
             [
@@ -253,12 +254,12 @@ class GenerateDummyStudent extends Command
         );
 
         $this->info("\n✅ SUCCESS: Dummy student successfully generated!");
-        $this->line("--------------------------------------------------");
+        $this->line('--------------------------------------------------');
         $this->line("Login Username : {$nim}");
-        $this->line("Login Password : password");
-        $this->line("Nama           : Budi Simulasi KKN");
-        $this->line("Kelompok       : Kelompok 99 - Simulasi");
-        $this->line("Lokasi         : Desa Simulasi Maju");
-        $this->line("--------------------------------------------------");
+        $this->line('Login Password : password');
+        $this->line('Nama           : Budi Simulasi KKN');
+        $this->line('Kelompok       : Kelompok 99 - Simulasi');
+        $this->line('Lokasi         : Desa Simulasi Maju');
+        $this->line('--------------------------------------------------');
     }
 }

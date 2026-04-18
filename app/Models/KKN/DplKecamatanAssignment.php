@@ -16,10 +16,10 @@ class DplKecamatanAssignment extends Model
     protected $table = 'dpl_kecamatan_assignments';
 
     protected $fillable = [
-        'dpl_period_id',
+        'dpl_periode_id',
         'dosen_id',
-        'period_id',
-        'district_id',
+        'periode_id',
+        'kecamatan_id',
         'district_name',
         'regency_name',
         'assigned_by',
@@ -32,7 +32,7 @@ class DplKecamatanAssignment extends Model
 
     public function dplPeriod(): BelongsTo
     {
-        return $this->belongsTo(DplPeriod::class, 'dpl_period_id');
+        return $this->belongsTo(DplPeriod::class, 'dpl_periode_id');
     }
 
     public function dosen(): BelongsTo
@@ -42,7 +42,7 @@ class DplKecamatanAssignment extends Model
 
     public function periode(): BelongsTo
     {
-        return $this->belongsTo(Periode::class, 'period_id');
+        return $this->belongsTo(Periode::class, 'periode_id');
     }
 
     public function assigner(): BelongsTo

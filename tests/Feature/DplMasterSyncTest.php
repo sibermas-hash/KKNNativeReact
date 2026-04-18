@@ -52,7 +52,7 @@ class DplMasterSyncTest extends TestCase
         ]);
 
         $service = Mockery::mock(MasterApiService::class);
-        $service->shouldReceive('yieldSyncDosen')->once()->andReturn((function() use ($faculty) {
+        $service->shouldReceive('yieldSyncDosen')->once()->andReturn((function () use ($faculty) {
             yield [
                 'id' => '77',
                 'nip' => '198700010099',
@@ -72,7 +72,7 @@ class DplMasterSyncTest extends TestCase
             'nip' => '198700010099',
             'nama' => 'Dosen Master Baru',
             'master_id' => '77',
-            'faculty_id' => $faculty->id,
+            'fakultas_id' => $faculty->id,
             'gender' => 'L',
         ], 'kkn');
 

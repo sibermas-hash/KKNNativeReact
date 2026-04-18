@@ -14,7 +14,7 @@ class StressTestRegistrationWorkerCommand extends Command
 {
     protected $signature = 'kkn:stress-registration-worker
         {student_id : ID mahasiswa yang akan diproses}
-        {period_id : ID periode target}
+        {periode_id : ID periode target}
         {group_id : ID kelompok target}';
 
     protected $description = 'Worker internal untuk simulasi rebutan kelompok secara paralel.';
@@ -23,7 +23,7 @@ class StressTestRegistrationWorkerCommand extends Command
     {
         $startedAt = hrtime(true);
         $studentId = (int) $this->argument('student_id');
-        $periodId = (int) $this->argument('period_id');
+        $periodId = (int) $this->argument('periode_id');
         $groupId = (int) $this->argument('group_id');
 
         try {

@@ -99,21 +99,21 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
               <span className="text-xs font-black text-[#1a7a4a] uppercase tracking-widest bg-[#e8f5ee] px-3 py-1 rounded-full inset-ring-1 inset-ring-emerald-100/50 w-fit">
                 Operasi Basis Data
               </span>
-              <h1 className="text-3xl font-black text-gray-900 tracking-tight leading-none uppercase">
+              <h1 className="text-3xl font-black text-emerald-950 tracking-tight leading-none uppercase">
                 Mutasi Peserta 
               </h1>
-              <p className="text-sm font-bold text-gray-700 max-w-xl leading-relaxed">
+              <p className="text-sm font-bold text-emerald-800 max-w-xl leading-relaxed">
                 Protokol administrasi instan untuk menggeser penempatan personil KKN lintas kelompok atau siklus periode secara aman dan akurat.
               </p>
             </div>
           </div>
 
-          <div className="relative z-10 hidden md:flex items-center gap-6 bg-[#e8f5ee] px-8 py-6 rounded-[2rem] shrink-0 border border-gray-200">
+          <div className="relative z-10 hidden md:flex items-center gap-6 bg-[#e8f5ee] px-8 py-6 rounded-[2rem] shrink-0 border border-emerald-50">
             <div className="flex flex-col text-right">
               <span className="text-xs font-black text-[#1a7a4a] uppercase tracking-widest mb-1">Total Peserta Valid</span>
-              <span className="text-4xl font-black text-gray-900 leading-none">{students.meta.total.toLocaleString('id-ID')}</span>
+              <span className="text-4xl font-black text-emerald-950 leading-none">{students.meta.total.toLocaleString('id-ID')}</span>
             </div>
-            <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center text-[#1a7a4a] border border-gray-200 shadow-sm shrink-0">
+            <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center text-[#1a7a4a] border border-emerald-50 shadow-sm shrink-0">
               <Zap size={24} strokeWidth={3} />
             </div>
           </div>
@@ -121,7 +121,7 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* --- LEFT COLUMN: SEARCH & SELECTION (1/3 LAYOUT) --- */}
-          <div className="lg:col-span-4 flex flex-col bg-white border border-gray-200 rounded-xl overflow-hidden h-[800px] shadow-sm">
+          <div className="lg:col-span-4 flex flex-col bg-white border border-emerald-50 rounded-xl overflow-hidden h-[800px] shadow-sm">
             <div className="p-6 border-b border-[#f3f4f6] bg-white">
               <form onSubmit={handleSearch} className="relative group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#1a7a4a] group-focus-within:text-[#1a7a4a] transition-colors" />
@@ -129,7 +129,7 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
                   type="text"
                   value={search} 
                   onChange={(e) => setSearch(e.target.value)} 
-                  className="w-full h-14 pl-12 pr-6 bg-gray-50 border-2 border-[#f3f4f6] rounded-xl text-xs font-bold text-gray-900 uppercase tracking-wider focus:border-emerald-300 focus:bg-white placeholder:text-gray-600 transition-all outline-none"
+                  className="w-full h-14 pl-12 pr-6 bg-gray-50 border-2 border-[#f3f4f6] rounded-xl text-xs font-bold text-emerald-950 uppercase tracking-wider focus:border-emerald-300 focus:bg-white placeholder:text-black transition-all outline-none"
                   placeholder="CARI NIM / NAMA MAHASISWA..."
                 />
               </form>
@@ -144,17 +144,17 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
                     'w-full p-5 text-left transition-all duration-300 flex flex-col gap-2 rounded-xl mb-3', 
                     selectedStudent?.id === s.id 
                     ? 'bg-[#16a34a] text-white shadow-xl shadow-emerald-900/20 translate-x-2' 
-                    : 'bg-white hover:bg-gray-50 border border-[#f3f4f6] text-gray-900 hover:translate-x-1'
+                    : 'bg-white hover:bg-gray-50 border border-[#f3f4f6] text-emerald-950 hover:translate-x-1'
                   )}
                 >
-                  <span className={clsx('text-xs font-black uppercase tracking-widest', selectedStudent?.id === s.id ? 'text-gray-500' : 'text-[#1a7a4a]')}>
+                  <span className={clsx('text-xs font-black uppercase tracking-widest', selectedStudent?.id === s.id ? 'text-emerald-700' : 'text-[#1a7a4a]')}>
                     {s.mahasiswa.nim}
                   </span>
                   <div className="flex flex-col">
                     <span className="text-sm font-bold leading-tight uppercase">
                       {s.mahasiswa.nama}
                     </span>
-                    <span className={clsx('text-xs font-bold mt-2 uppercase tracking-widest', selectedStudent?.id === s.id ? 'text-gray-700' : 'text-[#1a7a4a]')}>
+                    <span className={clsx('text-xs font-bold mt-2 uppercase tracking-widest', selectedStudent?.id === s.id ? 'text-emerald-800' : 'text-[#1a7a4a]')}>
                       {s.kelompok?.nama_kelompok || s.kelompok?.code ? (
                         <>Posisi: <span className="font-extrabold">{s.kelompok.nama_kelompok || s.kelompok.code}</span></>
                       ) : (
@@ -166,9 +166,9 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
               ))}
               {students.data.length === 0 && (
                 <div className="py-24 flex flex-col items-center justify-center text-center">
-                  <UserCircle size={48} className="text-gray-700 mb-4" strokeWidth={1.5} />
-                  <span className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1">Data Kosong</span>
-                  <p className="text-xs font-bold text-gray-600">Peserta tidak ditemukan.</p>
+                  <UserCircle size={48} className="text-emerald-800 mb-4" strokeWidth={1.5} />
+                  <span className="text-xs font-black text-emerald-950 uppercase tracking-widest mb-1">Data Kosong</span>
+                  <p className="text-xs font-bold text-emerald-800">Peserta tidak ditemukan.</p>
                 </div>
               )}
             </div>
@@ -196,7 +196,7 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
                   </div>
                   <button 
                     onClick={() => setSelectedStudent(null)} 
-                    className="h-10 px-5 bg-white/10 text-white text-xs font-bold tracking-widest uppercase rounded-lg hover:bg-white hover:text-gray-900 transition-all border border-white/20"
+                    className="h-10 px-5 bg-white/10 text-white text-xs font-bold tracking-widest uppercase rounded-lg hover:bg-white hover:text-emerald-950 transition-all border border-white/20"
                   >
                     Batal Pilih
                   </button>
@@ -206,14 +206,14 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
                   {/* Current Status Box */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="p-8 border-2 border-[#f3f4f6] rounded-xl flex flex-col gap-3 relative overflow-hidden group">
-                      <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity text-gray-900 border"><UserCircle size={100} /></div>
+                      <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity text-emerald-950 border"><UserCircle size={100} /></div>
                       <span className="text-xs font-black text-[#1a7a4a] uppercase tracking-widest relative z-10">Identitas Terpilih</span>
                       <div className="relative z-10">
-                        <strong className="text-2xl font-black text-gray-900 uppercase shrink-0 leading-none block">{selectedStudent.mahasiswa.nama}</strong>
+                        <strong className="text-2xl font-black text-emerald-950 uppercase shrink-0 leading-none block">{selectedStudent.mahasiswa.nama}</strong>
                         <span className="text-xs font-bold text-[#1a7a4a] block mt-2 uppercase tracking-widest">{selectedStudent.mahasiswa.nim}</span>
                       </div>
                     </div>
-                    <div className="p-8 bg-gray-50 border-2 border-gray-200 rounded-xl flex flex-col gap-3 relative overflow-hidden group">
+                    <div className="p-8 bg-gray-50 border-2 border-emerald-50 rounded-xl flex flex-col gap-3 relative overflow-hidden group">
                       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-[#1a7a4a]"><MapPin size={100} strokeWidth={1} /></div>
                       <span className="text-xs font-black text-[#1a7a4a] uppercase tracking-widest relative z-10">Penempatan Saat Ini</span>
                       <div className="relative z-10">
@@ -232,7 +232,7 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
                   {/* Transfer Form Inputs */}
                   <div className="space-y-8 bg-white rounded-xl border-2 border-[#f3f4f6] p-8 shadow-sm">
                     <div className="border-b border-[#f3f4f6] pb-6 mb-6">
-                        <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                        <h3 className="text-sm font-black text-emerald-950 uppercase tracking-wider flex items-center gap-2">
                         <Filter size={16} className="text-[#1a7a4a]"/>
                         Parameter Relokasi Baru
                         </h3>
@@ -240,13 +240,13 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-3">
-                        <label className="text-xs font-bold text-gray-900 uppercase tracking-widest flex items-center gap-2">
+                        <label className="text-xs font-bold text-emerald-950 uppercase tracking-widest flex items-center gap-2">
                           <TargetIcon /> Target Siklus Periode
                         </label>
                         <select 
                           value={targetPeriodId} 
                           onChange={(e) => { setTargetPeriodId(e.target.value); setTargetGroupId(''); fetchGroups(e.target.value); }} 
-                          className="w-full h-14 px-5 rounded-xl bg-gray-50 border border-transparent focus:border-emerald-300 focus:bg-white text-sm font-bold text-gray-900 transition-all outline-none appearance-none"
+                          className="w-full h-14 px-5 rounded-xl bg-gray-50 border border-transparent focus:border-emerald-300 focus:bg-white text-sm font-bold text-emerald-950 transition-all outline-none appearance-none"
                         >
                           <option value="">-- SELEKSI PERIODE --</option>
                           {targetPeriods.map(p => <option key={p.id} value={p.id}>{p.name} ({p.periode})</option>)}
@@ -254,14 +254,14 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
                       </div>
                       
                       <div className="space-y-3">
-                        <label className="text-xs font-bold text-gray-900 uppercase tracking-widest flex items-center gap-2">
+                        <label className="text-xs font-bold text-emerald-950 uppercase tracking-widest flex items-center gap-2">
                           <MapPin size={14} className="text-[#1a7a4a]" /> Unit Kelompok Tujuan
                         </label>
                         <select 
                           value={targetGroupId} 
                           onChange={(e) => setTargetGroupId(e.target.value)} 
                           disabled={!targetPeriodId || isLoadingGroups} 
-                          className="w-full h-14 px-5 rounded-xl bg-gray-50 border border-transparent focus:border-emerald-300 focus:bg-white text-sm font-bold text-gray-900 transition-all outline-none appearance-none disabled:opacity-40"
+                          className="w-full h-14 px-5 rounded-xl bg-gray-50 border border-transparent focus:border-emerald-300 focus:bg-white text-sm font-bold text-emerald-950 transition-all outline-none appearance-none disabled:opacity-40"
                         >
                           <option value="">{isLoadingGroups ? 'LOADING...' : '-- SELEKSI UNIT (OPSIONAL) --'}</option>
                           {groups.filter(g => g.id !== selectedStudent.kelompok?.id).map(g => (
@@ -274,7 +274,7 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
                     </div>
 
                     <div className="space-y-3 pt-4">
-                      <label className="text-xs font-bold text-gray-900 uppercase tracking-widest flex items-center gap-2">
+                      <label className="text-xs font-bold text-emerald-950 uppercase tracking-widest flex items-center gap-2">
                         <AlertTriangle size={14} className="text-amber-500" strokeWidth={3} /> Alasan / Justifikasi Mutasi
                       </label>
                       <textarea 
@@ -282,16 +282,16 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
                         onChange={(e) => setReason(e.target.value)} 
                         placeholder="INPUT ALASAN PERPINDAHAN UNTUK AUDIT LOG..."
                         rows={4} 
-                        className="w-full p-6 rounded-xl bg-gray-50 border border-transparent focus:border-emerald-300 focus:bg-white text-sm font-bold text-gray-900 transition-all outline-none placeholder:text-gray-600"
+                        className="w-full p-6 rounded-xl bg-gray-50 border border-transparent focus:border-emerald-300 focus:bg-white text-sm font-bold text-emerald-950 transition-all outline-none placeholder:text-black"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Footer Actions */}
-                <div className="px-10 py-6 bg-gray-50 border-t-2 border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div className="px-10 py-6 bg-gray-50 border-t-2 border-emerald-50 flex flex-col sm:flex-row items-center justify-between gap-6">
                   <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-[#1a7a4a] shadow-sm border border-gray-200">
+                    <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-[#1a7a4a] shadow-sm border border-emerald-50">
                       <Zap size={20} />
                     </div>
                     <span className="text-xs font-bold text-[#1a7a4a] max-w-[250px] leading-relaxed uppercase tracking-wider">
@@ -308,12 +308,12 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
                 </div>
               </div>
             ) : (
-              <div className="flex-1 flex flex-col bg-gray-50/50 border-2 border-dashed border-gray-200 rounded-xl items-center justify-center p-20 text-center h-full group transition-all hover:bg-gray-50">
+              <div className="flex-1 flex flex-col bg-gray-50/50 border-2 border-dashed border-emerald-50 rounded-xl items-center justify-center p-20 text-center h-full group transition-all hover:bg-gray-50">
                 <div className="h-32 w-32 bg-white rounded-[2rem] shadow-sm border border-[#f3f4f6] flex items-center justify-center mb-10 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700">
-                  <ArrowRightLeft size={48} className="text-gray-600 group-hover:text-[#1a7a4a] transition-colors" strokeWidth={1.5} />
+                  <ArrowRightLeft size={48} className="text-emerald-800 group-hover:text-[#1a7a4a] transition-colors" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-2xl font-black text-gray-900 mb-4 uppercase tracking-tight">Kondisi Siaga</h3>
-                <p className="text-xs font-bold text-gray-700 max-w-sm leading-relaxed uppercase tracking-widest">
+                <h3 className="text-2xl font-black text-emerald-950 mb-4 uppercase tracking-tight">Kondisi Siaga</h3>
+                <p className="text-xs font-bold text-emerald-800 max-w-sm leading-relaxed uppercase tracking-widest">
                   Silakan seleksi identitas peserta dari kolom sebelah kiri untuk mengaktifkan antarmuka protokol perpindahan dan mutasi.
                 </p>
               </div>

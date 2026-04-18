@@ -17,11 +17,11 @@ class EvaluasiController extends Controller
         Gate::authorize('access-admin-panel');
         $user = auth()->user();
         $isFacultyAdmin = $user?->hasRole('faculty_admin');
-        $facultyId = $isFacultyAdmin ? $user?->faculty_id : null;
+        $facultyId = $isFacultyAdmin ? $user?->fakultas_id : null;
 
         $evaluations = Evaluasi::with(['mahasiswa', 'kelompok', 'evaluator', 'item'])
             ->orderByDesc('evaluated_at')
-            ->when($facultyId, fn ($q) => $q->whereHas('mahasiswa', fn ($m) => $m->where('faculty_id', $facultyId)))
+            ->when($facultyId, fn ($q) => $q->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $facultyId)))
             ->paginate(20);
 
         // Map to frontend-expected property names

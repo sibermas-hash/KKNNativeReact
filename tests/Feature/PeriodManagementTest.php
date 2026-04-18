@@ -40,15 +40,15 @@ test('superadmin can duplicate a period with groups without reusing unique ident
     $dosen = Dosen::factory()->create();
     $dplPeriod = DplPeriod::create([
         'dosen_id' => $dosen->id,
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'max_groups' => 5,
         'is_active' => true,
     ]);
 
     $group = KelompokKkn::factory()->create([
-        'period_id' => $period->id,
+        'periode_id' => $period->id,
         'dpl_id' => $dosen->id,
-        'dpl_period_id' => $dplPeriod->id,
+        'dpl_periode_id' => $dplPeriod->id,
         'code' => 'KKN-ABCDE1',
         'token' => 'TOKEN123',
         'status' => 'active',
@@ -59,7 +59,7 @@ test('superadmin can duplicate a period with groups without reusing unique ident
         ->assertRedirect(route('admin.periode.index'));
 
     $copy = Periode::whereKeyNot($period->id)->firstOrFail();
-    $copiedGroup = KelompokKkn::where('period_id', $copy->id)->firstOrFail();
+    $copiedGroup = KelompokKkn::where('periode_id', $copy->id)->firstOrFail();
 
     expect($copy->name)->toBe('Periode 57 - KKN Reguler (Copy)')
         ->and($copy->is_active)->toBeFalse()
@@ -68,7 +68,7 @@ test('superadmin can duplicate a period with groups without reusing unique ident
         ->and($copiedGroup->capacity)->toBe($group->capacity)
         ->and($copiedGroup->status)->toBe('draft')
         ->and($copiedGroup->dpl_id)->toBeNull()
-        ->and($copiedGroup->dpl_period_id)->toBeNull()
+        ->and($copiedGroup->dpl_periode_id)->toBeNull()
         ->and($copiedGroup->code)->not->toBe($group->code)
         ->and($copiedGroup->token)->not->toBe($group->token);
 });
@@ -154,7 +154,7 @@ test('superadmin cannot delete active or dependent periods', function () {
         'kuota' => 1200,
     ]);
 
-    KelompokKkn::factory()->create(['period_id' => $inactivePeriod->id]);
+    KelompokKkn::factory()->create(['periode_id' => $inactivePeriod->id]);
 
     $this->from(route('admin.periode.index'))
         ->delete(route('admin.periode.destroy', ['periode' => $inactivePeriod->id]))
@@ -177,7 +177,7 @@ test('period actions flush cached context keys', function () {
     ]);
 
     Cache::put('active_period', $period->id, 3600);
-    Cache::put('default_period_id', $period->id, 3600);
+    Cache::put('default_periode_id', $period->id, 3600);
     Cache::put('available_periods', ['cached'], 3600);
 
     $this->from(route('admin.periode.index'))
@@ -199,7 +199,7 @@ test('period actions flush cached context keys', function () {
         ])->assertRedirect(route('admin.periode.index'));
 
     expect(Cache::has('active_period'))->toBeFalse()
-        ->and(Cache::has('default_period_id'))->toBeFalse()
+        ->and(Cache::has('default_periode_id'))->toBeFalse()
         ->and(Cache::has('available_periods'))->toBeFalse();
 });
 

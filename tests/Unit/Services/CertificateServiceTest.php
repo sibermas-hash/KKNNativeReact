@@ -126,7 +126,7 @@ class CertificateServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
@@ -149,7 +149,7 @@ class CertificateServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
@@ -179,7 +179,7 @@ class CertificateServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
@@ -202,7 +202,7 @@ class CertificateServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
@@ -234,7 +234,7 @@ class CertificateServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
@@ -271,7 +271,7 @@ class CertificateServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
@@ -301,12 +301,12 @@ class CertificateServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
         $otherKelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 

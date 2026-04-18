@@ -26,7 +26,6 @@ class KegiatanKkn extends Model
         'activity',
         'reflection',
         'social_media_link',
-        'output',
         'latitude',
         'longitude',
         'gps_accuracy',

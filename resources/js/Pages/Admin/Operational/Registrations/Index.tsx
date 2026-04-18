@@ -124,7 +124,7 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
     <AppLayout title="Validasi Pendaftaran KKN">
       <Head title="Manajemen Pendaftaran" />
 
-      <div className="max-w-7xl mx-auto space-y-8 pb-24 text-gray-900 font-sans">
+      <div className="max-w-7xl mx-auto space-y-8 pb-24 text-emerald-950 font-sans">
         
         <PageHeader 
           title="Validasi Pendaftaran."
@@ -140,17 +140,17 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 mr-2">
                <div className="flex flex-col">
-                  <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest leading-none mb-1">Storage Mode</span>
+                  <span className="text-[8px] font-black text-emerald-800 uppercase tracking-widest leading-none mb-1">Storage Mode</span>
                   <div className="flex items-center gap-2">
                     <div className={clsx("h-2 w-2 rounded-full animate-pulse", app?.storage_disk === 's3' ? "bg-blue-500" : "bg-emerald-500")} />
-                    <span className="text-xs font-black text-gray-900 uppercase tracking-tight flex items-center gap-1.5">
+                    <span className="text-xs font-black text-emerald-950 uppercase tracking-tight flex items-center gap-1.5">
                         {app?.storage_disk === 's3' ? <Globe size={10} className="text-blue-500" /> : <HardDrive size={10} className="text-[#1a7a4a]" />}
                         {app?.storage_disk === 's3' ? 'Cloud R2' : 'Local Server'}
                     </span>
                   </div>
                </div>
             </div>
-            <button onClick={() => handleExport('standard')} className="h-12 px-5 bg-white border-2 border-[#f3f4f6] text-gray-900 rounded-xl font-extrabold transition-all shadow-sm flex items-center gap-3 active:scale-95 text-xs uppercase tracking-widest hover:border-emerald-600">
+            <button onClick={() => handleExport('standard')} className="h-12 px-5 bg-white border-2 border-[#f3f4f6] text-emerald-950 rounded-xl font-extrabold transition-all shadow-sm flex items-center gap-3 active:scale-95 text-xs uppercase tracking-widest hover:border-emerald-600">
               <Download size={16} strokeWidth={2.5} /> Ekspor List
             </button>
             <button onClick={() => handleExport('biodata')} className="h-12 px-6 bg-[#16a34a] hover:bg-[#15803d] text-white rounded-xl font-extrabold transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-3 active:scale-95 text-xs uppercase tracking-widest">
@@ -207,7 +207,7 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
                 onSearch={applyFilters}
                 className="w-64"
               />
-              <button onClick={() => setShowFilters(!showFilters)} className={clsx("h-11 px-5 rounded-xl text-xs font-extrabold flex items-center gap-3 transition-all border-2 uppercase tracking-widest", showFilters ?"bg-[#16a34a] text-white border-emerald-600 shadow-md shadow-emerald-600/20":"bg-white border-[#f3f4f6] text-gray-900 hover:border-emerald-600")}>
+              <button onClick={() => setShowFilters(!showFilters)} className={clsx("h-11 px-5 rounded-xl text-xs font-extrabold flex items-center gap-3 transition-all border-2 uppercase tracking-widest", showFilters ?"bg-[#16a34a] text-white border-emerald-600 shadow-md shadow-emerald-600/20":"bg-white border-[#f3f4f6] text-emerald-950 hover:border-emerald-600")}>
                 <Filter size={14} /> {activeFilterCount > 0 ? `FILTER (${activeFilterCount})` : 'FILTER'}
               </button>
               <button onClick={applyFilters} className="h-11 px-8 bg-emerald-900 hover:bg-black text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-none active:scale-95 transition-all">Terapkan</button>
@@ -215,8 +215,8 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
           }
           footer={
             <div className="flex items-center justify-between">
-              <span className="text-xs font-extrabold text-gray-900/40 uppercase tracking-widest">
-                Halaman <strong className="text-gray-900 tabular-nums">{registrations?.meta?.current_page || 1}</strong> dari {registrations?.meta?.last_page || 1}
+              <span className="text-xs font-extrabold text-emerald-950/40 uppercase tracking-widest">
+                Halaman <strong className="text-emerald-950 tabular-nums">{registrations?.meta?.current_page || 1}</strong> dari {registrations?.meta?.last_page || 1}
               </span>
               {registrations?.meta && <Pagination meta={registrations.meta} />}
             </div>
@@ -225,29 +225,29 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
           {showFilters && (
             <div className="p-6 bg-gray-50/20 border-b-2 border-[#f3f4f6] grid grid-cols-1 sm:grid-cols-2 gap-6 animate-in slide-in-from-top-4 duration-300">
               <div className="space-y-2">
-                <label className="text-xs font-extrabold text-gray-900 uppercase tracking-widest pl-1">Periode KKN</label>
+                <label className="text-xs font-extrabold text-emerald-950 uppercase tracking-widest pl-1">Periode KKN</label>
                 <div className="relative group">
-                  <select value={periodId} onChange={e => setPeriodId(e.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border-2 border-[#f3f4f6] bg-white text-xs font-bold text-gray-900 focus:border-emerald-600 appearance-none shadow-sm transition-all">
+                  <select value={periodId} onChange={e => setPeriodId(e.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border-2 border-[#f3f4f6] bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all">
                     <option value="">SEMUA PERIODE</option>
                     {periods?.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>)}
                   </select>
-                  <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none group-focus-within:rotate-180 transition-transform"/>
+                  <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform"/>
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-extrabold text-gray-900 uppercase tracking-widest pl-1">Status Verifikasi</label>
+                <label className="text-xs font-extrabold text-emerald-950 uppercase tracking-widest pl-1">Status Verifikasi</label>
                 <div className="relative group">
-                  <select value={status} onChange={e => setStatus(e.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border-2 border-[#f3f4f6] bg-white text-xs font-bold text-gray-900 focus:border-emerald-600 appearance-none shadow-sm transition-all">
+                  <select value={status} onChange={e => setStatus(e.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border-2 border-[#f3f4f6] bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all">
                     <option value="">SEMUA STATUS</option>
                     <option value="pending">MENUNGGU VERIFIKASI</option>
                     <option value="approved">TELAH DISETUJUI</option>
                     <option value="rejected">DITOLAK SISTEM</option>
                   </select>
-                  <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none group-focus-within:rotate-180 transition-transform"/>
+                  <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform"/>
                 </div>
               </div>
               <div className="sm:col-span-2 flex justify-end">
-                <button onClick={resetFilters} className="text-xs font-extrabold text-gray-900/30 hover:text-rose-600 uppercase tracking-widest transition-colors">Reset Semua Filter</button>
+                <button onClick={resetFilters} className="text-xs font-extrabold text-emerald-950/30 hover:text-rose-600 uppercase tracking-widest transition-colors">Reset Semua Filter</button>
               </div>
             </div>
           )}
@@ -276,17 +276,17 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
                 </PremiumTableCell>
                 <PremiumTableCell>
                   <div className="flex flex-col gap-1 px-1">
-                    <span className="text-xs font-black text-gray-900 leading-tight uppercase mr-2">{r.student.name}</span>
+                    <span className="text-xs font-black text-emerald-950 leading-tight uppercase mr-2">{r.student.name}</span>
                     <div className="flex items-center gap-2">
-                       <span className="text-[9px] font-black text-[#1a7a4a]/60 font-mono bg-gray-50 px-1.5 py-0.5 rounded border border-gray-200/50 w-fit tabular-nums">{r.student.nim}</span>
-                       <span className="text-[8px] font-bold text-gray-600 uppercase tracking-tighter">Joined {new Date(r.registration_date).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}</span>
+                       <span className="text-[9px] font-black text-[#1a7a4a]/60 font-mono bg-gray-50 px-1.5 py-0.5 rounded border border-emerald-50/50 w-fit tabular-nums">{r.student.nim}</span>
+                       <span className="text-[8px] font-bold text-emerald-800 uppercase tracking-tighter">Joined {new Date(r.registration_date).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}</span>
                     </div>
                   </div>
                 </PremiumTableCell>
                 <PremiumTableCell>
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-xs font-black text-gray-900/70 leading-tight uppercase tracking-tight truncate max-w-[140px]">{r.student.program?.name || 'UMUM'}</span>
-                     <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">{r.student.faculty?.name || 'UIN SAIZU'}</span>
+                    <span className="text-xs font-black text-emerald-950/70 leading-tight uppercase tracking-tight truncate max-w-[140px]">{r.student.program?.name || 'UMUM'}</span>
+                     <span className="text-[9px] font-bold text-emerald-800 uppercase tracking-widest">{r.student.faculty?.name || 'UIN SAIZU'}</span>
                   </div>
                 </PremiumTableCell>
                 <PremiumTableCell>
@@ -301,7 +301,7 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
                 </PremiumTableCell>
                 <PremiumTableCell>
                   <div className="flex flex-col">
-                    <span className="text-xs font-black text-gray-900 tabular-nums uppercase whitespace-nowrap">
+                    <span className="text-xs font-black text-emerald-950 tabular-nums uppercase whitespace-nowrap">
                       {new Date(r.registration_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: '2-digit' })}
                     </span>
                     <span className="text-[9px] font-bold text-[#1a7a4a]/40 uppercase tracking-tighter truncate max-w-[110px]" title={r.period.name}>
@@ -315,13 +315,13 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
                     {r.group && (
                       <div className="flex items-center gap-1.5 opacity-60">
                          <div className="h-1 w-1 rounded-full bg-emerald-400" />
-                         <span className="text-[9px] font-black text-gray-900 uppercase tracking-widest truncate max-w-[100px]">{r.group.name}</span>
+                         <span className="text-[9px] font-black text-emerald-950 uppercase tracking-widest truncate max-w-[100px]">{r.group.name}</span>
                       </div>
                     )}
                   </div>
                 </PremiumTableCell>
                 <PremiumTableCell align="right">
-                   <Link href={`/admin/pendaftaran/${r.id}`} className="h-10 px-5 bg-white text-gray-900 hover:bg-emerald-900 hover:text-white border-2 border-[#f3f4f6] rounded-xl flex items-center justify-center gap-3 text-xs font-black transition-all active:scale-95 uppercase tracking-widest shadow-sm hover:translate-x-1">
+                   <Link href={`/admin/pendaftaran/${r.id}`} className="h-10 px-5 bg-white text-emerald-950 hover:bg-emerald-900 hover:text-white border-2 border-[#f3f4f6] rounded-xl flex items-center justify-center gap-3 text-xs font-black transition-all active:scale-95 uppercase tracking-widest shadow-sm hover:translate-x-1">
                     Audit <ArrowRight size={14} strokeWidth={3} className="text-[#1a7a4a]" />
                   </Link>
                 </PremiumTableCell>

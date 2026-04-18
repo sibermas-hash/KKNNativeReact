@@ -77,81 +77,51 @@ class ImportKknExcel extends Command
             }
 
             foreach ($rows as $row) {
-                if (empty($row[6])) {
+                // Check if row has numeric No
+                if (!isset($row[0]) || !is_numeric($row[0])) {
                     continue;
-                } // Skip if NIM is empty
-
-                $kelompokCode = $row[1];
-                $desa = $row[2];
-                $kecamatan = $row[3];
-                $kabupaten = $row[4];
-                $nama = $row[5];
-                $nim = $row[6];
-                $gender = ($row[7] === 'P') ? 'P' : 'L';
-                $phone = $row[8];
-                $dplName = $row[9];
-                $pt = $row[10] ?? 'UIN SAIZU';
-
-                // 1. Faculty & Program (Defaults)
-                $faculty = Fakultas::firstOrCreate(['code' => 'FTIK'], ['nama' => 'Fakultas Tarbiyah dan Ilmu Keguruan']);
-                $program = Prodi::firstOrCreate(
-                    ['code' => 'PBA'],
-                    ['nama' => 'Pendidikan Bahasa Arab', 'faculty_id' => $faculty->id]
-                );
-
-                // 2. Location
-                $location = Lokasi::firstOrCreate(
-                    ['village_name' => $desa],
-                    [
-                        'address' => "{$kecamatan}, {$kabupaten}",
-                        'capacity' => 20,
-                    ]
-                );
-
-                // 3. Lecturer (DPL)
-                $nip = substr('dpl_'.str_replace([' ', "'"], ['_', ''], strtolower($dplName)), 0, 20);
-                $lecturerUser = User::firstOrCreate(
-                    ['username' => $nip],
-                    [
-                        'name' => $dplName,
-                        'email' => str_replace([' ', "'"], ['.', ''], strtolower($dplName)).'@uinsaizu.ac.id',
-                        'password' => Hash::make(Str::password(12)),
-                    ]
-                );
-
-                if (! $lecturerUser->hasRole('dpl')) {
-                    $lecturerUser->assignRole('dpl');
                 }
 
-                $lecturer = Dosen::firstOrCreate(
-                    ['nama' => $dplName],
-                    [
-                        'user_id' => $lecturerUser->id,
-                        'nip' => $lecturerUser->username,
-                        'faculty_id' => $faculty->id,
-                    ]
-                );
+                $nim = (string) $row[1];
+                if (empty($nim)) {
+                    continue;
+                }
+                
+                $nama = $row[2];
+                $gender = ($row[3] === 'P') ? 'P' : 'L';
+                $facultyName = $row[4];
+                $programCode = $row[5];
+                $phone = $row[8];
 
-                // 4. Group
-                $group = KelompokKkn::firstOrCreate(
-                    ['code' => 'K'.$kelompokCode],
-                    [
-                        'period_id' => $period->id,
-                        'location_id' => $location->id,
-                        'dpl_id' => $lecturer->id,
-                        'nama_kelompok' => "Kelompok {$kelompokCode}",
-                        'capacity' => 15,
-                        'status' => 'active',
-                    ]
-                );
+                // 1. Faculty & Program
+                $facultyName = trim($facultyName);
+                $programCode = trim($programCode);
+                
+                $facultyCode = strtoupper(substr($facultyName, 0, 4));
+                // Try finding by name first, then by code
+                $faculty = Fakultas::where('nama', $facultyName)->first() 
+                    ?? Fakultas::where('code', $facultyCode)->first();
+                
+                if (!$faculty) {
+                    $faculty = Fakultas::create(['nama' => $facultyName, 'code' => $facultyCode]);
+                }
 
-                // 5. User & Mahasiswa
+                $program = Prodi::where('code', $programCode)->first();
+                if (!$program) {
+                    $program = Prodi::create([
+                        'code' => $programCode, 
+                        'nama' => $programCode, 
+                        'fakultas_id' => $faculty->id
+                    ]);
+                }
+
+                // 2. User & Mahasiswa
                 $user = User::updateOrCreate(
                     ['username' => $nim],
                     [
                         'name' => $nama,
                         'email' => $nim.'@student.uinsaizu.ac.id',
-                        'password' => Hash::make(Str::password(12)),
+                        'password' => Hash::make('Password#123'),
                         'phone' => $phone,
                     ]
                 );
@@ -165,26 +135,21 @@ class ImportKknExcel extends Command
                     [
                         'user_id' => $user->id,
                         'nama' => $nama,
-                        'faculty_id' => $faculty->id,
-                        'program_id' => $program->id,
+                        'fakultas_id' => $faculty->id,
+                        'prodi_id' => $program->id,
                         'gender' => $gender,
                         'batch_year' => 2022,
                     ]
                 );
 
-                // 6. Registration (Peserta KKN)
+                // 3. Registration (Peserta KKN)
                 PesertaKkn::updateOrCreate(
-                    ['mahasiswa_id' => $mahasiswa->id, 'period_id' => $period->id],
+                    ['mahasiswa_id' => $mahasiswa->id, 'periode_id' => $period->id],
                     [
-                        'kelompok_id' => $group->id,
+                        'kelompok_id' => null, // No group assigned yet
                         'status' => 'approved',
                         'registration_date' => now(),
                     ]
-                );
-
-                DB::table('group_members')->updateOrInsert(
-                    ['kelompok_id' => $group->id, 'mahasiswa_id' => $mahasiswa->id],
-                    ['joined_at' => now()]
                 );
 
                 $bar->advance();
@@ -232,8 +197,10 @@ class ImportKknExcel extends Command
             DB::table($table)->truncate();
         }
 
-        // Delete users except superadmin
-        User::where('email', '!=', 'superadmin@uinsaizu.ac.id')->delete();
+        // Delete users except those with admin roles
+        User::whereDoesntHave('roles', function($q) {
+            $q->whereIn('name', ['superadmin', 'admin', 'faculty_admin']);
+        })->delete();
 
         $this->info('Database cleared.');
     }

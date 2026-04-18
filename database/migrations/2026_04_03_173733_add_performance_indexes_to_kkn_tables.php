@@ -12,7 +12,7 @@ return new class extends Migration
         $schema = Schema::connection('kkn');
 
         $this->addIndexIfMissing($schema, 'peserta_kkn', 'peserta_kkn_status_index', ['status']);
-        $this->addIndexIfMissing($schema, 'peserta_kkn', 'peserta_kkn_period_id_index', ['period_id']);
+        $this->addIndexIfMissing($schema, 'peserta_kkn', 'peserta_kkn_periode_id_index', ['periode_id']);
         $this->addIndexIfMissing($schema, 'peserta_kkn', 'peserta_kkn_kelompok_id_index', ['kelompok_id']);
         $this->addIndexIfMissing($schema, 'peserta_kkn', 'peserta_kkn_mahasiswa_id_index', ['mahasiswa_id']);
 
@@ -32,7 +32,7 @@ return new class extends Migration
         $schema = Schema::connection('kkn');
 
         $this->dropIndexIfExists($schema, 'peserta_kkn', 'peserta_kkn_status_index');
-        $this->dropIndexIfExists($schema, 'peserta_kkn', 'peserta_kkn_period_id_index');
+        $this->dropIndexIfExists($schema, 'peserta_kkn', 'peserta_kkn_periode_id_index');
         $this->dropIndexIfExists($schema, 'peserta_kkn', 'peserta_kkn_kelompok_id_index');
         $this->dropIndexIfExists($schema, 'peserta_kkn', 'peserta_kkn_mahasiswa_id_index');
 

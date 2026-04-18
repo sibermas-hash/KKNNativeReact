@@ -30,17 +30,17 @@ class GradeController extends Controller
 
         $user = auth()->user();
         $isFacultyAdmin = $user?->hasRole('faculty_admin');
-        $facultyId = $isFacultyAdmin ? $user?->faculty_id : null;
+        $facultyId = $isFacultyAdmin ? $user?->fakultas_id : null;
 
         $groups = KelompokKkn::with(['dosen.user:id,name', 'periode'])
             ->when($facultyId, function ($query, $id) {
-                $query->whereHas('peserta.mahasiswa', fn ($q) => $q->where('faculty_id', $id));
+                $query->whereHas('peserta.mahasiswa', fn ($q) => $q->where('fakultas_id', $id));
             })
             ->when(request('jenis_kkn_id'), function ($query, $jenisId) {
                 $query->whereHas('periode', fn ($q) => $q->where('jenis_kkn_id', $jenisId));
             })
             ->orderBy('code')
-            ->get(['id', 'code', 'nama_kelompok', 'dpl_id', 'period_id']);
+            ->get(['id', 'code', 'nama_kelompok', 'dpl_id', 'periode_id']);
 
         $jenisKknOptions = JenisKkn::dropdownOptions();
 
@@ -57,12 +57,12 @@ class GradeController extends Controller
         $this->authorize('viewAny', NilaiKkn::class);
         $user = auth()->user();
         $isFacultyAdmin = $user?->hasRole('faculty_admin');
-        $facultyId = $isFacultyAdmin ? $user?->faculty_id : null;
+        $facultyId = $isFacultyAdmin ? $user?->fakultas_id : null;
 
         $students = PesertaKkn::with(['mahasiswa:id,user_id,nim,nama', 'mahasiswa.user:id,username,email,name'])
             ->where('kelompok_id', $group->id)
             ->where('status', 'approved')
-            ->when($facultyId, fn ($q) => $q->whereHas('mahasiswa', fn ($m) => $m->where('faculty_id', $facultyId)))
+            ->when($facultyId, fn ($q) => $q->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $facultyId)))
             ->get()
             ->map(function ($reg) use ($group) {
                 $user = $reg->mahasiswa->user;

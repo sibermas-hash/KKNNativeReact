@@ -12,11 +12,11 @@ export function SectionHeading({ title, subtitle, accent, className }: SectionHe
     return (
         <div className={clsx("space-y-2", className)}>
             <div className="space-y-1">
-                <h2 className="text-2xl font-bold text-gray-900 leading-tight">
+                <h2 className="text-2xl font-bold text-emerald-950 leading-tight">
                     {title} {accent && <span className="text-[#1a7a4a]">{accent}</span>}
                 </h2>
                 {subtitle && (
-                    <p className="text-sm text-gray-700 leading-relaxed">
+                    <p className="text-sm text-emerald-800 leading-relaxed">
                         {subtitle}
                     </p>
                 )}

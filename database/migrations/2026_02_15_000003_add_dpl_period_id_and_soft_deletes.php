@@ -7,15 +7,15 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Add dpl_period_id to kelompok_kkn and soft deletes to core tables.
+     * Add dpl_periode_id to kelompok_kkn and soft deletes to core tables.
      * Existing dpl_id is kept for backward compatibility during transition.
      */
     public function up(): void
     {
-        // 1. Add dpl_period_id to kelompok_kkn (alongside existing dpl_id)
+        // 1. Add dpl_periode_id to kelompok_kkn (alongside existing dpl_id)
         Schema::table('kelompok_kkn', function (Blueprint $table) {
-            $table->foreignId('dpl_period_id')->nullable()->after('dpl_id')
-                ->constrained('dpl_periods')->nullOnDelete();
+            $table->foreignId('dpl_periode_id')->nullable()->after('dpl_id')
+                ->constrained('dpl_periode')->nullOnDelete();
             $table->softDeletes();
         });
 
@@ -42,7 +42,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('kelompok_kkn', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('dpl_period_id');
+            $table->dropConstrainedForeignId('dpl_periode_id');
             $table->dropSoftDeletes();
         });
 

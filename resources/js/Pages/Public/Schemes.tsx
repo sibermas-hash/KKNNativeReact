@@ -33,17 +33,17 @@ export default function Schemes({ content }: Props) {
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="inline-flex items-center gap-3 px-5 py-2 bg-emerald-50 border border-gray-200 rounded-full"
+                            className="inline-flex items-center gap-3 px-5 py-2 bg-emerald-50 border border-emerald-50 rounded-full"
                         >
                             <Target size={16} className="text-[#1a7a4a]" />
-                            <span className="text-xs font-bold text-black uppercase tracking-widest">Program & Skema Pengabdian</span>
+                            <span className="text-xs font-bold text-emerald-950 uppercase tracking-widest">Program & Skema Pengabdian</span>
                         </motion.div>
                         
                         <motion.h1 
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-6xl lg:text-[100px] font-bold tracking-tighter text-black leading-[0.85] uppercase"
+                            className="text-6xl lg:text-[100px] font-bold tracking-tighter text-emerald-950 leading-[0.85] uppercase"
                         >
                             Opsi <br /> 
                             <span className="text-[#1a7a4a]   font-medium">intervensi.</span>
@@ -53,7 +53,7 @@ export default function Schemes({ content }: Props) {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="text-xl lg:text-3xl text-gray-900 font-bold max-w-2xl leading-relaxed  border-l-8 border-gray-1000 pl-12"
+                            className="text-xl lg:text-3xl text-emerald-950 font-bold max-w-2xl leading-relaxed  border-l-8 border-gray-1000 pl-12"
                         >
                             {content.intro}
                         </motion.p>
@@ -71,7 +71,7 @@ export default function Schemes({ content }: Props) {
                                     whileInView={{ opacity: 1, scale: 1 }}
                                     viewport={{ once: true }}
                                     transition={{ delay: i * 0.1 }}
-                                    className="group relative bg-white p-16 lg:p-20 rounded-[4rem] border border-gray-200/60 hover:border-gray-1000 transition-all hover:shadow-[0_80px_160px_rgba(0,0,0,0.06)] cursor-pointer"
+                                    className="group relative bg-white p-16 lg:p-20 rounded-[4rem] border border-emerald-50/60 hover:border-gray-1000 transition-all hover:shadow-[0_80px_160px_rgba(0,0,0,0.06)] cursor-pointer"
                                 >
                                     <div className="absolute top-0 right-0 p-12 opacity-[0.03] rotate-12 group-hover:rotate-0 transition-transform duration-700 pointer-events-none">
                                         <Icon size={240} />
@@ -86,10 +86,10 @@ export default function Schemes({ content }: Props) {
                                     </div>
 
                                     <div className="space-y-8 relative z-10">
-                                        <h4 className="text-4xl lg:text-5xl font-bold text-black uppercase tracking-tighter leading-none  group-hover:text-emerald-600 transition-colors">
+                                        <h4 className="text-4xl lg:text-5xl font-bold text-emerald-950 uppercase tracking-tighter leading-none  group-hover:text-emerald-600 transition-colors">
                                             {scheme.title}
                                         </h4>
-                                        <p className="text-gray-900 text-lg lg:text-xl font-bold leading-relaxed  opacity-80 line-clamp-3">
+                                        <p className="text-emerald-950 text-lg lg:text-xl font-bold leading-relaxed  opacity-80 line-clamp-3">
                                             {scheme.description}
                                         </p>
                                     </div>

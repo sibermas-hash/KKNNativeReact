@@ -17,10 +17,10 @@ class RegistrationHistory extends Model
 
     protected $fillable = [
         'peserta_kkn_id',
-        'from_period_id',
-        'to_period_id',
-        'from_group_id',
-        'to_group_id',
+        'from_periode_id',
+        'to_periode_id',
+        'from_kelompok_id',
+        'to_kelompok_id',
         'reason',
         'processed_by',
         'processed_at',
@@ -37,22 +37,22 @@ class RegistrationHistory extends Model
 
     public function fromPeriode(): BelongsTo
     {
-        return $this->belongsTo(Periode::class, 'from_period_id');
+        return $this->belongsTo(Periode::class, 'from_periode_id');
     }
 
     public function toPeriode(): BelongsTo
     {
-        return $this->belongsTo(Periode::class, 'to_period_id');
+        return $this->belongsTo(Periode::class, 'to_periode_id');
     }
 
     public function fromKelompok(): BelongsTo
     {
-        return $this->belongsTo(KelompokKkn::class, 'from_group_id');
+        return $this->belongsTo(KelompokKkn::class, 'from_kelompok_id');
     }
 
     public function toKelompok(): BelongsTo
     {
-        return $this->belongsTo(KelompokKkn::class, 'to_group_id');
+        return $this->belongsTo(KelompokKkn::class, 'to_kelompok_id');
     }
 
     public function processedBy(): BelongsTo

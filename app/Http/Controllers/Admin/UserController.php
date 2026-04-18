@@ -94,8 +94,8 @@ class UserController extends Controller
     {
         $filters = $request->only([
             'search',
-            'faculty_id',
-            'program_id',
+            'fakultas_id',
+            'prodi_id',
             'batch_year',
             'gender',
             'bta_ppi',
@@ -125,15 +125,15 @@ class UserController extends Controller
                         ->orWhereHas('prodi.fakultas', fn ($facultyQuery) => $facultyQuery->where('nama', 'like', "%{$s}%"));
                 });
             })
-            ->when($request->filled('faculty_id'), function ($query) use ($request) {
-                $facultyId = (int) $request->input('faculty_id');
+            ->when($request->filled('fakultas_id'), function ($query) use ($request) {
+                $facultyId = (int) $request->input('fakultas_id');
 
                 $query->where(function ($inner) use ($facultyId) {
-                    $inner->where('faculty_id', $facultyId)
-                        ->orWhereHas('prodi', fn ($programQuery) => $programQuery->where('faculty_id', $facultyId));
+                    $inner->where('fakultas_id', $facultyId)
+                        ->orWhereHas('prodi', fn ($programQuery) => $programQuery->where('fakultas_id', $facultyId));
                 });
             })
-            ->when($request->filled('program_id'), fn ($query) => $query->where('program_id', (int) $request->input('program_id')))
+            ->when($request->filled('prodi_id'), fn ($query) => $query->where('prodi_id', (int) $request->input('prodi_id')))
             ->when($request->filled('batch_year'), fn ($query) => $query->where('batch_year', (int) $request->input('batch_year')))
             ->when($request->filled('gender'), fn ($query) => $query->where('gender', $request->string('gender')->toString()))
             ->when($request->filled('bta_ppi'), function ($query) use ($request) {
@@ -228,10 +228,10 @@ class UserController extends Controller
                 ->map(fn (Fakultas $faculty) => ['id' => $faculty->id, 'name' => $faculty->nama]),
             'programs' => Prodi::query()
                 ->orderBy('nama')
-                ->get(['id', 'faculty_id', 'nama'])
+                ->get(['id', 'fakultas_id', 'nama'])
                 ->map(fn (Prodi $program) => [
                     'id' => $program->id,
-                    'faculty_id' => $program->faculty_id,
+                    'fakultas_id' => $program->fakultas_id,
                     'name' => $program->nama,
                 ]),
             'batchYears' => $batchYears,
@@ -258,7 +258,7 @@ class UserController extends Controller
             'prodi',
             'user.roles',
             'peserta.periode',
-            'peserta.kelompok.location',
+            'peserta.kelompok.lokasi',
         ]);
 
         $account = $mahasiswa->user;
@@ -353,8 +353,8 @@ class UserController extends Controller
             'role' => ['required', 'in:superadmin,faculty_admin,dpl,student'],
             // Student fields
             'nim' => ['required_if:role,student', 'nullable', 'string', 'max:20'],
-            'faculty_id' => ['required_if:role,student,dpl,faculty_admin', 'nullable', 'exists:fakultas,id'],
-            'program_id' => ['required_if:role,student', 'nullable', 'exists:prodi,id'],
+            'fakultas_id' => ['required_if:role,student,dpl,faculty_admin', 'nullable', 'exists:fakultas,id'],
+            'prodi_id' => ['required_if:role,student', 'nullable', 'exists:prodi,id'],
             'batch_year' => ['required_if:role,student', 'nullable', 'integer'],
             'gender' => ['required_if:role,student', 'nullable', 'in:L,P'],
             // Lecturer fields
@@ -373,7 +373,7 @@ class UserController extends Controller
             'password' => Hash::make($validated['password']),
             'is_active' => true,
             'must_change_password' => true, // Force change on first login
-            'faculty_id' => $validated['role'] === 'faculty_admin' ? $validated['faculty_id'] : null,
+            'fakultas_id' => $validated['role'] === 'faculty_admin' ? $validated['fakultas_id'] : null,
         ]);
 
         $user->assignRole($validated['role']);
@@ -383,8 +383,8 @@ class UserController extends Controller
                 'user_id' => $user->id,
                 'nim' => $validated['nim'],
                 'nama' => $validated['name'],
-                'faculty_id' => $validated['faculty_id'],
-                'program_id' => $validated['program_id'],
+                'fakultas_id' => $validated['fakultas_id'],
+                'prodi_id' => $validated['prodi_id'],
                 'batch_year' => $validated['batch_year'],
                 'gender' => $validated['gender'],
             ]);
@@ -398,7 +398,7 @@ class UserController extends Controller
                 'user_id' => $user->id,
                 'nip' => $validated['nip'],
                 'nama' => $validated['name'],
-                'faculty_id' => $validated['faculty_id'] ?? Fakultas::first()?->id,
+                'fakultas_id' => $validated['fakultas_id'] ?? Fakultas::first()?->id,
             ]);
         }
 

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('grading_configs', function (Blueprint $table) {
+        Schema::create('konfigurasi_penilaian', function (Blueprint $table) {
             $table->id();
             $table->string('config_key')->unique(); // e.g., weight_main_dpl
             $table->string('label'); // e.g., Bobot Nilai DPL
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('grading_configs');
+        Schema::dropIfExists('konfigurasi_penilaian');
     }
 };

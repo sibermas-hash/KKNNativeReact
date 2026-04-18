@@ -70,7 +70,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
     },
     approved: {
       bg: 'bg-emerald-50',
-      text: 'text-gray-700',
+      text: 'text-emerald-800',
       ring: 'ring-emerald-200/50',
       dot: 'bg-emerald-500',
     },
@@ -117,21 +117,21 @@ export default function DailyReportIndex({ reports, flash }: Props) {
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div className="space-y-8 max-w-2xl">
               <div className="flex items-center gap-4">
-                <div className="h-16 w-16 bg-emerald-100 rounded-xl flex items-center justify-center text-gray-700 shadow-sm">
+                <div className="h-16 w-16 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-800 shadow-sm">
                   <Activity size={32} strokeWidth={2.5} />
                 </div>
                 <div className="space-y-1">
                   <h4 className="text-sm font-bold text-emerald-600 uppercase tracking-wider text-xs font-semibold">
                     Section 01 / Operational Log
                   </h4>
-                  <h1 className="text-2xl md:text-2xl font-bold text-gray-900 tracking-tighter uppercase leading-[0.85]">
+                  <h1 className="text-2xl md:text-2xl font-bold text-emerald-950 tracking-tighter uppercase leading-[0.85]">
                     Jurnal <br /> <span className="text-emerald-600">Pengabdian.</span>
                   </h1>
                 </div>
               </div>
-              <p className="text-lg font-bold text-gray-900 tracking-tight leading-relaxed">
+              <p className="text-lg font-bold text-emerald-950 tracking-tight leading-relaxed">
                 Rekam jejak digital kontribusi Anda di masyarakat. <br />
-                <span className="text-gray-900">
+                <span className="text-emerald-950">
                   "Setiap tindakan adalah data, setiap data adalah dedikasi."
                 </span>
               </p>
@@ -163,7 +163,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
           ].map((sop, i) => (
             <div
               key={i}
-              className="bg-white p-10 rounded-[2.5rem] border border-gray-200/60 flex flex-col gap-6 shadow-sm hover:shadow-xl transition-all group overflow-hidden relative"
+              className="bg-white p-10 rounded-[2.5rem] border border-emerald-50/60 flex flex-col gap-6 shadow-sm hover:shadow-xl transition-all group overflow-hidden relative"
             >
               <div
                 className={`absolute top-0 right-0 h-40 w-40 bg-${sop.color}-50 rounded-full -mr-20 -mt-20 opacity-0 group-hover:opacity-100 transition-all duration-700 blur-2xl`}
@@ -179,7 +179,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                 >
                   {sop.label}
                 </p>
-                <p className="text-sm font-bold text-gray-900 leading-tight uppercase tracking-tight">
+                <p className="text-sm font-bold text-emerald-950 leading-tight uppercase tracking-tight">
                   {sop.desc}
                 </p>
               </div>
@@ -191,7 +191,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
         <div className="space-y-10">
           <div className="flex items-center justify-between px-4">
             <div className="flex items-center gap-4">
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider text-xs font-semibold">
+              <h3 className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold">
                 Audit Timeline
               </h3>
               <div className="h-px w-24 bg-emerald-50/60" />
@@ -221,10 +221,10 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                     {/* Date Column */}
                     <div className="lg:w-44 shrink-0 relative">
                       <div className="bg-white border-2 border-slate-50 rounded-xl p-6 lg:p-8 flex flex-col items-center justify-center shadow-sm group-hover:border-emerald-200 transition-all group-hover:shadow-xl group-hover:shadow-emerald-500/5 relative z-10">
-                        <span className="text-sm font-bold text-gray-900 uppercase tracking-wider text-xs font-semibold mb-2">
+                        <span className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold mb-2">
                           {new Date(report.date).toLocaleDateString('id-ID', { month: 'long' })}
                         </span>
-                        <span className="text-2xl font-bold text-gray-900 tracking-tighter leading-none">
+                        <span className="text-2xl font-bold text-emerald-950 tracking-tighter leading-none">
                           {new Date(report.date).getDate()}
                         </span>
                         <div className="mt-4 h-1.5 w-1.5 rounded-full bg-emerald-500 group-hover:scale-[3] transition-transform" />
@@ -259,12 +259,12 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                         </div>
 
                         <div className="space-y-4">
-                          <h4 className="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight leading-none group-hover:text-emerald-600 transition-colors uppercase">
+                          <h4 className="text-2xl lg:text-3xl font-bold text-emerald-950 tracking-tight leading-none group-hover:text-emerald-600 transition-colors uppercase">
                             {report.title}
                           </h4>
                           <div className="flex items-start gap-4">
                             <CornerDownRight size={20} className="text-slate-200 shrink-0 mt-1" />
-                            <p className="text-sm font-bold text-gray-900 leading-relaxed uppercase tracking-tight">
+                            <p className="text-sm font-bold text-emerald-950 leading-relaxed uppercase tracking-tight">
                               "{report.activity}"
                             </p>
                           </div>
@@ -272,7 +272,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
 
                         {/* AI SENSE: Automated Insight */}
                         {report.ai_analysis && (
-                          <div className="p-6 bg-emerald-50/30 rounded-3xl border border-gray-200/60 space-y-4 relative overflow-hidden">
+                          <div className="p-6 bg-emerald-50/30 rounded-3xl border border-emerald-50/60 space-y-4 relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-4 opacity-5">
                               <Activity size={64} />
                             </div>
@@ -280,7 +280,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                               <div className="h-8 w-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-emerald-200">
                                 <LayoutGrid size={16} strokeWidth={3} />
                               </div>
-                              <h5 className="text-sm font-bold text-gray-900 uppercase tracking-wider text-xs font-semibold">
+                              <h5 className="text-sm font-bold text-emerald-950 uppercase tracking-wider text-xs font-semibold">
                                 AI Intelligence Review
                               </h5>
                               <div className="ml-auto flex items-center gap-2">
@@ -288,7 +288,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                                   className={clsx(
                                     'px-2 py-1 rounded-md text-sm font-bold uppercase',
                                     report.ai_analysis.abcd_compliance >= 8
-                                      ? 'bg-emerald-100 text-gray-700'
+                                      ? 'bg-emerald-100 text-emerald-800'
                                       : 'bg-amber-100 text-amber-700',
                                   )}
                                 >
@@ -296,7 +296,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                                 </span>
                               </div>
                             </div>
-                            <p className="text-xs font-bold text-gray-900 leading-relaxed">
+                            <p className="text-xs font-bold text-emerald-950 leading-relaxed">
                               {report.ai_analysis.feedback}
                             </p>
                             <div className="flex flex-wrap gap-2 pt-1">
@@ -316,7 +316,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                           {report.status !== 'approved' && (
                             <Link
                               href={route('student.laporan-harian.edit', report.id)}
-                              className="h-14 px-8 rounded-2xl bg-emerald-50/30 border border-gray-200/60 text-gray-900 hover:bg-emerald-600 hover:text-white font-bold text-sm transition-all flex items-center gap-3 uppercase tracking-wider text-xs font-semibold"
+                              className="h-14 px-8 rounded-2xl bg-emerald-50/30 border border-emerald-50/60 text-emerald-950 hover:bg-emerald-600 hover:text-white font-bold text-sm transition-all flex items-center gap-3 uppercase tracking-wider text-xs font-semibold"
                             >
                               Review Detail <ChevronRight size={14} strokeWidth={3} />
                             </Link>
@@ -359,7 +359,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                               )}
                             </>
                           ) : (
-                            <div className="col-span-2 bg-emerald-50/30 rounded-2xl border-2 border-dashed border-gray-200/60 flex flex-col items-center justify-center text-slate-200 gap-3">
+                            <div className="col-span-2 bg-emerald-50/30 rounded-2xl border-2 border-dashed border-emerald-50/60 flex flex-col items-center justify-center text-slate-200 gap-3">
                               <Camera size={32} strokeWidth={1} />
                               <span className="text-sm font-bold font-semibold uppercase text-xs">
                                 No Media Asset
@@ -402,7 +402,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                 <h4 className="text-2xl font-bold tracking-tight uppercase">
                   Protocol: Location Discovery
                 </h4>
-                <p className="text-gray-900 font-bold leading-relaxed uppercase tracking-tight text-xs">
+                <p className="text-emerald-950 font-bold leading-relaxed uppercase tracking-tight text-xs">
                   Jika portal gagal mendeteksi koordinat, pastikan Browser mengizinkan akses lokasi
                   secara eksplisit (*Location Access: Explicitly Granted*).
                 </p>
@@ -441,7 +441,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                     'h-14 min-w-[56px] px-5 flex items-center justify-center rounded-2xl text-sm font-bold tracking-widest uppercase transition-all',
                     link.active
                       ? 'bg-emerald-600 text-white shadow-2xl shadow-emerald-200'
-                      : 'bg-white border border-gray-200/60 text-gray-900 hover:text-emerald-600 hover:border-emerald-200 shadow-sm',
+                      : 'bg-white border border-emerald-50/60 text-emerald-950 hover:text-emerald-600 hover:border-emerald-200 shadow-sm',
                   )}
                 />
               ))}

@@ -13,7 +13,7 @@ const VARIANTS = {
     warning: 'bg-amber-50 text-amber-700',
     danger: 'bg-rose-50 text-rose-700',
     info: 'bg-sky-50 text-sky-700',
-    gray: 'bg-gray-100 text-gray-700',
+    gray: 'bg-gray-100 text-emerald-800',
 };
 
 const ICONS = {

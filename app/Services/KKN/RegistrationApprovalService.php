@@ -86,7 +86,7 @@ class RegistrationApprovalService
                     ->whereIn('id', $batchIds)
                     ->where('status', 'pending')
                     ->when($isFacultyAdmin, function ($query) use ($facultyId) {
-                        $query->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
+                        $query->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
                     })
                     ->lockForUpdate()
                     ->get();
@@ -133,7 +133,7 @@ class RegistrationApprovalService
                     ->whereIn('id', $batchIds)
                     ->where('status', 'pending')
                     ->when($isFacultyAdmin, function ($query) use ($facultyId) {
-                        $query->whereHas('mahasiswa', fn ($q) => $q->where('faculty_id', $facultyId));
+                        $query->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
                     })
                     ->lockForUpdate()
                     ->get();
@@ -205,7 +205,7 @@ class RegistrationApprovalService
 
             $kelompok = KelompokKkn::query()
                 ->whereKey($kelompokId)
-                ->where('period_id', $registration->period_id)
+                ->where('periode_id', $registration->periode_id)
                 ->where('status', 'active')
                 ->lockForUpdate()
                 ->first();
@@ -345,7 +345,7 @@ class RegistrationApprovalService
         try {
             $group = $this->automaticGroupPlacementService->selectGroupForStudent(
                 $registration->mahasiswa,
-                (int) $registration->period_id,
+                (int) $registration->periode_id,
             );
         } catch (ValidationException $exception) {
             $message = collect($exception->errors())->flatten()->first()
@@ -374,7 +374,7 @@ class RegistrationApprovalService
 
         $kelompok = KelompokKkn::query()
             ->whereKey($registration->kelompok_id)
-            ->where('period_id', $registration->period_id)
+            ->where('periode_id', $registration->periode_id)
             ->where('status', 'active')
             ->lockForUpdate()
             ->first();

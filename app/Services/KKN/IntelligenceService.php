@@ -38,7 +38,7 @@ class IntelligenceService
 
         if ($facultyId) {
             $query->whereHas('mahasiswa', function ($q) use ($facultyId) {
-                $q->where('faculty_id', $facultyId);
+                $q->where('fakultas_id', $facultyId);
             });
         }
 

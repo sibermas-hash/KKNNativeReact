@@ -146,24 +146,24 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
 
       <div className="max-w-7xl mx-auto space-y-6 sm:px-6 lg:px-8 font-sans pb-12">
         {/* HEADER SECTION */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-gray-200 pt-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-emerald-50 pt-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <Settings size={16} className="text-[#1a7a4a]" />
-              <span className="text-sm font-medium text-gray-700">Manajemen Sistem</span>
+              <span className="text-sm font-medium text-emerald-800">Manajemen Sistem</span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 leading-tight">Pengaturan & Monitor AI</h1>
-            <p className="text-sm text-gray-700 max-w-2xl mt-1">
+            <h1 className="text-2xl font-bold text-emerald-950 leading-tight">Pengaturan & Monitor AI</h1>
+            <p className="text-sm text-emerald-800 max-w-2xl mt-1">
               Pusat kendali parameter operasional KKN dan pemantauan intelegensi buatan secara real-time.
             </p>
           </div>
 
           <div className="flex items-center gap-4 shrink-0">
-            <div className="px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm flex items-center gap-3">
+            <div className="px-4 py-2 bg-white border border-emerald-50 rounded-lg shadow-sm flex items-center gap-3">
               <Database size={18} className="text-[#1a7a4a]" />
               <div className="flex flex-col">
-                <span className="text-xs font-medium text-gray-700">Konfigurasi</span>
-                <span className="text-sm font-semibold text-gray-900">{flattened.length} Data</span>
+                <span className="text-xs font-medium text-emerald-800">Konfigurasi</span>
+                <span className="text-sm font-semibold text-emerald-950">{flattened.length} Data</span>
               </div>
             </div>
             <div className={clsx(
@@ -172,7 +172,7 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
             )}>
               <Cpu size={18} className={ai_status?.is_healthy ? "text-[#16a34a]" : "text-red-600"} />
               <div className="flex flex-col">
-                <span className="text-xs font-medium text-gray-700">Status AI</span>
+                <span className="text-xs font-medium text-emerald-800">Status AI</span>
                 <span className={clsx("text-sm font-semibold", ai_status?.is_healthy ? "text-[#15803d]" : "text-red-700")}>
                   {ai_status?.is_healthy ? 'Online' : 'Offline'}
                 </span>
@@ -182,14 +182,14 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
         </div>
 
         {/* TABS */}
-        <div className="inline-flex items-center p-1 bg-gray-100 rounded-xl border border-gray-200 mb-2">
+        <div className="inline-flex items-center p-1 bg-gray-100 rounded-xl border border-emerald-50 mb-2">
           <button
             onClick={() => setActiveTab('settings')}
             className={clsx(
               "px-6 py-2.5 text-sm font-bold rounded-lg transition-all flex items-center gap-2",
               activeTab === 'settings' 
                 ? "bg-white text-[#1a7a4a] shadow-sm ring-1 ring-gray-900/5" 
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
+                : "text-emerald-800 hover:text-emerald-950 hover:bg-gray-200/50"
             )}
           >
             <Settings size={16} />
@@ -201,7 +201,7 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
               "px-6 py-2.5 text-sm font-bold rounded-lg transition-all flex items-center gap-2",
               activeTab === 'ai' 
                 ? "bg-white text-[#1a7a4a] shadow-sm ring-1 ring-gray-900/5" 
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
+                : "text-emerald-800 hover:text-emerald-950 hover:bg-gray-200/50"
             )}
           >
             <Cpu size={16} />
@@ -223,19 +223,19 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
               {Object.entries(settings || {}).filter(([g]) => g !== 'ai_settings').map(([group, items]) => {
                 const GroupIcon = GROUP_ICONS[group] || Layers;
                 return (
-                  <div key={group} className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                    <div className="px-6 py-5 border-b border-gray-200 bg-gray-50 flex flex-col md:flex-row md:items-center gap-4">
+                  <div key={group} className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
+                    <div className="px-6 py-5 border-b border-emerald-50 bg-gray-50 flex flex-col md:flex-row md:items-center gap-4">
                       <div className="flex items-center gap-3 w-full md:w-1/3 shrink-0">
-                        <div className="h-10 w-10 bg-white border border-gray-200 text-gray-700 rounded flex items-center justify-center shadow-sm">
+                        <div className="h-10 w-10 bg-white border border-emerald-50 text-emerald-800 rounded flex items-center justify-center shadow-sm">
                           <GroupIcon size={20} />
                         </div>
                         <div>
-                          <h3 className="text-base font-semibold text-gray-900">{GROUP_TITLES[group] ?? group.toUpperCase()}</h3>
-                          <p className="text-xs text-gray-700 hidden md:block mt-0.5">{items.length} pengaturan</p>
+                          <h3 className="text-base font-semibold text-emerald-950">{GROUP_TITLES[group] ?? group.toUpperCase()}</h3>
+                          <p className="text-xs text-emerald-800 hidden md:block mt-0.5">{items.length} pengaturan</p>
                         </div>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-700">{GROUP_DESCRIPTIONS[group]}</p>
+                        <p className="text-sm text-emerald-800">{GROUP_DESCRIPTIONS[group]}</p>
                       </div>
                     </div>
 
@@ -247,8 +247,8 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
                         return (
                           <div key={setting.id} className={clsx('space-y-2', isLongText && 'md:col-span-2')}>
                             <div className="flex items-center justify-between">
-                              <label className="text-sm font-medium text-gray-700">{LABEL_OVERRIDE[setting.config_key] || setting.label}</label>
-                              <code className="text-xs text-gray-600 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-200">{setting.config_key}</code>
+                              <label className="text-sm font-medium text-emerald-800">{LABEL_OVERRIDE[setting.config_key] || setting.label}</label>
+                              <code className="text-xs text-emerald-800 bg-gray-50 px-1.5 py-0.5 rounded border border-emerald-50">{setting.config_key}</code>
                             </div>
 
                             <div className="relative">
@@ -257,7 +257,7 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
                                   value={getValue(setting.id)}
                                   onChange={(event) => updateValue(setting.id, event.target.value)}
                                   rows={4}
-                                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-[#1a7a4a] focus:ring-[#1a7a4a] sm:text-sm text-gray-900"
+                                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-[#1a7a4a] focus:ring-[#1a7a4a] sm:text-sm text-emerald-950"
                                 />
                               ) : (
                                 <div className="relative">
@@ -267,12 +267,12 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
                                     onChange={(event) => updateValue(setting.id, event.target.value)}
                                     className={clsx(
                                       'w-full rounded-md shadow-sm sm:text-sm',
-                                      getError(setting.id) ? 'border-rose-300 text-rose-900 focus:ring-rose-500 focus:border-rose-500' : 'border-gray-300 text-gray-900 focus:ring-[#1a7a4a] focus:border-[#1a7a4a]',
+                                      getError(setting.id) ? 'border-rose-300 text-rose-900 focus:ring-rose-500 focus:border-rose-500' : 'border-gray-300 text-emerald-950 focus:ring-[#1a7a4a] focus:border-[#1a7a4a]',
                                       isSecret && 'pr-10 font-mono '
                                     )}
                                   />
                                   {isSecret && (
-                                    <button type="button" onClick={() => setVisiblePasswords((prev) => ({ ...prev, [setting.id]: !prev[setting.id] }))} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-600 hover:text-gray-700 rounded">
+                                    <button type="button" onClick={() => setVisiblePasswords((prev) => ({ ...prev, [setting.id]: !prev[setting.id] }))} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-emerald-800 hover:text-emerald-800 rounded">
                                       {visiblePasswords[setting.id] ? <EyeOff size={16} /> : <Eye size={16} />}
                                     </button>
                                   )}
@@ -282,8 +282,8 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
 
                             {SETTING_HELPERS[setting.config_key] && (
                               <div className="flex gap-1.5 items-start mt-1">
-                                <Info size={14} className="text-gray-600 shrink-0 mt-0.5" />
-                                <p className="text-xs text-gray-700">{SETTING_HELPERS[setting.config_key]}</p>
+                                <Info size={14} className="text-emerald-800 shrink-0 mt-0.5" />
+                                <p className="text-xs text-emerald-800">{SETTING_HELPERS[setting.config_key]}</p>
                               </div>
                             )}
 
@@ -296,10 +296,10 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
                 );
               })}
 
-              <div className="bg-gray-50 border-t border-gray-200 px-6 py-4 flex items-center justify-between rounded-xl">
+              <div className="bg-gray-50 border-t border-emerald-50 px-6 py-4 flex items-center justify-between rounded-xl">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Perhatikan Perubahan</p>
-                  <p className="text-xs text-gray-700">Perubahan pengaturan dapat memengaruhi alur sistem yang sedang berjalan secara langsung.</p>
+                  <p className="text-sm font-medium text-emerald-950">Perhatikan Perubahan</p>
+                  <p className="text-xs text-emerald-800">Perubahan pengaturan dapat memengaruhi alur sistem yang sedang berjalan secara langsung.</p>
                 </div>
                 <button type="submit" disabled={form.processing} className="inline-flex items-center gap-2 justify-center rounded-md border border-transparent bg-[#16a34a] px-6 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-[#15803d] focus:outline-none focus:ring-2 focus:ring-[#1a7a4a] focus:ring-offset-2 disabled:opacity-50 transition-colors">
                   {form.processing ? <RefreshCw size={16} className="animate-spin" /> : <Save size={16} />}
@@ -320,19 +320,19 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
             </div>
 
             {/* AI CONFIGURATION FORM (Injected via PRD) */}
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-              <div className="px-6 py-5 border-b border-gray-200 bg-gray-50 flex flex-col md:flex-row md:items-center gap-4">
+            <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
+              <div className="px-6 py-5 border-b border-emerald-50 bg-gray-50 flex flex-col md:flex-row md:items-center gap-4">
                 <div className="flex items-center gap-3 w-full md:w-1/3 shrink-0">
-                  <div className="h-10 w-10 bg-white border border-gray-200 text-gray-700 rounded flex items-center justify-center shadow-sm">
+                  <div className="h-10 w-10 bg-white border border-emerald-50 text-emerald-800 rounded flex items-center justify-center shadow-sm">
                     <Cpu size={20} />
                   </div>
                   <div>
-                    <h3 className="text-base font-semibold text-gray-900">Kecerdasan Buatan (AI)</h3>
-                    <p className="text-xs text-gray-700 hidden md:block mt-0.5">Pengaturan Koneksi AI</p>
+                    <h3 className="text-base font-semibold text-emerald-950">Kecerdasan Buatan (AI)</h3>
+                    <p className="text-xs text-emerald-800 hidden md:block mt-0.5">Pengaturan Koneksi AI</p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-700">Atur sambungan ke sistem AI Google Gemini untuk membantu pengecekan dan memandu mahasiswa secara otomatis.</p>
+                  <p className="text-sm text-emerald-800">Atur sambungan ke sistem AI Google Gemini untuk membantu pengecekan dan memandu mahasiswa secara otomatis.</p>
                 </div>
               </div>
               <div className="p-6 space-y-6">
@@ -372,14 +372,14 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
 
 function MetricCard({ label, value, icon: Icon, desc }: { label: string; value: string; icon: LucideIcon; desc: string }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex items-start gap-4">
+    <div className="bg-white border border-emerald-50 rounded-xl p-5 shadow-sm flex items-start gap-4">
       <div className="h-10 w-10 rounded-lg bg-gray-50 text-[#1a7a4a] flex items-center justify-center shrink-0">
         <Icon size={20} />
       </div>
       <div>
-        <p className="text-xs font-medium text-gray-700 mb-0.5">{label}</p>
-        <p className="text-xl font-bold text-gray-900">{value}</p>
-        <p className="text-xs text-gray-700 mt-1">{desc}</p>
+        <p className="text-xs font-medium text-emerald-800 mb-0.5">{label}</p>
+        <p className="text-xl font-bold text-emerald-950">{value}</p>
+        <p className="text-xs text-emerald-800 mt-1">{desc}</p>
       </div>
     </div>
   );
@@ -387,17 +387,17 @@ function MetricCard({ label, value, icon: Icon, desc }: { label: string; value: 
 
 function MetricCore({ icon: Icon, label, value, desc }: { icon: any, label: string, value: string | number, desc: string }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col justify-between hover:shadow-md transition-all group relative overflow-hidden">
+    <div className="bg-white border border-emerald-50 rounded-xl p-6 flex flex-col justify-between hover:shadow-md transition-all group relative overflow-hidden">
       <div className="flex justify-between items-start relative z-10">
         <div className="h-12 w-12 bg-[#e8f5ee] text-[#1a7a4a] rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 mb-4">
           <Icon size={24} strokeWidth={2.5} />
         </div>
       </div>
       <div className="space-y-1.5 relative z-10">
-        <p className="text-3xl font-extrabold text-gray-900 truncate tracking-tight leading-none">{value}</p>
+        <p className="text-3xl font-extrabold text-emerald-950 truncate tracking-tight leading-none">{value}</p>
         <div className="flex flex-col">
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{label}</span>
-          <span className="text-sm font-medium text-gray-600 truncate mt-0.5">{desc}</span>
+          <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">{label}</span>
+          <span className="text-sm font-medium text-emerald-800 truncate mt-0.5">{desc}</span>
         </div>
       </div>
     </div>
@@ -406,8 +406,8 @@ function MetricCore({ icon: Icon, label, value, desc }: { icon: any, label: stri
 
 function ProtocolNode({ label, active }: { label: string, active: boolean }) {
   return (
-    <div className="flex items-center justify-between p-3.5 bg-white rounded-lg border border-gray-200 transition-colors hover:border-gray-300 hover:bg-gray-50 group">
-      <span className="text-[13px] font-bold text-gray-700 truncate mr-3">{label}</span>
+    <div className="flex items-center justify-between p-3.5 bg-white rounded-lg border border-emerald-50 transition-colors hover:border-gray-300 hover:bg-gray-50 group">
+      <span className="text-[13px] font-bold text-emerald-800 truncate mr-3">{label}</span>
       <div className="flex items-center gap-2 shrink-0 bg-gray-100 px-2 py-1 rounded-md">
         {active ? (
           <>
@@ -415,12 +415,12 @@ function ProtocolNode({ label, active }: { label: string, active: boolean }) {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#16a34a] opacity-75"></span>
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#15803d]"></span>
             </div>
-            <span className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Aman</span>
+            <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Aman</span>
           </>
         ) : (
           <>
             <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
-            <span className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Offline</span>
+            <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Offline</span>
           </>
         )}
       </div>

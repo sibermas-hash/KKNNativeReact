@@ -23,8 +23,8 @@ return new class extends Migration
         });
 
         // MIGRATE EXISTING DATA: Move data from kelompok_kkn.dpl_id to new pivot table
-        $groups = DB::table('kelompok_kkn')->whereNotNull('dpl_id')->get();
-        foreach ($groups as $group) {
+        $kelompok_kkn = DB::table('kelompok_kkn')->whereNotNull('dpl_id')->get();
+        foreach ($kelompok_kkn as $group) {
             DB::table('dpl_kelompok')->insert([
                 'kelompok_kkn_id' => $group->id,
                 'dosen_id' => $group->dpl_id,

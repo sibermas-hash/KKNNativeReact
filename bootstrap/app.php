@@ -10,13 +10,16 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\KknThrottleMiddleware;
 use App\Http\Middleware\RestrictDebugbarAccess;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\TestAutoLogin;
 use App\Http\Middleware\ValidateApiKey;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use Inertia\Inertia;
+use Spatie\Permission\Exceptions\UnauthorizedException;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
@@ -58,7 +61,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->prepend([
-            \App\Http\Middleware\TestAutoLogin::class,
+            TestAutoLogin::class,
         ]);
 
         $middleware->web(append: [
@@ -99,11 +102,11 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
         */
-        
-        $exceptions->render(function (\Spatie\Permission\Exceptions\UnauthorizedException $e, $request) {
+
+        $exceptions->render(function (UnauthorizedException $e, $request) {
             if ($request->expectsJson() || $request->is('api/*') || $request->header('Accept') === 'application/json') {
                 return response()->json([
-                    'message' => 'Forbidden: You do not have permission. ' . $e->getMessage()
+                    'message' => 'Forbidden: You do not have permission. '.$e->getMessage(),
                 ], 403);
             }
         });
@@ -113,7 +116,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return $response; // Let Laravel handle JSON status codes naturally
             }
 
-            if ($response instanceof \Illuminate\Http\Response || $response instanceof \Illuminate\Http\JsonResponse) {
+            if ($response instanceof Response || $response instanceof JsonResponse) {
                 $status = $response->getStatusCode();
 
                 if (in_array($status, [500, 503, 404, 403])) {

@@ -150,7 +150,7 @@ class DplAssignmentController extends Controller
                 'name' => $assignment->district_name,
             ],
             'dpl_period' => [
-                'id' => $assignment->dpl_period_id,
+                'id' => $assignment->dpl_periode_id,
                 'dosen' => [
                     'nama' => $assignment->dosen?->nama ?? '-',
                 ],
@@ -160,9 +160,9 @@ class DplAssignmentController extends Controller
         return Inertia::render('Admin/Operational/Dpl/Assignment', [
             'assignments' => $assignmentsPaginated->getCollection()->map(fn (DplPeriod $assignment) => [
                 'id' => $assignment->id,
-                'max_groups' => $assignment->max_groups,
+                'max_kelompok_kkn' => $assignment->max_kelompok_kkn,
                 'current_groups' => $assignment->kelompok_count,
-                'remaining_slots' => max(0, $assignment->max_groups - $assignment->kelompok_count),
+                'remaining_slots' => max(0, $assignment->max_kelompok_kkn - $assignment->kelompok_count),
                 'is_active' => (bool) $assignment->is_active,
                 'dosen' => [
                     'id' => $assignment->dosen?->id,
@@ -187,7 +187,7 @@ class DplAssignmentController extends Controller
                 'name' => $group->nama_kelompok,
                 'code' => $group->code,
                 'status' => $group->status,
-                'dpl_period_id' => $group->dpl_period_id,
+                'dpl_periode_id' => $group->dpl_periode_id,
                 'period' => [
                     'id' => $group->periode?->id,
                     'name' => $group->periode?->name ?? '-',
@@ -255,8 +255,8 @@ class DplAssignmentController extends Controller
             'summary' => Inertia::defer(fn () => [
                 'active_assignments' => $assignmentsPaginated->total(),
                 'groups_total' => $groupsPaginated->total(),
-                'groups_without_dpl' => Cache::remember('dpl_summary_groups_without_dpl', 60, fn () => KelompokKkn::query()->whereNull('dpl_period_id')->count()),
-                'active_groups_without_dpl' => Cache::remember('dpl_summary_active_groups_without_dpl', 60, fn () => KelompokKkn::query()->where('status', 'active')->whereNull('dpl_period_id')->count()),
+                'groups_without_dpl' => Cache::remember('dpl_summary_groups_without_dpl', 60, fn () => KelompokKkn::query()->whereNull('dpl_periode_id')->count()),
+                'active_groups_without_dpl' => Cache::remember('dpl_summary_active_groups_without_dpl', 60, fn () => KelompokKkn::query()->where('status', 'active')->whereNull('dpl_periode_id')->count()),
                 'district_coordinators' => $districtCoordinatorsPaginated->total(),
             ]),
         ]);
@@ -268,13 +268,13 @@ class DplAssignmentController extends Controller
 
         $validated = $request->validate([
             'dosen_id' => 'required|exists:dosen,id',
-            'period_id' => 'required|exists:periode,id',
-            'max_groups' => 'integer|min:1|max:20',
+            'periode_id' => 'required|exists:periode,id',
+            'max_kelompok_kkn' => 'integer|min:1|max:20',
         ]);
 
         $dosen = Dosen::query()->findOrFail($validated['dosen_id']);
-        $period = Periode::query()->findOrFail($validated['period_id']);
-        $activation = $this->assignmentService->activateForPeriod($dosen, $period, (int) ($validated['max_groups'] ?? 5));
+        $period = Periode::query()->findOrFail($validated['periode_id']);
+        $activation = $this->assignmentService->activateForPeriod($dosen, $period, (int) ($validated['max_kelompok_kkn'] ?? 5));
 
         $message = "DPL {$dosen->nama} berhasil diaktifkan pada periode {$period->name}.";
         if ($activation['provisioning']['temp_password']) {
@@ -289,12 +289,12 @@ class DplAssignmentController extends Controller
         Gate::authorize('manageDplAssignment');
 
         $validated = $request->validate([
-            'dpl_period_id' => 'required|exists:dpl_periods,id',
+            'dpl_periode_id' => 'required|exists:dpl_periode,id',
         ]);
 
-        $dplPeriod = DplPeriod::with('dosen')->findOrFail($validated['dpl_period_id']);
+        $dplPeriod = DplPeriod::with('dosen')->findOrFail($validated['dpl_periode_id']);
 
-        if ($group->dpl_period_id === $dplPeriod->id) {
+        if ($group->dpl_periode_id === $dplPeriod->id) {
             return back()->with('info', "Kelompok {$group->nama_kelompok} sudah ditugaskan kepada DPL {$dplPeriod->dosen->nama}. Tidak ada perubahan.");
         }
 
@@ -312,28 +312,28 @@ class DplAssignmentController extends Controller
         Gate::authorize('manageDplAssignment');
 
         $validated = $request->validate([
-            'dpl_period_id' => 'nullable|exists:dpl_periods,id',
+            'dpl_periode_id' => 'nullable|exists:dpl_periode,id',
             'dosen_id' => 'nullable|exists:dosen,id',
-            'period_id' => 'nullable|exists:periode,id',
+            'periode_id' => 'nullable|exists:periode,id',
             'district_id' => 'required|string',
-            'max_groups' => 'nullable|integer|min:1|max:20',
+            'max_kelompok_kkn' => 'nullable|integer|min:1|max:20',
         ]);
 
         try {
-            if (! empty($validated['dpl_period_id'])) {
-                $dplPeriod = DplPeriod::query()->with(['dosen', 'periode'])->findOrFail($validated['dpl_period_id']);
+            if (! empty($validated['dpl_periode_id'])) {
+                $dplPeriod = DplPeriod::query()->with(['dosen', 'periode'])->findOrFail($validated['dpl_periode_id']);
                 $dosen = $dplPeriod->dosen;
                 $period = $dplPeriod->periode;
             } else {
                 $dosen = Dosen::query()->findOrFail($validated['dosen_id']);
-                $period = Periode::query()->findOrFail($validated['period_id']);
+                $period = Periode::query()->findOrFail($validated['periode_id']);
             }
 
             $activation = $this->assignmentService->assignDistrictCoordinator(
                 $dosen,
                 $period,
                 $validated['district_id'],
-                (int) ($validated['max_groups'] ?? 5)
+                (int) ($validated['max_kelompok_kkn'] ?? 5)
             );
 
             $message = 'Koordinator DPL untuk kecamatan berhasil ditetapkan.';
@@ -398,7 +398,7 @@ class DplAssignmentController extends Controller
 
         $dplList = Dosen::availableForPeriod($periodId)
             ->with(['dplPeriods' => function ($q) use ($periodId) {
-                $q->where('period_id', $periodId)
+                $q->where('periode_id', $periodId)
                     ->withCount('kelompok');
             }])
             ->get()
@@ -409,10 +409,10 @@ class DplAssignmentController extends Controller
                     'id' => $dosen->id,
                     'nama' => $dosen->nama,
                     'nip' => $dosen->nip,
-                    'dpl_period_id' => $dplPeriod?->id,
-                    'max_groups' => $dplPeriod?->max_groups,
+                    'dpl_periode_id' => $dplPeriod?->id,
+                    'max_kelompok_kkn' => $dplPeriod?->max_kelompok_kkn,
                     'current_groups' => $dplPeriod?->kelompok_count ?? 0,
-                    'remaining_slots' => $dplPeriod ? max(0, $dplPeriod->max_groups - $dplPeriod->kelompok_count) : 0,
+                    'remaining_slots' => $dplPeriod ? max(0, $dplPeriod->max_kelompok_kkn - $dplPeriod->kelompok_count) : 0,
                 ];
             });
 

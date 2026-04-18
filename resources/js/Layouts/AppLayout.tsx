@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, createContext, useContext, useMemo, useRef } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import type { User } from '@/types';
 import { Menu, Power } from 'lucide-react';
@@ -31,17 +31,41 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dynamicTitle, setDynamicTitle] = useState(title || '');
   const toast = useToast();
+  const shownMessagesRef = useRef(new Set<string>());
 
   // Memeriksa apakah komponen ini dirender di dalam AppLayout lain
   const parentLayout = useLayout();
 
-  // Handle flash messages globally
+  // Handle flash messages globally - hanya tampilkan sekali per unique message
   useEffect(() => {
-    if (flash?.success) toast.success(flash.success);
-    if (flash?.error) toast.error(flash.error);
-    if (flash?.warning) toast.warning(flash.warning);
-    if (flash?.info) toast.info(flash.info);
-  }, [flash, toast]);
+    if (parentLayout.insideLayout) return; // Hanya jalankan di layout terluar
+
+    // Buat unique key untuk tracking messages yang sudah ditampilkan
+    const showFlashMessage = (type: 'success' | 'error' | 'warning' | 'info', message: string | undefined) => {
+      if (!message) return;
+      
+      // Gunakan message + timestamp untuk membuat unique key
+      const messageKey = `${type}:${message}`;
+      
+      // Hanya tampilkan jika belum pernah ditampilkan sebelumnya
+      if (!shownMessagesRef.current.has(messageKey)) {
+        shownMessagesRef.current.add(messageKey);
+        toast[type](message);
+      }
+    };
+
+    showFlashMessage('success', flash?.success);
+    showFlashMessage('error', flash?.error);
+    showFlashMessage('warning', flash?.warning);
+    showFlashMessage('info', flash?.info);
+  }, [flash?.success, flash?.error, flash?.warning, flash?.info, parentLayout.insideLayout, toast]);
+
+  // Clear shown messages ketika semua flash messages kosong (page baru/navigasi)
+  useEffect(() => {
+    if (!flash?.success && !flash?.error && !flash?.warning && !flash?.info) {
+      shownMessagesRef.current.clear();
+    }
+  }, [flash?.success, flash?.error, flash?.warning, flash?.info]);
 
   // Sinkronisasi judul jika title prop berubah
   useEffect(() => {
@@ -67,8 +91,10 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
     });
   };
 
+  const layoutContextValue = useMemo(() => ({ insideLayout: true, setTitle: setDynamicTitle }), []);
+
   return (
-    <LayoutContext.Provider value={{ insideLayout: true, setTitle: setDynamicTitle }}>
+    <LayoutContext.Provider value={layoutContextValue}>
       <div className="min-h-screen bg-white font-sans">
         <Head>
           <title>{displayTitle ? `${displayTitle} | KKN UIN SAIZU` : 'SIM-KKN UIN SAIZU'}</title>
@@ -78,23 +104,23 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
 
         <div className="lg:pl-60 flex flex-col min-h-screen transition-all duration-300 w-full overflow-x-hidden">
           {/* TOP HEADER BAR */}
-          <header className="sticky top-0 z-40 h-14 bg-white border-b border-gray-200 px-6 sm:px-8 flex items-center justify-between">
+          <header className="sticky top-0 z-40 h-14 bg-white border-b border-emerald-50 px-6 sm:px-8 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg lg:hidden transition-colors"
+                className="p-2 text-emerald-800 hover:bg-gray-50 rounded-lg lg:hidden transition-colors"
                 aria-label="Buka Menu"
               >
                 <Menu className="h-5 w-5" strokeWidth={2} />
               </button>
 
-              <h2 className="text-lg font-bold text-gray-900">{displayTitle}</h2>
+              <h2 className="text-lg font-bold text-emerald-950">{displayTitle}</h2>
             </div>
 
             <div className="flex items-center gap-4">
               <div className="hidden sm:flex flex-col items-end text-right">
-                <span className="text-sm font-bold text-gray-900">{auth?.user?.name}</span>
-                <span className="text-xs font-medium text-gray-700 uppercase">Administrator</span>
+                <span className="text-sm font-bold text-emerald-950">{auth?.user?.name}</span>
+                <span className="text-xs font-bold text-emerald-600 uppercase">Portal Pengabdian</span>
               </div>
 
               <button

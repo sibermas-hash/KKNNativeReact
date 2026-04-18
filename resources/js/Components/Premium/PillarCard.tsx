@@ -13,7 +13,7 @@ export function PillarCard({ icon: Icon, title, desc, className }: PillarCardPro
     return (
         <div 
             className={clsx(
-                "bg-white border border-gray-200 rounded-xl p-6 space-y-4 hover:border-gray-300 transition-all duration-200 group",
+                "bg-white border border-emerald-50 rounded-xl p-6 space-y-4 hover:border-gray-300 transition-all duration-200 group",
                 className
             )}
         >
@@ -21,8 +21,8 @@ export function PillarCard({ icon: Icon, title, desc, className }: PillarCardPro
                 <Icon size={24} strokeWidth={2} />
              </div>
              <div className="space-y-2">
-                <h3 className="text-base font-bold text-gray-900 leading-tight">{title}</h3>
-                <p className="text-sm text-gray-700 leading-relaxed">
+                <h3 className="text-base font-bold text-emerald-950 leading-tight">{title}</h3>
+                <p className="text-sm text-emerald-800 leading-relaxed">
                     {desc}
                 </p>
              </div>

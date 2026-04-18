@@ -24,12 +24,12 @@ class ProgramKerjaController extends Controller
 
         $user = auth()->user();
         $isFacultyAdmin = $user?->hasRole('faculty_admin');
-        $facultyId = $isFacultyAdmin ? $user?->faculty_id : null;
+        $facultyId = $isFacultyAdmin ? $user?->fakultas_id : null;
 
         $query = ProgramKerja::query()
             ->when($status, fn ($q) => $q->where('status', $status))
             ->when($facultyId, function ($query, $id) {
-                $query->whereHas('kelompok.peserta.mahasiswa', fn ($q) => $q->where('faculty_id', $id));
+                $query->whereHas('kelompok.peserta.mahasiswa', fn ($q) => $q->where('fakultas_id', $id));
             });
 
         $workPrograms = $query->with(['kelompok.lokasi'])

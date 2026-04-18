@@ -16,7 +16,7 @@ class DispensasiKkn extends Model
 
     protected $fillable = [
         'nim',
-        'period_id',
+        'periode_id',
         'alasan',
         'bypassed_requirements',
         'granted_by',
@@ -30,7 +30,7 @@ class DispensasiKkn extends Model
 
     public function periode(): BelongsTo
     {
-        return $this->belongsTo(Periode::class, 'period_id');
+        return $this->belongsTo(Periode::class, 'periode_id');
     }
 
     public function grantedByUser(): BelongsTo
@@ -47,7 +47,7 @@ class DispensasiKkn extends Model
 
         if ($periodId) {
             $query->where(function ($q) use ($periodId) {
-                $q->where('period_id', $periodId)->orWhereNull('period_id');
+                $q->where('periode_id', $periodId)->orWhereNull('periode_id');
             });
         }
 
@@ -63,7 +63,7 @@ class DispensasiKkn extends Model
 
         if ($periodId) {
             $query->where(function ($q) use ($periodId) {
-                $q->where('period_id', $periodId)->orWhereNull('period_id');
+                $q->where('periode_id', $periodId)->orWhereNull('periode_id');
             });
         }
 

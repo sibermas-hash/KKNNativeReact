@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Models\KKN;
 
 use App\Models\User;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,8 +24,8 @@ class Mahasiswa extends Model
         'nik',
         'nama',
         'mother_name',
-        'faculty_id',
-        'program_id',
+        'fakultas_id',
+        'prodi_id',
         'batch_year',
         'sks_completed',
         'total_sks',
@@ -66,12 +65,12 @@ class Mahasiswa extends Model
 
     public function fakultas(): BelongsTo
     {
-        return $this->belongsTo(Fakultas::class, 'faculty_id');
+        return $this->belongsTo(Fakultas::class, 'fakultas_id');
     }
 
     public function prodi(): BelongsTo
     {
-        return $this->belongsTo(Prodi::class, 'program_id');
+        return $this->belongsTo(Prodi::class, 'prodi_id');
     }
 
     public function peserta(): HasMany

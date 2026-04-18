@@ -59,14 +59,14 @@ export default function Locations({ locations, filters }: Props) {
                         animate={{ opacity: 1, y: 0 }}
                         className="space-y-6 max-w-4xl mx-auto"
                     >
-                         <span className="inline-flex rounded-full border border-gray-1000/20 bg-emerald-50 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-gray-700 shadow-sm">
+                         <span className="inline-flex rounded-full border border-gray-1000/20 bg-emerald-50 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-emerald-800 shadow-sm">
                             Peta lokasi penempatan
                         </span>
-                        <h1 className="text-5xl lg:text-7xl font-bold tracking-tighter text-black leading-[1.1]">
+                        <h1 className="text-5xl lg:text-7xl font-bold tracking-tighter text-emerald-950 leading-[1.1]">
                             <span className="font-serif  font-normal text-emerald-600 block mb-2">Cari Lokasi</span>
-                            Penempatan KKN <span className="text-gray-900">&</span> Pengabdian.
+                            Penempatan KKN <span className="text-emerald-950">&</span> Pengabdian.
                         </h1>
-                        <p className="text-xl text-gray-900 font-medium leading-relaxed max-w-2xl mx-auto">
+                        <p className="text-xl text-emerald-950 font-medium leading-relaxed max-w-2xl mx-auto">
                             Temukan wilayah mitra pengabdian masyarakat UIN SAIZU di berbagai daerah dengan data unit terintegrasi.
                         </p>
                     </motion.div>
@@ -80,14 +80,14 @@ export default function Locations({ locations, filters }: Props) {
                     >
                         <form onSubmit={handleSearch} className="relative group">
                             <div className="absolute inset-0 bg-emerald-600/5 blur-2xl group-focus-within:bg-emerald-600/10 transition-all rounded-3xl" />
-                            <div className="relative bg-white border border-gray-200/60 p-2 rounded-[2rem] shadow-xl shadow-slate-200/50 flex items-center transition-all focus-within:border-gray-1000 focus-within:ring-4 focus-within:ring-emerald-500/5">
-                                <Search className="ml-6 text-gray-900 group-focus-within:text-[#1a7a4a] transition-colors" size={24} />
+                            <div className="relative bg-white border border-emerald-50/60 p-2 rounded-[2rem] shadow-xl shadow-slate-200/50 flex items-center transition-all focus-within:border-gray-1000 focus-within:ring-4 focus-within:ring-emerald-500/5">
+                                <Search className="ml-6 text-emerald-950 group-focus-within:text-[#1a7a4a] transition-colors" size={24} />
                                 <input 
                                     type="text"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     placeholder="Cari desa, kecamatan, atau kabupaten..."
-                                    className="flex-1 bg-transparent border-none focus:ring-0 text-lg font-medium text-black placeholder:text-gray-900 px-6"
+                                    className="flex-1 bg-transparent border-none focus:ring-0 text-lg font-medium text-emerald-950 placeholder:text-black px-6"
                                 />
                                 <button 
                                     type="submit"
@@ -102,7 +102,7 @@ export default function Locations({ locations, filters }: Props) {
             </div>
 
             {/* --- GRID LOCATIONS --- */}
-            <div className="bg-white min-h-[600px] border-t border-gray-200/60">
+            <div className="bg-white min-h-[600px] border-t border-emerald-50/60">
                 <section className="container mx-auto px-6 lg:px-12 py-24">
                     <AnimatePresence mode="wait">
                         {locations.data.length > 0 ? (
@@ -116,7 +116,7 @@ export default function Locations({ locations, filters }: Props) {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: i * 0.05 }}
-                                        className="group relative bg-white border border-gray-200/60 rounded-[2.5rem] p-10 hover:border-gray-1000/20 hover:shadow-md hover:shadow-emerald-600/5 transition-all hover:-translate-y-2 overflow-hidden"
+                                        className="group relative bg-white border border-emerald-50/60 rounded-[2.5rem] p-10 hover:border-gray-1000/20 hover:shadow-md hover:shadow-emerald-600/5 transition-all hover:-translate-y-2 overflow-hidden"
                                     >
                                         <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-all rotate-12 group-hover:rotate-0">
                                             <LocateFixed size={120} />
@@ -124,18 +124,18 @@ export default function Locations({ locations, filters }: Props) {
                                         
                                         <div className="relative z-10 space-y-8">
                                             <div className="flex items-center justify-between">
-                                                <div className="h-14 w-14 bg-emerald-50/30 border border-gray-200/60 rounded-2xl flex items-center justify-center text-gray-900 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-sm">
+                                                <div className="h-14 w-14 bg-emerald-50/30 border border-emerald-50/60 rounded-2xl flex items-center justify-center text-emerald-950 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-sm">
                                                     <MapPin size={24} />
                                                 </div>
                                                 <div className="px-5 py-2 bg-emerald-50 rounded-full border border-gray-1000/10 flex items-center gap-3">
                                                     <Users size={14} className="text-emerald-600" />
-                                                    <span className="text-xs font-bold text-gray-700 uppercase tracking-widest">{loc.groups_count} Kelompok</span>
+                                                    <span className="text-xs font-bold text-emerald-800 uppercase tracking-widest">{loc.groups_count} Kelompok</span>
                                                 </div>
                                             </div>
 
                                             <div className="space-y-3">
-                                                <h3 className="text-2xl font-bold text-black tracking-tight leading-tight uppercase ">{loc.name}</h3>
-                                                <div className="space-y-2 text-gray-900">
+                                                <h3 className="text-2xl font-bold text-emerald-950 tracking-tight leading-tight uppercase ">{loc.name}</h3>
+                                                <div className="space-y-2 text-emerald-950">
                                                     <div className="flex items-center gap-3 text-xs font-bold leading-relaxed">
                                                         <Navigation size={14} className="text-[#1a7a4a]" />
                                                         <span className="uppercase tracking-widest">{loc.district}, {loc.city}</span>
@@ -147,8 +147,8 @@ export default function Locations({ locations, filters }: Props) {
                                                 </div>
                                             </div>
 
-                                            <button className="w-full h-14 border border-gray-200/60 group-hover:border-gray-1000/20 group-hover:bg-emerald-50/30 rounded-2xl p-4 flex items-center justify-between transition-all">
-                                                <span className="text-xs font-bold text-gray-900 group-hover:text-gray-700 uppercase tracking-widest ">Lihat ringkasan</span>
+                                            <button className="w-full h-14 border border-emerald-50/60 group-hover:border-gray-1000/20 group-hover:bg-emerald-50/30 rounded-2xl p-4 flex items-center justify-between transition-all">
+                                                <span className="text-xs font-bold text-emerald-950 group-hover:text-emerald-800 uppercase tracking-widest ">Lihat ringkasan</span>
                                                 <ChevronRight size={16} className="text-slate-300 group-hover:text-emerald-600 transition-transform group-hover:translate-x-1" />
                                             </button>
                                         </div>
@@ -166,8 +166,8 @@ export default function Locations({ locations, filters }: Props) {
                                     <Map size={60} strokeWidth={1} />
                                 </div>
                                 <div className="text-center space-y-2">
-                                    <h3 className="text-2xl font-bold text-black uppercase ">Lokasi Tidak Ditemukan</h3>
-                                    <p className="text-gray-900 font-medium max-w-xs mx-auto">Kami tidak dapat menemukan wilayah yang sesuai dengan kata kunci Anda.</p>
+                                    <h3 className="text-2xl font-bold text-emerald-950 uppercase ">Lokasi Tidak Ditemukan</h3>
+                                    <p className="text-emerald-950 font-medium max-w-xs mx-auto">Kami tidak dapat menemukan wilayah yang sesuai dengan kata kunci Anda.</p>
                                 </div>
                                 <button 
                                     onClick={() => { setSearch(''); router.get('/cari-lokasi'); }}
@@ -191,16 +191,16 @@ export default function Locations({ locations, filters }: Props) {
             </div>
 
             {/* --- CALL TO ACTION --- */}
-            <section className="bg-emerald-50 py-32 relative overflow-hidden border border-gray-200">
+            <section className="bg-emerald-50 py-32 relative overflow-hidden border border-emerald-50">
                 <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(#10a853_1px,transparent_1px)] bg-[size:40px_40px] opacity-[0.03]" />
                 <div className="container mx-auto px-6 lg:px-12 text-center relative z-10 space-y-12">
                     <div className="space-y-4">
                         <h2 className="text-4xl lg:text-5xl font-bold text-bg-emerald-100 tracking-tighter uppercase leading-none">Siap Berkontribusi?</h2>
-                        <p className="text-gray-700 max-w-xl mx-auto font-medium">Jangan tunda pengabdian Anda. Masuk ke portal untuk memulai pendaftaran penempatan.</p>
+                        <p className="text-emerald-800 max-w-xl mx-auto font-medium">Jangan tunda pengabdian Anda. Masuk ke portal untuk memulai pendaftaran penempatan.</p>
                     </div>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                         <Link href="/login" className="bg-emerald-600 text-white px-12 py-5 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all">Masuk ke Portal</Link>
-                        <Link href="/" className="text-gray-700 hover:text-bg-emerald-100 px-12 py-5 font-bold text-xs uppercase tracking-widest transition-all">Kembali Beranda</Link>
+                        <Link href="/" className="text-emerald-800 hover:text-bg-emerald-100 px-12 py-5 font-bold text-xs uppercase tracking-widest transition-all">Kembali Beranda</Link>
                     </div>
                 </div>
             </section>

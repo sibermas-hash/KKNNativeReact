@@ -67,14 +67,14 @@ class KelompokKknImport implements ToCollection, WithHeadingRow
             }
 
             $group = KelompokKkn::query()->firstOrNew([
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
                 'code' => $code,
             ]);
 
             $isExisting = $group->exists;
 
             $group->fill([
-                'period_id' => $period->id,
+                'periode_id' => $period->id,
                 'location_id' => $location->id,
                 'nama_kelompok' => $name,
                 'capacity' => $capacity,
@@ -101,7 +101,7 @@ class KelompokKknImport implements ToCollection, WithHeadingRow
 
     private function resolvePeriod(Collection $row): ?Periode
     {
-        $periodId = $this->value($row, ['period_id', 'periode_id']);
+        $periodId = $this->value($row, ['periode_id', 'periode_id']);
         if (filled($periodId) && is_numeric($periodId)) {
             return Periode::query()->find((int) $periodId);
         }

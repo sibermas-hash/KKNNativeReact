@@ -136,12 +136,12 @@ export default function Login() {
             </div>
             <div className="text-center">
               <p className="text-xs font-bold text-primary-600 uppercase tracking-widest mb-1">LPPM UIN SAIZU</p>
-              <h1 className="text-2xl font-bold text-black tracking-tight">
+              <h1 className="text-2xl font-bold text-emerald-950 tracking-tight">
                 Masuk ke Sistem
               </h1>
             </div>
           </div>
-          <p className="text-xs font-medium text-gray-900 leading-relaxed text-center w-full">
+          <p className="text-xs font-bold text-emerald-900 leading-relaxed text-center w-full">
             Silakan masukkan NIM / Username / NIP dan kata sandi Anda untuk mengakses portal.
           </p>
         </motion.div>
@@ -158,7 +158,7 @@ export default function Login() {
               <AlertCircle className="text-rose-500 shrink-0" size={18} />
               <div className="space-y-1">
                 <p className="text-xs font-bold text-rose-600 uppercase tracking-wider">Akses Gagal</p>
-                <div className="text-xs font-semibold text-gray-900 space-y-0.5">
+                <div className="text-xs font-bold text-emerald-950 space-y-0.5">
                   {getErrorMessages(errors).map((err, i) => (
                     <p key={i}>{err}</p>
                   ))}
@@ -173,11 +173,11 @@ export default function Login() {
           <div className="space-y-4">
             {/* Username/NIM/Email */}
             <motion.div variants={itemVariants} className="space-y-1">
-              <label className="text-xs font-bold text-gray-900 uppercase tracking-wider ml-1">
+              <label className="text-xs font-bold text-emerald-950 uppercase tracking-wider ml-1">
                 Username / NIM / NIP
               </label>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary-600 transition-colors">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-200 group-focus-within:text-emerald-600 transition-colors">
                   <User size={16} />
                 </div>
                 <input
@@ -186,7 +186,7 @@ export default function Login() {
                   value={data.login}
                   onChange={(e) => setData('login', e.target.value)}
                   style={{ paddingLeft: '3.5rem' }}
-                  className="w-full h-12 bg-emerald-50/30 border border-gray-200/60 rounded-xl pr-4 text-xs font-bold text-black placeholder:text-slate-300 focus:ring-4 focus:ring-primary-600/10 focus:border-primary-600 transition-all placeholder:normal-case"
+                  className="w-full h-12 bg-emerald-50/30 border border-emerald-100 rounded-xl pr-4 text-xs font-bold text-emerald-950 placeholder:text-black focus:ring-4 focus:ring-emerald-600/10 focus:border-emerald-600 transition-all"
                   placeholder="NIM / Username"
                   required
                   autoFocus
@@ -196,11 +196,11 @@ export default function Login() {
 
             {/* Password */}
             <motion.div variants={itemVariants} className="space-y-1">
-              <label className="text-xs font-bold text-gray-900 uppercase tracking-wider ml-1">
+              <label className="text-xs font-bold text-emerald-950 uppercase tracking-wider ml-1">
                 Kata Sandi
               </label>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary-600 transition-colors">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-200 group-focus-within:text-emerald-600 transition-colors">
                   <Lock size={16} />
                 </div>
                 <input
@@ -209,14 +209,14 @@ export default function Login() {
                   value={data.password}
                   onChange={(e) => setData('password', e.target.value)}
                   style={{ paddingLeft: '3.5rem' }}
-                  className="w-full h-12 bg-emerald-50/30 border border-gray-200/60 rounded-xl pr-11 text-xs font-bold text-black placeholder:text-slate-300 focus:ring-4 focus:ring-primary-600/10 focus:border-primary-600 transition-all"
+                  className="w-full h-12 bg-emerald-50/30 border border-emerald-100 rounded-xl pr-11 text-xs font-bold text-emerald-950 placeholder:text-black focus:ring-4 focus:ring-emerald-600/10 focus:border-emerald-600 transition-all"
                   placeholder="••••••••"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-primary-600 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-200 hover:text-emerald-600 transition-colors"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -225,20 +225,20 @@ export default function Login() {
 
             {/* Captcha */}
             <motion.div variants={itemVariants} className="space-y-1">
-              <label className="text-xs font-bold text-gray-900 uppercase tracking-wider ml-1">
+              <label className="text-xs font-bold text-emerald-950 uppercase tracking-wider ml-1">
                 Verifikasi
               </label>
               <div className="flex gap-2">
-                <div className="flex-1 h-12 bg-white border border-gray-200/60 rounded-xl px-4 flex items-center justify-between">
-                  <span className="text-xs font-bold text-gray-900 tabular-nums uppercase">
+                <div className="flex-1 h-12 bg-white border border-emerald-100 rounded-xl px-4 flex items-center justify-between">
+                  <span className="text-xs font-bold text-emerald-950 tabular-nums uppercase">
                     <span data-testid="login-captcha-question">{activeCaptchaQuestion}</span>{' '}
-                    <span className="text-primary-600 font-bold ml-1">=</span>
+                    <span className="text-emerald-600 font-bold ml-1">=</span>
                   </span>
                   <button
                     type="button"
                     onClick={refreshCaptcha}
                     disabled={isRefreshing}
-                    className="p-1.5 text-gray-900 hover:text-green-800 hover:bg-green-50 rounded-lg transition-all"
+                    className="p-1.5 text-emerald-950 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
                     title="Refresh Verifikasi"
                   >
                     <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
@@ -250,7 +250,7 @@ export default function Login() {
                   inputMode="numeric"
                   value={data.captcha_answer}
                   onChange={(e) => setData('captcha_answer', e.target.value.replace(/[^0-9]/g, ''))}
-                  className="w-24 h-12 bg-emerald-50/30 border-2 border-gray-200/60 rounded-xl text-center text-md font-bold text-black focus:border-primary-600 focus:ring-4 focus:ring-primary-600/10 transition-all placeholder:text-slate-300"
+                  className="w-24 h-12 bg-emerald-50/30 border-2 border-emerald-100 rounded-xl text-center text-md font-bold text-emerald-950 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 transition-all placeholder:text-black"
                   placeholder="???"
                   required
                 />
@@ -265,11 +265,11 @@ export default function Login() {
                 type="checkbox"
                 checked={data.remember}
                 onChange={(e) => setData('remember', e.target.checked)}
-                className="w-3.5 h-3.5 rounded border-gray-200/60 text-primary-600 focus:ring-green-600"
+                className="w-3.5 h-3.5 rounded border-emerald-200 text-emerald-600 focus:ring-emerald-600"
               />
-              <span className="text-xs font-bold text-gray-900 uppercase tracking-wider group-hover:text-gray-900 transition-colors">Ingat Saya</span>
+              <span className="text-xs font-bold text-emerald-950 uppercase tracking-wider group-hover:text-emerald-600 transition-colors">Ingat Saya</span>
             </label>
-            <Link href="/lupa-kata-sandi" className="text-xs font-bold text-primary-600 hover:text-green-800 uppercase tracking-wider">Lupa Sandi?</Link>
+            <Link href="/lupa-kata-sandi" className="text-xs font-bold text-emerald-600 hover:text-emerald-800 uppercase tracking-wider">Lupa Sandi?</Link>
           </motion.div>
 
           {/* Submit */}
@@ -278,7 +278,7 @@ export default function Login() {
               data-testid="login-submit"
               type="submit"
               disabled={processing}
-              className="w-full h-12 bg-primary-600 text-white rounded-xl flex items-center justify-center gap-2 group hover:bg-green-800 transition-all shadow-lg shadow-green-100 active:scale-[0.98] disabled:opacity-50"
+              className="w-full h-12 bg-emerald-600 text-white rounded-xl flex items-center justify-center gap-2 group hover:bg-emerald-800 transition-all shadow-lg shadow-emerald-100 active:scale-[0.98] disabled:opacity-50"
             >
               {processing ? (
                 <RefreshCw size={18} className="animate-spin" />

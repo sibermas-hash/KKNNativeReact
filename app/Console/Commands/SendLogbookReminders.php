@@ -35,7 +35,7 @@ class SendLogbookReminders extends Command
 
         foreach ($activePeriods as $period) {
             // Get approved participants who have NOT submitted a logbook today
-            $lazyParticipants = PesertaKkn::where('period_id', $period->id)
+            $lazyParticipants = PesertaKkn::where('periode_id', $period->id)
                 ->where('status', 'approved')
                 ->whereHas('mahasiswa.user')
                 ->whereDoesntHave('mahasiswa.kegiatan', function ($query) {

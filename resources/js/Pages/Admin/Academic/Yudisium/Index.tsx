@@ -71,7 +71,7 @@ export default function YudisiumIndex({ periodes, rekap, selectedPeriodeId }: Pr
  <AppLayout title="Sidang Yudisium & Kelulusan">
  <Head title="Yudisium KKN"/>
 
- <div className="max-w-7xl mx-auto space-y-8 pb-24 text-gray-900 font-sans">
+ <div className="max-w-7xl mx-auto space-y-8 pb-24 text-emerald-950 font-sans">
  {/* --- PREMIUM HEADER --- */}
  <div className="space-y-4">
  <div className="flex items-center gap-3 text-[#1a7a4a]">
@@ -80,10 +80,10 @@ export default function YudisiumIndex({ periodes, rekap, selectedPeriodeId }: Pr
  </div>
  <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
  <div className="space-y-1">
- <h1 className="text-3xl font-extrabold text-gray-900">
+ <h1 className="text-3xl font-extrabold text-emerald-950">
  Sidang <span className="text-[#1a7a4a]">Yudisium.</span>
  </h1>
- <p className="font-semibold text-xs text-gray-700 mt-2 leading-relaxed max-w-2xl">
+ <p className="font-semibold text-xs text-emerald-800 mt-2 leading-relaxed max-w-2xl">
  Penetapan status kelulusan akhir bagi mahasiswa peserta KKN berdasarkan akumulasi nilai dan pemenuhan administrasi.
  </p>
  </div>
@@ -94,12 +94,12 @@ export default function YudisiumIndex({ periodes, rekap, selectedPeriodeId }: Pr
  <select 
  value={periodeId} 
  onChange={(e) => handleFetchRekap(e.target.value)}
- className="w-full h-14 pl-12 pr-10 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-[#1a7a4a] transition-all appearance-none cursor-pointer shadow-sm"
+ className="w-full h-14 pl-12 pr-10 bg-white border border-emerald-50 rounded-xl text-sm font-bold text-emerald-950 outline-none focus:border-[#1a7a4a] transition-all appearance-none cursor-pointer shadow-sm"
  >
  <option value="">-- PILIH PERIODE --</option>
  {periodes.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>)}
  </select>
- <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none"size={18} />
+ <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none"size={18} />
  </div>
 
  <button
@@ -115,8 +115,8 @@ export default function YudisiumIndex({ periodes, rekap, selectedPeriodeId }: Pr
  </div>
 
  {!rekap ? (
- <div className="py-32 flex flex-col items-center justify-center text-center space-y-6 bg-gray-50 rounded-xl border border-dashed border-gray-200">
- <div className="h-20 w-20 bg-white rounded-xl flex items-center justify-center text-gray-500 shadow-sm border border-gray-200">
+ <div className="py-32 flex flex-col items-center justify-center text-center space-y-6 bg-gray-50 rounded-xl border border-dashed border-emerald-50">
+ <div className="h-20 w-20 bg-white rounded-xl flex items-center justify-center text-emerald-700 shadow-sm border border-emerald-50">
  <Search size={40} />
  </div>
  <div className="space-y-2">
@@ -151,14 +151,14 @@ export default function YudisiumIndex({ periodes, rekap, selectedPeriodeId }: Pr
  </div>
 
  {/* --- DATA TABLE --- */}
- <section className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
- <div className="p-6 bg-gray-50 border-b-2 border-gray-200 flex items-center justify-between">
+ <section className="bg-white border border-emerald-50 rounded-xl overflow-hidden shadow-sm">
+ <div className="p-6 bg-gray-50 border-b-2 border-emerald-50 flex items-center justify-between">
  <div className="flex items-center gap-3">
  <ShieldCheck size={20} className="text-[#1a7a4a]"/>
  <span className="text-xs font-bold text-[#1f2937]">Daftar Hasil Sidang Yudisium</span>
  </div>
  <div className="flex items-center gap-4">
- <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-gray-200 shadow-sm">
+ <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-emerald-50 shadow-sm">
  <div className="h-2 w-2 bg-gray-500 rounded-full animate-pulse"/>
  <span className="text-xs font-bold text-[#1a7a4a]">Snapshot Terverifikasi</span>
  </div>
@@ -167,7 +167,7 @@ export default function YudisiumIndex({ periodes, rekap, selectedPeriodeId }: Pr
 
  <div className="overflow-x-auto min-h-[400px]">
  <table className="w-full text-left">
- <thead className="bg-gray-50 border-b-2 border-gray-200 text-gray-900">
+ <thead className="bg-gray-50 border-b-2 border-emerald-50 text-emerald-950">
  <tr>
  <th className="px-8 py-5 text-xs font-bold">Mahasiswa</th>
  <th className="px-8 py-5 text-xs font-bold">Unit Kerja (Kelompok)</th>
@@ -181,12 +181,12 @@ export default function YudisiumIndex({ periodes, rekap, selectedPeriodeId }: Pr
  <tr key={idx} className="group hover:bg-gray-50 transition-all">
  <td className="px-8 py-5">
  <div className="flex flex-col">
- <span className="text-sm font-bold text-gray-900 leading-none mb-1.5 group-hover:text-gray-700 transition-colors">{m.nama}</span>
+ <span className="text-sm font-bold text-emerald-950 leading-none mb-1.5 group-hover:text-emerald-800 transition-colors">{m.nama}</span>
  <span className="text-xs font-semibold text-[#1a7a4a] font-mono">{m.nim}</span>
  </div>
  </td>
  <td className="px-8 py-5">
- <div className="inline-flex h-7 items-center px-3 bg-gray-50 border border-gray-300 text-gray-700 rounded-lg text-xs font-bold tracking-wide">
+ <div className="inline-flex h-7 items-center px-3 bg-gray-50 border border-gray-300 text-emerald-800 rounded-lg text-xs font-bold tracking-wide">
  {m.kelompok}
  </div>
  </td>
@@ -198,7 +198,7 @@ export default function YudisiumIndex({ periodes, rekap, selectedPeriodeId }: Pr
  </td>
  <td className="px-8 py-5 text-center">
  <div className="flex flex-col items-center">
- <span className="text-xl font-semibold text-gray-900 tabular-nums leading-none mb-1.5 slashed-zero">{m.skor_akhir?.toFixed(1) || '-'}</span>
+ <span className="text-xl font-semibold text-emerald-950 tabular-nums leading-none mb-1.5 slashed-zero">{m.skor_akhir?.toFixed(1) || '-'}</span>
  <span className="text-xs font-bold text-[#1a7a4a]">GRADE {m.nilai_huruf || 'N/A'}</span>
  </div>
  </td>
@@ -226,12 +226,12 @@ export default function YudisiumIndex({ periodes, rekap, selectedPeriodeId }: Pr
  <div className="absolute top-0 right-0 p-10 opacity-10 -mr-20 -mt-20"><GraduationCap size={300} /></div>
  <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
  <div className="flex items-center gap-8">
- <div className="h-20 w-20 bg-gray-100/50 rounded-xl flex items-center justify-center text-gray-700 border border-emerald-800 shadow-inner">
+ <div className="h-20 w-20 bg-gray-100/50 rounded-xl flex items-center justify-center text-emerald-800 border border-emerald-800 shadow-inner">
  <Trophy size={40} />
  </div>
  <div className="space-y-3">
  <h2 className="text-2xl font-bold">Penetapan Hasil Yudisium</h2>
- <p className="text-sm font-semibold text-gray-700 leading-relaxed max-w-2xl">
+ <p className="text-sm font-semibold text-emerald-800 leading-relaxed max-w-2xl">
  Data yang ditampilkan merupakan hasil finalisasi nilai yang telah divalidasi oleh LPPM. Mahasiswa yang DINYATAKAN LULUS berhak mendapatkan Sertifikat KKN Digital yang dapat diunduh melalui portal mahasiswa.
  </p>
  </div>
@@ -247,17 +247,17 @@ export default function YudisiumIndex({ periodes, rekap, selectedPeriodeId }: Pr
 
 function StatCard({ label, value, icon: Icon, color, trend }: { label: string; value: string | number; icon: any; color: 'emerald' | 'amber'; trend?: string }) {
  return (
- <div className="bg-white border border-gray-200 rounded-xl p-7 flex items-center gap-6 shadow-sm hover:border-gray-200 transition-all group overflow-hidden relative">
+ <div className="bg-white border border-emerald-50 rounded-xl p-7 flex items-center gap-6 shadow-sm hover:border-emerald-50 transition-all group overflow-hidden relative">
  <div className={clsx(
 "h-16 w-16 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all shadow-sm border",
- color === 'emerald' ?"bg-gray-50 text-[#1a7a4a] border-gray-200":"bg-amber-50 text-amber-600 border-amber-100"
+ color === 'emerald' ?"bg-gray-50 text-[#1a7a4a] border-emerald-50":"bg-amber-50 text-amber-600 border-amber-100"
  )}>
  <Icon size={30} strokeWidth={2.5} />
  </div>
  <div className="flex flex-col relative z-20">
- <span className="text-xs font-bold text-gray-700 leading-none mb-3">{label}</span>
+ <span className="text-xs font-bold text-emerald-800 leading-none mb-3">{label}</span>
  <div className="flex items-end gap-3">
- <span className="text-4xl font-semibold text-gray-900 er tabular-nums leading-none">{value}</span>
+ <span className="text-4xl font-semibold text-emerald-950 er tabular-nums leading-none">{value}</span>
  {trend && <span className="text-xs font-bold text-[#1a7a4a] mb-1">{trend}</span>}
  </div>
  </div>

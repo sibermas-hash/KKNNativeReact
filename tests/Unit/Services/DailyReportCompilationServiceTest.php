@@ -120,7 +120,7 @@ class DailyReportCompilationServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
@@ -134,7 +134,7 @@ class DailyReportCompilationServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
@@ -143,13 +143,13 @@ class DailyReportCompilationServiceTest extends TestCase
 
         PesertaKkn::factory()->create([
             'mahasiswa_id' => $mahasiswaA->id,
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'kelompok_id' => $kelompok->id,
         ]);
 
         PesertaKkn::factory()->create([
             'mahasiswa_id' => $mahasiswaB->id,
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'kelompok_id' => $kelompok->id,
         ]);
 
@@ -178,7 +178,7 @@ class DailyReportCompilationServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
@@ -193,7 +193,7 @@ class DailyReportCompilationServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
@@ -236,7 +236,7 @@ class DailyReportCompilationServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
@@ -244,7 +244,7 @@ class DailyReportCompilationServiceTest extends TestCase
 
         PesertaKkn::factory()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'kelompok_id' => $kelompok->id,
         ]);
 

@@ -80,7 +80,7 @@ export default function BellDropdown() {
  type="button"
  onClick={() => setOpen((current) => !current)}
  className={`relative rounded-xl p-2.5 transition ${
- open ? 'bg-primary-100 text-primary-700' : 'text-gray-900 hover:bg-gray-50/60 hover:text-gray-700'
+ open ? 'bg-primary-100 text-primary-700' : 'text-emerald-950 hover:bg-gray-50/60 hover:text-emerald-800'
  }`}
  >
  <Bell className="h-5 w-5" />
@@ -93,11 +93,11 @@ export default function BellDropdown() {
 
  {open && (
  <div
- className="absolute right-0 top-14 z-[100] w-80 overflow-hidden rounded-xl border border-gray-200/60 bg-white shadow-lg"
+ className="absolute right-0 top-14 z-[100] w-80 overflow-hidden rounded-xl border border-emerald-50/60 bg-white shadow-lg"
  >
- <div className="flex items-center justify-between border-b border-gray-200/60 px-4 py-3">
+ <div className="flex items-center justify-between border-b border-emerald-50/60 px-4 py-3">
  <div className="flex items-center gap-2">
- <h3 className="text-sm font-semibold text-gray-900">Notifikasi</h3>
+ <h3 className="text-sm font-semibold text-emerald-950">Notifikasi</h3>
  {count > 0 && (
  <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-600">
  {count > 99 ? '99+' : count}
@@ -120,7 +120,7 @@ export default function BellDropdown() {
  <div className="max-h-96 overflow-y-auto">
  {items.length > 0 ? (
  items.map((item) => (
- <div key={item.id} className="border-b border-gray-200/60 px-4 py-3 hover:bg-gray-50">
+ <div key={item.id} className="border-b border-emerald-50/60 px-4 py-3 hover:bg-gray-50">
  <div className="flex gap-3">
  <span
  className={`mt-1 h-2 w-2 flex-shrink-0 rounded-full ${
@@ -128,10 +128,10 @@ export default function BellDropdown() {
  }`}
  />
  <div className="min-w-0 flex-1">
- <p className="text-sm font-semibold text-gray-900">{item.title}</p>
- <p className="mt-1 text-xs leading-relaxed text-gray-900">{item.message}</p>
+ <p className="text-sm font-semibold text-emerald-950">{item.title}</p>
+ <p className="mt-1 text-xs leading-relaxed text-emerald-950">{item.message}</p>
  <div className="mt-3 flex items-center justify-between gap-3">
- <span className="inline-flex items-center gap-1 text-xs text-gray-900">
+ <span className="inline-flex items-center gap-1 text-xs text-emerald-950">
  <Clock className="h-3.5 w-3.5" />
  {item.created_at}
  </span>
@@ -148,7 +148,7 @@ export default function BellDropdown() {
  <button
  type="button"
  onClick={() => markRead(item.id)}
- className="text-xs font-medium text-gray-900 hover:text-gray-700"
+ className="text-xs font-medium text-emerald-950 hover:text-emerald-800"
  >
  Tandai dibaca
  </button>
@@ -161,9 +161,9 @@ export default function BellDropdown() {
  ) : (
  <div className="px-4 py-8 text-center">
  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50/60">
- <Bell className="h-6 w-6 text-gray-900" />
+ <Bell className="h-6 w-6 text-emerald-950" />
  </div>
- <p className="mt-3 text-sm font-medium text-gray-900">Belum ada notifikasi baru</p>
+ <p className="mt-3 text-sm font-medium text-emerald-950">Belum ada notifikasi baru</p>
  </div>
  )}
  </div>

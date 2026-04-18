@@ -23,13 +23,13 @@ class KknScoreRepository
             ->join('lokasi as lok', 'g.location_id', '=', 'lok.id')
             ->leftJoin('dosen as dpl_l', 'g.dpl_id', '=', 'dpl_l.id')
             ->leftJoin('users as dpl_u', 'dpl_l.user_id', '=', 'dpl_u.id')
-            ->leftJoin('fakultas as fak', 's.faculty_id', '=', 'fak.id')
-            ->leftJoin('prodi as prodi', 's.program_id', '=', 'prodi.id')
+            ->leftJoin('fakultas as fak', 's.fakultas_id', '=', 'fak.id')
+            ->leftJoin('prodi as prodi', 's.prodi_id', '=', 'prodi.id')
             ->leftJoin('nilai_kkn as ks', function ($join) {
                 $join->on('ks.user_id', '=', 'u.id')
                     ->on('ks.kelompok_id', '=', 'g.id');
             })
-            ->where('g.period_id', $periodeId)
+            ->where('g.periode_id', $periodeId)
             ->when($filters['search'] ?? null, function ($query, $search) {
                 $value = str_replace(['%', '_'], ['\\%', '\\_'], trim((string) $search));
 
@@ -42,7 +42,7 @@ class KknScoreRepository
                         ->orWhere('prodi.nama', 'like', "%{$value}%");
                 });
             })
-            ->when($filters['faculty_id'] ?? null, fn ($q, $v) => $q->where('s.faculty_id', $v))
+            ->when($filters['fakultas_id'] ?? null, fn ($q, $v) => $q->where('s.fakultas_id', $v))
             ->when($filters['kelompok_id'] ?? null, fn ($q, $v) => $q->where('g.id', $v))
             ->when($filters['huruf'] ?? null, fn ($q, $v) => $q->where('ks.letter_grade', $v))
             ->select([

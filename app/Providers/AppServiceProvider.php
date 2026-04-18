@@ -12,6 +12,7 @@ use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\NilaiKkn;
 use App\Observers\AuditObserver;
 use App\Policies\AdminOperationPolicy;
+use App\Policies\KknScorePolicy;
 use App\Repositories\Contracts\RegistrationRepositoryInterface;
 use App\Repositories\Eloquent\RegistrationRepository;
 use App\Services\AuditService;
@@ -31,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(RegistrationRepositoryInterface::class, RegistrationRepository::class);
 
-        Gate::policy(NilaiKkn::class, \App\Policies\KknScorePolicy::class);
+        Gate::policy(NilaiKkn::class, KknScorePolicy::class);
     }
 
     /**

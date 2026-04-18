@@ -1,0 +1,466 @@
+ID,NIP,Nama,Email,Unit_Kerja,Status,Created_At
+464,"NIP0000100459","Dosen 459","dosen459@example.edu","Unit 10","aktif",2026-02-16 03:28:14
+465,"NIP0000100460","Dosen 460","dosen460@example.edu","Unit 1","aktif",2026-02-16 03:28:14
+1,"199801012021121001","Dr. Bambang Sutomo, M.Kom","bambang@universitas.ac.id","Fakultas Sains","aktif",2026-02-16 03:27:18
+2,"199702152021121002","Prof. Siti Nurhaliza, M.Si","siti@universitas.ac.id","Fakultas Teknik","aktif",2026-02-16 03:27:18
+3,"199503202021121003","Ir. Rudi Hartono","rudi@universitas.ac.id","Fakultas Teknik","aktif",2026-02-16 03:27:18
+4,"77070700000001","Mr. Kania Budiyanto","kania.budiyanto.1@universitas.ac.id","Fakultas Humaniora","aktif",2026-02-16 03:27:18
+5,"62080700000002","Prof. Elon Sudiati","elon.sudiati.2@universitas.ac.id","Fakultas Ekonomi","aktif",2026-02-16 03:27:18
+6,"84061400000003","Dr. Umay Mulyani","umay.mulyani.3@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+7,"93120300000004","Asmadi Winarsih","asmadi.winarsih.4@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+8,"66120100000005","Dr. Bakda Sitompul","bakda.sitompul.5@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+9,"76080700000006","Mumpuni Sitorus","mumpuni.sitorus.6@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+10,"70111700000007","Mr. Nabila Waskita","nabila.waskita.7@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+11,"66120300000008","Dr. Putri Hutapea","putri.hutapea.8@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+12,"73082200000009","Calista Lestari","calista.lestari.9@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+13,"64020700000010","Ir. Agnes Mansur","agnes.mansur.10@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+14,"62110700000011","Dr. Paulin Hariyah","paulin.hariyah.11@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+15,"99092700000012","Prof. Sakti Napitupulu","sakti.napitupulu.12@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+16,"72101200000013","Mr. Puspa Saptono","puspa.saptono.13@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+17,"89122800000014","Ir. Ega Mandala","ega.mandala.14@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+18,"70040500000015","Prof. Genta Budiman","genta.budiman.15@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+19,"95120500000016","Dr. Baktianto Wahyuni","baktianto.wahyuni.16@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+20,"97032300000017","Ajeng Utami","ajeng.utami.17@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+21,"74012100000018","Mrs. Mustika Suartini","mustika.suartini.18@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+22,"84122200000019","Prof. Harjo Hakim","harjo.hakim.19@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+23,"70112600000020","Mrs. Alika Rahayu","alika.rahayu.20@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+24,"78101500000021","Kemal Tarihoran","kemal.tarihoran.21@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+25,"77122700000022","Mr. Tri Lazuardi","tri.lazuardi.22@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+26,"90101400000023","Dr. Juli Hardiansyah","juli.hardiansyah.23@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+27,"93021100000024","Najam Salahudin","najam.salahudin.24@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+28,"93012100000025","Mrs. Kamidin Widodo","kamidin.widodo.25@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+29,"67012700000026","Galur Mangunsong","galur.mangunsong.26@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+30,"75082200000027","Ir. Janet Halimah","janet.halimah.27@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+31,"62011200000028","Agus Andriani","agus.andriani.28@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+32,"81082700000029","Zaenab Novitasari","zaenab.novitasari.29@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+33,"70090100000030","Mr. Unjani Lailasari","unjani.lailasari.30@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+34,"77102300000031","Ir. Himawan Wibisono","himawan.wibisono.31@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+35,"86011800000032","Mr. Raina Wulandari","raina.wulandari.32@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+36,"88111900000033","Silvia Ardianto","silvia.ardianto.33@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+37,"68070100000034","Anastasia Usada","anastasia.usada.34@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+38,"60080700000035","Mr. Laswi Suryatmi","laswi.suryatmi.35@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+39,"86012400000036","Wadi Dongoran","wadi.dongoran.36@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+40,"78072500000037","Mrs. Tiara Usamah","tiara.usamah.37@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+41,"99111100000038","Citra Susanti","citra.susanti.38@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+42,"96050100000039","Mr. Ganjaran Pradipta","ganjaran.pradipta.39@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+43,"83021800000040","Prof. Emong Sihombing","emong.sihombing.40@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+44,"77110800000041","Mrs. Murti Fujiati","murti.fujiati.41@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+45,"71010700000042","Mr. Juli Handayani","juli.handayani.42@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+46,"79010700000043","Mr. Wani Susanti","wani.susanti.43@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+47,"96122300000044","Ir. Kariman Pertiwi","kariman.pertiwi.44@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+48,"62031500000045","Prof. Cawisadi Marbun","cawisadi.marbun.45@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+49,"81060500000046","Dr. Maimunah Maryati","maimunah.maryati.46@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+50,"92121800000047","Ir. Gatra Waskita","gatra.waskita.47@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+51,"98031600000048","Ir. Tania Melani","tania.melani.48@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+52,"80092100000049","Prof. Ratna Laksmiwati","ratna.laksmiwati.49@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+53,"96110300000050","Prof. Gamblang Waskita","gamblang.waskita.50@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+54,"91071100000051","Rina Gunawan","rina.gunawan.51@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+55,"60041300000052","Mrs. Ratna Uyainah","ratna.uyainah.52@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+56,"91051600000053","Prof. Ghaliyati Melani","ghaliyati.melani.53@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+57,"81110200000054","Dr. Violet Maryati","violet.maryati.54@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+58,"74030700000055","Dr. Gamani Prakasa","gamani.prakasa.55@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+59,"77022200000056","Mr. Kasiyah Nuraini","kasiyah.nuraini.56@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+60,"96040400000057","Pangeran Prasetya","pangeran.prasetya.57@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+61,"92082600000058","Lalita Fujiati","lalita.fujiati.58@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+62,"97121900000059","Mrs. Imam Kusmawati","imam.kusmawati.59@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+63,"85112600000060","Prof. Kenari Usamah","kenari.usamah.60@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+64,"78041000000061","Cawisadi Nashiruddin","cawisadi.nashiruddin.61@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+65,"66060900000062","Prof. Uli Waskita","uli.waskita.62@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+66,"60112000000063","Usyi Melani","usyi.melani.63@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+67,"93122200000064","Mrs. Victoria Andriani","victoria.andriani.64@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+68,"76011000000065","Prof. Paiman Hassanah","paiman.hassanah.65@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+69,"83032200000066","Kariman Pratiwi","kariman.pratiwi.66@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+70,"91061500000067","Mr. Ilyas Wastuti","ilyas.wastuti.67@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+71,"93071300000068","Tania Purnawati","tania.purnawati.68@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+72,"84042000000069","Mr. Dodo Ramadan","dodo.ramadan.69@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+73,"71042400000070","Mr. Paulin Salahudin","paulin.salahudin.70@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+74,"62011300000071","Victoria Anggraini","victoria.anggraini.71@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+75,"66010800000072","Dr. Maida Suryatmi","maida.suryatmi.72@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+76,"63041600000073","Prof. Jayeng Usamah","jayeng.usamah.73@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+77,"69110800000074","Mr. Jane Mahendra","jane.mahendra.74@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+78,"69070700000075","Ir. Ana Usamah","ana.usamah.75@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+79,"67072100000076","Ir. Malika Prasetyo","malika.prasetyo.76@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+80,"99012700000077","Prof. Darmaji Natsir","darmaji.natsir.77@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+81,"77081600000078","Nugraha Widodo","nugraha.widodo.78@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+82,"92112300000079","Cawisadi Laksita","cawisadi.laksita.79@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+83,"76092400000080","Rahayu Maryati","rahayu.maryati.80@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+84,"96061800000081","Dr. Jail Damanik","jail.damanik.81@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+85,"60071200000082","Dr. Paulin Pudjiastuti","paulin.pudjiastuti.82@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+86,"96110500000083","Mr. Pandu Sitompul","pandu.sitompul.83@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+87,"93082800000084","Prof. Gamblang Winarsih","gamblang.winarsih.84@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+88,"91021000000085","Dr. Kasusra Mulyani","kasusra.mulyani.85@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+89,"97122000000086","Ir. Darimin Widodo","darimin.widodo.86@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+90,"78111600000087","Asmadi Nurdiyanti","asmadi.nurdiyanti.87@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+91,"86111600000088","Dr. Amelia Anggriawan","amelia.anggriawan.88@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+92,"62102000000089","Ir. Kamaria Halimah","kamaria.halimah.89@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+93,"68122300000090","Gandewa Suryatmi","gandewa.suryatmi.90@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+94,"73102100000091","Dr. Estiono Kurniawan","estiono.kurniawan.91@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+95,"82091300000092","Dr. Daliman Widiastuti","daliman.widiastuti.92@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+96,"81020700000093","Prof. Kiandra Sihombing","kiandra.sihombing.93@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+97,"70080100000094","Ir. Nadia Uyainah","nadia.uyainah.94@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+98,"77040900000095","Ir. Agus Uyainah","agus.uyainah.95@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+99,"98091600000096","Prof. Ilsa Pangestu","ilsa.pangestu.96@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+100,"74032000000097","Dadap Mandasari","dadap.mandasari.97@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+101,"80072800000098","Mr. Bahuwarna Wasita","bahuwarna.wasita.98@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+102,"73071900000099","Dr. Almira Hassanah","almira.hassanah.99@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+103,"67062700000100","Mrs. Aris Lestari","aris.lestari.100@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+104,"77010800000101","Mrs. Ika Zulaika","ika.zulaika.101@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+105,"93010600000102","Mrs. Ulya Utami","ulya.utami.102@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+106,"70082800000103","Kamila Mandasari","kamila.mandasari.103@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+107,"62112600000104","Prof. Cici Agustina","cici.agustina.104@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+108,"96052100000105","Tania Namaga","tania.namaga.105@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+109,"80020700000106","Mr. Ida Nasyidah","ida.nasyidah.106@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+110,"99082300000107","Prof. Julia Hutagalung","julia.hutagalung.107@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+111,"69121100000108","Bakidin Pratama","bakidin.pratama.108@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+112,"84021500000109","Dr. Dadap Anggraini","dadap.anggraini.109@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+113,"63080900000110","Ajimat Safitri","ajimat.safitri.110@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+114,"87040600000111","Ir. Jati Pudjiastuti","jati.pudjiastuti.111@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+115,"80111200000112","Dr. Icha Suryono","icha.suryono.112@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+116,"79052400000113","Mr. Ajiman Suwarno","ajiman.suwarno.113@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+117,"79100100000114","Mr. Bahuwirya Wahyudin","bahuwirya.wahyudin.114@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+118,"88041200000115","Najwa Firgantoro","najwa.firgantoro.115@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+119,"79091500000116","Gilda Pratiwi","gilda.pratiwi.116@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+120,"66080700000117","Darimin Hartati","darimin.hartati.117@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+121,"83071900000118","Dr. Viktor Ramadan","viktor.ramadan.118@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+122,"74021800000119","Prof. Ridwan Safitri","ridwan.safitri.119@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+123,"94031000000120","Marwata Wahyudin","marwata.wahyudin.120@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+124,"64042700000121","Ir. Indah Riyanti","indah.riyanti.121@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+125,"99051700000122","Koko Purwanti","koko.purwanti.122@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+126,"81050300000123","Mrs. Mustofa Nurdiyanti","mustofa.nurdiyanti.123@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+127,"96092400000124","Mrs. Ega Hariyah","ega.hariyah.124@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+128,"75121700000125","Rahman Putra","rahman.putra.125@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+129,"90070300000126","Ir. Clara Handayani","clara.handayani.126@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+130,"78120900000127","Pranawa Yolanda","pranawa.yolanda.127@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+131,"89022700000128","Ir. Warji Rahmawati","warji.rahmawati.128@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+132,"81100800000129","Mr. Novi Pertiwi","novi.pertiwi.129@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+133,"98031900000130","Dr. Melinda Mardhiyah","melinda.mardhiyah.130@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+134,"96032400000131","Prof. Maria Gunarto","maria.gunarto.131@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+135,"74060600000132","Mr. Galuh Purwanti","galuh.purwanti.132@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+136,"89111900000133","Dr. Ibrani Pudjiastuti","ibrani.pudjiastuti.133@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+137,"67110500000134","Nabila Yuliarti","nabila.yuliarti.134@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+138,"86022700000135","Dr. Satya Halimah","satya.halimah.135@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+139,"60020600000136","Mrs. Galur Hutagalung","galur.hutagalung.136@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+140,"92050300000137","Mr. Prakosa Kuswoyo","prakosa.kuswoyo.137@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+141,"67110300000138","Dr. Tantri Padmasari","tantri.padmasari.138@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+142,"79041500000139","Tiara Winarsih","tiara.winarsih.139@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+143,"71112100000140","Mr. Ajimat Mustofa","ajimat.mustofa.140@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+144,"97052400000141","Rina Pertiwi","rina.pertiwi.141@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+145,"63060500000142","Mr. Kardi Tamba","kardi.tamba.142@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+146,"98071700000143","Ir. Samiah Anggraini","samiah.anggraini.143@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+147,"82031700000144","Ir. Cawuk Pradipta","cawuk.pradipta.144@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+148,"98041600000145","Vivi Suwarno","vivi.suwarno.145@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+149,"85101700000146","Carub Yuniar","carub.yuniar.146@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+150,"70081200000147","Mrs. Wisnu Sitompul","wisnu.sitompul.147@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+151,"85122100000148","Prof. Ilsa Januar","ilsa.januar.148@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+152,"98022400000149","Rafi Sudiati","rafi.sudiati.149@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+153,"78101600000150","Mrs. Irsad Kusmawati","irsad.kusmawati.150@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+154,"99051700000151","Mr. Ade Suwarno","ade.suwarno.151@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+155,"69011500000152","Dr. Ibun Andriani","ibun.andriani.152@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+156,"86080400000153","Dr. Mulyono Adriansyah","mulyono.adriansyah.153@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+157,"64012700000154","Ellis Riyanti","ellis.riyanti.154@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+158,"97120500000155","Dr. Qori Maryadi","qori.maryadi.155@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+159,"95031200000156","Dr. Ajeng Prasetyo","ajeng.prasetyo.156@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+160,"61102600000157","Mrs. Edward Safitri","edward.safitri.157@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+161,"89110600000158","Suci Haryanti","suci.haryanti.158@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+162,"89071500000159","Mrs. Dagel Megantara","dagel.megantara.159@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+163,"63111100000160","Prof. Pangestu Halim","pangestu.halim.160@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+164,"98122300000161","Mrs. Gamani Nurdiyanti","gamani.nurdiyanti.161@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+165,"71032700000162","Mr. Ana Salahudin","ana.salahudin.162@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+166,"88090500000163","Anom Prasasta","anom.prasasta.163@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+167,"98112300000164","Mr. Irwan Handayani","irwan.handayani.164@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+168,"80112500000165","Ir. Kiandra Usada","kiandra.usada.165@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+169,"71072200000166","Ani Suryatmi","ani.suryatmi.166@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+170,"85050400000167","Kala Nugroho","kala.nugroho.167@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+171,"77060500000168","Hasta Riyanti","hasta.riyanti.168@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+172,"86012300000169","Saadat Hidayanto","saadat.hidayanto.169@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+173,"72072000000170","Dr. Malika Anggriawan","malika.anggriawan.170@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+174,"95020200000171","Prof. Purwadi Safitri","purwadi.safitri.171@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+175,"67100700000172","Ir. Vera Palastri","vera.palastri.172@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+176,"91090800000173","Dr. Dina Anggraini","dina.anggraini.173@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+177,"62011800000174","Ir. Cakrawala Nainggolan","cakrawala.nainggolan.174@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+178,"62011500000175","Patricia Halim","patricia.halim.175@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+179,"98080800000176","Rahman Sirait","rahman.sirait.176@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+180,"67122700000177","Ir. Rahmi Santoso","rahmi.santoso.177@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+181,"98030600000178","Oni Pudjiastuti","oni.pudjiastuti.178@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+182,"87102100000179","Mrs. Lurhur Hidayat","lurhur.hidayat.179@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+183,"75041100000180","Johan Permadi","johan.permadi.180@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+184,"77010300000181","Mr. Shania Simanjuntak","shania.simanjuntak.181@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+185,"68010500000182","Ir. Tri Oktaviani","tri.oktaviani.182@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+186,"96060700000183","Mrs. Cornelia Lestari","cornelia.lestari.183@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+187,"87050900000184","Mr. Soleh Kurniawan","soleh.kurniawan.184@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+188,"64091700000185","Mr. Puti Pradipta","puti.pradipta.185@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+189,"90021800000186","Tina Hidayat","tina.hidayat.186@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+190,"63020500000187","Jaya Widiastuti","jaya.widiastuti.187@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+191,"91042200000188","Mrs. Jayadi Hutagalung","jayadi.hutagalung.188@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+192,"84091800000189","Reksa Setiawan","reksa.setiawan.189@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+193,"78071500000190","Prof. Oni Hidayanto","oni.hidayanto.190@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+194,"64021900000191","Ir. Lili Irawan","lili.irawan.191@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+195,"85022000000192","Mr. Darmaji Suartini","darmaji.suartini.192@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+196,"61020200000193","Ir. Jaiman Mahendra","jaiman.mahendra.193@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+197,"97100400000194","Prof. Kenes Sudiati","kenes.sudiati.194@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+198,"96050700000195","Samiah Siregar","samiah.siregar.195@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+199,"99070500000196","Prof. Mursita Pradana","mursita.pradana.196@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+200,"91031000000197","Ir. Wadi Hardiansyah","wadi.hardiansyah.197@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+201,"64030800000198","Mr. Bagiya Maryati","bagiya.maryati.198@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+202,"97032800000199","Prof. Pia Suwarno","pia.suwarno.199@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+203,"76062600000200","Prof. Jessica Handayani","jessica.handayani.200@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+204,"64091200000201","Mrs. Melinda Palastri","melinda.palastri.201@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+205,"96030500000202","Mr. Eja Pradipta","eja.pradipta.202@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+206,"74030200000203","Mr. Kariman Maheswara","kariman.maheswara.203@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+207,"83120900000204","Ir. Hasta Mustofa","hasta.mustofa.204@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+208,"67022600000205","Okto Rajasa","okto.rajasa.205@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+209,"67090100000206","Uli Laksita","uli.laksita.206@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+210,"85122400000207","Mrs. Maryadi Hariyah","maryadi.hariyah.207@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+211,"75060400000208","Teddy Wasita","teddy.wasita.208@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+212,"78070700000209","Mrs. Jarwadi Wahyudin","jarwadi.wahyudin.209@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+213,"97072600000210","Bakianto Kusmawati","bakianto.kusmawati.210@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+214,"65080600000211","Ida Hartati","ida.hartati.211@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+215,"85101800000212","Prof. Cagak Winarsih","cagak.winarsih.212@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+216,"76012000000213","Genta Sihombing","genta.sihombing.213@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+217,"70110400000214","Mrs. Karimah Puspita","karimah.puspita.214@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+218,"93010400000215","Mr. Gilda Puspita","gilda.puspita.215@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+219,"99041200000216","Ir. Liman Najmudin","liman.najmudin.216@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+220,"65101600000217","Ir. Jelita Usamah","jelita.usamah.217@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+221,"94031400000218","Ir. Eko Santoso","eko.santoso.218@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+222,"63032300000219","Tami Suartini","tami.suartini.219@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+223,"95011800000220","Dr. Balapati Wijayanti","balapati.wijayanti.220@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+224,"63112400000221","Mr. Syahrini Riyanti","syahrini.riyanti.221@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+225,"87122400000222","Estiono Laksmiwati","estiono.laksmiwati.222@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+226,"73030200000223","Dr. Padmi Hutagalung","padmi.hutagalung.223@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+227,"92042800000224","Restu Iswahyudi","restu.iswahyudi.224@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+228,"73041600000225","Mr. Naradi Riyanti","naradi.riyanti.225@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+229,"88022100000226","Mrs. Edison Gunawan","edison.gunawan.226@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+230,"91081800000227","Ir. Arsipatra Prabowo","arsipatra.prabowo.227@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+231,"95040800000228","Mr. Luis Astuti","luis.astuti.228@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+232,"61062700000229","Mrs. Purwanto Kurniawan","purwanto.kurniawan.229@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+233,"95041800000230","Dr. Kasusra Pangestu","kasusra.pangestu.230@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+234,"83021000000231","Ir. Jarwadi Hidayanto","jarwadi.hidayanto.231@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+235,"92092200000232","Dr. Cahyono Kurniawan","cahyono.kurniawan.232@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:13
+236,"89091800000233","Dr. Banawi Padmasari","banawi.padmasari.233@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:13
+237,"80120400000234","Dr. Ian Maryati","ian.maryati.234@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:13
+238,"95052400000235","Lidya Hariyah","lidya.hariyah.235@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:13
+239,"93092200000236","Mr. Taufik Pudjiastuti","taufik.pudjiastuti.236@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:13
+240,"79030900000237","Dr. Winda Lazuardi","winda.lazuardi.237@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:13
+241,"67070700000238","Prof. Kusuma Mulyani","kusuma.mulyani.238@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:13
+242,"85091100000239","Mr. Galih Mulyani","galih.mulyani.239@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:13
+243,"67012100000240","Mr. Bakiadi Firmansyah","bakiadi.firmansyah.240@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:13
+244,"74072100000241","Prof. Bakti Mardhiyah","bakti.mardhiyah.241@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:13
+245,"90121000000242","Puput Zulaika","puput.zulaika.242@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+246,"60122600000243","Mr. Ani Rahimah","ani.rahimah.243@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+247,"83032300000244","Mr. Among Salahudin","among.salahudin.244@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+248,"61082800000245","Prof. Kamaria Yuniar","kamaria.yuniar.245@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+249,"62090900000246","Mrs. Dewi Hassanah","dewi.hassanah.246@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+250,"91042600000247","Mrs. Janet Prasetya","janet.prasetya.247@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+251,"92101600000248","Prof. Anastasia Hutasoit","anastasia.hutasoit.248@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+252,"64111800000249","Naradi Wahyuni","naradi.wahyuni.249@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+253,"70042300000250","Estiawan Hardiansyah","estiawan.hardiansyah.250@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+254,"79122000000251","Mr. Zelda Nasyiah","zelda.nasyiah.251@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+255,"99072200000252","Danuja Mahendra","danuja.mahendra.252@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+256,"80010500000253","Elvina Sihombing","elvina.sihombing.253@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+257,"79090400000254","Mrs. Balidin Rahimah","balidin.rahimah.254@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+258,"73052200000255","Dr. Gina Sitorus","gina.sitorus.255@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+259,"71020900000256","Harjo Mardhiyah","harjo.mardhiyah.256@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+260,"85061400000257","Mr. Winda Pradipta","winda.pradipta.257@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+261,"63070100000258","Mr. Nabila Rahimah","nabila.rahimah.258@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+262,"65011800000259","Ir. Talia Permata","talia.permata.259@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+263,"68071800000260","Prof. Tantri Nuraini","tantri.nuraini.260@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+264,"66042500000261","Amalia Hakim","amalia.hakim.261@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+265,"87061500000262","Purwa Tamba","purwa.tamba.262@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+266,"75030400000263","Prof. Dariati Lestari","dariati.lestari.263@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+267,"66121800000264","Aslijan Budiyanto","aslijan.budiyanto.264@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+268,"76011000000265","Mr. Dewi Sihombing","dewi.sihombing.265@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+269,"95092700000266","Mrs. Latika Laksita","latika.laksita.266@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+270,"63062700000267","Ir. Saka Safitri","saka.safitri.267@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+271,"72012200000268","Prof. Estiawan Aryani","estiawan.aryani.268@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+272,"95042000000269","Ir. Jumadi Sitompul","jumadi.sitompul.269@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+273,"91032800000270","Ir. Prabowo Dongoran","prabowo.dongoran.270@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+274,"96091800000271","Mr. Yuliana Sihotang","yuliana.sihotang.271@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+275,"84061400000272","Dr. Yuni Samosir","yuni.samosir.272@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+276,"96062200000273","Mr. Kayla Iswahyudi","kayla.iswahyudi.273@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+277,"77021100000274","Mrs. Anita Winarno","anita.winarno.274@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+278,"98121800000275","Kamila Oktaviani","kamila.oktaviani.275@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+279,"85102700000276","Septi Mangunsong","septi.mangunsong.276@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+280,"95111900000277","Prof. Tania Wulandari","tania.wulandari.277@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+281,"88040900000278","Kasim Widiastuti","kasim.widiastuti.278@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+282,"87071000000279","Dasa Permadi","dasa.permadi.279@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+283,"87020900000280","Ir. Cagak Namaga","cagak.namaga.280@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+284,"91081200000281","Calista Yolanda","calista.yolanda.281@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+285,"61071700000282","Mr. Padma Widiastuti","padma.widiastuti.282@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+286,"91111700000283","Mrs. Michelle Farida","michelle.farida.283@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+287,"91012200000284","Mrs. Ayu Yuliarti","ayu.yuliarti.284@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+288,"75091800000285","Prof. Farah Waluyo","farah.waluyo.285@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+289,"72030500000286","Calista Rahayu","calista.rahayu.286@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+290,"90071800000287","Prof. Nurul Prastuti","nurul.prastuti.287@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+291,"61022300000288","Mr. Kayla Gunawan","kayla.gunawan.288@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+292,"91021200000289","Prof. Almira Susanti","almira.susanti.289@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+293,"88092600000290","Dr. Simon Kuswoyo","simon.kuswoyo.290@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+294,"87101300000291","Ir. Vero Mayasari","vero.mayasari.291@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+295,"72081800000292","Ir. Bakijan Widiastuti","bakijan.widiastuti.292@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+296,"74060200000293","Mr. Nova Yuliarti","nova.yuliarti.293@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+297,"79061500000294","Mr. Soleh Simanjuntak","soleh.simanjuntak.294@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+298,"89011100000295","Dr. Aditya Winarno","aditya.winarno.295@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+299,"76081100000296","Victoria Pradana","victoria.pradana.296@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+300,"77060300000297","Dr. Olga Zulaika","olga.zulaika.297@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+301,"89011700000298","Prof. Shakila Kuswandari","shakila.kuswandari.298@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+302,"90121000000299","Ir. Ulya Utami","ulya.utami.299@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+303,"61010500000300","Citra Putra","citra.putra.300@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+304,"92042800000301","Prof. Yance Kuswoyo","yance.kuswoyo.301@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+305,"98100400000302","Dr. Harjaya Prasetyo","harjaya.prasetyo.302@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+306,"78050900000303","Mrs. Titi Natsir","titi.natsir.303@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+307,"73031600000304","Mrs. Banawa Natsir","banawa.natsir.304@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+308,"95061100000305","Ir. Hani Putra","hani.putra.305@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+309,"84031500000306","Dr. Kairav Novitasari","kairav.novitasari.306@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+310,"68011200000307","Dasa Napitupulu","dasa.napitupulu.307@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+311,"61080700000308","Ir. Kuncara Pranowo","kuncara.pranowo.308@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+312,"70041600000309","Mr. Pia Aryani","pia.aryani.309@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+313,"60110500000310","Prof. Jefri Megantara","jefri.megantara.310@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+314,"99081200000311","Eman Pratiwi","eman.pratiwi.311@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+315,"99061700000312","Mrs. Paulin Lazuardi","paulin.lazuardi.312@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+316,"71082600000313","Ir. Galar Kusmawati","galar.kusmawati.313@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+317,"62120200000314","Mr. Cemani Hassanah","cemani.hassanah.314@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+318,"84121000000315","Mr. Cakrabuana Sitorus","cakrabuana.sitorus.315@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+319,"70102200000316","Puji Halimah","puji.halimah.316@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+320,"62070800000317","Dr. Najib Wijayanti","najib.wijayanti.317@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+321,"65070800000318","Ir. Ayu Wibisono","ayu.wibisono.318@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+322,"99010800000319","Mr. Lalita Agustina","lalita.agustina.319@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+323,"69011800000320","Mr. Ajimat Napitupulu","ajimat.napitupulu.320@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+324,"89042000000321","Kadir Firmansyah","kadir.firmansyah.321@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+325,"76091700000322","Mr. Kamila Usamah","kamila.usamah.322@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+326,"99092800000323","Banawa Usamah","banawa.usamah.323@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+327,"98062600000324","Mrs. Alika Ramadan","alika.ramadan.324@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+328,"94032400000325","Prof. Galur Wijayanti","galur.wijayanti.325@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+329,"99042000000326","Ir. Gatot Damanik","gatot.damanik.326@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+330,"78050300000327","Dr. Malik Yuliarti","malik.yuliarti.327@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+331,"80052200000328","Ir. Hardi Ramadan","hardi.ramadan.328@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+332,"70021400000329","Dr. Asirwada Agustina","asirwada.agustina.329@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+333,"71050900000330","Dr. Ganep Utami","ganep.utami.330@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+334,"99012500000331","Mrs. Wakiman Agustina","wakiman.agustina.331@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+335,"61092500000332","Ir. Heru Laksita","heru.laksita.332@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+336,"67101600000333","Mrs. Hamima Haryanto","hamima.haryanto.333@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+337,"62022400000334","Ir. Umi Sihotang","umi.sihotang.334@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+338,"87071500000335","Mr. Yahya Hasanah","yahya.hasanah.335@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+339,"81091600000336","Hamima Zulkarnain","hamima.zulkarnain.336@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+340,"71010900000337","Wawan Budiyanto","wawan.budiyanto.337@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+341,"79050700000338","Mrs. Legawa Thamrin","legawa.thamrin.338@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+342,"86050300000339","Mr. Empluk Zulaika","empluk.zulaika.339@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+343,"64100600000340","Prof. Jasmin Sihotang","jasmin.sihotang.340@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+344,"74061400000341","Prof. Bakidin Melani","bakidin.melani.341@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+345,"91120200000342","Ir. Danu Saefullah","danu.saefullah.342@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+346,"88100600000343","Mrs. Dalima Utami","dalima.utami.343@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+347,"77032200000344","Ganjaran Winarno","ganjaran.winarno.344@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+348,"62110500000345","Dr. Luwes Nainggolan","luwes.nainggolan.345@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+349,"77052300000346","Salsabila Hastuti","salsabila.hastuti.346@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+350,"88012500000347","Nadia Mardhiyah","nadia.mardhiyah.347@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+351,"70022300000348","Mrs. Labuh Marpaung","labuh.marpaung.348@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+352,"85111200000349","Prof. Jaiman Nainggolan","jaiman.nainggolan.349@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+353,"61060300000350","Ir. Rahmat Yuliarti","rahmat.yuliarti.350@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+354,"87111700000351","Mr. Mariadi Wijaya","mariadi.wijaya.351@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+355,"64022700000352","Prof. Ratna Saragih","ratna.saragih.352@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+356,"67052100000353","Limar Marbun","limar.marbun.353@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+357,"96060900000354","Mr. Safina Puspasari","safina.puspasari.354@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+358,"85110700000355","Prof. Nova Rajata","nova.rajata.355@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+359,"63111900000356","Prof. Rafid Agustina","rafid.agustina.356@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+360,"84062600000357","Pia Sihotang","pia.sihotang.357@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+361,"67080300000358","Dr. Karen Latupono","karen.latupono.358@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+362,"74062600000359","Mrs. Anita Nababan","anita.nababan.359@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+363,"94042800000360","Dr. Asirwada Marbun","asirwada.marbun.360@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+364,"86121800000361","Prof. Rina Winarsih","rina.winarsih.361@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+365,"72102300000362","Ratih Nugroho","ratih.nugroho.362@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+366,"93090700000363","Carla Anggriawan","carla.anggriawan.363@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+367,"67010500000364","Prof. Ciaobella Maheswara","ciaobella.maheswara.364@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+368,"84100100000365","Ir. Siti Hutapea","siti.hutapea.365@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+369,"75030900000366","Ir. Oliva Sihombing","oliva.sihombing.366@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+370,"94031800000367","Prof. Dian Wahyuni","dian.wahyuni.367@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+371,"69101300000368","Dr. Kanda Hastuti","kanda.hastuti.368@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+372,"87070500000369","Mrs. Rendy Najmudin","rendy.najmudin.369@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+373,"83031800000370","Cawisono Nainggolan","cawisono.nainggolan.370@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+374,"64102600000371","Lasmono Hariyah","lasmono.hariyah.371@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+375,"60021000000372","Dr. Dono Handayani","dono.handayani.372@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+376,"84090400000373","Mr. Hasan Wibisono","hasan.wibisono.373@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+377,"98072000000374","Uchita Rahayu","uchita.rahayu.374@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+378,"85101500000375","Dr. Marsudi Lailasari","marsudi.lailasari.375@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+379,"99020800000376","Dwi Hidayat","dwi.hidayat.376@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+380,"83031300000377","Ir. Salwa Winarsih","salwa.winarsih.377@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+381,"75022400000378","Mr. Icha Nuraini","icha.nuraini.378@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+382,"75092300000379","Prof. Salwa Halimah","salwa.halimah.379@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+383,"69060800000380","Prof. Gaiman Wijaya","gaiman.wijaya.380@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+384,"88091900000381","Ir. Sabrina Mustofa","sabrina.mustofa.381@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+385,"76060500000382","Ir. Dimas Napitupulu","dimas.napitupulu.382@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+386,"96110100000383","Prof. Syahrini Wasita","syahrini.wasita.383@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+387,"76052800000384","Prof. Tina Aryani","tina.aryani.384@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+388,"89042100000385","Ir. Kezia Hutapea","kezia.hutapea.385@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+389,"64081500000386","Mr. Jayeng Mandasari","jayeng.mandasari.386@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+390,"62102800000387","Prof. Karna Utami","karna.utami.387@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+391,"60072400000388","Dr. Lanjar Saptono","lanjar.saptono.388@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+392,"65021500000389","Mrs. Silvia Januar","silvia.januar.389@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+393,"69032800000390","Daruna Habibi","daruna.habibi.390@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+394,"81030200000391","Prof. Kemba Zulaika","kemba.zulaika.391@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+395,"61072700000392","Mr. Gilda Siregar","gilda.siregar.392@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+396,"76081900000393","Mrs. Prasetyo Halim","prasetyo.halim.393@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+397,"60072300000394","Mr. Ella Nasyiah","ella.nasyiah.394@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+398,"81062600000395","Salimah Yuniar","salimah.yuniar.395@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+399,"89062600000396","Prof. Eva Oktaviani","eva.oktaviani.396@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+400,"68062100000397","Zizi Hastuti","zizi.hastuti.397@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+401,"92061700000398","Ani Kuswoyo","ani.kuswoyo.398@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+402,"69091300000399","Hilda Prabowo","hilda.prabowo.399@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+403,"97011000000400","Mrs. Bajragin Firgantoro","bajragin.firgantoro.400@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+404,"94112100000401","Ir. Irma Yulianti","irma.yulianti.401@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+405,"90120300000402","Mr. Galar Pradana","galar.pradana.402@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+406,"95120500000403","Prof. Ophelia Prakasa","ophelia.prakasa.403@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+407,"88060600000404","Ir. Mursita Utami","mursita.utami.404@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+408,"90070400000405","Mr. Samiah Laksita","samiah.laksita.405@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+409,"77061600000406","Mrs. Cinthia Mahendra","cinthia.mahendra.406@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+410,"97042600000407","Citra Tamba","citra.tamba.407@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+411,"63050800000408","Mr. Bakiman Haryanto","bakiman.haryanto.408@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+412,"70092800000409","Ani Hutasoit","ani.hutasoit.409@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+413,"83071200000410","Siska Prabowo","siska.prabowo.410@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+414,"65122400000411","Ir. Hamima Simbolon","hamima.simbolon.411@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+415,"70051300000412","Bakidin Thamrin","bakidin.thamrin.412@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+416,"81082400000413","Mrs. Zelda Ardianto","zelda.ardianto.413@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+417,"92011000000414","Mrs. Labuh Hassanah","labuh.hassanah.414@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+418,"62052300000415","Ir. Almira Hasanah","almira.hasanah.415@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+419,"97071700000416","Dr. Yani Padmasari","yani.padmasari.416@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+420,"88090900000417","Purwanto Prastuti","purwanto.prastuti.417@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+421,"90102300000418","Balidin Puspita","balidin.puspita.418@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+422,"92112000000419","Juli Pratama","juli.pratama.419@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+423,"95010300000420","Ganda Hidayat","ganda.hidayat.420@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+424,"78050800000421","Mrs. Prayitna Mandala","prayitna.mandala.421@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+425,"80050600000422","Prof. Zalindra Utami","zalindra.utami.422@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+426,"70032100000423","Dr. Yosef Kuswoyo","yosef.kuswoyo.423@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+427,"79092200000424","Dr. Irwan Damanik","irwan.damanik.424@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+428,"84032300000425","Soleh Pertiwi","soleh.pertiwi.425@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+429,"71091000000426","Wirda Prasasta","wirda.prasasta.426@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+430,"77121200000427","Mrs. Saadat Samosir","saadat.samosir.427@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+431,"61122800000428","Asmuni Sihotang","asmuni.sihotang.428@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+432,"85122500000429","Mrs. Zulfa Wulandari","zulfa.wulandari.429@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+433,"80071200000430","Prof. Rini Laksita","rini.laksita.430@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+434,"62011500000431","Mrs. Raditya Utama","raditya.utama.431@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+435,"89081700000432","Mala Puspasari","mala.puspasari.432@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+436,"93062500000433","Mr. Prabu Pertiwi","prabu.pertiwi.433@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+437,"88042200000434","Dr. Kasiyah Habibi","kasiyah.habibi.434@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+438,"72101400000435","Pranata Utama","pranata.utama.435@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+439,"77021400000436","Prof. Jasmin Damanik","jasmin.damanik.436@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+440,"85102800000437","Mrs. Harja Iswahyudi","harja.iswahyudi.437@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+441,"63040400000438","Gilang Nurdiyanti","gilang.nurdiyanti.438@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+442,"87120300000439","Dr. Uchita Kusumo","uchita.kusumo.439@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+443,"86082700000440","Dr. Cecep Firgantoro","cecep.firgantoro.440@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+444,"72100500000441","Garda Irawan","garda.irawan.441@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+445,"61021200000442","Mr. Kezia Setiawan","kezia.setiawan.442@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+446,"63082600000443","Ir. Yulia Setiawan","yulia.setiawan.443@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+447,"96052800000444","Balamantri Hasanah","balamantri.hasanah.444@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+448,"94032600000445","Dr. Ulva Damanik","ulva.damanik.445@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+449,"71092000000446","Amelia Mandasari","amelia.mandasari.446@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+450,"77112300000447","Prof. Puti Mardhiyah","puti.mardhiyah.447@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+451,"91061300000448","Ir. Teguh Hakim","teguh.hakim.448@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+452,"95050900000449","Simon Nuraini","simon.nuraini.449@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+453,"65051000000450","Prof. Unggul Megantara","unggul.megantara.450@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14
+454,"69060200000451","Dr. Salman Palastri","salman.palastri.451@universitas.ac.id","Unit 10","aktif",2026-02-16 03:28:14
+455,"90111600000452","Prof. Rama Halimah","rama.halimah.452@universitas.ac.id","Unit 1","aktif",2026-02-16 03:28:14
+456,"65031100000453","Prof. Eka Habibi","eka.habibi.453@universitas.ac.id","Unit 2","aktif",2026-02-16 03:28:14
+457,"91012000000454","Latika Nasyidah","latika.nasyidah.454@universitas.ac.id","Unit 3","aktif",2026-02-16 03:28:14
+458,"81120600000455","Prof. Harto Situmorang","harto.situmorang.455@universitas.ac.id","Unit 4","aktif",2026-02-16 03:28:14
+459,"71091600000456","Warsa Ardianto","warsa.ardianto.456@universitas.ac.id","Unit 5","aktif",2026-02-16 03:28:14
+460,"79012200000457","Mr. Hamima Palastri","hamima.palastri.457@universitas.ac.id","Unit 6","aktif",2026-02-16 03:28:14
+461,"63120700000458","Prof. Rafid Setiawan","rafid.setiawan.458@universitas.ac.id","Unit 7","aktif",2026-02-16 03:28:14
+462,"97032300000459","Mrs. Nardi Setiawan","nardi.setiawan.459@universitas.ac.id","Unit 8","aktif",2026-02-16 03:28:14
+463,"99091900000460","Harjasa Uyainah","harjasa.uyainah.460@universitas.ac.id","Unit 9","aktif",2026-02-16 03:28:14

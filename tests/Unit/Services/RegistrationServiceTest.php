@@ -201,7 +201,7 @@ class RegistrationServiceTest extends TestCase
         $otherPeriode = Periode::factory()->create();
         PesertaKkn::factory()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $otherPeriode->id,
+            'periode_id' => $otherPeriode->id,
             'status' => 'approved',
         ]);
 
@@ -222,7 +222,7 @@ class RegistrationServiceTest extends TestCase
     {
         $studentFaculty = Fakultas::factory()->create();
         $studentProgram = Prodi::factory()->create([
-            'faculty_id' => $studentFaculty->id,
+            'fakultas_id' => $studentFaculty->id,
         ]);
         $targetFaculty = Fakultas::factory()->create();
 
@@ -231,8 +231,8 @@ class RegistrationServiceTest extends TestCase
             'is_bta_ppi_passed' => true,
             'health_certificate_path' => 'cert.pdf',
             'parent_permission_path' => 'permission.pdf',
-            'faculty_id' => $studentFaculty->id,
-            'program_id' => $studentProgram->id,
+            'fakultas_id' => $studentFaculty->id,
+            'prodi_id' => $studentProgram->id,
         ]);
 
         $periode = Periode::factory()->create([
@@ -241,11 +241,11 @@ class RegistrationServiceTest extends TestCase
         ]);
 
         $lokasi = Lokasi::factory()->create([
-            'faculty_id' => $targetFaculty->id,
+            'fakultas_id' => $targetFaculty->id,
         ]);
 
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
             'status' => 'active',
         ]);
@@ -275,7 +275,7 @@ class RegistrationServiceTest extends TestCase
         $lokasi = Lokasi::factory()->create();
 
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
             'status' => 'active',
             'capacity' => 1,
@@ -285,7 +285,7 @@ class RegistrationServiceTest extends TestCase
         $otherMahasiswa = Mahasiswa::factory()->create();
         PesertaKkn::factory()->create([
             'mahasiswa_id' => $otherMahasiswa->id,
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'kelompok_id' => $kelompok->id,
             'status' => 'approved',
         ]);
@@ -314,7 +314,7 @@ class RegistrationServiceTest extends TestCase
 
         $existing = PesertaKkn::factory()->create([
             'mahasiswa_id' => $mahasiswa->id,
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'kelompok_id' => null,
             'status' => 'rejected',
             'rejection_reason' => 'Lengkapi berkas pendukung.',
@@ -322,7 +322,7 @@ class RegistrationServiceTest extends TestCase
         ]);
 
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'status' => 'active',
         ]);
 
@@ -341,7 +341,7 @@ class RegistrationServiceTest extends TestCase
         $periodeId = 10;
         $mahasiswa = Mahasiswa::factory()->make(['id' => $mahasiswaId]);
 
-        // Expected key format: registration:student:{id}:period:{period_id}
+        // Expected key format: registration:student:{id}:period:{periode_id}
         $expectedKey = "registration:student:{$mahasiswaId}:period:{$periodeId}";
 
         // We use reflection or internal knowledge to test the key format used by the service
@@ -361,19 +361,19 @@ class RegistrationServiceTest extends TestCase
         $periode = Periode::factory()->create();
         $lokasi = Lokasi::factory()->create();
         $kelompok = KelompokKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'location_id' => $lokasi->id,
         ]);
 
         $registration = PesertaKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'kelompok_id' => $kelompok->id,
             'status' => 'pending',
             'notes' => 'Test notes',
         ]);
 
         $queue = AntrianKkn::factory()->create([
-            'period_id' => $periode->id,
+            'periode_id' => $periode->id,
             'mahasiswa_id' => $registration->mahasiswa_id,
             'status' => 'dalam_kelompok',
             'penalti_poin' => 5,
@@ -435,7 +435,7 @@ class RegistrationServiceTest extends TestCase
 
         $this->assertInstanceOf(PesertaKkn::class, $result);
         $this->assertSame('pending', $result->status);
-        $this->assertSame($periode->id, $result->period_id);
+        $this->assertSame($periode->id, $result->periode_id);
     }
 
     private function activateAcademicRequirements(): void

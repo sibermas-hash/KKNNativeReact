@@ -82,7 +82,7 @@ class GeneratorNilaiController extends Controller
 
                 return [
                     'id' => $g->id,
-                    'period_id' => $g->period_id,
+                    'periode_id' => $g->periode_id,
                     'code' => $kelompokNum,
                     'name' => 'Kelompok '.$kelompokNum,
                     'desa' => $g->lokasi?->village_name ?? '-',
@@ -237,7 +237,7 @@ class GeneratorNilaiController extends Controller
 
     public function exportExcel(Request $request, $id)
     {
-        $periodId = $request->query('period_id');
+        $periodId = $request->query('periode_id');
 
         if ($id !== 'all') {
             $this->authorizeDplGroup((int) $id);
@@ -259,7 +259,7 @@ class GeneratorNilaiController extends Controller
 
     public function exportPdf(Request $request, $id)
     {
-        $periodId = $request->query('period_id');
+        $periodId = $request->query('periode_id');
 
         if ($id !== 'all') {
             $this->authorizeDplGroup((int) $id);
@@ -283,14 +283,14 @@ class GeneratorNilaiController extends Controller
     {
         abort_if(auth()->user()->hasRole('dpl'), 403, 'DPL hanya dapat mengekspor kelompok yang ditugaskan.');
 
-        $periodId = $request->query('period_id');
+        $periodId = $request->query('periode_id');
         if (! $periodId) {
-            abort(400, 'Missing period_id');
+            abort(400, 'Missing periode_id');
         }
 
         // Use cursor for memory efficiency
         $groups = KelompokKkn::with(['lokasi', 'dosen.user:id,name', 'periode.tahunAkademik'])
-            ->where('period_id', $periodId)
+            ->where('periode_id', $periodId)
             ->whereHas('dosen', function ($q) {
                 if (auth()->user()->hasRole('dpl')) {
                     $dosenId = auth()->user()->dosen?->id;
@@ -346,7 +346,7 @@ class GeneratorNilaiController extends Controller
                 $join->on('ks.user_id', '=', 'u.id')
                     ->on('ks.kelompok_id', '=', 'g.id');
             })
-            ->where('g.period_id', $periodId)
+            ->where('g.periode_id', $periodId)
             ->select([
                 'u.id as user_id',
                 'u.name',

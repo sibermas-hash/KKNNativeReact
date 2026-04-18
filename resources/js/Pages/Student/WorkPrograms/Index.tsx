@@ -57,7 +57,7 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
         <motion.section
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="group relative overflow-hidden rounded-xl bg-emerald-50 border border-gray-200 p-12 lg:p-16 text-bg-emerald-100 shadow-lg"
+          className="group relative overflow-hidden rounded-xl bg-emerald-50 border border-emerald-50 p-12 lg:p-16 text-bg-emerald-100 shadow-lg"
         >
           <div className="absolute top-0 right-0 h-full w-1/3 bg-emerald-500 opacity-5 -skew-x-12 translate-x-1/2" />
           <div className="absolute -bottom-24 -left-24 h-64 w-64 bg-emerald-500/10 rounded-full blur-[100px]" />
@@ -65,7 +65,7 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-6 max-w-2xl">
               <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-2xl bg-emerald-500 flex items-center justify-center text-black shadow-xl shadow-emerald-500/20">
+                <div className="h-12 w-12 rounded-2xl bg-emerald-500 flex items-center justify-center text-emerald-950 shadow-xl shadow-emerald-500/20">
                   <Briefcase size={24} strokeWidth={3} />
                 </div>
                 <div className="h-px w-12 bg-emerald-500/30" />
@@ -77,7 +77,7 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
                 <h1 className="text-2xl md:text-2xl font-bold tracking-tighter uppercase leading-[0.9]">
                   Program <span className="text-[#1a7a4a]">Kerja Unit.</span>
                 </h1>
-                <p className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs leading-relaxed max-w-md opacity-80">
+                <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs leading-relaxed max-w-md opacity-80">
                   Matriks strategi pengabdian dan pemberdayaan masyarakat oleh kelompok Anda.
                 </p>
               </div>
@@ -86,7 +86,7 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
             {canCreate && (
               <Link
                 href={route('student.program-kerja.create')}
-                className="h-10 px-6 rounded-xl bg-emerald-500 text-black hover:bg-white transition-all flex items-center justify-center gap-4 group/btn shadow-2xl shadow-emerald-500/20 active:scale-95"
+                className="h-10 px-6 rounded-xl bg-emerald-500 text-emerald-950 hover:bg-white transition-all flex items-center justify-center gap-4 group/btn shadow-2xl shadow-emerald-500/20 active:scale-95"
               >
                 <Plus
                   size={24}
@@ -113,7 +113,7 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
               <motion.section
                 key={program.id}
                 variants={cardVariants}
-                className="group relative rounded-[2.5rem] bg-white border border-gray-200/60 p-10 shadow-sm hover:shadow-2xl hover:shadow-bg-emerald-100/5 transition-all duration-500 overflow-hidden"
+                className="group relative rounded-[2.5rem] bg-white border border-emerald-50/60 p-10 shadow-sm hover:shadow-2xl hover:shadow-bg-emerald-100/5 transition-all duration-500 overflow-hidden"
               >
                 {/* Active Indicator */}
                 <div className="absolute top-0 right-0 h-12 w-24 bg-emerald-500 opacity-0 group-hover:opacity-[0.03] -rotate-45 translate-x-12 -translate-y-12 transition-all duration-700" />
@@ -126,7 +126,7 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
                         Module-PK26-{program.id}
                       </p>
                     </div>
-                    <h2 className="text-2xl font-bold text-black tracking-tighter uppercase group-hover:text-emerald-600 transition-colors leading-none">
+                    <h2 className="text-2xl font-bold text-emerald-950 tracking-tighter uppercase group-hover:text-emerald-600 transition-colors leading-none">
                       {program.title}
                     </h2>
                   </div>
@@ -137,37 +137,37 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
                 </div>
 
                 <div className="space-y-8">
-                  <div className="bg-emerald-50/30 rounded-3xl p-8 border border-gray-200/60/50 min-h-[120px] relative overflow-hidden">
+                  <div className="bg-emerald-50/30 rounded-3xl p-8 border border-emerald-50/60/50 min-h-[120px] relative overflow-hidden">
                     <Layers className="absolute -bottom-4 -right-4 h-12 w-24 text-slate-200 opacity-20" />
-                    <p className="text-sm font-bold text-gray-900 leading-relaxed uppercase tracking-tight relative z-10">
+                    <p className="text-sm font-bold text-emerald-950 leading-relaxed uppercase tracking-tight relative z-10">
                       {program.description ||
                         'Deskripsi operasional belum dikonfigurasi untuk modul ini.'}
                     </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
-                    <div className="p-6 rounded-3xl bg-white border border-gray-200/60 shadow-sm space-y-3">
+                    <div className="p-6 rounded-3xl bg-white border border-emerald-50/60 shadow-sm space-y-3">
                       <div className="h-10 w-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
                         <Target size={20} strokeWidth={2.5} />
                       </div>
                       <div>
-                        <p className="text-sm font-bold font-semibold uppercase text-xs text-gray-900 mb-1">
+                        <p className="text-sm font-bold font-semibold uppercase text-xs text-emerald-950 mb-1">
                           Objektif Utama
                         </p>
-                        <p className="text-xs font-bold text-black uppercase truncate">
+                        <p className="text-xs font-bold text-emerald-950 uppercase truncate">
                           {program.objectives || '-'}
                         </p>
                       </div>
                     </div>
-                    <div className="p-6 rounded-3xl bg-white border border-gray-200/60 shadow-sm space-y-3">
+                    <div className="p-6 rounded-3xl bg-white border border-emerald-50/60 shadow-sm space-y-3">
                       <div className="h-10 w-10 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600">
                         <Wallet size={20} strokeWidth={2.5} />
                       </div>
                       <div>
-                        <p className="text-sm font-bold font-semibold uppercase text-xs text-gray-900 mb-1">
+                        <p className="text-sm font-bold font-semibold uppercase text-xs text-emerald-950 mb-1">
                           Asset Allocation
                         </p>
-                        <p className="text-xs font-bold text-black uppercase tabular-nums">
+                        <p className="text-xs font-bold text-emerald-950 uppercase tabular-nums">
                           Rp {Number(program.budget || 0).toLocaleString('id-ID')}
                         </p>
                       </div>
@@ -176,7 +176,7 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
 
                   <Link
                     href={route('student.program-kerja.show', program.id)}
-                    className="w-full h-14 rounded-2xl bg-emerald-50 border border-gray-200 flex items-center justify-between px-8 text-emerald-600 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all group/link"
+                    className="w-full h-14 rounded-2xl bg-emerald-50 border border-emerald-50 flex items-center justify-between px-8 text-emerald-600 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all group/link"
                   >
                     <span className="text-sm font-bold font-semibold uppercase text-xs">
                       Detail & Manifes
@@ -194,15 +194,15 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
           <motion.section
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="rounded-xl border-4 border-dashed border-gray-200/60 bg-white py-32 text-center group hover:bg-emerald-50/30 transition-all duration-700"
+            className="rounded-xl border-4 border-dashed border-emerald-50/60 bg-white py-32 text-center group hover:bg-emerald-50/30 transition-all duration-700"
           >
             <div className="mx-auto h-12 w-24 rounded-3xl bg-emerald-50/30 flex items-center justify-center text-slate-200 mb-10 group-hover:scale-110 group-hover:bg-emerald-50 group-hover:text-[#1a7a4a] transition-all duration-500">
               <FolderKanban size={48} strokeWidth={1} />
             </div>
-            <h3 className="text-3xl font-bold text-black font-bold text-center">
+            <h3 className="text-3xl font-bold text-emerald-950 font-bold text-center">
               Database Entry Kosong
             </h3>
-            <p className="text-sm font-bold text-gray-900 mt-4 uppercase tracking-wider text-xs font-semibold max-w-sm mx-auto leading-relaxed opacity-60">
+            <p className="text-sm font-bold text-emerald-950 mt-4 uppercase tracking-wider text-xs font-semibold max-w-sm mx-auto leading-relaxed opacity-60">
               Belum ada manifes program kerja yang terdaftar dalam unit kelompok Anda.
             </p>
           </motion.section>

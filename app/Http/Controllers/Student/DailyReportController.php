@@ -154,7 +154,6 @@ class DailyReportController extends Controller
             'activity' => $validated['activity'],
             'reflection' => $validated['reflection'] ?? null,
             'social_media_link' => $validated['social_media_link'] ?? null,
-            'output' => $validated['output'] ?? null,
             'latitude' => $validated['latitude'],
             'longitude' => $validated['longitude'],
             'gps_accuracy' => $validated['gps_accuracy'] ?? null,

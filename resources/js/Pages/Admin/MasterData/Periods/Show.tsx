@@ -84,36 +84,36 @@ export default function PeriodShow({ period }: Props) {
 
  <div className="max-w-7xl mx-auto space-y-6 sm:px-6 lg:px-8 font-sans pb-12">
  {/* HEADER */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200 pt-6">
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-emerald-50 pt-6">
  <div className="flex items-center gap-3">
  <Link
  href="/admin/periode"
- className="p-2 rounded-md text-gray-700 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+ className="p-2 rounded-md text-emerald-800 hover:text-emerald-800 hover:bg-gray-100 transition-colors"
  >
  <ChevronLeft size={20} />
  </Link>
  <div>
  <div className="flex items-center gap-2">
- <span className="text-sm font-medium text-gray-700">Periode KKN</span>
- <span className="text-gray-500">/</span>
+ <span className="text-sm font-medium text-emerald-800">Periode KKN</span>
+ <span className="text-emerald-700">/</span>
  <span className={clsx(
  'text-xs font-semibold px-2 py-0.5 rounded-full',
- period.is_active ? 'bg-[#e8f5ee] text-gray-700' : 'bg-gray-100 text-gray-700'
+ period.is_active ? 'bg-[#e8f5ee] text-emerald-800' : 'bg-gray-100 text-emerald-800'
  )}>
  {period.is_active ? 'Publik' : 'Draft'}
  </span>
  </div>
- <h1 className="text-xl font-bold text-gray-900 mt-0.5">{period.name}</h1>
+ <h1 className="text-xl font-bold text-emerald-950 mt-0.5">{period.name}</h1>
  </div>
  </div>
 
  <div className="flex items-center gap-3 shrink-0">
- <span className="text-sm text-gray-700">
- Tahun Akademik: <strong className="text-gray-700">{period.academic_year.name}</strong>
+ <span className="text-sm text-emerald-800">
+ Tahun Akademik: <strong className="text-emerald-800">{period.academic_year.name}</strong>
  </span>
  <Link
  href="/admin/periode"
- className="h-9 px-4 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium shadow-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
+ className="h-9 px-4 bg-white border border-gray-300 text-emerald-800 rounded-lg text-sm font-medium shadow-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
  >
  <ChevronLeft size={16} /> Kembali ke Daftar
  </Link>
@@ -132,13 +132,13 @@ export default function PeriodShow({ period }: Props) {
  {/* LEFT: TIMELINE + DESKRIPSI */}
  <div className="lg:col-span-2 space-y-6">
  {/* Timeline */}
- <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
- <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
+ <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
+ <div className="px-6 py-4 bg-gray-50 border-b border-emerald-50 flex items-center gap-2">
  <Clock size={16} className="text-[#1a7a4a]"/>
  <h3 className="text-sm font-semibold text-[#1f2937]">Linimasa Operasional</h3>
  </div>
  <div className="p-6">
- <ol className="relative border-l border-gray-200 space-y-6 ml-3">
+ <ol className="relative border-l border-emerald-50 space-y-6 ml-3">
  {timeline.map((item, idx) => {
  const isActive = period.status_kkn === item.phase;
  return (
@@ -156,12 +156,12 @@ export default function PeriodShow({ period }: Props) {
  'p-4 rounded-lg border',
  isActive
  ? 'bg-gray-50 border-gray-300'
- : 'bg-white border-gray-200'
+ : 'bg-white border-emerald-50'
  )}>
  <div className="flex items-center justify-between gap-4">
  <p className={clsx(
  'text-sm font-semibold',
- isActive ? 'text-[#1f2937]' : 'text-gray-700'
+ isActive ? 'text-[#1f2937]' : 'text-emerald-800'
  )}>
  {item.title}
  </p>
@@ -171,7 +171,7 @@ export default function PeriodShow({ period }: Props) {
  </span>
  )}
  </div>
- <p className="text-xs text-gray-700 mt-1 tabular-nums">
+ <p className="text-xs text-emerald-800 mt-1 tabular-nums">
  {formatDate(item.start)} — {formatDate(item.end)}
  </p>
  </div>
@@ -183,13 +183,13 @@ export default function PeriodShow({ period }: Props) {
  </div>
 
  {/* Deskripsi */}
- <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
- <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
+ <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
+ <div className="px-6 py-4 bg-gray-50 border-b border-emerald-50 flex items-center gap-2">
  <FileText size={16} className="text-[#1a7a4a]"/>
  <h3 className="text-sm font-semibold text-[#1f2937]">Keterangan Periode</h3>
  </div>
  <div className="p-6">
- <p className="text-sm text-gray-700 leading-relaxed">
+ <p className="text-sm text-emerald-800 leading-relaxed">
  {period.description || 'Tidak ada keterangan tambahan untuk periode ini.'}
  </p>
  </div>
@@ -199,29 +199,29 @@ export default function PeriodShow({ period }: Props) {
  {/* RIGHT: STATUS + QUICK ACCESS */}
  <div className="space-y-6">
  {/* Status Card */}
- <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
- <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
+ <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
+ <div className="px-6 py-4 bg-gray-50 border-b border-emerald-50 flex items-center gap-2">
  <Info size={16} className="text-[#1a7a4a]"/>
  <h3 className="text-sm font-semibold text-[#1f2937]">Status Periode</h3>
  </div>
  <div className="p-6 space-y-4">
  <div className="flex items-center justify-between">
- <span className="text-sm text-gray-700">Publikasi</span>
+ <span className="text-sm text-emerald-800">Publikasi</span>
  <span className={clsx(
  'text-xs font-semibold px-2.5 py-1 rounded-full',
- period.is_active ? 'bg-[#e8f5ee] text-gray-700' : 'bg-gray-100 text-gray-700'
+ period.is_active ? 'bg-[#e8f5ee] text-emerald-800' : 'bg-gray-100 text-emerald-800'
  )}>
  {period.is_active ? 'Terbit (Publik)' : 'Sembunyikan (Draft)'}
  </span>
  </div>
  <div className="flex items-center justify-between">
- <span className="text-sm text-gray-700">Fase Saat Ini</span>
- <span className="text-xs font-semibold text-gray-700 bg-gray-50 border border-gray-300 px-2.5 py-1 rounded-full">
+ <span className="text-sm text-emerald-800">Fase Saat Ini</span>
+ <span className="text-xs font-semibold text-emerald-800 bg-gray-50 border border-gray-300 px-2.5 py-1 rounded-full">
  {currentPhaseLabel}
  </span>
  </div>
- <div className="pt-2 border-t border-gray-200">
- <p className="text-xs text-gray-700">
+ <div className="pt-2 border-t border-emerald-50">
+ <p className="text-xs text-emerald-800">
  Seluruh akses fitur mahasiswa dan DPL dikontrol berdasarkan fase aktif periode ini.
  </p>
  </div>
@@ -229,8 +229,8 @@ export default function PeriodShow({ period }: Props) {
  </div>
 
  {/* Quick Access */}
- <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
- <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+ <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
+ <div className="px-6 py-4 bg-gray-50 border-b border-emerald-50">
  <h3 className="text-sm font-semibold text-[#1f2937]">Akses Cepat</h3>
  </div>
  <div className="p-4 space-y-2">
@@ -253,15 +253,15 @@ function StatCard({ label, value, unit, icon: Icon }: {
  icon: React.ElementType;
 }) {
  return (
- <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
+ <div className="bg-white border border-emerald-50 rounded-xl shadow-sm p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
  <div className="h-10 w-10 rounded-lg bg-gray-50 text-[#1a7a4a] flex items-center justify-center shrink-0">
  <Icon size={20} strokeWidth={2} />
  </div>
  <div>
- <p className="text-xl font-bold text-gray-900 leading-tight tabular-nums">
+ <p className="text-xl font-bold text-emerald-950 leading-tight tabular-nums">
  {value.toLocaleString('id-ID')}
  </p>
- <p className="text-xs text-gray-700 mt-0.5">{label}</p>
+ <p className="text-xs text-emerald-800 mt-0.5">{label}</p>
  </div>
  </div>
  );
@@ -271,10 +271,10 @@ function QuickLink({ href, label }: { href: string; label: string }) {
  return (
  <Link
  href={href}
- className="flex items-center justify-between px-4 py-3 rounded-lg border border-gray-200 hover:border-emerald-300 hover:bg-gray-50 transition-colors group"
+ className="flex items-center justify-between px-4 py-3 rounded-lg border border-emerald-50 hover:border-emerald-300 hover:bg-gray-50 transition-colors group"
  >
- <span className="text-sm font-medium text-gray-700 group-hover:text-gray-700">{label}</span>
- <ArrowRight size={16} className="text-gray-600 group-hover:text-[#1a7a4a] transition-colors"/>
+ <span className="text-sm font-medium text-emerald-800 group-hover:text-emerald-800">{label}</span>
+ <ArrowRight size={16} className="text-emerald-800 group-hover:text-[#1a7a4a] transition-colors"/>
  </Link>
  );
 }

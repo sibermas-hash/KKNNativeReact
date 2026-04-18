@@ -216,7 +216,7 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
 
       <div className="mx-auto max-w-[1600px] space-y-10 pb-20 font-sans">
         {/* Academic Header */}
-        <header className="relative overflow-hidden rounded-xl border border-gray-200 bg-white p-12 md:p-16 shadow-sm">
+        <header className="relative overflow-hidden rounded-xl border border-emerald-50 bg-white p-12 md:p-16 shadow-sm">
           <div className="absolute top-0 right-0 h-64 w-64 translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-50 opacity-20 blur-3xl" />
           <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8 text-left">
             <div className="space-y-4">
@@ -226,10 +226,10 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                   AKUNTABILITAS AKADEMIK
                 </span>
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 tracking-tight leading-none">
+              <h1 className="text-2xl font-bold text-emerald-950 tracking-tight leading-none">
                 Input Nilai <span className="text-emerald-600">Terintegrasi.</span>
               </h1>
-              <p className="max-w-xl text-gray-900 font-medium text-lg leading-relaxed">
+              <p className="max-w-xl text-emerald-950 font-medium text-lg leading-relaxed">
                 Evaluasi capaian pengabdian mahasiswa berbasis kompetensi. Pastikan seluruh komponen
                 Laporan, Artikel, dan Kinerja Lapangan telah terverifikasi.
               </p>
@@ -237,7 +237,7 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
             <div className="flex gap-4">
               <Button
                 variant="outline"
-                className="h-14 px-8 rounded-2xl border-2 border-gray-200/60 font-bold text-xs font-semibold uppercase text-xs gap-3"
+                className="h-14 px-8 rounded-2xl border-2 border-emerald-50/60 font-bold text-xs font-semibold uppercase text-xs gap-3"
                 onClick={() => router.get(route('dpl.evaluations.index'))}
               >
                 <FileSpreadsheet className="w-5 h-5 text-emerald-600" /> Unduh Template
@@ -251,8 +251,8 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
           {/* Left Side: Village Selector */}
           <div className="space-y-6">
             <div className="flex items-center gap-3 ml-2">
-              <Users size={16} className="text-gray-900" />
-              <h3 className="text-sm font-bold text-gray-900 font-semibold uppercase text-xs leading-none">
+              <Users size={16} className="text-emerald-950" />
+              <h3 className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs leading-none">
                 Pilih Kelompok Kerja
               </h3>
             </div>
@@ -268,7 +268,7 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                     'group p-6 rounded-xl border-2 transition-all text-left relative overflow-hidden',
                     selectedGroupId === String(group.id)
                       ? 'bg-emerald-900 border-emerald-900 text-white shadow-xl shadow-slate-200'
-                      : 'bg-white border-gray-200/60 text-gray-900 hover:border-emerald-200',
+                      : 'bg-white border-emerald-50/60 text-emerald-950 hover:border-emerald-200',
                   )}
                 >
                   <div className="relative z-10 space-y-2">
@@ -282,7 +282,7 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                     size={48}
                     className={clsx(
                       'absolute -bottom-4 -right-4 opacity-5 group-hover:opacity-10 transition-opacity',
-                      selectedGroupId === String(group.id) ? 'text-white' : 'text-gray-900',
+                      selectedGroupId === String(group.id) ? 'text-white' : 'text-emerald-950',
                     )}
                   />
                 </button>
@@ -293,7 +293,7 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
           {/* Right Side: Bulk Spreadsheet */}
           <div className="space-y-6">
             {!selectedGroupId ? (
-              <div className="rounded-xl border-2 border-dashed border-gray-200/60 bg-emerald-50/30/30 p-20 text-center">
+              <div className="rounded-xl border-2 border-dashed border-emerald-50/60 bg-emerald-50/30/30 p-20 text-center">
                 <Search className="mx-auto h-16 w-16 text-slate-200" strokeWidth={1} />
                 <h3 className="mt-8 text-xl font-bold text-slate-300 font-semibold uppercase text-xs leading-none">
                   Menunggu Pilihan
@@ -308,8 +308,8 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                 className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500"
               >
                 {/* Search & Meta */}
-                <div className="bg-white rounded-[2.5rem] border border-gray-200/60 p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
-                  <div className="flex items-center gap-4 bg-emerald-50/30 p-1 rounded-2xl border border-gray-200/60 w-full md:w-96">
+                <div className="bg-white rounded-[2.5rem] border border-emerald-50/60 p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
+                  <div className="flex items-center gap-4 bg-emerald-50/30 p-1 rounded-2xl border border-emerald-50/60 w-full md:w-96">
                     <div className="pl-4 text-slate-300">
                       <Search size={18} />
                     </div>
@@ -323,9 +323,9 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <div className="h-14 px-6 rounded-2xl bg-emerald-50 border border-gray-200 flex items-center gap-4">
+                    <div className="h-14 px-6 rounded-2xl bg-emerald-50 border border-emerald-50 flex items-center gap-4">
                       <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                      <p className="text-sm font-bold text-gray-700 font-semibold uppercase text-xs">
+                      <p className="text-sm font-bold text-emerald-800 font-semibold uppercase text-xs">
                         Status: {bulkForm.data.evaluations.length} dari{' '}
                         {selectedGroup?.students.length} Terisi
                       </p>
@@ -352,7 +352,7 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                 </div>
 
                 {/* Spreadsheet Table */}
-                <div className="bg-white rounded-xl border border-gray-200/60 shadow-xl overflow-hidden overflow-x-auto">
+                <div className="bg-white rounded-xl border border-emerald-50/60 shadow-xl overflow-hidden overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-emerald-900 text-white">
@@ -391,15 +391,15 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                           >
                             <td className="px-6 py-6 sticky left-0 z-10 bg-white group-hover/row:bg-emerald-50/30/50">
                               <div className="flex items-center gap-4">
-                                <div className="h-10 w-10 rounded-xl bg-emerald-50/60 flex items-center justify-center text-gray-900 font-bold text-xs">
+                                <div className="h-10 w-10 rounded-xl bg-emerald-50/60 flex items-center justify-center text-emerald-950 font-bold text-xs">
                                   {student.name.charAt(0)}
                                 </div>
                                 <div>
-                                  <p className="text-sm font-bold text-gray-900 leading-none mb-1">
+                                  <p className="text-sm font-bold text-emerald-950 leading-none mb-1">
                                     {student.name}
                                   </p>
                                   <div className="flex items-center gap-3">
-                                    <p className="text-sm font-bold text-gray-900 font-mono tracking-tighter">
+                                    <p className="text-sm font-bold text-emerald-950 font-mono tracking-tighter">
                                       {student.nim}
                                     </p>
                                     {student.ai_performance?.has_data && (
@@ -429,8 +429,8 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                                   className={clsx(
                                     'h-12 w-20 text-center rounded-xl font-bold text-sm border-2 transition-all p-0 focus:ring-0',
                                     cat.is_extra
-                                      ? 'bg-emerald-50/30 border-gray-200/60 focus:border-slate-400 focus:bg-white'
-                                      : 'bg-white border-gray-200/60 focus:border-[#f3f4f6]0',
+                                      ? 'bg-emerald-50/30 border-emerald-50/60 focus:border-slate-400 focus:bg-white'
+                                      : 'bg-white border-emerald-50/60 focus:border-[#f3f4f6]0',
                                   )}
                                 />
                                 {cat.key === 'report' && student.ai_performance?.has_data && (
@@ -456,7 +456,7 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
                             ))}
                             <td className="px-6 py-6 text-center">
                               <div className="flex items-center justify-center gap-4">
-                                <span className="text-xl font-bold text-gray-900 tracking-tighter leading-none">
+                                <span className="text-xl font-bold text-emerald-950 tracking-tighter leading-none">
                                   {total}
                                 </span>
                                 <div

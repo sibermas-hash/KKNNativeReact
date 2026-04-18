@@ -48,7 +48,7 @@ export default function GeotaggingMap({
 
   return (
     <div
-      className="relative w-full overflow-hidden rounded-[2rem] border border-gray-200 shadow-xl group/map"
+      className="relative w-full overflow-hidden rounded-[2rem] border border-emerald-50 shadow-xl group/map"
       style={{ height }}
     >
       <MapContainer
@@ -68,7 +68,7 @@ export default function GeotaggingMap({
               <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-1">
                 Geotagging Verified
               </p>
-              <p className="text-xs font-bold text-gray-900 uppercase ">{label}</p>
+              <p className="text-xs font-bold text-emerald-950 uppercase ">{label}</p>
             </div>
           </Popup>
         </Marker>

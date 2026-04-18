@@ -16,7 +16,7 @@ class AntrianKkn extends Model
 
     protected $fillable = [
         'mahasiswa_id',
-        'period_id',
+        'periode_id',
         'posisi_antrian',
         'status',
         'penalti_poin',
@@ -39,6 +39,6 @@ class AntrianKkn extends Model
 
     public function periode(): BelongsTo
     {
-        return $this->belongsTo(Periode::class, 'period_id');
+        return $this->belongsTo(Periode::class, 'periode_id');
     }
 }

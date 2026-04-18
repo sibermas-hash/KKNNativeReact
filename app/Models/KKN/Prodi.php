@@ -11,23 +11,23 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Prodi extends Model
 {
+    use HasFactory;
+
     protected $table = 'prodi';
 
     protected $connection = 'kkn';
 
-    protected $fillable = ['faculty_id', 'nama', 'code', 'jenjang', 'master_id'];
+    protected $fillable = ['fakultas_id', 'nama', 'code', 'jenjang', 'master_id'];
 
-    protected $casts = ['faculty_id' => 'integer'];
-
-    use HasFactory;
+    protected $casts = ['fakultas_id' => 'integer'];
 
     public function fakultas(): BelongsTo
     {
-        return $this->belongsTo(Fakultas::class, 'faculty_id');
+        return $this->belongsTo(Fakultas::class, 'fakultas_id');
     }
 
     public function mahasiswa(): HasMany
     {
-        return $this->hasMany(Mahasiswa::class, 'program_id');
+        return $this->hasMany(Mahasiswa::class, 'prodi_id');
     }
 }

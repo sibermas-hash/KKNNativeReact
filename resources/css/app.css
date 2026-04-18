@@ -73,12 +73,11 @@
 
 @layer base {
   body {
-    /* BLACK ALLOWED FOR TEXT ONLY */
-    @apply font-sans antialiased text-black bg-white selection:bg-primary-200 selection:text-primary-900;
+    @apply font-sans antialiased text-emerald-950 bg-white selection:bg-primary-200 selection:text-primary-900;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display tracking-tight text-black font-bold;
+    @apply font-display tracking-tight text-emerald-950 font-bold;
   }
 
   /* Table Reset */
@@ -87,29 +86,33 @@
   }
 
   .app-workspace thead th {
-    @apply sticky top-0 z-10 border-b border-neutral-200 bg-primary-50/80 backdrop-blur-sm font-bold text-xs uppercase tracking-wider text-black;
+    @apply sticky top-0 z-10 border-b border-emerald-50 bg-primary-50/80 backdrop-blur-sm font-bold text-xs uppercase tracking-wider text-emerald-950;
     padding: 0.75rem 1.5rem !important;
   }
 
   .app-workspace tbody td {
-    @apply border-b border-neutral-100 align-middle text-black font-medium;
+    @apply border-b border-emerald-50 align-middle text-emerald-950 font-medium;
     padding: 0.75rem 1.5rem !important;
     line-height: 1.5;
   }
 
   .app-workspace tbody tr:hover td {
-    @apply bg-primary-50/50 text-black transition-all duration-150;
+    @apply bg-primary-50/50 text-emerald-950 transition-all duration-150;
   }
 
   /* Form Labels */
   label {
-    @apply text-sm font-semibold text-black mb-1.5 block;
+    @apply text-sm font-bold text-emerald-950 mb-1.5 block uppercase tracking-tight;
   }
 
   /* Input Fields */
   input, textarea, select {
-    @apply text-black border-neutral-300 bg-white focus:ring-primary-500 focus:border-primary-500 rounded-xl shadow-sm transition-all;
+    @apply text-emerald-950 border-emerald-50 bg-white focus:ring-primary-500 focus:border-primary-500 rounded-xl shadow-sm transition-all;
     padding: 0.625rem 1rem;
+  }
+
+  input::placeholder, textarea::placeholder {
+    @apply text-black opacity-60;
   }
 }
 

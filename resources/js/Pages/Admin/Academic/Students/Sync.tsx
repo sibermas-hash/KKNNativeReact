@@ -55,21 +55,21 @@ export default function StudentSync({ summary }: Props) {
 
       <div className="max-w-7xl mx-auto space-y-6 sm:px-6 lg:px-8 font-sans pb-12">
         {/* HEADER SECTION */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-gray-200 pt-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-emerald-50 pt-6">
           <div className="space-y-1">
              <div className="flex items-center gap-2">
                 <RefreshCw size={16} className="text-[#1a7a4a]" />
-                <span className="text-sm font-medium text-gray-700">Integrasi Data Master</span>
+                <span className="text-sm font-medium text-emerald-800">Integrasi Data Master</span>
              </div>
-             <h1 className="text-2xl font-bold text-gray-900 leading-tight">Sinkronisasi Data Mahasiswa</h1>
-             <p className="text-sm text-gray-700 max-w-2xl mt-1">
+             <h1 className="text-2xl font-bold text-emerald-950 leading-tight">Sinkronisasi Data Mahasiswa</h1>
+             <p className="text-sm text-emerald-800 max-w-2xl mt-1">
                 Pusat integrasi data untuk menyelaraskan identitas dan riwayat studi mahasiswa antara sistem KKN dan database induk universitas.
              </p>
           </div>
           
           <div className="flex items-center gap-3 shrink-0">
-             <div className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700">
-                Update Terakhir: <strong className="text-gray-900">{formatSyncTime(summary.last_synced_at)}</strong>
+             <div className="px-3 py-1.5 bg-gray-50 border border-emerald-50 rounded-lg text-xs text-emerald-800">
+                Update Terakhir: <strong className="text-emerald-950">{formatSyncTime(summary.last_synced_at)}</strong>
              </div>
           </div>
         </div>
@@ -100,20 +100,20 @@ export default function StudentSync({ summary }: Props) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
           {/* Sinkronisasi Menyeluruh */}
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
-            <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex items-center gap-3">
+          <div className="bg-white border border-emerald-50 rounded-xl overflow-hidden shadow-sm flex flex-col">
+            <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-3">
               <div className="h-10 w-10 bg-[#e8f5ee] text-[#1a7a4a] rounded-lg flex items-center justify-center">
                 <Database size={20} />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-gray-900">Sinkronisasi Menyeluruh</h3>
+                <h3 className="text-sm font-semibold text-emerald-950">Sinkronisasi Menyeluruh</h3>
                 <p className="text-xs font-bold text-[#1a7a4a] uppercase tracking-tighter">Pembaruan Database Masal</p>
               </div>
             </div>
             
             <div className="p-6 space-y-6 flex-1 flex flex-col">
               <div className="space-y-4 flex-1">
-                <p className="text-sm text-gray-700 leading-relaxed">
+                <p className="text-sm text-emerald-800 leading-relaxed">
                   Proses ini akan menarik seluruh data mahasiswa aktif dari server pusat universitas untuk menyelaraskan database operasional KKN.
                 </p>
                 <div className="grid grid-cols-1 gap-2.5">
@@ -123,7 +123,7 @@ export default function StudentSync({ summary }: Props) {
                     'Sinkronisasi Status Akademik',
                     'Kalibrasi Riwayat Kelompok'
                   ].map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-sm text-gray-700">
+                    <div key={idx} className="flex items-center gap-2 text-sm text-emerald-800">
                       <CheckCircle2 size={16} className="text-[#1a7a4a] shrink-0" />
                       <span>{item}</span>
                     </div>
@@ -147,20 +147,20 @@ export default function StudentSync({ summary }: Props) {
           </div>
 
           {/* Sinkronisasi Terarah */}
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
-            <div className="px-5 py-4 border-b border-gray-200 bg-gray-50 flex items-center gap-3">
-              <div className="h-10 w-10 bg-gray-100 text-gray-700 rounded-lg flex items-center justify-center">
+          <div className="bg-white border border-emerald-50 rounded-xl overflow-hidden shadow-sm flex flex-col">
+            <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-3">
+              <div className="h-10 w-10 bg-gray-100 text-emerald-800 rounded-lg flex items-center justify-center">
                 <ListFilter size={20} />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-gray-900">Sinkronisasi Spesifik</h3>
-                <p className="text-xs font-bold text-gray-700 uppercase tracking-tighter">Target Berdasarkan NIM</p>
+                <h3 className="text-sm font-semibold text-emerald-950">Sinkronisasi Spesifik</h3>
+                <p className="text-xs font-bold text-emerald-800 uppercase tracking-tighter">Target Berdasarkan NIM</p>
               </div>
             </div>
 
             <form onSubmit={submitTargeted} className="p-6 space-y-6 flex-1 flex flex-col">
               <div className="flex-1 space-y-2">
-                <label htmlFor="sync-nim-list" className="block text-xs font-medium text-gray-700">Daftar NIM (Nomor Induk Mahasiswa)</label>
+                <label htmlFor="sync-nim-list" className="block text-xs font-medium text-emerald-800">Daftar NIM (Nomor Induk Mahasiswa)</label>
                 <textarea
                   id="sync-nim-list"
                   rows={4}
@@ -204,11 +204,11 @@ export default function StudentSync({ summary }: Props) {
 
 function MetricCard({ label, value, icon: Icon, desc }: { label: string, value: string, icon: LucideIcon, desc: string }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-center justify-between shadow-sm">
+    <div className="bg-white border border-emerald-50 rounded-xl p-5 flex items-center justify-between shadow-sm">
       <div className="flex flex-col">
-        <span className="text-sm font-medium text-gray-700 mb-1">{label}</span>
+        <span className="text-sm font-medium text-emerald-800 mb-1">{label}</span>
         <div className="flex items-center gap-2">
-            <span className="text-2xl font-semibold text-gray-900 leading-none">{value}</span>
+            <span className="text-2xl font-semibold text-emerald-950 leading-none">{value}</span>
         </div>
         <span className="text-xs text-[#1a7a4a] mt-1 font-medium">{desc}</span>
       </div>

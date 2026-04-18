@@ -21,15 +21,16 @@ class EnsurePasswordChanged
         $routeName = $request->route()?->getName();
 
         if ($routeName && (
-            $routeName === 'profile.show'
+            $routeName === 'profile.password-change'
             || $routeName === 'profile.password'
+            || $routeName === 'profile.show'
             || in_array($routeName, ['keluar', 'logout'], true)
         )) {
             return $next($request);
         }
 
         return redirect()
-            ->route('profile.show')
+            ->route('profile.password-change')
             ->with('warning', 'Demi keamanan, Anda wajib mengganti kata sandi default sebelum dapat mengakses portal SIM-KKN.');
     }
 }

@@ -1,20 +1,32 @@
-import { Head, useForm, usePage, router } from '@inertia/react';
-import { type FormEventHandler } from 'react';
+import { Head, useForm, usePage, router } from '@inertiajs/react';
+import { useState, type FormEventHandler } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { FormInput } from '@/Components/ui';
 import type { PageProps } from '@/types';
 import { route } from 'ziggy-js';
-import { KeyRound, Lock, ChevronRight, AlertCircle } from 'lucide-react';
+import { KeyRound, Lock, ChevronRight, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
 
 interface UserData {
   id: number; name: string; email: string; username: string;
   must_change_password: boolean;
 }
 
-interface Props extends PageProps { user: UserData; mustChangePassword: boolean }
+interface FlashProps {
+  success?: string;
+  error?: string;
+}
+
+interface Props extends PageProps {
+  user: UserData;
+  mustChangePassword: boolean;
+  flash?: FlashProps;
+}
 
 export default function PasswordChange() {
-  const { user } = usePage<Props>().props;
+  const { user, flash } = usePage<Props>().props;
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const passwordForm = useForm({
     password: '',
@@ -34,9 +46,17 @@ export default function PasswordChange() {
       return;
     }
 
-    passwordForm.post(route('profile.password'), {
+    passwordForm.patch(route('profile.password'), {
       onSuccess: () => {
         router.get(route('profile.show'));
+      },
+      onError: (errors) => {
+        if (errors.password) {
+          passwordForm.setError('password', errors.password);
+        }
+        if (errors.current_password) {
+          passwordForm.setError('current_password', errors.current_password);
+        }
       },
     });
   };
@@ -59,29 +79,46 @@ export default function PasswordChange() {
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-5">
-              <div className="bg-rose-50 border border-rose-200 rounded-lg p-4 flex gap-3">
-                <AlertCircle size={18} className="text-rose-600 mt-0.5 shrink-0" />
-                <div className="space-y-1">
-                  <p className="text-sm font-semibold text-rose-900">Akses Diblokir</p>
-                  <p className="text-sm text-rose-700">
-                    Anda wajib mengganti kata sandi default sebelum dapat mengakses portal SIM-KKN.
-                  </p>
+              {flash?.success ? (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 flex gap-3">
+                  <CheckCircle size={18} className="text-emerald-600 mt-0.5 shrink-0" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-emerald-900">Berhasil</p>
+                    <p className="text-sm text-emerald-700">{flash.success}</p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="bg-rose-50 border border-rose-200 rounded-lg p-4 flex gap-3">
+                  <AlertCircle size={18} className="text-rose-600 mt-0.5 shrink-0" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-rose-900">Akses Diblokir</p>
+                    <p className="text-sm text-rose-700">
+                      Anda wajib mengganti kata sandi default sebelum dapat mengakses portal SIM-KKN.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-emerald-800">Kata Sandi Baru</label>
                 <div className="relative">
                   <FormInput
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     value={passwordForm.data.password}
                     onChange={e => passwordForm.setData('password', e.target.value)}
                     error={passwordForm.errors.password}
                     placeholder="Minimal 8 karakter"
-                    className="h-11 pl-10"
+                    className="h-11 pl-10 pr-10"
                     autoFocus
                   />
                   <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400" />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400 hover:text-emerald-600"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
               </div>
 
@@ -89,14 +126,21 @@ export default function PasswordChange() {
                 <label className="text-sm font-medium text-emerald-800">Konfirmasi Kata Sandi Baru</label>
                 <div className="relative">
                   <FormInput
-                    type="password"
+                    type={showConfirm ? 'text' : 'password'}
                     value={passwordForm.data.password_confirmation}
                     onChange={e => passwordForm.setData('password_confirmation', e.target.value)}
                     error={passwordForm.errors.password_confirmation}
                     placeholder="Ulangi kata sandi baru"
-                    className="h-11 pl-10"
+                    className="h-11 pl-10 pr-10"
                   />
                   <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400" />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400 hover:text-emerald-600"
+                  >
+                    {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
               </div>
 

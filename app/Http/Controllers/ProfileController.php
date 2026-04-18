@@ -235,12 +235,20 @@ class ProfileController extends Controller
      */
     public function updatePassword(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'current_password' => ['required', 'current_password'],
-            'password' => ['required', Password::min(8)->mixedCase()->numbers()->symbols(), 'confirmed'],
-        ]);
+        $user = $request->user();
+        $isFirstChange = $user->must_change_password;
 
-        $request->user()->update([
+        $rules = [
+            'password' => ['required', Password::min(8)->mixedCase()->numbers()->symbols(), 'confirmed'],
+        ];
+
+        if (!$isFirstChange) {
+            $rules['current_password'] = ['required', 'current_password'];
+        }
+
+        $validated = $request->validate($rules);
+
+        $user->update([
             'password' => Hash::make($validated['password']),
             'must_change_password' => false,
             'password_changed_at' => now(),

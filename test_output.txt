@@ -1,0 +1,134 @@
+array:4 [
+  "_token" => "RCIT6j1dSLF4Tfmij3XriTYIaGa9DtEJVViBiwdr"
+  "active_period_id" => 2
+  "active_period_data" => array:12 [
+    "id" => 2
+    "periode" => 84
+    "angkatan" => 84
+    "jenis" => App\Enums\KknType {#6690
+      +name: "REGULER"
+      +value: "REGULER"
+    }
+    "program_type" => "reguler"
+    "program_subtype" => null
+    "registration_mode" => "open"
+    "placement_mode" => "automatic_after_approval"
+    "name" => "Periode alias"
+    "academic_year" => "2029/2030"
+    "is_active" => true
+    "current_phase" => "execution"
+  ]
+  "_flash" => array:2 [
+    "old" => []
+    "new" => []
+  ]
+] // vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:1879
+
+   FAIL  FullRegistrationToGradingWorkflowTest
+  ⨯ full registration to grading workflow                                0.75s  
+  ✓ workflow requires approved registration before daily report          0.04s  
+  ⨯ daily report cannot be reviewed twice after approval                 0.05s  
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  FullRegistrationToGradingWorkflowTest > full registration to grading workflow  QueryException   
+  SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block (Connection: kkn, Host: , Port: , Database: , SQL: select * from "periode" where "periode"."deleted_at" is null order by "periode" desc, "jenis" asc)
+
+  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:425
+    421▕             );
+    422▕ 
+    423▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+    424▕ 
+  ➜ 425▕             $statement->execute();
+    426▕ 
+    427▕             return $statement->fetchAll();
+    428▕         });
+    429▕     }
+
+  1   vendor/laravel/framework/src/Illuminate/Database/Connection.php:425
+  2   vendor/laravel/framework/src/Illuminate/Database/Connection.php:827
+  3   vendor/laravel/framework/src/Illuminate/Database/Connection.php:794
+  4   vendor/laravel/framework/src/Illuminate/Database/Connection.php:411
+  5   vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:3505
+  6   vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:3490
+  7   vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4080
+  8   vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:3489
+  9   vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:902
+  10  vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:884
+  11  app/Services/PeriodContextService.php:124
+  12  vendor/laravel/framework/src/Illuminate/Cache/Repository.php:564
+  13  vendor/laravel/framework/src/Illuminate/Cache/CacheManager.php:558
+  14  vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:363
+  15  app/Services/PeriodContextService.php:120
+  16  app/Http/Middleware/HandleActivePeriod.php:62
+  17  vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+  18  vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+  19  vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:84
+  20  vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+  21  vendor/laravel/framework/src/Illuminate/Container/Container.php:799
+  22  vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:363
+  23  vendor/inertiajs/inertia-laravel/src/Response.php:348
+  24  vendor/inertiajs/inertia-laravel/src/Response.php:232
+  25  vendor/inertiajs/inertia-laravel/src/Response.php:196
+  26  bootstrap/app.php:124
+  27  vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php:641
+  28  vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php:622
+  29  vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:574
+  30  vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:148
+  31  vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php:607
+  32  vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php:573
+  33  vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php:411
+  34  tests/Feature/FullRegistrationToGradingWorkflowTest.php:256
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  FullRegistrationToGradingWorkflowTest > daily report cannot be reviewed twice after approval  QueryException   
+  SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block (Connection: kkn, Host: , Port: , Database: , SQL: select * from "periode" where "periode"."deleted_at" is null order by "periode" desc, "jenis" asc)
+
+  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:425
+    421▕             );
+    422▕ 
+    423▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+    424▕ 
+  ➜ 425▕             $statement->execute();
+    426▕ 
+    427▕             return $statement->fetchAll();
+    428▕         });
+    429▕     }
+
+  1   vendor/laravel/framework/src/Illuminate/Database/Connection.php:425
+  2   vendor/laravel/framework/src/Illuminate/Database/Connection.php:827
+  3   vendor/laravel/framework/src/Illuminate/Database/Connection.php:794
+  4   vendor/laravel/framework/src/Illuminate/Database/Connection.php:411
+  5   vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:3505
+  6   vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:3490
+  7   vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4080
+  8   vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:3489
+  9   vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:902
+  10  vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:884
+  11  app/Services/PeriodContextService.php:124
+  12  vendor/laravel/framework/src/Illuminate/Cache/Repository.php:564
+  13  vendor/laravel/framework/src/Illuminate/Cache/CacheManager.php:558
+  14  vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:363
+  15  app/Services/PeriodContextService.php:120
+  16  app/Http/Middleware/HandleActivePeriod.php:62
+  17  vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+  18  vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+  19  vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:84
+  20  vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+  21  vendor/laravel/framework/src/Illuminate/Container/Container.php:799
+  22  vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:363
+  23  vendor/inertiajs/inertia-laravel/src/Response.php:348
+  24  vendor/inertiajs/inertia-laravel/src/Response.php:232
+  25  vendor/inertiajs/inertia-laravel/src/Response.php:196
+  26  bootstrap/app.php:124
+  27  vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php:641
+  28  vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php:622
+  29  vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:574
+  30  vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:148
+  31  vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php:607
+  32  vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php:573
+  33  vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php:411
+  34  tests/Feature/FullRegistrationToGradingWorkflowTest.php:498
+
+
+  Tests:    2 failed, 1 passed (15 assertions)
+  Duration: 0.87s
+

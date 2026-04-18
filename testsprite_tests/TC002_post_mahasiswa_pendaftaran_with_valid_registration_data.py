@@ -1,64 +1,40 @@
 import requests
 
-BASE_URL = "http://localhost:8000"
-BEARER_TOKEN = "your_valid_student_bearer_token_here"
-TIMEOUT = 30
-
-def test_post_mahasiswa_pendaftaran_valid_registration():
-    session = requests.Session()
+def test_post_mahasiswa_pendaftaran_with_valid_registration_data():
+    base_url = "http://localhost:8000"
+    endpoint = "/mahasiswa/pendaftaran"
+    url = base_url + endpoint
+    token = "valid_student_token_here"  # Replace this with a valid Bearer token for the student
     headers = {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {BEARER_TOKEN}"
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
     }
-
-    # Step 1: Get registration form to check eligibility and current_phase
+    # A valid registration payload example
+    payload = {
+        "period_id": 1,
+        "program_study": "Computer Science",
+        "gpa": 3.75,
+        "sks_completed": 110,
+        "prerequisites_met": True
+    }
     try:
-        get_resp = session.get(f"{BASE_URL}/mahasiswa/pendaftaran", headers=headers, timeout=TIMEOUT)
-        assert get_resp.status_code == 200, f"Expected 200 OK from GET /mahasiswa/pendaftaran, got {get_resp.status_code}"
-        get_data = get_resp.json()
-        assert "eligible" in get_data, "Response missing 'eligible' field"
-        assert isinstance(get_data["eligible"], bool), "'eligible' field is not boolean"
-        assert "current_phase" in get_data, "Response missing 'current_phase' field"
-        assert get_data["eligible"], "Student is not eligible for registration in GET response"
-
-        # Craft valid registration payload (example fields; adjust as needed)
-        payload = {
-            "student_id": "STU123456",
-            "period_id": get_data.get("current_phase", "2026-01"),  # assuming period or phase usage
-            "krs_approved": True,
-            "gpa": 3.75,
-            "prerequisites": ["SKS_complete", "no_disciplinary_action"],
-            "contact_phone": "081234567890",
-            "address": "Jl. Example No. 123",
-            "additional_notes": "Looking forward to the program."
-        }
-
-        # Step 2: POST registration payload
-        post_resp = session.post(
-            f"{BASE_URL}/mahasiswa/pendaftaran",
+        response = requests.post(
+            url,
             headers=headers,
             json=payload,
-            timeout=TIMEOUT
+            timeout=30
         )
+    except requests.RequestException as e:
+        assert False, f"Request failed: {e}"
+    
+    assert response.status_code == 201, f"Expected 201 Created but got {response.status_code}"
+    try:
+        data = response.json()
+    except ValueError:
+        assert False, "Response is not valid JSON"
 
-        assert post_resp.status_code == 201, f"Expected 201 Created from POST /mahasiswa/pendaftaran, got {post_resp.status_code}"
-        post_data = post_resp.json()
-        assert "registration_id" in post_data, "Response missing 'registration_id'"
-        assert isinstance(post_data["registration_id"], (int, str)), "'registration_id' has unexpected type"
-        assert "status" in post_data, "Response missing 'status'"
-        assert post_data["status"] == "pending", f"Expected status 'pending', got '{post_data['status']}'"
+    assert "registration_id" in data, "Response JSON missing 'registration_id'"
+    assert "status" in data, "Response JSON missing 'status'"
+    assert data["status"].lower() == "pending", f"Expected status 'pending' but got '{data['status']}'"
 
-    finally:
-        # Cleanup: attempt to delete the created registration if registration_id available
-        try:
-            reg_id = post_data.get("registration_id") if 'post_data' in locals() else None
-            if reg_id is not None:
-                del_resp = session.delete(f"{BASE_URL}/mahasiswa/pendaftaran/{reg_id}", headers=headers, timeout=TIMEOUT)
-                # Accept 200 OK or 204 No Content as successful deletion
-                assert del_resp.status_code in (200, 204), f"Failed to delete registration {reg_id}, status {del_resp.status_code}"
-        except Exception:
-            # Cleanup failure should not raise test error
-            pass
-
-test_post_mahasiswa_pendaftaran_valid_registration()
+test_post_mahasiswa_pendaftaran_with_valid_registration_data()

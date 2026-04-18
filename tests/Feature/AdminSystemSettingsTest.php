@@ -1,58 +1,46 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Models\KKN\SystemSetting;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
-use Tests\TestCase;
+use function Pest\Laravel\{actingAs, get, patch};
 
-class AdminSystemSettingsTest extends TestCase
-{
-    protected function setUp(): void
-    {
-        parent::setUp();
+beforeEach(function () {
+    Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web']);
+});
 
-        Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web']);
-    }
+test('superadmin can open system settings page', function () {
+    $user = User::factory()->create();
+    $user->assignRole('superadmin');
 
-    public function test_superadmin_can_open_system_settings_page(): void
-    {
-        $user = User::factory()->create();
-        $user->assignRole('superadmin');
+    actingAs($user)
+        ->get('/admin/pengaturan/sistem')
+        ->assertOk();
+});
 
-        $response = $this->actingAs($user)->get('/admin/pengaturan/sistem');
+test('superadmin can update system settings', function () {
+    $user = User::factory()->create();
+    $user->assignRole('superadmin');
 
-        $response->assertOk();
-    }
+    $setting = SystemSetting::query()
+        ->where('config_key', 'support_contact_label')
+        ->firstOrFail();
 
-    public function test_superadmin_can_update_system_settings(): void
-    {
-        $user = User::factory()->create();
-        $user->assignRole('superadmin');
-
-        $this->actingAs($user)->get('/admin/pengaturan/sistem')->assertOk();
-
-        $setting = SystemSetting::query()
-            ->where('config_key', 'support_contact_label')
-            ->firstOrFail();
-
-        $response = $this->actingAs($user)->patch('/admin/pengaturan/sistem', [
+    actingAs($user)
+        ->patch('/admin/pengaturan/sistem', [
             'settings' => [
                 [
                     'id' => $setting->id,
                     'value' => 'Admin KKN Siap Bantu',
                 ],
             ],
-        ]);
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success', 'Pengaturan sistem berhasil diperbarui.');
 
-        $response->assertRedirect();
-        $response->assertSessionHas('success', 'Pengaturan sistem berhasil diperbarui.');
-
-        $this->assertDatabaseHas('system_settings', [
-            'id' => $setting->id,
-            'config_key' => 'support_contact_label',
-            'value' => 'Admin KKN Siap Bantu',
-        ], 'kkn');
-    }
-}
+    $this->assertDatabaseHas('system_settings', [
+        'id' => $setting->id,
+        'config_key' => 'support_contact_label',
+        'value' => 'Admin KKN Siap Bantu',
+    ], 'kkn');
+});

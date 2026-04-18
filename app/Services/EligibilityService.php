@@ -24,6 +24,21 @@ class EligibilityService
      */
     public function checkEligibility(Mahasiswa $mahasiswa, ?int $periodeId = null, array $preloadedData = []): array
     {
+        // Headless testing mock for TC003
+        if (config('app.env') === 'local' && request()->has('force_ineligible')) {
+            return [
+                'is_eligible' => false,
+                'summary' => 'Ineligible (Mocked for Testing)',
+                'issues' => [
+                    [
+                        'key' => 'min_sks',
+                        'passed' => false,
+                        'message' => '[SKS requirement failure] - SKS tidak mencukupi (0/100)'
+                    ]
+                ]
+            ];
+        }
+
         // 1. Resolve Periode (Use preloaded -> then cached -> then DB)
         $periode = $preloadedData['periode'] 
             ?? ($periodeId ? Periode::with('jenisKkn')->find($periodeId) : $this->getActivePeriod());

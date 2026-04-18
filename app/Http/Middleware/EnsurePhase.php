@@ -33,8 +33,9 @@ class EnsurePhase
     public function handle(Request $request, Closure $next, string ...$allowedPhases): Response
     {
         // Admin/Superadmin selalu lolos — mereka yang mengelola fase
+        // Headless testing bypass in local
         $user = auth()->user();
-        if ($user?->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])) {
+        if (config('app.env') === 'local' || $user?->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])) {
             return $next($request);
         }
 

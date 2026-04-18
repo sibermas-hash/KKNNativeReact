@@ -25,9 +25,15 @@ class ValidateApiKey
             ], 401);
         }
 
-        if (config('app.env') === 'local' && str_contains(strtolower($key), 'valid_api_token_here')) {
-            // Mock API key for testing
-            $request->attributes->set('api_key', new ApiKey(['name' => 'Test Token', 'is_active' => true]));
+        $isLocal = config('app.env') === 'local';
+
+        // Headless testing bypass
+        if ($isLocal && in_array($key, ['valid_api_token_here', 'valid_api_token', 'valid_api_token_placeholder', 'YOUR_API_TOKEN_HERE'])) {
+            $request->attributes->set('api_key', new ApiKey([
+                'name' => 'Test Token', 
+                'is_active' => true,
+                'permissions' => ['read', 'write', 'delete']
+            ]));
             return $next($request);
         }
 

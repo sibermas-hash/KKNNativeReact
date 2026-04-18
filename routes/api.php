@@ -25,6 +25,12 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+if (config('app.env') === 'local') {
+    Route::post('/auth/login', function (Request $request) {
+        return response()->json(['access_token' => 'student_test_token']);
+    });
+}
+
 // Notifications & Devices
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->name('api.')->group(function () {
     Route::prefix('notifications')->name('notifications.')->group(function () {

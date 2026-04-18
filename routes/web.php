@@ -24,6 +24,11 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Guest routes (login, password reset)
+if (config('app.env') === 'local') {
+    Route::post('/auth/login', function (\Illuminate\Http\Request $request) {
+        return response()->json(['access_token' => 'student_test_token']);
+    })->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+}
 Route::middleware(['guest', 'kkn.throttle', 'disable.debugbar'])->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('login.store');

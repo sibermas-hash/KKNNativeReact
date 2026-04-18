@@ -1,60 +1,33 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Models\User;
 use Spatie\Permission\Models\Role;
-use Tests\TestCase;
+use function Pest\Laravel\{actingAs, get};
 
-class SmokeTest extends TestCase
-{
-    /**
-     * Test that the home page is accessible.
-     */
-    public function test_home_page_is_accessible(): void
-    {
-        $response = $this->get(route('home'));
+test('home page is accessible', function () {
+    get(route('home'))->assertOk();
+});
 
-        $response->assertStatus(200);
-    }
+test('login page is accessible', function () {
+    get(route('login'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Auth/Login'));
+});
 
-    /**
-     * Test that the login page is accessible.
-     */
-    public function test_login_page_is_accessible(): void
-    {
-        $response = $this->get(route('login'));
+test('dashboard redirects to login for guests', function () {
+    get('/mahasiswa')->assertRedirect(route('login'));
+});
 
-        $response->assertStatus(200);
-        // We just check that it's an Inertia page
-        $response->assertInertia(fn ($page) => $page->component('Auth/Login'));
-    }
+test('authenticated user is redirected to role dashboard', function () {
+    $user = User::factory()->create([
+        'is_active' => true,
+        'must_change_password' => false,
+    ]);
 
-    /**
-     * Test that the dashboard redirects to login for guests.
-     */
-    public function test_dashboard_redirects_to_login_for_guests(): void
-    {
-        $response = $this->get('/mahasiswa');
+    Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
+    $user->assignRole('student');
 
-        $response->assertRedirect(route('login'));
-    }
-
-    /**
-     * Test that an authenticated user is redirected to their specific dashboard.
-     */
-    public function test_authenticated_user_is_redirected_to_role_dashboard(): void
-    {
-        $user = User::factory()->create([
-            'is_active' => true,
-            'must_change_password' => false,
-        ]);
-
-        Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
-        $user->assignRole('student');
-
-        $response = $this->actingAs($user)->get(route('student.dashboard'));
-
-        $response->assertStatus(200);
-    }
-}
+    actingAs($user)
+        ->get(route('student.dashboard'))
+        ->assertOk();
+});

@@ -99,6 +99,14 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
         */
+        
+        $exceptions->render(function (\Spatie\Permission\Exceptions\UnauthorizedException $e, $request) {
+            if ($request->expectsJson() || $request->is('api/*') || $request->header('Accept') === 'application/json') {
+                return response()->json([
+                    'message' => 'Forbidden: You do not have permission. ' . $e->getMessage()
+                ], 403);
+            }
+        });
         // Custom rendering for Inertia requests to show the pretty Error page
         $exceptions->respond(function ($response, $e, $request) {
             if (env('APP_ENV') === 'local' && ($request->expectsJson() || $request->header('X-Inertia'))) {

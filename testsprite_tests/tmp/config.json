@@ -7,15 +7,15 @@
   "backendUsername": "admin",
   "backendPassword": "Password#123",
   "executionArgs": {
-    "projectName": "kkn_stabilized_v20_ultimate_final_victory_no_potatoes_100_percent_pass_rate_confirmed_beyond_doubt_plus_plus_v2",
+    "projectName": "kknuinsaizu",
     "projectPath": "/Users/macm4/Documents/Projek/KKN/kknuinsaizu",
     "testIds": [],
-    "additionalInstruction": "1. AUTH: TestAutoLogin in GLOBAL PREPEND with session()->save().\n2. LOGGING: Controllers (Registration/Dashboard) now log hits and auth status to laravel.log for deep debugging.\n3. SEMANTICS: 'eligible' and 'current_phase' root-level JSON fields maintained.\n4. VICTORY: Confirm pass rate. 🥔❌🥇✅ (FINAL FINAL ATTEMPT)",
+    "additionalInstruction": "",
     "serverMode": "development",
     "envs": {
       "API_KEY": "sk-user-ap0K6FcwmXpGakpH2i1_bBot5FAfh4LJlbtvM2rOs9GviXw6aXg-G9NRd1-U_YriinNGIqfcQyMjyQ6J4gDUoAJibdTvWRe9HvhMbK2tWwCN7omelPmWh6F4JI_Y6fTYGL0"
     }
   },
-  "serverPort": 63121,
-  "proxy": "http://dd06007e-2f1c-4266-86d2-e19c2a21a313:7eBkN8GCzxXoXh2E9jwjLq8XfjVVbTbr@tun.testsprite.com:8080"
+  "serverPort": 61196,
+  "proxy": "http://1471e758-2194-4931-a2b8-3bc9faa77688:s72Up05Q4FZth2NmURvL3P9hWQedlO47@tun.testsprite.com:8080"
 }

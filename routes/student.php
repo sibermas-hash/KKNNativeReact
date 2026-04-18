@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware([
+    'auth',
     'role:student',
     EnsurePasswordChanged::class,
     EnsureProfileCompleted::class,

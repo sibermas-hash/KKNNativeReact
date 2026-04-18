@@ -4,35 +4,26 @@ def test_get_api_v1_periods_with_valid_token():
     base_url = "http://localhost:8000"
     endpoint = "/api/v1/periods"
     url = base_url + endpoint
-    api_token = "valid_api_token_here"
-    headers = {"Authorization": f"Bearer {api_token}"}
-    timeout = 30
+    headers = {
+        "Accept": "application/json",
+        "Authorization": "Bearer YOUR_VALID_API_TOKEN"
+    }
 
     try:
-        response = requests.get(
-            url,
-            headers=headers,
-            timeout=timeout
-        )
-    except requests.RequestException as e:
-        assert False, f"Request to {url} failed: {e}"
+        response = requests.get(url, headers=headers, timeout=30)
+        # Assert status code is 200
+        assert response.status_code == 200, f"Expected status code 200, got {response.status_code}"
 
-    assert response.status_code == 200, f"Expected status code 200 but got {response.status_code}"
+        data = response.json()
+        # Assert 'periods' in response and it is a list
+        assert "periods" in data, "'periods' key not found in response"
+        assert isinstance(data["periods"], list), "'periods' is not a list"
 
-    try:
-        json_data = response.json()
-    except ValueError:
-        assert False, "Response is not valid JSON"
+        # Assert 'metadata' in response and it is a dict
+        assert "metadata" in data, "'metadata' key not found in response"
+        assert isinstance(data["metadata"], dict), "'metadata' is not a dict"
 
-    # Check presence of periods list and metadata according to PRD
-    assert 'periods' in json_data or 'data' in json_data, "Response JSON missing periods data"
-    assert 'meta' in json_data, "Response JSON missing meta field"
-    
-    # Validate meta contents
-    meta = json_data.get('meta', {})
-    assert isinstance(meta, dict), "meta field should be a dict"
-    assert 'project' in meta and isinstance(meta['project'], str), "'project' missing or invalid in meta"
-    assert 'date' in meta and isinstance(meta['date'], str), "'date' missing or invalid in meta"
-    assert 'prepared_by' in meta and isinstance(meta['prepared_by'], str), "'prepared_by' missing or invalid in meta"
+    except requests.exceptions.RequestException as e:
+        assert False, f"Request failed: {e}"
 
 test_get_api_v1_periods_with_valid_token()

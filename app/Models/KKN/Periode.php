@@ -6,6 +6,7 @@ namespace App\Models\KKN;
 
 use App\Enums\KknType;
 use App\Services\KKN\PeriodeGovernanceService;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

@@ -66,7 +66,7 @@ class SystemSettingController extends Controller
             'provider' => 'GEMINI GOOGLE AI',
             'is_healthy' => $hasKey,
             'endpoint' => 'generativelanguage.googleapis.com',
-            'model_text' => 'gemini-1.5-flash / pro',
+            'model_text' => 'gemini-2.5-flash / pro (Latest)',
             'last_check' => now()->toIso8601String(),
         ];
 
@@ -406,7 +406,7 @@ class SystemSettingController extends Controller
         try {
             $response = Http::timeout(10)
                 ->withHeaders(['Content-Type' => 'application/json'])
-                ->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}", [
+                ->post("https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={$apiKey}", [
                     'contents' => [
                         [
                             'parts' => [
@@ -419,8 +419,8 @@ class SystemSettingController extends Controller
             if ($response->successful()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Koneksi berhasil',
-                    'model' => 'gemini-1.5-flash',
+                    'message' => 'Koneksi berhasil ke Google Gemini 2.5',
+                    'model' => 'gemini-2.5-flash',
                 ]);
             }
 

@@ -119,6 +119,13 @@ class AuthenticatedSessionController extends Controller
         $user = auth()->user();
         \Log::info('User authenticated successfully', ['user_id' => $user->id, 'roles' => $user->getRoleNames()]);
 
+        // If profile is incomplete (must_change_password = true), redirect to profile first
+        if ($user->must_change_password) {
+            \Log::info('Profile incomplete, redirecting to profile', ['user_id' => $user->id]);
+
+            return redirect()->route('profile.show')->with('error', 'Profil belum lengkap! Anda harus melengkapi semua data terlebih dahulu.');
+        }
+
         if ($user->hasRole(['superadmin', 'admin', 'faculty_admin'])) {
             \Log::info('Redirecting to admin dashboard');
 
@@ -128,13 +135,13 @@ class AuthenticatedSessionController extends Controller
         if ($user->hasRole(['dosen', 'dpl'])) {
             \Log::info('Redirecting to Dosen dashboard');
 
-            return redirect()->intended(route('dosen.dashboard', absolute: false));
+            return redirect()->route('dpl.dashboard');
         }
 
         if ($user->hasRole('student')) {
             \Log::info('Redirecting to student dashboard');
 
-            return redirect()->intended(route('student.dashboard', absolute: false));
+            return redirect()->route('student.dashboard');
         }
 
         \Log::warning('User has no matching roles, redirecting to home', ['user_id' => $user->id]);

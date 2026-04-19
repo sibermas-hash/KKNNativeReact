@@ -5,7 +5,7 @@ import { FormInput, FormTextarea } from '@/Components/ui';
 import type { PageProps } from '@/types';
 import { route } from 'ziggy-js';
 import {
-  User, Camera, Lock, KeyRound, UserCheck,
+  User, Camera, Lock, UserCheck,
   AlertCircle, ChevronRight, IdCard, Briefcase, GraduationCap, Loader2,
   BadgeCheck,
   Info,
@@ -219,18 +219,6 @@ export default function ProfileShow() {
             </p>
           </div>
         </div>
-
-        {mustChangePassword && (
-          <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex gap-3">
-            <KeyRound size={18} className="text-rose-600 mt-0.5 shrink-0" />
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-rose-900">Kata Sandi Wajib Diganti</p>
-              <p className="text-sm text-rose-700">
-                Anda wajib mengganti kata sandi default sebelum dapat mengakses fitur SIM-KKN. Silakan ganti kata sandi Anda di bawah.
-              </p>
-            </div>
-          </div>
-        )}
 
         {mustChangePassword && (
           <div className="bg-rose-100 border border-rose-300 rounded-xl p-4 flex gap-3">

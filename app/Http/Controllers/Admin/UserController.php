@@ -60,12 +60,13 @@ class UserController extends Controller
 
     public function dosenIndex(Request $request): Response
     {
-        $baseQuery = User::role('dpl')
-            ->with(['dosen.fakultas']);
+        $baseQuery = User::role('dosen')
+            ->with(['dosen.fakultas', 'roles']);
 
         // Stats dari seluruh data (bukan per halaman)
         $totalDosen = (clone $baseQuery)->count();
         $activeDosen = (clone $baseQuery)->where('is_active', true)->count();
+        $totalDpl = User::role('dpl')->count();
 
         $users = $baseQuery
             ->when($request->input('search'), function ($q, $search) {
@@ -85,6 +86,8 @@ class UserController extends Controller
                 'username' => $user->username,
                 'email' => $user->email,
                 'is_active' => (bool) $user->is_active,
+                'is_dpl' => $user->hasRole('dpl'),
+                'roles' => $user->roles->pluck('name')->toArray(),
                 'dosen' => $user->dosen ? [
                     'nip' => $user->dosen->nip,
                     'fakultas' => $user->dosen->fakultas ? [
@@ -99,8 +102,9 @@ class UserController extends Controller
             'stats' => [
                 'total' => $totalDosen,
                 'active' => $activeDosen,
+                'dpl_active' => $totalDpl,
             ],
-            'title' => 'Manajemen Data Dosen (DPL)',
+            'title' => 'Manajemen Data Dosen',
         ]);
     }
 
@@ -365,15 +369,15 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()->symbols()],
-            'role' => ['required', 'in:superadmin,faculty_admin,dpl,student'],
+            'role' => ['required', 'in:superadmin,faculty_admin,dosen,student'],
             // Student fields
             'nim' => ['required_if:role,student', 'nullable', 'string', 'max:20'],
-            'fakultas_id' => ['required_if:role,student,dpl,faculty_admin', 'nullable', 'exists:fakultas,id'],
+            'fakultas_id' => ['required_if:role,student,dosen,faculty_admin', 'nullable', 'exists:fakultas,id'],
             'prodi_id' => ['required_if:role,student', 'nullable', 'exists:prodi,id'],
             'batch_year' => ['required_if:role,student', 'nullable', 'integer'],
             'gender' => ['required_if:role,student', 'nullable', 'in:L,P'],
             // Lecturer fields
-            'nip' => ['required_if:role,dpl', 'nullable', 'string', 'max:20'],
+            'nip' => ['required_if:role,dosen', 'nullable', 'string', 'max:20'],
         ]);
 
         // Constraint: Only 1 superadmin account allowed
@@ -408,7 +412,7 @@ class UserController extends Controller
             $user->update(['name' => $validated['name']]);
         }
 
-        if ($validated['role'] === 'dpl' && ! empty($validated['nip'])) {
+        if ($validated['role'] === 'dosen' && ! empty($validated['nip'])) {
             Dosen::create([
                 'user_id' => $user->id,
                 'nip' => $validated['nip'],
@@ -420,7 +424,7 @@ class UserController extends Controller
         // Notify user about their new account
         $roleLabel = match ($validated['role']) {
             'student' => 'Mahasiswa',
-            'dpl' => 'Dosen Pembimbing Lapangan',
+            'dosen' => 'Dosen',
             'faculty_admin' => 'Admin Fakultas',
             'superadmin' => 'Super Administrator',
             default => 'Pengguna',

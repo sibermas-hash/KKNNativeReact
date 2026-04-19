@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('AI_PROVIDER', 'alibaba'),
+    'default' => env('AI_PROVIDER', 'gemini'),
     'default_for_images' => 'gemini',
     'default_for_audio' => 'openai',
     'default_for_transcription' => 'openai',
@@ -85,9 +85,9 @@ return [
             'key' => env('GEMINI_API_KEY'),
             'models' => [
                 'text' => [
-                    'default' => 'gemini-1.0-pro',
-                    'cheapest' => 'gemini-1.0-pro',
-                    'smartest' => 'gemini-1.5-pro',
+                    'default' => 'gemini-2.5-flash',
+                    'cheapest' => 'gemini-2.5-flash',
+                    'smartest' => 'gemini-2.5-pro',
                 ],
             ],
         ],

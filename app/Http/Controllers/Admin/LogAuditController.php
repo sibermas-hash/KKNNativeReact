@@ -53,7 +53,7 @@ class LogAuditController extends Controller
             'stats' => $stats,
             'filters' => $request->only(['action', 'user_id', 'date_from', 'date_to', 'search']),
             'actions' => LogAudit::distinct('action')->pluck('action'),
-            'users' => User::whereHas('roles', fn ($q) => $q->whereIn('name', ['superadmin', 'faculty_admin', 'dpl']))
+            'users' => User::whereHas('roles', fn ($q) => $q->whereIn('name', ['superadmin', 'faculty_admin', 'dosen', 'dpl']))
                 ->select('id', 'name')
                 ->orderBy('name')
                 ->get(),

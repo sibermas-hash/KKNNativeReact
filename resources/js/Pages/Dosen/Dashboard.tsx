@@ -1,4 +1,4 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import {
   GraduationCap,
@@ -70,6 +70,7 @@ export default function DosenDashboard({
   dosen,
   workshop_status,
   dpl_registration,
+  available_periods,
   available_workshops,
   has_passed_workshop,
 }: Props) {
@@ -314,26 +315,7 @@ export default function DosenDashboard({
               </div>
             ) : !dpl_registration ? (
               /* Lulus workshop, belum daftar DPL */
-              <div className="bg-white rounded-xl border border-emerald-200 p-10 text-center space-y-4">
-                <div className="h-12 w-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto text-emerald-600 border border-emerald-200">
-                  <CheckCircle2 size={24} />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-lg font-bold text-emerald-950 uppercase tracking-tight">
-                    Selamat, Anda Lulus Workshop!
-                  </h3>
-                  <p className="text-xs font-bold text-emerald-800 max-w-md mx-auto leading-relaxed">
-                    Anda dapat mendaftarkan diri sebagai Dosen Pembimbing Lapangan (DPL) untuk
-                    periode KKN yang tersedia.
-                  </p>
-                </div>
-                <button
-                  className="inline-flex items-center gap-2 px-6 py-2.5 font-bold text-xs rounded-lg shadow-lg transition-all uppercase tracking-wider bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-100"
-                >
-                  Daftar Sebagai DPL
-                  <ArrowRight size={14} />
-                </button>
-              </div>
+              <DplRegistrationForm availablePeriods={available_periods} />
             ) : dpl_registration.status === 'pending' ? (
               /* Sudah daftar, menunggu approval */
               <div className="bg-white rounded-xl border border-amber-200 p-10 text-center space-y-4">
@@ -418,6 +400,58 @@ export default function DosenDashboard({
         </div>
       </motion.div>
     </AppLayout>
+  );
+}
+
+function DplRegistrationForm({ availablePeriods }: { availablePeriods: Array<{ id: number; name: string }> }) {
+  const form = useForm({ periode_id: availablePeriods[0]?.id?.toString() || '' });
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.data.periode_id) return;
+    form.post('/dosen/daftar-dpl', { preserveScroll: true });
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-emerald-200 p-10 text-center space-y-4">
+      <div className="h-12 w-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto text-emerald-600 border border-emerald-200">
+        <CheckCircle2 size={24} />
+      </div>
+      <div className="space-y-1">
+        <h3 className="text-lg font-bold text-emerald-950 uppercase tracking-tight">
+          Selamat, Anda Lulus Workshop!
+        </h3>
+        <p className="text-xs font-bold text-emerald-800 max-w-md mx-auto leading-relaxed">
+          Anda dapat mendaftarkan diri sebagai Dosen Pembimbing Lapangan (DPL) untuk periode KKN yang tersedia.
+        </p>
+      </div>
+      {availablePeriods.length > 0 ? (
+        <form onSubmit={submit} className="space-y-3 max-w-sm mx-auto">
+          <select
+            value={form.data.periode_id}
+            onChange={(e) => form.setData('periode_id', e.target.value)}
+            className="w-full h-10 px-3 border border-emerald-200 rounded-lg text-sm font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-500"
+          >
+            {availablePeriods.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+          <button
+            type="submit"
+            disabled={form.processing || !form.data.periode_id}
+            className="inline-flex items-center gap-2 px-6 py-2.5 font-bold text-xs rounded-lg shadow-lg transition-all uppercase tracking-wider bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-100 disabled:opacity-50"
+          >
+            {form.processing ? 'Mengirim...' : 'Daftar Sebagai DPL'}
+            <ArrowRight size={14} />
+          </button>
+          {form.errors.periode_id && <p className="text-xs font-bold text-rose-600">{form.errors.periode_id}</p>}
+        </form>
+      ) : (
+        <p className="text-xs font-bold text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-100 max-w-md mx-auto">
+          Belum ada periode KKN yang dibuka untuk pendaftaran DPL.
+        </p>
+      )}
+    </div>
   );
 }
 

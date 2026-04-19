@@ -119,7 +119,17 @@ class AuthenticatedSessionController extends Controller
         $user = auth()->user();
         \Log::info('User authenticated successfully', ['user_id' => $user->id, 'roles' => $user->getRoleNames()]);
 
-        // If profile is incomplete (must_change_password = true), redirect to profile first
+        // Check password status first
+        $hasNeverChangedPassword = is_null($user->password_changed_at);
+
+        // If password never changed → must go to change password page first
+        if ($hasNeverChangedPassword) {
+            \Log::info('Password never changed, redirecting to change password', ['user_id' => $user->id]);
+
+            return redirect()->route('profile.password-change')->with('warning', 'Anda wajib mengganti kata sandi default terlebih dahulu.');
+        }
+
+        // If profile is incomplete (must_change_password = true), redirect to profile
         if ($user->must_change_password) {
             \Log::info('Profile incomplete, redirecting to profile', ['user_id' => $user->id]);
 

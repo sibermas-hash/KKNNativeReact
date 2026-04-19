@@ -410,29 +410,51 @@ class SystemSettingController extends Controller
                     'contents' => [
                         [
                             'parts' => [
-                                ['text' => 'ping'],
+                                ['text' => 'Halo, ini test koneksi API. Jawab dengan singkat: OK'],
                             ],
                         ],
+                    ],
+                    'generationConfig' => [
+                        'temperature' => 0.7,
+                        'maxOutputTokens' => 100,
                     ],
                 ]);
 
             if ($response->successful()) {
+                $data = $response->json();
+                
+                // Check if response has candidates
+                if (isset($data['candidates']) && count($data['candidates']) > 0) {
+                    $candidate = $data['candidates'][0];
+                    if (isset($candidate['content']['parts']) && count($candidate['content']['parts']) > 0) {
+                        return response()->json([
+                            'success' => true,
+                            'message' => 'Koneksi berhasil ke Google Gemini 2.5 Flash',
+                            'model' => 'gemini-2.5-flash',
+                            'response' => $candidate['content']['parts'][0]['text'] ?? 'OK',
+                        ]);
+                    }
+                }
+                
                 return response()->json([
-                    'success' => true,
-                    'message' => 'Koneksi berhasil ke Google Gemini 2.5',
-                    'model' => 'gemini-2.5-flash',
+                    'success' => false,
+                    'message' => 'Response format tidak dikenali',
+                    'error_code' => 'INVALID_RESPONSE',
                 ]);
             }
 
+            $errorData = $response->json();
+            $errorMessage = $errorData['error']['message'] ?? 'Unknown error';
+
             return response()->json([
                 'success' => false,
-                'message' => 'API Key tidak valid atau ditolak oleh Google AI.',
-                'error_code' => 'API_REJECTED',
+                'message' => 'API Key ditolak: ' . $errorMessage,
+                'error_code' => $errorData['error']['status'] ?? 'API_ERROR',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghubungi server Google AI.',
+                'message' => 'Gagal menghubungi server Google AI: ' . $e->getMessage(),
                 'error_code' => 'NETWORK_ERROR',
             ]);
         }

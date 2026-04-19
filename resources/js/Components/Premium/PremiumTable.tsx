@@ -76,3 +76,5 @@ export const PremiumTableCell: React.FC<{
 );
 
 export default PremiumTable;
+export { PremiumTableRow };
+export { PremiumTableCell };

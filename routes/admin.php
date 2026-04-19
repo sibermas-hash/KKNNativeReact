@@ -174,6 +174,12 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
     Route::get('dosen/sinkron', [Admin\DplSyncController::class, 'index'])->name('dpl.sinkron');
     Route::post('dosen/sinkron', [Admin\DplSyncController::class, 'sync'])->name('dpl.sinkron.store');
     Route::get('dpl/sync', [Admin\DplSyncController::class, 'index'])->name('dpl.sync');
+    Route::get('dosen/pendaftaran-dpl', [Admin\DplRegistrationController::class, 'index'])->name('dpl.pendaftaran');
+    Route::patch('dosen/pendaftaran-dpl/{registration}/setujui', [Admin\DplRegistrationController::class, 'approve'])->name('dpl.pendaftaran.setujui');
+    Route::patch('dosen/pendaftaran-dpl/{registration}/tolak', [Admin\DplRegistrationController::class, 'reject'])->name('dpl.pendaftaran.tolak');
+    Route::post('dosen/pendaftaran-dpl/setujui-massal', [Admin\DplRegistrationController::class, 'bulkApprove'])->name('dpl.pendaftaran.setujui-massal');
+    Route::post('dosen/pendaftaran-dpl/tolak-massal', [Admin\DplRegistrationController::class, 'bulkReject'])->name('dpl.pendaftaran.tolak-massal');
+
     Route::get('dosen/penugasan', [Admin\DplAssignmentController::class, 'index'])->name('dpl.penugasan');
     Route::redirect('dpl/assignment', 'admin/dosen/penugasan', 301)->name('dpl.assignment');
     Route::post('dosen/tugaskan-periode', [Admin\DplAssignmentController::class, 'assignToPeriod'])->name('dpl.tugaskan-periode');

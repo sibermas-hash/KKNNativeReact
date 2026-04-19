@@ -55,11 +55,17 @@ const FIELD_LABELS: Record<string, string> = {
 
 export default function ProfileShow() {
   const { user, student, lecturer, is_onboarding: isOnboarding } = usePage<Props>().props;
+  
+  // Safety check
+  if (!user) {
+    return <div className="text-red-600">Error: User data not available</div>;
+  }
+  
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [nikChecking, setNikChecking] = useState(false);
   const [nikUniqueError, setNikUniqueError] = useState<string | null>(null);
-  const mustChangePassword = user.must_change_password;
+  const mustChangePassword = user?.must_change_password ?? false;
 
   const profileForm = useForm({
     name: user.name ?? '', phone: user.phone ?? '', address: user.address ?? '',
@@ -104,6 +110,67 @@ export default function ProfileShow() {
 
   const passwordForm = useForm({ current_password: '', password: '', password_confirmation: '' });
   const avatarForm = useForm<{ avatar: File | null }>({ avatar: null });
+
+  // If must change password, show only password form
+  if (mustChangePassword) {
+    return (
+      <AppLayout title="Ganti Password">
+        <Head title="Ganti Password" />
+        <div className="max-w-2xl mx-auto py-12">
+          <div className="bg-rose-50 border border-rose-200 rounded-xl p-8 space-y-6">
+            <div className="text-center space-y-2">
+              <AlertCircle size={48} className="text-rose-600 mx-auto" />
+              <h1 className="text-2xl font-bold text-rose-900">Ganti Password</h1>
+              <p className="text-rose-800">Anda harus mengganti password Anda sebelum melanjutkan.</p>
+            </div>
+            
+            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+              <div>
+                <label className="text-sm font-semibold text-rose-900">Password Saat Ini</label>
+                <FormInput 
+                  type="password" 
+                  value={passwordForm.data.current_password} 
+                  onChange={e => passwordForm.setData('current_password', e.target.value)} 
+                  error={passwordForm.errors.current_password} 
+                  className="h-10 mt-1"
+                  placeholder="Masukkan password saat ini"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-rose-900">Password Baru</label>
+                <FormInput 
+                  type="password" 
+                  value={passwordForm.data.password} 
+                  onChange={e => passwordForm.setData('password', e.target.value)} 
+                  error={passwordForm.errors.password} 
+                  className="h-10 mt-1"
+                  placeholder="Masukkan password baru"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-rose-900">Konfirmasi Password Baru</label>
+                <FormInput 
+                  type="password" 
+                  value={passwordForm.data.password_confirmation} 
+                  onChange={e => passwordForm.setData('password_confirmation', e.target.value)} 
+                  error={passwordForm.errors.password_confirmation} 
+                  className="h-10 mt-1"
+                  placeholder="Konfirmasi password baru"
+                />
+              </div>
+              <button 
+                type="submit" 
+                disabled={passwordForm.processing}
+                className="w-full h-10 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg transition-colors disabled:opacity-50"
+              >
+                {passwordForm.processing ? 'Menyimpan...' : 'Ganti Password'}
+              </button>
+            </form>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   const handleProfileSubmit: FormEventHandler = (e) => {
     e.preventDefault();

@@ -82,6 +82,7 @@ const getAdminNav = (): NavGroup[] => [
     title: 'KELOMPOK & PENUGASAN',
     items: [
       { label: 'Kelompok KKN', href: safeRoute('admin.kelompok.index'), icon: Users },
+      { label: 'Pendaftaran DPL', href: safeRoute('admin.dpl.pendaftaran'), icon: ClipboardList },
       { label: 'Penugasan DPL', href: safeRoute('admin.dpl.penugasan'), icon: UserCheck },
       { label: 'Transfer Peserta', href: safeRoute('admin.peserta.pindah.index'), icon: Shuffle },
     ],

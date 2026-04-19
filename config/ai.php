@@ -85,8 +85,11 @@ return [
             'key' => env('GEMINI_API_KEY'),
             'models' => [
                 'text' => [
+                    // Production: gemini-2.5-flash (optimal untuk speed + quality)
                     'default' => 'gemini-2.5-flash',
-                    'cheapest' => 'gemini-2.5-flash',
+                    // Fastest model untuk real-time responses (student notifications, etc)
+                    'cheapest' => 'gemini-2.5-flash-lite',
+                    // Most capable model untuk complex reasoning (admin review, verification)
                     'smartest' => 'gemini-2.5-pro',
                 ],
             ],

@@ -38,6 +38,9 @@ Route::middleware([
         Route::post('/{workshop}/register', [WorkshopController::class, 'register'])->name('register');
     });
 
+    // Pendaftaran DPL (dosen yang sudah lulus workshop)
+    Route::post('daftar-dpl', [Dosen\DplRegistrationController::class, 'store'])->name('dpl-registration.store');
+
     // ═══════════════════════════════════════════════════════════
     // AKSES DPL (hanya dosen yang sudah di-approve sebagai DPL)
     // ═══════════════════════════════════════════════════════════

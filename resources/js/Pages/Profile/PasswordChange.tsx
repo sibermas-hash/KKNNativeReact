@@ -48,6 +48,7 @@ export default function PasswordChange() {
 
     passwordForm.patch(route('profile.password'), {
       onSuccess: () => {
+        // After password changed, go to profile to complete data
         router.get(route('profile.show'));
       },
       onError: (errors) => {

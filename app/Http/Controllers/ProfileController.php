@@ -87,7 +87,12 @@ class ProfileController extends Controller
      */
     public function show(): Response
     {
-        $user = auth()->user()->loadMissing(['mahasiswa.fakultas', 'mahasiswa.prodi', 'dosen.fakultas']);
+        $user = auth()->user();
+        if (!$user) {
+            abort(401, 'Unauthorized');
+        }
+        
+        $user->loadMissing(['mahasiswa.fakultas', 'mahasiswa.prodi', 'dosen.fakultas']);
         $student = $user->mahasiswa;
         $lecturer = $user->dosen;
         
@@ -327,13 +332,13 @@ class ProfileController extends Controller
     public function updatePassword(Request $request): RedirectResponse
     {
         $user = $request->user();
-        $isFirstChange = $user->must_change_password;
+        $hasNeverChangedPassword = is_null($user->password_changed_at);
 
         $rules = [
             'password' => ['required', Password::min(8)->mixedCase()->numbers()->symbols(), 'confirmed'],
         ];
 
-        if (!$isFirstChange) {
+        if (!$hasNeverChangedPassword) {
             $rules['current_password'] = ['required', 'current_password'];
         }
 
@@ -344,7 +349,8 @@ class ProfileController extends Controller
             'password_changed_at' => now(),
         ]);
 
-        if ($isFirstChange) {
+        // If this was first password change OR profile incomplete → check profile completeness
+        if ($hasNeverChangedPassword || $user->must_change_password) {
             // Use unified method - works for both student and lecturer
             // Note: All biodata comes from API, only profile + contact info required
             if ($this->isProfileComplete($user)) {
@@ -358,8 +364,10 @@ class ProfileController extends Controller
                 return redirect('/dpl/dashboard')->with('success', 'Profil lengkap! Selamat datang di SIM-KKN.');
             }
 
-            // If incomplete → STAY LOCKED
-            $user->update(['must_change_password' => true]);
+            // If incomplete → STAY LOCKED but still unlocked password (password now changed)
+            if ($hasNeverChangedPassword) {
+                $user->update(['must_change_password' => true]);
+            }
 
             // Get specific missing fields (only profile/contact - biodata from API)
             $missing = [];
@@ -374,8 +382,6 @@ class ProfileController extends Controller
 
             return redirect()->route('profile.show')->with('error', 'Profil belum lengkap! '.implode(', ', $missing).' wajib diisi.');
         }
-
-        $user->update(['must_change_password' => false]);
 
         return redirect()->back()->with('success', 'Password berhasil diubah.');
     }

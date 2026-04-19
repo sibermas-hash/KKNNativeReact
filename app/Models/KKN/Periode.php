@@ -19,16 +19,10 @@ class Periode extends Model
 
     protected $table = 'periode';
 
-
     protected $fillable = [
         'academic_year_id',
         'jenis_kkn_id',
         'periode',
-        'jenis',
-        'program_type',
-        'program_subtype',
-        'registration_mode',
-        'placement_mode',
         'name',
         'start_date',
         'end_date',
@@ -145,48 +139,30 @@ class Periode extends Model
         ];
     }
 
-    public function getJenisAttribute(mixed $value): mixed
-    {
-        if ($this->jenisKkn) {
-            return $this->jenisKkn->code;
-        }
-
-        if ($value === null || $value === '') {
-            return null;
-        }
-
-        return PeriodeGovernanceService::resolveJenisEnum($this->program_type, $this->program_subtype, $value);
-    }
-
-    public function setJenisAttribute(KknType|string|null $value): void
-    {
-        if ($value === null || $value === '') {
-            $this->attributes['jenis'] = null;
-
-            return;
-        }
-
-        $this->attributes['jenis'] = PeriodeGovernanceService::resolveJenisEnum($this->program_type, $this->program_subtype, $value)->value;
-    }
-
     public function governance(): array
     {
-        return PeriodeGovernanceService::blueprint(
-            $this->program_type,
-            $this->program_subtype,
-            $this->attributes['jenis'] ?? 'REGULER',
-            $this->jenisKkn,
-        );
+        return $this->jenisKkn
+            ? PeriodeGovernanceService::blueprintFromJenisKkn($this->jenisKkn)
+            : [];
     }
 
     public function usesSelfServiceRegistration(): bool
     {
-        return (bool) ($this->governance()['self_service_enabled'] ?? false);
+        $jenisKkn = $this->jenisKkn;
+
+        return $jenisKkn
+            ? $jenisKkn->registration_mode === self::REGISTRATION_MODE_OPEN
+                && $jenisKkn->placement_mode === self::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL
+            : false;
     }
 
     public function usesAutomaticPlacementAfterApproval(): bool
     {
-        return ($this->governance()['placement_mode'] ?? null) === self::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL;
+        $jenisKkn = $this->jenisKkn;
+
+        return $jenisKkn
+            ? $jenisKkn->placement_mode === self::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL
+            : false;
     }
 
     public static function getActivePeriod(): ?self

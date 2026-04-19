@@ -71,13 +71,13 @@ class WebhookController extends Controller
         }
 
         if (str_ends_with($event, '.deleted')) {
-            $mahasiswa = Mahasiswa::on('kkn')->where('nim', $data['nim'])->first();
+            $mahasiswa = Mahasiswa::where('nim', $data['nim'])->first();
             if ($mahasiswa) {
                 DB::transaction(function () use ($mahasiswa) {
                     $mahasiswa->update(['master_synced_at' => null]);
 
                     if ($mahasiswa->user_id) {
-                        $user = User::on('kkn')->find($mahasiswa->user_id);
+                        $user = User::find($mahasiswa->user_id);
                         if ($user) {
                             $user->update(['is_active' => false]);
                         }
@@ -100,13 +100,13 @@ class WebhookController extends Controller
         }
 
         if (str_ends_with($event, '.deleted')) {
-            $dosen = Dosen::on('kkn')->where('nip', $data['nip'])->first();
+            $dosen = Dosen::where('nip', $data['nip'])->first();
             if ($dosen) {
                 DB::transaction(function () use ($dosen) {
                     $dosen->update(['master_synced_at' => null]);
 
                     if ($dosen->user_id) {
-                        $user = User::on('kkn')->find($dosen->user_id);
+                        $user = User::find($dosen->user_id);
                         if ($user) {
                             $user->update(['is_active' => false]);
                         }
@@ -124,14 +124,14 @@ class WebhookController extends Controller
             $facultyId = null;
             $organizationMasterId = $this->normalizeMasterId($data['organization_id'] ?? $data['fakultas_id'] ?? null);
             if ($organizationMasterId !== null) {
-                $facultyId = Fakultas::on('kkn')->where('master_id', $organizationMasterId)->first()?->id;
+                $facultyId = Fakultas::where('master_id', $organizationMasterId)->first()?->id;
             }
 
             $username = (string) $nip;
             $incomingEmail = $data['email'] ?? null;
             $fallbackEmail = $username.'@kkn.local';
 
-            $user = User::on('kkn')->firstOrNew(['username' => $username]);
+            $user = User::firstOrNew(['username' => $username]);
             $isNewUser = ! $user->exists;
 
             if ($isNewUser) {
@@ -149,10 +149,10 @@ class WebhookController extends Controller
             $user->save();
 
             if (! $user->hasRole('dpl')) {
-                $user->assignRole('dpl');
+                $user->assignRole('dosen');
             }
 
-            Dosen::on('kkn')->updateOrCreate(
+            Dosen::updateOrCreate(
                 ['nip' => $nip],
                 [
                     'user_id' => $user->id,

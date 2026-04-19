@@ -401,6 +401,50 @@ class RegistrationController extends Controller
         }
     }
 
+    public function status(Request $request): Response|RedirectResponse
+    {
+        $mahasiswa = auth()->user()?->mahasiswa;
+        
+        if (! $mahasiswa) {
+            return redirect()->route('student.dashboard');
+        }
+
+        $registration = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
+            ->with(['periode.jenisKkn', 'kelompok.lokasi', 'kelompok.lecturer'])
+            ->latest()
+            ->first();
+
+        if (! $registration) {
+            return redirect()->route('student.daftar.index');
+        }
+
+        return Inertia::render('Student/RegistrationStatus', [
+            'registration' => [
+                'id' => $registration->id,
+                'status' => $registration->status,
+                'status_label' => $registration->status_label,
+                'registration_date' => $registration->registration_date?->format('d/m/Y H:i'),
+                'approved_at' => $registration->approved_at?->format('d/m/Y H:i'),
+                'period' => [
+                    'name' => $registration->periode?->name,
+                    'jenis' => $registration->periode?->jenisKkn?->name,
+                ],
+                'notes' => $registration->notes,
+                'rejection_reason' => $registration->rejection_reason,
+                'group' => $registration->kelompok ? [
+                    'name' => $registration->kelompok->nama_kelompok,
+                    'location' => $registration->kelompok->lokasi?->village_name,
+                    'lecturer' => $registration->kelompok->lecturer?->nama,
+                ] : null,
+            ],
+            'student' => [
+                'nim' => $mahasiswa->nim,
+                'name' => $mahasiswa->nama,
+                'phone' => auth()->user()->phone,
+            ]
+        ]);
+    }
+
     public function leave(
         Request $request,
         Periode $periode,

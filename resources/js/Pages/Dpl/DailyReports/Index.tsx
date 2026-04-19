@@ -66,7 +66,7 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
     const [groupIdFilter, setGroupIdFilter] = useState(filters.kelompok_id || '');
 
     const handleFilterChange = (status: string, groupId: string) => {
-        router.get(route('dpl.daily-reports.index'), { status, kelompok_id: groupId }, {
+        router.get(route('dosen.daily-reports.index'), { status, kelompok_id: groupId }, {
             preserveState: true,
             replace: true
         });
@@ -105,7 +105,7 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
                             className="h-14 px-8 rounded-2xl bg-emerald-900 text-white hover:bg-emerald-600 font-bold text-sm transition-all flex items-center gap-3 shadow-xl shadow-slate-200 active:scale-95"
                             onClick={() => {
                                 if(confirm(`Setujui seluruh laporan yang berstatus 'Selesai Daftar' (Antrian) untuk ${groupIdFilter ? 'kelompok ini' : 'semua kelompok Anda'}?`)) {
-                                    router.post(route('dpl.daily-reports.approve-all'), {
+                                    router.post(route('dosen.daily-reports.approve-all'), {
                                         group_ids: groupIdFilter ? [parseInt(groupIdFilter)] : []
                                     });
                                 }
@@ -281,7 +281,7 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
                                         </td>
                                         <td className="px-6 py-6 text-right">
                                             <Link 
-                                                href={route('dpl.daily-reports.show', report.id)}
+                                                href={route('dosen.daily-reports.show', report.id)}
                                                 className="h-11 px-6 rounded-xl bg-white border border-emerald-50/60 text-emerald-950 hover:text-emerald-600 hover:border-emerald-200 font-bold text-xs transition-all inline-flex items-center gap-2 shadow-sm active:scale-95 group-hover:bg-emerald-50"
                                             >
                                                 Periksa <ArrowRight size={14} strokeWidth={3} />

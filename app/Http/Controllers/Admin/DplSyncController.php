@@ -149,7 +149,7 @@ class DplSyncController extends Controller
                     $user->save();
 
                     if (! $user->hasRole('dpl')) {
-                        $user->assignRole('dpl');
+                        $user->assignRole('dosen');
                     }
 
                     Dosen::updateOrCreate(

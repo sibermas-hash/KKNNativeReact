@@ -61,6 +61,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Dashboard access gates
         Gate::define('access-admin-panel', fn ($user) => $user->hasAnyRole(['superadmin', 'admin', 'faculty_admin']));
+        Gate::define('access-dosen-panel', fn ($user) => $user->hasAnyRole(['dosen', 'dpl']));
         Gate::define('access-dpl-panel', fn ($user) => $user->hasRole('dpl'));
         Gate::define('access-student-panel', fn ($user) => $user->hasRole('student'));
         Gate::define('view-reports', fn ($user) => $user->hasAnyRole(['superadmin', 'admin', 'faculty_admin', 'dpl']));

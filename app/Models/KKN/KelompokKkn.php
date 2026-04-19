@@ -19,7 +19,6 @@ class KelompokKkn extends Model
 
     protected $table = 'kelompok_kkn';
 
-
     protected $fillable = [
         'periode_id',
         'location_id',
@@ -109,15 +108,24 @@ class KelompokKkn extends Model
      */
     public function getKknTypeAttribute(): KknType
     {
-        $jenis = $this->periode?->jenis;
-        if ($jenis instanceof KknType) {
-            return $jenis;
-        }
-        if (is_string($jenis) && $jenis !== '') {
-            return KknType::tryFrom($jenis) ?? KknType::REGULER;
+        $jenisKkn = $this->periode?->jenisKkn;
+        if ($jenisKkn) {
+            return match ($jenisKkn->code ?? 'REGULER') {
+                'NUSANTARA' => KknType::NUSANTARA,
+                'INTERNASIONAL' => KknType::INTERNASIONAL,
+                'KOLABORASI_PTKIN' => KknType::KOLABORASI_PTKIN,
+                'KAMPUNG_ZAKAT' => KknType::KAMPUNG_ZAKAT,
+                'DESA_KATANA' => KknType::DESA_KATANA,
+                'TEMATIK' => KknType::TEMATIK,
+                default => KknType::REGULER,
+            };
         }
 
-        return KknType::REGULER;
+        $jenis = $this->periode?->jenis;
+
+        return $jenis instanceof KknType
+            ? $jenis
+            : KknType::tryFrom($jenis ?? 'REGULER') ?? KknType::REGULER;
     }
 
     /**

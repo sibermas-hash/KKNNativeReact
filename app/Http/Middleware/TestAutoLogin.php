@@ -67,7 +67,7 @@ class TestAutoLogin
                         $user->assignRole('superadmin');
                     }
                     if ($username === 'dpl' && ! $user->hasRole('dpl')) {
-                        $user->assignRole('dpl');
+                        $user->assignRole('dosen');
                     }
 
                     \Log::info('TestAutoLogin: Success. Logged in User ID: '.$user->id);

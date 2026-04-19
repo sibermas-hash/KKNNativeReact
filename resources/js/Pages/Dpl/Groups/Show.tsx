@@ -60,7 +60,7 @@ export default function DplGroupShow({ group }: Props) {
  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
  <div>
  <div className="flex items-center gap-3">
- <Link href="/dpl/groups" className="text-sm font-medium text-primary hover:underline">
+ <Link href="/dosen/groups" className="text-sm font-medium text-primary hover:underline">
  Kembali ke daftar kelompok
  </Link>
  </div>

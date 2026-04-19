@@ -34,6 +34,7 @@ Route::middleware([
     
     // Daftar KKN - halaman utama pemilihan periode
     Route::get('daftar', [Student\KknDaftarController::class, 'index'])->name('daftar.index');
+    Route::get('cek-pendaftaran', [Student\RegistrationController::class, 'status'])->name('registration.status');
 
     Route::get('posko', [Student\PoskoController::class, 'edit'])->name('posko.index');
     Route::post('posko', [Student\PoskoController::class, 'store'])->name('posko.store');

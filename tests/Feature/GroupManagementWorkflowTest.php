@@ -309,7 +309,7 @@ class GroupManagementWorkflowTest extends TestCase
             ->delete(route('admin.kelompok.destroy', $emptyGroup))
             ->assertRedirect(route('admin.kelompok.index'));
 
-        $this->assertSoftDeleted('kelompok_kkn', ['id' => $emptyGroup->id], 'kkn');
+        $this->assertSoftDeleted('kelompok_kkn', ['id' => $emptyGroup->id]);
     }
 
     public function test_group_with_students_cannot_be_deleted(): void
@@ -340,7 +340,7 @@ class GroupManagementWorkflowTest extends TestCase
             ->assertRedirect(route('admin.kelompok.index'))
             ->assertSessionHas('error');
 
-        $this->assertNotSoftDeleted('kelompok_kkn', ['id' => $group->id], 'kkn');
+        $this->assertNotSoftDeleted('kelompok_kkn', ['id' => $group->id]);
     }
 
     public function test_group_can_be_edited(): void

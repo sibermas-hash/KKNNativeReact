@@ -17,12 +17,12 @@ class DemoSeedPublicContentCommandTest extends TestCase
         $this->assertDatabaseHas('announcements', [
             'title' => 'Pembukaan Pendaftaran KKN Semester Ganjil 2026',
             'is_active' => true,
-        ], 'kkn');
+        ]);
 
         $this->assertDatabaseHas('downloads', [
             'title' => 'Panduan Operasional KKN 2026',
             'is_active' => true,
-        ], 'kkn');
+        ]);
 
         $this->assertSame(
             'Skema KKN yang fleksibel dan kontekstual.',

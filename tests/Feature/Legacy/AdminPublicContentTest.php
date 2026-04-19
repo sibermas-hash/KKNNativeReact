@@ -48,7 +48,7 @@ class AdminPublicContentTest extends TestCase
         $this->assertDatabaseHas('system_settings', [
             'config_key' => 'site_about',
             'value' => 'Profil terbaru LPPM untuk halaman publik.',
-        ], 'kkn');
+        ]);
     }
 
     public function test_superadmin_can_update_schemes_and_public_page_reads_it(): void

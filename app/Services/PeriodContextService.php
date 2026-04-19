@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\KKN\Periode;
+use App\Services\KKN\PeriodeGovernanceService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
 
@@ -146,15 +147,18 @@ class PeriodContextService
      */
     private function serializePeriod(Periode $period): array
     {
+        $jenisKkn = $period->jenisKkn;
+
         return [
             'id' => $period->id,
             'periode' => $period->periode,
             'angkatan' => $period->periode,
-            'jenis' => $period->jenis,
-            'program_type' => $period->program_type,
-            'program_subtype' => $period->program_subtype,
-            'registration_mode' => $period->registration_mode,
-            'placement_mode' => $period->placement_mode,
+            'jenis' => $jenisKkn?->name ?? '-',
+            'jenis_code' => $jenisKkn?->code ?? 'REGULER',
+            'program_type' => $jenisKkn ? PeriodeGovernanceService::blueprintFromJenisKkn($jenisKkn)['program_type'] : null,
+            'program_subtype' => null,
+            'registration_mode' => $jenisKkn?->registration_mode ?? 'open',
+            'placement_mode' => $jenisKkn?->placement_mode ?? 'manual_admin',
             'name' => $period->name,
             'academic_year' => $period->tahunAkademik?->year ?? null,
             'is_active' => $period->is_active,

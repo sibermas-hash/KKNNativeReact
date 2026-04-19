@@ -30,7 +30,7 @@ beforeEach(function () {
     Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
 
     // Clean up KKN connection tables (RefreshDatabase only handles default connection)
-    DB::connection('kkn')->table('system_settings')
+    DB::table('system_settings')
         ->whereIn('config_key', [
             'gemini_api_key', 'master_api_base_url', 'master_api_client_secret',
             'master_api_token', 'storage_secret',
@@ -68,7 +68,7 @@ test('[AUDIT 1.1] SystemSetting::set() TIDAK mengenkripsi non-secret keys', func
 
 test('[AUDIT 1.1] SystemSetting::get() backward compatible dengan data lama (unencrypted)', function () {
     // Simulasi data lama yang belum terenkripsi — insert langsung via DB (bypass model set())
-    DB::connection('kkn')->table('system_settings')->updateOrInsert(
+    DB::table('system_settings')->updateOrInsert(
         ['config_key' => 'storage_secret'],
         [
             'label' => 'Storage Secret',

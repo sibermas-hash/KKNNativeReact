@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\LokasiExport;
 use App\Http\Controllers\Controller;
 use App\Imports\LokasiWilayahImport;
 use App\Models\KKN\KelompokKkn;
@@ -72,6 +73,32 @@ class LokasiController extends Controller
                 'groups_import_url' => '/admin/kelompok',
             ],
         ]);
+    }
+
+    public function export(Request $request)
+    {
+        Gate::authorize('manage-master-data');
+
+        $query = Lokasi::query()
+            ->withCount([
+                'kelompok',
+                'kelompok as posko_count' => fn ($query) => $query->has('posko'),
+            ])
+            ->orderBy('regency_name')
+            ->orderBy('district_name')
+            ->orderBy('village_name');
+
+        if ($request->search) {
+            $s = str_replace(['%', '_'], ['\\%', '\\_'], $request->search);
+            $query->where(function ($innerQuery) use ($s) {
+                $innerQuery->where('village_name', 'like', "%{$s}%")
+                    ->orWhere('district_name', 'like', "%{$s}%")
+                    ->orWhere('regency_name', 'like', "%{$s}%")
+                    ->orWhere('village_code', 'like', "%{$s}%");
+            });
+        }
+
+        return Excel::download(new LokasiExport($query), 'data_lokasi_kkn_'.now()->format('Ymd_His').'.xlsx');
     }
 
     public function import(Request $request): RedirectResponse

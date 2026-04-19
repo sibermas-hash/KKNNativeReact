@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\KknType;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\JenisKkn;
 use App\Models\KKN\Periode;
@@ -12,6 +11,7 @@ use App\Models\KKN\TahunAkademik;
 use App\Services\Admin\PeriodeService;
 use App\Services\KKN\PeriodeGovernanceService;
 use App\Traits\HandlesPagination;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -39,17 +39,14 @@ class PeriodeController extends Controller
     {
         return $request->validate([
             'academic_year_id' => ['required', 'exists:App\Models\KKN\TahunAkademik,id'],
-            'jenis_kkn_id' => ['nullable', 'exists:App\Models\KKN\JenisKkn,id'],
+            'jenis_kkn_id' => ['required', 'exists:App\Models\KKN\JenisKkn,id'],
             'periode' => ['required', 'integer'],
-            'jenis' => ['nullable', 'string', 'max:100'],
-            'program_type' => ['nullable', 'string', 'max:100'],
-            'program_subtype' => ['nullable', 'string', 'max:100'],
             'name' => ['nullable', 'string', 'max:100'],
             'start_date' => ['required', 'date', function ($attribute, $value, $fail) use ($request) {
                 $registrationEnd = $request->input('registration_end');
                 if ($registrationEnd && $value) {
-                    $endDate = \Carbon\Carbon::parse($registrationEnd);
-                    $startDate = \Carbon\Carbon::parse($value);
+                    $endDate = Carbon::parse($registrationEnd);
+                    $startDate = Carbon::parse($value);
                     $gap = $endDate->diffInDays($startDate);
                     if ($gap < 7) {
                         $fail("Jarak minimal antara penutupan pendaftaran dan mulai pelaksanaan adalah 7 hari. Saat ini hanya {$gap} hari.");
@@ -67,11 +64,11 @@ class PeriodeController extends Controller
                     $jenisKknId = $request->input('jenis_kkn_id');
                     $existingActive = Periode::where('jenis_kkn_id', $jenisKknId)
                         ->where('is_active', true);
-                    
+
                     if ($request->route('periode.update')) {
                         $existingActive->where('id', '!=', $request->route('periode.update')->id);
                     }
-                    
+
                     if ($existingActive->exists()) {
                         $fail('Hanya boleh ada 1 periode aktif untuk setiap Jenis KKN.');
                     }
@@ -111,22 +108,26 @@ class PeriodeController extends Controller
                 $paginator = $query->paginate(10);
 
                 $paginator->getCollection()->transform(function ($p) {
+                    $jenisKkn = $p->jenisKkn;
                     $governance = $p->governance() ?: [];
 
                     return [
                         'id' => $p->id,
                         'jenis_kkn_id' => $p->jenis_kkn_id,
                         'periode' => $p->periode,
-                        'jenis' => $p->jenis instanceof KknType ? $p->jenis->label() : $p->jenis,
+                        'jenis' => $jenisKkn?->name ?? '-',
                         'program_type' => $governance['program_type'] ?? 'reguler',
                         'program_subtype' => $governance['program_subtype'] ?? null,
-                        'registration_mode' => $governance['registration_mode'] ?? 'open',
-                        'placement_mode' => $governance['placement_mode'] ?? 'manual_admin',
-                        'program_type_label' => $governance['program_type_label'] ?? 'Reguler',
+                        'registration_mode' => $jenisKkn?->registration_mode ?? 'open',
+                        'placement_mode' => $jenisKkn?->placement_mode ?? 'manual_admin',
+                        'program_type_label' => $jenisKkn?->name ?? 'Reguler',
                         'program_subtype_label' => $governance['program_subtype_label'] ?? '-',
-                        'registration_mode_label' => $governance['registration_mode_label'] ?? 'Terbuka',
-                        'placement_mode_label' => $governance['placement_mode_label'] ?? 'Manual',
-                        'self_service_enabled' => $p->usesSelfServiceRegistration(),
+                        'registration_mode_label' => $jenisKkn?->registrationModeLabel() ?? 'Terbuka',
+                        'placement_mode_label' => $jenisKkn?->placementModeLabel() ?? 'Manual',
+                        'self_service_enabled' => $jenisKkn
+                            ? $jenisKkn->registration_mode === Periode::REGISTRATION_MODE_OPEN
+                                && $jenisKkn->placement_mode === Periode::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL
+                            : false,
                         'name' => $p->name,
                         'start_date' => $p->start_date?->format('Y-m-d'),
                         'end_date' => $p->end_date?->format('Y-m-d'),
@@ -369,7 +370,7 @@ class PeriodeController extends Controller
             $sheet->setCellValue("A{$row}", $index + 1);
             $sheet->setCellValue("B{$row}", $period->name);
             $sheet->setCellValue("C{$row}", $period->tahunAkademik?->year ?? '-');
-            $sheet->setCellValue("D{$row}", $period->jenis instanceof KknType ? $period->jenis->label() : $period->jenis);
+            $sheet->setCellValue("D{$row}", $period->jenisKkn?->name ?? '-');
             $sheet->setCellValue("E{$row}", $period->start_date?->format('d M Y') ?? '-');
             $sheet->setCellValue("F{$row}", $period->end_date?->format('d M Y') ?? '-');
             $sheet->setCellValue("G{$row}", $period->start_date && $period->end_date ? $period->start_date->diffInDays($period->end_date) : 0);

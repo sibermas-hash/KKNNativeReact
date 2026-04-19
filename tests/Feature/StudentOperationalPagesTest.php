@@ -59,7 +59,7 @@ class StudentOperationalPagesTest extends TestCase
             'kelompok_id' => $group->id,
             'type' => 'final_report',
             'title' => 'Laporan Final Kelompok',
-        ], 'kkn');
+        ]);
 
         $report = Laporan::where('user_id', $user->id)->first();
 

@@ -58,7 +58,7 @@ class StudentDailyReportGpsTest extends TestCase
             'title' => 'Kegiatan Posyandu Desa',
             'location_name' => 'Balai Desa',
             'location_source' => 'gps',
-        ], 'kkn');
+        ]);
     }
 
     public function test_student_cannot_submit_daily_report_outside_allowed_radius(): void
@@ -118,7 +118,7 @@ class StudentDailyReportGpsTest extends TestCase
         $this->assertDatabaseHas('kegiatan_kkn', [
             'title' => 'Sinkronisasi Offline',
             'location_source' => 'gps',
-        ], 'kkn');
+        ]);
     }
 
     /**

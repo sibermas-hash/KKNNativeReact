@@ -117,8 +117,7 @@ class DatabaseSyncController extends Controller implements HasMiddleware
         return response()->json([
             'status' => $health['overall_status'],
             'databases' => [
-                'kkn' => $health['kkn'],
-                'master' => $health['master'],
+                'pgsql' => $health['pgsql'],
                 'redis' => $health['redis'],
             ],
             'master_api' => $apiHealth,
@@ -202,23 +201,23 @@ class DatabaseSyncController extends Controller implements HasMiddleware
     public function testConnection()
     {
         try {
-            // Test master database connection
-            $result = DB::connection('master')->select('SELECT 1 as test');
+            // Test default database connection
+            $result = DB::connection()->select('SELECT 1 as test');
 
-            // Get master database info
-            $database = DB::connection('master')->getDatabaseName();
-            $host = DB::connection('master')->getConfig('host');
+            // Get database info
+            $database = DB::connection()->getDatabaseName();
+            $host = DB::connection()->getConfig('host');
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Master database connection successful',
+                'message' => 'Koneksi database berhasil',
                 'database' => $database,
                 'host' => $host,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Master database connection failed',
+                'message' => 'Koneksi database gagal',
                 'error' => $e->getMessage(),
             ], 500);
         }

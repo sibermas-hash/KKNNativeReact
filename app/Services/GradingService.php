@@ -89,9 +89,7 @@ class GradingService
         $period = $score->kelompok?->periode;
 
         // Resolve KKN Type for config lookup
-        $kknType = $period?->jenis instanceof KknType
-            ? $period->jenis
-            : KknType::tryFrom($period?->jenis) ?? KknType::REGULER;
+        $kknType = self::resolveKknType($period);
 
         // Load configs from DB (cached) with fallback
         $cacheKey = 'grading_configs_'.$kknType->value;
@@ -297,5 +295,34 @@ class GradingService
                 'top_tags' => $tags,
             ];
         });
+    }
+
+    private static function resolveKknType(?object $period): KknType
+    {
+        if (! $period) {
+            return KknType::REGULER;
+        }
+
+        $jenisKkn = $period->jenisKkn ?? null;
+        if ($jenisKkn) {
+            $code = match ($jenisKkn->code ?? 'REGULER') {
+                'NUSANTARA' => KknType::NUSANTARA,
+                'INTERNASIONAL' => KknType::INTERNASIONAL,
+                'KOLABORASI_PTKIN' => KknType::KOLABORASI_PTKIN,
+                'KAMPUNG_ZAKAT' => KknType::KAMPUNG_ZAKAT,
+                'DESA_KATANA' => KknType::DESA_KATANA,
+                'TEMATIK' => KknType::TEMATIK,
+                default => KknType::REGULER,
+            };
+
+            return $code;
+        }
+
+        $jenisAttr = $period->jenis ?? $period->program_type ?? null;
+        if ($jenisAttr instanceof KknType) {
+            return $jenisAttr;
+        }
+
+        return KknType::tryFrom($jenisAttr ?? 'REGULER') ?? KknType::REGULER;
     }
 }

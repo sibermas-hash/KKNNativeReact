@@ -103,7 +103,7 @@ class MonitoringController extends Controller
             'catatan_tambahan' => $validated['catatan_tambahan'],
         ]);
 
-        return redirect()->route('dpl.monitoring.index')
+        return redirect()->route('dosen.monitoring.index')
             ->with('success', 'Laporan monitoring berhasil disimpan.');
     }
 }

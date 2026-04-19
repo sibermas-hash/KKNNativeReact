@@ -40,13 +40,13 @@ test('superadmin can import groups and automatically create locations from the s
         'village_name' => 'Desa A',
         'district_name' => 'Kecamatan A',
         'regency_name' => 'Kabupaten A',
-    ], 'kkn');
+    ]);
 
     $this->assertDatabaseHas('kelompok_kkn', [
         'periode_id' => $period->id,
         'code' => 'KKN-A1',
         'nama_kelompok' => 'Kelompok A1',
-    ], 'kkn');
+    ]);
 });
 
 test('superadmin import groups updates matching location data when available', function () {
@@ -78,14 +78,14 @@ test('superadmin import groups updates matching location data when available', f
         'nama_kelompok' => 'Kelompok A1',
         'capacity' => 12,
         'status' => 'active',
-    ], 'kkn');
+    ]);
 
     $this->assertDatabaseHas('lokasi', [
         'village_name' => 'Desa A',
         'district_name' => 'Kecamatan A',
         'regency_name' => 'Kabupaten A',
         'village_code' => '3302010001',
-    ], 'kkn');
+    ]);
 });
 
 test('superadmin cannot import dpl assignment before groups exist', function () {

@@ -74,6 +74,7 @@ Route::middleware(['auth', 'verified', 'disable.debugbar'])->group(function () {
 
     // Load role-based routes from separate files
     require __DIR__.'/admin.php';
+    require __DIR__.'/dosen.php';
     require __DIR__.'/dpl.php';
     require __DIR__.'/student.php';
 

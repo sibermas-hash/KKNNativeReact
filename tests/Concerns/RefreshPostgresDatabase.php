@@ -94,13 +94,7 @@ trait RefreshPostgresDatabase
         $defaultConfig = config("database.connections.{$defaultConnectionName}");
         $defaultConnection = DB::connection($defaultConnectionName);
 
-        foreach (['kkn', 'master'] as $connectionName) {
-            config(["database.connections.{$connectionName}" => $defaultConfig]);
-            DB::purge($connectionName);
-            $conn = DB::connection($connectionName);
-            $conn->setPdo($defaultConnection->getPdo());
-            $conn->setReadPdo($defaultConnection->getReadPdo());
-        }
+        // No additional connections to share since we only use pgsql.
     }
 
     private function ensurePostgresDatabaseExists(array $connectionConfig): void

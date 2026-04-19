@@ -75,20 +75,22 @@ return [
             'sslmode' => env('DB_SSLMODE', 'require'),
         ],
 
-        'master' => [
-            'driver' => 'pgsql',
-            'url' => env('DB_MASTER_URL'),
-            'host' => env('DB_MASTER_HOST', env('DB_HOST', '127.0.0.1')),
-            'port' => env('DB_MASTER_PORT', env('DB_PORT', '5432')),
-            'database' => env('DB_MASTER_DATABASE', env('DB_DATABASE', 'laravel')),
-            'username' => env('DB_MASTER_USERNAME', env('DB_USERNAME', 'root')),
-            'password' => env('DB_MASTER_PASSWORD', env('DB_PASSWORD', '')),
-            'charset' => 'utf8',
-            'prefix' => '',
-            'prefix_indexes' => true,
-            'search_path' => env('DB_MASTER_SCHEMA', env('DB_SEARCH_PATH', 'public')),
-            'sslmode' => env('DB_MASTER_SSLMODE', env('DB_SSLMODE', 'require')),
-        ],
+        // Master Database (External SIKAD integration)
+        // Uncomment when SIKAD master database is available for direct DB sync.
+        // 'master' => [
+        //     'driver' => 'pgsql',
+        //     'url' => env('DB_MASTER_URL'),
+        //     'host' => env('DB_MASTER_HOST', env('DB_HOST', '127.0.0.1')),
+        //     'port' => env('DB_MASTER_PORT', env('DB_PORT', '5432')),
+        //     'database' => env('DB_MASTER_DATABASE', env('DB_DATABASE', 'laravel')),
+        //     'username' => env('DB_MASTER_USERNAME', env('DB_USERNAME', 'root')),
+        //     'password' => env('DB_MASTER_PASSWORD', env('DB_PASSWORD', '')),
+        //     'charset' => 'utf8',
+        //     'prefix' => '',
+        //     'prefix_indexes' => true,
+        //     'search_path' => env('DB_MASTER_SCHEMA', env('DB_SEARCH_PATH', 'public')),
+        //     'sslmode' => env('DB_MASTER_SSLMODE', env('DB_SSLMODE', 'require')),
+        // ],
 
         // 'kkn' => [
         //     'driver' => 'pgsql',

@@ -13,16 +13,6 @@ use Illuminate\Support\Facades\Log;
 
 class DatabaseSyncMonitoringService
 {
-    protected string $masterDbConnection;
-
-    protected string $kknDbConnection;
-
-    public function __construct()
-    {
-        $this->masterDbConnection = config('database.connections.master.database', 'master');
-        $this->kknDbConnection = config('database.connections.kkn.database', 'kkn');
-    }
-
     /**
      * Check health of all database connections
      */
@@ -30,11 +20,8 @@ class DatabaseSyncMonitoringService
     {
         $results = [];
 
-        // Check KKN Database
-        $results['kkn'] = $this->checkConnection('kkn');
-
-        // Check Master Database
-        $results['master'] = $this->checkConnection('master');
+        // Check PostgreSQL Database (single connection)
+        $results['pgsql'] = $this->checkConnection('pgsql');
 
         // Check Redis
         $results['redis'] = $this->checkRedis();
@@ -181,7 +168,7 @@ class DatabaseSyncMonitoringService
      */
     protected function determineOverallStatus(array $results): string
     {
-        $critical = ['kkn', 'master', 'redis'];
+        $critical = ['pgsql', 'redis'];
 
         foreach ($critical as $service) {
             if (! isset($results[$service]['status']) || $results[$service]['status'] !== 'connected') {

@@ -13,7 +13,7 @@ class KknRequirementService
 {
     private function resolveType(Periode $periode): KknType
     {
-        $legacyJenis = strtolower(trim((string) ($periode->jenis instanceof KknType ? $periode->jenis->label() : $periode->jenis)));
+        $legacyJenis = $periode->jenisKkn?->code ?? 'REGULER';
 
         if (str_contains($legacyJenis, 'responsif')) {
             return KknType::TEMATIK;

@@ -185,7 +185,7 @@ class SeedDummyBatch extends Command
         );
         if (method_exists($dplUser1, 'assignRole')) {
             try {
-                $dplUser1->assignRole('dpl');
+                $dplUser1->assignRole('dosen');
             } catch (\Exception $e) {
             }
         }
@@ -201,7 +201,7 @@ class SeedDummyBatch extends Command
         );
         if (method_exists($dplUser2, 'assignRole')) {
             try {
-                $dplUser2->assignRole('dpl');
+                $dplUser2->assignRole('dosen');
             } catch (\Exception $e) {
             }
         }

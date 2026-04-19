@@ -50,12 +50,11 @@ class SyncDosenJob implements ShouldQueue
 
     protected function syncSingleDosen(MasterApiService $masterApi): void
     {
-        $dosen = Dosen::on('kkn')
-            ->where('nip', $this->dosenId)
+        $dosen = Dosen::where('nip', $this->dosenId)
             ->first();
 
         if (! $dosen) {
-            $dosen = Dosen::on('kkn')->find($this->dosenId);
+            $dosen = Dosen::find($this->dosenId);
         }
 
         if (! $dosen) {
@@ -119,10 +118,10 @@ class SyncDosenJob implements ShouldQueue
             $facultyId = null;
             $organizationMasterId = $this->normalizeMasterId($data['organization_id'] ?? null);
             if ($organizationMasterId !== null) {
-                $facultyId = Fakultas::on('kkn')->where('master_id', $organizationMasterId)->first()?->id;
+                $facultyId = Fakultas::where('master_id', $organizationMasterId)->first()?->id;
             }
 
-            $defaultFaculty = Fakultas::on('kkn')->first();
+            $defaultFaculty = Fakultas::first();
             if (! $facultyId && $defaultFaculty) {
                 $facultyId = $defaultFaculty->id;
             }
@@ -149,7 +148,7 @@ class SyncDosenJob implements ShouldQueue
             $user->save();
 
             if (! $user->hasRole('dpl')) {
-                $user->assignRole('dpl');
+                $user->assignRole('dosen');
             }
 
             Dosen::updateOrCreate(

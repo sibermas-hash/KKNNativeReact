@@ -46,12 +46,11 @@ class SyncMahasiswaJob implements ShouldQueue
 
     protected function syncSingleMahasiswa(MasterApiService $masterApi, StudentSyncService $studentSync): void
     {
-        $mahasiswa = Mahasiswa::on('kkn')
-            ->where('nim', $this->mahasiswaId)
+        $mahasiswa = Mahasiswa::where('nim', $this->mahasiswaId)
             ->first();
 
         if (! $mahasiswa) {
-            $mahasiswa = Mahasiswa::on('kkn')->find($this->mahasiswaId);
+            $mahasiswa = Mahasiswa::find($this->mahasiswaId);
         }
 
         if (! $mahasiswa) {

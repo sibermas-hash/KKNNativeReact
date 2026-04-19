@@ -379,13 +379,13 @@ class EvaluationController extends Controller
             }
         });
 
-        return redirect()->route('dpl.evaluations.index')->with('success', 'Import evaluasi berhasil diselesaikan.');
+        return redirect()->route('dosen.evaluations.index')->with('success', 'Import evaluasi berhasil diselesaikan.');
     }
 
     public function create(Request $request): RedirectResponse
     {
         return redirect()
-            ->route('dpl.evaluations.index', array_filter([
+            ->route('dosen.evaluations.index', array_filter([
                 'group_id' => $request->input('group_id'),
                 'student_id' => $request->input('student_id'),
             ]))
@@ -464,7 +464,7 @@ class EvaluationController extends Controller
                 );
             }
 
-            return redirect()->route('dpl.evaluations.index')
+            return redirect()->route('dosen.evaluations.index')
                 ->with('success', 'Evaluasi berhasil disimpan.');
         });
     }

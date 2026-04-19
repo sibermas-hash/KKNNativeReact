@@ -98,12 +98,15 @@ class DailyReportController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(): Response|RedirectResponse
     {
         $mahasiswa = auth()->user()?->mahasiswa;
         $pendaftaran = $mahasiswa?->peserta()->where('status', 'approved')->with(['kelompok.lokasi', 'kelompok.posko'])->first();
 
-        abort_if(! $pendaftaran, 403, 'Anda belum terdaftar dalam kelompok aktif.');
+        if (! $pendaftaran || ! $pendaftaran->kelompok_id) {
+            return redirect()->route('student.dashboard')
+                ->with('error', 'Anda belum ditempatkan dalam kelompok aktif. Silakan tunggu proses plotting oleh admin.');
+        }
 
         return Inertia::render('Student/DailyReports/Create', [
             'group' => [

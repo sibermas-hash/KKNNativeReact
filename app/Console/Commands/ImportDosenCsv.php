@@ -62,7 +62,7 @@ class ImportDosenCsv extends Command
                 );
 
                 if (!$user->hasRole('dpl')) {
-                    $user->assignRole('dpl');
+                    $user->assignRole('dosen');
                 }
 
                 // 2. Faculty

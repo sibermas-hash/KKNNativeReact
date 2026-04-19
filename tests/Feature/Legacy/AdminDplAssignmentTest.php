@@ -87,7 +87,7 @@ class AdminDplAssignmentTest extends TestCase
             'periode_id' => $period->id,
             'max_groups' => 3,
             'is_active' => true,
-        ], 'kkn');
+        ]);
 
         $dplPeriodId = DplPeriod::query()
             ->where('dosen_id', $dosen->id)
@@ -102,7 +102,7 @@ class AdminDplAssignmentTest extends TestCase
         $this->assertDatabaseHas('dosen', [
             'id' => $dosen->id,
             'user_id' => $user->id,
-        ], 'kkn');
+        ]);
         $this->assertNotNull($dplPeriodId);
     }
 
@@ -155,7 +155,7 @@ class AdminDplAssignmentTest extends TestCase
             'id' => $group->id,
             'dpl_id' => $dosen->id,
             'dpl_periode_id' => $dplPeriodId,
-        ], 'kkn');
+        ]);
 
         $this->actingAs($admin)
             ->from(route('admin.dpl.penugasan'))
@@ -174,7 +174,7 @@ class AdminDplAssignmentTest extends TestCase
             'district_id' => '3301010',
             'district_name' => 'Kecamatan Demo',
             'is_active' => true,
-        ], 'kkn');
+        ]);
     }
 
     public function test_admin_role_can_open_dpl_assignment_page(): void

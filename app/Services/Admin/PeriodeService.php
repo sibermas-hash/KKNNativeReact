@@ -7,7 +7,6 @@ namespace App\Services\Admin;
 use App\Models\KKN\JenisKkn;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Periode;
-use App\Services\KKN\PeriodeGovernanceService;
 use App\Services\RedisCacheService;
 use DomainException;
 use Illuminate\Support\Carbon;
@@ -25,30 +24,13 @@ class PeriodeService
             ? JenisKkn::query()->find($data['jenis_kkn_id'])
             : null;
 
-        $governance = PeriodeGovernanceService::blueprint(
-            $data['program_type'] ?? $jenisKkn?->code,
-            $data['program_subtype'] ?? null,
-            $data['jenis'] ?? $jenisKkn?->code,
-            $jenisKkn,
-        );
-
-        $data['jenis'] = $governance['jenis_value'];
-        $data['program_type'] = $governance['program_type'];
-        $data['program_subtype'] = $governance['program_subtype'];
-        $data['registration_mode'] = $governance['registration_mode'];
-        $data['placement_mode'] = $governance['placement_mode'];
-
-        // Fallback default for technical fields
-        $data = array_merge([
-            'program_type' => 'reguler',
-            'registration_mode' => 'open',
-            'placement_mode' => 'manual_admin',
-        ], $data);
+        if (! $jenisKkn) {
+            throw new DomainException('Jenis KKN wajib dipilih.');
+        }
 
         // Generate name if empty
         if (empty($data['name'])) {
-            $programLabel = $jenisKkn?->name ?? $data['jenis'] ?? $data['program_type'] ?? 'KKN';
-            $data['name'] = "Periode {$data['periode']} - ".strtoupper((string) $programLabel);
+            $data['name'] = "Periode {$data['periode']} - ".strtoupper($jenisKkn->name);
         }
 
         // Overlap Check

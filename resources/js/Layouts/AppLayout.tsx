@@ -1,7 +1,7 @@
 import { useState, useEffect, createContext, useContext, useMemo, useRef } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import type { User } from '@/types';
-import { Menu, Power } from 'lucide-react';
+import { Menu, Power, BadgeCheck, Lock, AlertTriangle, X, ShieldCheck, GraduationCap } from 'lucide-react';
 import Sidebar from '@/Components/Sidebar';
 import AiAssistant from '@/Components/AiAssistant';
 import { ErrorBoundary } from '@/Components/ErrorBoundary';
@@ -77,6 +77,8 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
     }
   }, [title, parentLayout]);
 
+  const layoutContextValue = useMemo(() => ({ insideLayout: true, setTitle: setDynamicTitle }), []);
+
   // JIKA SUDAH DI DALAM LAYOUT: Hanya render isinya (Fragment)
   // Ini mencegah double padding (lg:pl-60) dan double sidebar
   if (parentLayout.insideLayout) {
@@ -90,8 +92,6 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
       window.location.href = '/';
     });
   };
-
-  const layoutContextValue = useMemo(() => ({ insideLayout: true, setTitle: setDynamicTitle }), []);
 
   return (
     <LayoutContext.Provider value={layoutContextValue}>
@@ -117,14 +117,72 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
               <h2 className="text-lg font-bold text-emerald-950">{displayTitle}</h2>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={logout}
-                className="flex items-center gap-2 px-3 py-1.5 text-[#ef4444] hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"
-              >
-                <Power className="h-4 w-4" strokeWidth={2.5} />
-                <span className="hidden sm:inline">Keluar</span>
-              </button>
+            <div className="flex items-center gap-4">
+              {auth?.user?.roles?.some((r: any) => r.name === 'student') && (
+                <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100">
+                  <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Status:</span>
+                  <div className="flex items-center gap-1.5">
+                    {(() => {
+                      const reg = props.registration;
+                      const status = reg?.status?.toLowerCase();
+                      if (['approved', 'disetujui', 'completed'].includes(status)) {
+                        return (
+                          <>
+                            <BadgeCheck size={12} className="text-emerald-600" />
+                            <span className="text-[10px] font-black text-emerald-950 uppercase">Peserta Aktif</span>
+                          </>
+                        );
+                      }
+                      if (['pending', 'menunggu'].includes(status)) {
+                        return (
+                          <>
+                            <Lock size={12} className="text-amber-600" />
+                            <span className="text-[10px] font-black text-amber-800 uppercase tracking-tighter">Verifikasi</span>
+                          </>
+                        );
+                      }
+                      if (['rejected', 'ditolak'].includes(status)) {
+                        return (
+                          <>
+                            <AlertTriangle size={12} className="text-rose-600" />
+                            <span className="text-[10px] font-black text-rose-800 uppercase tracking-tighter">Perbaikan</span>
+                          </>
+                        );
+                      }
+                      return (
+                        <>
+                          <X size={12} className="text-slate-400" />
+                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">Belum Terdaftar</span>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
+
+              {auth?.user?.roles?.some((r: any) => r.name === 'dpl') && (
+                <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100">
+                   <ShieldCheck size={12} className="text-emerald-600" />
+                   <span className="text-[10px] font-black text-emerald-950 uppercase tracking-tight">Dosen Pembimbing</span>
+                </div>
+              )}
+
+              {auth?.user?.roles?.some((r: any) => r.name === 'dosen') && !auth?.user?.roles?.some((r: any) => r.name === 'dpl') && (
+                <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100">
+                   <GraduationCap size={12} className="text-emerald-600" />
+                   <span className="text-[10px] font-black text-emerald-950 uppercase tracking-tight">Dosen</span>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={logout}
+                  className="flex items-center gap-2 px-3 py-1.5 text-[#ef4444] hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"
+                >
+                  <Power className="h-4 w-4" strokeWidth={2.5} />
+                  <span className="hidden sm:inline">Keluar</span>
+                </button>
+              </div>
             </div>
           </header>
 

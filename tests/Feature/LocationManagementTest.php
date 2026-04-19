@@ -40,7 +40,7 @@ test('superadmin can import administrative locations from csv', function () {
         'district_name' => 'Kecamatan Kembaran',
         'regency_name' => 'Kabupaten Banyumas',
         'village_code' => '3302010001',
-    ], 'kkn');
+    ]);
 });
 
 test('import updates an existing administrative location instead of duplicating it', function () {

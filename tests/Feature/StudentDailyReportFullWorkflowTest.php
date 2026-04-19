@@ -156,7 +156,7 @@ class StudentDailyReportFullWorkflowTest extends TestCase
             'location_name' => 'Balai Desa',
             'location_source' => 'gps',
             'status' => 'submitted',
-        ], 'kkn');
+        ]);
 
         // Student can view their submitted report
         $this->actingAs($studentUser)

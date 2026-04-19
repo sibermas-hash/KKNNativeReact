@@ -125,10 +125,10 @@ class AuthenticatedSessionController extends Controller
             return redirect()->intended(route('admin.dashboard'));
         }
 
-        if ($user->hasRole('dpl')) {
-            \Log::info('Redirecting to DPL dashboard');
+        if ($user->hasRole(['dosen', 'dpl'])) {
+            \Log::info('Redirecting to Dosen dashboard');
 
-            return redirect()->intended(route('dpl.dashboard', absolute: false));
+            return redirect()->intended(route('dosen.dashboard', absolute: false));
         }
 
         if ($user->hasRole('student')) {

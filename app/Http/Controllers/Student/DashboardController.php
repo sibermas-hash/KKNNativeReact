@@ -27,8 +27,15 @@ class DashboardController extends Controller
         };
     }
 
-    public function index(PeriodContextService $periodContextService): Response
+    public function index(PeriodContextService $periodContextService): Response|\Illuminate\Http\RedirectResponse
     {
+        $user = request()->user();
+
+        // If profile is still incomplete (must_change_password still true after first login), lock to profile page
+        if ($user->must_change_password) {
+            return redirect()->route('profile.show')->with('error', 'Profil belum lengkap! Anda harus melengkapi semua data terlebih dahulu.');
+        }
+
         $user = auth()->user();
         $mahasiswa = $user->mahasiswa;
 

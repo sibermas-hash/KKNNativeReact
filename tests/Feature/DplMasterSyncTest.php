@@ -74,7 +74,7 @@ class DplMasterSyncTest extends TestCase
             'master_id' => '77',
             'fakultas_id' => $faculty->id,
             'gender' => 'L',
-        ], 'kkn');
+        ]);
 
         $this->assertDatabaseHas('users', [
             'username' => '198700010099',
@@ -110,6 +110,6 @@ class DplMasterSyncTest extends TestCase
             'nip' => '198700010055',
             'nama' => 'Dosen NIP Terpilih',
             'master_id' => '55',
-        ], 'kkn');
+        ]);
     }
 }

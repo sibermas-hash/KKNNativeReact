@@ -158,7 +158,7 @@ class MultiRoleWorkflowTest extends TestCase
         $this->assertDatabaseHas('kelompok_kkn', [
             'periode_id' => $period->id,
             'nama_kelompok' => 'Kelompok Mawar',
-        ], 'kkn');
+        ]);
 
         // Superadmin can view group management page
         $this->actingAs($superadmin)

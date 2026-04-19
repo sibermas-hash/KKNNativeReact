@@ -141,7 +141,7 @@ class DplTestSeeder extends Seeder
                 ]
             );
 
-            $user->assignRole('dpl');
+            $user->assignRole('dosen');
 
             $dosenMap[$dData['nip']] = $dosen->id;
         }

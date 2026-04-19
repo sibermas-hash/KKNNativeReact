@@ -109,7 +109,7 @@ class RegistrationTest extends TestCase
             'mahasiswa_id' => $mahasiswa->id,
             'periode_id' => $period->id,
             'status' => 'pending',
-        ], 'kkn');
+        ]);
     }
 
     public function test_student_cannot_register_twice_for_the_same_period(): void

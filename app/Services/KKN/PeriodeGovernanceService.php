@@ -14,8 +14,62 @@ use App\Models\KKN\Periode;
  */
 class PeriodeGovernanceService
 {
+    public static function blueprintFromJenisKkn(JenisKkn $jenisKkn): array
+    {
+        return [
+            'program_type' => self::mapCodeToProgramType($jenisKkn->code),
+            'program_subtype' => self::mapCodeToProgramSubtype($jenisKkn->code),
+            'registration_mode' => $jenisKkn->registration_mode,
+            'placement_mode' => $jenisKkn->placement_mode,
+            'jenis_enum' => self::resolveJenisEnumFromCode($jenisKkn->code),
+            'jenis_value' => $jenisKkn->code,
+            'jenis_label' => $jenisKkn->name,
+            'program_type_label' => $jenisKkn->name,
+            'program_subtype_label' => null,
+            'registration_mode_label' => $jenisKkn->registrationModeLabel(),
+            'placement_mode_label' => $jenisKkn->placementModeLabel(),
+            'self_service_enabled' => $jenisKkn->registration_mode === Periode::REGISTRATION_MODE_OPEN
+                && $jenisKkn->placement_mode === Periode::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL,
+        ];
+    }
+
+    private static function mapCodeToProgramType(string $code): string
+    {
+        return match ($code) {
+            'NUSANTARA' => Periode::PROGRAM_TYPE_NUSANTARA,
+            'INTERNASIONAL' => Periode::PROGRAM_TYPE_INTERNASIONAL_MANDIRI,
+            'KOLABORASI_PTKIN' => Periode::PROGRAM_TYPE_KOLABORASI_PTKIN,
+            'KAMPUNG_ZAKAT', 'DESA_KATANA', 'TEMATIK' => Periode::PROGRAM_TYPE_TEMATIK,
+            default => Periode::PROGRAM_TYPE_REGULER,
+        };
+    }
+
+    private static function mapCodeToProgramSubtype(?string $code): ?string
+    {
+        return match ($code) {
+            'KAMPUNG_ZAKAT' => Periode::PROGRAM_SUBTYPE_KAMPUNG_ZAKAT,
+            'DESA_KATANA' => Periode::PROGRAM_SUBTYPE_DESA_KATANA,
+            default => null,
+        };
+    }
+
+    private static function resolveJenisEnumFromCode(string $code): KknType
+    {
+        return match ($code) {
+            'NUSANTARA' => KknType::NUSANTARA,
+            'INTERNASIONAL' => KknType::INTERNASIONAL,
+            'KOLABORASI_PTKIN' => KknType::KOLABORASI_PTKIN,
+            'KAMPUNG_ZAKAT' => KknType::KAMPUNG_ZAKAT,
+            'DESA_KATANA' => KknType::DESA_KATANA,
+            'TEMATIK' => KknType::TEMATIK,
+            default => KknType::REGULER,
+        };
+    }
+
     /**
      * Get governance blueprint for a period configuration.
+     *
+     * @deprecated - Use blueprintFromJenisKkn instead
      */
     public static function blueprint(
         ?string $programType = null,
@@ -147,18 +201,11 @@ class PeriodeGovernanceService
      */
     public static function applyGovernanceToModel(Periode $period): void
     {
-        $governance = self::blueprint(
-            $period->program_type,
-            $period->program_subtype,
-            $period->jenis,
-            $period->jenisKkn // Pass relationship
-        );
+        if (! $period->jenisKkn) {
+            return;
+        }
 
-        $period->program_type = $governance['program_type'];
-        $period->program_subtype = $governance['program_subtype'];
-        $period->registration_mode = $governance['registration_mode'];
-        $period->placement_mode = $governance['placement_mode'];
-        $period->jenis = $governance['jenis_enum'];
+        $period->jenis_kkn_id = $period->jenisKkn->id;
     }
 
     /**

@@ -56,7 +56,7 @@ export default function DplIzinIndex({ izins }: Props) {
             confirmVariant: 'primary',
             confirmLabel: 'Ya, Setujui',
             onConfirm: () => {
-                router.post(route('dpl.izin.approve', izin.id), {}, {
+                router.post(route('dosen.izin.approve', izin.id), {}, {
                     onSuccess: () => setConfirmDialog(prev => ({ ...prev, open: false }))
                 });
             }
@@ -66,7 +66,7 @@ export default function DplIzinIndex({ izins }: Props) {
     const handleReject = (id: number) => {
         const catatan = prompt('Masukkan catatan penolakan:');
         if (catatan && catatan.trim()) {
-            router.post(route('dpl.izin.reject', id), { catatan: catatan.trim() });
+            router.post(route('dosen.izin.reject', id), { catatan: catatan.trim() });
         }
     };
 

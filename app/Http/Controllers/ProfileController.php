@@ -11,7 +11,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
@@ -19,6 +18,39 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
+    private function isProfileComplete(User $user): bool
+    {
+        // REQUIRED: only Avatar (upload by user)
+        // All other data comes from API Kampus (automatically synced)
+        if (! filled($user->avatar)) {
+            return false;
+        }
+
+        // REQUIRED: contact info (user must fill - may not from API)
+        if (! filled($user->phone)) {
+            return false;
+        }
+
+        if (! filled($user->address)) {
+            return false;
+        }
+
+        if (! filled($user->domicile_village_name) ||
+            ! filled($user->domicile_district_name) ||
+            ! filled($user->domicile_regency_name)) {
+            return false;
+        }
+
+        if (! filled($user->address_verified_at)) {
+            return false;
+        }
+
+        // All biodata for both Student and Dosen comes from API Kampus
+        // No manual check needed
+
+        return true;
+    }
+
     private function domicileSummary(User $user): array
     {
         $required = [
@@ -55,29 +87,51 @@ class ProfileController extends Controller
      */
     public function show(): Response
     {
-        $user = auth()->user()->loadMissing(['mahasiswa.fakultas', 'mahasiswa.prodi']);
+        $user = auth()->user()->loadMissing(['mahasiswa.fakultas', 'mahasiswa.prodi', 'dosen.fakultas']);
         $student = $user->mahasiswa;
-        // dd($user);
-        Log::info('user : ' . json_encode($user, JSON_PRETTY_PRINT));
-        $requiredBiodataFields = [
-            'nik' => $student?->nik,
-            'mother_name' => $student?->mother_name,
-            'birth_place' => $student?->birth_place,
-            'birth_date' => optional($student?->birth_date)?->toDateString(),
-            'gender' => $student?->gender,
-            'shirt_size' => $student?->shirt_size,
-            'phone' => $user->phone,
-            'address' => $user->address,
-        ];
-        $labels = [
-            'nik' => 'NIK',
-            'mother_name' => 'Nama ibu kandung',
-            'birth_place' => 'Tempat lahir',
-            'birth_date' => 'Tanggal lahir',
-            'gender' => 'Jenis kelamin',
-            'phone' => 'Nomor WhatsApp',
-            'address' => 'Alamat lengkap',
-        ];
+        $lecturer = $user->dosen;
+        
+        $requiredBiodataFields = [];
+        $labels = [];
+
+        if ($student) {
+            $requiredBiodataFields = [
+                'nik' => $student->nik,
+                'mother_name' => $student->mother_name,
+                'birth_place' => $student->birth_place,
+                'birth_date' => optional($student->birth_date)?->toDateString(),
+                'gender' => $student->gender,
+                'shirt_size' => $student->shirt_size,
+                'phone' => $user->phone,
+                'address' => $user->address,
+            ];
+            $labels = [
+                'nik' => 'NIK',
+                'mother_name' => 'Nama ibu kandung',
+                'birth_place' => 'Tempat lahir',
+                'birth_date' => 'Tanggal lahir',
+                'gender' => 'Jenis kelamin',
+                'phone' => 'Nomor WhatsApp',
+                'address' => 'Alamat lengkap',
+            ];
+        } elseif ($lecturer) {
+             $requiredBiodataFields = [
+                'nip' => $lecturer->nip,
+                'nama' => $lecturer->nama,
+                'jabatan' => $lecturer->jabatan,
+                'gender' => $lecturer->gender,
+                'birth_date' => optional($lecturer->birth_date)?->toDateString(),
+                'phone' => $user->phone,
+            ];
+            $labels = [
+                'nip' => 'NIP',
+                'nama' => 'Nama lengkap',
+                'jabatan' => 'Jabatan fungsional',
+                'gender' => 'Jenis kelamin',
+                'birth_date' => 'Tanggal lahir',
+                'phone' => 'Nomor WhatsApp',
+            ];
+        }
 
         $missingBiodataFields = collect($requiredBiodataFields)
             ->filter(fn ($value) => blank($value))
@@ -88,8 +142,8 @@ class ProfileController extends Controller
 
         $domicileSummary = $this->domicileSummary($user);
 
-        // Onboarding mode: user belum pernah verifikasi alamat domisili
-        $isOnboarding = ! filled($user->address_verified_at);
+        // Onboarding mode: user belum pernah verifikasi alamat OR is still locked due to incomplete profile
+        $isOnboarding = ! filled($user->address_verified_at) || $user->must_change_password;
 
         return Inertia::render('Profile/Show', [
             'user' => $user->only([
@@ -128,6 +182,18 @@ class ProfileController extends Controller
                 'domicile_verified' => $domicileSummary['is_verified'],
                 'domicile_verified_at' => $domicileSummary['verified_at'],
                 'missing_domicile_fields' => $domicileSummary['missing_fields'],
+            ] : null,
+            'lecturer' => $lecturer ? [
+                'nip' => $lecturer->nip,
+                'nama' => $lecturer->nama,
+                'jabatan' => $lecturer->jabatan,
+                'gender' => $lecturer->gender,
+                'is_cpns' => (bool) $lecturer->is_cpns,
+                'is_tugas_belajar' => (bool) $lecturer->is_tugas_belajar,
+                'faculty' => $lecturer->fakultas?->nama,
+                'birth_date' => optional($lecturer->birth_date)?->toDateString(),
+                'biodata_complete' => $missingBiodataFields === [],
+                'missing_biodata_fields' => $missingBiodataFields,
             ] : null,
         ]);
     }
@@ -210,9 +276,11 @@ class ProfileController extends Controller
             }
         });
 
-        // Onboarding selesai → redirect ke halaman Daftar KKN
-        if ($wasOnboarding && $requestedAddressVerified) {
-            return redirect('/mahasiswa/daftar')->with('success', 'Profil berhasil dilengkapi. Silakan pilih periode KKN untuk mendaftar.');
+        // Check if profile is now complete → unlock and redirect to Daftar
+        if ($this->isProfileComplete($user)) {
+            $user->update(['must_change_password' => false]);
+
+            return redirect('/mahasiswa/daftar')->with('success', 'Profil lengkap! Silakan pilih periode KKN untuk mendaftar.');
         }
 
         return redirect()->back()->with('success', 'Profil dan domisili berhasil diperbarui.');
@@ -238,6 +306,18 @@ class ProfileController extends Controller
         $user->avatar = $path;
         $user->save();
 
+        // Check if profile is now complete → unlock and redirect
+        if ($this->isProfileComplete($user)) {
+            $user->update(['must_change_password' => false]);
+
+            // Redirect based on role
+            if ($user->hasRole('student')) {
+                return redirect('/mahasiswa/daftar')->with('success', 'Profil lengkap! Silakan pilih periode KKN untuk mendaftar.');
+            }
+
+            return redirect('/dpl/dashboard')->with('success', 'Profil lengkap! Selamat datang di SIM-KKN.');
+        }
+
         return redirect()->back()->with('success', 'Foto profil berhasil diperbarui.');
     }
 
@@ -261,9 +341,41 @@ class ProfileController extends Controller
 
         $user->update([
             'password' => Hash::make($validated['password']),
-            'must_change_password' => false,
             'password_changed_at' => now(),
         ]);
+
+        if ($isFirstChange) {
+            // Use unified method - works for both student and lecturer
+            // Note: All biodata comes from API, only profile + contact info required
+            if ($this->isProfileComplete($user)) {
+                $user->update(['must_change_password' => false]);
+
+                // Redirect based on role
+                if ($user->hasRole('student')) {
+                    return redirect('/mahasiswa/daftar')->with('success', 'Profil lengkap! Selamat datang di SIM-KKN.');
+                }
+
+                return redirect('/dpl/dashboard')->with('success', 'Profil lengkap! Selamat datang di SIM-KKN.');
+            }
+
+            // If incomplete → STAY LOCKED
+            $user->update(['must_change_password' => true]);
+
+            // Get specific missing fields (only profile/contact - biodata from API)
+            $missing = [];
+
+            if (! filled($user->avatar)) { $missing[] = 'Foto Profil'; }
+            if (! filled($user->phone)) { $missing[] = 'Nomor HP'; }
+            if (! filled($user->address)) { $missing[] = 'Alamat'; }
+            if (! filled($user->domicile_village_name)) { $missing[] = 'Desa/Kelurahan'; }
+            if (! filled($user->domicile_district_name)) { $missing[] = 'Kecamatan'; }
+            if (! filled($user->domicile_regency_name)) { $missing[] = 'Kabupaten/Kota'; }
+            if (! filled($user->address_verified_at)) { $missing[] = 'Verifikasi Alamat'; }
+
+            return redirect()->route('profile.show')->with('error', 'Profil belum lengkap! '.implode(', ', $missing).' wajib diisi.');
+        }
+
+        $user->update(['must_change_password' => false]);
 
         return redirect()->back()->with('success', 'Password berhasil diubah.');
     }
@@ -296,9 +408,13 @@ class ProfileController extends Controller
         return response()->json(['valid' => true, 'message' => 'NIK tersedia']);
     }
 
-    public function passwordChange(): Response
+    public function passwordChange(): Response|\Illuminate\Http\RedirectResponse
     {
         $user = auth()->user();
+
+        if (! $user->must_change_password) {
+            return redirect()->route('profile.show')->with('info', 'Kata sandi Anda sudah diperbarui.');
+        }
 
         return Inertia::render('Profile/PasswordChange', [
             'user' => $user->only(['id', 'name', 'email', 'username', 'must_change_password']),

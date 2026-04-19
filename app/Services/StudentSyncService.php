@@ -31,8 +31,8 @@ class StudentSyncService
             return;
         }
 
-        $this->facultyMap = Fakultas::on('kkn')->pluck('id', 'master_id')->all();
-        $this->prodiMap = Prodi::on('kkn')->pluck('id', 'master_id')->all();
+        $this->facultyMap = Fakultas::pluck('id', 'master_id')->all();
+        $this->prodiMap = Prodi::pluck('id', 'master_id')->all();
         $this->mapsLoaded = true;
     }
 
@@ -92,13 +92,13 @@ class StudentSyncService
                 $facultyId = null;
                 $organizationMasterId = $this->normalizeMasterId($data['organization_id'] ?? null);
                 if ($organizationMasterId !== null) {
-                    $facultyId = Fakultas::on('kkn')->where('master_id', $organizationMasterId)->first()?->id;
+                    $facultyId = Fakultas::where('master_id', $organizationMasterId)->first()?->id;
                 }
 
                 $prodiId = null;
                 $programMasterId = $this->normalizeMasterId($data['prodi_id'] ?? null);
                 if ($programMasterId !== null) {
-                    $prodiId = Prodi::on('kkn')->where('master_id', $programMasterId)->first()?->id;
+                    $prodiId = Prodi::where('master_id', $programMasterId)->first()?->id;
                 }
             }
 
@@ -115,9 +115,9 @@ class StudentSyncService
             );
 
             $email = $data['email'] ?? $data['nim'].'@student.uinsaizu.ac.id';
-            $isNewUser = ! User::on('kkn')->where('username', $data['nim'])->exists();
+            $isNewUser = ! User::where('username', $data['nim'])->exists();
 
-            $user = User::on('kkn')->firstOrCreate(
+            $user = User::firstOrCreate(
                 ['username' => $data['nim']],
                 [
                     'name' => $data['name'],
@@ -144,7 +144,7 @@ class StudentSyncService
                 $user->assignRole('student');
             }
 
-            Mahasiswa::on('kkn')->updateOrCreate(
+            Mahasiswa::updateOrCreate(
                 ['nim' => $data['nim']],
                 [
                     'user_id' => $user->id,

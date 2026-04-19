@@ -20,6 +20,7 @@ class Dosen extends Model
         'user_id',
         'nip',
         'nama',
+        'jabatan',
         'birth_date',
         'gender',
         'is_cpns',

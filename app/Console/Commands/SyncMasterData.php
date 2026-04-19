@@ -60,12 +60,12 @@ class SyncMasterData extends Command
             }
             $this->info('Master API is UP');
         } else {
-            $this->info('Syncing directly from Master Database');
+            $this->info('Syncing directly from database (using default connection)');
             try {
-                DB::connection('master')->getPdo();
-                $this->info('Master DB connection is UP');
+                DB::connection()->getPdo();
+                $this->info('Database connection is UP');
             } catch (\Exception $e) {
-                $this->error('Master DB connection failed: '.$e->getMessage());
+                $this->error('Database connection failed: '.$e->getMessage());
 
                 return 1;
             }
@@ -133,7 +133,7 @@ class SyncMasterData extends Command
             try {
                 // Only sync faculties (check if name contains 'Fakultas' or specific level)
                 if (str_contains($orgData['name'], 'Fakultas') || ($orgData['level'] ?? 0) == 2) {
-                    $faculty = Fakultas::on('kkn')->updateOrCreate(
+                    $faculty = Fakultas::updateOrCreate(
                         ['master_id' => (string) $orgData['id']],
                         [
                             'code' => $orgData['code'],
@@ -212,9 +212,9 @@ class SyncMasterData extends Command
         $now = now();
 
         // Default faculty if not found in data
-        $defaultFaculty = Fakultas::on('kkn')->first();
+        $defaultFaculty = Fakultas::first();
         if (! $defaultFaculty) {
-            $defaultFaculty = Fakultas::on('kkn')->create([
+            $defaultFaculty = Fakultas::create([
                 'code' => 'DEFAULT',
                 'nama' => 'Default Faculty',
                 'master_id' => '0',
@@ -254,7 +254,7 @@ class SyncMasterData extends Command
                 $fallbackEmail = $username.'@kkn.local';
 
                 DB::transaction(function () use ($empData, $nip, $username, $incomingEmail, $fallbackEmail, &$stats, $now, $defaultFaculty) {
-                    $user = User::on('kkn')->firstOrNew(['username' => $username]);
+                    $user = User::firstOrNew(['username' => $username]);
                     $isNewUser = ! $user->exists;
 
                     if ($isNewUser) {
@@ -276,7 +276,7 @@ class SyncMasterData extends Command
                     $user->save();
 
                     if (! $user->hasRole('dpl')) {
-                        $user->assignRole('dpl');
+                        $user->assignRole('dosen');
                     }
 
                     $statusPegawai = strtoupper($empData['status_pegawai'] ?? $empData['employment_status'] ?? '');
@@ -285,7 +285,7 @@ class SyncMasterData extends Command
                     $statusAktif = strtoupper($empData['status_aktif'] ?? $empData['active_status'] ?? 'AKTIF');
                     $isTugasBelajar = str_contains($statusAktif, 'TUGAS BELAJAR') || ($empData['is_tugas_belajar'] ?? false);
 
-                    $dosen = Dosen::on('kkn')->updateOrCreate(
+                    $dosen = Dosen::updateOrCreate(
                         ['nip' => $nip],
                         [
                             'master_id' => (string) $empData['id'],
@@ -377,9 +377,9 @@ class SyncMasterData extends Command
         $errorDetails = [];
 
         $now = now();
-        $defaultFaculty = Fakultas::on('kkn')->first();
+        $defaultFaculty = Fakultas::first();
         if (! $defaultFaculty) {
-            $defaultFaculty = Fakultas::on('kkn')->create([
+            $defaultFaculty = Fakultas::create([
                 'code' => 'DEFAULT',
                 'nama' => 'Default Faculty',
                 'master_id' => '0',
@@ -388,8 +388,8 @@ class SyncMasterData extends Command
             $this->info('  Created Default Faculty as fallback');
         }
 
-        $facultyMap = Fakultas::on('kkn')->pluck('id', 'master_id')->all();
-        $prodiMap = Prodi::on('kkn')->pluck('id', 'master_id')->all();
+        $facultyMap = Fakultas::pluck('id', 'master_id')->all();
+        $prodiMap = Prodi::pluck('id', 'master_id')->all();
 
         foreach ($students as $stud) {
             $stats['total_fetched']++;
@@ -424,7 +424,7 @@ class SyncMasterData extends Command
                     $prodiId = $programMasterId !== null ? ($prodiMap[$programMasterId] ?? null) : null;
 
                     if (! $prodiId) {
-                        $program = Prodi::on('kkn')->firstOrCreate(
+                        $program = Prodi::firstOrCreate(
                             $programMasterId ? ['master_id' => $programMasterId] : ['nama' => $prodiName],
                             [
                                 'code' => strtoupper(substr(Str::slug($prodiName), 0, 10)),
@@ -443,7 +443,7 @@ class SyncMasterData extends Command
                     $incomingEmail = $studData['email'] ?? null;
                     $fallbackEmail = $username.'@kkn.local';
 
-                    $user = User::on('kkn')->firstOrNew(['username' => $username]);
+                    $user = User::firstOrNew(['username' => $username]);
                     $isNewUser = ! $user->exists;
 
                     if ($isNewUser) {
@@ -466,7 +466,7 @@ class SyncMasterData extends Command
                         $user->assignRole('student');
                     }
 
-                    $mahasiswa = Mahasiswa::on('kkn')->updateOrCreate(
+                    $mahasiswa = Mahasiswa::updateOrCreate(
                         ['nim' => $nim],
                         [
                             'master_id' => (string) $studData['id'],

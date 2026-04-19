@@ -19,11 +19,16 @@ class DplPeriod extends Model
         'periode_id',
         'max_kelompok_kkn',
         'is_active',
+        'status',
+        'approved_at',
+        'approved_by',
+        'rejection_reason',
     ];
 
     protected $casts = [
         'max_kelompok_kkn' => 'integer',
         'is_active' => 'boolean',
+        'approved_at' => 'datetime',
     ];
 
     use HasFactory;

@@ -142,6 +142,7 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
         ->only(['index', 'store', 'update', 'destroy']);
 
     // Locations
+    Route::get('locations/export', [Admin\LokasiController::class, 'export'])->name('locations.export');
     Route::post('lokasi/impor', [Admin\LokasiController::class, 'import'])->name('lokasi.import');
     Route::get('locations', [Admin\LokasiController::class, 'index'])->name('locations.index');
     Route::resource('lokasi', Admin\LokasiController::class)

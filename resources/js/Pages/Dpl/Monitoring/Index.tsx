@@ -46,7 +46,7 @@ export default function DplMonitoringIndex({ monitorings, groups }: Props) {
                             </p>
                         </div>
                         <Link
-                            href={route('dpl.monitoring.create')}
+                            href={route('dosen.monitoring.create')}
                             className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
                         >
                             <Plus className="h-4 w-4" /> Tambah Monitoring
@@ -78,7 +78,7 @@ export default function DplMonitoringIndex({ monitorings, groups }: Props) {
                                     <span>Terakhir: <strong className="text-emerald-950">{group.terakhir_monitoring}</strong></span>
                                 </div>
                                 <Link
-                                    href={route('dpl.monitoring.create', { kelompok_id: group.id })}
+                                    href={route('dosen.monitoring.create', { kelompok_id: group.id })}
                                     className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-800"
                                 >
                                     Tambah monitoring <ChevronRight className="h-3 w-3" />

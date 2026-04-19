@@ -53,7 +53,7 @@ export default function DplFinalReportsShow({ report }: Props) {
  <section className="rounded-lg border border-emerald-50/60 bg-white p-8">
  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
  <div>
- <Link href="/dpl/final-reports" className="text-sm font-medium text-primary hover:underline">
+ <Link href="/dosen/final-reports" className="text-sm font-medium text-primary hover:underline">
  Kembali ke daftar laporan akhir
  </Link>
  <h1 className="mt-3 text-2xl font-semibold text-emerald-950">{report.title}</h1>

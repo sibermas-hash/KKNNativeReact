@@ -164,8 +164,8 @@ class DailyReportController extends Controller
                     'id' => $file->id,
                     'file_name' => $file->file_name,
                     'file_path' => $file->file_path,
-                    'download_url' => route('dpl.daily-reports.files.download', $file),
-                    'preview_url' => route('dpl.daily-reports.files.preview', $file),
+                    'download_url' => route('dosen.daily-reports.files.download', $file),
+                    'preview_url' => route('dosen.daily-reports.files.preview', $file),
                     'is_image' => in_array(
                         strtolower(pathinfo($file->file_name ?? $file->file_path, PATHINFO_EXTENSION)),
                         ['jpg', 'jpeg', 'png', 'webp', 'gif']

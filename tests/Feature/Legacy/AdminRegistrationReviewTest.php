@@ -63,7 +63,7 @@ class AdminRegistrationReviewTest extends TestCase
             'notes' => 'Saya siap mengikuti KKN dan sudah melengkapi berkas.',
             'rejection_reason' => 'Surat sehat belum terbaca jelas. Mohon unggah ulang.',
             'last_rejected_by' => $admin->id,
-        ], 'kkn');
+        ]);
     }
 
     public function test_faculty_scoped_registration_stats_only_include_the_assigned_faculty(): void
@@ -210,7 +210,7 @@ class AdminRegistrationReviewTest extends TestCase
             'status' => 'approved',
             'kelompok_id' => $eligibleGroup->id,
             'approved_by' => $admin->id,
-        ], 'kkn');
+        ]);
     }
 
     public function test_admin_cannot_assign_student_to_group_from_different_period(): void
@@ -248,7 +248,7 @@ class AdminRegistrationReviewTest extends TestCase
         $this->assertDatabaseHas('peserta_kkn', [
             'id' => $registration->id,
             'kelompok_id' => null,
-        ], 'kkn');
+        ]);
     }
 
     public function test_admin_cannot_manually_assign_pending_registration_to_group(): void
@@ -285,7 +285,7 @@ class AdminRegistrationReviewTest extends TestCase
             'id' => $registration->id,
             'kelompok_id' => null,
             'status' => 'pending',
-        ], 'kkn');
+        ]);
     }
 
     public function test_bulk_approve_rejects_registration_when_assigned_group_is_invalid(): void
@@ -323,6 +323,6 @@ class AdminRegistrationReviewTest extends TestCase
         $this->assertDatabaseHas('peserta_kkn', [
             'id' => $registration->id,
             'status' => 'pending',
-        ], 'kkn');
+        ]);
     }
 }

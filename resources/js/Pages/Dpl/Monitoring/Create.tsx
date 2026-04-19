@@ -25,7 +25,7 @@ export default function DplMonitoringCreate({ groups, selectedGroupId }: Props) 
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('dpl.monitoring.store'));
+        post(route('dosen.monitoring.store'));
     };
 
     return (
@@ -35,7 +35,7 @@ export default function DplMonitoringCreate({ groups, selectedGroupId }: Props) 
             <div className="space-y-8">
                 <div className="flex items-center gap-4">
                     <Link
-                        href={route('dpl.monitoring.index')}
+                        href={route('dosen.monitoring.index')}
                         className="inline-flex items-center gap-2 text-sm font-bold text-emerald-950 hover:text-emerald-600 uppercase italic"
                     >
                         <ArrowLeft className="h-4 w-4" /> Kembali ke Monitoring
@@ -153,7 +153,7 @@ export default function DplMonitoringCreate({ groups, selectedGroupId }: Props) 
                                 {processing ? 'Menyimpan...' : 'Simpan Monitoring'}
                             </button>
                             <Link
-                                href={route('dpl.monitoring.index')}
+                                href={route('dosen.monitoring.index')}
                                 className="text-sm font-bold text-emerald-950 hover:text-emerald-600 uppercase italic"
                             >
                                 Batal

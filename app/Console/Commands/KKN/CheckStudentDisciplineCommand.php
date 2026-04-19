@@ -75,7 +75,7 @@ class CheckStudentDisciplineCommand extends Command
                             'title' => 'Peringatan Kedisiplinan',
                             'message' => "Mahasiswa {$participant->mahasiswa->nama} tidak mengisi logbook selama 3 hari berturut-turut.",
                             'icon' => 'exclamation-triangle',
-                            'action' => route('dpl.kelompok.show', $participant->kelompok_id),
+                            'action' => route('dosen.kelompok.show', $participant->kelompok_id),
                         ]));
                     }
 

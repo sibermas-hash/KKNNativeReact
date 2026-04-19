@@ -21,27 +21,30 @@ class EnsureProfileCompleted
 
         $mahasiswa = $user->mahasiswa;
 
-        // Jika data mahasiswa belum ada (sinkron gagal) atau data minimal kosong
-        // Minimal: Nama, Jenis Kelamin, Telepon, dan Berkas Persyaratan (SOP KKN 56)
         $isComplete = $mahasiswa
-            && ! empty($mahasiswa->nama)
-            && ! empty($mahasiswa->gender)
-            && ! empty($user->phone);
-            // && ! empty($mahasiswa->health_certificate_path)
-            // && ! empty($mahasiswa->parent_permission_path);
+            && filled($mahasiswa->nik)
+            && filled($mahasiswa->mother_name)
+            && filled($mahasiswa->birth_place)
+            && filled($mahasiswa->birth_date)
+            && filled($mahasiswa->gender)
+            && filled($mahasiswa->shirt_size)
+            && filled($user->phone)
+            && filled($user->address)
+            && filled($user->domicile_village_name)
+            && filled($user->domicile_district_name)
+            && filled($user->domicile_regency_name)
+            && filled($user->address_verified_at)
+            && filled($user->avatar);
 
         $routeName = $request->route()?->getName();
         $allowedRoutes = [
             'profile.show',
             'profile.update',
             'profile.password',
+            'profile.password-change',
+            'profile.avatar',
+            'profile.check-nik',
             'logout',
-            'student.dashboard',
-            'student.registration.create', // Pendaftaran harus bisa diakses untuk upload berkas
-            'student.registration.store',
-            'student.registration.documents',       // Upload dokumen persyaratan
-            'student.registration.documents.store',
-            'student.daftar.index',        // Halaman daftar KKN bisa diakses untuk melihat periode
         ];
 
         if ($isComplete || in_array($routeName, $allowedRoutes)) {
@@ -50,6 +53,6 @@ class EnsureProfileCompleted
 
         return redirect()
             ->route('profile.show')
-            ->with('warning', 'Mohon lengkapi data profil (nama, jenis kelamin, dan nomor telepon) sebelum dapat mengakses fitur KKN.');
+            ->with('warning', 'Mohon lengkapi seluruh data profil Anda (Biodata, Domisili, dan Foto Profil) sebelum dapat mengakses fitur KKN.');
     }
 }

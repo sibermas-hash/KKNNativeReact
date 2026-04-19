@@ -77,7 +77,7 @@ class FinalReportController extends Controller
                 'can_review' => $this->canReview($report),
                 'submitted_at' => optional($report->submitted_at)->format('d M Y H:i'),
                 'review_notes' => $report->review_notes,
-                'download_url' => route('dpl.final-reports.download', $report),
+                'download_url' => route('dosen.final-reports.download', $report),
                 'mahasiswa' => [
                     'nama' => $report->mahasiswa?->nama ?? 'Mahasiswa tidak ditemukan',
                     'nim' => $report->mahasiswa?->nim ?? '-',

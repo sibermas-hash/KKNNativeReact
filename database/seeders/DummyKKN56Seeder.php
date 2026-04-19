@@ -204,8 +204,8 @@ class DummyKKN56Seeder extends Seeder
                 'created_at' => now(), 'updated_at' => now(),
             ]);
             $dplUser = User::find($userId);
-            $dplRole = Role::firstOrCreate(['name' => 'dpl', 'guard_name' => 'web']);
-            $dplUser->assignRole($dplRole);
+            $dosenRole = Role::firstOrCreate(['name' => 'dosen', 'guard_name' => 'web']);
+            $dplUser->assignRole($dosenRole);
         }
 
         // ═══════════════════════════════════════════════════

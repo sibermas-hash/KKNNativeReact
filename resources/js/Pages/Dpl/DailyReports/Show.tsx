@@ -123,7 +123,7 @@ export default function DplDailyReportShow({ report }: Props) {
                 <div className="flex items-center justify-between gap-6">
                     <div className="flex items-center gap-6">
                         <Link 
-                            href="/dpl/laporan-harian" 
+                            href="/dosen/laporan-harian" 
                             className="h-12 w-12 rounded-2xl bg-white border border-emerald-50 flex items-center justify-center text-emerald-950 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm"
                         >
                             <ArrowLeft size={22} strokeWidth={2.5} />

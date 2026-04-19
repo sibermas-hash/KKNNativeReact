@@ -91,7 +91,6 @@ export default function StudentDashboard({
 
   const shouldShowPopup = isApproved && registration && !registration.notification_shown;
   const hasGroup = Boolean(registration?.group);
-  const hasDPL = Boolean(registration?.group?.lecturer?.name);
   const groupName = registration?.group?.name || 'Menunggu penugasan';
   const groupLocation = registration?.group?.location?.name || '-';
   const dplName = registration?.group?.lecturer?.name || 'Akan ditentukan';
@@ -107,8 +106,6 @@ export default function StudentDashboard({
   if (shouldShowPopup && !showPopup) {
     setShowPopup(true);
   }
-
-  const studentFirstName = student?.name?.split(' ')?.[0] ?? 'Mahasiswa';
 
   const phases = [
     {
@@ -247,51 +244,6 @@ export default function StudentDashboard({
         )}
 
         <div className="space-y-4">
-          {/* --- WELCOME CARD --- */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4"
-          >
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 bg-emerald-600 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-emerald-100">
-                {studentFirstName.charAt(0)}
-              </div>
-              <div className="space-y-0.5">
-                <h1 className="text-lg font-bold text-emerald-950 tracking-tight">
-                  Halo, <span className="text-emerald-600">{studentFirstName}!</span>
-                </h1>
-                <p className="text-sm font-bold text-emerald-950 uppercase tracking-wider">
-                  NIM: {student.nim || '-'}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 bg-emerald-50/50 p-3 rounded-xl border border-emerald-50">
-              <div className="text-right">
-                <p className="text-sm font-bold text-emerald-950 uppercase leading-none mb-1">
-                  Status Keanggotaan
-                </p>
-                <p className="text-sm font-bold text-emerald-950 uppercase">
-                  {isApproved
-                    ? 'Peserta Aktif'
-                    : isPending
-                      ? 'Dalam Verifikasi'
-                      : isRejected
-                        ? 'Perlu Perbaikan'
-                        : 'Belum Terdaftar'}
-                </p>
-              </div>
-              <div
-                className={clsx(
-                  'h-8 w-8 rounded-lg flex items-center justify-center',
-                  isApproved ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-emerald-950',
-                )}
-              >
-                {isApproved ? <BadgeCheck size={16} /> : <Lock size={16} />}
-              </div>
-            </div>
-          </motion.div>
-
           {/* --- PROGRESS TIMELINE --- */}
           <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm space-y-5">
             <div className="flex items-center justify-between">
@@ -387,13 +339,25 @@ export default function StudentDashboard({
                 </p>
               </div>
               {!isApproved && (
-                <Link
-                  href='/mahasiswa/daftar'
-                  className="inline-flex items-center gap-2 px-6 py-2.5 font-bold text-xs rounded-lg shadow-lg transition-all uppercase tracking-wider bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-100"
-                >
-                  Daftar Sekarang
-                  <ArrowRight size={14} />
-                </Link>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  {registration ? (
+                    <Link
+                      href={route('student.registration.status')}
+                      className="inline-flex items-center gap-2 px-6 py-2.5 font-black text-xs rounded-lg shadow-lg transition-all uppercase tracking-widest bg-amber-500 text-white hover:bg-amber-600 shadow-amber-100"
+                    >
+                      Periksa Pendaftaran
+                      <ArrowRight size={14} />
+                    </Link>
+                  ) : (
+                    <Link
+                      href='/mahasiswa/daftar'
+                      className="inline-flex items-center gap-2 px-6 py-2.5 font-black text-xs rounded-lg shadow-lg transition-all uppercase tracking-widest bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-100"
+                    >
+                      Daftar Sekarang
+                      <ArrowRight size={14} />
+                    </Link>
+                  )}
+                </div>
               )}
             </div>
           ) : (

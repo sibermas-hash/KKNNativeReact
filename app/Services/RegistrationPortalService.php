@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\KKN\Periode;
 use App\Models\KKN\SystemSetting;
 use App\Services\KKN\KknRequirementService;
+use App\Services\KKN\PeriodeGovernanceService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -76,22 +77,27 @@ class RegistrationPortalService
                 ->orderByDesc('registration_start')
                 ->get()
                 ->map(function (Periode $period) {
-                    $governance = $period->governance();
+                    $jenisKkn = $period->jenisKkn;
+                    $governance = $jenisKkn ? PeriodeGovernanceService::blueprintFromJenisKkn($jenisKkn) : [];
                     $guide = $this->kknRequirementService->describe($period);
 
                     return [
                         'id' => $period->id,
                         'nama' => $period->name,
-                        'jenis' => $period->jenis,
-                        'program_type' => $period->program_type,
-                        'program_subtype' => $period->program_subtype,
-                        'registration_mode' => $period->registration_mode,
-                        'placement_mode' => $period->placement_mode,
-                        'program_type_label' => $governance['program_type_label'],
-                        'program_subtype_label' => $governance['program_subtype_label'],
-                        'registration_mode_label' => $governance['registration_mode_label'],
-                        'placement_mode_label' => $governance['placement_mode_label'],
-                        'self_service_enabled' => $governance['self_service_enabled'],
+                        'jenis' => $jenisKkn?->name ?? '-',
+                        'jenis_code' => $jenisKkn?->code ?? 'REGULER',
+                        'program_type' => $governance['program_type'] ?? 'reguler',
+                        'program_subtype' => $governance['program_subtype'] ?? null,
+                        'registration_mode' => $jenisKkn?->registration_mode ?? 'open',
+                        'placement_mode' => $jenisKkn?->placement_mode ?? 'manual_admin',
+                        'program_type_label' => $governance['program_type_label'] ?? 'Reguler',
+                        'program_subtype_label' => $governance['program_subtype_label'] ?? '-',
+                        'registration_mode_label' => $jenisKkn?->registrationModeLabel() ?? 'Terbuka',
+                        'placement_mode_label' => $jenisKkn?->placementModeLabel() ?? 'Manual',
+                        'self_service_enabled' => $jenisKkn
+                            ? $jenisKkn->registration_mode === Periode::REGISTRATION_MODE_OPEN
+                                && $jenisKkn->placement_mode === Periode::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL
+                            : false,
                         'guide' => $guide,
                         'registration_start' => optional($period->registration_start)->format('Y-m-d'),
                         'registration_end' => optional($period->registration_end)->format('Y-m-d'),

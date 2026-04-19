@@ -122,12 +122,29 @@ return Application::configure(basePath: dirname(__DIR__))
         // Custom rendering for Inertia requests to show the pretty Error page
         $exceptions->respond(function ($response, $e, $request) {
             if (env('APP_ENV') === 'local' && ($request->expectsJson() || $request->header('X-Inertia'))) {
-                return $response; // Let Laravel handle JSON status codes naturally
+                return $response;
             }
 
             if ($response instanceof Response || $response instanceof JsonResponse) {
                 $status = $response->getStatusCode();
+                $user = auth()->user();
+                $isStudent = $user?->hasRole('student');
 
+                // Professional handling for Students: Redirect to Dashboard with Toast
+                if ($isStudent && in_array($status, [403, 404])) {
+                    $message = $status === 403 
+                        ? ($e->getMessage() ?: 'Akses ditolak: Anda tidak memiliki izin untuk fitur tersebut.')
+                        : 'Halaman atau data yang Anda cari tidak ditemukan.';
+                    
+                    return redirect('/mahasiswa')->with('error', $message);
+                }
+
+                // For non-GET Inertia requests (like form submissions that fail with 403)
+                if ($status === 403 && $request->header('X-Inertia') && ! $request->isMethod('get')) {
+                    return redirect()->back()->with('error', $e->getMessage() ?: 'Anda tidak memiliki akses untuk tindakan ini.');
+                }
+
+                // Fallback to pretty error page for fatal errors or other roles
                 if (in_array($status, [500, 503, 404, 403])) {
                     return Inertia::render('Error', [
                         'status' => $status,

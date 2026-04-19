@@ -91,7 +91,6 @@ return [
              */
             'databases' => [
                 'pgsql',
-                'kkn',
             ],
         ],
 

@@ -43,10 +43,7 @@ class NilaiAkhirService
             }
 
             // Get KKN type and load grading configuration (aligned with GradingService)
-            $kknType = $nilai->kelompok?->periode?->jenis;
-            if (! $kknType instanceof KknType) {
-                $kknType = KknType::tryFrom($kknType) ?? KknType::REGULER;
-            }
+            $kknType = self::resolveKknType($nilai->kelompok?->periode);
 
             $cacheKey = 'grading_configs_'.$kknType->value;
             $configs = Cache::remember($cacheKey, 3600, function () use ($kknType) {
@@ -106,5 +103,31 @@ class NilaiAkhirService
 
             return $nilai;
         });
+    }
+
+    private static function resolveKknType(?object $period): KknType
+    {
+        if (! $period) {
+            return KknType::REGULER;
+        }
+
+        $jenisKkn = $period->jenisKkn ?? null;
+        if ($jenisKkn) {
+            return match ($jenisKkn->code ?? 'REGULER') {
+                'NUSANTARA' => KknType::NUSANTARA,
+                'INTERNASIONAL' => KknType::INTERNASIONAL,
+                'KOLABORASI_PTKIN' => KknType::KOLABORASI_PTKIN,
+                'KAMPUNG_ZAKAT' => KknType::KAMPUNG_ZAKAT,
+                'DESA_KATANA' => KknType::DESA_KATANA,
+                'TEMATIK' => KknType::TEMATIK,
+                default => KknType::REGULER,
+            };
+        }
+
+        $jenisAttr = $period->jenis ?? $period->program_type ?? null;
+
+        return $jenisAttr instanceof KknType
+            ? $jenisAttr
+            : KknType::tryFrom($jenisAttr ?? 'REGULER') ?? KknType::REGULER;
     }
 }

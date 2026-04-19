@@ -190,7 +190,7 @@ class DplModuleTest extends TestCase
         $this->assertDatabaseHas('kegiatan_kkn', [
             'id' => $context['dailyReport']->id,
             'status' => 'approved',
-        ], 'kkn');
+        ]);
     }
 
     public function test_dpl_can_send_daily_report_revision(): void
@@ -208,7 +208,7 @@ class DplModuleTest extends TestCase
             'id' => $context['dailyReport']->id,
             'status' => 'revision',
             'review_notes' => 'Mohon lengkapi dokumentasi kegiatan.',
-        ], 'kkn');
+        ]);
     }
 
     public function test_dpl_can_review_final_reports_and_download_document(): void
@@ -237,7 +237,7 @@ class DplModuleTest extends TestCase
         $this->assertDatabaseHas('laporan_akhir', [
             'id' => $context['finalReport']->id,
             'status' => 'approved',
-        ], 'kkn');
+        ]);
     }
 
     public function test_dpl_cannot_access_reports_from_other_groups(): void
@@ -329,7 +329,7 @@ class DplModuleTest extends TestCase
         $this->assertDatabaseMissing('evaluasi', [
             'mahasiswa_id' => $outsider->id,
             'kelompok_id' => $context['group']->id,
-        ], 'kkn');
+        ]);
     }
 
     public function test_dpl_cannot_re_review_approved_daily_report(): void
@@ -352,7 +352,7 @@ class DplModuleTest extends TestCase
         $this->assertDatabaseHas('kegiatan_kkn', [
             'id' => $context['dailyReport']->id,
             'status' => 'approved',
-        ], 'kkn');
+        ]);
     }
 
     public function test_dpl_cannot_re_review_approved_final_report(): void
@@ -375,6 +375,6 @@ class DplModuleTest extends TestCase
         $this->assertDatabaseHas('laporan_akhir', [
             'id' => $context['finalReport']->id,
             'status' => 'approved',
-        ], 'kkn');
+        ]);
     }
 }

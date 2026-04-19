@@ -20,9 +20,14 @@ class DashboardController extends Controller
         private DplScopeService $scopeService,
     ) {}
 
-    public function index(): Response
+    public function index(): Response|\Illuminate\Http\RedirectResponse
     {
         $user = auth()->user();
+
+        // If profile is still incomplete (must_change_password still true after first login), lock to profile page
+        if ($user->must_change_password) {
+            return redirect()->route('profile.show')->with('error', 'Profil belum lengkap! Anda harus melengkapi semua data terlebih dahulu.');
+        }
         $dosen = $user->dosen;
 
         if (! $dosen) {

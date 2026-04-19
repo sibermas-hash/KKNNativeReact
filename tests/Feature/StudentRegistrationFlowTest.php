@@ -236,19 +236,19 @@ test('student can submit regular registration and waits for admin approval befor
         'periode_id' => $period->id,
         'kelompok_id' => null,
         'status' => 'pending',
-    ], 'kkn');
+    ]);
 
     $this->assertDatabaseHas('antrian_kkn', [
         'mahasiswa_id' => $student->id,
         'periode_id' => $period->id,
         'status' => 'menunggu',
-    ], 'kkn');
+    ]);
 
     $this->assertDatabaseMissing('peserta_kkn', [
         'mahasiswa_id' => $student->id,
         'periode_id' => $period->id,
         'kelompok_id' => $sameRegencyGroup->id,
-    ], 'kkn');
+    ]);
 });
 
 test('student with approved group registration is redirected away from registration page', function () {
@@ -346,7 +346,7 @@ test('rejected student can resubmit registration after fixing their data', funct
         'notes' => 'Dokumen dan biodata sudah diperbaiki.',
         'rejection_reason' => 'Mohon lengkapi alamat domisili dan unggah ulang surat sehat.',
         'revision_count' => 1,
-    ], 'kkn');
+    ]);
 
     expect(
         PesertaKkn::query()
@@ -627,7 +627,7 @@ test('faculty slot restriction is enforced when admin approves a regular registr
         'periode_id' => $period->id,
         'status' => 'pending',
         'kelompok_id' => null,
-    ], 'kkn');
+    ]);
 
     $this->actingAs($admin)
         ->from(route('admin.pendaftaran.show', $registration))
@@ -712,7 +712,7 @@ test('minimum male ratio is enforced when admin approves a regular registration'
         'periode_id' => $period->id,
         'status' => 'pending',
         'kelompok_id' => null,
-    ], 'kkn');
+    ]);
 
     $this->actingAs($admin)
         ->from(route('admin.pendaftaran.show', $registration))
@@ -784,7 +784,7 @@ test('male student can fill a seat while group is still below the minimum male r
         'periode_id' => $period->id,
         'kelompok_id' => null,
         'status' => 'pending',
-    ], 'kkn');
+    ]);
 });
 
 test('male student can still join when male composition has reached the ideal target', function () {
@@ -834,7 +834,7 @@ test('male student can still join when male composition has reached the ideal ta
         'periode_id' => $period->id,
         'kelompok_id' => null,
         'status' => 'pending',
-    ], 'kkn');
+    ]);
 });
 
 test('student with approved registration cannot leave group through registration flow while locked', function () {
@@ -906,11 +906,11 @@ test('student with approved registration remains locked even after cooling perio
         'mahasiswa_id' => $student->id,
         'periode_id' => $period->id,
         'kelompok_id' => $group->id,
-    ], 'kkn');
+    ]);
 
     $this->assertDatabaseHas('antrian_kkn', [
         'mahasiswa_id' => $student->id,
         'periode_id' => $period->id,
         'status' => 'dalam_kelompok',
-    ], 'kkn');
+    ]);
 });

@@ -204,7 +204,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
             'periode_id' => $period->id,
             'kelompok_id' => null,
             'status' => 'pending',
-        ], 'kkn');
+        ]);
 
         // ── Step 3: Admin approves registration ───────────────────────
         $registration = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
@@ -220,7 +220,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
             'status' => 'approved',
             'kelompok_id' => $group->id,
             'approved_by' => $admin->id,
-        ], 'kkn');
+        ]);
 
         $registration->refresh();
         expect($registration->kelompok_id)->toBe($group->id);
@@ -308,7 +308,7 @@ class FullRegistrationToGradingWorkflowTest extends TestCase
         $this->assertDatabaseHas('program_kerja', [
             'kelompok_id' => $group->id,
             'title' => 'Program Kerja Pendidikan Masyarakat',
-        ], 'kkn');
+        ]);
 
         // ── Step 8: DPL evaluates student ─────────────────────────────
         $period->update(['current_phase' => 'grading']);

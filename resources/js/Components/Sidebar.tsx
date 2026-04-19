@@ -122,22 +122,31 @@ const getAdminNav = (): NavGroup[] => [
   },
 ];
 
-const getDplNav = (): NavGroup[] => [
-  {
-    title: 'AKSES DPL',
+function getDosenNav(hasDplRole: boolean): NavGroup[] {
+  const base: NavGroup = {
+    title: 'PORTAL DOSEN',
     items: [
-      { label: 'Beranda DPL', href: safeRoute('dpl.dashboard'), icon: LayoutDashboard },
-      { label: 'Workshop & Pembekalan', href: safeRoute('dpl.workshops.index'), icon: GraduationCap },
-      { label: 'Data Kelompok', href: safeRoute('dpl.kelompok.index'), icon: Users },
-      { label: 'Monitoring Mahasiswa', href: safeRoute('dpl.monitoring.index'), icon: Activity },
-      { label: 'Penilaian Akhir', href: safeRoute('dpl.evaluations.index'), icon: Star },
+      { label: 'Beranda Dosen', href: safeRoute('dosen.dashboard'), icon: LayoutDashboard },
+      { label: 'Workshop & Pembekalan', href: safeRoute('dosen.workshops.index'), icon: GraduationCap },
     ],
-  },
-];
+  };
+
+  if (!hasDplRole) return [base];
+
+  return [
+    base,
+    {
+      title: 'BIMBINGAN DPL',
+      items: [
+        { label: 'Data Kelompok', href: safeRoute('dosen.kelompok.index'), icon: Users },
+        { label: 'Monitoring Mahasiswa', href: safeRoute('dosen.monitoring.index'), icon: Activity },
+        { label: 'Penilaian Akhir', href: safeRoute('dosen.evaluations.index'), icon: Star },
+      ],
+    },
+  ];
+}
 
 function buildStudentNav(currentPhase: string, registrationStatus: string = 'none'): NavGroup[] {
-  const isRegistration = currentPhase === 'registration';
-  const isPlacement = currentPhase === 'placement';
   const isExecutionOrLater = ['execution', 'grading', 'finished'].includes(currentPhase);
   const isGradingOrLater = ['grading', 'finished'].includes(currentPhase);
 
@@ -184,7 +193,7 @@ function buildStudentNav(currentPhase: string, registrationStatus: string = 'non
 function getNavForRole(roles: string[], currentPhase: string, registrationStatus: string = 'none'): NavGroup[] {
   const norm = roles.map((r) => r.toLowerCase());
   if (norm.includes('admin') || norm.includes('superadmin')) return getAdminNav();
-  if (norm.includes('dpl')) return getDplNav();
+  if (norm.includes('dosen') || norm.includes('dpl')) return getDosenNav(norm.includes('dpl'));
   return buildStudentNav(currentPhase, registrationStatus);
 }
 
@@ -254,13 +263,15 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 ? 'Portal Admin'
                 : roles.includes('dpl')
                   ? 'Portal DPL'
-                  : 'Portal Mahasiswa'}
+                  : roles.includes('dosen')
+                    ? 'Portal Dosen'
+                    : 'Portal Mahasiswa'}
             </p>
           </div>
         </div>
 
         {/* USER INFO - untuk student */}
-        {roles.includes('student') && auth.user && (
+        {(roles.includes('student') || roles.includes('dosen')) && auth.user && (
           <div className="px-4 py-4 border-b border-emerald-50 bg-gradient-to-b from-emerald-50 to-white">
             <div className="flex flex-col items-center text-center">
               <div className="h-16 w-16 rounded-full bg-emerald-200 flex items-center justify-center overflow-hidden shrink-0 border-4 border-white shadow-md mb-3">
@@ -273,7 +284,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               <div className="min-w-0">
                 <p className="text-sm font-bold text-emerald-950 truncate">{auth.user.name}</p>
                 <p className="text-xs font-semibold text-emerald-600 truncate">
-                  NIM: {auth.user.nim || auth.user.username}
+                  {roles.includes('dosen') ? 'NIP' : 'NIM'}: {auth.user.nim || auth.user.username}
                 </p>
               </div>
             </div>

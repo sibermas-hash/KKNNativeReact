@@ -43,5 +43,5 @@ test('superadmin can update system settings', function () {
         'id' => $setting->id,
         'config_key' => 'support_contact_label',
         'value' => 'Admin KKN Siap Bantu',
-    ], 'kkn');
+    ]);
 });

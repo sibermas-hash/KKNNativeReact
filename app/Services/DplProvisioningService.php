@@ -64,7 +64,7 @@ class DplProvisioningService
         }
 
         if (! $user->hasRole('dpl')) {
-            $user->assignRole('dpl');
+            $user->assignRole('dosen');
             $activated = true;
         }
 

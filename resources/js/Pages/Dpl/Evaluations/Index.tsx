@@ -196,7 +196,7 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
 
   const submitBulk = (e: React.FormEvent) => {
     e.preventDefault();
-    bulkForm.post(route('dpl.evaluations.store'), {
+    bulkForm.post(route('dosen.evaluations.store'), {
       preserveScroll: true,
       onSuccess: () => alert('Penyimpanan massal berhasil!'),
     });
@@ -238,7 +238,7 @@ export default function DplBulkEvaluations({ groups, dplWeights }: Props) {
               <Button
                 variant="outline"
                 className="h-14 px-8 rounded-2xl border-2 border-emerald-50/60 font-bold text-xs font-semibold uppercase text-xs gap-3"
-                onClick={() => router.get(route('dpl.evaluations.index'))}
+                onClick={() => router.get(route('dosen.evaluations.index'))}
               >
                 <FileSpreadsheet className="w-5 h-5 text-emerald-600" /> Unduh Template
               </Button>

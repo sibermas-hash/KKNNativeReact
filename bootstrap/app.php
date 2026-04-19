@@ -103,6 +103,15 @@ return Application::configure(basePath: dirname(__DIR__))
         });
         */
 
+        // Force redirect to login for expired sessions on web routes
+        // Prevents raw JSON {"message":"Unauthenticated."} in browser
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+            if (! $request->is('api/*') && ! $request->is('api/v1/*')) {
+                return redirect()->guest(route('login'))
+                    ->with('warning', 'Sesi Anda telah berakhir. Silakan masuk kembali.');
+            }
+        });
+
         $exceptions->render(function (UnauthorizedException $e, $request) {
             if ($request->expectsJson() || $request->is('api/*') || $request->header('Accept') === 'application/json') {
                 return response()->json([
@@ -135,6 +144,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Handle 419 CSRF errors... (rest of the code is already handled by respond above)
     })
     ->withSchedule(function (Schedule $schedule): void {
+        // Auto sync phase based on dates - runs every hour
+        $schedule->command('kkn:auto-sync-phase')->hourly();
+
         // Event-driven sync trigger (safe no-op when no trigger file exists).
         $schedule->command('master:webhook:sync')->everyMinute();
 

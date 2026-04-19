@@ -11,20 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('kkn')->table('evaluasi', function (Blueprint $table) {
-            if (! Schema::connection('kkn')->hasColumn('evaluasi', 'evaluator_id')) {
+        Schema::table('evaluasi', function (Blueprint $table) {
+            if (! Schema::hasColumn('evaluasi', 'evaluator_id')) {
                 $table->foreignId('evaluator_id')->nullable()->constrained('users')->nullOnDelete();
             }
-            if (! Schema::connection('kkn')->hasColumn('evaluasi', 'evaluator_type')) {
+            if (! Schema::hasColumn('evaluasi', 'evaluator_type')) {
                 $table->string('evaluator_type', 20)->nullable(); // dpl, lppm
             }
-            if (! Schema::connection('kkn')->hasColumn('evaluasi', 'notes')) {
+            if (! Schema::hasColumn('evaluasi', 'notes')) {
                 $table->text('notes')->nullable();
             }
-            if (! Schema::connection('kkn')->hasColumn('evaluasi', 'grade')) {
+            if (! Schema::hasColumn('evaluasi', 'grade')) {
                 $table->string('grade', 5)->nullable();
             }
-            if (! Schema::connection('kkn')->hasColumn('evaluasi', 'evaluated_at')) {
+            if (! Schema::hasColumn('evaluasi', 'evaluated_at')) {
                 $table->timestamp('evaluated_at')->nullable();
             }
         });
@@ -35,7 +35,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('kkn')->table('evaluasi', function (Blueprint $table) {
+        Schema::table('evaluasi', function (Blueprint $table) {
             $table->dropColumn(['evaluator_id', 'evaluator_type', 'notes', 'grade', 'evaluated_at']);
         });
     }

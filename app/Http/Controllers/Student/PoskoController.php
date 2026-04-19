@@ -173,7 +173,7 @@ class PoskoController extends Controller
             $newPhotoName = $file->getClientOriginalName();
             $newPhotoSize = $file->getSize();
             $disk = Storage::disk($diskName);
-            $connection = DB::connection('kkn');
+            $connection = DB::getFacadeRoot();
             $persist = function () use ($existingPosko, $validated, $newPhotoPath, $newPhotoName, $newPhotoSize, $request, $registration) {
                 if ($existingPosko?->photo_path) {
                     $this->deletePhotoFromKnownDisks($existingPosko->photo_path);

@@ -82,7 +82,6 @@ class NilaiKkn extends Model
 
     protected $table = 'nilai_kkn';
 
-    protected $connection = 'kkn';
 
     use HasFactory;
 

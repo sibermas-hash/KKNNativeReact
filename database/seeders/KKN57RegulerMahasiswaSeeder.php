@@ -55,9 +55,86 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
         'Tasikmalaya', 'Ciamis', 'Pangandaran', 'Banjar',
     ];
 
+    private const MOTHER_NAMES = [
+        'Siti Hartati', 'Siti Rahayu', 'Siti Mariam', 'Siti Aminah', 'Siti Khoiriyah',
+        'Siti Nurhaliza', 'Siti Maryam', 'Siti Kulsum', 'Siti Fatimah', 'Siti Aisyah',
+        'Siti Nurul', 'Siti Hidayah', 'Siti Latifah', 'Siti Wahyuni', 'Siti Suryani',
+        'Siti Rohmah', 'Siti Maysaroh', 'Siti Istiqomah', 'Siti Khatun', 'Siti Balkis',
+        'Siti Muakhirah', 'Siti Maesarah', 'Siti Ngadisah', 'Siti Korinah', 'Siti Latu',
+        'Siti Umroh', 'Siti Kartika', 'Siti Damayanti', 'Siti Wati', 'Siti Nurlela',
+        'Siti Halimah', 'Siti Hasanah', 'Siti Muflihah', 'Siti Uswatun', 'Siti Husna',
+        'Siti Zalzalah', 'Siti Ghonimah', 'Siti Maqsudah', 'Siti Bashiroh', 'Siti Mudrikah',
+        'Siti Qomariyah', 'Siti Muthmainnah', 'Siti Jamilah', 'Siti Khadijah', 'Siti Zaenab',
+        'Siti Asma', 'Siti Ulfa', 'Siti Lutfiah', 'Siti NabIIah', 'Siti Hafsoh',
+        'Siti Hanum', 'Siti Rukaiyah', 'Siti Barirah', 'Siti Sholikhah', 'Siti Ghadah',
+        'Siti az-Zahro', 'Siti Nazzala', 'Siti Baroroh', 'Siti Mudrik', 'Siti Faridah',
+        'Siti Azizah', 'Siti Zahrotul', 'Siti Nailal', 'Siti Aufa', 'Siti Julaeha',
+        'Siti Muawanah', 'Siti Hisan', 'Siti Basuni', 'Siti Muqarramah', 'Siti Sayyidah',
+        'Siti Hani', 'Siti Laily', 'Sperti', 'Maya', 'Dewi',
+        'Kartika', 'Lina', 'Rina', 'Ani', 'Diah',
+        'Nita', 'Ayu', 'Ika', 'Fitri', 'Yuni',
+        'Tika', 'Wati', 'Sari', 'Ratri', 'Nindi',
+        'Aulia', 'Citra', 'Farida', 'Intan', 'Puji',
+        'Rika', 'Siti', 'Hilda', 'Indah', 'Mega',
+    ];
+
+    private const VILLAGE_NAMES = [
+        'Karang Anyar', 'Pelog', 'Kudusan', 'Kepatihan', 'Solo Baru',
+        'Manahan', 'Bakalan', 'Cemorosewu', 'Donotirto', 'Banjarsari',
+        'Karang Timur', 'Wonosari', 'Sentolo', 'Pengasih', 'Kokap',
+        'Godean', 'Sleman', 'Banguntapan', 'Bantul', 'Jetis',
+        'Taman', 'Karangnongko', 'Jaten', 'Wonogiri', 'Bulusari',
+    ];
+
+    private const DISTRICT_NAMES = [
+        'Gondokusuman', 'Umbulharjo', 'Jetis', 'Tegalrejo', 'Mantrijeron',
+        'Kraton', 'Gondomanan', 'Mergangsang', 'Pakualaman', 'Wirobrajan',
+        'Dukuh', 'Kedungsukan', 'Pemecutan', 'Dauh Puri', 'Denpasar Barat',
+        'Ubung', 'Dangin Puri', 'Kuta', 'Kuta Utara', 'Kuta Selatan',
+    ];
+
+    private const REGENCY_NAMES = [
+        'Surakarta', 'Yogyakarta', 'Sleman', 'Bantul', 'Gunung Kidul',
+        'Klaten', 'Wonogiri', 'Karanganyar', 'Sragen', 'Purworejo',
+        ' Kebumen', 'Berkeley', 'Bandung', 'Semarang', 'Surabaya',
+        'Jakarta', 'Tangerang', 'Depok', 'Bekasi', 'Bogor',
+    ];
+
+    private const STREET_PREFIXES = ['Jl.', 'Jl. '];
+    private const STREET_NAMES = [
+        ' Ahmad Yani', ' Suprayitno', ' MT Харьох', ' Diponegoro', 'Veteran',
+        ' Sudirman', ' Thamrin', ' Hasanudin', ' P Sudirman', ' Gatot Subroto',
+        ' Juanda', ' Ahmad Dahlan', 'Sri Sultan', ' HB Jati', ' Mataram',
+    ];
+
+    private function generateMotherName(): string
+    {
+        return self::MOTHER_NAMES[array_rand(self::MOTHER_NAMES)];
+    }
+
+    private function generateAddress(): array
+    {
+        return [
+            'address' => self::STREET_PREFIXES[array_rand(self::STREET_PREFIXES)] . self::STREET_NAMES[array_rand(self::STREET_NAMES)] . ' No.' . rand(1, 99),
+            'domicile_village_name' => self::VILLAGE_NAMES[array_rand(self::VILLAGE_NAMES)],
+            'domicile_district_name' => self::DISTRICT_NAMES[array_rand(self::DISTRICT_NAMES)],
+            'domicile_regency_name' => self::REGENCY_NAMES[array_rand(self::REGENCY_NAMES)],
+        ];
+    }
+
     private function generateBirthDate(): string
     {
         return sprintf('%04d-%02d-%02d', rand(2000, 2005), rand(1, 12), rand(1, 28));
+    }
+
+    private function generateSemester(): int
+    {
+        return rand(1, 10);
+    }
+
+    private function generateBtaStatus(): string
+    {
+        return rand(0, 1) ? 'LULUS' : 'BELUM_LULUS';
     }
 
     private function syncFakultasDanProdi(): void
@@ -160,8 +237,13 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
             if (in_array($email, $existingEmails)) {
                 $user = DB::table('users')->where('email', $email)->first();
                 if ($user) {
+                    $address = $this->generateAddress();
                     DB::table('users')->where('id', $user->id)->update([
                         'phone' => !empty($row['WA']) ? trim($row['WA']) : $user->phone,
+                        'address' => $address['address'],
+                        'domicile_village_name' => $address['domicile_village_name'],
+                        'domicile_district_name' => $address['domicile_district_name'],
+                        'domicile_regency_name' => $address['domicile_regency_name'],
                         'must_change_password' => true,
                         'updated_at' => $now,
                     ]);
@@ -170,6 +252,9 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
                         DB::table('mahasiswa')->where('id', $mhs->id)->update([
                             'birth_place' => self::BIRTH_PLACES[array_rand(self::BIRTH_PLACES)],
                             'birth_date' => $this->generateBirthDate(),
+                            'semester' => $this->generateSemester(),
+                            'status_bta_ppi' => $this->generateBtaStatus(),
+                            'mother_name' => $this->generateMotherName(),
                             'updated_at' => $now,
                         ]);
                         $updated++;
@@ -179,7 +264,7 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
                             'nim' => $nim,
                             'nik' => !empty($row['NIK']) ? trim($row['NIK']) : null,
                             'nama' => trim($row['NAMA']),
-                            'mother_name' => !empty($row['Nama Ibu']) ? trim($row['Nama Ibu']) : null,
+                            'mother_name' => !empty($row['Nama Ibu']) && trim($row['Nama Ibu']) !== '' ? trim($row['Nama Ibu']) : $this->generateMotherName(),
                             'fakultas_id' => $fId,
                             'prodi_id' => $pId,
                             'batch_year' => 2025,
@@ -190,7 +275,8 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
                             'shirt_size' => !empty($row['Kaos']) ? trim($row['Kaos']) : null,
                             'birth_place' => self::BIRTH_PLACES[array_rand(self::BIRTH_PLACES)],
                             'birth_date' => $this->generateBirthDate(),
-                            'is_bta_ppi_passed' => false,
+                            'semester' => $this->generateSemester(),
+                            'status_bta_ppi' => $this->generateBtaStatus(),
                             'created_at' => $now,
                             'updated_at' => $now,
                         ]);
@@ -199,11 +285,16 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
                 continue;
             }
 
+            $address = $this->generateAddress();
             $newUsers[] = [
                 'username' => $nim,
                 'name' => trim($row['NAMA']),
                 'email' => $email,
                 'phone' => !empty($row['WA']) ? trim($row['WA']) : null,
+                'address' => $address['address'],
+                'domicile_village_name' => $address['domicile_village_name'],
+                'domicile_district_name' => $address['domicile_district_name'],
+                'domicile_regency_name' => $address['domicile_regency_name'],
                 'is_active' => true,
                 'must_change_password' => true,
                 'email_verified_at' => $now,
@@ -216,7 +307,7 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
                 'nim' => $nim,
                 'nik' => !empty($row['NIK']) ? trim($row['NIK']) : null,
                 'nama' => trim($row['NAMA']),
-                'mother_name' => !empty($row['Nama Ibu']) ? trim($row['Nama Ibu']) : null,
+                'mother_name' => !empty($row['Nama Ibu']) && trim($row['Nama Ibu']) !== '' ? trim($row['Nama Ibu']) : $this->generateMotherName(),
                 'fakultas_id' => $fId,
                 'prodi_id' => $pId,
                 'batch_year' => 2025,
@@ -227,7 +318,8 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
                 'shirt_size' => !empty($row['Kaos']) ? trim($row['Kaos']) : null,
                 'birth_place' => self::BIRTH_PLACES[array_rand(self::BIRTH_PLACES)],
                 'birth_date' => $this->generateBirthDate(),
-                'is_bta_ppi_passed' => false,
+                'semester' => $this->generateSemester(),
+                'status_bta_ppi' => $this->generateBtaStatus(),
                 'created_at' => $now,
                 'updated_at' => $now,
             ];

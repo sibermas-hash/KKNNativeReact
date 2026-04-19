@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('kkn')->table('program_kerja', function (Blueprint $table) {
+        Schema::table('program_kerja', function (Blueprint $table) {
             if (! Schema::hasColumn('program_kerja', 'abcd_stage')) {
                 $table->string('abcd_stage')->default('Discovery')->after('status');
             }
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('kkn')->table('program_kerja', function (Blueprint $table) {
+        Schema::table('program_kerja', function (Blueprint $table) {
             if (Schema::hasColumn('program_kerja', 'abcd_stage')) {
                 $table->dropColumn('abcd_stage');
             }

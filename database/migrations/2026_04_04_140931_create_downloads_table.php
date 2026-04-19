@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('kkn')->create('downloads', function (Blueprint $table) {
+        Schema::create('downloads', function (Blueprint $table) {
             $table->id();
             $table->string('title');
             $table->string('file_name')->nullable();
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('kkn')->dropIfExists('downloads');
+        Schema::dropIfExists('downloads');
     }
 };

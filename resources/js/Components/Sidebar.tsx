@@ -135,58 +135,57 @@ const getDplNav = (): NavGroup[] => [
   },
 ];
 
-function buildStudentNav(currentPhase: string): NavGroup[] {
+function buildStudentNav(currentPhase: string, registrationStatus: string = 'none'): NavGroup[] {
   const isRegistration = currentPhase === 'registration';
+  const isPlacement = currentPhase === 'placement';
   const isExecutionOrLater = ['execution', 'grading', 'finished'].includes(currentPhase);
   const isGradingOrLater = ['grading', 'finished'].includes(currentPhase);
+
+  const isApproved = registrationStatus === 'approved';
 
   return [
     {
       title: 'SENTRAL MAHASISWA',
       items: [
         { label: 'Beranda Mahasiswa', href: safeRoute('student.dashboard'), icon: LayoutDashboard },
-        ...(isRegistration
+        ...(!isApproved
           ? [
-              {
-                label: 'Daftar KKN',
-                href: safeRoute('student.registration.create'),
-                icon: ClipboardList,
-              },
-            ]
+            { label: 'Daftar KKN', href: '/mahasiswa/daftar', icon: ClipboardList },
+          ]
           : []),
-        ...(isExecutionOrLater
+        ...(isApproved || isExecutionOrLater
           ? [
-              {
-                label: 'Logbook Masuk',
-                href: safeRoute('student.laporan-harian.index'),
-                icon: FileText,
-              },
-              {
-                label: 'Target Proker',
-                href: safeRoute('student.program-kerja.index'),
-                icon: BookOpen,
-              },
-            ]
+            {
+              label: 'Logbook Masuk',
+              href: safeRoute('student.laporan-harian.index'),
+              icon: FileText,
+            },
+            {
+              label: 'Target Proker',
+              href: safeRoute('student.program-kerja.index'),
+              icon: BookOpen,
+            },
+          ]
           : []),
         ...(isGradingOrLater
           ? [
-              {
-                label: 'Unduh Sertifikat',
-                href: safeRoute('student.certificate.index'),
-                icon: Award,
-              },
-            ]
+            {
+              label: 'Unduh Sertifikat',
+              href: safeRoute('student.certificate.index'),
+              icon: Award,
+            },
+          ]
           : []),
       ],
     },
   ];
 }
 
-function getNavForRole(roles: string[], currentPhase: string): NavGroup[] {
+function getNavForRole(roles: string[], currentPhase: string, registrationStatus: string = 'none'): NavGroup[] {
   const norm = roles.map((r) => r.toLowerCase());
   if (norm.includes('admin') || norm.includes('superadmin')) return getAdminNav();
   if (norm.includes('dpl')) return getDplNav();
-  return buildStudentNav(currentPhase);
+  return buildStudentNav(currentPhase, registrationStatus);
 }
 
 interface SidebarProps {
@@ -197,11 +196,12 @@ interface SidebarProps {
 export default function Sidebar({ open, onClose }: SidebarProps) {
   const { props, url } = usePage<PageProps & { url: string }>();
   const { auth } = props;
-  
+
   const roles =
     (auth.user?.roles as any[])?.map((r) => (typeof r === 'string' ? r : (r as any).name)) || [];
   const currentPhase = (auth as any)?.active_phase ?? 'upcoming';
-  const navGroups = getNavForRole(roles, currentPhase);
+  const registrationStatus = (auth as any)?.user?.student_registration_status ?? 'none';
+  const navGroups = getNavForRole(roles, currentPhase, registrationStatus);
   const currentPath = url;
 
   const navRef = useRef<HTMLDivElement>(null);
@@ -235,7 +235,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           />
         )}
       </AnimatePresence>
- 
+
       <aside
         className={clsx(
           'fixed inset-y-0 left-0 z-50 w-60 bg-white border-r border-emerald-50 flex flex-col transition-transform duration-300 lg:translate-x-0',
@@ -243,20 +243,45 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         )}
       >
         {/* LOGO AREA */}
-        <div className="h-16 px-5 flex items-center gap-3 border-b border-emerald-50">
-          <div className="h-12 w-12 bg-[#1a7a4a] rounded-full flex items-center justify-center shadow-sm shrink-0">
-            <img src="/images/logo_kkn.png" alt="Logo" className="h-6 w-6 object-contain brightness-0 invert" />
+        <div className="h-16 px-4 flex items-center gap-3 border-b border-emerald-50">
+          <div className="h-10 w-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden">
+            <img src="/images/logo_kkn.png" alt="Logo UIN SAIZU" className="h-10 w-10 object-contain" />
           </div>
           <div>
             <h1 className="text-sm font-bold text-emerald-950 leading-tight">KKN UIN SAIZU</h1>
             <p className="text-xs font-semibold text-[#1a7a4a] mt-0.5">
-              Portal Administrasi
+              {roles.some(r => ['admin', 'superadmin'].includes(r))
+                ? 'Portal Admin'
+                : roles.includes('dpl')
+                  ? 'Portal DPL'
+                  : 'Portal Mahasiswa'}
             </p>
           </div>
         </div>
- 
+
+        {/* USER INFO - untuk student */}
+        {roles.includes('student') && auth.user && (
+          <div className="px-4 py-4 border-b border-emerald-50 bg-gradient-to-b from-emerald-50 to-white">
+            <div className="flex flex-col items-center text-center">
+              <div className="h-16 w-16 rounded-full bg-emerald-200 flex items-center justify-center overflow-hidden shrink-0 border-4 border-white shadow-md mb-3">
+                {auth.user.avatar ? (
+                  <img src={`/storage/${auth.user.avatar}`} alt="Foto" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-2xl font-bold text-emerald-700">{auth.user.name?.charAt(0) || 'U'}</span>
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-emerald-950 truncate">{auth.user.name}</p>
+                <p className="text-xs font-semibold text-emerald-600 truncate">
+                  NIM: {auth.user.nim || auth.user.username}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* NAVIGATION */}
-        <nav 
+        <nav
           ref={navRef}
           onScroll={handleScroll}
           className="flex-1 overflow-y-auto px-4 py-4 scrollbar-hide scroll-smooth"
@@ -278,10 +303,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
                   const itemPath = getPath(item.href);
                   const normalizedCurrentPath = currentPath.split('?')[0];
-                  
-                  const isActive = 
-                    normalizedCurrentPath === itemPath || 
-                    (itemPath !== '/admin' && normalizedCurrentPath.startsWith(itemPath));
+
+                  const isActive = normalizedCurrentPath === itemPath;
 
                   const isValidHref = item.href && item.href !== '#';
                   return (
@@ -325,7 +348,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             </div>
           ))}
         </nav>
- 
+
         {/* USER PROFILE SECTION */}
         <div className="p-4 border-t border-emerald-50">
           <Link

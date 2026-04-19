@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ItemEvaluasi extends Model
 {
-    protected $connection = 'kkn';
 
     protected $table = 'item_evaluasi';
 

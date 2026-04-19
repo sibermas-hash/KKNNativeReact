@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProposalProgramKerja extends Model
 {
-    protected $connection = 'kkn';
 
     protected $table = 'proposal_program_kerja';
 

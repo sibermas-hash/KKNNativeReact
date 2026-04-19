@@ -14,7 +14,6 @@ class Laporan extends Model
 {
     protected $table = 'laporan';
 
-    protected $connection = 'kkn';
 
     protected $fillable = [
         'user_id',

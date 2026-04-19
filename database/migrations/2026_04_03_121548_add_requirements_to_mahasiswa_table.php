@@ -8,16 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::connection('kkn')->hasTable('mahasiswa')) {
+        if (! Schema::hasTable('mahasiswa')) {
             return;
         }
 
-        Schema::connection('kkn')->table('mahasiswa', function (Blueprint $table) {
-            if (! Schema::connection('kkn')->hasColumn('mahasiswa', 'is_bta_ppi_passed')) {
+        Schema::table('mahasiswa', function (Blueprint $table) {
+            if (! Schema::hasColumn('mahasiswa', 'is_bta_ppi_passed')) {
                 $table->boolean('is_bta_ppi_passed')->default(false)->after('gpa');
             }
 
-            if (! Schema::connection('kkn')->hasColumn('mahasiswa', 'health_certificate_path')) {
+            if (! Schema::hasColumn('mahasiswa', 'health_certificate_path')) {
                 $table->string('health_certificate_path')->nullable()->after('is_bta_ppi_passed');
             }
         });
@@ -25,14 +25,14 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (! Schema::connection('kkn')->hasTable('mahasiswa')) {
+        if (! Schema::hasTable('mahasiswa')) {
             return;
         }
 
-        Schema::connection('kkn')->table('mahasiswa', function (Blueprint $table) {
+        Schema::table('mahasiswa', function (Blueprint $table) {
             $columnsToDrop = array_values(array_filter([
-                Schema::connection('kkn')->hasColumn('mahasiswa', 'is_bta_ppi_passed') ? 'is_bta_ppi_passed' : null,
-                Schema::connection('kkn')->hasColumn('mahasiswa', 'health_certificate_path') ? 'health_certificate_path' : null,
+                Schema::hasColumn('mahasiswa', 'is_bta_ppi_passed') ? 'is_bta_ppi_passed' : null,
+                Schema::hasColumn('mahasiswa', 'health_certificate_path') ? 'health_certificate_path' : null,
             ]));
 
             if ($columnsToDrop !== []) {

@@ -1,5 +1,6 @@
-import { Link, Head, usePage } from '@inertiajs/react';
+import { Link, Head, usePage, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
+import { useState } from 'react';
 import { ErrorBoundary } from '@/Components/ErrorBoundary';
 import AppLayout from '@/Layouts/AppLayout';
 import {
@@ -17,6 +18,10 @@ import {
   Target,
   ScrollText,
   LayoutGrid,
+  X,
+  UserCheck,
+  Users,
+  Lightbulb,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import type {
@@ -30,9 +35,11 @@ import type {
 import { motion } from 'framer-motion';
 
 interface Registration {
+  id: number;
   status: string;
   notes?: string | null;
   rejection_reason?: string | null;
+  notification_shown?: boolean;
   period?: {
     id: number;
     name: string;
@@ -41,6 +48,7 @@ interface Registration {
   group?: {
     id: number;
     name: string;
+    code: string;
     location?: { name: string };
     lecturer?: { name: string };
   };
@@ -78,15 +86,38 @@ export default function StudentDashboard({
   const isRejected = normalizedStatus === 'rejected';
   const isGroupPinned = isApproved && Boolean(registration?.group);
 
+  const [showPopup, setShowPopup] = useState(false);
+  const notificationForm = useForm({});
+
+  const shouldShowPopup = isApproved && registration && !registration.notification_shown;
+  const hasGroup = Boolean(registration?.group);
+  const hasDPL = Boolean(registration?.group?.lecturer?.name);
+  const groupName = registration?.group?.name || 'Menunggu penugasan';
+  const groupLocation = registration?.group?.location?.name || '-';
+  const dplName = registration?.group?.lecturer?.name || 'Akan ditentukan';
+  const periodName = registration?.period?.name || 'Periode KKN';
+
+  const handleClosePopup = () => {
+    setShowPopup(false);
+    if (registration?.id && !registration.notification_shown) {
+      notificationForm.patch(route('student.notification.shown', registration.id));
+    }
+  };
+
+  if (shouldShowPopup && !showPopup) {
+    setShowPopup(true);
+  }
+
   const studentFirstName = student?.name?.split(' ')?.[0] ?? 'Mahasiswa';
 
   const phases = [
     {
       id: 1,
-      label: 'Pendaftaran',
-      desc: 'Registrasi Unit',
+      label: isRejected ? 'Pendaftaran' : (isPending ? 'Pendaftaran' : (isApproved ? 'Pendaftaran' : 'Pendaftaran')),
+      desc: isRejected ? 'Registrasi Unit - PERBAIKAN' : (isPending ? 'Sedang Diverifikasi' : (isApproved ? 'Terverifikasi' : 'Registrasi Unit')),
       isCompleted: isApproved,
-      isActive: !registration || isPending,
+      isActive: isPending || (!registration),
+      isLocked: isApproved,
     },
     {
       id: 2,
@@ -94,6 +125,7 @@ export default function StudentDashboard({
       desc: 'Program Kerja',
       isCompleted: workProgramCount > 0,
       isActive: isApproved && workProgramCount === 0,
+      isLocked: !isApproved,
     },
     {
       id: 3,
@@ -127,6 +159,92 @@ export default function StudentDashboard({
     <ErrorBoundary>
       <AppLayout title="Portal Mahasiswa">
         <Head title="Beranda Mahasiswa" />
+
+        {/* --- APPROVAL/REJECTION POPUP --- */}
+        {showPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          >
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleClosePopup} />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+            >
+              <button
+                onClick={handleClosePopup}
+                className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <X size={20} className="text-gray-400" />
+              </button>
+
+              {isApproved ? (
+                <div className="text-center">
+                  <div className="h-16 w-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle size={32} className="text-emerald-600" />
+                  </div>
+                  <h2 className="text-xl font-black text-emerald-950 mb-4">PENDAFTARAN DITERIMA</h2>
+                  <div className="text-left bg-emerald-50 rounded-xl p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <Calendar size={18} className="text-emerald-600 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-xs font-bold text-emerald-800 uppercase">Periode</p>
+                        <p className="text-sm font-semibold text-emerald-950">{periodName}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <Users size={18} className="text-emerald-600 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-xs font-bold text-emerald-800 uppercase">Kelompok</p>
+                        <p className="text-sm font-semibold text-emerald-950">{groupName}</p>
+                        <p className="text-xs text-emerald-700">{groupLocation}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <UserCheck size={18} className="text-emerald-600 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-xs font-bold text-emerald-800 uppercase">Dosen Pembimbing Lapangan</p>
+                        <p className="text-sm font-semibold text-emerald-950">{dplName}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-100">
+                    <div className="flex items-center gap-2">
+                      <Lightbulb size={16} className="text-amber-600" />
+                      <p className="text-xs font-semibold text-amber-800">Langkah Selanjutnya: Isi Program Kerja</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <div className="h-16 w-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <X size={32} className="text-rose-600" />
+                  </div>
+                  <h2 className="text-xl font-black text-rose-950 mb-4">PENDAFTARAN DITOLAK</h2>
+                  <div className="text-left bg-rose-50 rounded-xl p-4">
+                    <p className="text-xs font-bold text-rose-800 uppercase mb-1">Alasan Penolakan</p>
+                    <p className="text-sm font-semibold text-rose-950">{registration?.rejection_reason || '-'}</p>
+                  </div>
+                  <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-100">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle size={16} className="text-amber-600" />
+                      <p className="text-xs font-semibold text-amber-800">Silakan Perbaiki Berkas & Upload Ulang</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={handleClosePopup}
+                className="w-full mt-6 h-11 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-black uppercase tracking-widest rounded-xl transition-colors"
+              >
+                {isApproved ? 'Mengerti' : 'Tutup'}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
 
         <div className="space-y-4">
           {/* --- WELCOME CARD --- */}
@@ -251,26 +369,32 @@ export default function StudentDashboard({
               <div className="space-y-1">
                 <h3 className="text-lg font-bold text-emerald-950 uppercase tracking-tight">
                   {isRejected
-                    ? 'Perbaikan Data Diperlukan'
+                    ? 'Pendaftaran Ditolak - Perbaikan'
                     : isPending
-                      ? 'Sedang Memverifikasi Berkas'
-                      : 'Mulai Pendaftaran KKN'}
+                      ? 'Pendaftaran Pending'
+                      : isApproved
+                        ? 'Pendaftaran Diterima'
+                        : 'Mulai Pendaftaran KKN'}
                 </h3>
                 <p className="text-xs font-bold text-emerald-950 max-w-md mx-auto leading-relaxed">
                   {isRejected
                     ? registration?.rejection_reason || 'Mohon periksa kembali dokumen.'
                     : isPending
-                      ? 'Dokumen Anda sedang dalam antrean verifikasi.'
-                      : 'Lengkapi profil untuk mendaftar.'}
+                      ? 'Dokumen Anda sedang dalam proses verifikasi.'
+                      : isApproved
+                        ? 'Pendaftaran Anda telah disetujui. Silakan melengkapi Program Kerja.'
+                        : 'Lengkapi profil untuk mendaftar.'}
                 </p>
               </div>
-              <Link
-                href={route('student.registration.create')}
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white font-bold text-xs rounded-lg hover:bg-emerald-700 shadow-lg shadow-emerald-100 transition-all uppercase tracking-wider"
-              >
-                {isRejected ? 'Ubah Pendaftaran' : isPending ? 'Lihat Detail' : 'Daftar Sekarang'}
-                <ArrowRight size={14} />
-              </Link>
+              {!isApproved && (
+                <Link
+                  href='/mahasiswa/daftar'
+                  className="inline-flex items-center gap-2 px-6 py-2.5 font-bold text-xs rounded-lg shadow-lg transition-all uppercase tracking-wider bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-100"
+                >
+                  Daftar Sekarang
+                  <ArrowRight size={14} />
+                </Link>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

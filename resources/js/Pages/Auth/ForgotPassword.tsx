@@ -1,7 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { MessageCircle, ShieldCheck, Mail, ArrowRight, Loader2 } from 'lucide-react';
-import { FormEvent } from 'react';
+import type { FormEvent } from 'react';
 
 interface Props {
     status?: string;

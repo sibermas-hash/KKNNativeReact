@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class KknRequirement extends Model
 {
-    protected $connection = 'kkn';
 
     protected $table = 'kkn_requirements';
 
@@ -42,7 +41,7 @@ class KknRequirement extends Model
             $actualValue = $mahasiswa->sks_completed;
         }
         if ($this->column_name === 'status_bta_ppi' && empty($actualValue)) {
-            $actualValue = $mahasiswa->is_bta_ppi_passed ? 'LULUS' : 'BELUM_LULUS';
+            $actualValue = $mahasiswa->status_bta_ppi ?? 'BELUM_LULUS';
         }
 
         // Fallback for nulls (treat as 0 for numbers or empty string for text)

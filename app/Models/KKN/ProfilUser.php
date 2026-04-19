@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class ProfilUser extends Model
 {
-    protected $connection = 'kkn';
 
     protected $table = 'profil_user';
 

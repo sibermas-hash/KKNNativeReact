@@ -1,7 +1,7 @@
 import { Head, router, useForm, Link } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 import {
- Calendar, Copy, Edit2, Plus, Search, Trash2, X, Clock, Database, CheckCircle2, RefreshCw
+  Calendar, Copy, Edit2, Plus, Search, Trash2, X, Clock, Database, CheckCircle2, RefreshCw, AlertTriangle
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import AppLayout from '@/Layouts/AppLayout';
@@ -12,6 +12,23 @@ import Pagination from '@/Components/ui/Pagination';
 import Modal from '@/Components/ui/Modal';
 import type { PageProps } from '@/types';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
+
+const MIN_GAP_DAYS = 7;
+
+function getMinStartDate(registrationEnd: string | ''): string {
+  if (!registrationEnd) return '';
+  const date = new Date(registrationEnd);
+  date.setDate(date.getDate() + MIN_GAP_DAYS);
+  return date.toISOString().split('T')[0];
+}
+
+function getGapDays(registrationEnd: string | '', startDate: string | ''): number {
+  if (!registrationEnd || !startDate) return 0;
+  const end = new Date(registrationEnd);
+  const start = new Date(startDate);
+  const diff = start.getTime() - end.getTime();
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
 
 interface AcademicYearOption {
  id: number;
@@ -118,42 +135,55 @@ export default function PeriodsIndex({
  const generatedName = form.data.periode && programLabel ? `Periode ${form.data.periode} - ${programLabel}` : '';
  if (generatedName && generatedName !== form.data.name) updates.name = generatedName;
 
- if (Object.keys(updates).length > 0) form.setData({ ...form.data, ...updates } as typeof form.data);
- }, [form.data.periode, form.data.program_subtype, form.data.program_type, form.data.academic_year_id, selectedJenisKkn]);
+if (Object.keys(updates).length > 0) form.setData({ ...form.data, ...updates } as typeof form.data);
+  }, [form.data.periode, form.data.program_subtype, form.data.program_type, form.data.academic_year_id, selectedJenisKkn]);
 
- const cancelForm = () => {
- setEditing(null);
- setShowForm(false);
- form.reset();
- form.clearErrors();
+  const minStartDate = getMinStartDate(form.data.registration_end);
+  const gapDays = getGapDays(form.data.registration_end, form.data.start_date);
+  const isGapInsufficient = form.data.start_date && gapDays < MIN_GAP_DAYS;
+
+  const validateDates = () => {
+    if (!form.data.registration_end || !form.data.start_date) return true;
+    return gapDays >= MIN_GAP_DAYS;
+  };
+
+const cancelForm = () => {
+  setEditing(null);
+  setShowForm(false);
+  form.reset();
+  form.clearErrors();
  };
 
  const startEdit = (period: PeriodData) => {
- setEditing(period);
- setShowForm(true);
- form.clearErrors();
+  setEditing(period);
+  setShowForm(true);
+  form.clearErrors();
  form.setData({
- academic_year_id: period.academic_year ? String(period.academic_year.id) : '',
- periode: period.periode?.toString() ?? '',
- jenis_kkn_id: period.jenis_kkn_id ? String(period.jenis_kkn_id) : '',
- jenis: period.jenis ?? '',
- program_type: period.program_type ?? 'reguler',
- program_subtype: period.program_subtype ?? '',
- name: period.name,
- start_date: period.start_date,
- end_date: period.end_date,
- registration_start: period.registration_start,
- registration_end: period.registration_end,
- grading_start: period.grading_start ?? '',
- grading_end: period.grading_end ?? '',
- kuota: period.kuota?.toString() ?? '',
- is_active: period.is_active,
- current_phase: period.current_phase === 'selection' ? 'placement' : (period.current_phase ?? 'upcoming'),
+  academic_year_id: period.academic_year ? String(period.academic_year.id) : '',
+  periode: period.periode?.toString() ?? '',
+  jenis_kkn_id: period.jenis_kkn_id ? String(period.jenis_kkn_id) : '',
+  jenis: period.jenis ?? '',
+  program_type: period.program_type ?? 'reguler',
+  program_subtype: period.program_subtype ?? '',
+  name: period.name,
+  start_date: period.start_date,
+  end_date: period.end_date,
+  registration_start: period.registration_start,
+  registration_end: period.registration_end,
+  grading_start: period.grading_start ?? '',
+  grading_end: period.grading_end ?? '',
+  kuota: period.kuota?.toString() ?? '',
+  is_active: period.is_active,
+  current_phase: period.current_phase === 'selection' ? 'placement' : (period.current_phase ?? 'upcoming'),
  });
  };
 
  const handleSubmit = (event: React.FormEvent) => {
  event.preventDefault();
+ if (!validateDates()) {
+   alert(`Jarak minimal antara penutupan pendaftaran dan mulai pelaksanaan adalah ${MIN_GAP_DAYS} hari. Saat ini hanya ${gapDays} hari.`);
+   return;
+ }
  if (editing) {
  form.put(`/admin/periode/${editing.id}`, { onSuccess: () => cancelForm() });
  return;
@@ -238,7 +268,7 @@ export default function PeriodsIndex({
  <tr>
  <th className="px-6 py-3 text-left text-xs font-medium text-emerald-800">Nama Periode</th>
  <th className="px-6 py-3 text-left text-xs font-medium text-emerald-800">Tahun Akademik</th>
- <th className="px-6 py-3 text-left text-xs font-medium text-emerald-800">Jadwal Pendaftaran</th>
+ <th className="px-6 py-3 text-left text-xs font-medium text-emerald-800">Periode</th>
  <th className="px-6 py-3 text-center text-xs font-medium text-emerald-800">Fase</th>
  <th className="px-6 py-3 text-center text-xs font-medium text-emerald-800">Status Publikasi</th>
  <th className="px-6 py-3 text-right text-xs font-medium text-emerald-800">Aksi</th>
@@ -373,30 +403,55 @@ export default function PeriodsIndex({
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 border border-emerald-50 rounded-lg">
  <div>
- <h5 className="text-xs font-semibold text-emerald-800 mb-3">Masa Pendaftaran</h5>
+ <h5 className="text-xs font-semibold text-emerald-800 mb-3">Periode Pendaftaran</h5>
  <div className="space-y-3">
- <FormInput id="registration_start"label="Pendaftaran Dibuka"type="date"value={form.data.registration_start} onChange={(e) => form.setData('registration_start', e.target.value)} required error={form.errors.registration_start} />
- <FormInput id="registration_end"label="Pendaftaran Ditutup"type="date"value={form.data.registration_end} onChange={(e) => form.setData('registration_end', e.target.value)} required error={form.errors.registration_end} />
+<FormInput id="registration_start"label="Pendaftaran Dibuka"type="date"value={form.data.registration_start} onChange={(e) => form.setData('registration_start', e.target.value)} required error={form.errors.registration_start} />
+  <FormInput 
+    id="registration_end"
+    label="Pendaftaran Ditutup"
+    type="date"
+    value={form.data.registration_end} 
+    onChange={(e) => form.setData('registration_end', e.target.value)}
+    min={form.data.registration_start || undefined}
+    required error={form.errors.registration_end} 
+  />
  </div>
  </div>
- <div>
- <h5 className="text-xs font-semibold text-emerald-800 mb-3">Masa Pelaksanaan</h5>
- <div className="space-y-3">
- <FormInput id="start_date"label="Penerjunan"type="date"value={form.data.start_date} onChange={(e) => form.setData('start_date', e.target.value)} required error={form.errors.start_date} />
- <FormInput id="end_date"label="Penarikan"type="date"value={form.data.end_date} onChange={(e) => form.setData('end_date', e.target.value)} required error={form.errors.end_date} />
- </div>
- </div>
- </div>
- </div>
+<div>
+  <h5 className="text-xs font-semibold text-emerald-800 mb-3">Periode Pelaksanaan</h5>
+  <div className="space-y-3">
+  <div>
+    <FormInput 
+      id="start_date"
+      label="Penerjunan"
+      type="date"
+      value={form.data.start_date}
+      onChange={(e) => form.setData('start_date', e.target.value)}
+      min={minStartDate}
+      required 
+      error={form.errors.start_date}
+    />
+    {form.data.registration_end && form.data.start_date && isGapInsufficient && (
+      <div className="flex items-center gap-1 mt-1 text-xs text-amber-600">
+        <AlertTriangle size={12} />
+        <span>Jarak hanya {gapDays} hari (min. {MIN_GAP_DAYS} hari)</span>
+      </div>
+    )}
+  </div>
+  <FormInput id="end_date"label="Penarikan"type="date"value={form.data.end_date} onChange={(e) => form.setData('end_date', e.target.value)} min={form.data.start_date || undefined} required error={form.errors.end_date} />
+  </div>
+  </div>
+  </div>
+  </div>
 
- <div className="pt-4 border-t border-emerald-50 flex justify-end gap-3">
- <button type="button"onClick={cancelForm} className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-emerald-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1a7a4a]">Batal</button>
- <button type="submit"disabled={form.processing} className="inline-flex justify-center items-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#16a34a] hover:bg-[#15803d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1a7a4a] disabled:opacity-50">
- {form.processing ? <RefreshCw size={16} className="animate-spin mr-2"/> : <CheckCircle2 size={16} className="mr-2"/>}
- {editing ? 'Simpan' : 'Tambah Periode'}
- </button>
- </div>
- </form>
+  <div className="pt-4 border-t border-emerald-50 flex justify-end gap-3">
+  <button type="button"onClick={cancelForm} className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-emerald-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1a7a4a]">Batal</button>
+  <button type="button"disabled={form.processing || isGapInsufficient} onClick={handleSubmit} className="inline-flex justify-center items-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#16a34a] hover:bg-[#15803d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1a7a4a] disabled:opacity-50">
+  {form.processing ? <RefreshCw size={16} className="animate-spin mr-2"/> : <CheckCircle2 size={16} className="mr-2"/>}
+  {editing ? 'Simpan' : 'Tambah Periode'}
+  </button>
+  </div>
+  </form>
  </div>
  </Modal>
 

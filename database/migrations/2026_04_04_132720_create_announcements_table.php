@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('kkn')->create('announcements', function (Blueprint $blueprint) {
+        Schema::create('announcements', function (Blueprint $blueprint) {
             $blueprint->id();
             $blueprint->string('title');
             $blueprint->string('category')->default('PENGUMUMAN'); // PENDAFTARAN, PEDOMAN, PENGUMUMAN
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('kkn')->dropIfExists('announcements');
+        Schema::dropIfExists('announcements');
     }
 };

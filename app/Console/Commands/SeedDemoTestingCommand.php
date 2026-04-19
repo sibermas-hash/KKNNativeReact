@@ -657,7 +657,7 @@ PDF;
                 'batch_year' => $batchYear,
                 'sks_completed' => 130,
                 'gpa' => 3.45,
-                'is_bta_ppi_passed' => true,
+                'status_bta_ppi' => 'LULUS',
                 'health_certificate_path' => 'health-certificates/default.pdf',
                 'parent_permission_path' => 'parent-permissions/default.pdf',
                 'gender' => $gender,

@@ -15,7 +15,6 @@ class Prodi extends Model
 
     protected $table = 'prodi';
 
-    protected $connection = 'kkn';
 
     protected $fillable = ['fakultas_id', 'nama', 'code', 'jenjang', 'master_id'];
 

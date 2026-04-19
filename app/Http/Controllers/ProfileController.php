@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\Periode;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -87,6 +88,9 @@ class ProfileController extends Controller
 
         $domicileSummary = $this->domicileSummary($user);
 
+        // Onboarding mode: user belum pernah verifikasi alamat domisili
+        $isOnboarding = ! filled($user->address_verified_at);
+
         return Inertia::render('Profile/Show', [
             'user' => $user->only([
                 'id',
@@ -102,6 +106,7 @@ class ProfileController extends Controller
                 'address_verified_at',
                 'must_change_password',
             ]),
+            'is_onboarding' => $isOnboarding,
             'student' => $student ? [
                 'nim' => $student->nim,
                 'nik' => $student->nik,
@@ -149,6 +154,7 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+        $wasOnboarding = ! filled($user->address_verified_at);
         $requestedAddressVerified = (bool) ($validated['address_verified'] ?? false);
         $addressFields = [
             'address' => $validated['address'] ?? null,
@@ -203,6 +209,11 @@ class ProfileController extends Controller
                 }
             }
         });
+
+        // Onboarding selesai → redirect ke halaman Daftar KKN
+        if ($wasOnboarding && $requestedAddressVerified) {
+            return redirect('/mahasiswa/daftar')->with('success', 'Profil berhasil dilengkapi. Silakan pilih periode KKN untuk mendaftar.');
+        }
 
         return redirect()->back()->with('success', 'Profil dan domisili berhasil diperbarui.');
     }

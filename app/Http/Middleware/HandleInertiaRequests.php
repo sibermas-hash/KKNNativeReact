@@ -59,6 +59,7 @@ class HandleInertiaRequests extends Middleware
             report: false,
         );
 
+        $studentRegistrationStatus = 'none';
         if ($user?->hasRole('student') && $user->mahasiswa) {
             $studentRegistrationLocked = PesertaKkn::query()
                 ->where('mahasiswa_id', $user->mahasiswa->id)
@@ -66,6 +67,19 @@ class HandleInertiaRequests extends Middleware
                 ->whereNotNull('kelompok_id')
                 ->latest('approved_at')
                 ->exists();
+
+            $latestRegistration = PesertaKkn::query()
+                ->where('mahasiswa_id', $user->mahasiswa->id)
+                ->latest()
+                ->first();
+
+            $rawStatus = $latestRegistration?->status;
+            $studentRegistrationStatus = match ($rawStatus) {
+                'approved', 'disetujui', 'verifikasi_pusat', 'completed' => 'approved',
+                'pending', 'menunggu', 'document_submitted', 'document_verified' => 'pending',
+                'rejected', 'ditolak', 'gugur' => 'rejected',
+                default => $rawStatus ?? 'none',
+            };
         }
 
         return [
@@ -80,6 +94,7 @@ class HandleInertiaRequests extends Middleware
                     'nim' => $user->hasRole('student') ? $user->mahasiswa?->nim : null,
                     'must_change_password' => $user->must_change_password,
                     'student_registration_locked' => $studentRegistrationLocked,
+                    'student_registration_status' => $studentRegistrationStatus,
                     'faculty' => $user->fakultas ? [
                         'id' => $user->fakultas->id,
                         'name' => $user->fakultas->nama,

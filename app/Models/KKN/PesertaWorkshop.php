@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PesertaWorkshop extends Model
 {
-    protected $connection = 'kkn';
 
     protected $table = 'peserta_workshop';
 

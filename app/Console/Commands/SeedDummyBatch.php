@@ -299,7 +299,7 @@ class SeedDummyBatch extends Command
                 'sks_completed' => rand(110, 130),
                 'total_sks' => 144,
                 'gpa' => round(rand(300, 395) / 100, 2),
-                'is_bta_ppi_passed' => true,
+                'status_bta_ppi' => 'LULUS',
                 'status_bta_ppi' => 'Lulus',
                 'semester' => 7,
                 'shirt_size' => $data['gender'] === 'L' ? 'L' : 'M',

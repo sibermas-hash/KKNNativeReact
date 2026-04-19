@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::connection('kkn')->create('kkn_requirements', function (Blueprint $table) {
+        Schema::create('kkn_requirements', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('column_name'); // Which column in 'mahasiswa' table to check
@@ -22,6 +22,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::connection('kkn')->dropIfExists('kkn_requirements');
+        Schema::dropIfExists('kkn_requirements');
     }
 };

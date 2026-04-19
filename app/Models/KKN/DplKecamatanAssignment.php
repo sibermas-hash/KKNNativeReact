@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DplKecamatanAssignment extends Model
 {
-    protected $connection = 'kkn';
 
     protected $table = 'dpl_kecamatan_assignments';
 

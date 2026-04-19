@@ -200,7 +200,7 @@ export default function RegistrationShow({ registration }: Props) {
                           <FileText size={16} />
                         </div>
                         <div className="flex flex-col overflow-hidden">
-                          <span className="text-xs font-black text-emerald-950 uppercase tracking-tight truncate">{doc.document_type || 'Berkas'}</span>
+                          <span className="text-xs font-black text-emerald-950 uppercase tracking-tight truncate">{doc.document_type}</span>
                           <span className="text-xs text-emerald-800 font-mono truncate">{doc.file_name}</span>
                         </div>
                       </div>

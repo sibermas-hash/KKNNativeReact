@@ -235,7 +235,7 @@ class DummyKKN56Seeder extends Seeder
                 'gpa' => number_format(rand(300, 400) / 100, 2),
                 'gender' => $i % 2 == 0 ? 'L' : 'P',
                 'university' => 'UIN Prof. K.H. Saifuddin Zuhri Purwokerto',
-                'is_bta_ppi_passed' => true, 'status_bta_ppi' => 'LULUS',
+                'status_bta_ppi' => 'LULUS',
                 'semester' => 7,
                 'health_certificate_path' => 'dummy/health_'.$i.'.pdf',
                 'parent_permission_path' => 'dummy/parent_'.$i.'.pdf',

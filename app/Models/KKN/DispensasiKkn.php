@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DispensasiKkn extends Model
 {
-    protected $connection = 'kkn';
 
     protected $table = 'dispensasi_kkn';
 

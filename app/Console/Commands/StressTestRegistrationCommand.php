@@ -256,9 +256,9 @@ class StressTestRegistrationCommand extends Command
         $kknDatabase = (string) config('database.connections.kkn.database');
 
         $defaultReady = Schema::connection($defaultConnection)->hasTable('users');
-        $kknReady = Schema::connection('kkn')->hasTable('periode')
-            && Schema::connection('kkn')->hasTable('kelompok_kkn')
-            && Schema::connection('kkn')->hasTable('peserta_kkn');
+        $kknReady = Schema::hasTable('periode')
+            && Schema::hasTable('kelompok_kkn')
+            && Schema::hasTable('peserta_kkn');
 
         if ($defaultReady && $kknReady) {
             return;

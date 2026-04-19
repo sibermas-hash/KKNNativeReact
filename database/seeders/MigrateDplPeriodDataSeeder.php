@@ -18,8 +18,7 @@ class MigrateDplPeriodDataSeeder extends Seeder
         $this->command->info('Starting DPL Period data migration...');
 
         // Get all unique dpl_id + periode_id combinations from existing groups
-        $existingAssignments = DB::connection('kkn')
-            ->table('kelompok_kkn')
+        $existingAssignments = DB::table('kelompok_kkn')
             ->select('dpl_id', 'periode_id')
             ->whereNotNull('dpl_id')
             ->whereNull('deleted_at')

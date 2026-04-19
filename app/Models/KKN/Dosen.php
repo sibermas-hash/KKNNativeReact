@@ -15,7 +15,6 @@ class Dosen extends Model
 {
     protected $table = 'dosen';
 
-    protected $connection = 'kkn';
 
     protected $fillable = [
         'user_id',

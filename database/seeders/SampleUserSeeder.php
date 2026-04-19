@@ -62,9 +62,7 @@ class SampleUserSeeder extends Seeder
                 'gender' => 'L',
                 'sks_completed' => 100,
                 'gpa' => 3.5,
-                'health_certificate_path' => 'dummy/health.pdf',
-                'parent_permission_path' => 'dummy/parent.pdf',
-                'is_bta_ppi_passed' => true,
+                'status_bta_ppi' => 'LULUS',
             ]
         );
 

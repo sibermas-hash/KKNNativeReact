@@ -8,28 +8,28 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::connection('kkn')->hasTable('peserta_kkn')) {
+        if (! Schema::hasTable('peserta_kkn')) {
             return;
         }
 
-        Schema::connection('kkn')->table('peserta_kkn', function (Blueprint $table) {
-            if (! Schema::connection('kkn')->hasColumn('peserta_kkn', 'rejection_reason')) {
+        Schema::table('peserta_kkn', function (Blueprint $table) {
+            if (! Schema::hasColumn('peserta_kkn', 'rejection_reason')) {
                 $table->text('rejection_reason')->nullable()->after('notes');
             }
 
-            if (! Schema::connection('kkn')->hasColumn('peserta_kkn', 'last_rejected_at')) {
+            if (! Schema::hasColumn('peserta_kkn', 'last_rejected_at')) {
                 $table->timestamp('last_rejected_at')->nullable()->after('approved_by');
             }
 
-            if (! Schema::connection('kkn')->hasColumn('peserta_kkn', 'last_rejected_by')) {
+            if (! Schema::hasColumn('peserta_kkn', 'last_rejected_by')) {
                 $table->foreignId('last_rejected_by')->nullable()->after('last_rejected_at')->constrained('users')->nullOnDelete();
             }
 
-            if (! Schema::connection('kkn')->hasColumn('peserta_kkn', 'resubmitted_at')) {
+            if (! Schema::hasColumn('peserta_kkn', 'resubmitted_at')) {
                 $table->timestamp('resubmitted_at')->nullable()->after('last_rejected_by');
             }
 
-            if (! Schema::connection('kkn')->hasColumn('peserta_kkn', 'revision_count')) {
+            if (! Schema::hasColumn('peserta_kkn', 'revision_count')) {
                 $table->unsignedInteger('revision_count')->default(0)->after('resubmitted_at');
             }
         });
@@ -37,17 +37,17 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (! Schema::connection('kkn')->hasTable('peserta_kkn')) {
+        if (! Schema::hasTable('peserta_kkn')) {
             return;
         }
 
-        Schema::connection('kkn')->table('peserta_kkn', function (Blueprint $table) {
-            if (Schema::connection('kkn')->hasColumn('peserta_kkn', 'last_rejected_by')) {
+        Schema::table('peserta_kkn', function (Blueprint $table) {
+            if (Schema::hasColumn('peserta_kkn', 'last_rejected_by')) {
                 $table->dropConstrainedForeignId('last_rejected_by');
             }
 
             foreach (['rejection_reason', 'last_rejected_at', 'resubmitted_at', 'revision_count'] as $column) {
-                if (Schema::connection('kkn')->hasColumn('peserta_kkn', $column)) {
+                if (Schema::hasColumn('peserta_kkn', $column)) {
                     $table->dropColumn($column);
                 }
             }

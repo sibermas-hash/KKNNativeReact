@@ -29,6 +29,11 @@ Route::middleware([
     // ─── SELALU TERSEDIA ──────────────────────────────────────────────
     // Dashboard & info posko bisa diakses di semua fase
     Route::get('/', [Student\DashboardController::class, 'index'])->name('dashboard');
+    Route::patch('{pesertaKkn}/notification-shown', [Student\DashboardController::class, 'markNotificationShown'])
+        ->name('notification.shown');
+    
+    // Daftar KKN - halaman utama pemilihan periode
+    Route::get('daftar', [Student\KknDaftarController::class, 'index'])->name('daftar.index');
 
     Route::get('posko', [Student\PoskoController::class, 'edit'])->name('posko.index');
     Route::post('posko', [Student\PoskoController::class, 'store'])->name('posko.store');
@@ -50,10 +55,14 @@ Route::middleware([
     // ─── FASE: PENDAFTARAN ────────────────────────────────────────────
     // Hanya terbuka saat admin klik "Buka Pendaftaran"
     Route::middleware(['phase:registration'])->group(function () {
-        Route::get('pendaftaran', [Student\RegistrationController::class, 'create'])->name('registration.create');
-        Route::post('pendaftaran', [Student\RegistrationController::class, 'store'])
+        // Redirect lama: /mahasiswa/pendaftaran → /mahasiswa/daftar
+        Route::get('pendaftaran', fn () => redirect('/mahasiswa/daftar'))->name('registration.create');
+
+        // Upload dokumen persyaratan per periode
+        Route::get('pendaftaran/{periode}/dokumen', [Student\RegistrationDocumentController::class, 'show'])->name('registration.documents');
+        Route::post('pendaftaran/{periode}/dokumen', [Student\RegistrationDocumentController::class, 'store'])
             ->middleware('throttle:5,1')
-            ->name('registration.store');
+            ->name('registration.documents.store');
     });
 
     // Kompatibilitas alur lama "keluar dari pendaftaran/kelompok".

@@ -16,7 +16,6 @@ class Mahasiswa extends Model
 
     protected $table = 'mahasiswa';
 
-    protected $connection = 'kkn';
 
     protected $fillable = [
         'user_id',
@@ -30,7 +29,6 @@ class Mahasiswa extends Model
         'sks_completed',
         'total_sks',
         'gpa',
-        'is_bta_ppi_passed',
         'status_bta_ppi',
         'semester',
         'health_certificate_path',
@@ -53,7 +51,6 @@ class Mahasiswa extends Model
             'total_sks' => 'integer',
             'semester' => 'integer',
             'gpa' => 'float',
-            'is_bta_ppi_passed' => 'boolean',
             'master_synced_at' => 'datetime',
         ];
     }

@@ -21,7 +21,7 @@ class DashboardController extends Controller
     {
         return match ($status) {
             'approved', 'disetujui', 'verifikasi_pusat', 'completed' => 'approved',
-            'pending', 'menunggu' => 'pending',
+            'pending', 'menunggu', 'document_submitted', 'document_verified' => 'pending',
             'rejected', 'ditolak', 'gugur' => 'rejected',
             default => $status,
         };
@@ -74,7 +74,8 @@ class DashboardController extends Controller
                 'notes' => $registrationModel->notes,
                 'rejection_reason' => $registrationModel->rejection_reason,
                 'role' => $registrationModel->role,
-                'period' => $registrationModel->periode ? [
+                'notification_shown' => (bool) $registrationModel->notification_shown,
+                'periode' => $registrationModel->periode ? [
                     'id' => $registrationModel->periode->id,
                     'name' => $registrationModel->periode->name,
                     'min_logbook' => $registrationModel->periode->min_logbook ?? 30,
@@ -129,5 +130,18 @@ class DashboardController extends Controller
                 ] : null;
             },
         ]);
+    }
+
+    public function markNotificationShown(PesertaKkn $pesertaKkn): \Illuminate\Http\RedirectResponse
+    {
+        $user = auth()->user();
+
+        if ($pesertaKkn->mahasiswa_id !== $user->mahasiswa?->id) {
+            abort(403);
+        }
+
+        $pesertaKkn->update(['notification_shown' => true]);
+
+        return redirect()->back();
     }
 }

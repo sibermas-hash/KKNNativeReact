@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Download extends Model
 {
-    protected $connection = 'kkn';
 
     protected $table = 'downloads';
 

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('kkn')->table('periode', function (Blueprint $table) {
+        Schema::table('periode', function (Blueprint $table) {
             // Tambah kolom periode (angka periode KKN: 78, 79, 80, dst)
             $table->integer('periode')->nullable()->after('academic_year_id');
 
@@ -28,7 +28,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('kkn')->table('periode', function (Blueprint $table) {
+        Schema::table('periode', function (Blueprint $table) {
             $table->dropIndex(['periode']);
             $table->dropColumn('periode');
         });

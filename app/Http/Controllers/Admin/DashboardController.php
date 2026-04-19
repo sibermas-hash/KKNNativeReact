@@ -215,24 +215,24 @@ class DashboardController extends Controller
             }),
         ];
 
-        if ($request->wantsJson() && ! $request->header('X-Inertia')) {
-            // Return simple data to avoid serializing Inertia::defer
-            return response()->json([
-                'eligible' => true,
-                'current_phase' => $currentPhase['key'] ?? 'upcoming',
-                'active_periode_id' => (int) $periodId,
-                'is_faculty_admin' => $isFacultyAdmin,
-                'dashboard_statistics' => [
-                    'total_students' => 0,
-                    'total_groups' => 0,
-                ],
-                'data' => [
-                    'eligible' => true,
-                    'current_phase' => $currentPhase['key'] ?? 'upcoming',
-                    'active_periode_id' => (int) $periodId,
-                ],
-            ]);
-        }
+    //    if ($request->wantsJson() && ! $request->header('X-Inertia')) {
+    //         $dashboardStats = $periodId ? $this->statsService->getPeriodStatistics($periodId) : ['summary' => []];
+    //         return response()->json([
+    //             'eligible' => true,
+    //             'current_phase' => $currentPhase['key'] ?? 'upcoming',
+    //             'active_periode_id' => (int) $periodId,
+    //             'is_faculty_admin' => $isFacultyAdmin,
+    //             'dashboard_statistics' => [
+    //                 'total_students' => $dashboardStats['summary']['total_students'] ?? 0,
+    //                 'total_groups' => $dashboardStats['summary']['total_groups'] ?? 0,
+    //             ],
+    //             'data' => [
+    //                 'eligible' => true,
+    //                 'current_phase' => $currentPhase['key'] ?? 'upcoming',
+    //                 'active_periode_id' => (int) $periodId,
+    //             ],
+    //         ]);
+    //     }
 
         return Inertia::render('Admin/Dashboard', $responseProps);
     }
@@ -431,8 +431,7 @@ class DashboardController extends Controller
         try {
             $groupIds = KelompokKkn::where('periode_id', $periodId)
                 ->pluck('id');
-            $gradedStudents = DB::connection('kkn')
-                ->table('nilai_kkn')
+            $gradedStudents = DB::table('nilai_kkn')
                 ->whereIn('kelompok_id', $groupIds)
                 ->where('total_score', '>', 0)
                 ->count();

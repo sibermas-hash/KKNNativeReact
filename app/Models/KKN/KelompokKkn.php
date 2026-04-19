@@ -19,7 +19,6 @@ class KelompokKkn extends Model
 
     protected $table = 'kelompok_kkn';
 
-    protected $connection = 'kkn';
 
     protected $fillable = [
         'periode_id',

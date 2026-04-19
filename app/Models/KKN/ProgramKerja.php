@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProgramKerja extends Model
 {
-    protected $connection = 'kkn';
 
     protected $table = 'program_kerja';
 

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('kkn')->create('laporan', function (Blueprint $table) {
+        Schema::create('laporan', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->unsignedBigInteger('kelompok_id')->nullable()->index();

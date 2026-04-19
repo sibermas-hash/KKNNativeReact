@@ -308,7 +308,7 @@ class RegistrationService
 
     private function runAtomically(callable $callback): mixed
     {
-        $connection = DB::connection('kkn');
+        $connection = DB::getFacadeRoot();
 
         if ($connection->transactionLevel() > 0 || $connection->getPdo()->inTransaction()) {
             return $callback();

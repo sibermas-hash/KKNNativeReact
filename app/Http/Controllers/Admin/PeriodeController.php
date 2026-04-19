@@ -45,14 +45,38 @@ class PeriodeController extends Controller
             'program_type' => ['nullable', 'string', 'max:100'],
             'program_subtype' => ['nullable', 'string', 'max:100'],
             'name' => ['nullable', 'string', 'max:100'],
-            'start_date' => ['required', 'date'],
+            'start_date' => ['required', 'date', function ($attribute, $value, $fail) use ($request) {
+                $registrationEnd = $request->input('registration_end');
+                if ($registrationEnd && $value) {
+                    $endDate = \Carbon\Carbon::parse($registrationEnd);
+                    $startDate = \Carbon\Carbon::parse($value);
+                    $gap = $endDate->diffInDays($startDate);
+                    if ($gap < 7) {
+                        $fail("Jarak minimal antara penutupan pendaftaran dan mulai pelaksanaan adalah 7 hari. Saat ini hanya {$gap} hari.");
+                    }
+                }
+            }],
             'end_date' => ['required', 'date', 'after:start_date'],
             'registration_start' => ['required', 'date'],
             'registration_end' => ['required', 'date', 'after:registration_start'],
             'kuota' => ['required', 'integer', 'min:1'],
             'grading_start' => ['nullable', 'date'],
             'grading_end' => ['nullable', 'date', 'after_or_equal:grading_start'],
-            'is_active' => ['boolean'],
+            'is_active' => ['boolean', function ($attribute, $value, $fail) use ($request) {
+                if ($value && $request->input('jenis_kkn_id')) {
+                    $jenisKknId = $request->input('jenis_kkn_id');
+                    $existingActive = Periode::where('jenis_kkn_id', $jenisKknId)
+                        ->where('is_active', true);
+                    
+                    if ($request->route('periode.update')) {
+                        $existingActive->where('id', '!=', $request->route('periode.update')->id);
+                    }
+                    
+                    if ($existingActive->exists()) {
+                        $fail('Hanya boleh ada 1 periode aktif untuk setiap Jenis KKN.');
+                    }
+                }
+            }],
             'current_phase' => ['nullable', 'string', 'in:upcoming,registration,placement,execution,grading,finished'],
         ]);
     }
@@ -143,8 +167,8 @@ class PeriodeController extends Controller
             'totalStats' => Inertia::defer(function () {
                 return [
                     'active_count' => Periode::where('is_active', true)->count(),
-                    'total_groups' => DB::connection('kkn')->table('kelompok_kkn')->count(),
-                    'total_participants' => DB::connection('kkn')->table('peserta_kkn')->count(),
+                    'total_groups' => DB::table('kelompok_kkn')->count(),
+                    'total_participants' => DB::table('peserta_kkn')->count(),
                     'upcoming_registrations' => Periode::where('current_phase', 'registration')->count(),
                 ];
             }),
@@ -214,9 +238,9 @@ class PeriodeController extends Controller
         $periode->load(['tahunAkademik']);
 
         $stats = [
-            'total_students' => DB::connection('kkn')->table('peserta_kkn')->where('periode_id', $periode->id)->count(),
-            'total_groups' => DB::connection('kkn')->table('kelompok_kkn')->where('periode_id', $periode->id)->count(),
-            'total_locations' => DB::connection('kkn')->table('kelompok_kkn')
+            'total_students' => DB::table('peserta_kkn')->where('periode_id', $periode->id)->count(),
+            'total_groups' => DB::table('kelompok_kkn')->where('periode_id', $periode->id)->count(),
+            'total_locations' => DB::table('kelompok_kkn')
                 ->where('periode_id', $periode->id)
                 ->whereNotNull('location_id')
                 ->distinct('location_id')

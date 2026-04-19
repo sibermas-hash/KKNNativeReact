@@ -34,14 +34,25 @@ class EligibilityController extends Controller
         $user = auth()->user();
         $isFacultyAdmin = $user?->hasRole('faculty_admin');
 
-        $periodeId = $request->integer('periode_id');
-        $facultyId = $isFacultyAdmin ? $user?->fakultas_id : $request->integer('fakultas_id');
+        $periodeId = $request->integer('period_id');
+        $facultyId = $isFacultyAdmin ? $user?->fakultas_id : $request->integer('faculty_id');
         $showEligible = $request->boolean('show_eligible', true);
+        $search = $request->string('search')->trim()->toString();
 
         $result = $this->eligibilityService->getEligibleStudents($periodeId, $facultyId);
 
         // Pagination manual
         $studentsToShow = $showEligible ? $result['eligible'] : $result['not_eligible'];
+
+        // Server-side search filter
+        if ($search !== '') {
+            $searchLower = strtolower($search);
+            $studentsToShow = $studentsToShow->filter(function ($s) use ($searchLower) {
+                return str_contains(strtolower($s['nim'] ?? ''), $searchLower)
+                    || str_contains(strtolower($s['nama'] ?? ''), $searchLower);
+            })->values();
+        }
+
         $perPage = 20;
         $currentPage = $request->integer('page', 1);
         $total = $studentsToShow->count();
@@ -64,9 +75,10 @@ class EligibilityController extends Controller
                 'eligibility_rate' => $result['eligibility_rate'],
             ],
             'filters' => [
-                'periode_id' => $periodeId,
-                'fakultas_id' => $facultyId,
+                'period_id' => $periodeId,
+                'faculty_id' => $facultyId,
                 'show_eligible' => $showEligible,
+                'search' => $search,
             ],
             'periods' => $periods,
             'faculties' => Fakultas::orderBy('nama')->get(['id', 'nama as name']),
@@ -119,8 +131,8 @@ class EligibilityController extends Controller
             $sheet1->setCellValue("A{$row}", $index + 1);
             $sheet1->setCellValue("B{$row}", $student['nim']);
             $sheet1->setCellValue("C{$row}", $student['nama']);
-            $sheet1->setCellValue("D{$row}", $student['mahasiswa']->fakultas?->nama ?? '-');
-            $sheet1->setCellValue("E{$row}", $student['mahasiswa']->prodi?->nama ?? '-');
+            $sheet1->setCellValue("D{$row}", $student['fakultas_nama'] ?? '-');
+            $sheet1->setCellValue("E{$row}", $student['prodi_nama'] ?? '-');
             $sheet1->setCellValue("F{$row}", $student['sks_completed'] ?? 0);
             $sheet1->setCellValue("G{$row}", $student['gpa'] ? number_format($student['gpa'], 2) : '-');
             $sheet1->setCellValue("H{$row}", $student['is_bta_ppi_passed'] ? 'LULUS' : 'BELUM');
@@ -151,8 +163,8 @@ class EligibilityController extends Controller
             $sheet2->setCellValue("A{$row}", $index + 1);
             $sheet2->setCellValue("B{$row}", $student['nim']);
             $sheet2->setCellValue("C{$row}", $student['nama']);
-            $sheet2->setCellValue("D{$row}", $student['mahasiswa']->fakultas?->nama ?? '-');
-            $sheet2->setCellValue("E{$row}", $student['mahasiswa']->prodi?->nama ?? '-');
+            $sheet2->setCellValue("D{$row}", $student['fakultas_nama'] ?? '-');
+            $sheet2->setCellValue("E{$row}", $student['prodi_nama'] ?? '-');
             $sheet2->setCellValue("F{$row}", $student['sks_completed'] ?? 0);
             $sheet2->setCellValue("G{$row}", $student['gpa'] ? number_format($student['gpa'], 2) : '-');
             $sheet2->setCellValue("H{$row}", $student['is_bta_ppi_passed'] ? 'LULUS' : 'BELUM');

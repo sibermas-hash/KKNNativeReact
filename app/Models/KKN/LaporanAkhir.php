@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class LaporanAkhir extends Model
 {
-    protected $connection = 'kkn';
 
     protected $table = 'laporan_akhir';
 

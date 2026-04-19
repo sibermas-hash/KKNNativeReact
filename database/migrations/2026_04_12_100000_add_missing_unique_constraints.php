@@ -12,58 +12,58 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Dosen
-        if (Schema::connection('kkn')->hasTable('dosen')) {
-            Schema::connection('kkn')->table('dosen', function (Blueprint $table) {
-                if (! Schema::connection('kkn')->hasIndex('dosen', 'dosen_user_id_unique')) {
+        if (Schema::hasTable('dosen')) {
+            Schema::table('dosen', function (Blueprint $table) {
+                if (! Schema::hasIndex('dosen', 'dosen_user_id_unique')) {
                     $table->unique('user_id', 'dosen_user_id_unique');
                 }
             });
         }
 
         // 2. Mahasiswa
-        if (Schema::connection('kkn')->hasTable('mahasiswa')) {
-            Schema::connection('kkn')->table('mahasiswa', function (Blueprint $table) {
-                if (! Schema::connection('kkn')->hasIndex('mahasiswa', 'mahasiswa_user_id_unique')) {
+        if (Schema::hasTable('mahasiswa')) {
+            Schema::table('mahasiswa', function (Blueprint $table) {
+                if (! Schema::hasIndex('mahasiswa', 'mahasiswa_user_id_unique')) {
                     $table->unique('user_id', 'mahasiswa_user_id_unique');
                 }
             });
         }
 
         // 3. Academic Years / Tahun Akademik
-        $yearTable = Schema::connection('kkn')->hasTable('tahun_akademik') ? 'tahun_akademik' : 'tahun_akademik';
-        if (Schema::connection('kkn')->hasTable($yearTable)) {
-            Schema::connection('kkn')->table($yearTable, function (Blueprint $table) use ($yearTable) {
-                if (! Schema::connection('kkn')->hasIndex($yearTable, "{$yearTable}_year_unique")) {
+        $yearTable = Schema::hasTable('tahun_akademik') ? 'tahun_akademik' : 'tahun_akademik';
+        if (Schema::hasTable($yearTable)) {
+            Schema::table($yearTable, function (Blueprint $table) use ($yearTable) {
+                if (! Schema::hasIndex($yearTable, "{$yearTable}_year_unique")) {
                     $table->unique('year', "{$yearTable}_year_unique");
                 }
             });
         }
 
         // 4. Locations / Lokasi
-        $locTable = Schema::connection('kkn')->hasTable('lokasi') ? 'lokasi' : 'lokasi';
-        if (Schema::connection('kkn')->hasTable($locTable)) {
-            Schema::connection('kkn')->table($locTable, function (Blueprint $table) use ($locTable) {
-                if (! Schema::connection('kkn')->hasIndex($locTable, "{$locTable}_unique_name")) {
+        $locTable = Schema::hasTable('lokasi') ? 'lokasi' : 'lokasi';
+        if (Schema::hasTable($locTable)) {
+            Schema::table($locTable, function (Blueprint $table) use ($locTable) {
+                if (! Schema::hasIndex($locTable, "{$locTable}_unique_name")) {
                     $table->unique(['village_name', 'district_id', 'regency_id'], "{$locTable}_unique_name");
                 }
             });
         }
 
         // 5. Periods / Periode
-        $periodTable = Schema::connection('kkn')->hasTable('periode') ? 'periode' : 'periode';
-        if (Schema::connection('kkn')->hasTable($periodTable)) {
-            Schema::connection('kkn')->table($periodTable, function (Blueprint $table) use ($periodTable) {
-                if (! Schema::connection('kkn')->hasIndex($periodTable, "{$periodTable}_is_active_idx")) {
+        $periodTable = Schema::hasTable('periode') ? 'periode' : 'periode';
+        if (Schema::hasTable($periodTable)) {
+            Schema::table($periodTable, function (Blueprint $table) use ($periodTable) {
+                if (! Schema::hasIndex($periodTable, "{$periodTable}_is_active_idx")) {
                     $table->index('is_active', "{$periodTable}_is_active_idx");
                 }
             });
         }
 
         // 6. Groups / Kelompok
-        $groupTable = Schema::connection('kkn')->hasTable('kelompok_kkn') ? 'kelompok_kkn' : 'kelompok_kkn';
-        if (Schema::connection('kkn')->hasTable($groupTable)) {
-            Schema::connection('kkn')->table($groupTable, function (Blueprint $table) use ($groupTable) {
-                if (! Schema::connection('kkn')->hasIndex($groupTable, "{$groupTable}_status_idx")) {
+        $groupTable = Schema::hasTable('kelompok_kkn') ? 'kelompok_kkn' : 'kelompok_kkn';
+        if (Schema::hasTable($groupTable)) {
+            Schema::table($groupTable, function (Blueprint $table) use ($groupTable) {
+                if (! Schema::hasIndex($groupTable, "{$groupTable}_status_idx")) {
                     $table->index('status', "{$groupTable}_status_idx");
                 }
             });
@@ -77,7 +77,7 @@ return new class extends Migration
     {
         // Safety reversal
         foreach (['dosen', 'mahasiswa', 'tahun_akademik', 'tahun_akademik', 'lokasi', 'lokasi', 'periode', 'periode', 'kelompok_kkn', 'kelompok_kkn'] as $table) {
-            if (Schema::connection('kkn')->hasTable($table)) {
+            if (Schema::hasTable($table)) {
                 // Drop logic omitted for brevity in audit fix, focus on UP stability
             }
         }

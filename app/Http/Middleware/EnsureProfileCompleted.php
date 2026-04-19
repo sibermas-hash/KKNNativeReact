@@ -26,9 +26,9 @@ class EnsureProfileCompleted
         $isComplete = $mahasiswa
             && ! empty($mahasiswa->nama)
             && ! empty($mahasiswa->gender)
-            && ! empty($user->phone)
-            && ! empty($mahasiswa->health_certificate_path)
-            && ! empty($mahasiswa->parent_permission_path);
+            && ! empty($user->phone);
+            // && ! empty($mahasiswa->health_certificate_path)
+            // && ! empty($mahasiswa->parent_permission_path);
 
         $routeName = $request->route()?->getName();
         $allowedRoutes = [
@@ -36,7 +36,12 @@ class EnsureProfileCompleted
             'profile.update',
             'profile.password',
             'logout',
-            'student.dashboard', // Dashboard harus bisa diakses untuk menampilkan "Warning"
+            'student.dashboard',
+            'student.registration.create', // Pendaftaran harus bisa diakses untuk upload berkas
+            'student.registration.store',
+            'student.registration.documents',       // Upload dokumen persyaratan
+            'student.registration.documents.store',
+            'student.daftar.index',        // Halaman daftar KKN bisa diakses untuk melihat periode
         ];
 
         if ($isComplete || in_array($routeName, $allowedRoutes)) {
@@ -45,6 +50,6 @@ class EnsureProfileCompleted
 
         return redirect()
             ->route('profile.show')
-            ->with('warning', 'Mohon lengkapi profil dan unggah berkas persyaratan (Surat Sehat & Izin Orang Tua) sebelum dapat mengakses fitur KKN.');
+            ->with('warning', 'Mohon lengkapi data profil (nama, jenis kelamin, dan nomor telepon) sebelum dapat mengakses fitur KKN.');
     }
 }

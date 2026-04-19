@@ -19,7 +19,6 @@ class Periode extends Model
 
     protected $table = 'periode';
 
-    protected $connection = 'kkn';
 
     protected $fillable = [
         'academic_year_id',

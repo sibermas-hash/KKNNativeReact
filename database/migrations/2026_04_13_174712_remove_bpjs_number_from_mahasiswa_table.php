@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('kkn')->table('mahasiswa', function (Blueprint $table) {
+        Schema::table('mahasiswa', function (Blueprint $table) {
             $table->dropColumn('bpjs_number');
         });
     }
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('kkn')->table('mahasiswa', function (Blueprint $table) {
+        Schema::table('mahasiswa', function (Blueprint $table) {
             $table->string('bpjs_number')->nullable();
         });
     }

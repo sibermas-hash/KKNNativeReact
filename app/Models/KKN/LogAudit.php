@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LogAudit extends Model
 {
-    protected $connection = 'kkn';
 
     protected $table = 'log_audit';
 

@@ -100,7 +100,7 @@ class GenerateDummyStudent extends Command
                 'sks_completed' => 120,
                 'total_sks' => 144,
                 'gpa' => 3.85,
-                'is_bta_ppi_passed' => true,
+                'status_bta_ppi' => 'LULUS',
                 'status_bta_ppi' => 'Lulus',
                 'semester' => 7,
                 'shirt_size' => 'L',

@@ -11,26 +11,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('kkn')->table('laporan_akhir', function (Blueprint $table) {
-            if (! Schema::connection('kkn')->hasColumn('laporan_akhir', 'abstract')) {
+        Schema::table('laporan_akhir', function (Blueprint $table) {
+            if (! Schema::hasColumn('laporan_akhir', 'abstract')) {
                 $table->text('abstract')->nullable();
             }
-            if (! Schema::connection('kkn')->hasColumn('laporan_akhir', 'file_path')) {
+            if (! Schema::hasColumn('laporan_akhir', 'file_path')) {
                 $table->string('file_path')->nullable();
             }
-            if (! Schema::connection('kkn')->hasColumn('laporan_akhir', 'file_name')) {
+            if (! Schema::hasColumn('laporan_akhir', 'file_name')) {
                 $table->string('file_name')->nullable();
             }
-            if (! Schema::connection('kkn')->hasColumn('laporan_akhir', 'submitted_at')) {
+            if (! Schema::hasColumn('laporan_akhir', 'submitted_at')) {
                 $table->timestamp('submitted_at')->nullable();
             }
-            if (! Schema::connection('kkn')->hasColumn('laporan_akhir', 'reviewed_at')) {
+            if (! Schema::hasColumn('laporan_akhir', 'reviewed_at')) {
                 $table->timestamp('reviewed_at')->nullable();
             }
-            if (! Schema::connection('kkn')->hasColumn('laporan_akhir', 'reviewed_by')) {
+            if (! Schema::hasColumn('laporan_akhir', 'reviewed_by')) {
                 $table->foreignId('reviewed_by')->nullable()->constrained('users')->nullOnDelete();
             }
-            if (! Schema::connection('kkn')->hasColumn('laporan_akhir', 'score')) {
+            if (! Schema::hasColumn('laporan_akhir', 'score')) {
                 $table->decimal('score', 5, 2)->nullable();
             }
         });
@@ -41,7 +41,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('kkn')->table('laporan_akhir', function (Blueprint $table) {
+        Schema::table('laporan_akhir', function (Blueprint $table) {
             $table->dropColumn(['abstract', 'file_path', 'file_name', 'submitted_at', 'reviewed_at', 'reviewed_by', 'score']);
         });
     }

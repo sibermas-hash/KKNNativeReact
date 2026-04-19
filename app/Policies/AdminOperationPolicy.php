@@ -20,7 +20,7 @@ class AdminOperationPolicy extends BasePolicy
             return $bypass;
         }
 
-        return $user->hasRole('admin');
+        return $user->hasAnyRole(['admin', 'superadmin']);
     }
 
     public function manageGroups(User $user): bool

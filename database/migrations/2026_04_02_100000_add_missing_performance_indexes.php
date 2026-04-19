@@ -8,9 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $connection = config('database.kkn_connection', 'kkn');
-        $schema = Schema::connection($connection);
-
         $tables = [
             'dosen' => ['nip', 'fakultas_id', 'user_id'],
             'mahasiswa' => ['nim', 'fakultas_id', 'prodi_id', 'user_id'],
@@ -22,8 +19,8 @@ return new class extends Migration
         ];
 
         foreach ($tables as $table => $columns) {
-            if ($schema->hasTable($table)) {
-                $existingColumns = array_values(array_filter($columns, fn (string $col) => $schema->hasColumn($table, $col)));
+            if (Schema::hasTable($table)) {
+                $existingColumns = array_values(array_filter($columns, fn (string $col) => Schema::hasColumn($table, $col)));
 
                 if ($existingColumns === []) {
                     continue;
@@ -31,7 +28,7 @@ return new class extends Migration
 
                 foreach ($existingColumns as $col) {
                     $indexName = "{$table}_{$col}_index";
-                    DB::connection($connection)->statement(
+                    DB::statement(
                         sprintf('create index if not exists "%s" on "%s" ("%s")', $indexName, $table, $col)
                     );
                 }
@@ -41,9 +38,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        $connection = config('database.kkn_connection', 'kkn');
-        $schema = Schema::connection($connection);
-
         $tables = [
             'dosen' => ['nip', 'fakultas_id', 'user_id'],
             'mahasiswa' => ['nim', 'fakultas_id', 'prodi_id', 'user_id'],
@@ -55,8 +49,8 @@ return new class extends Migration
         ];
 
         foreach ($tables as $table => $columns) {
-            if ($schema->hasTable($table)) {
-                $existingColumns = array_values(array_filter($columns, fn (string $col) => $schema->hasColumn($table, $col)));
+            if (Schema::hasTable($table)) {
+                $existingColumns = array_values(array_filter($columns, fn (string $col) => Schema::hasColumn($table, $col)));
 
                 if ($existingColumns === []) {
                     continue;
@@ -64,7 +58,7 @@ return new class extends Migration
 
                 foreach ($existingColumns as $col) {
                     $indexName = "{$table}_{$col}_index";
-                    DB::connection($connection)->statement(
+                    DB::statement(
                         sprintf('drop index if exists "%s"', $indexName)
                     );
                 }

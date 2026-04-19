@@ -9,7 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $schema = Schema::connection('kkn');
+        $schema = Schema::getFacadeRoot();
 
         $this->addIndexIfMissing($schema, 'kelompok_kkn', 'kelompok_kkn_period_status_idx', ['periode_id', 'status']);
         $this->addIndexIfMissing($schema, 'periode', 'periode_active_registration_window_idx', ['is_active', 'registration_start', 'registration_end']);
@@ -18,7 +18,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        $schema = Schema::connection('kkn');
+        $schema = Schema::getFacadeRoot();
 
         $this->dropIndexIfExists($schema, 'kelompok_kkn', 'kelompok_kkn_period_status_idx');
         $this->dropIndexIfExists($schema, 'periode', 'periode_active_registration_window_idx');

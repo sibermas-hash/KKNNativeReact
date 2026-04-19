@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Evaluasi extends Model
 {
-    protected $connection = 'kkn';
 
     protected $table = 'evaluasi';
 

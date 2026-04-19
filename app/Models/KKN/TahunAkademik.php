@@ -13,7 +13,6 @@ class TahunAkademik extends Model
 {
     protected $table = 'tahun_akademik';
 
-    protected $connection = 'kkn';
 
     protected $fillable = ['year', 'is_active'];
 

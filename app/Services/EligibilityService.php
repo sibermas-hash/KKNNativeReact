@@ -22,7 +22,7 @@ class EligibilityService
     /**
      * Check if a student is eligible to register for KKN
      */
-    public function checkEligibility(Mahasiswa $mahasiswa, ?int $periodeId = null, array $preloadedData = []): array
+    public function checkEligibility(Mahasiswa $mahasiswa, ?int $periodeId = null, array $preloadedData = [], string $context = 'registration'): array
     {
         // Headless testing mock for TC003
         if (config('app.env') === 'local' && request()->has('force_ineligible')) {
@@ -46,17 +46,26 @@ class EligibilityService
         // 2. Resolve Settings
         $settings = $preloadedData['settings'] ?? $this->getSettings();
 
-        $checks = [
-            'registration_window' => $this->checkRegistrationWindow($periode),
-            'no_prior_completion' => $this->checkNoPriorCompletion($mahasiswa, $preloadedData['completed_ids'] ?? null),
-            'min_sks' => $this->checkMinimumSKS($mahasiswa, $periode, $settings),
-            'min_gpa' => $this->checkMinimumGPA($mahasiswa, $periode, $settings),
-            'bta_ppi' => $this->checkBtaPpi($mahasiswa),
-            'program_prodi' => $this->checkProgramProdiRestriction($mahasiswa, $periode),
-            'personal_status' => $this->checkPersonalStatusMandate($mahasiswa, $periode),
-            'documents' => $this->checkDocuments($mahasiswa),
-            'no_active_registration' => $this->checkNoActiveRegistration($mahasiswa, $periodeId, $preloadedData['active_reg_ids'] ?? null),
-        ];
+        // 3. Build checks — audit mode hanya cek persyaratan akademik
+        $checks = [];
+
+        // Cek operasional: hanya untuk konteks pendaftaran
+        if ($context === 'registration') {
+            $checks['registration_window'] = $this->checkRegistrationWindow($periode);
+        }
+
+        $checks['no_prior_completion'] = $this->checkNoPriorCompletion($mahasiswa, $preloadedData['completed_ids'] ?? null);
+        $checks['min_sks'] = $this->checkMinimumSKS($mahasiswa, $periode, $settings);
+        $checks['min_gpa'] = $this->checkMinimumGPA($mahasiswa, $periode, $settings);
+        $checks['bta_ppi'] = $this->checkBtaPpi($mahasiswa);
+        $checks['program_prodi'] = $this->checkProgramProdiRestriction($mahasiswa, $periode);
+        $checks['personal_status'] = $this->checkPersonalStatusMandate($mahasiswa, $periode);
+
+        // Cek dokumen & registrasi aktif: hanya untuk konteks pendaftaran
+        if ($context === 'registration') {
+            $checks['documents'] = $this->checkDocuments($mahasiswa);
+            $checks['no_active_registration'] = $this->checkNoActiveRegistration($mahasiswa, $periodeId, $preloadedData['active_reg_ids'] ?? null);
+        }
 
         // Apply dispensasi bypass — override failed checks if student has active dispensasi
         $bypassed = $preloadedData['dispensations'][$mahasiswa->nim]
@@ -80,9 +89,11 @@ class EligibilityService
             'mahasiswa_id' => $mahasiswa->id,
             'nim' => $mahasiswa->nim,
             'nama' => $mahasiswa->nama,
+            'prodi_nama' => $mahasiswa->prodi?->nama ?? null,
+            'fakultas_nama' => $mahasiswa->fakultas?->nama ?? $mahasiswa->prodi?->fakultas?->nama ?? null,
             'sks_completed' => $mahasiswa->sks_completed,
             'gpa' => $mahasiswa->gpa,
-            'is_bta_ppi_passed' => $mahasiswa->is_bta_ppi_passed,
+            'is_bta_ppi_passed' => in_array(strtoupper(trim($mahasiswa->status_bta_ppi ?? '')), ['LULUS', 'PASSED', 'SUCCESS']),
             'has_health_certificate' => ! empty($mahasiswa->health_certificate_path),
             'has_parent_permission' => ! empty($mahasiswa->parent_permission_path),
             'checks' => $checks,
@@ -202,7 +213,7 @@ class EligibilityService
      */
     private function checkBtaPpi(Mahasiswa $mahasiswa): array
     {
-        $passed = (bool) ($mahasiswa->is_bta_ppi_passed ?? false);
+        $passed = in_array(strtoupper(trim($mahasiswa->status_bta_ppi ?? '')), ['LULUS', 'PASSED', 'SUCCESS']);
 
         return [
             'passed' => $passed,
@@ -303,7 +314,7 @@ class EligibilityService
         $hasActive = $preloadedIds
             ? isset($preloadedIds[$mahasiswa->id])
             : PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
-                ->whereIn('status', ['pending', 'approved'])
+                ->whereIn('status', ['pending', 'approved', 'document_submitted'])
                 ->when($currentPeriodeId, fn ($q) => $q->where('periode_id', '!=', $currentPeriodeId))
                 ->exists();
 
@@ -343,7 +354,7 @@ class EligibilityService
     /**
      * Get all eligible students for a period
      */
-    public function getEligibleStudents(?int $periodeId = null, ?int $facultyId = null): array
+    public function getEligibleStudents(?int $periodeId = null, ?int $facultyId = null, string $context = 'audit'): array
     {
         $periode = $periodeId ? Periode::with('jenisKkn')->find($periodeId) : $this->getActivePeriod();
         $settings = $this->getSettings();
@@ -367,7 +378,7 @@ class EligibilityService
             ->toArray();
 
         $activeRegIds = PesertaKkn::whereIn('mahasiswa_id', $studentIds)
-            ->whereIn('status', ['pending', 'approved'])
+            ->whereIn('status', ['pending', 'approved', 'document_submitted'])
             ->when($periodeId, fn ($q) => $q->where('periode_id', '!=', $periodeId))
             ->pluck('mahasiswa_id')
             ->toArray();
@@ -393,7 +404,7 @@ class EligibilityService
         $notEligible = [];
 
         foreach ($students as $student) {
-            $result = $this->checkEligibility($student, $periodeId, $preloadedData);
+            $result = $this->checkEligibility($student, $periodeId, $preloadedData, $context);
             if ($result['is_eligible']) {
                 $eligible[] = $result;
             } else {

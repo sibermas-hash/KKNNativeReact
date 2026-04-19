@@ -45,7 +45,6 @@ class FakeStudentRegistrationSeeder extends Seeder
                 'shirt_size' => 'XL',
                 'sks_completed' => 110,
                 'gpa' => 3.75,
-                'is_bta_ppi_passed' => true,
                 'status_bta_ppi' => 'LULUS',
                 'batch_year' => 2021,
                 'semester' => 6,

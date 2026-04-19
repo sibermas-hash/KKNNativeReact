@@ -158,7 +158,7 @@ class StudentSyncService
                     'birth_date' => $data['birth_date'] ?? null,
                     'sks_completed' => $data['sks_completed'] ?? $data['sks'] ?? 0,
                     'gpa' => $data['gpa'] ?? $data['ipk'] ?? 0.0,
-                    'is_bta_ppi_passed' => $data['is_bta_ppi_passed'] ?? $data['bta_ppi_passed'] ?? false,
+                    'status_bta_ppi' => $data['status_bta_ppi'] ?? ($data['bta_ppi_passed'] ?? false ? 'LULUS' : 'BELUM_LULUS'),
                     'master_id' => $this->normalizeMasterId($data['id'] ?? null),
                     'master_synced_at' => now(),
                 ]

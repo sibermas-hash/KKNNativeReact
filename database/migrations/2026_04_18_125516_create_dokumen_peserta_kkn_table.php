@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('kkn')->create('dokumen_peserta_kkn', function (Blueprint $table) {
+        Schema::create('dokumen_peserta_kkn', function (Blueprint $table) {
             $table->id();
             $table->foreignId('peserta_kkn_id')->constrained('peserta_kkn')->cascadeOnDelete();
             $table->string('document_type', 50);
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('kkn')->dropIfExists('dokumen_peserta_kkn');
+        Schema::dropIfExists('dokumen_peserta_kkn');
     }
 };

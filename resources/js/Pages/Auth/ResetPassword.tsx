@@ -1,5 +1,5 @@
 import { useForm, Link, Head } from '@inertiajs/react';
-import { FormEvent } from 'react';
+import type { FormEvent } from 'react';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { KeyRound, ShieldCheck, ArrowRight, Loader2, Mail } from 'lucide-react';
 

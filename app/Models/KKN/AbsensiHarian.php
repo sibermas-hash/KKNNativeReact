@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AbsensiHarian extends Model
 {
-    protected $connection = 'kkn';
 
     protected $table = 'absensi_harian';
 

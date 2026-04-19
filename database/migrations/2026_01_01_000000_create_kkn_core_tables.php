@@ -8,14 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::connection('kkn')->create('fakultas', function (Blueprint $table) {
+        Schema::create('fakultas', function (Blueprint $table) {
             $table->id();
             $table->string('code', 10)->unique();
             $table->string('nama', 100);
             $table->timestamps();
         });
 
-        Schema::connection('kkn')->create('prodi', function (Blueprint $table) {
+        Schema::create('prodi', function (Blueprint $table) {
             $table->id();
             $table->foreignId('fakultas_id')->constrained('fakultas')->cascadeOnDelete();
             $table->string('code', 10)->unique();
@@ -23,14 +23,14 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::connection('kkn')->create('tahun_akademik', function (Blueprint $table) {
+        Schema::create('tahun_akademik', function (Blueprint $table) {
             $table->id();
             $table->string('year', 20)->unique();
             $table->boolean('is_active')->default(false);
             $table->timestamps();
         });
 
-        Schema::connection('kkn')->create('periode', function (Blueprint $table) {
+        Schema::create('periode', function (Blueprint $table) {
             $table->id();
             $table->foreignId('academic_year_id')->constrained('tahun_akademik')->cascadeOnDelete();
             $table->string('name', 100);
@@ -42,7 +42,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::connection('kkn')->create('dosen', function (Blueprint $table) {
+        Schema::create('dosen', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('nip', 20)->unique();
@@ -51,7 +51,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::connection('kkn')->create('mahasiswa', function (Blueprint $table) {
+        Schema::create('mahasiswa', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('nim', 20)->unique();
@@ -71,7 +71,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::connection('kkn')->create('lokasi', function (Blueprint $table) {
+        Schema::create('lokasi', function (Blueprint $table) {
             $table->id();
             $table->integer('province_id')->nullable();
             $table->integer('regency_id')->nullable();
@@ -87,7 +87,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::connection('kkn')->create('kelompok_kkn', function (Blueprint $table) {
+        Schema::create('kelompok_kkn', function (Blueprint $table) {
             $table->id();
             $table->foreignId('periode_id')->constrained('periode')->cascadeOnDelete();
             $table->foreignId('location_id')->constrained('lokasi')->cascadeOnDelete();
@@ -100,7 +100,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::connection('kkn')->create('peserta_kkn', function (Blueprint $table) {
+        Schema::create('peserta_kkn', function (Blueprint $table) {
             $table->id();
             $table->foreignId('mahasiswa_id')->constrained('mahasiswa')->cascadeOnDelete();
             $table->foreignId('periode_id')->constrained('periode')->cascadeOnDelete();
@@ -115,7 +115,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::connection('kkn')->create('kegiatan_kkn', function (Blueprint $table) {
+        Schema::create('kegiatan_kkn', function (Blueprint $table) {
             $table->id();
             $table->foreignId('mahasiswa_id')->constrained('mahasiswa')->cascadeOnDelete();
             $table->foreignId('kelompok_id')->constrained('kelompok_kkn')->cascadeOnDelete();
@@ -126,7 +126,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::connection('kkn')->create('program_kerja', function (Blueprint $table) {
+        Schema::create('program_kerja', function (Blueprint $table) {
             $table->id();
             $table->foreignId('kelompok_id')->constrained('kelompok_kkn')->cascadeOnDelete();
             $table->string('title', 200);
@@ -134,7 +134,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::connection('kkn')->create('laporan_akhir', function (Blueprint $table) {
+        Schema::create('laporan_akhir', function (Blueprint $table) {
             $table->id();
             $table->foreignId('mahasiswa_id')->constrained('mahasiswa')->cascadeOnDelete();
             $table->foreignId('kelompok_id')->constrained('kelompok_kkn')->cascadeOnDelete();
@@ -143,7 +143,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::connection('kkn')->create('evaluasi', function (Blueprint $table) {
+        Schema::create('evaluasi', function (Blueprint $table) {
             $table->id();
             $table->foreignId('mahasiswa_id')->constrained('mahasiswa')->cascadeOnDelete();
             $table->foreignId('kelompok_id')->constrained('kelompok_kkn')->cascadeOnDelete();
@@ -151,7 +151,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::connection('kkn')->create('item_evaluasi', function (Blueprint $table) {
+        Schema::create('item_evaluasi', function (Blueprint $table) {
             $table->id();
             $table->foreignId('evaluasi_id')->constrained('evaluasi')->cascadeOnDelete();
             $table->string('criterion', 100);
@@ -162,19 +162,19 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::connection('kkn')->dropIfExists('item_evaluasi');
-        Schema::connection('kkn')->dropIfExists('evaluasi');
-        Schema::connection('kkn')->dropIfExists('laporan_akhir');
-        Schema::connection('kkn')->dropIfExists('program_kerja');
-        Schema::connection('kkn')->dropIfExists('kegiatan_kkn');
-        Schema::connection('kkn')->dropIfExists('peserta_kkn');
-        Schema::connection('kkn')->dropIfExists('kelompok_kkn');
-        Schema::connection('kkn')->dropIfExists('lokasi');
-        Schema::connection('kkn')->dropIfExists('mahasiswa');
-        Schema::connection('kkn')->dropIfExists('dosen');
-        Schema::connection('kkn')->dropIfExists('periode');
-        Schema::connection('kkn')->dropIfExists('tahun_akademik');
-        Schema::connection('kkn')->dropIfExists('prodi');
-        Schema::connection('kkn')->dropIfExists('fakultas');
+        Schema::dropIfExists('item_evaluasi');
+        Schema::dropIfExists('evaluasi');
+        Schema::dropIfExists('laporan_akhir');
+        Schema::dropIfExists('program_kerja');
+        Schema::dropIfExists('kegiatan_kkn');
+        Schema::dropIfExists('peserta_kkn');
+        Schema::dropIfExists('kelompok_kkn');
+        Schema::dropIfExists('lokasi');
+        Schema::dropIfExists('mahasiswa');
+        Schema::dropIfExists('dosen');
+        Schema::dropIfExists('periode');
+        Schema::dropIfExists('tahun_akademik');
+        Schema::dropIfExists('prodi');
+        Schema::dropIfExists('fakultas');
     }
 };

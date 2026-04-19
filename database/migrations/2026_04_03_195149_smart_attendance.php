@@ -8,33 +8,33 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $workshopTable = Schema::connection('kkn')->hasTable('workshop')
+        $workshopTable = Schema::hasTable('workshop')
             ? 'workshop'
-            : (Schema::connection('kkn')->hasTable('workshop') ? 'workshop' : null);
+            : (Schema::hasTable('workshop') ? 'workshop' : null);
 
         if ($workshopTable) {
-            Schema::connection('kkn')->table($workshopTable, function (Blueprint $table) use ($workshopTable) {
-                if (! Schema::connection('kkn')->hasColumn($workshopTable, 'latitude')) {
+            Schema::table($workshopTable, function (Blueprint $table) use ($workshopTable) {
+                if (! Schema::hasColumn($workshopTable, 'latitude')) {
                     $table->decimal('latitude', 10, 8)->nullable();
                 }
-                if (! Schema::connection('kkn')->hasColumn($workshopTable, 'longitude')) {
+                if (! Schema::hasColumn($workshopTable, 'longitude')) {
                     $table->decimal('longitude', 11, 8)->nullable();
                 }
-                if (! Schema::connection('kkn')->hasColumn($workshopTable, 'radius_meters')) {
+                if (! Schema::hasColumn($workshopTable, 'radius_meters')) {
                     $table->integer('radius_meters')->default(100);
                 }
-                if (! Schema::connection('kkn')->hasColumn($workshopTable, 'active_token')) {
+                if (! Schema::hasColumn($workshopTable, 'active_token')) {
                     $table->string('active_token', 10)->nullable();
                 }
             });
         }
 
-        if (Schema::connection('kkn')->hasTable('peserta_workshop')) {
-            Schema::connection('kkn')->table('peserta_workshop', function (Blueprint $table) {
-                if (! Schema::connection('kkn')->hasColumn('peserta_workshop', 'device_signature')) {
+        if (Schema::hasTable('peserta_workshop')) {
+            Schema::table('peserta_workshop', function (Blueprint $table) {
+                if (! Schema::hasColumn('peserta_workshop', 'device_signature')) {
                     $table->string('device_signature')->nullable();
                 }
-                if (! Schema::connection('kkn')->hasColumn('peserta_workshop', 'ip_address')) {
+                if (! Schema::hasColumn('peserta_workshop', 'ip_address')) {
                     $table->string('ip_address')->nullable();
                 }
             });
@@ -43,17 +43,17 @@ return new class extends Migration
 
     public function down(): void
     {
-        $workshopTable = Schema::connection('kkn')->hasTable('workshop')
+        $workshopTable = Schema::hasTable('workshop')
             ? 'workshop'
-            : (Schema::connection('kkn')->hasTable('workshop') ? 'workshop' : null);
+            : (Schema::hasTable('workshop') ? 'workshop' : null);
 
         if ($workshopTable) {
-            Schema::connection('kkn')->table($workshopTable, function (Blueprint $table) use ($workshopTable) {
+            Schema::table($workshopTable, function (Blueprint $table) use ($workshopTable) {
                 $columns = array_values(array_filter([
-                    Schema::connection('kkn')->hasColumn($workshopTable, 'latitude') ? 'latitude' : null,
-                    Schema::connection('kkn')->hasColumn($workshopTable, 'longitude') ? 'longitude' : null,
-                    Schema::connection('kkn')->hasColumn($workshopTable, 'radius_meters') ? 'radius_meters' : null,
-                    Schema::connection('kkn')->hasColumn($workshopTable, 'active_token') ? 'active_token' : null,
+                    Schema::hasColumn($workshopTable, 'latitude') ? 'latitude' : null,
+                    Schema::hasColumn($workshopTable, 'longitude') ? 'longitude' : null,
+                    Schema::hasColumn($workshopTable, 'radius_meters') ? 'radius_meters' : null,
+                    Schema::hasColumn($workshopTable, 'active_token') ? 'active_token' : null,
                 ]));
 
                 if ($columns !== []) {
@@ -62,11 +62,11 @@ return new class extends Migration
             });
         }
 
-        if (Schema::connection('kkn')->hasTable('peserta_workshop')) {
-            Schema::connection('kkn')->table('peserta_workshop', function (Blueprint $table) {
+        if (Schema::hasTable('peserta_workshop')) {
+            Schema::table('peserta_workshop', function (Blueprint $table) {
                 $columns = array_values(array_filter([
-                    Schema::connection('kkn')->hasColumn('peserta_workshop', 'device_signature') ? 'device_signature' : null,
-                    Schema::connection('kkn')->hasColumn('peserta_workshop', 'ip_address') ? 'ip_address' : null,
+                    Schema::hasColumn('peserta_workshop', 'device_signature') ? 'device_signature' : null,
+                    Schema::hasColumn('peserta_workshop', 'ip_address') ? 'ip_address' : null,
                 ]));
 
                 if ($columns !== []) {

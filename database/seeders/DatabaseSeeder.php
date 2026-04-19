@@ -19,12 +19,14 @@ class DatabaseSeeder extends Seeder
             MasterDataSeeder::class,
             KonfigurasiPenilaianSeeder::class,
             KonfigurasiSertifikatSeeder::class,
+            JenisKknSeeder::class,
         ];
 
         if (app()->environment('local')) {
             $seeders[] = AdminUserSeeder::class;
             $seeders[] = SampleUserSeeder::class;
             $seeders[] = KKN57RegulerMahasiswaSeeder::class;
+            $seeders[] = DosenCsvSeeder::class;
         }
 
         $this->call($seeders);

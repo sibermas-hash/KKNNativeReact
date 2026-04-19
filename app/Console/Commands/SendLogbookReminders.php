@@ -51,8 +51,7 @@ class SendLogbookReminders extends Command
                 }
 
                 // Count consecutive missed days
-                $lastActivity = DB::connection('kkn')
-                    ->table('kegiatan_kkn')
+                $lastActivity = DB::table('kegiatan_kkn')
                     ->where('mahasiswa_id', $peserta->mahasiswa_id)
                     ->max('date');
 

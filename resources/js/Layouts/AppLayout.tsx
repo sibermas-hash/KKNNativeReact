@@ -117,12 +117,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
               <h2 className="text-lg font-bold text-emerald-950">{displayTitle}</h2>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex flex-col items-end text-right">
-                <span className="text-sm font-bold text-emerald-950">{auth?.user?.name}</span>
-                <span className="text-xs font-bold text-emerald-600 uppercase">Portal Pengabdian</span>
-              </div>
-
+            <div className="flex items-center gap-2">
               <button
                 onClick={logout}
                 className="flex items-center gap-2 px-3 py-1.5 text-[#ef4444] hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"

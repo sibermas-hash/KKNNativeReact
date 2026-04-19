@@ -60,8 +60,14 @@ class UserController extends Controller
 
     public function dosenIndex(Request $request): Response
     {
-        $users = User::role('dpl')
-            ->with(['dosen.fakultas'])
+        $baseQuery = User::role('dpl')
+            ->with(['dosen.fakultas']);
+
+        // Stats dari seluruh data (bukan per halaman)
+        $totalDosen = (clone $baseQuery)->count();
+        $activeDosen = (clone $baseQuery)->where('is_active', true)->count();
+
+        $users = $baseQuery
             ->when($request->input('search'), function ($q, $search) {
                 $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
                 $q->where(function ($query) use ($s) {
@@ -79,13 +85,21 @@ class UserController extends Controller
                 'username' => $user->username,
                 'email' => $user->email,
                 'is_active' => (bool) $user->is_active,
-                'email_verified_at' => $user->email_verified_at ? $user->email_verified_at->toIso8601String() : null,
-                'roles' => $user->roles->pluck('name')->toArray(),
+                'dosen' => $user->dosen ? [
+                    'nip' => $user->dosen->nip,
+                    'fakultas' => $user->dosen->fakultas ? [
+                        'nama' => $user->dosen->fakultas->nama,
+                    ] : null,
+                ] : null,
             ]);
 
         return Inertia::render('Admin/System/Users/DosenIndex', [
             'users' => $this->formatPaginator($users),
             'filters' => $request->only('search'),
+            'stats' => [
+                'total' => $totalDosen,
+                'active' => $activeDosen,
+            ],
             'title' => 'Manajemen Data Dosen (DPL)',
         ]);
     }
@@ -137,7 +151,8 @@ class UserController extends Controller
             ->when($request->filled('batch_year'), fn ($query) => $query->where('batch_year', (int) $request->input('batch_year')))
             ->when($request->filled('gender'), fn ($query) => $query->where('gender', $request->string('gender')->toString()))
             ->when($request->filled('bta_ppi'), function ($query) use ($request) {
-                $query->where('is_bta_ppi_passed', $request->string('bta_ppi')->toString() === 'passed');
+                $passed = $request->string('bta_ppi')->toString() === 'passed';
+                $query->where('status_bta_ppi', $passed ? 'LULUS' : 'BELUM_LULUS');
             })
             ->when($request->filled('account_status'), function ($query) use ($request) {
                 match ($request->string('account_status')->toString()) {
@@ -176,7 +191,7 @@ class UserController extends Controller
                 'gender' => $mahasiswa->gender,
                 'sks_completed' => $mahasiswa->sks_completed,
                 'gpa' => (float) $mahasiswa->gpa,
-                'is_bta_ppi_passed' => $mahasiswa->is_bta_ppi_passed,
+                'is_bta_ppi_passed' => in_array(strtoupper(trim($mahasiswa->status_bta_ppi ?? '')), ['LULUS', 'PASSED', 'SUCCESS']),
                 'master_id' => $mahasiswa->master_id,
                 'master_synced_at' => $mahasiswa->master_synced_at?->toIso8601String(),
                 'address' => $mahasiswa->user?->address,
@@ -215,9 +230,9 @@ class UserController extends Controller
             count(*) as total,
             count(case when exists (select 1 from users where users.id = mahasiswa.user_id) then 1 end) as with_account,
             count(case when exists (select 1 from users where users.id = mahasiswa.user_id and users.is_active = true) then 1 end) as active_accounts,
-            count(case when is_bta_ppi_passed = true then 1 end) as bta_passed,
+            count(case when status_bta_ppi = ? then 1 end) as bta_passed,
             count(case when master_synced_at is not null then 1 end) as synced
-        ')->first();
+        ', ['LULUS'])->first();
 
         return Inertia::render('Admin/System/Users/MahasiswaIndex', [
             'students' => $this->formatPaginator($students),
@@ -282,7 +297,7 @@ class UserController extends Controller
                 'batch_year' => $mahasiswa->batch_year,
                 'sks_completed' => $mahasiswa->sks_completed,
                 'gpa' => $mahasiswa->gpa,
-                'is_bta_ppi_passed' => (bool) $mahasiswa->is_bta_ppi_passed,
+                'is_bta_ppi_passed' => in_array(strtoupper(trim($mahasiswa->status_bta_ppi ?? '')), ['LULUS', 'PASSED', 'SUCCESS']),
                 'mother_name' => $mahasiswa->mother_name,
                 'address' => $mahasiswa->address ?? null,
                 'master_synced_at' => $mahasiswa->master_synced_at?->toIso8601String(),

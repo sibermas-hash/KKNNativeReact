@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Schema;
 
 class SystemSetting extends Model
 {
-    protected $connection = 'kkn';
 
     protected $table = 'system_settings';
 
@@ -44,7 +43,7 @@ class SystemSetting extends Model
     {
         return Cache::remember("system_setting_{$key}", now()->addHours(24), function () use ($key, $default) {
             try {
-                if (! Schema::connection('kkn')->hasTable('system_settings')) {
+                if (! Schema::hasTable('system_settings')) {
                     return $default;
                 }
                 $setting = self::where('config_key', $key)->first();

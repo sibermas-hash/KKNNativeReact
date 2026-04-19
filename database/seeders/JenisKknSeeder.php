@@ -68,7 +68,7 @@ class JenisKknSeeder extends Seeder
         ];
 
         foreach ($types as $type) {
-            DB::connection('kkn')->table('jenis_kkn')->updateOrInsert(
+            DB::table('jenis_kkn')->updateOrInsert(
                 ['code' => $type['code']],
                 array_merge($type, [
                     'is_active' => true,

@@ -9,14 +9,14 @@ import type { PageProps } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Dashboard({
- active_period_id, active_period_name, active_periods = [], stats = {}, current_phase = {}, recentRegistrations = []
+  active_periode_id, active_period_name, active_periods = [], stats = {}, current_phase = {}, recentRegistrations = []
 }: PageProps & {
- active_period_id?: number | null; active_period_name?: string | null; active_periods?: any[]; stats?: Record<string, any>; current_phase?: Record<string, any>; recentRegistrations?: any[];
+  active_periode_id?: number | null; active_period_name?: string | null; active_periods?: any[]; stats?: Record<string, any>; current_phase?: Record<string, any>; recentRegistrations?: any[];
 }) {
  const [periodDropdown, setPeriodDropdown] = useState(false);
  const [switching, setSwitching] = useState(false);
  const [confirmPhase, setConfirmPhase] = useState<string | null>(null);
- const currentPhaseKey = current_phase?.key || 'upcoming';
+ const currentPhaseKey = typeof current_phase === 'string' ? current_phase : (current_phase?.key || 'upcoming');
 
  const phases = [
  { id: 'registration', label: 'Pendaftaran' },
@@ -29,13 +29,23 @@ export default function Dashboard({
  registration: 'Pendaftaran', placement: 'Plotting', execution: 'Pelaksanaan', grading: 'Penilaian', upcoming: 'Pra-Pendaftaran', finished: 'Selesai',
  };
 
- function handleSwitchPhase(target: string) {
- if (!active_period_id || switching) return;
- setSwitching(true);
- router.post('/admin/dashboard/switch-phase', { target, period_id: active_period_id }, {
- preserveScroll: true, onFinish: () => { setSwitching(false); setConfirmPhase(null); },
- });
- }
+function handleSwitchPhase(target: string) {
+  if (!active_periode_id || switching) return;
+  setSwitching(true);
+  router.post('/admin/dashboard/switch-phase', { target, periode_id: active_periode_id }, {
+  preserveScroll: true,
+  onError: (errors) => {
+    console.error('Switch phase error:', errors);
+    setSwitching(false);
+    alert('Gagal切换 fase: ' + JSON.stringify(errors));
+  },
+  onSuccess: () => {
+    console.log('Phase switched successfully to:', target);
+    setSwitching(false);
+    setConfirmPhase(null);
+  },
+  });
+  }
 
  const isPlottingCrisis = (stats?.unassigned_students || 0) > 0 && currentPhaseKey === 'placement';
 
@@ -79,9 +89,9 @@ export default function Dashboard({
  <div className="fixed inset-0 z-40"onClick={() => setPeriodDropdown(false)} />
  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="absolute right-0 mt-3 w-72 bg-white border border-emerald-50 rounded-xl shadow-sm z-50 p-2 overflow-hidden">
  {active_periods.length > 0 ? active_periods.map((p: any) => (
- <Link key={p.id} href={`/admin?period_id=${p.id}`} onClick={() => setPeriodDropdown(false)} className={clsx("flex items-center justify-between px-4 py-3 rounded-xl text-sm transition-all", p.id === active_period_id ?"bg-gray-50 text-emerald-800 font-bold":"text-emerald-950 hover:bg-gray-50 hover:text-[#1a7a4a]")}>
+ <Link key={p.id} href={`/admin?period_id=${p.id}`} onClick={() => setPeriodDropdown(false)} className={clsx("flex items-center justify-between px-4 py-3 rounded-xl text-sm transition-all", p.id === active_periode_id ?"bg-gray-50 text-emerald-800 font-bold":"text-emerald-950 hover:bg-gray-50 hover:text-[#1a7a4a]")}>
  <span className="tracking-wide">{p.nama}</span>
- {p.id === active_period_id && <CheckCircle2 size={16} className="text-[#1a7a4a]"strokeWidth={3} />}
+ {p.id === active_periode_id && <CheckCircle2 size={16} className="text-[#1a7a4a]"strokeWidth={3} />}
  </Link>
  )) : (
  <div className="px-4 py-6 text-xs font-bold text-emerald-800 text-center">Tiada Periode Tersedia</div>
@@ -126,7 +136,7 @@ export default function Dashboard({
  {phases.map((p) => {
  const isActive = currentPhaseKey === p.id;
  return (
- <button key={p.id} onClick={() => !isActive && active_period_id && setConfirmPhase(p.id)} disabled={switching} className={clsx("relative group px-5 py-6 rounded-xl border transition-all text-left overflow-hidden", isActive ?"bg-gray-50 border-gray-300 shadow-inner":"bg-white border-emerald-50 hover:border-gray-300 hover:bg-gray-50")}>
+ <button key={p.id} onClick={() => !isActive && active_periode_id && setConfirmPhase(p.id)} disabled={switching} className={clsx("relative group px-5 py-6 rounded-xl border transition-all text-left overflow-hidden", isActive ?"bg-gray-50 border-gray-300 shadow-inner":"bg-white border-emerald-50 hover:border-gray-300 hover:bg-gray-50")}>
  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><Target size={40} /></div>
  <div className="flex flex-col gap-1.5 relative z-10">
  <span className={clsx("text-xs font-bold", isActive ?"text-emerald-800":"text-emerald-950")}>{p.label}</span>

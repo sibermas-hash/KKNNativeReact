@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Lokasi extends Model
 {
-    protected $connection = 'kkn';
 
     protected $table = 'lokasi';
 

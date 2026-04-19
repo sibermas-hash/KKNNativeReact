@@ -6,11 +6,10 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    protected $connection = 'kkn';
 
     public function up(): void
     {
-        Schema::connection('kkn')->create('dispensasi_kkn', function (Blueprint $table) {
+        Schema::create('dispensasi_kkn', function (Blueprint $table) {
             $table->id();
             $table->string('nim', 20)->index();
             $table->foreignId('periode_id')->nullable()->constrained('periode')->nullOnDelete();
@@ -26,6 +25,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::connection('kkn')->dropIfExists('dispensasi_kkn');
+        Schema::dropIfExists('dispensasi_kkn');
     }
 };

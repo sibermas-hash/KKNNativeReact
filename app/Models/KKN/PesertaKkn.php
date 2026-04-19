@@ -18,7 +18,6 @@ class PesertaKkn extends Model
 
     protected $table = 'peserta_kkn';
 
-    protected $connection = 'kkn';
 
     protected $fillable = [
         'mahasiswa_id',
@@ -37,6 +36,7 @@ class PesertaKkn extends Model
         'revision_count',
         'joined_group_at',
         'group_locked_until',
+        'notification_shown',
     ];
 
     protected $guarded = [];

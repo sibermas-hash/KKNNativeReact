@@ -1,4 +1,4 @@
-import { FileCheck, Download } from 'lucide-react';
+import { FileCheck, Download, UploadCloud } from 'lucide-react';
 import { clsx } from 'clsx';
 
 interface FileDropProps {
@@ -26,48 +26,54 @@ export const FileDrop = ({
       />
       <div
         className={clsx(
-          'p-8 rounded-xl border-2 border-dashed transition-all flex flex-col items-center text-center gap-4',
+          'p-8 rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center text-center gap-4',
           file
-            ? 'border-[#f3f4f6]0 bg-emerald-50/30'
-            : 'border-emerald-50/60 bg-emerald-50/30/50 group-hover/file:border-emerald-200 group-hover/file:bg-emerald-50/20',
-          error && 'border-rose-500 bg-rose-50/30',
+            ? 'border-emerald-200 bg-emerald-50/40'
+            : 'border-emerald-100 bg-emerald-50/20 group-hover/file:border-emerald-300 group-hover/file:bg-emerald-50/40',
+          error && 'border-rose-300 bg-rose-50/30',
         )}
       >
         <div
           className={clsx(
-            'h-16 w-16 rounded-xl flex items-center justify-center transition-all',
+            'h-14 w-14 rounded-2xl flex items-center justify-center transition-all duration-300',
             file
-              ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-100'
-              : 'bg-white text-slate-300 group-hover/file:text-[#1a7a4a] group-hover/file:scale-110',
-            error && 'bg-rose-500 text-white',
+              ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200/50'
+              : 'bg-white text-emerald-300 border border-emerald-100 group-hover/file:text-emerald-600 group-hover/file:scale-110 group-hover/file:shadow-md',
+            error && 'bg-rose-500 text-white shadow-lg shadow-rose-200/50',
           )}
         >
           {file ? (
-            <FileCheck size={32} strokeWidth={2.5} />
+            <FileCheck size={28} strokeWidth={2} />
           ) : (
-            <Download size={32} strokeWidth={2.5} />
+            <UploadCloud size={28} strokeWidth={2} />
           )}
         </div>
-        <div className="space-y-1">
-          <p className="text-sm font-bold text-emerald-950 uppercase tracking-tight truncate max-w-[200px]">
+        <div className="space-y-1.5">
+          <p
+            className={clsx(
+              'text-sm font-semibold tracking-tight truncate max-w-[220px]',
+              file ? 'text-emerald-950' : error ? 'text-rose-700' : 'text-emerald-950',
+            )}
+          >
             {file ? file.name : error || label}
           </p>
-          <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs opacity-60">
-            PDF/JPG MAX 2MB
+          <p className="text-xs text-emerald-700/60 font-medium">
+            Format: PDF / JPG — Maks. 2 MB
           </p>
         </div>
         {templateUrl && (
           <a
             href={templateUrl}
             onClick={(e) => e.stopPropagation()}
-            className="mt-2 text-sm font-bold text-emerald-600 hover:text-emerald-950 uppercase tracking-wider text-xs font-semibold flex items-center gap-2 relative z-20"
+            className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-900 text-xs font-semibold transition-colors relative z-20"
           >
-            GET TEMPLATE <Download size={10} strokeWidth={3} />
+            <Download size={12} strokeWidth={2.5} />
+            Unduh Template
           </a>
         )}
       </div>
       {error && (
-        <p className="mt-2 text-sm font-bold text-rose-500 font-semibold uppercase text-xs text-center">
+        <p className="mt-2 text-xs font-medium text-rose-600 text-center">
           {error}
         </p>
       )}

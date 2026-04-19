@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('kkn')->table('periode', function (Blueprint $table) {
+        Schema::table('periode', function (Blueprint $table) {
             $table->string('current_phase')->default('upcoming')->after('is_active');
         });
     }
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('kkn')->table('periode', function (Blueprint $table) {
+        Schema::table('periode', function (Blueprint $table) {
             $table->dropColumn('current_phase');
         });
     }

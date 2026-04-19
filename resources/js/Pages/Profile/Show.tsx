@@ -102,8 +102,13 @@ export default function ProfileShow() {
     if (nikError || phoneError || nikUniqueError) {
       return;
     }
+
+    if (!student?.domicile_verified_at && !profileForm.data.address_verified) {
+      profileForm.setData('address_verified', false);
+      return;
+    }
     
-    profileForm.put(route('profile.update'), { preserveScroll: true });
+    profileForm.patch(route('profile.update'), { preserveScroll: true });
   };
 
   const handlePasswordSubmit: FormEventHandler = (e) => {
@@ -384,6 +389,9 @@ export default function ProfileShow() {
                           <div className="space-y-1">
                             <p className="text-sm font-medium text-emerald-950">Saya menyatakan alamat domisili di atas benar adanya</p>
                             <p className="text-xs text-emerald-700">Alamat ini digunakan sebagai acuan penempatan otomatis KKN. Sistem tidak akan menempatkan Anda di kabupaten/kota yang sama.</p>
+                            {!student?.domicile_verified_at && !profileForm.data.address_verified && (
+                              <p className="text-xs text-rose-600 font-medium">Centang untuk melanjutkan</p>
+                            )}
                             {student?.domicile_verified_at && (
                               <div className="flex items-center gap-1.5 pt-1 text-xs text-emerald-600">
                                 <UserCheck size={12} /> Dikonfirmasi {new Date(student.domicile_verified_at).toLocaleDateString('id-ID')}

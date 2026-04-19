@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('kkn')->table('kegiatan_kkn', function (Blueprint $table) {
+        Schema::table('kegiatan_kkn', function (Blueprint $table) {
             $table->text('ai_summary')->nullable();
             $table->json('ai_analysis')->nullable();
         });
@@ -22,7 +22,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('kkn')->table('kegiatan_kkn', function (Blueprint $table) {
+        Schema::table('kegiatan_kkn', function (Blueprint $table) {
             $table->dropColumn(['ai_summary', 'ai_analysis']);
         });
     }

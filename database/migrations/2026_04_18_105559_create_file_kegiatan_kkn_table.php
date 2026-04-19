@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (! Schema::connection('kkn')->hasTable('file_kegiatan_kkn')) {
-            Schema::connection('kkn')->create('file_kegiatan_kkn', function (Blueprint $table) {
+        if (! Schema::hasTable('file_kegiatan_kkn')) {
+            Schema::create('file_kegiatan_kkn', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('kegiatan_kkn_id')->constrained('kegiatan_kkn')->cascadeOnDelete();
                 $table->string('file_path');
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('kkn')->dropIfExists('file_kegiatan_kkn');
+        Schema::dropIfExists('file_kegiatan_kkn');
     }
 };

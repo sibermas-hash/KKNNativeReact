@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('kkn')->table('announcements', function (Blueprint $table) {
+        Schema::table('announcements', function (Blueprint $table) {
             $table->string('slug')->nullable()->unique()->after('title');
             $table->string('image')->nullable()->after('content');
             $table->string('meta_title')->nullable()->after('image');
@@ -25,7 +25,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('kkn')->table('announcements', function (Blueprint $table) {
+        Schema::table('announcements', function (Blueprint $table) {
             $table->dropColumn(['slug', 'image', 'meta_title', 'meta_description', 'meta_keywords']);
         });
     }

@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RegistrationHistory extends Model
 {
-    protected $connection = 'kkn';
 
     protected $table = 'registration_histories';
 

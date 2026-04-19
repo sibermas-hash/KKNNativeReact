@@ -47,7 +47,7 @@ class PesertaKknController extends Controller
         $status = $approvedOnly ? 'approved' : $this->normalizeStatus($request->input('status'));
 
         $query = PesertaKkn::with([
-            'mahasiswa:id,user_id,nim,nama,fakultas_id,prodi_id,nik,mother_name,gpa,is_bta_ppi_passed,sks_completed,health_certificate_path,parent_permission_path',
+            'mahasiswa:id,user_id,nim,nama,fakultas_id,prodi_id,nik,mother_name,gpa,status_bta_ppi,sks_completed,health_certificate_path,parent_permission_path',
             'mahasiswa.user:id,name,email,address,phone',
             'mahasiswa.fakultas:id,code,nama',
             'mahasiswa.prodi:id,code,nama,fakultas_id',
@@ -275,10 +275,25 @@ class PesertaKknController extends Controller
     {
         $documents = [];
 
+        $typeLabels = [
+            'krs' => 'KRS (Kartu Rencana Studi)',
+            'pembayaran' => 'Bukti Pembayaran UKT/SPP',
+            'payment' => 'Bukti Pembayaran UKT/SPP',
+            'asuransi' => 'Bukti Asuransi',
+            'health_certificate' => 'Surat Keterangan Sehat',
+            'parent_permission' => 'Surat Izin Orang Tua',
+            'photo' => 'Pas Foto',
+            'ktp' => 'Kartu Tanda Mahasiswa (KTM)',
+            'surat_pernyataan' => 'Surat Pernyataan',
+            'surat_rekomendasi' => 'Surat Rekomendasi Prodi',
+        ];
+
         // Include uploaded documents from dokumen relation
         foreach ($pesertaKkn->dokumen as $doc) {
+            $docType = $doc->document_type;
             $documents[] = [
-                'type' => $doc->document_type,
+                'id' => $doc->id,
+                'document_type' => $typeLabels[$docType] ?? (ucwords(str_replace('_', ' ', $docType)) ?: 'Berkas'),
                 'file_name' => $doc->file_name,
                 'file_path' => $doc->file_path,
                 'status' => $doc->status,
@@ -289,7 +304,8 @@ class PesertaKknController extends Controller
         $mahasiswa = $pesertaKkn->mahasiswa;
         if ($mahasiswa?->health_certificate_path) {
             $documents[] = [
-                'type' => 'health_certificate',
+                'id' => 0,
+                'document_type' => 'Surat Keterangan Sehat',
                 'file_name' => basename($mahasiswa->health_certificate_path),
                 'file_path' => $mahasiswa->health_certificate_path,
                 'status' => 'uploaded',
@@ -297,7 +313,8 @@ class PesertaKknController extends Controller
         }
         if ($mahasiswa?->parent_permission_path) {
             $documents[] = [
-                'type' => 'parent_permission',
+                'id' => 0,
+                'document_type' => 'Surat Izin Orang Tua',
                 'file_name' => basename($mahasiswa->parent_permission_path),
                 'file_path' => $mahasiswa->parent_permission_path,
                 'status' => 'uploaded',
@@ -312,6 +329,11 @@ class PesertaKknController extends Controller
         $pesertaKkn->load('mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'periode', 'kelompok', 'dokumen', 'rejector');
 
         $registration = $pesertaKkn->toArray();
+        
+        $mahasiswa = $pesertaKkn->mahasiswa;
+        $btaStatus = strtoupper(trim($mahasiswa?->status_bta_ppi ?? ''));
+        $registration['mahasiswa']['is_bta_ppi_passed'] = in_array($btaStatus, ['LULUS', 'PASSED', 'SUCCESS']);
+        
         $registration['dokumen'] = $this->registrationDocuments($pesertaKkn);
         if ($pesertaKkn->periode) {
             $registration['periode'] = array_merge($registration['periode'] ?? [], [

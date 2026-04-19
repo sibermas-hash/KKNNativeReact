@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('kkn')->table('kegiatan_kkn', function (Blueprint $table) {
-            if (! Schema::connection('kkn')->hasColumn('kegiatan_kkn', 'reviewed_by')) {
+        Schema::table('kegiatan_kkn', function (Blueprint $table) {
+            if (! Schema::hasColumn('kegiatan_kkn', 'reviewed_by')) {
                 $table->foreignId('reviewed_by')->nullable()->constrained('users')->nullOnDelete();
             }
-            if (! Schema::connection('kkn')->hasColumn('kegiatan_kkn', 'reviewed_at')) {
+            if (! Schema::hasColumn('kegiatan_kkn', 'reviewed_at')) {
                 $table->timestamp('reviewed_at')->nullable();
             }
-            if (! Schema::connection('kkn')->hasColumn('kegiatan_kkn', 'review_notes')) {
+            if (! Schema::hasColumn('kegiatan_kkn', 'review_notes')) {
                 $table->text('review_notes')->nullable();
             }
         });
@@ -29,7 +29,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('kkn')->table('kegiatan_kkn', function (Blueprint $table) {
+        Schema::table('kegiatan_kkn', function (Blueprint $table) {
             $table->dropColumn(['reviewed_by', 'reviewed_at', 'review_notes']);
         });
     }

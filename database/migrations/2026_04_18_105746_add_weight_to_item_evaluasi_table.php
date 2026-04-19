@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('kkn')->table('item_evaluasi', function (Blueprint $table) {
-            if (! Schema::connection('kkn')->hasColumn('item_evaluasi', 'weight')) {
+        Schema::table('item_evaluasi', function (Blueprint $table) {
+            if (! Schema::hasColumn('item_evaluasi', 'weight')) {
                 $table->integer('weight')->default(0);
             }
         });
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('kkn')->table('item_evaluasi', function (Blueprint $table) {
+        Schema::table('item_evaluasi', function (Blueprint $table) {
             $table->dropColumn('weight');
         });
     }

@@ -9,7 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $schema = Schema::connection('kkn');
+        $schema = Schema::getFacadeRoot();
 
         // 1. Mahasiswa: Index for faculty-based filtering and searches
         $this->addIndexIfMissing($schema, 'mahasiswa', 'mahasiswa_faculty_prodi_idx', ['fakultas_id', 'prodi_id']);
@@ -29,7 +29,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        $schema = Schema::connection('kkn');
+        $schema = Schema::getFacadeRoot();
 
         $this->dropIndexIfExists($schema, 'mahasiswa', 'mahasiswa_faculty_prodi_idx');
         $this->dropIndexIfExists($schema, 'lokasi', 'lokasi_faculty_district_idx');

@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DokumenPesertaKkn extends Model
 {
-    protected $connection = 'kkn';
 
     protected $table = 'dokumen_peserta_kkn';
 
@@ -23,11 +22,21 @@ class DokumenPesertaKkn extends Model
         'uploaded_at',
         'status',
         'notes',
+        'is_verified',
+        'is_archived',
+        'verified_at',
+        'archived_at',
+        'verified_by',
+        'archived_by',
     ];
 
     protected $casts = [
         'file_size' => 'integer',
         'uploaded_at' => 'datetime',
+        'verified_at' => 'datetime',
+        'archived_at' => 'datetime',
+        'is_verified' => 'boolean',
+        'is_archived' => 'boolean',
     ];
 
     use HasFactory;

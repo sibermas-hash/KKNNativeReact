@@ -30,7 +30,7 @@ class StudentTransferService
         // Validation
         $this->validateTransfer($peserta, $targetPeriod, $targetGroupId);
 
-        return DB::connection('kkn')->transaction(function () use (
+        return DB::transaction(function () use (
             $peserta, $targetPeriod, $targetGroupId, $reason, $processedBy
         ) {
             // Record transfer history

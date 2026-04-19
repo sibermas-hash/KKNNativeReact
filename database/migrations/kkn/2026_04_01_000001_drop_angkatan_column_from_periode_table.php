@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('kkn')->table('periode', function (Blueprint $table) {
+        Schema::table('periode', function (Blueprint $table) {
             // Hapus kolom angkatan yang sudah tidak digunakan
             $table->dropColumn('angkatan');
         });
@@ -22,7 +22,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('kkn')->table('periode', function (Blueprint $table) {
+        Schema::table('periode', function (Blueprint $table) {
             // Kembalikan kolom angkatan jika rollback
             $table->integer('angkatan')->nullable();
         });

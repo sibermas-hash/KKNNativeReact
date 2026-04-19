@@ -59,7 +59,12 @@ class RegistrationApprovalService
                 'status' => 'approved',
                 'approved_at' => now(),
                 'approved_by' => $approvedBy,
+                'notification_shown' => false,
             ]);
+
+            // Load and mark/archive all documents
+            $registration->load('dokumen');
+            $this->markAndArchiveDocuments($registration, $approvedBy);
 
             AuditService::log(
                 'REGISTRATION_APPROVAL',
@@ -67,6 +72,23 @@ class RegistrationApprovalService
                 $registration
             );
         });
+    }
+
+    /**
+     * Mark and archive all registration documents.
+     */
+    private function markAndArchiveDocuments(PesertaKkn $registration, int $userId): void
+    {
+        foreach ($registration->dokumen as $doc) {
+            $doc->update([
+                'is_verified' => true,
+                'is_archived' => true,
+                'verified_at' => now(),
+                'archived_at' => now(),
+                'verified_by' => $userId,
+                'archived_by' => $userId,
+            ]);
+        }
     }
 
     /**
@@ -82,7 +104,7 @@ class RegistrationApprovalService
         foreach ($idBatches as $batchIds) {
             $batchCount = DB::transaction(function () use ($batchIds, $approvedBy, $isFacultyAdmin, $facultyId) {
                 $registrations = PesertaKkn::query()
-                    ->with(['mahasiswa', 'periode'])
+                    ->with(['mahasiswa', 'periode', 'dokumen'])
                     ->whereIn('id', $batchIds)
                     ->where('status', 'pending')
                     ->when($isFacultyAdmin, function ($query) use ($facultyId) {
@@ -100,6 +122,9 @@ class RegistrationApprovalService
                         'approved_at' => now(),
                         'approved_by' => $approvedBy,
                     ]);
+
+                    // Mark and archive all documents
+                    $this->markAndArchiveDocuments($registration, $approvedBy);
 
                     AuditService::log(
                         'BULK_REGISTRATION_APPROVAL',
@@ -130,6 +155,7 @@ class RegistrationApprovalService
         foreach ($idBatches as $batchIds) {
             $batchCount = DB::transaction(function () use ($batchIds, $reason, $rejectedBy, $isFacultyAdmin, $facultyId) {
                 $registrations = PesertaKkn::query()
+                    ->with(['dokumen'])
                     ->whereIn('id', $batchIds)
                     ->where('status', 'pending')
                     ->when($isFacultyAdmin, function ($query) use ($facultyId) {
@@ -145,6 +171,9 @@ class RegistrationApprovalService
                         'last_rejected_at' => now(),
                         'last_rejected_by' => $rejectedBy,
                     ]);
+
+                    // Archive documents (for audit trail)
+                    $this->archiveDocuments($registration, $rejectedBy);
 
                     AuditService::log(
                         'BULK_REGISTRATION_REJECTION',
@@ -175,12 +204,30 @@ class RegistrationApprovalService
                 'last_rejected_by' => $rejectedBy,
             ]);
 
+            // Load and archive documents even when rejected (for audit trail)
+            $registration->load('dokumen');
+            $this->archiveDocuments($registration, $rejectedBy);
+
             AuditService::log(
                 'REGISTRATION_REJECTION',
                 "Pendaftaran ditolak. Alasan: {$reason}",
                 $registration
             );
         });
+    }
+
+    /**
+     * Archive documents without marking as verified (for rejected registrations).
+     */
+    private function archiveDocuments(PesertaKkn $registration, int $userId): void
+    {
+        foreach ($registration->dokumen as $doc) {
+            $doc->update([
+                'is_archived' => true,
+                'archived_at' => now(),
+                'archived_by' => $userId,
+            ]);
+        }
     }
 
     /**

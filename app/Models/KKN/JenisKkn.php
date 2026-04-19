@@ -11,7 +11,6 @@ class JenisKkn extends Model
 {
     protected $table = 'jenis_kkn';
 
-    protected $connection = 'kkn';
 
     protected $fillable = [
         'code',

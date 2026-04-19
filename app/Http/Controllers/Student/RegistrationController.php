@@ -34,10 +34,9 @@ class RegistrationController extends Controller
             return false;
         }
 
-        $legacyStatus = strtoupper(trim((string) $mahasiswa->status_bta_ppi));
+        $status = strtoupper(trim((string) $mahasiswa->status_bta_ppi));
 
-        return (bool) $mahasiswa->is_bta_ppi_passed
-            || in_array($legacyStatus, ['LULUS', 'PASSED', 'SUCCESS'], true);
+        return in_array($status, ['LULUS', 'PASSED', 'SUCCESS'], true);
     }
 
     private function biodataProfileSummary(?Mahasiswa $mahasiswa, ?User $user): array
@@ -148,7 +147,7 @@ class RegistrationController extends Controller
         \Log::info('RegistrationController@create hit. User: '.($request->user()?->username ?? 'null').' Request expects JSON: '.($request->wantsJson() ? 'YES' : 'NO'));
         $today = now()->toDateString();
         $mahasiswa = auth()->user()?->mahasiswa;
-
+//dd($mahasiswa);
         if ($this->hasLockedRegistration($mahasiswa)) {
             if ($request->wantsJson()) {
                 return response()->json([
@@ -240,18 +239,10 @@ class RegistrationController extends Controller
             'current_phase' => 'registration',
         ];
 
-        if ($request->wantsJson() && ! $request->header('X-Inertia')) {
-            return response()->json(array_merge($responseProps, [
-                'eligible' => $isEligible,
-                'current_phase' => $responseProps['current_phase'] ?? 'registration',
-                'registration' => ['eligible' => $isEligible],
-                'form' => ['eligible' => $isEligible],
-                'data' => array_merge($responseProps, [
-                    'eligible' => $isEligible,
-                    'current_phase' => $responseProps['current_phase'] ?? 'registration',
-                ]),
-            ]));
-        }
+        // JSON fallback disabled — was causing browser visits to return raw JSON
+        // if ($request->wantsJson() && ! $request->header('X-Inertia')) {
+        //     return response()->json(array_merge($responseProps, [...]));
+        // }
 
         return Inertia::render('Student/Register', $responseProps);
     }

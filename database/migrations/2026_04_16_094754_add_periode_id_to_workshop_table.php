@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('kkn')->table('workshop', function (Blueprint $table) {
-            if (! Schema::connection('kkn')->hasColumn('workshop', 'periode_id')) {
+        Schema::table('workshop', function (Blueprint $table) {
+            if (! Schema::hasColumn('workshop', 'periode_id')) {
                 $table->foreignId('periode_id')->nullable()->after('id')->constrained('periode')->nullOnDelete();
             }
         });
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('kkn')->table('workshop', function (Blueprint $table) {
+        Schema::table('workshop', function (Blueprint $table) {
             $table->dropForeign(['periode_id']);
             $table->dropColumn('periode_id');
         });

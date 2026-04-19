@@ -73,8 +73,10 @@ class PeriodeService
         $preparedData = $this->prepareData($data);
 
         return DB::transaction(function () use ($preparedData) {
-            if (! empty($preparedData['is_active'])) {
-                Periode::where('is_active', true)->update(['is_active' => false]);
+            if (! empty($preparedData['is_active']) && ! empty($preparedData['jenis_kkn_id'])) {
+                Periode::where('jenis_kkn_id', $preparedData['jenis_kkn_id'])
+                    ->where('is_active', true)
+                    ->update(['is_active' => false]);
             }
 
             $periode = Periode::create($preparedData);
@@ -89,8 +91,9 @@ class PeriodeService
         $preparedData = $this->prepareData($data, $periode->id);
 
         return DB::transaction(function () use ($periode, $preparedData) {
-            if (! empty($preparedData['is_active'])) {
+            if (! empty($preparedData['is_active']) && ! empty($preparedData['jenis_kkn_id'])) {
                 Periode::where('id', '!=', $periode->id)
+                    ->where('jenis_kkn_id', $preparedData['jenis_kkn_id'])
                     ->where('is_active', true)
                     ->update(['is_active' => false]);
             }

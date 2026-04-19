@@ -1,1 +1,0 @@
-                          <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">Riwayat Logging Sync</p>

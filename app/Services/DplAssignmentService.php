@@ -41,8 +41,17 @@ class DplAssignmentService
             [
                 'max_kelompok_kkn' => $maxGroups,
                 'is_active' => true,
+                'status' => 'approved',
+                'approved_at' => now(),
+                'approved_by' => auth()->id(),
             ],
         );
+
+        // Berikan role DPL saat admin approve penugasan
+        $user = $provisioning['user'];
+        if (! $user->hasRole('dpl')) {
+            $user->assignRole('dpl');
+        }
 
         return [
             'assignment' => $assignment,

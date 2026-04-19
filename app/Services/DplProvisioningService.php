@@ -63,7 +63,7 @@ class DplProvisioningService
             $dosen->update(['user_id' => $user->id]);
         }
 
-        if (! $user->hasRole('dpl')) {
+        if (! $user->hasRole('dosen')) {
             $user->assignRole('dosen');
             $activated = true;
         }

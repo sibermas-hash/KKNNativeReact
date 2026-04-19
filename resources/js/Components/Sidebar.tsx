@@ -55,71 +55,64 @@ const getAdminNav = (): NavGroup[] => [
     items: [{ label: 'Beranda', href: safeRoute('admin.dashboard'), icon: LayoutDashboard }],
   },
   {
-    title: 'DATA MASTER',
+    title: 'PERSIAPAN & DATA MASTER',
     items: [
       { label: 'Tahun Akademik', href: safeRoute('admin.tahun-akademik.index'), icon: Calendar },
       { label: 'Periode Program', href: safeRoute('admin.periode.index'), icon: History },
       { label: 'Jenis KKN', href: safeRoute('admin.jenis-kkn.index'), icon: Layers },
       { label: 'Wilayah Penugasan', href: safeRoute('admin.locations.index'), icon: MapPin },
-      { label: 'Mahasiswa', href: safeRoute('admin.mahasiswa.index'), icon: Users },
-      { label: 'Dosen', href: safeRoute('admin.dpl.index'), icon: UserCheck },
+      { label: 'Direktori Mahasiswa', href: safeRoute('admin.mahasiswa.index'), icon: Users },
+      { label: 'Direktori Dosen', href: safeRoute('admin.dpl.index'), icon: UserCheck },
       { label: 'Workshop & Pembekalan', href: safeRoute('admin.workshops.index'), icon: GraduationCap },
     ],
   },
   {
-    title: 'PENDAFTARAN & PESERTA',
+    title: 'SELEKSI & PENDAFTARAN',
     items: [
-      {
-        label: 'Pendaftaran Peserta',
-        href: safeRoute('admin.pendaftaran.index'),
-        icon: ClipboardList,
-      },
-      { label: 'Cek Kelayakan', href: safeRoute('admin.cek-kelayakan.index'), icon: ShieldCheck },
+      { label: 'Audit Kelayakan', href: safeRoute('admin.cek-kelayakan.index'), icon: ShieldCheck },
       { label: 'Dispensasi & Izin', href: safeRoute('admin.dispensasi.index'), icon: Shield },
+      { label: 'Pendaftaran Mahasiswa', href: safeRoute('admin.pendaftaran.index'), icon: ClipboardList },
+      { label: 'Pendaftaran DPL', href: safeRoute('admin.dpl.pendaftaran'), icon: UserCheck },
     ],
   },
   {
-    title: 'KELOMPOK & PENUGASAN',
+    title: 'PENEMPATAN & PENUGASAN',
     items: [
-      { label: 'Kelompok KKN', href: safeRoute('admin.kelompok.index'), icon: Users },
-      { label: 'Pendaftaran DPL', href: safeRoute('admin.dpl.pendaftaran'), icon: ClipboardList },
-      { label: 'Penugasan DPL', href: safeRoute('admin.dpl.penugasan'), icon: UserCheck },
+      { label: 'Manajemen Kelompok', href: safeRoute('admin.kelompok.index'), icon: Users },
+      { label: 'Penugasan DPL', href: safeRoute('admin.dpl.penugasan'), icon: MapPin },
       { label: 'Transfer Peserta', href: safeRoute('admin.peserta.pindah.index'), icon: Shuffle },
     ],
   },
   {
-    title: 'PENILAIAN',
+    title: 'PELAKSANAAN & MONITORING',
     items: [
-      { label: 'Nilai Peserta', href: safeRoute('admin.nilai.index'), icon: FileText },
-      { label: 'Laporan Nilai', href: safeRoute('admin.grade-reports.index'), icon: BarChart3 },
-      { label: 'Evaluasi', href: safeRoute('admin.evaluasi.index'), icon: Star },
-      { label: 'Yudisium', href: safeRoute('admin.yudisium.index'), icon: GraduationCap },
+      { label: 'Laporan Harian', href: safeRoute('admin.laporan.harian.index'), icon: Activity },
+      { label: 'Program Kerja', href: safeRoute('admin.laporan.program-kerja.index'), icon: BookOpen },
     ],
   },
   {
-    title: 'LAPORAN',
+    title: 'PELAPORAN & PENILAIAN',
     items: [
-      { label: 'Laporan Harian', href: safeRoute('admin.laporan.harian.index'), icon: Calendar },
-      {
-        label: 'Program Kerja',
-        href: safeRoute('admin.laporan.program-kerja.index'),
-        icon: BookOpen,
-      },
       { label: 'Laporan Akhir', href: safeRoute('admin.laporan.akhir.index'), icon: FileCheck },
-      { label: 'Rekapitulasi', href: safeRoute('admin.rekapitulasi.index'), icon: BarChart3 },
+      { label: 'Evaluasi Kinerja', href: safeRoute('admin.evaluasi.index'), icon: Star },
+      { label: 'Nilai Peserta', href: safeRoute('admin.nilai.index'), icon: FileText },
+    ],
+  },
+  {
+    title: 'PENYELESAIAN (OUTPUT)',
+    items: [
+      { label: 'Rekapitulasi Nilai', href: safeRoute('admin.grade-reports.index'), icon: BarChart3 },
+      { label: 'Yudisium & Kelulusan', href: safeRoute('admin.yudisium.index'), icon: GraduationCap },
+      { label: 'Laporan Eksekutif', href: safeRoute('admin.rekapitulasi.index'), icon: Layers },
     ],
   },
   {
     title: 'PENGATURAN & SINKRONISASI',
     items: [
-      { label: 'Pengguna', href: safeRoute('admin.pengguna.index'), icon: Shield },
-      {
-        label: 'Konfigurasi Nilai',
-        href: safeRoute('admin.konfigurasi-penilaian.index'),
-        icon: Settings,
-      },
+      { label: 'Manajemen Pengguna', href: safeRoute('admin.pengguna.index'), icon: UserCog },
+      { label: 'Konfigurasi Penilaian', href: safeRoute('admin.konfigurasi-penilaian.index'), icon: Settings },
       { label: 'Sinkronisasi Data', href: safeRoute('admin.database-sync.index'), icon: RefreshCw },
-      { label: 'Pengaturan Sistem', href: safeRoute('admin.pengaturan.sistem'), icon: Settings },
+      { label: 'Pengaturan Sistem', href: safeRoute('admin.pengaturan.sistem'), icon: Cpu },
     ],
   },
 ];

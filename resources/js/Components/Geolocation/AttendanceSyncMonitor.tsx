@@ -25,7 +25,7 @@ const AttendanceSyncMonitor: React.FC = () => {
     const [syncing, setSyncing] = useState(false);
     const [lastChecked, setLastChecked] = useState<Date | null>(null);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     useEffect(() => {
         checkSyncStatus();
 

@@ -148,6 +148,10 @@ const GeolocationCapture: React.FC<{ onSuccess?: () => void }> = ({ onSuccess })
         }
     }, [pendingSync.length, checkSyncStatus]);
 
+    const manualSync = () => {
+        autoSync();
+    };
+
     // ─── CAMERA HANDLERS ─────────────────────────────────────────
 
     const startCamera = useCallback(async () => {
@@ -171,6 +175,67 @@ const GeolocationCapture: React.FC<{ onSuccess?: () => void }> = ({ onSuccess })
         }
     }, []);
 
+    const capturePhoto = () => {
+        if (cameraRef.current && canvasRef.current) {
+            const context = canvasRef.current.getContext('2d');
+            if (context) {
+                canvasRef.current.width = cameraRef.current.videoWidth;
+                canvasRef.current.height = cameraRef.current.videoHeight;
+                context.drawImage(cameraRef.current, 0, 0);
+
+                // Add watermark
+                addWatermark(context);
+
+                const imageData = canvasRef.current.toDataURL('image/jpeg', 0.8);
+                setPhotoData(imageData);
+
+                // Save to IndexedDB
+                saveToIndexedDB('photo_capture', {
+                    data: imageData,
+                    timestamp: new Date().toISOString(),
+                });
+
+                setShowCamera(false);
+            }
+        }
+    };
+
+    const uploadPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const imageData = event.target?.result as string;
+                setPhotoData(imageData);
+
+                saveToIndexedDB('photo_capture', {
+                    data: imageData,
+                    timestamp: new Date().toISOString(),
+                    source: 'upload',
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const addWatermark = (context: CanvasRenderingContext2D) => {
+        const user = (window as any).__user__?.name || 'User';
+        const time = new Date().toLocaleString('id-ID');
+
+        context.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        context.font = 'bold 16px Arial';
+        context.fillText(`${user} - ${time}`, 10, 30);
+
+        // Add GPS coordinates
+        if (geoData) {
+            context.fillText(
+                `${geoData.latitude.toFixed(6)}, ${geoData.longitude.toFixed(6)}`,
+                10,
+                55
+            );
+        }
+    };
+
     // ─── UTILITIES ───────────────────────────────────────────────
 
     const handleOnline = useCallback(() => {
@@ -183,6 +248,23 @@ const GeolocationCapture: React.FC<{ onSuccess?: () => void }> = ({ onSuccess })
         setIsOnline(false);
         setSyncStatus('offline');
     }, []);
+
+    const getDeviceSignature = (): string => {
+        // Simple device fingerprint
+        const ua = navigator.userAgent;
+        const screen = `${window.screen.width}x${window.screen.height}`;
+        const tz = new Date().getTimezoneOffset();
+
+        return btoa(`${ua}|${screen}|${tz}`).substring(0, 32);
+    };
+
+    const getAccuracyStatus = (accuracy: number | null): string => {
+        if (!accuracy) return 'Tidak tersedia';
+        if (accuracy < 10) return '🟢 Sangat Akurat';
+        if (accuracy < 50) return '🟡 Baik';
+        if (accuracy < 100) return '🟠 Cukup';
+        return '🔴 Buruk';
+    };
 
     // ─── LIFECYCLE ───────────────────────────────────────────────
 
@@ -272,90 +354,6 @@ const GeolocationCapture: React.FC<{ onSuccess?: () => void }> = ({ onSuccess })
         );
     };
 
-    // ─── CAMERA CAPTURE ─────────────────────────────────────────
-
-    const startCamera = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'user' },
-            });
-
-            if (cameraRef.current) {
-                cameraRef.current.srcObject = stream;
-            }
-        } catch (err) {
-            setGeoError('Gagal mengakses kamera: ' + (err instanceof Error ? err.message : 'Unknown error'));
-        }
-    };
-
-    const stopCamera = () => {
-        if (cameraRef.current && cameraRef.current.srcObject) {
-            const tracks = (cameraRef.current.srcObject as MediaStream).getTracks();
-            tracks.forEach((track) => track.stop());
-        }
-    };
-
-    const capturePhoto = () => {
-        if (cameraRef.current && canvasRef.current) {
-            const context = canvasRef.current.getContext('2d');
-            if (context) {
-                canvasRef.current.width = cameraRef.current.videoWidth;
-                canvasRef.current.height = cameraRef.current.videoHeight;
-                context.drawImage(cameraRef.current, 0, 0);
-
-                // Add watermark
-                addWatermark(context);
-
-                const imageData = canvasRef.current.toDataURL('image/jpeg', 0.8);
-                setPhotoData(imageData);
-
-                // Save to IndexedDB
-                saveToIndexedDB('photo_capture', {
-                    data: imageData,
-                    timestamp: new Date().toISOString(),
-                });
-
-                setShowCamera(false);
-            }
-        }
-    };
-
-    const uploadPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const imageData = event.target?.result as string;
-                setPhotoData(imageData);
-
-                saveToIndexedDB('photo_capture', {
-                    data: imageData,
-                    timestamp: new Date().toISOString(),
-                    source: 'upload',
-                });
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    const addWatermark = (context: CanvasRenderingContext2D) => {
-        const user = (window as any).__user__?.name || 'User';
-        const time = new Date().toLocaleString('id-ID');
-
-        context.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        context.font = 'bold 16px Arial';
-        context.fillText(`${user} - ${time}`, 10, 30);
-
-        // Add GPS coordinates
-        if (geoData) {
-            context.fillText(
-                `${geoData.latitude.toFixed(6)}, ${geoData.longitude.toFixed(6)}`,
-                10,
-                55
-            );
-        }
-    };
-
     // ─── SUBMISSION ──────────────────────────────────────────────
 
     const submitAttendance = async () => {
@@ -429,7 +427,6 @@ const GeolocationCapture: React.FC<{ onSuccess?: () => void }> = ({ onSuccess })
             setTimeout(() => {
                 setGeoData(null);
                 setPhotoData(null);
-                setShowDetails(false);
             }, 1000);
         } catch (err) {
             const errorMsg =
@@ -439,115 +436,6 @@ const GeolocationCapture: React.FC<{ onSuccess?: () => void }> = ({ onSuccess })
             setGeoError(errorMsg);
             setSubmitting(false);
         }
-    };
-
-    // ─── SYNC HANDLERS ───────────────────────────────────────────
-
-    const checkSyncStatus = async () => {
-        try {
-            const response = await axios.get('/api/attendance/sync-status', {
-                headers: {
-                    'Authorization': `Bearer ${(window as any).__token__}`,
-                },
-            });
-
-            if (response.data.success) {
-                setPendingSync(response.data.pending_retries);
-            }
-        } catch (err) {
-            // Silent fail
-        }
-    };
-
-    const autoSync = async () => {
-        if (pendingSync.length === 0) return;
-
-        setSyncStatus('syncing');
-
-        try {
-            await axios.post('/api/attendance/retry-sync', {}, {
-                headers: {
-                    'Authorization': `Bearer ${(window as any).__token__}`,
-                },
-            });
-
-            setSyncStatus('sync_complete');
-            await checkSyncStatus();
-
-            setTimeout(() => setSyncStatus('idle'), 2000);
-        } catch (err) {
-            setSyncStatus('sync_failed');
-        }
-    };
-
-    const manualSync = () => {
-        autoSync();
-    };
-
-    // ─── INDEXEDDB HELPERS ───────────────────────────────────────
-
-    const saveToIndexedDB = async (storeName: string, data: any) => {
-        try {
-            const db = await openIndexedDB();
-            const tx = db.transaction(storeName, 'readwrite');
-            const store = tx.objectStore(storeName);
-            store.add(data);
-        } catch (err) {
-            console.warn('IndexedDB save failed:', err);
-        }
-    };
-
-    const removeFromIndexedDB = async (storeName: string, key: any) => {
-        try {
-            const db = await openIndexedDB();
-            const tx = db.transaction(storeName, 'readwrite');
-            const store = tx.objectStore(storeName);
-            store.delete(key);
-        } catch (err) {
-            console.warn('IndexedDB remove failed:', err);
-        }
-    };
-
-    const openIndexedDB = (): Promise<IDBDatabase> => {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open('KknAttendance', 1);
-
-            request.onerror = () => reject(request.error);
-            request.onsuccess = () => resolve(request.result);
-
-            request.onupgradeneeded = (event) => {
-                const db = (event.target as IDBOpenDBRequest).result;
-
-                if (!db.objectStoreNames.contains('gps_capture')) {
-                    db.createObjectStore('gps_capture', { autoIncrement: true });
-                }
-                if (!db.objectStoreNames.contains('photo_capture')) {
-                    db.createObjectStore('photo_capture', { autoIncrement: true });
-                }
-                if (!db.objectStoreNames.contains('pending_attendance')) {
-                    db.createObjectStore('pending_attendance', { keyPath: 'id' });
-                }
-            };
-        });
-    };
-
-    // ─── UTILITIES ───────────────────────────────────────────────
-
-    const getDeviceSignature = (): string => {
-        // Simple device fingerprint
-        const ua = navigator.userAgent;
-        const screen = `${window.screen.width}x${window.screen.height}`;
-        const tz = new Date().getTimezoneOffset();
-
-        return btoa(`${ua}|${screen}|${tz}`).substring(0, 32);
-    };
-
-    const getAccuracyStatus = (accuracy: number | null): string => {
-        if (!accuracy) return 'Tidak tersedia';
-        if (accuracy < 10) return '🟢 Sangat Akurat';
-        if (accuracy < 50) return '🟡 Baik';
-        if (accuracy < 100) return '🟠 Cukup';
-        return '🔴 Buruk';
     };
 
     // ─── RENDER ──────────────────────────────────────────────────

@@ -107,7 +107,7 @@ describe('GeolocationCapture Component', () => {
                 coords: {
                     latitude: -7.2575,
                     longitude: 110.4268,
-                    accuracy: 15, // Good accuracy
+                    accuracy: 5, // Very good accuracy (< 10)
                 },
                 timestamp: Date.now(),
             });
@@ -129,6 +129,7 @@ describe('GeolocationCapture Component', () => {
         mockGeolocation.getCurrentPosition.mockImplementation((success, error) => {
             error({
                 code: 1, // PERMISSION_DENIED
+                PERMISSION_DENIED: 1,
                 message: 'User denied geolocation',
             });
         });

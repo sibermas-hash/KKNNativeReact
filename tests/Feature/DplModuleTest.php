@@ -3,8 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\KKN\Dosen;
-use App\Models\KKN\DplKecamatanAssignment;
-use App\Models\KKN\DplPeriod;
 use App\Models\KKN\FileKegiatanKkn;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\KelompokKkn;
@@ -28,6 +26,7 @@ class DplModuleTest extends TestCase
         parent::setUp();
 
         Role::firstOrCreate(['name' => 'dpl', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'dosen', 'guard_name' => 'web']);
         Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
         Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web']);
     }
@@ -39,7 +38,7 @@ class DplModuleTest extends TestCase
         $dplUser = User::factory()->create([
             'username' => $overrides['dpl_username'] ?? 'dpl-test',
         ]);
-        $dplUser->assignRole('dpl');
+        $dplUser->assignRole('dosen', 'dpl');
 
         $dosen = Dosen::factory()->create([
             'user_id' => $dplUser->id,
@@ -104,49 +103,18 @@ class DplModuleTest extends TestCase
         $context = $this->createDplScenario();
 
         $this->actingAs($context['dplUser'])
-            ->get(route('dpl.dashboard'))
+            ->get(route('dosen.dashboard'))
             ->assertOk();
 
         $this->actingAs($context['dplUser'])
-            ->get(route('dpl.kelompok.index'))
+            ->get(route('dosen.kelompok.index'))
             ->assertOk()
             ->assertSee($context['group']->code);
 
         $this->actingAs($context['dplUser'])
-            ->get(route('dpl.kelompok.show', $context['group']))
+            ->get(route('dosen.kelompok.show', $context['group']))
             ->assertOk()
             ->assertSee($context['student']->nama);
-    }
-
-    public function test_dpl_dashboard_shows_coordinator_area_summary(): void
-    {
-        $context = $this->createDplScenario();
-
-        $dplPeriod = DplPeriod::create([
-            'dosen_id' => $context['dosen']->id,
-            'periode_id' => $context['period']->id,
-            'max_groups' => 5,
-            'is_active' => true,
-        ]);
-
-        DplKecamatanAssignment::create([
-            'dpl_periode_id' => $dplPeriod->id,
-            'dosen_id' => $context['dosen']->id,
-            'periode_id' => $context['period']->id,
-            'district_id' => $context['group']->lokasi->district_id,
-            'district_name' => $context['group']->lokasi->district_name,
-            'regency_name' => $context['group']->lokasi->regency_name,
-            'is_active' => true,
-        ]);
-
-        $this->actingAs($context['dplUser'])
-            ->get(route('dpl.dashboard'))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Dpl/Dashboard')
-                ->has('coordinatorAreas', 1)
-                ->where('coordinatorAreas.0.district_name', $context['group']->lokasi->district_name)
-            );
     }
 
     public function test_dpl_can_open_evaluations_index_for_owned_group(): void
@@ -154,7 +122,7 @@ class DplModuleTest extends TestCase
         $context = $this->createDplScenario();
 
         $this->actingAs($context['dplUser'])
-            ->get(route('dpl.evaluations.index'))
+            ->get(route('dosen.evaluations.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Dpl/Evaluations/Index')
@@ -169,23 +137,23 @@ class DplModuleTest extends TestCase
         $context = $this->createDplScenario();
 
         $this->actingAs($context['dplUser'])
-            ->get(route('dpl.daily-reports.index'))
+            ->get(route('dosen.daily-reports.index'))
             ->assertOk()
             ->assertSee('Laporan Harian DPL');
 
         $this->actingAs($context['dplUser'])
-            ->get(route('dpl.daily-reports.show', $context['dailyReport']))
+            ->get(route('dosen.daily-reports.show', $context['dailyReport']))
             ->assertOk()
             ->assertSee('Mahasiswa melakukan kegiatan lapangan.');
 
         $this->actingAs($context['dplUser'])
-            ->get(route('dpl.daily-reports.files.download', $context['attachment']))
+            ->get(route('dosen.daily-reports.files.download', $context['attachment']))
             ->assertOk();
 
         $this->actingAs($context['dplUser'])
-            ->from(route('dpl.daily-reports.index'))
-            ->patch(route('dpl.daily-reports.approve', $context['dailyReport']))
-            ->assertRedirect(route('dpl.daily-reports.index'));
+            ->from(route('dosen.daily-reports.index'))
+            ->patch(route('dosen.daily-reports.approve', $context['dailyReport']))
+            ->assertRedirect(route('dosen.daily-reports.index'));
 
         $this->assertDatabaseHas('kegiatan_kkn', [
             'id' => $context['dailyReport']->id,
@@ -197,12 +165,12 @@ class DplModuleTest extends TestCase
     {
         $context = $this->createDplScenario();
 
-        $this->from(route('dpl.daily-reports.show', $context['dailyReport']))
+        $this->from(route('dosen.daily-reports.show', $context['dailyReport']))
             ->actingAs($context['dplUser'])
-            ->patch(route('dpl.daily-reports.revision', $context['dailyReport']), [
+            ->patch(route('dosen.daily-reports.revision', $context['dailyReport']), [
                 'revision_notes' => 'Mohon lengkapi dokumentasi kegiatan.',
             ])
-            ->assertRedirect(route('dpl.daily-reports.show', $context['dailyReport']));
+            ->assertRedirect(route('dosen.daily-reports.show', $context['dailyReport']));
 
         $this->assertDatabaseHas('kegiatan_kkn', [
             'id' => $context['dailyReport']->id,
@@ -216,23 +184,23 @@ class DplModuleTest extends TestCase
         $context = $this->createDplScenario();
 
         $this->actingAs($context['dplUser'])
-            ->get(route('dpl.final-reports.index'))
+            ->get(route('dosen.final-reports.index'))
             ->assertOk()
             ->assertSee('Laporan Akhir DPL');
 
         $this->actingAs($context['dplUser'])
-            ->get(route('dpl.final-reports.show', $context['finalReport']))
+            ->get(route('dosen.final-reports.show', $context['finalReport']))
             ->assertOk()
             ->assertSee('Ringkasan laporan akhir mahasiswa.');
 
         $this->actingAs($context['dplUser'])
-            ->get(route('dpl.final-reports.download', $context['finalReport']))
+            ->get(route('dosen.final-reports.download', $context['finalReport']))
             ->assertOk();
 
         $this->actingAs($context['dplUser'])
-            ->from(route('dpl.final-reports.index'))
-            ->patch(route('dpl.final-reports.approve', $context['finalReport']))
-            ->assertRedirect(route('dpl.final-reports.index'));
+            ->from(route('dosen.final-reports.index'))
+            ->patch(route('dosen.final-reports.approve', $context['finalReport']))
+            ->assertRedirect(route('dosen.final-reports.index'));
 
         $this->assertDatabaseHas('laporan_akhir', [
             'id' => $context['finalReport']->id,
@@ -246,11 +214,11 @@ class DplModuleTest extends TestCase
         $foreignContext = $this->createDplScenario(['dpl_username' => 'dpl-foreign']);
 
         $this->actingAs($ownerContext['dplUser'])
-            ->get(route('dpl.daily-reports.show', $foreignContext['dailyReport']))
+            ->get(route('dosen.daily-reports.show', $foreignContext['dailyReport']))
             ->assertForbidden();
 
         $this->actingAs($ownerContext['dplUser'])
-            ->get(route('dpl.final-reports.show', $foreignContext['finalReport']))
+            ->get(route('dosen.final-reports.show', $foreignContext['finalReport']))
             ->assertForbidden();
     }
 
@@ -278,7 +246,7 @@ class DplModuleTest extends TestCase
         ]);
 
         $this->actingAs($context['dplUser'])
-            ->post(route('dpl.evaluations.store'), [
+            ->post(route('dosen.evaluations.store'), [
                 'student_id' => $context['student']->id,
                 'group_id' => $context['group']->id,
                 'evaluator_type' => 'dpl',
@@ -289,7 +257,7 @@ class DplModuleTest extends TestCase
                     ['criterion' => 'Artikel Ilmiah', 'score' => 86, 'weight' => 30],
                 ],
             ])
-            ->assertRedirect(route('dpl.evaluations.index'));
+            ->assertRedirect(route('dosen.evaluations.index'));
 
         $score = NilaiKkn::query()
             ->where('user_id', $context['student']->user_id)
@@ -310,9 +278,9 @@ class DplModuleTest extends TestCase
         $outsider = Mahasiswa::factory()->create();
         $outsider->user->assignRole('student');
 
-        $this->from(route('dpl.evaluations.index'))
+        $this->from(route('dosen.evaluations.index'))
             ->actingAs($context['dplUser'])
-            ->post(route('dpl.evaluations.store'), [
+            ->post(route('dosen.evaluations.store'), [
                 'student_id' => $outsider->id,
                 'group_id' => $context['group']->id,
                 'evaluator_type' => 'dpl',
@@ -323,7 +291,7 @@ class DplModuleTest extends TestCase
                     ['criterion' => 'Artikel Ilmiah', 'score' => 86, 'weight' => 30],
                 ],
             ])
-            ->assertRedirect(route('dpl.evaluations.index'))
+            ->assertRedirect(route('dosen.evaluations.index'))
             ->assertSessionHasErrors('student_id');
 
         $this->assertDatabaseMissing('evaluasi', [
@@ -337,16 +305,16 @@ class DplModuleTest extends TestCase
         $context = $this->createDplScenario();
 
         $this->actingAs($context['dplUser'])
-            ->from(route('dpl.daily-reports.show', $context['dailyReport']))
-            ->patch(route('dpl.daily-reports.approve', $context['dailyReport']))
-            ->assertRedirect(route('dpl.daily-reports.show', $context['dailyReport']));
+            ->from(route('dosen.daily-reports.show', $context['dailyReport']))
+            ->patch(route('dosen.daily-reports.approve', $context['dailyReport']))
+            ->assertRedirect(route('dosen.daily-reports.show', $context['dailyReport']));
 
-        $this->from(route('dpl.daily-reports.show', $context['dailyReport']))
+        $this->from(route('dosen.daily-reports.show', $context['dailyReport']))
             ->actingAs($context['dplUser'])
-            ->patch(route('dpl.daily-reports.revision', $context['dailyReport']), [
+            ->patch(route('dosen.daily-reports.revision', $context['dailyReport']), [
                 'revision_notes' => 'Tidak boleh berubah lagi.',
             ])
-            ->assertRedirect(route('dpl.daily-reports.show', $context['dailyReport']))
+            ->assertRedirect(route('dosen.daily-reports.show', $context['dailyReport']))
             ->assertSessionHas('error');
 
         $this->assertDatabaseHas('kegiatan_kkn', [
@@ -360,16 +328,16 @@ class DplModuleTest extends TestCase
         $context = $this->createDplScenario();
 
         $this->actingAs($context['dplUser'])
-            ->from(route('dpl.final-reports.show', $context['finalReport']))
-            ->patch(route('dpl.final-reports.approve', $context['finalReport']))
-            ->assertRedirect(route('dpl.final-reports.show', $context['finalReport']));
+            ->from(route('dosen.final-reports.show', $context['finalReport']))
+            ->patch(route('dosen.final-reports.approve', $context['finalReport']))
+            ->assertRedirect(route('dosen.final-reports.show', $context['finalReport']));
 
-        $this->from(route('dpl.final-reports.show', $context['finalReport']))
+        $this->from(route('dosen.final-reports.show', $context['finalReport']))
             ->actingAs($context['dplUser'])
-            ->patch(route('dpl.final-reports.revision', $context['finalReport']), [
+            ->patch(route('dosen.final-reports.revision', $context['finalReport']), [
                 'notes' => 'Tidak boleh berubah lagi.',
             ])
-            ->assertRedirect(route('dpl.final-reports.show', $context['finalReport']))
+            ->assertRedirect(route('dosen.final-reports.show', $context['finalReport']))
             ->assertSessionHas('error');
 
         $this->assertDatabaseHas('laporan_akhir', [

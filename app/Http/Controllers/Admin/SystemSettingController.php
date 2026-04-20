@@ -66,7 +66,7 @@ class SystemSettingController extends Controller
             'provider' => 'GEMINI GOOGLE AI',
             'is_healthy' => $hasKey,
             'endpoint' => 'generativelanguage.googleapis.com',
-            'model_text' => 'gemini-2.5-flash / pro (Latest)',
+            'model_text' => 'gemini-1.5-flash / pro (Latest)',
             'last_check' => now()->toIso8601String(),
         ];
 
@@ -92,7 +92,7 @@ class SystemSettingController extends Controller
 
         $validated = $request->validate([
             'settings' => 'required|array',
-            'settings.*.id' => 'required|exists:kkn.system_settings,id',
+            'settings.*.id' => 'required|exists:system_settings,id',
             'settings.*.value' => 'nullable|string',
         ]);
 
@@ -399,14 +399,17 @@ class SystemSettingController extends Controller
     {
         $request->validate([
             'gemini_api_key' => 'required|string',
+            'model' => 'nullable|string',
         ]);
 
         $apiKey = $request->input('gemini_api_key');
+        $model = $request->input('model') ?? config('ai.providers.gemini.models.text.default') ?? 'gemini-1.5-flash';
+        $baseUrl = config('ai.providers.gemini.url') ?? 'https://generativelanguage.googleapis.com/v1';
 
         try {
             $response = Http::timeout(10)
                 ->withHeaders(['Content-Type' => 'application/json'])
-                ->post("https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={$apiKey}", [
+                ->post("{$baseUrl}/models/{$model}:generateContent?key={$apiKey}", [
                     'contents' => [
                         [
                             'parts' => [
@@ -422,20 +425,20 @@ class SystemSettingController extends Controller
 
             if ($response->successful()) {
                 $data = $response->json();
-                
+
                 // Check if response has candidates
                 if (isset($data['candidates']) && count($data['candidates']) > 0) {
                     $candidate = $data['candidates'][0];
                     if (isset($candidate['content']['parts']) && count($candidate['content']['parts']) > 0) {
                         return response()->json([
                             'success' => true,
-                            'message' => 'Koneksi berhasil ke Google Gemini 2.5 Flash',
-                            'model' => 'gemini-2.5-flash',
+                            'message' => "Koneksi berhasil ke Google Gemini ({$model})",
+                            'model' => $model,
                             'response' => $candidate['content']['parts'][0]['text'] ?? 'OK',
                         ]);
                     }
                 }
-                
+
                 return response()->json([
                     'success' => false,
                     'message' => 'Response format tidak dikenali',
@@ -448,13 +451,13 @@ class SystemSettingController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'API Key ditolak: ' . $errorMessage,
+                'message' => 'API Key ditolak: '.$errorMessage,
                 'error_code' => $errorData['error']['status'] ?? 'API_ERROR',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghubungi server Google AI: ' . $e->getMessage(),
+                'message' => 'Gagal menghubungi server Google AI: '.$e->getMessage(),
                 'error_code' => 'NETWORK_ERROR',
             ]);
         }
@@ -485,6 +488,28 @@ class SystemSettingController extends Controller
         }
 
         return redirect()->back()->with('success', 'Konfigurasi AI berhasil diperbarui.');
+    }
+
+    /**
+     * Get AI configuration and available models for frontend
+     */
+    public function getAiConfig()
+    {
+        $provider = config('ai.default') ?? 'gemini';
+        $models = config("ai.providers.{$provider}.models.text") ?? [];
+        $endpoint = config("ai.providers.{$provider}.url") ?? '';
+
+        return response()->json([
+            'success' => true,
+            'provider' => $provider,
+            'endpoint' => $endpoint,
+            'models' => [
+                'default' => $models['default'] ?? 'gemini-2.5-flash',
+                'cheapest' => $models['cheapest'] ?? 'gemini-2.5-flash-lite',
+                'smartest' => $models['smartest'] ?? 'gemini-2.5-pro',
+            ],
+            'selectedModel' => $models['default'] ?? 'gemini-2.5-flash',
+        ]);
     }
 
     public function removeAiKey(Request $request)

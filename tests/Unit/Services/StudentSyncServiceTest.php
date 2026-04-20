@@ -348,7 +348,7 @@ class StudentSyncServiceTest extends TestCase
         $mahasiswa = Mahasiswa::where('nim', '0000000001')->first();
         $this->assertSame(90, $mahasiswa->sks_completed);
         $this->assertSame(3.20, $mahasiswa->gpa);
-        $this->assertTrue($mahasiswa->is_bta_ppi_passed);
+        $this->assertTrue($mahasiswa->status_bta_ppi === 'LULUS');
         $this->assertSame('Mother Name', $mahasiswa->mother_name);
     }
 

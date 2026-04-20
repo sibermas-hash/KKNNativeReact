@@ -383,7 +383,8 @@ class RedisCacheService
 
             return true;
         } catch (\Exception $e) {
-            \Log::error('Redis health check failed', ['error' => $e->getMessage()]);
+            // Only log as warning to prevent log pollution in local/disconnected environments
+            \Log::warning('Redis cache service unavailable: '.$e->getMessage());
 
             return false;
         }

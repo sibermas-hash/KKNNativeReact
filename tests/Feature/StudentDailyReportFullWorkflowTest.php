@@ -30,7 +30,7 @@ class StudentDailyReportFullWorkflowTest extends TestCase
     private function createDplUser(): array
     {
         $user = User::factory()->create();
-        $user->assignRole('dpl');
+        $user->assignRole('dosen', 'dpl');
 
         $dosen = Dosen::factory()->create([
             'user_id' => $user->id,
@@ -262,7 +262,7 @@ class StudentDailyReportFullWorkflowTest extends TestCase
 
         // DPL can see the report in their queue
         $this->actingAs($dplUser)
-            ->get(route('dpl.daily-reports.index'))
+            ->get(route('dosen.daily-reports.index'))
             ->assertOk()
             ->assertSee('Laporan untuk DPL Review');
 
@@ -270,7 +270,7 @@ class StudentDailyReportFullWorkflowTest extends TestCase
         $report = KegiatanKkn::where('mahasiswa_id', $mahasiswa->id)->firstOrFail();
 
         $this->actingAs($dplUser)
-            ->get(route('dpl.daily-reports.show', $report))
+            ->get(route('dosen.daily-reports.show', $report))
             ->assertOk()
             ->assertSee('Kegiatan yang perlu direview.');
     }
@@ -331,9 +331,9 @@ class StudentDailyReportFullWorkflowTest extends TestCase
 
         // DPL approves the report
         $this->actingAs($dplUser)
-            ->from(route('dpl.daily-reports.index'))
-            ->patch(route('dpl.daily-reports.approve', $report))
-            ->assertRedirect(route('dpl.daily-reports.index'));
+            ->from(route('dosen.daily-reports.index'))
+            ->patch(route('dosen.daily-reports.approve', $report))
+            ->assertRedirect(route('dosen.daily-reports.index'));
 
         $report->refresh();
         expect($report->status)->toBe('approved')
@@ -402,11 +402,11 @@ class StudentDailyReportFullWorkflowTest extends TestCase
 
         // DPL requests revision
         $this->actingAs($dplUser)
-            ->from(route('dpl.daily-reports.show', $report))
-            ->patch(route('dpl.daily-reports.revision', $report), [
+            ->from(route('dosen.daily-reports.show', $report))
+            ->patch(route('dosen.daily-reports.revision', $report), [
                 'revision_notes' => 'Mohon lengkapi dokumentasi kegiatan dan refleksi.',
             ])
-            ->assertRedirect(route('dpl.daily-reports.show', $report));
+            ->assertRedirect(route('dosen.daily-reports.show', $report));
 
         $report->refresh();
         expect($report->status)->toBe('revision')

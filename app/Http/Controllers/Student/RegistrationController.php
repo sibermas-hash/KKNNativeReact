@@ -147,7 +147,7 @@ class RegistrationController extends Controller
         \Log::info('RegistrationController@create hit. User: '.($request->user()?->username ?? 'null').' Request expects JSON: '.($request->wantsJson() ? 'YES' : 'NO'));
         $today = now()->toDateString();
         $mahasiswa = auth()->user()?->mahasiswa;
-//dd($mahasiswa);
+        // dd($mahasiswa);
         if ($this->hasLockedRegistration($mahasiswa)) {
             if ($request->wantsJson()) {
                 return response()->json([
@@ -404,7 +404,7 @@ class RegistrationController extends Controller
     public function status(Request $request): Response|RedirectResponse
     {
         $mahasiswa = auth()->user()?->mahasiswa;
-        
+
         if (! $mahasiswa) {
             return redirect()->route('student.dashboard');
         }
@@ -441,7 +441,7 @@ class RegistrationController extends Controller
                 'nim' => $mahasiswa->nim,
                 'name' => $mahasiswa->nama,
                 'phone' => auth()->user()->phone,
-            ]
+            ],
         ]);
     }
 

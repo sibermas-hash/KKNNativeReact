@@ -1,8 +1,9 @@
 import { Head, useForm, usePage, router } from '@inertiajs/react';
-import { useRef, useState, useEffect, type ChangeEvent, type FormEventHandler } from 'react';
+import { useRef, useState, useEffect, type ChangeEvent } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { FormInput, FormTextarea } from '@/Components/ui';
 import type { PageProps } from '@/types';
+import type { FormEventHandlerType } from '@/types/events';
 import { route } from 'ziggy-js';
 import {
   User, Camera, Lock, UserCheck,
@@ -36,6 +37,7 @@ interface LecturerData {
   nip: string; nama: string; gender: 'L' | 'P' | null;
   is_cpns: boolean; is_tugas_belajar: boolean; faculty: string | null;
   birth_date: string | null; jabatan: string | null;
+  golongan: string | null; no_rekening: string | null; nama_bank: string | null; npwp: string | null;
   biodata_complete: boolean; missing_biodata_fields: string[];
 }
 
@@ -50,36 +52,41 @@ const FIELD_LABELS: Record<string, string> = {
   nik: 'NIK (KTP)', mother_name: 'Nama Ibu Kandung', birth_place: 'Tempat Lahir',
   birth_date: 'Tanggal Lahir', phone: 'Nomor HP', gender: 'Jenis Kelamin',
   shirt_size: 'Ukuran Baju/Jaket', nip: 'NIP / NIDN', nama: 'Nama Lengkap',
-  jabatan: 'Jabatan Fungsional'
+  jabatan: 'Jabatan Fungsional', golongan: 'Golongan', no_rekening: 'No. Rekening',
+  nama_bank: 'Nama Bank', npwp: 'NPWP'
 };
 
 export default function ProfileShow() {
   const { user, student, lecturer, is_onboarding: isOnboarding } = usePage<Props>().props;
   
-  // Safety check
-  if (!user) {
-    return <div className="text-red-600">Error: User data not available</div>;
-  }
-  
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const nikCheckTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [nikChecking, setNikChecking] = useState(false);
   const [nikUniqueError, setNikUniqueError] = useState<string | null>(null);
+  
   const mustChangePassword = user?.must_change_password ?? false;
 
   const profileForm = useForm({
-    name: user.name ?? '', phone: user.phone ?? '', address: user.address ?? '',
-    domicile_village_name: user.domicile_village_name ?? '',
-    domicile_district_name: user.domicile_district_name ?? '',
-    domicile_regency_name: user.domicile_regency_name ?? '',
-    address_verified: !!user.address_verified_at,
+    name: user?.name ?? '', phone: user?.phone ?? '', address: user?.address ?? '',
+    domicile_village_name: user?.domicile_village_name ?? '',
+    domicile_district_name: user?.domicile_district_name ?? '',
+    domicile_regency_name: user?.domicile_regency_name ?? '',
+    address_verified: !!user?.address_verified_at,
     nik: student?.nik ?? '', mother_name: student?.mother_name ?? '',
     gender: student?.gender ?? lecturer?.gender ?? '', 
     shirt_size: student?.shirt_size ?? '',
     birth_place: student?.birth_place ?? '', 
     birth_date: student?.birth_date ?? lecturer?.birth_date ?? '',
     jabatan: lecturer?.jabatan ?? '',
+    golongan: lecturer?.golongan ?? '',
+    no_rekening: lecturer?.no_rekening ?? '',
+    nama_bank: lecturer?.nama_bank ?? '',
+    npwp: lecturer?.npwp ?? '',
   });
+
+  const avatarForm = useForm<{ avatar: File | null }>({ avatar: null });
 
   const validateNik = (value: string): string | undefined => {
     if (!student) return undefined; // Only for students
@@ -108,71 +115,45 @@ export default function ProfileShow() {
     profileForm.setError('phone', validatePhone(value) ?? '');
   };
 
-  const passwordForm = useForm({ current_password: '', password: '', password_confirmation: '' });
-  const avatarForm = useForm<{ avatar: File | null }>({ avatar: null });
+  useEffect(() => {
+    const isStudent = !!student;
+    if (!isStudent) return;
 
-  // If must change password, show only password form
-  if (mustChangePassword) {
-    return (
-      <AppLayout title="Ganti Password">
-        <Head title="Ganti Password" />
-        <div className="max-w-2xl mx-auto py-12">
-          <div className="bg-rose-50 border border-rose-200 rounded-xl p-8 space-y-6">
-            <div className="text-center space-y-2">
-              <AlertCircle size={48} className="text-rose-600 mx-auto" />
-              <h1 className="text-2xl font-bold text-rose-900">Ganti Password</h1>
-              <p className="text-rose-800">Anda harus mengganti password Anda sebelum melanjutkan.</p>
-            </div>
-            
-            <form onSubmit={handlePasswordSubmit} className="space-y-4">
-              <div>
-                <label className="text-sm font-semibold text-rose-900">Password Saat Ini</label>
-                <FormInput 
-                  type="password" 
-                  value={passwordForm.data.current_password} 
-                  onChange={e => passwordForm.setData('current_password', e.target.value)} 
-                  error={passwordForm.errors.current_password} 
-                  className="h-10 mt-1"
-                  placeholder="Masukkan password saat ini"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-rose-900">Password Baru</label>
-                <FormInput 
-                  type="password" 
-                  value={passwordForm.data.password} 
-                  onChange={e => passwordForm.setData('password', e.target.value)} 
-                  error={passwordForm.errors.password} 
-                  className="h-10 mt-1"
-                  placeholder="Masukkan password baru"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-rose-900">Konfirmasi Password Baru</label>
-                <FormInput 
-                  type="password" 
-                  value={passwordForm.data.password_confirmation} 
-                  onChange={e => passwordForm.setData('password_confirmation', e.target.value)} 
-                  error={passwordForm.errors.password_confirmation} 
-                  className="h-10 mt-1"
-                  placeholder="Konfirmasi password baru"
-                />
-              </div>
-              <button 
-                type="submit" 
-                disabled={passwordForm.processing}
-                className="w-full h-10 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg transition-colors disabled:opacity-50"
-              >
-                {passwordForm.processing ? 'Menyimpan...' : 'Ganti Password'}
-              </button>
-            </form>
-          </div>
-        </div>
-      </AppLayout>
-    );
-  }
+    const nik = profileForm.data.nik;
+    if (nik.length !== 16) {
+      setNikUniqueError(null);
+      return;
+    }
 
-  const handleProfileSubmit: FormEventHandler = (e) => {
+    if (nikCheckTimeout.current) {
+      clearTimeout(nikCheckTimeout.current);
+    }
+
+    setNikChecking(true);
+    setNikUniqueError(null);
+
+    nikCheckTimeout.current = setTimeout(async () => {
+      try {
+        const response = await fetch(route('profile.check-nik', { nik }));
+        const data = await response.json();
+        if (!data.valid) {
+          setNikUniqueError(data.message);
+        }
+      } catch (error) {
+        console.error('Failed to check NIK:', error);
+      } finally {
+        setNikChecking(false);
+      }
+    }, 500);
+
+    return () => {
+      if (nikCheckTimeout.current) {
+        clearTimeout(nikCheckTimeout.current);
+      }
+    };
+  }, [profileForm.data.nik, student]);
+
+  const handleProfileSubmit: FormEventHandlerType = (e) => {
     e.preventDefault();
     
     const nikError = student ? validateNik(profileForm.data.nik) : undefined;
@@ -200,10 +181,13 @@ export default function ProfileShow() {
     profileForm.patch(route('profile.update'), { preserveScroll: true });
   };
 
-  const handlePasswordSubmit: FormEventHandler = (e) => {
-    e.preventDefault();
-    passwordForm.post(route('profile.password'), { preserveScroll: true, onSuccess: () => passwordForm.reset() });
-  };
+  // If must change password, redirect to dedicated page
+  if (mustChangePassword) {
+    if (typeof window !== 'undefined') {
+      router.visit(route('profile.password-change'));
+    }
+    return null;
+  }
 
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -228,47 +212,6 @@ export default function ProfileShow() {
   const biodataComplete = isStudent ? (student?.biodata_complete ?? true) : (lecturer?.biodata_complete ?? true);
   const missingFields = isStudent ? (student?.missing_biodata_fields ?? []) : (lecturer?.missing_biodata_fields ?? []);
 
-  const nikCheckTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (!isStudent) return;
-
-    const nik = profileForm.data.nik;
-    if (nik.length !== 16) {
-      setNikUniqueError(null);
-      return;
-    }
-
-    if (nikCheckTimeout.current) {
-      clearTimeout(nikCheckTimeout.current);
-    }
-
-    setNikChecking(true);
-    setNikUniqueError(null);
-
-    nikCheckTimeout.current = setTimeout(async () => {
-      try {
-        const response = await fetch(route('profile.check-nik', { nik }));
-        const data = await response.json();
-        if (!data.valid) {
-          setNikUniqueError(data.message);
-        } else {
-          setNikUniqueError(null);
-        }
-      } catch {
-        setNikUniqueError(null);
-      } finally {
-        setNikChecking(false);
-      }
-    }, 500);
-
-    return () => {
-      if (nikCheckTimeout.current) {
-        clearTimeout(nikCheckTimeout.current);
-      }
-    };
-  }, [profileForm.data.nik, isStudent]);
-
   return (
     <AppLayout title="Profil Pengguna">
       <Head title="Profil Saya" />
@@ -287,28 +230,7 @@ export default function ProfileShow() {
           </div>
         </div>
 
-        {mustChangePassword && (
-          <div className="bg-rose-100 border border-rose-300 rounded-xl p-4 flex gap-3">
-            <AlertCircle size={18} className="text-rose-700 mt-0.5 shrink-0" />
-            <div className="space-y-2">
-              <p className="text-sm font-bold text-rose-900 uppercase tracking-wide">
-                ⚠️ PROFIL BELUM LENGKAP - TERKUNCIL
-              </p>
-              <p className="text-sm text-rose-800">
-                Anda harus melengkapi semua data di bawah ini untuk dapat mengakses fitur SIM-KKN.
-              </p>
-              {(!user.avatar) && (
-                <p className="text-sm text-rose-700">• Foto Profil (klik foto di atas untuk upload)</p>
-              )}
-              {missingFields.length > 0 && (
-                <p className="text-sm text-rose-700">• {missingFields.map(f => FIELD_LABELS[f] ?? f).join(', ')}</p>
-              )}
-              {(!user.address_verified_at) && (
-                <p className="text-sm text-rose-700">• Verifikasi Alamat Domisili (centang &quot;Saya menyatakan alamat...&quot;)</p>
-              )}
-            </div>
-          </div>
-        )}
+
 
         {!mustChangePassword && !biodataComplete && missingFields.length > 0 && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3">
@@ -395,25 +317,49 @@ export default function ProfileShow() {
                   )}
                </div>
 
-               {isLecturer && (
-                 <div className="mt-2 p-3 bg-emerald-50 rounded-lg space-y-2">
+{isLecturer && (
+                  <div className="mt-2 p-3 bg-emerald-50 rounded-lg space-y-2">
+                     <div className="flex items-center gap-2">
+                        <BadgeCheck size={14} className="text-emerald-600" />
+                        <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider text-emerald-950 uppercase">Kualifikasi DPL</span>
+                     </div>
+                     <div className="grid grid-cols-2 gap-2">
+                        <div className={clsx("px-2 py-1 rounded text-[10px] font-bold text-center", lecturer.is_cpns ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800")}>
+                           {lecturer.is_cpns ? 'CPNS' : 'PNS/TETAP'}
+                        </div>
+                        <div className={clsx("px-2 py-1 rounded text-[10px] font-bold text-center", lecturer.is_tugas_belajar ? "bg-rose-100 text-rose-800" : "bg-blue-100 text-blue-800")}>
+                           {lecturer.is_tugas_belajar ? 'TGS BELAJAR' : 'AKTIF'}
+                        </div>
+                     </div>
+                     {lecturer.is_tugas_belajar && (
+                       <p className="text-[9px] text-rose-600 italic leading-tight">* Dosen tugas belajar tidak diperbolehkan mendaftar sebagai DPL.</p>
+                     )}
+                  </div>
+                )}
+
+
+                {isLecturer && (lecturer.golongan || lecturer.no_rekening || lecturer.nama_bank || lecturer.npwp) && (
+                  <div className="mt-2 p-3 bg-gray-50 rounded-lg space-y-2">
                     <div className="flex items-center gap-2">
-                       <BadgeCheck size={14} className="text-emerald-600" />
-                       <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider text-emerald-950 uppercase">Kualifikasi DPL</span>
+                      <Info size={14} className="text-gray-600" />
+                      <span className="text-[10px] font-bold text-gray-800 uppercase tracking-wider">Data Keuangan & Pajak</span>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                       <div className={clsx("px-2 py-1 rounded text-[10px] font-bold text-center", lecturer.is_cpns ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800")}>
-                          {lecturer.is_cpns ? 'CPNS' : 'PNS/TETAP'}
-                       </div>
-                       <div className={clsx("px-2 py-1 rounded text-[10px] font-bold text-center", lecturer.is_tugas_belajar ? "bg-rose-100 text-rose-800" : "bg-blue-100 text-blue-800")}>
-                          {lecturer.is_tugas_belajar ? 'TGS BELAJAR' : 'AKTIF'}
-                       </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                      {lecturer.golongan && (
+                        <div><span className="text-gray-500">Golongan:</span> <span className="font-medium text-gray-900">{lecturer.golongan}</span></div>
+                      )}
+                      {lecturer.no_rekening && (
+                        <div><span className="text-gray-500">No. Rekening:</span> <span className="font-medium text-gray-900">{lecturer.no_rekening}</span></div>
+                      )}
+                      {lecturer.nama_bank && (
+                        <div><span className="text-gray-500">Nama Bank:</span> <span className="font-medium text-gray-900">{lecturer.nama_bank}</span></div>
+                      )}
+                      {lecturer.npwp && (
+                        <div><span className="text-gray-500">NPWP:</span> <span className="font-medium text-gray-900">{lecturer.npwp}</span></div>
+                      )}
                     </div>
-                    {lecturer.is_tugas_belajar && (
-                      <p className="text-[9px] text-rose-600 italic leading-tight">* Dosen tugas belajar tidak diperbolehkan mendaftar sebagai DPL.</p>
-                    )}
-                 </div>
-               )}
+                  </div>
+                )}
             </div>
           </div>
 
@@ -489,12 +435,33 @@ export default function ProfileShow() {
                       <FormInput value={profileForm.data.name} onChange={e => profileForm.setData('name', e.target.value)} error={profileForm.errors.name} placeholder="Nama sesuai KTP" className="h-10" />
                     </div>
 
-                    {isLecturer && (
+{isLecturer && (
                        <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-emerald-800 flex items-center gap-1">Jabatan Fungsional <span className="text-rose-500">*</span></label>
-                        <FormInput value={profileForm.data.jabatan} onChange={e => profileForm.setData('jabatan', e.target.value)} error={profileForm.errors.jabatan} placeholder="Contoh: Lektor Kepala" className="h-10" />
-                      </div>
-                    )}
+                         <label className="text-sm font-medium text-emerald-800 flex items-center gap-1">Jabatan Fungsional <span className="text-rose-500">*</span></label>
+                         <FormInput value={profileForm.data.jabatan} onChange={e => profileForm.setData('jabatan', e.target.value)} error={profileForm.errors.jabatan} placeholder="Contoh: Lektor Kepala" className="h-10" />
+                       </div>
+                     )}
+
+                     {isLecturer && (
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         <div className="space-y-1.5">
+                           <label className="text-sm font-medium text-emerald-800">Golongan</label>
+                           <FormInput value={profileForm.data.golongan} onChange={e => profileForm.setData('golongan', e.target.value)} error={profileForm.errors.golongan} placeholder="Contoh: IV/a" className="h-10" />
+                         </div>
+                         <div className="space-y-1.5">
+                           <label className="text-sm font-medium text-emerald-800">NPWP</label>
+                           <FormInput value={profileForm.data.npwp} onChange={e => profileForm.setData('npwp', e.target.value)} error={profileForm.errors.npwp} placeholder="Contoh: 12.345.678.9-012.345" className="h-10" />
+                         </div>
+                         <div className="space-y-1.5">
+                           <label className="text-sm font-medium text-emerald-800">No. Rekening</label>
+                           <FormInput value={profileForm.data.no_rekening} onChange={e => profileForm.setData('no_rekening', e.target.value)} error={profileForm.errors.no_rekening} placeholder="Contoh: 1234567890" className="h-10" inputMode="numeric" />
+                         </div>
+                         <div className="space-y-1.5">
+                           <label className="text-sm font-medium text-emerald-800">Nama Bank</label>
+                           <FormInput value={profileForm.data.nama_bank} onChange={e => profileForm.setData('nama_bank', e.target.value)} error={profileForm.errors.nama_bank} placeholder="Contoh: Bank Negara Indonesia" className="h-10" />
+                         </div>
+                       </div>
+                     )}
 
                     {isStudent && (
                       <>
@@ -600,34 +567,7 @@ export default function ProfileShow() {
               </form>
             </div>
 
-            <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-2">
-                <KeyRound size={16} className="text-emerald-600" />
-                <h2 className="text-sm font-semibold text-emerald-950">Ganti Kata Sandi</h2>
-              </div>
-              <form onSubmit={handlePasswordSubmit} className="p-6 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-emerald-800">Kata Sandi Sekarang</label>
-                    <FormInput type="password" value={passwordForm.data.current_password} onChange={e => passwordForm.setData('current_password', e.target.value)} error={passwordForm.errors.current_password} className="h-10" />
-                  </div>
-                  <div className="hidden md:block" />
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-emerald-800">Kata Sandi Baru</label>
-                    <FormInput type="password" value={passwordForm.data.password} onChange={e => passwordForm.setData('password', e.target.value)} error={passwordForm.errors.password} className="h-10" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-emerald-800">Konfirmasi Sandi Baru</label>
-                    <FormInput type="password" value={passwordForm.data.password_confirmation} onChange={e => passwordForm.setData('password_confirmation', e.target.value)} error={passwordForm.errors.password_confirmation} className="h-10" />
-                  </div>
-                </div>
-                <div className="flex justify-end pt-2">
-                  <button type="submit" disabled={passwordForm.processing} className="h-10 px-6 bg-white border border-gray-300 text-emerald-800 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50">
-                    {passwordForm.processing ? 'Memproses...' : 'Perbarui Kata Sandi'}
-                  </button>
-                </div>
-              </form>
-            </div>
+
           </div>
         </div>
       </div>

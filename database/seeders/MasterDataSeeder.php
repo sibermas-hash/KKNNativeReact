@@ -63,7 +63,7 @@ class MasterDataSeeder extends Seeder
                 'academic_year_id' => $academicYear->id,
                 'name' => 'KKN Reguler',
                 'periode' => 56,
-                'jenis' => 'KKN Reguler',
+                'jenis' => 'REGULER',
             ],
             [
                 'angkatan' => 56,

@@ -18,7 +18,6 @@ class PesertaKkn extends Model
 
     protected $table = 'peserta_kkn';
 
-
     protected $fillable = [
         'mahasiswa_id',
         'periode_id',
@@ -82,6 +81,16 @@ class PesertaKkn extends Model
     public function rejector(): BelongsTo
     {
         return $this->belongsTo(User::class, 'last_rejected_by');
+    }
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class, 'peserta_kkn_id');
+    }
+
+    public function locationDispensations(): HasMany
+    {
+        return $this->hasMany(LocationDispensation::class, 'peserta_kkn_id');
     }
 
     /**

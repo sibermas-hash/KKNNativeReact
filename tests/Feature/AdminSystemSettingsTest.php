@@ -8,6 +8,12 @@ use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web']);
+
+    // Ensure required settings exist for tests
+    SystemSetting::updateOrCreate(
+        ['config_key' => 'support_contact_label'],
+        ['label' => 'Support Contact Label', 'value' => 'LPPM Support', 'type' => 'text', 'group' => 'contact']
+    );
 });
 
 test('superadmin can open system settings page', function () {

@@ -113,6 +113,7 @@ class AiConfigServiceProvider extends ServiceProvider
                     \Log::warning("Failed to decrypt AI setting: {$setting->config_key}", [
                         'error' => $e->getMessage(),
                     ]);
+
                     continue;
                 }
             }
@@ -133,8 +134,6 @@ class AiConfigServiceProvider extends ServiceProvider
      * - 'anthropic_api_key' -> ['anthropic' => ['key' => value]]
      *
      * @param  array<string, array>  $config
-     * @param  string  $dbKey
-     * @param  mixed  $value
      * @return array<string, array>
      */
     private function mapDatabaseKeyToConfig(array $config, string $dbKey, mixed $value): array

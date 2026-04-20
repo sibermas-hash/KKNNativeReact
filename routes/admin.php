@@ -110,7 +110,7 @@ Route::middleware([
 
 /*
 |--------------------------------------------------------------------------
-| SUPERADMIN ONLY (Sensitive operations)
+| ADMIN & SUPERADMIN (Operational - except sensitive system settings)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -125,12 +125,8 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
     // Master Data
     Route::resource('tahun-akademik', Admin\TahunAkademikController::class)
         ->only(['index', 'store', 'update', 'destroy']);
-
-    // Jenis KKN (Program Types)
     Route::resource('jenis-kkn', Admin\JenisKknController::class)
         ->only(['index', 'show', 'store', 'update', 'destroy']);
-
-    // Faculties & Programs
     Route::resource('fakultas', Admin\FakultasController::class)
         ->only(['index', 'store', 'update', 'destroy']);
     Route::resource('prodi', Admin\ProdiController::class)
@@ -143,8 +139,12 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
 
     // Locations
     Route::get('locations/export', [Admin\LokasiController::class, 'export'])->name('locations.export');
+    Route::get('lokasi/template', [Admin\LokasiController::class, 'downloadTemplate'])->name('lokasi.template');
     Route::post('lokasi/impor', [Admin\LokasiController::class, 'import'])->name('lokasi.import');
     Route::get('locations', [Admin\LokasiController::class, 'index'])->name('locations.index');
+    Route::post('locations', [Admin\LokasiController::class, 'store'])->name('locations.store');
+    Route::put('locations/{lokasi}', [Admin\LokasiController::class, 'update'])->name('locations.update');
+    Route::delete('locations/{lokasi}', [Admin\LokasiController::class, 'destroy'])->name('locations.destroy');
     Route::resource('lokasi', Admin\LokasiController::class)
         ->only(['index', 'store', 'update', 'destroy']);
 
@@ -156,6 +156,39 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
         Route::patch('/{workshop}/cancel', [WorkshopController::class, 'cancel'])->name('cancel');
         Route::post('/{workshop}/mark-attendance', [WorkshopController::class, 'markAttendance'])->name('mark-attendance');
     });
+
+    // Participant Operations (accessible by admin)
+    Route::get('peserta/pindah', [Admin\StudentTransferController::class, 'index'])->name('peserta.pindah.index');
+    Route::post('peserta/pindah', [Admin\StudentTransferController::class, 'transfer'])->name('peserta.pindah');
+    Route::post('pendaftaran/setuju-massal', [Admin\PesertaKknController::class, 'bulkApprove'])->name('pendaftaran.setuju-massal');
+    Route::post('pendaftaran/tolak-massal', [Admin\PesertaKknController::class, 'bulkReject'])->name('pendaftaran.tolak-massal');
+    Route::patch('pendaftaran/{pesertaKkn}/setuji', [Admin\PesertaKknController::class, 'approve'])->name('pendaftaran.setuji');
+    Route::patch('pendaftaran/{pesertaKkn}/tolak', [Admin\PesertaKknController::class, 'reject'])->name('pendaftaran.tolak');
+    Route::patch('pendaftaran/{pesertaKkn}/tugaskan-kelompok', [Admin\PesertaKknController::class, 'assignGroup'])->name('pendaftaran.tugaskan-kelompok');
+    Route::post('pendaftaran/{registration}/jadikan-ketua', [Admin\PesertaKknController::class, 'makeLeader'])->name('pendaftaran.jadikan-ketua');
+    Route::post('pendaftaran/{registration}/jadikan-korcam', [Admin\PesertaKknController::class, 'makeKorcam'])->name('pendaftaran.jadikan-korcam');
+
+    // Groups CRUD
+    Route::post('kelompok/impor', [Admin\KelompokKknController::class, 'import'])->name('kelompok.import');
+    Route::resource('kelompok', Admin\KelompokKknController::class)
+        ->only(['store', 'update', 'destroy']);
+
+    Route::get('rekapitulasi', [Admin\RekapitulasiController::class, 'index'])->name('rekapitulasi.index');
+
+    // Public Content Management
+    Route::resource('unduhan', Admin\DownloadController::class)
+        ->only(['index', 'create', 'store', 'update', 'destroy']);
+    Route::get('warta-utama', [Admin\AnnouncementController::class, 'index'])->name('warta-utama.index');
+    Route::post('warta-utama', [Admin\AnnouncementController::class, 'store'])->name('warta-utama.store');
+    Route::patch('warta-utama/{announcement}', [Admin\AnnouncementController::class, 'update'])->name('warta-utama.update');
+});
+
+/*
+|--------------------------------------------------------------------------
+| SUPERADMIN ONLY (Sensitive operations - user management, sync, role delegation)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['role:superadmin'])->prefix('admin')->name('admin.')->group(function () {
 
     // User & Staff Management
     Route::get('pengguna', [Admin\UserController::class, 'index'])->name('pengguna.index');
@@ -198,6 +231,7 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
     Route::patch('pendaftaran/{pesertaKkn}/tolak', [Admin\PesertaKknController::class, 'reject'])->name('pendaftaran.tolak');
     Route::patch('pendaftaran/{pesertaKkn}/tugaskan-kelompok', [Admin\PesertaKknController::class, 'assignGroup'])->name('pendaftaran.tugaskan-kelompok');
     Route::post('pendaftaran/{registration}/jadikan-ketua', [Admin\PesertaKknController::class, 'makeLeader'])->name('pendaftaran.jadikan-ketua');
+    Route::post('pendaftaran/{registration}/jadikan-korcam', [Admin\PesertaKknController::class, 'makeKorcam'])->name('pendaftaran.jadikan-korcam');
 
     // Groups CRUD
     Route::post('kelompok/impor', [Admin\KelompokKknController::class, 'import'])->name('kelompok.import');
@@ -245,6 +279,7 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
         Route::patch('sertifikat', [Admin\CertificateConfigController::class, 'update'])->name('sertifikat.update');
         Route::get('sistem', [Admin\SystemSettingController::class, 'index'])->name('sistem');
         Route::patch('sistem', [Admin\SystemSettingController::class, 'update'])->name('sistem.update');
+        Route::get('sistem/ai/config', [Admin\SystemSettingController::class, 'getAiConfig'])->name('sistem.ai.config');
         Route::post('sistem/ai/test', [Admin\SystemSettingController::class, 'testAiConnection'])->name('sistem.ai.test');
         Route::patch('sistem/ai/update', [Admin\SystemSettingController::class, 'updateAiSettings'])->name('sistem.ai.update');
         Route::delete('sistem/ai/key', [Admin\SystemSettingController::class, 'removeAiKey'])->name('sistem.ai.remove');

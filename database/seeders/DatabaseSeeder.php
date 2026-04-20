@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
     {
         $seeders = [
             RoleSeeder::class,
+            PermissionSeeder::class,
             MasterDataSeeder::class,
             KonfigurasiPenilaianSeeder::class,
             KonfigurasiSertifikatSeeder::class,

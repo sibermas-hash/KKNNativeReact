@@ -34,8 +34,8 @@ class WorkshopController extends Controller
 
         $workshops = $this->workshopService->getUpcomingWorkshops(
             $user->hasRole('student') ? $user->id : null,
-            $user->hasRole('superadmin'),
-            $user->hasRole('superadmin'),
+            $user->hasAnyRole(['superadmin', 'admin']),
+            $user->hasAnyRole(['superadmin', 'admin']),
             $activePeriodId
         );
 
@@ -58,7 +58,7 @@ class WorkshopController extends Controller
      */
     public function store(Request $request)
     {
-        abort_unless($request->user()->hasRole('superadmin'), 403, 'Hanya superadmin yang dapat membuat pembekalan.');
+        abort_unless($request->user()->hasAnyRole(['superadmin', 'admin']), 403, 'Hanya superadmin dan admin yang dapat membuat pembekalan.');
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -81,7 +81,7 @@ class WorkshopController extends Controller
      */
     public function update(Request $request, Workshop $workshop)
     {
-        abort_unless($request->user()->hasRole('superadmin'), 403, 'Hanya superadmin yang dapat mengubah pembekalan.');
+        abort_unless($request->user()->hasAnyRole(['superadmin', 'admin']), 403, 'Hanya superadmin dan admin yang dapat mengubah pembekalan.');
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -108,7 +108,7 @@ class WorkshopController extends Controller
      */
     public function cancel(Request $request, Workshop $workshop)
     {
-        abort_unless($request->user()->hasRole('superadmin'), 403, 'Hanya superadmin yang dapat membatalkan pembekalan.');
+        abort_unless($request->user()->hasAnyRole(['superadmin', 'admin']), 403, 'Hanya superadmin dan admin yang dapat membatalkan pembekalan.');
 
         try {
             $this->workshopService->cancelWorkshop($workshop);
@@ -124,7 +124,7 @@ class WorkshopController extends Controller
      */
     public function markPassingStatus(Request $request, int $workshop)
     {
-        abort_unless($request->user()->hasRole('superadmin'), 403, 'Hanya superadmin yang dapat mengelola status kelulusan pembekalan.');
+        abort_unless($request->user()->hasAnyRole(['superadmin', 'admin']), 403, 'Hanya superadmin dan admin yang dapat mengelola status kelulusan pembekalan.');
 
         $validated = $request->validate([
             'user_ids' => ['nullable', 'array'],
@@ -144,7 +144,7 @@ class WorkshopController extends Controller
      */
     public function markAttendance(Request $request, int $workshop)
     {
-        abort_unless($request->user()->hasRole('superadmin'), 403, 'Hanya superadmin yang dapat mengelola presensi pembekalan.');
+        abort_unless($request->user()->hasAnyRole(['superadmin', 'admin']), 403, 'Hanya superadmin dan admin yang dapat mengelola presensi pembekalan.');
 
         $validated = $request->validate([
             'user_ids' => ['nullable', 'array'],

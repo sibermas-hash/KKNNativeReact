@@ -38,6 +38,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\YudisiumController;
 use App\Http\Controllers\WorkshopController;
 use Closure;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
@@ -266,7 +267,7 @@ class EnsureAdminAuthorization
 
         // Ensure user is authenticated
         if (! $user) {
-            throw new \Illuminate\Auth\AuthenticationException(
+            throw new AuthenticationException(
                 'Unauthenticated.', [], route('login')
             );
         }

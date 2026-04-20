@@ -113,7 +113,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
           <div className="relative overflow-x-auto pb-6">
             <div className="flex gap-3 pb-2 min-w-max">
               {Array.from({ length: 17 }, (_, i) => String(i + 1)).map((sdg) => {
-                const count = sdg_distribution ? (sdg_distribution[sdg as keyof typeof sdg_distribution] || 0) : 0;
+                const count = sdg_distribution ? Number(sdg_distribution[sdg as keyof typeof sdg_distribution] || 0) : 0;
                 return (
                   <div key={sdg} className="relative flex flex-col items-center group">
                     <div className="w-16 h-20 bg-gray-50 border border-emerald-50/60 rounded-xl p-3 flex flex-col justify-between transition-all group-hover:bg-[#16a34a] group-hover:border-emerald-600">

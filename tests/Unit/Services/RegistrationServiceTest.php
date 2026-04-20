@@ -62,7 +62,7 @@ class RegistrationServiceTest extends TestCase
     {
         $mahasiswa = Mahasiswa::factory()->create([
             'sks_completed' => 120,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'cert.pdf',
             'parent_permission_path' => 'permission.pdf',
         ]);
@@ -82,7 +82,7 @@ class RegistrationServiceTest extends TestCase
     {
         $mahasiswa = Mahasiswa::factory()->create([
             'sks_completed' => 120,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'cert.pdf',
             'parent_permission_path' => 'permission.pdf',
         ]);
@@ -102,7 +102,7 @@ class RegistrationServiceTest extends TestCase
     {
         $mahasiswa = Mahasiswa::factory()->create([
             'sks_completed' => 120,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'cert.pdf',
             'parent_permission_path' => 'permission.pdf',
         ]);
@@ -127,7 +127,7 @@ class RegistrationServiceTest extends TestCase
     {
         $mahasiswa = Mahasiswa::factory()->create([
             'sks_completed' => 50,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'cert.pdf',
             'parent_permission_path' => 'permission.pdf',
         ]);
@@ -149,7 +149,7 @@ class RegistrationServiceTest extends TestCase
     {
         $mahasiswa = Mahasiswa::factory()->create([
             'sks_completed' => 120,
-            'is_bta_ppi_passed' => false,
+            'status_bta_ppi' => 'BELUM_LULUS',
             'health_certificate_path' => 'cert.pdf',
             'parent_permission_path' => 'permission.pdf',
         ]);
@@ -162,7 +162,7 @@ class RegistrationServiceTest extends TestCase
         ]);
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Belum lulus BTA-PPI');
+        $this->expectExceptionMessage('Belum lulus BTA/PPI');
 
         $this->service->register($mahasiswa, $periode->id, null, null);
     }
@@ -171,7 +171,7 @@ class RegistrationServiceTest extends TestCase
     {
         $mahasiswa = Mahasiswa::factory()->create([
             'sks_completed' => 120,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => null,
             'parent_permission_path' => 'permission.pdf',
         ]);
@@ -193,7 +193,7 @@ class RegistrationServiceTest extends TestCase
     {
         $mahasiswa = Mahasiswa::factory()->create([
             'sks_completed' => 120,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'cert.pdf',
             'parent_permission_path' => 'permission.pdf',
         ]);
@@ -228,7 +228,7 @@ class RegistrationServiceTest extends TestCase
 
         $mahasiswa = Mahasiswa::factory()->create([
             'sks_completed' => 120,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'cert.pdf',
             'parent_permission_path' => 'permission.pdf',
             'fakultas_id' => $studentFaculty->id,
@@ -262,7 +262,7 @@ class RegistrationServiceTest extends TestCase
     {
         $mahasiswa = Mahasiswa::factory()->create([
             'sks_completed' => 120,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'cert.pdf',
             'parent_permission_path' => 'permission.pdf',
         ]);
@@ -302,7 +302,7 @@ class RegistrationServiceTest extends TestCase
     {
         $mahasiswa = Mahasiswa::factory()->create([
             'sks_completed' => 120,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'cert.pdf',
             'parent_permission_path' => 'permission.pdf',
         ]);
@@ -397,7 +397,7 @@ class RegistrationServiceTest extends TestCase
     {
         $mahasiswa = Mahasiswa::factory()->create([
             'sks_completed' => 120,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => null,
             'parent_permission_path' => null,
         ]);
@@ -421,7 +421,7 @@ class RegistrationServiceTest extends TestCase
         // the period check does not throw an exception
         $mahasiswa = Mahasiswa::factory()->create([
             'sks_completed' => 120,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'cert.pdf',
             'parent_permission_path' => 'permission.pdf',
         ]);

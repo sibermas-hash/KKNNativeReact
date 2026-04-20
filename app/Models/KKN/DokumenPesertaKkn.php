@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DokumenPesertaKkn extends Model
 {
-
     protected $table = 'dokumen_peserta_kkn';
 
     protected $fillable = [

@@ -15,7 +15,6 @@ class SyncLog extends Model
 
     protected $table = 'sync_logs';
 
-
     protected $fillable = [
         'sync_type',
         'entity_type',

@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class KknRequirement extends Model
 {
-
     protected $table = 'kkn_requirements';
 
     protected $fillable = [

@@ -329,11 +329,11 @@ class PesertaKknController extends Controller
         $pesertaKkn->load('mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'periode', 'kelompok', 'dokumen', 'rejector');
 
         $registration = $pesertaKkn->toArray();
-        
+
         $mahasiswa = $pesertaKkn->mahasiswa;
         $btaStatus = strtoupper(trim($mahasiswa?->status_bta_ppi ?? ''));
         $registration['mahasiswa']['is_bta_ppi_passed'] = in_array($btaStatus, ['LULUS', 'PASSED', 'SUCCESS']);
-        
+
         $registration['dokumen'] = $this->registrationDocuments($pesertaKkn);
         if ($pesertaKkn->periode) {
             $registration['periode'] = array_merge($registration['periode'] ?? [], [
@@ -402,6 +402,26 @@ class PesertaKknController extends Controller
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
 
-        return redirect()->back()->with('success', "{$registration->mahasiswa->nama} kini resmi menjadi Ketua Kelompok.");
+        return redirect()->back()->with('success', "{$registration->mahasiswa->nama} kini resmi menjadi Ketua Kelompok (Kordes).");
+    }
+
+    public function makeKorcam(
+        PesertaKkn $registration,
+    ): RedirectResponse {
+        // Faculty scope verification
+        if (auth()->user()->hasRole('faculty_admin')) {
+            $studentFacultyId = $registration->mahasiswa?->fakultas_id;
+            if ($studentFacultyId !== auth()->user()->fakultas_id) {
+                return redirect()->back()->withErrors(['error' => 'Anda hanya dapat mengangkat Korcam untuk mahasiswa di fakultas Anda.']);
+            }
+        }
+
+        try {
+            $this->registrationService->makeKorcam($registration);
+        } catch (ValidationException $e) {
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+        }
+
+        return redirect()->back()->with('success', "{$registration->mahasiswa->nama} kini resmi menjadi Koordinator Kecamatan (Korcam).");
     }
 }

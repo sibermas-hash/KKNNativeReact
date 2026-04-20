@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FileKegiatanKkn extends Model
 {
-
     protected $table = 'file_kegiatan_kkn';
 
     protected $fillable = [

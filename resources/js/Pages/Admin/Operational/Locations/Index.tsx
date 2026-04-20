@@ -385,6 +385,14 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
                 Wajib kolom: <strong className="text-emerald-950">desa, kecamatan, kabupaten</strong>. <br/>
                 Opsional: <strong>kode_desa</strong> (BPS). Baris header wajib ada.
               </p>
+              <div className="pt-2">
+                <a 
+                  href={route('admin.lokasi.template')} 
+                  className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#16a34a] hover:text-[#15803d] uppercase tracking-wider bg-white px-2 py-1 rounded border border-emerald-100 shadow-sm transition-all"
+                >
+                  <FileSpreadsheet size={12} /> Unduh Template .XLSX
+                </a>
+              </div>
             </div>
           </div>
 

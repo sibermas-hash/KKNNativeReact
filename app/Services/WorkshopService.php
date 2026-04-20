@@ -361,8 +361,12 @@ class WorkshopService
         $query = Workshop::where('workshop_date', '>=', now()->toDateString())
             ->withCount('peserta');
 
+        // Only filter by period if explicitly set and workshop has periode_id
         if (Workshop::supportsPeriodAssignment() && $periodId) {
-            $query->where('periode_id', $periodId);
+            $query->where(function ($q) use ($periodId) {
+                $q->where('periode_id', $periodId)
+                    ->orWhereNull('periode_id');
+            });
         }
 
         if (! $includeAllStatuses) {

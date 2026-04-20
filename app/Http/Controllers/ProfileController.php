@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\KKN\Dosen;
 use App\Models\KKN\Mahasiswa;
-use App\Models\KKN\Periode;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -88,14 +88,14 @@ class ProfileController extends Controller
     public function show(): Response
     {
         $user = auth()->user();
-        if (!$user) {
+        if (! $user) {
             abort(401, 'Unauthorized');
         }
-        
+
         $user->loadMissing(['mahasiswa.fakultas', 'mahasiswa.prodi', 'dosen.fakultas']);
         $student = $user->mahasiswa;
         $lecturer = $user->dosen;
-        
+
         $requiredBiodataFields = [];
         $labels = [];
 
@@ -120,7 +120,7 @@ class ProfileController extends Controller
                 'address' => 'Alamat lengkap',
             ];
         } elseif ($lecturer) {
-             $requiredBiodataFields = [
+            $requiredBiodataFields = [
                 'nip' => $lecturer->nip,
                 'nama' => $lecturer->nama,
                 'jabatan' => $lecturer->jabatan,
@@ -192,6 +192,10 @@ class ProfileController extends Controller
                 'nip' => $lecturer->nip,
                 'nama' => $lecturer->nama,
                 'jabatan' => $lecturer->jabatan,
+                'golongan' => $lecturer->golongan,
+                'no_rekening' => $lecturer->no_rekening,
+                'nama_bank' => $lecturer->nama_bank,
+                'npwp' => $lecturer->npwp,
                 'gender' => $lecturer->gender,
                 'is_cpns' => (bool) $lecturer->is_cpns,
                 'is_tugas_belajar' => (bool) $lecturer->is_tugas_belajar,
@@ -222,6 +226,11 @@ class ProfileController extends Controller
             'shirt_size' => ['nullable', 'string', 'max:10'],
             'birth_place' => ['nullable', 'string', 'max:100'],
             'birth_date' => ['nullable', 'date'],
+            'jabatan' => ['nullable', 'string', 'max:100'],
+            'golongan' => ['nullable', 'string', 'max:50'],
+            'no_rekening' => ['nullable', 'string', 'max:50'],
+            'nama_bank' => ['nullable', 'string', 'max:100'],
+            'npwp' => ['nullable', 'string', 'max:50'],
         ]);
 
         $user = $request->user();
@@ -277,6 +286,21 @@ class ProfileController extends Controller
                         'birth_date' => $validated['birth_date'] ?? null,
                     ]);
                     $mahasiswa->save();
+                }
+            } elseif ($user->dosen) {
+                $dosen = Dosen::where('user_id', $user->id)->lockForUpdate()->first();
+                if ($dosen) {
+                    $dosen->fill([
+                        'nama' => $validated['name'],
+                        'jabatan' => $validated['jabatan'] ?? $dosen->jabatan,
+                        'golongan' => $validated['golongan'] ?? $dosen->golongan,
+                        'no_rekening' => $validated['no_rekening'] ?? $dosen->no_rekening,
+                        'nama_bank' => $validated['nama_bank'] ?? $dosen->nama_bank,
+                        'npwp' => $validated['npwp'] ?? $dosen->npwp,
+                        'gender' => $validated['gender'] ?? $dosen->gender,
+                        'birth_date' => $validated['birth_date'] ?? $dosen->birth_date,
+                    ]);
+                    $dosen->save();
                 }
             }
         });
@@ -338,7 +362,7 @@ class ProfileController extends Controller
             'password' => ['required', Password::min(8)->mixedCase()->numbers()->symbols(), 'confirmed'],
         ];
 
-        if (!$hasNeverChangedPassword) {
+        if (! $hasNeverChangedPassword) {
             $rules['current_password'] = ['required', 'current_password'];
         }
 
@@ -351,11 +375,11 @@ class ProfileController extends Controller
 
         // If this was first password change OR profile incomplete → check profile completeness
         if ($hasNeverChangedPassword || $user->must_change_password) {
-            // Use unified method - works for both student and lecturer
-            // Note: All biodata comes from API, only profile + contact info required
-            if ($this->isProfileComplete($user)) {
-                $user->update(['must_change_password' => false]);
+            // Password has been changed — always unlock the password gate
+            $user->update(['must_change_password' => false]);
 
+            // Use unified method - works for both student and lecturer
+            if ($this->isProfileComplete($user)) {
                 // Redirect based on role
                 if ($user->hasRole('student')) {
                     return redirect('/mahasiswa/daftar')->with('success', 'Profil lengkap! Selamat datang di SIM-KKN.');
@@ -364,23 +388,32 @@ class ProfileController extends Controller
                 return redirect('/dpl/dashboard')->with('success', 'Profil lengkap! Selamat datang di SIM-KKN.');
             }
 
-            // If incomplete → STAY LOCKED but still unlocked password (password now changed)
-            if ($hasNeverChangedPassword) {
-                $user->update(['must_change_password' => true]);
-            }
-
-            // Get specific missing fields (only profile/contact - biodata from API)
+            // Profile still incomplete → redirect to profile page to fill remaining data
             $missing = [];
 
-            if (! filled($user->avatar)) { $missing[] = 'Foto Profil'; }
-            if (! filled($user->phone)) { $missing[] = 'Nomor HP'; }
-            if (! filled($user->address)) { $missing[] = 'Alamat'; }
-            if (! filled($user->domicile_village_name)) { $missing[] = 'Desa/Kelurahan'; }
-            if (! filled($user->domicile_district_name)) { $missing[] = 'Kecamatan'; }
-            if (! filled($user->domicile_regency_name)) { $missing[] = 'Kabupaten/Kota'; }
-            if (! filled($user->address_verified_at)) { $missing[] = 'Verifikasi Alamat'; }
+            if (! filled($user->avatar)) {
+                $missing[] = 'Foto Profil';
+            }
+            if (! filled($user->phone)) {
+                $missing[] = 'Nomor HP';
+            }
+            if (! filled($user->address)) {
+                $missing[] = 'Alamat';
+            }
+            if (! filled($user->domicile_village_name)) {
+                $missing[] = 'Desa/Kelurahan';
+            }
+            if (! filled($user->domicile_district_name)) {
+                $missing[] = 'Kecamatan';
+            }
+            if (! filled($user->domicile_regency_name)) {
+                $missing[] = 'Kabupaten/Kota';
+            }
+            if (! filled($user->address_verified_at)) {
+                $missing[] = 'Verifikasi Alamat';
+            }
 
-            return redirect()->route('profile.show')->with('error', 'Profil belum lengkap! '.implode(', ', $missing).' wajib diisi.');
+            return redirect()->route('profile.show')->with('success', 'Kata sandi berhasil diubah! Silakan lengkapi data berikut: '.implode(', ', $missing).'.');
         }
 
         return redirect()->back()->with('success', 'Password berhasil diubah.');
@@ -393,7 +426,7 @@ class ProfileController extends Controller
     {
         $nik = $request->query('nik', '');
 
-        if (strlen($nik) !== 16 || !ctype_digit($nik)) {
+        if (strlen($nik) !== 16 || ! ctype_digit($nik)) {
             return response()->json(['valid' => false, 'message' => 'NIK harus 16 digit angka']);
         }
 
@@ -407,14 +440,14 @@ class ProfileController extends Controller
         if ($exists) {
             return response()->json([
                 'valid' => false,
-                'message' => 'NIK ini sudah digunakan oleh pengguna lain'
+                'message' => 'NIK ini sudah digunakan oleh pengguna lain',
             ]);
         }
 
         return response()->json(['valid' => true, 'message' => 'NIK tersedia']);
     }
 
-    public function passwordChange(): Response|\Illuminate\Http\RedirectResponse
+    public function passwordChange(): Response|RedirectResponse
     {
         $user = auth()->user();
 

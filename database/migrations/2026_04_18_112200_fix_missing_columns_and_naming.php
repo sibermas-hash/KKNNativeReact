@@ -14,9 +14,9 @@ return new class extends Migration
         // Fix Users table: fakultas_id -> fakultas_id
         if (Schema::hasTable('users')) {
             Schema::table('users', function (Blueprint $table) {
-                if (Schema::hasColumn('users', 'fakultas_id') && !Schema::hasColumn('users', 'fakultas_id')) {
+                if (Schema::hasColumn('users', 'fakultas_id') && ! Schema::hasColumn('users', 'fakultas_id')) {
                     $table->renameColumn('fakultas_id', 'fakultas_id');
-                } elseif (!Schema::hasColumn('users', 'fakultas_id')) {
+                } elseif (! Schema::hasColumn('users', 'fakultas_id')) {
                     $table->foreignId('fakultas_id')->nullable()->constrained('fakultas')->nullOnDelete();
                 }
             });
@@ -25,7 +25,7 @@ return new class extends Migration
         // Fix kegiatan_kkn: add output
         if (Schema::hasTable('kegiatan_kkn')) {
             Schema::table('kegiatan_kkn', function (Blueprint $table) {
-                if (!Schema::hasColumn('kegiatan_kkn', 'output')) {
+                if (! Schema::hasColumn('kegiatan_kkn', 'output')) {
                     $table->text('output')->nullable()->after('deskripsi');
                 }
             });
@@ -34,7 +34,7 @@ return new class extends Migration
         // Fix laporan_akhir: add review_notes
         if (Schema::hasTable('laporan_akhir')) {
             Schema::table('laporan_akhir', function (Blueprint $table) {
-                if (!Schema::hasColumn('laporan_akhir', 'review_notes')) {
+                if (! Schema::hasColumn('laporan_akhir', 'review_notes')) {
                     $table->text('review_notes')->nullable();
                 }
             });

@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Dosen;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\DplPeriod;
-use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\Periode;
+use App\Models\KKN\PesertaWorkshop;
 use Illuminate\Http\Request;
 
 class DplRegistrationController extends Controller
@@ -20,7 +20,7 @@ class DplRegistrationController extends Controller
         $user = auth()->user();
         $dosen = $user->dosen;
 
-        if (!$dosen) {
+        if (! $dosen) {
             return back()->with('error', 'Data dosen Anda tidak ditemukan dalam sistem.');
         }
 
@@ -29,7 +29,7 @@ class DplRegistrationController extends Controller
             ->where('is_passed', true)
             ->exists();
 
-        if (!$hasPassedWorkshop) {
+        if (! $hasPassedWorkshop) {
             return back()->with('error', 'Anda harus lulus Workshop Pembekalan DPL terlebih dahulu.');
         }
 
@@ -45,6 +45,7 @@ class DplRegistrationController extends Controller
 
         if ($existing) {
             $statusLabel = $existing->status === 'pending' ? 'menunggu verifikasi' : 'sudah disetujui';
+
             return back()->with('info', "Anda sudah memiliki pendaftaran DPL yang {$statusLabel} untuk periode ini.");
         }
 

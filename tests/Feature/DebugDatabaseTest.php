@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\EnsureProfileCompleted;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\User;
@@ -39,7 +40,7 @@ class DebugDatabaseTest extends TestCase
 
         echo "--- Creating Periode ---\n";
         try {
-            Periode::factory()->active()->create();
+            Periode::factory()->active()->create(['current_phase' => 'registration']);
             echo "Periode created successfully\n";
         } catch (\Throwable $e) {
             echo 'Periode creation FAILED: '.$e->getMessage()."\n";
@@ -47,16 +48,20 @@ class DebugDatabaseTest extends TestCase
         }
 
         echo "--- Making Request ---\n";
+        $this->withoutMiddleware(EnsureProfileCompleted::class);
         try {
             $response = $this->actingAs($user)
                 ->get(route('student.registration.create'));
             echo 'Request completed with status: '.$response->status()."\n";
+            if ($response->status() === 302) {
+                echo 'Redirected to: '.$response->headers->get('Location')."\n";
+            }
         } catch (\Throwable $e) {
             echo 'Request FAILED: '.$e->getMessage()."\n";
             throw $e;
         }
 
         echo "--- Final Check ---\n";
-        $response->assertOk();
+        $response->assertRedirect('/mahasiswa/daftar');
     }
 }

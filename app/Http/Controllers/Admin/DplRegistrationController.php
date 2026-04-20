@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\DplPeriod;
-use App\Models\KKN\Periode;
 use App\Services\DplAssignmentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -124,7 +123,7 @@ class DplRegistrationController extends Controller
 
         // Assign role DPL ke user
         $user = $registration->dosen?->user;
-        if ($user && !$user->hasRole('dpl')) {
+        if ($user && ! $user->hasRole('dpl')) {
             $user->assignRole('dpl');
         }
 
@@ -180,7 +179,7 @@ class DplRegistrationController extends Controller
                 ]);
 
                 $user = $reg->dosen?->user;
-                if ($user && !$user->hasRole('dpl')) {
+                if ($user && ! $user->hasRole('dpl')) {
                     $user->assignRole('dpl');
                 }
 

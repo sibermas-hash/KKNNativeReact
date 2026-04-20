@@ -1,5 +1,5 @@
 import { Head, useForm, router } from '@inertiajs/react';
-import { type FormEventHandler } from 'react';
+import type { FormEventHandlerType } from '@/types/events';
 import {
   Upload, ShieldCheck, FileText, ArrowLeft, Send,
   CheckCircle2, IdCard, Info, ChevronRight,
@@ -54,7 +54,7 @@ export default function UploadDokumen({
     notes: '',
   });
 
-  const handleSubmit: FormEventHandler = (e) => {
+  const handleSubmit: FormEventHandlerType = (e) => {
     e.preventDefault();
     form.post(`/mahasiswa/pendaftaran/${period.id}/dokumen`, {
       forceFormData: true,

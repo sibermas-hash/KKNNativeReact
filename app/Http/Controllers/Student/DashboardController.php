@@ -11,6 +11,7 @@ use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\ProgramKerja;
 use App\Services\PeriodContextService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -27,7 +28,7 @@ class DashboardController extends Controller
         };
     }
 
-    public function index(PeriodContextService $periodContextService): Response|\Illuminate\Http\RedirectResponse
+    public function index(PeriodContextService $periodContextService): Response|RedirectResponse
     {
         $user = request()->user();
 
@@ -139,7 +140,7 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function markNotificationShown(PesertaKkn $pesertaKkn): \Illuminate\Http\RedirectResponse
+    public function markNotificationShown(PesertaKkn $pesertaKkn): RedirectResponse
     {
         $user = auth()->user();
 

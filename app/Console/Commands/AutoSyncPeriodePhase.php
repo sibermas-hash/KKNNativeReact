@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 
 use App\Models\KKN\Periode;
 use App\Services\RedisCacheService;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -18,7 +19,7 @@ class AutoSyncPeriodePhase extends Command
 
     private const PHASE_TRANSITIONS = [
         'registration' => 'registration_end',
-        'placement' => 'end_date', 
+        'placement' => 'end_date',
         'execution' => 'end_date',
         'grading' => 'grading_end',
         'finished' => 'finished',
@@ -47,27 +48,29 @@ class AutoSyncPeriodePhase extends Command
         foreach ($periods as $period) {
             $currentPhase = $period->current_phase;
             $nextPhase = $this->getNextPhase($currentPhase);
-            
-            if (!$nextPhase) {
+
+            if (! $nextPhase) {
                 $skipped++;
+
                 continue;
             }
 
             $triggerDate = $this->getTriggerDate($period, $currentPhase);
-            
-            if (!$triggerDate) {
+
+            if (! $triggerDate) {
                 $skipped++;
+
                 continue;
             }
 
             $shouldTransition = $now->gte($triggerDate);
 
             if ($dryRun) {
-                $this->line("Period {$period->id} ({$period->name}): {$currentPhase} -> {$nextPhase} (trigger: {$triggerDate}) " . ($shouldTransition ? '[WOULD CHANGE]' : '[WAITING]'));
+                $this->line("Period {$period->id} ({$period->name}): {$currentPhase} -> {$nextPhase} (trigger: {$triggerDate}) ".($shouldTransition ? '[WOULD CHANGE]' : '[WAITING]'));
             } elseif ($shouldTransition) {
                 $period->update(['current_phase' => $nextPhase]);
                 $this->info("Period {$period->id}: {$currentPhase} -> {$nextPhase}");
-                Log::info("Auto phase transition", [
+                Log::info('Auto phase transition', [
                     'periode_id' => $period->id,
                     'periode_name' => $period->name,
                     'from' => $currentPhase,
@@ -79,9 +82,9 @@ class AutoSyncPeriodePhase extends Command
             }
         }
 
-        if (!$dryRun) {
+        if (! $dryRun) {
             $this->info("Completed. Changed: {$changed}, Skipped: {$skipped}");
-            
+
             if ($changed > 0) {
                 $this->clearCache();
             }
@@ -103,10 +106,10 @@ class AutoSyncPeriodePhase extends Command
         };
     }
 
-    private function getTriggerDate(Periode $period, string $currentPhase): ?\Carbon\Carbon
+    private function getTriggerDate(Periode $period, string $currentPhase): ?Carbon
     {
         $phase = $currentPhase === 'upcoming' ? 'registration' : $currentPhase;
-        
+
         return match ($phase) {
             'registration' => $period->registration_start,
             'placement' => $period->registration_end,

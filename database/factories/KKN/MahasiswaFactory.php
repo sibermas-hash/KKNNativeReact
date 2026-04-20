@@ -25,7 +25,7 @@ class MahasiswaFactory extends Factory
             'batch_year' => $this->faker->numberBetween(2020, 2026),
             'sks_completed' => $this->faker->numberBetween(120, 150),
             'gpa' => $this->faker->randomFloat(2, 3.0, 4.0),
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'health-certificates/default.pdf',
             'parent_permission_path' => 'parent-permissions/default.pdf',
             'gender' => $this->faker->randomElement(['L', 'P']),

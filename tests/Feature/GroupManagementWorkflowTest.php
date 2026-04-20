@@ -34,7 +34,7 @@ class GroupManagementWorkflowTest extends TestCase
     private function createDplUser(): array
     {
         $user = User::factory()->create();
-        $user->assignRole('dpl');
+        $user->assignRole('dosen', 'dpl');
 
         $dosen = Dosen::factory()->create([
             'user_id' => $user->id,
@@ -495,11 +495,11 @@ class GroupManagementWorkflowTest extends TestCase
 
         // DPL can view their assigned groups
         $this->actingAs($dplUser)
-            ->get(route('dpl.kelompok.index'))
+            ->get(route('dosen.kelompok.index'))
             ->assertOk();
 
         $this->actingAs($dplUser)
-            ->get(route('dpl.kelompok.show', $group))
+            ->get(route('dosen.kelompok.show', $group))
             ->assertOk();
     }
 }

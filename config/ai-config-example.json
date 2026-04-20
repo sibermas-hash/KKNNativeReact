@@ -1,0 +1,499 @@
+{
+  "ai_config": {
+    "default_provider": "gemini",
+    "fallback_provider": "openai",
+    "enable_ai": true,
+    "cache_ttl_hours": 1,
+    "timeout_seconds": 15,
+    "max_retries": 3
+  },
+
+  "providers": {
+    "gemini": {
+      "name": "gemini",
+      "api_key": "AIzaSy...",
+      "enabled": true,
+      "primary": true,
+      "api_url": "https://generativelanguage.googleapis.com/v1"
+    },
+
+    "openai": {
+      "name": "openai",
+      "api_key": "sk-proj-...",
+      "enabled": false,
+      "primary": false,
+      "api_url": "https://api.openai.com/v1"
+    },
+
+    "anthropic": {
+      "name": "anthropic",
+      "api_key": "sk-ant-...",
+      "enabled": false,
+      "primary": false,
+      "api_url": "https://api.anthropic.com"
+    },
+
+    "groq": {
+      "name": "groq",
+      "api_key": "gsk-...",
+      "enabled": false,
+      "primary": false,
+      "api_url": "https://api.groq.com/openai/v1"
+    },
+
+    "azure": {
+      "name": "azure",
+      "api_key": "...",
+      "enabled": false,
+      "primary": false,
+      "api_url": "https://your-resource.openai.azure.com/",
+      "provider_specific": {
+        "deployment": "gpt-4o",
+        "api_version": "2024-10-21"
+      }
+    },
+
+    "ollama": {
+      "name": "ollama",
+      "api_key": "",
+      "enabled": false,
+      "primary": false,
+      "provider_specific": {
+        "base_url": "http://localhost:11434"
+      }
+    },
+
+    "mistral": {
+      "name": "mistral",
+      "api_key": "...",
+      "enabled": false,
+      "primary": false,
+      "api_url": "https://api.mistral.ai/v1"
+    },
+
+    "deepseek": {
+      "name": "deepseek",
+      "api_key": "...",
+      "enabled": false,
+      "primary": false
+    },
+
+    "cohere": {
+      "name": "cohere",
+      "api_key": "...",
+      "enabled": false,
+      "primary": false
+    },
+
+    "alibaba": {
+      "name": "alibaba",
+      "api_key": "...",
+      "enabled": false,
+      "primary": false,
+      "api_url": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+    }
+  },
+
+  "models": {
+    "gemini": {
+      "text": {
+        "type": "text",
+        "default": "gemini-2.5-flash",
+        "cheapest": "gemini-2.5-flash-lite",
+        "smartest": "gemini-2.5-pro",
+        "models": [
+          {
+            "id": "gemini-2.5-flash",
+            "name": "Gemini 2.5 Flash",
+            "tier": "standard",
+            "latency_ms": 800,
+            "accuracy_score": 95,
+            "cost_per_1m_tokens": 0.075,
+            "context_window": 1000000,
+            "supported": true,
+            "use_cases": [
+              "Student assistance",
+              "Real-time recommendations",
+              "General chat",
+              "Document summarization"
+            ]
+          },
+          {
+            "id": "gemini-2.5-flash-lite",
+            "name": "Gemini 2.5 Flash Lite",
+            "tier": "lite",
+            "latency_ms": 300,
+            "accuracy_score": 90,
+            "cost_per_1m_tokens": 0.0375,
+            "context_window": 800000,
+            "supported": true,
+            "use_cases": [
+              "High-volume notifications",
+              "Lightweight summarization",
+              "Real-time processing",
+              "Bulk operations"
+            ]
+          },
+          {
+            "id": "gemini-2.5-pro",
+            "name": "Gemini 2.5 Pro",
+            "tier": "pro",
+            "latency_ms": 2500,
+            "accuracy_score": 98,
+            "cost_per_1m_tokens": 0.15,
+            "context_window": 2000000,
+            "supported": true,
+            "use_cases": [
+              "Complex reasoning",
+              "Document verification",
+              "Report analysis",
+              "Critical decisions"
+            ]
+          },
+          {
+            "id": "gemini-2.0-flash",
+            "name": "Gemini 2.0 Flash",
+            "tier": "standard",
+            "latency_ms": 900,
+            "accuracy_score": 94,
+            "cost_per_1m_tokens": 0.05,
+            "context_window": 1000000,
+            "supported": true,
+            "use_cases": [
+              "General purpose",
+              "Fallback model"
+            ]
+          }
+        ]
+      }
+    },
+
+    "openai": {
+      "text": {
+        "type": "text",
+        "default": "gpt-4o",
+        "cheapest": "gpt-3.5-turbo",
+        "smartest": "gpt-4-turbo",
+        "models": [
+          {
+            "id": "gpt-4o",
+            "name": "GPT-4 Omni",
+            "tier": "pro",
+            "latency_ms": 1500,
+            "accuracy_score": 97,
+            "cost_per_1m_tokens": 0.15,
+            "context_window": 128000,
+            "supported": true,
+            "use_cases": [
+              "Complex reasoning",
+              "Document analysis",
+              "Advanced tasks"
+            ]
+          },
+          {
+            "id": "gpt-4-turbo",
+            "name": "GPT-4 Turbo",
+            "tier": "pro",
+            "latency_ms": 1200,
+            "accuracy_score": 96,
+            "cost_per_1m_tokens": 0.1,
+            "context_window": 128000,
+            "supported": true,
+            "use_cases": [
+              "General purpose",
+              "Good balance"
+            ]
+          },
+          {
+            "id": "gpt-4",
+            "name": "GPT-4",
+            "tier": "standard",
+            "latency_ms": 1800,
+            "accuracy_score": 95,
+            "cost_per_1m_tokens": 0.12,
+            "context_window": 8192,
+            "supported": true,
+            "use_cases": [
+              "Stable option"
+            ]
+          },
+          {
+            "id": "gpt-3.5-turbo",
+            "name": "GPT-3.5 Turbo",
+            "tier": "lite",
+            "latency_ms": 400,
+            "accuracy_score": 88,
+            "cost_per_1m_tokens": 0.01,
+            "context_window": 16384,
+            "supported": true,
+            "use_cases": [
+              "Budget-friendly",
+              "High-volume",
+              "Simple tasks"
+            ]
+          }
+        ]
+      },
+      "vision": {
+        "type": "vision",
+        "default": "gpt-4o",
+        "cheapest": "gpt-4-turbo",
+        "smartest": "gpt-4o",
+        "models": [
+          {
+            "id": "gpt-4o",
+            "name": "GPT-4 Omni (Vision)",
+            "tier": "pro",
+            "latency_ms": 2000,
+            "accuracy_score": 96,
+            "cost_per_1m_tokens": 0.2,
+            "context_window": 128000,
+            "supported": true,
+            "use_cases": [
+              "Document OCR",
+              "Image analysis"
+            ]
+          }
+        ]
+      }
+    },
+
+    "anthropic": {
+      "text": {
+        "type": "text",
+        "default": "claude-3-5-sonnet",
+        "cheapest": "claude-3-haiku",
+        "smartest": "claude-3-opus",
+        "models": [
+          {
+            "id": "claude-3-5-sonnet",
+            "name": "Claude 3.5 Sonnet",
+            "tier": "standard",
+            "latency_ms": 1000,
+            "accuracy_score": 96,
+            "cost_per_1m_tokens": 0.2,
+            "context_window": 200000,
+            "supported": true,
+            "use_cases": [
+              "Balanced performance",
+              "Default choice"
+            ]
+          },
+          {
+            "id": "claude-3-opus",
+            "name": "Claude 3 Opus",
+            "tier": "pro",
+            "latency_ms": 2000,
+            "accuracy_score": 98,
+            "cost_per_1m_tokens": 0.25,
+            "context_window": 200000,
+            "supported": true,
+            "use_cases": [
+              "Most capable",
+              "Complex reasoning"
+            ]
+          },
+          {
+            "id": "claude-3-haiku",
+            "name": "Claude 3 Haiku",
+            "tier": "lite",
+            "latency_ms": 500,
+            "accuracy_score": 88,
+            "cost_per_1m_tokens": 0.08,
+            "context_window": 200000,
+            "supported": true,
+            "use_cases": [
+              "Fast responses",
+              "Budget-friendly"
+            ]
+          }
+        ]
+      }
+    },
+
+    "groq": {
+      "text": {
+        "type": "text",
+        "default": "llama-3.1-70b-versatile",
+        "cheapest": "mixtral-8x7b-32768",
+        "smartest": "llama-3.1-70b-versatile",
+        "models": [
+          {
+            "id": "llama-3.1-70b-versatile",
+            "name": "LLaMA 3.1 70B Versatile",
+            "tier": "standard",
+            "latency_ms": 200,
+            "accuracy_score": 92,
+            "cost_per_1m_tokens": 0.05,
+            "context_window": 131072,
+            "supported": true,
+            "use_cases": [
+              "Ultra-fast responses",
+              "Real-time chat",
+              "Budget-friendly"
+            ]
+          },
+          {
+            "id": "mixtral-8x7b-32768",
+            "name": "Mixtral 8x7B",
+            "tier": "lite",
+            "latency_ms": 150,
+            "accuracy_score": 90,
+            "cost_per_1m_tokens": 0.03,
+            "context_window": 32768,
+            "supported": true,
+            "use_cases": [
+              "Fastest",
+              "Lightweight"
+            ]
+          }
+        ]
+      }
+    },
+
+    "mistral": {
+      "text": {
+        "type": "text",
+        "default": "mistral-medium",
+        "cheapest": "mistral-small",
+        "smartest": "mistral-large",
+        "models": [
+          {
+            "id": "mistral-large",
+            "name": "Mistral Large",
+            "tier": "pro",
+            "latency_ms": 1500,
+            "accuracy_score": 95,
+            "cost_per_1m_tokens": 0.15,
+            "context_window": 32000,
+            "supported": true,
+            "use_cases": [
+              "Complex tasks"
+            ]
+          },
+          {
+            "id": "mistral-medium",
+            "name": "Mistral Medium",
+            "tier": "standard",
+            "latency_ms": 800,
+            "accuracy_score": 93,
+            "cost_per_1m_tokens": 0.07,
+            "context_window": 32000,
+            "supported": true,
+            "use_cases": [
+              "Balanced"
+            ]
+          },
+          {
+            "id": "mistral-small",
+            "name": "Mistral Small",
+            "tier": "lite",
+            "latency_ms": 300,
+            "accuracy_score": 88,
+            "cost_per_1m_tokens": 0.02,
+            "context_window": 32000,
+            "supported": true,
+            "use_cases": [
+              "Fast and cheap"
+            ]
+          }
+        ]
+      }
+    },
+
+    "deepseek": {
+      "text": {
+        "type": "text",
+        "default": "deepseek-chat",
+        "cheapest": "deepseek-chat",
+        "smartest": "deepseek-chat",
+        "models": [
+          {
+            "id": "deepseek-chat",
+            "name": "DeepSeek Chat",
+            "tier": "standard",
+            "latency_ms": 1000,
+            "accuracy_score": 93,
+            "cost_per_1m_tokens": 0.08,
+            "context_window": 4096,
+            "supported": true,
+            "use_cases": [
+              "General purpose",
+              "Cost-effective"
+            ]
+          }
+        ]
+      }
+    },
+
+    "alibaba": {
+      "text": {
+        "type": "text",
+        "default": "qwen-plus",
+        "cheapest": "qwen-turbo",
+        "smartest": "qwen-max",
+        "models": [
+          {
+            "id": "qwen-max",
+            "name": "Qwen Max",
+            "tier": "pro",
+            "latency_ms": 1200,
+            "accuracy_score": 95,
+            "cost_per_1m_tokens": 0.2,
+            "context_window": 32000,
+            "supported": true,
+            "use_cases": [
+              "Most capable",
+              "Complex reasoning"
+            ]
+          },
+          {
+            "id": "qwen-plus",
+            "name": "Qwen Plus",
+            "tier": "standard",
+            "latency_ms": 800,
+            "accuracy_score": 92,
+            "cost_per_1m_tokens": 0.08,
+            "context_window": 32000,
+            "supported": true,
+            "use_cases": [
+              "Balanced",
+              "Recommended"
+            ]
+          },
+          {
+            "id": "qwen-turbo",
+            "name": "Qwen Turbo",
+            "tier": "lite",
+            "latency_ms": 300,
+            "accuracy_score": 88,
+            "cost_per_1m_tokens": 0.02,
+            "context_window": 6000,
+            "supported": true,
+            "use_cases": [
+              "Speed priority",
+              "Budget"
+            ]
+          }
+        ]
+      }
+    }
+  },
+
+  "usage_config": {
+    "enable_usage_tracking": true,
+    "monthly_token_limit": 100000000,
+    "daily_token_limit": null,
+    "cost_per_1m_input_tokens": 0.075,
+    "cost_per_1m_output_tokens": 0.3,
+    "monthly_budget_usd": 100
+  },
+
+  "feature_flags": {
+    "student_assistant": true,
+    "document_verification": true,
+    "report_analysis": true,
+    "placement_recommendation": true,
+    "notification_generation": true
+  }
+}

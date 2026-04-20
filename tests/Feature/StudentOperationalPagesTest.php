@@ -96,7 +96,7 @@ class StudentOperationalPagesTest extends TestCase
             'username' => 'dpl_eval_redirect',
             'email' => 'dpl-eval-redirect@example.test',
         ]);
-        $dplUser->assignRole('dpl');
+        $dplUser->assignRole('dosen', 'dpl');
 
         $dosen = Dosen::factory()->create([
             'user_id' => $dplUser->id,
@@ -106,8 +106,8 @@ class StudentOperationalPagesTest extends TestCase
         $group->dosen()->attach($dosen->id, ['role' => 'Ketua']);
 
         $this->actingAs($dplUser)
-            ->get(route('dpl.evaluations.create'))
-            ->assertRedirect(route('dpl.evaluations.index'));
+            ->get(route('dosen.evaluations.create'))
+            ->assertRedirect(route('dosen.evaluations.index'));
     }
 
     public function test_superadmin_can_download_report_file(): void

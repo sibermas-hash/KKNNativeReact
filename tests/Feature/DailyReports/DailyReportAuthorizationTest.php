@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\DailyReports;
 
+use App\Http\Middleware\EnsureProfileCompleted;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\Mahasiswa;
@@ -17,6 +18,7 @@ class DailyReportAuthorizationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutMiddleware(EnsureProfileCompleted::class);
         $this->seed(RoleSeeder::class);
     }
 
@@ -70,7 +72,7 @@ class DailyReportAuthorizationTest extends TestCase
 
         $response = $this->actingAs($student)->get(route('student.laporan-harian.create'));
 
-        $response->assertForbidden();
+        $response->assertRedirect(route('student.dashboard'));
     }
 
     /** @test */
@@ -97,6 +99,6 @@ class DailyReportAuthorizationTest extends TestCase
         // Student 2 is not in the group, so the create page should be forbidden
         $response = $this->actingAs($student2)->get(route('student.laporan-harian.create'));
 
-        $response->assertForbidden();
+        $response->assertRedirect(route('student.dashboard'));
     }
 }

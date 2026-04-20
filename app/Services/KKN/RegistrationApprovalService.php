@@ -324,6 +324,40 @@ class RegistrationApprovalService
     }
 
     /**
+     * Make a student the Koordinator Kecamatan (Korcam).
+     */
+    public function makeKorcam(PesertaKkn $registration): void
+    {
+        if (! $registration->kelompok_id) {
+            throw ValidationException::withMessages([
+                'kelompok_id' => 'Mahasiswa harus ditempatkan di kelompok terlebih dahulu.',
+            ]);
+        }
+
+        if ($registration->status !== 'approved') {
+            throw ValidationException::withMessages([
+                'kelompok_id' => 'Hanya mahasiswa yang sudah disetujui yang dapat menjadi Korcam.',
+            ]);
+        }
+
+        DB::transaction(function () use ($registration) {
+            // Reset all other members in the same group to 'Anggota'
+            PesertaKkn::where('kelompok_id', $registration->kelompok_id)
+                ->where('id', '!=', $registration->id)
+                ->update(['role' => 'Anggota']);
+
+            // Set this student as 'Korcam'
+            $registration->update(['role' => 'Korcam']);
+
+            AuditService::log(
+                'GROUP_KORCAM_ASSIGN',
+                'Mahasiswa diangkat menjadi Koordinator Kecamatan (Korcam)',
+                $registration
+            );
+        });
+    }
+
+    /**
      * Download registration document with security checks.
      * Supports both local and cloud storage.
      */

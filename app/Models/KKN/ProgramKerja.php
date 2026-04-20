@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProgramKerja extends Model
 {
-
     protected $table = 'program_kerja';
 
     protected $fillable = [

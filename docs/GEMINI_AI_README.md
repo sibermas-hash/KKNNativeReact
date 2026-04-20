@@ -12,7 +12,21 @@ Panduan setup terbaik untuk integrasi Google Gemini API ke Portal KKN dengan pem
    - Troubleshooting singkat
    - Model selection quick reference
 
-### 2. **🚀 Production Deployment (PENTING!)**
+### 2. **� JSON Configuration Format** ⭐ **NEW**
+   **Untuk form builder, import/export, automation:**
+   - 📋 [`AI_CONFIG_JSON_FORMAT.md`](AI_CONFIG_JSON_FORMAT.md) - Detailed documentation
+   - 🚀 [`AI_CONFIG_JSON_QUICK_REFERENCE.md`](AI_CONFIG_JSON_QUICK_REFERENCE.md) - Quick scenarios  
+   - 📄 [`config/ai-config-schema.json`](../config/ai-config-schema.json) - JSON Schema (formal)
+   - 📋 [`config/ai-config-example.json`](../config/ai-config-example.json) - Example config
+
+   Gunakan untuk:
+   - Form generation
+   - Import/export configuration
+   - Automation & scripting
+   - API integration
+   - Documentation reference
+
+### 3. **🚀 Production Deployment (PENTING!)**
    📄 [`docs/PRODUCTION_AI_CONFIG.md`](PRODUCTION_AI_CONFIG.md)
    
    **Jawaban atas: "Kenapa tidak perlu .env untuk production?"**
@@ -25,7 +39,7 @@ Panduan setup terbaik untuk integrasi Google Gemini API ke Portal KKN dengan pem
    
    **→ START HERE untuk understanding production architecture!**
 
-### 3. **📚 Setup Lengkap (Comprehensive Guide)**
+### 4. **📚 Setup Lengkap (Comprehensive Guide)**
    📄 [`docs/GEMINI_AI_SETUP_GUIDE.md`](GEMINI_AI_SETUP_GUIDE.md)
    
    Panduan komprehensif untuk setup production-ready.
@@ -35,7 +49,7 @@ Panduan setup terbaik untuk integrasi Google Gemini API ke Portal KKN dengan pem
    - Monitoring dan cost estimation
    - Troubleshooting detail
 
-### 4. **🔧 Developer Guide**
+### 5. **🔧 Developer Guide**
    📄 [`docs/GEMINI_MODEL_SELECTION_GUIDE.md`](GEMINI_MODEL_SELECTION_GUIDE.md)
    
    Untuk developers yang ingin implementasi di code.
@@ -44,6 +58,15 @@ Panduan setup terbaik untuk integrasi Google Gemini API ke Portal KKN dengan pem
    - Performance benchmarks
    - Cost optimization strategies
    - Implementation examples
+
+### 6. **🌐 Multiple AI Providers**
+   📄 [`docs/GEMINI_AI_SETUP_GUIDE.md`](GEMINI_AI_SETUP_GUIDE.md) (bagian "Provider yang Didukung")
+   
+   Setup alternatif provider selain Gemini:
+   - OpenAI, Claude, Groq, Mistral, DeepSeek, Ollama, Azure, dan lainnya
+   - Cost comparison
+   - Performance benchmarks
+   - Switching procedures
 
 ---
 

@@ -136,7 +136,7 @@ export default function DosenIndex({ users, filters, stats }: Props) {
           }
         >
           <PremiumTable
-            headers={['Profil Dosen', 'NIP', 'Afiliasi Institusi', 'Status Akses', 'Aksi']}
+            headers={['Profil Dosen', 'NIP', 'Fakultas', 'Status Akses', 'Aksi']}
             isEmpty={users.data.length === 0}
             emptyText="Tidak ada data dosen ditemukan."
           >

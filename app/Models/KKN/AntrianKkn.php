@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AntrianKkn extends Model
 {
-
     protected $table = 'antrian_kkn';
 
     protected $fillable = [

@@ -22,7 +22,8 @@ import {
   ChevronRight,
   ArrowUpRight,
   Search,
-  Filter
+  Filter,
+  Check
 } from 'lucide-react';
 import PageHeader from '@/Components/Premium/PageHeader';
 import StatCard from '@/Components/Premium/StatCard';
@@ -43,8 +44,7 @@ interface SyncLog {
 interface Props {
   health: { 
     overall_status: string; 
-    kkn: { status: string; latency_ms: number | null }; 
-    master: { status: string; latency_ms: number | null }; 
+    pgsql: { status: string; latency_ms: number | null }; 
     redis: { status: string; latency_ms: number | null }; 
     timestamp: string 
   };
@@ -82,10 +82,10 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
 
   const translateEntityType = (type: string) => {
     const map: Record<string, string> = {
-      'mahasiswa': 'Data Mahasiswa',
-      'dosen': 'Data Dosen',
-      'faculty': 'Data Fakultas',
-      'program': 'Data Program Studi',
+      'mahasiswa': 'Mahasiswa',
+      'dosen': 'Dosen',
+      'faculty': 'Fakultas',
+      'program': 'Program Studi',
       'all': 'Semua Data'
     };
     return map[type.toLowerCase()] || type;
@@ -95,9 +95,9 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
     <AppLayout title="Monitoring Database">
       <Head title="Monitoring Database" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans transition-all">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans transition-all text-emerald-950">
         
-        {/* HEADER SECTION (Gold Standard Aligned) */}
+        {/* HEADER SECTION */}
         <PageHeader
           title="Monitoring Database"
           subtitle="Pusat sinkronisasi data dari sistem utama UIN SAIZU untuk memastikan integritas data akademik."
@@ -113,31 +113,32 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
         {/* CONNECTION STATUS GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 mb-8">
           <StatCard 
-            icon={HardDrive} 
-            label="Data Aplikasi" 
-            value={health.kkn.status === 'connected' ? 'AKTIF' : 'TERPUTUS'} 
-            variant={health.kkn.status === 'connected' ? 'success' : 'danger'}
-            trend={health.kkn.latency_ms ? `${health.kkn.latency_ms}ms` : undefined}
+            icon={Database} 
+            label="Database Aplikasi" 
+            value={health.pgsql?.status === 'connected' ? 'AKTIF' : 'TERPUTUS'} 
+            variant={health.pgsql?.status === 'connected' ? 'success' : 'danger'}
+            trend={health.pgsql?.latency_ms ? `${health.pgsql.latency_ms}ms` : undefined}
           />
           <StatCard 
             icon={Server} 
-            label="Data Pusat (SIKAD)" 
-            value={health.master.status === 'connected' ? 'AKTIF' : 'TERPUTUS'} 
-            variant={health.master.status === 'connected' ? 'success' : 'danger'}
-            trend={health.master.latency_ms ? `${health.master.latency_ms}ms` : undefined}
+            label="API SIKAD Pusat" 
+            value={apiHealth.api_status === 'OK' ? 'AKTIF' : 'TERPUTUS'} 
+            variant={apiHealth.api_status === 'OK' ? 'success' : 'danger'}
+            trend={apiHealth.timestamp ? new Date(apiHealth.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : undefined}
           />
           <StatCard 
             icon={Cpu} 
-            label="Kecepatan Sistem" 
-            value={health.redis.status === 'connected' ? 'AKTIF' : 'TERPUTUS'} 
-            variant={health.redis.status === 'connected' ? 'success' : 'danger'}
-            trend={health.redis.latency_ms ? `${health.redis.latency_ms}ms` : undefined}
+            label="Cache & Antrean" 
+            value={health.redis?.status === 'connected' ? 'AKTIF' : 'TERPUTUS'} 
+            variant={health.redis?.status === 'connected' ? 'success' : 'danger'}
+            trend={health.redis?.latency_ms ? `${health.redis.latency_ms}ms` : undefined}
           />
           <StatCard 
-            icon={Network} 
-            label="Layanan Koneksi" 
-            value={apiHealth.api_status === 'OK' ? 'AKTIF' : 'NONAKTIF'} 
-            variant={apiHealth.api_status === 'OK' ? 'success' : 'warning'}
+            icon={History} 
+            label="Sesi Sinkronisasi" 
+            value={`${dashboard.summary.total_today}`} 
+            variant="info"
+            trend="Hari Ini"
           />
         </div>
 
@@ -150,8 +151,8 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
               icon={Terminal}
             >
               <div className="space-y-4">
-                <p className="text-xs text-emerald-800 leading-relaxed font-medium bg-emerald-50/30 p-3 rounded-lg border border-emerald-50">
-                  Gunakan kontrol di bawah untuk memaksa pembaruan data jika terjadi keterlambatan sinkronisasi otomatis.
+                <p className="text-[11px] text-emerald-800 leading-relaxed font-medium bg-emerald-50/50 p-3.5 rounded-xl border border-emerald-100">
+                  Gunakan kontrol di bawah untuk memaksa pembaruan data jika terjadi keterlambatan sinkronisasi otomatis dari SIKAD.
                 </p>
                 
                 <div className="grid grid-cols-1 gap-2">
@@ -160,16 +161,18 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
                       key={type}
                       onClick={() => handleManualSync(type.toLowerCase())}
                       disabled={isSyncing !== null}
-                      className="flex items-center justify-between px-4 py-3 bg-white hover:bg-[#1a7a4a] hover:text-white border border-emerald-50 text-emerald-950 shadow-sm transition-all rounded-xl group disabled:opacity-50"
+                      className="flex items-center justify-between px-4 py-3.5 bg-white hover:bg-emerald-50 hover:border-emerald-200 border border-emerald-100 text-emerald-950 shadow-sm transition-all rounded-xl group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <div className="flex items-center gap-3">
-                        <RefreshCw size={14} className={clsx(isSyncing === type.toLowerCase() ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-500")} />
-                        <span className="text-xs font-bold uppercase tracking-wider">Segarkan {translateEntityType(type)}</span>
+                        <div className={clsx("h-8 w-8 rounded-lg flex items-center justify-center transition-colors", isSyncing === type.toLowerCase() ? "bg-emerald-100 text-emerald-700" : "bg-gray-50 border border-gray-100 text-emerald-800 group-hover:bg-white group-hover:border-emerald-200 group-hover:text-[#1a7a4a]")}>
+                          <RefreshCw size={14} className={clsx(isSyncing === type.toLowerCase() ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-700")} />
+                        </div>
+                        <span className="text-xs font-bold uppercase tracking-wider">Data {translateEntityType(type)}</span>
                       </div>
                       {isSyncing === type.toLowerCase() ? (
-                        <RefreshCw size={14} className="animate-spin" />
+                        <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest animate-pulse">Proses...</span>
                       ) : (
-                        <ChevronRight size={14} className="text-emerald-700/50 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                        <ChevronRight size={16} className="text-emerald-300 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
                       )}
                     </button>
                   ))}
@@ -177,30 +180,30 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
               </div>
             </ContentPanel>
 
-            <div className="bg-emerald-950 text-white rounded-xl p-6 relative overflow-hidden shadow-lg shadow-emerald-900/20">
-              <div className="absolute top-0 right-0 p-6 opacity-10">
-                <Zap size={100} />
+            <div className="bg-white rounded-2xl p-6 relative overflow-hidden shadow-sm border border-emerald-100">
+              <div className="absolute -top-4 -right-4 p-6 opacity-[0.03] rotate-12 pointer-events-none text-[#1a7a4a]">
+                <Zap size={120} />
               </div>
-              <div className="relative z-10 space-y-4">
-               <div className="h-9 w-9 bg-white/10 rounded-lg flex items-center justify-center">
-                  <Activity size={20} className="text-emerald-400" />
+              <div className="relative z-10 space-y-5">
+               <div className="h-10 w-10 bg-[#e8f5ee] rounded-xl flex items-center justify-center border border-emerald-100">
+                  <Activity size={20} className="text-[#1a7a4a]" />
                </div>
                 <div>
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Efisiensi Hari Ini</h4>
-                  <div className="flex items-end gap-2">
-                    <span className="text-4xl font-bold tabular-nums leading-none">{dashboard.summary.success_rate_today}%</span>
-                    <span className="text-xs font-medium text-emerald-400 mb-1 uppercase tracking-wider">Suksestrate</span>
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-emerald-800 mb-1">Efisiensi Hari Ini</h4>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-black tabular-nums leading-none tracking-tight text-emerald-950">{dashboard.summary.success_rate_today}%</span>
+                    <span className="text-[10px] font-bold text-[#1a7a4a] uppercase tracking-widest">Berhasil</span>
                   </div>
                 </div>
                 
-                <div className="pt-4 border-t border-white/10 grid grid-cols-2 gap-4">
+                <div className="pt-5 border-t border-emerald-50 grid grid-cols-2 gap-4">
                   <div>
-                    <span className="text-[9px] font-black uppercase tracking-widest text-white/40 block mb-1">Total Sesi</span>
-                    <span className="text-sm font-bold tabular-nums">{dashboard.summary.total_today} Kali</span>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-800/60 block mb-1">Total Sesi</span>
+                    <span className="text-sm font-bold tabular-nums text-emerald-950">{dashboard.summary.total_today} Kali</span>
                   </div>
                   <div>
-                    <span className="text-[9px] font-black uppercase tracking-widest text-white/40 block mb-1">Gagal</span>
-                    <span className={clsx("text-sm font-bold tabular-nums", dashboard.summary.failed_today > 0 ? "text-rose-400" : "text-emerald-400")}>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-800/60 block mb-1">Gagal</span>
+                    <span className={clsx("text-sm font-bold tabular-nums", dashboard.summary.failed_today > 0 ? "text-rose-600" : "text-emerald-950")}>
                       {dashboard.summary.failed_today} Sesi
                     </span>
                   </div>
@@ -213,33 +216,33 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
           <div className="lg:col-span-2">
             <ContentPanel
               title="Riwayat Pembaruan Data"
-              description="Catatan terperinci aktivitas sinkronisasi."
+              description="Catatan terperinci aktivitas sinkronisasi hari ini."
               icon={History}
               padding={false}
               headerAction={
                 <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <Filter size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-emerald-800" />
+                  <div className="relative group">
+                    <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-700 pointer-events-none" />
                     <select 
                       value={filters.entity_type} 
                       onChange={(e) => handleFilterChange('entity_type', e.target.value)}
-                      className="h-8 pl-8 pr-8 bg-white border border-emerald-100 rounded-lg text-xs font-semibold text-emerald-950 outline-none focus:border-emerald-500 shadow-sm appearance-none"
+                      className="h-9 pl-9 pr-9 bg-gray-50 hover:bg-emerald-50 border border-emerald-100 rounded-lg text-xs font-bold uppercase tracking-wider text-emerald-950 outline-none focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] shadow-sm appearance-none transition-colors cursor-pointer"
                     >
-                      <option value="all">Semua Jenis Data</option>
+                      <option value="all">Semua Data</option>
                       {entityTypes.map(et => (
                         <option key={et.entity_type} value={et.entity_type}>
                           {translateEntityType(et.entity_type)}
                         </option>
                       ))}
                     </select>
-                    <ChevronRight size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 rotate-90 text-emerald-800 pointer-events-none" />
+                    <ChevronRight size={14} className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-emerald-700 pointer-events-none group-hover:text-[#1a7a4a] transition-colors" />
                   </div>
                 </div>
               }
               footer={
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-emerald-800">
-                    Menampilkan <strong className="text-emerald-950">{logs.data.length}</strong> dari <strong className="text-emerald-950">{logs.meta.total}</strong> log
+                  <span className="text-[11px] font-semibold text-emerald-800 uppercase tracking-wider">
+                    Total <strong className="text-emerald-950">{logs.meta.total}</strong> Catatan
                   </span>
                   <Pagination meta={logs.meta} />
                 </div>
@@ -248,38 +251,39 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
               <PremiumTable
                 headers={['Jenis Data', 'Status', 'Keterangan', 'Aksi']}
                 isEmpty={logs.data.length === 0}
-                emptyText="Belum ada riwayat sinkronisasi untuk periode ini."
+                emptyText="Belum ada riwayat sinkronisasi untuk kriteria ini."
               >
                 {logs.data.map((log) => (
                   <PremiumTableRow key={log.id} className="group">
                     <PremiumTableCell>
                       <div className="flex flex-col">
-                        <span className="font-bold text-emerald-950 uppercase text-[11px] mb-1">{translateEntityType(log.entity_type)}</span>
-                        <span className="text-[10px] text-emerald-800/60 font-mono tracking-wider italic">ID: {log.entity_id || '-'}</span>
+                        <span className="font-bold text-emerald-950 uppercase text-xs mb-0.5 tracking-tight">{translateEntityType(log.entity_type)}</span>
+                        <span className="text-[10px] text-emerald-700 font-mono tracking-wider">ID: {log.entity_id || 'Global'}</span>
                       </div>
                     </PremiumTableCell>
                     <PremiumTableCell align="center">
                       <span className={clsx(
-                        "inline-flex px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border",
-                        log.status === 'success' ? "bg-emerald-50 text-emerald-700 border-emerald-200" : 
+                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest border",
+                        log.status === 'success' ? "bg-emerald-50 text-[#1a7a4a] border-emerald-200" : 
                         log.status === 'failed' ? "bg-rose-50 text-rose-700 border-rose-200" : 
                         "bg-amber-50 text-amber-700 border-amber-200"
                       )}>
+                        {log.status === 'success' ? <Check size={10} strokeWidth={3} /> : null}
                         {log.status === 'success' ? 'BERHASIL' : log.status === 'failed' ? 'GAGAL' : 'PROSES'}
                       </span>
                     </PremiumTableCell>
                     <PremiumTableCell>
                       <div className="flex flex-col max-w-[200px] sm:max-w-xs">
                         <span className="text-xs text-emerald-900 font-medium line-clamp-1 leading-normal mb-1">
-                          {log.error_message || 'Sinkronisasi berhasil diselesaikan.'}
+                          {log.error_message || 'Sinkronisasi berhasil diselesaikan tanpa kendala.'}
                         </span>
-                        <span className="text-[9px] text-emerald-800/50 font-bold uppercase tabular-nums tracking-wider">{log.created_at}</span>
+                        <span className="text-[9px] text-emerald-700 font-bold uppercase tabular-nums tracking-wider">{new Date(log.created_at).toLocaleString('id-ID')}</span>
                       </div>
                     </PremiumTableCell>
                     <PremiumTableCell align="right">
                       <Link 
                         href={route('admin.database-sync.show', log.id)} 
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-100 text-emerald-700 bg-white hover:bg-emerald-700 hover:text-white hover:border-emerald-700 transition-all shadow-sm opacity-0 group-hover:opacity-100"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-100 text-emerald-700 bg-white hover:bg-[#1a7a4a] hover:text-white hover:border-[#1a7a4a] transition-all shadow-sm opacity-0 group-hover:opacity-100"
                         title="Lihat Detail Log"
                       >
                         <ArrowUpRight size={14} strokeWidth={2.5} />

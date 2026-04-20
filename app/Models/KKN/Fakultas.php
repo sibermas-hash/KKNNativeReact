@@ -12,7 +12,6 @@ class Fakultas extends Model
 {
     protected $table = 'fakultas';
 
-
     protected $fillable = ['nama', 'code', 'master_id'];
 
     use HasFactory;

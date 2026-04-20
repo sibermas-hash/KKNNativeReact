@@ -68,7 +68,7 @@ class AdminReportsPageTest extends TestCase
             'username' => 'dpl_reports',
             'email' => 'dpl-reports@example.test',
         ]);
-        $dplUser->assignRole('dpl');
+        $dplUser->assignRole('dosen', 'dpl');
 
         $dosen = Dosen::factory()->create([
             'user_id' => $dplUser->id,

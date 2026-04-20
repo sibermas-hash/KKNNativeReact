@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use App\Http\Middleware\EnsureProfileCompleted;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Tests\Concerns\RefreshPostgresDatabase;
@@ -19,6 +20,7 @@ abstract class TestCase extends BaseTestCase
         }
 
         $this->withoutVite();
+        $this->withoutMiddleware(EnsureProfileCompleted::class);
     }
 
     /**

@@ -1,8 +1,9 @@
-import { Head, useForm, usePage, router } from '@inertiajs/react';
-import { useState, type FormEventHandler } from 'react';
+import { Head, useForm, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { FormInput } from '@/Components/ui';
 import type { PageProps } from '@/types';
+import type { FormEventHandlerType } from '@/types/events';
 import { route } from 'ziggy-js';
 import { KeyRound, Lock, ChevronRight, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
 
@@ -33,7 +34,7 @@ export default function PasswordChange() {
     password_confirmation: '',
   });
 
-  const handleSubmit: FormEventHandler = (e) => {
+  const handleSubmit: FormEventHandlerType = (e) => {
     e.preventDefault();
     
     if (passwordForm.data.password.length < 8) {
@@ -47,16 +48,12 @@ export default function PasswordChange() {
     }
 
     passwordForm.patch(route('profile.password'), {
-      onSuccess: () => {
-        // After password changed, go to profile to complete data
-        router.get(route('profile.show'));
-      },
       onError: (errors) => {
         if (errors.password) {
           passwordForm.setError('password', errors.password);
         }
         if (errors.current_password) {
-          passwordForm.setError('current_password', errors.current_password);
+          passwordForm.setError('current_password' as any, errors.current_password);
         }
       },
     });

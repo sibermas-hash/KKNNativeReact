@@ -16,15 +16,17 @@ class PeriodeGovernanceService
 {
     public static function blueprintFromJenisKkn(JenisKkn $jenisKkn): array
     {
+        $jenisEnum = self::resolveJenisEnumFromCode($jenisKkn->code);
+
         return [
             'program_type' => self::mapCodeToProgramType($jenisKkn->code),
             'program_subtype' => self::mapCodeToProgramSubtype($jenisKkn->code),
             'registration_mode' => $jenisKkn->registration_mode,
             'placement_mode' => $jenisKkn->placement_mode,
-            'jenis_enum' => self::resolveJenisEnumFromCode($jenisKkn->code),
+            'jenis_enum' => $jenisEnum,
             'jenis_value' => $jenisKkn->code,
-            'jenis_label' => $jenisKkn->name,
-            'program_type_label' => $jenisKkn->name,
+            'jenis_label' => $jenisEnum->label(),
+            'program_type_label' => $jenisEnum->label(),
             'program_subtype_label' => null,
             'registration_mode_label' => $jenisKkn->registrationModeLabel(),
             'placement_mode_label' => $jenisKkn->placementModeLabel(),
@@ -39,7 +41,7 @@ class PeriodeGovernanceService
             'NUSANTARA' => Periode::PROGRAM_TYPE_NUSANTARA,
             'INTERNASIONAL' => Periode::PROGRAM_TYPE_INTERNASIONAL_MANDIRI,
             'KOLABORASI_PTKIN' => Periode::PROGRAM_TYPE_KOLABORASI_PTKIN,
-            'KAMPUNG_ZAKAT', 'DESA_KATANA', 'TEMATIK' => Periode::PROGRAM_TYPE_TEMATIK,
+            'KAMPUNG_ZAKAT', 'DESA_KATANA', 'TEMATIK', 'RESPONSIF' => Periode::PROGRAM_TYPE_TEMATIK,
             default => Periode::PROGRAM_TYPE_REGULER,
         };
     }
@@ -62,6 +64,7 @@ class PeriodeGovernanceService
             'KAMPUNG_ZAKAT' => KknType::KAMPUNG_ZAKAT,
             'DESA_KATANA' => KknType::DESA_KATANA,
             'TEMATIK' => KknType::TEMATIK,
+            'RESPONSIF' => KknType::TEMATIK, // Normalize legacy to thematic
             default => KknType::REGULER,
         };
     }
@@ -201,11 +204,25 @@ class PeriodeGovernanceService
      */
     public static function applyGovernanceToModel(Periode $period): void
     {
-        if (! $period->jenisKkn) {
+        $jenisKkn = $period->jenisKkn;
+
+        // If jenis_kkn_id was changed but relation not loaded, try to load it
+        if (! $jenisKkn && $period->isDirty('jenis_kkn_id') && $period->jenis_kkn_id) {
+            $jenisKkn = JenisKkn::find($period->jenis_kkn_id);
+        }
+
+        if (! $jenisKkn) {
             return;
         }
 
-        $period->jenis_kkn_id = $period->jenisKkn->id;
+        $blueprint = self::blueprintFromJenisKkn($jenisKkn);
+
+        // Sync attributes that might exist in the periode table
+        $period->jenis = $blueprint['jenis_enum'];
+        $period->program_type = $blueprint['program_type'];
+        $period->program_subtype = $blueprint['program_subtype'];
+        $period->registration_mode = $blueprint['registration_mode'];
+        $period->placement_mode = $blueprint['placement_mode'];
     }
 
     /**

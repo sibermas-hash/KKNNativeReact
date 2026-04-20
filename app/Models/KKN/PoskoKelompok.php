@@ -13,7 +13,6 @@ class PoskoKelompok extends Model
 {
     use HasFactory;
 
-
     protected $table = 'posko_kelompok';
 
     protected $fillable = [

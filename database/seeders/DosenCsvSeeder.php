@@ -20,12 +20,14 @@ class DosenCsvSeeder extends Seeder
     {
         if (! app()->environment('local', 'testing')) {
             $this->command->error('This seeder can only run in local or testing environment.');
+
             return;
         }
 
         $csvPath = base_path('dosen_465_seeder_lain.csv');
         if (! file_exists($csvPath)) {
             $this->command->error("CSV file not found: {$csvPath}");
+
             return;
         }
 
@@ -37,19 +39,21 @@ class DosenCsvSeeder extends Seeder
         $header = fgetcsv($handle); // Skip header
 
         while (($data = fgetcsv($handle)) !== false) {
-            if (count($data) < 6) continue;
+            if (count($data) < 6) {
+                continue;
+            }
 
             $rows[] = [
-                'nip'       => trim($data[1], '"'),
-                'nama'      => trim($data[2], '"'),
-                'email'     => trim($data[3], '"'),
-                'unit_kerja'=> trim($data[4], '"'),
-                'status'    => trim($data[5], '"'),
+                'nip' => trim($data[1], '"'),
+                'nama' => trim($data[2], '"'),
+                'email' => trim($data[3], '"'),
+                'unit_kerja' => trim($data[4], '"'),
+                'status' => trim($data[5], '"'),
             ];
         }
         fclose($handle);
 
-        $this->command->info("   Ditemukan " . count($rows) . " baris data.");
+        $this->command->info('   Ditemukan '.count($rows).' baris data.');
 
         // --- 2. Map Unit_Kerja ke Fakultas ---
         // Mapping Unit 1-10 ke fakultas yang ada di database
@@ -60,7 +64,9 @@ class DosenCsvSeeder extends Seeder
         $unitMap = [];
         foreach ($rows as $row) {
             $unit = $row['unit_kerja'];
-            if (isset($unitMap[$unit])) continue;
+            if (isset($unitMap[$unit])) {
+                continue;
+            }
 
             // Cek apakah unit_kerja cocok dengan nama fakultas di DB
             $matched = null;
@@ -79,7 +85,7 @@ class DosenCsvSeeder extends Seeder
             }
         }
 
-        $this->command->info('🏛️  Mapping unit kerja ke ' . count($fakultasIds) . ' fakultas.');
+        $this->command->info('🏛️  Mapping unit kerja ke '.count($fakultasIds).' fakultas.');
 
         // --- 3. Deduplicate: skip NIP yang sudah ada ---
         $existingNips = Dosen::pluck('nip')->toArray();
@@ -97,6 +103,7 @@ class DosenCsvSeeder extends Seeder
             // Skip duplicate NIP dalam CSV sendiri
             if (isset($seenNips[$row['nip']])) {
                 $skipped++;
+
                 continue;
             }
             $seenNips[$row['nip']] = true;
@@ -104,16 +111,18 @@ class DosenCsvSeeder extends Seeder
             // Skip yang sudah ada di database
             if (isset($existingNipsFlip[$row['nip']])) {
                 $skipped++;
+
                 continue;
             }
 
             $newRows[] = $row;
         }
 
-        $this->command->info("   Baru: " . count($newRows) . " dosen | Dilewati: {$skipped} (duplikat/sudah ada)");
+        $this->command->info('   Baru: '.count($newRows)." dosen | Dilewati: {$skipped} (duplikat/sudah ada)");
 
         if (empty($newRows)) {
             $this->command->info('✅ Tidak ada data baru untuk ditambahkan.');
+
             return;
         }
 
@@ -133,13 +142,13 @@ class DosenCsvSeeder extends Seeder
             // Buat username unik dari NIP
             $username = $row['nip'];
             if (isset($existingUsernamesFlip[$username])) {
-                $username = $row['nip'] . '_dpl';
+                $username = $row['nip'].'_dpl';
             }
 
             // Email unik
             $email = $row['email'];
             if (isset($existingEmailsFlip[$email]) || $email === '') {
-                $email = Str::slug($row['nama'], '.') . '.' . substr($row['nip'], -4) . '@uinsaizu.ac.id';
+                $email = Str::slug($row['nama'], '.').'.'.substr($row['nip'], -4).'@uinsaizu.ac.id';
             }
 
             // Track untuk duplikasi dalam batch
@@ -147,24 +156,24 @@ class DosenCsvSeeder extends Seeder
             $existingEmailsFlip[$email] = true;
 
             $dosenBatch[] = [
-                'nip'             => $row['nip'],
-                'nama'            => $row['nama'],
-                'fakultas_id'     => $fakultasId,
-                'master_synced_at'=> $now,
-                'created_at'      => $now,
-                'updated_at'      => $now,
+                'nip' => $row['nip'],
+                'nama' => $row['nama'],
+                'fakultas_id' => $fakultasId,
+                'master_synced_at' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
             ];
 
             $userBatch[] = [
-                'username'             => $username,
-                'name'                 => $row['nama'],
-                'email'                => $email,
-                'password'             => $passwordHash,
-                'is_active'            => $row['status'] === 'aktif',
+                'username' => $username,
+                'name' => $row['nama'],
+                'email' => $email,
+                'password' => $passwordHash,
+                'is_active' => $row['status'] === 'aktif',
                 'must_change_password' => true,
-                'fakultas_id'          => $fakultasId,
-                'created_at'           => $now,
-                'updated_at'           => $now,
+                'fakultas_id' => $fakultasId,
+                'created_at' => $now,
+                'updated_at' => $now,
             ];
         }
 
@@ -208,9 +217,9 @@ class DosenCsvSeeder extends Seeder
             foreach ($dosenUserIds as $uid) {
                 if (! in_array($uid, $existingRoleIds)) {
                     $roleInserts[] = [
-                        'role_id'    => $dplRole,
+                        'role_id' => $dplRole,
                         'model_type' => User::class,
-                        'model_id'   => $uid,
+                        'model_id' => $uid,
                     ];
                 }
             }
@@ -225,17 +234,17 @@ class DosenCsvSeeder extends Seeder
             $bar->finish();
 
             $this->command->newLine(2);
-            $this->command->info('✅ Selesai! ' . count($newRows) . ' dosen berhasil ditambahkan.');
+            $this->command->info('✅ Selesai! '.count($newRows).' dosen berhasil ditambahkan.');
             $this->command->info('');
             $this->command->info('📊 Ringkasan:');
-            $this->command->info('   👨‍🏫 Total dosen di DB: ' . Dosen::count());
-            $this->command->info('   👤 Total akun DPL: ' . User::role('dpl')->count());
+            $this->command->info('   👨‍🏫 Total dosen di DB: '.Dosen::count());
+            $this->command->info('   👤 Total akun DPL: '.User::role('dpl')->count());
             $this->command->info('   🔑 Password: [KKN_LOCAL_SEED_PASSWORD] atau "password"');
             $this->command->info('   📧 Username: [NIP dosen]');
 
         } catch (\Throwable $e) {
             DB::rollBack();
-            $this->command->error('❌ Gagal: ' . $e->getMessage());
+            $this->command->error('❌ Gagal: '.$e->getMessage());
             throw $e;
         }
     }

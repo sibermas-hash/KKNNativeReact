@@ -3,6 +3,7 @@
 namespace Database\Factories\KKN;
 
 use App\Enums\KknType;
+use App\Models\KKN\JenisKkn;
 use App\Models\KKN\Periode;
 use App\Models\KKN\TahunAkademik;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -21,6 +22,7 @@ class PeriodeFactory extends Factory
 
         return [
             'academic_year_id' => TahunAkademik::factory(),
+            'jenis_kkn_id' => JenisKkn::where('code', 'REGULER')->firstOrFail()->id,
             'periode' => $this->faker->numberBetween(1, 99),
             'jenis' => KknType::REGULER,
             'program_type' => Periode::PROGRAM_TYPE_REGULER,
@@ -44,6 +46,8 @@ class PeriodeFactory extends Factory
 
         return $this->state([
             'is_active' => true,
+            'jenis_kkn_id' => JenisKkn::where('code', 'REGULER')->firstOrFail()->id,
+            'jenis' => KknType::REGULER,
             'start_date' => $start->toDateString(),
             'end_date' => $end->toDateString(),
             'registration_start' => Carbon::now()->subWeek()->toDateString(),
@@ -70,5 +74,14 @@ class PeriodeFactory extends Factory
         return $this->active()->state([
             'current_phase' => 'grading',
         ]);
+    }
+
+    public function configure(): static
+    {
+        return $this->afterMaking(function ($instance) {
+            if (empty($instance->jenis_kkn_id)) {
+                $instance->jenis_kkn_id = JenisKkn::where('code', 'REGULER')->firstOrFail()->id;
+            }
+        });
     }
 }

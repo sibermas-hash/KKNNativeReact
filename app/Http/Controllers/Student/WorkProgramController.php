@@ -39,7 +39,7 @@ class WorkProgramController extends Controller
     {
         $mahasiswa = auth()->user()->mahasiswa;
         $pendaftaran = $mahasiswa->peserta()->where('status', 'approved')->first();
-        
+
         if (! $pendaftaran || ! $pendaftaran->kelompok_id) {
             return redirect()->back()->with('error', 'Tindakan ditolak: Anda belum ditempatkan ke dalam kelompok.');
         }

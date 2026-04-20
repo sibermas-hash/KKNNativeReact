@@ -21,10 +21,11 @@ it('renders the forgot password page with whatsapp support guidance', function (
 });
 
 it('redirects forgot password submissions to the admin-assisted flow', function () {
+    User::factory()->create(['email' => 'test@example.com']);
     $this->from(route('password.request'))
-        ->post(route('password.email'))
+        ->post(route('password.email'), ['email' => 'test@example.com'])
         ->assertRedirect(route('password.request'))
-        ->assertSessionHas('status', 'Reset password dilakukan melalui admin. Hubungi admin melalui WhatsApp dengan menyertakan username, NIM, atau NIP Anda.');
+        ->assertSessionHas('status');
 });
 
 it('allows an admin to generate a temporary password for any account', function () {

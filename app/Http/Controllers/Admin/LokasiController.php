@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Exports\LokasiExport;
+use App\Exports\LokasiTemplateExport;
 use App\Http\Controllers\Controller;
 use App\Imports\LokasiWilayahImport;
 use App\Models\KKN\KelompokKkn;
@@ -101,6 +102,13 @@ class LokasiController extends Controller
         return Excel::download(new LokasiExport($query), 'data_lokasi_kkn_'.now()->format('Ymd_His').'.xlsx');
     }
 
+    public function downloadTemplate()
+    {
+        Gate::authorize('manage-master-data');
+
+        return Excel::download(new LokasiTemplateExport, 'template_impor_lokasi.xlsx');
+    }
+
     public function import(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -155,7 +163,7 @@ class LokasiController extends Controller
             'capacity' => $validated['capacity'] ?? $lokasi->capacity,
         ]);
 
-        return redirect()->back()->with('success', 'Lokasi administratif berhasil diperbarui.');
+        return redirect()->route('admin.locations.index')->with('success', 'Lokasi administratif berhasil diperbarui.');
     }
 
     public function destroy(Lokasi $lokasi): RedirectResponse
@@ -168,7 +176,7 @@ class LokasiController extends Controller
 
         $lokasi->delete();
 
-        return redirect()->back()->with('success', 'Lokasi administratif berhasil dihapus.');
+        return redirect()->route('admin.locations.index')->with('success', 'Lokasi administratif berhasil dihapus.');
     }
 
     private function canDeleteLocation(Lokasi $location): bool

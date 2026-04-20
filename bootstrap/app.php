@@ -12,6 +12,7 @@ use App\Http\Middleware\RestrictDebugbarAccess;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\TestAutoLogin;
 use App\Http\Middleware\ValidateApiKey;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -105,7 +106,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Force redirect to login for expired sessions on web routes
         // Prevents raw JSON {"message":"Unauthenticated."} in browser
-        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+        $exceptions->render(function (AuthenticationException $e, $request) {
             if (! $request->is('api/*') && ! $request->is('api/v1/*')) {
                 return redirect()->guest(route('login'))
                     ->with('warning', 'Sesi Anda telah berakhir. Silakan masuk kembali.');
@@ -132,10 +133,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
                 // Professional handling for Students: Redirect to Dashboard with Toast
                 if ($isStudent && in_array($status, [403, 404])) {
-                    $message = $status === 403 
+                    $message = $status === 403
                         ? ($e->getMessage() ?: 'Akses ditolak: Anda tidak memiliki izin untuk fitur tersebut.')
                         : 'Halaman atau data yang Anda cari tidak ditemukan.';
-                    
+
                     return redirect('/mahasiswa')->with('error', $message);
                 }
 

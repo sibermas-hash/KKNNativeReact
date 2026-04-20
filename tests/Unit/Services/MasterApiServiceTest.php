@@ -3,6 +3,7 @@
 namespace Tests\Unit\Services;
 
 use App\Models\KKN\SystemSetting;
+use App\Services\MasterApi\MasterApiTokenService;
 use App\Services\MasterApiService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -30,11 +31,11 @@ class MasterApiServiceTest extends TestCase
 
     public function test_get_token_prefers_static_token_from_system_settings(): void
     {
-        SystemSetting::set('master_api_token', 'static-token-123');
+        config(['services.master_api.token' => 'static-token-123']);
 
         Http::fake();
 
-        $service = app(MasterApiService::class);
+        $service = app(MasterApiTokenService::class);
 
         $this->assertSame('static-token-123', $service->getToken());
         Http::assertNothingSent();
@@ -42,8 +43,8 @@ class MasterApiServiceTest extends TestCase
 
     public function test_get_students_by_nim_list_uses_filtered_master_api_when_supported(): void
     {
-        SystemSetting::set('master_api_url', 'https://master.example/api/v1');
-        SystemSetting::set('master_api_token', 'static-token-123');
+        config(['services.master_api.url' => 'https://master.example/api/v1']);
+        config(['services.master_api.token' => 'static-token-123']);
 
         Http::fake([
             'https://master.example/api/v1/sync/mahasiswa*' => Http::response([
@@ -67,7 +68,7 @@ class MasterApiServiceTest extends TestCase
 
         Http::assertSent(function ($request) {
             return str_contains($request->url(), '/sync/mahasiswa')
-                && $request['nims'] === '24010001,24010002';
+                && $request['nims'] === ['24010001', '24010002'];
         });
     }
 }

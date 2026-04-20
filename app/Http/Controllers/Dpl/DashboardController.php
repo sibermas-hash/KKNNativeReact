@@ -10,6 +10,7 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\NilaiKkn;
 use App\Services\DplScopeService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -20,7 +21,7 @@ class DashboardController extends Controller
         private DplScopeService $scopeService,
     ) {}
 
-    public function index(): Response|\Illuminate\Http\RedirectResponse
+    public function index(): Response|RedirectResponse
     {
         $user = auth()->user();
 

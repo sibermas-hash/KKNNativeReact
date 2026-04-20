@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import type { PageProps } from '@/types';
 import { 
@@ -8,19 +8,14 @@ import {
   Calendar, 
   MapPin, 
   Users, 
-  Clock, 
   Pencil,
   Trash2,
   CheckCircle2,
-  AlertTriangle,
-  Search,
-  BookOpen,
-  Activity,
   Layers,
   FileDigit,
+  Activity,
 } from 'lucide-react';
-import { Modal, Button, ConfirmDialog } from '@/Components/ui';
-import { clsx } from 'clsx';
+import { Modal, ConfirmDialog } from '@/Components/ui';
 
 // Premium Components
 import PageHeader from '@/Components/Premium/PageHeader';
@@ -46,22 +41,14 @@ interface Workshop {
   description: string;
   date: string;
   workshop_date_value: string;
-  time: string;
   start_time: string | null;
   end_time: string | null;
   location: string | null;
   registered: number;
-  peserta_count?: number;
   max_participants: number | null;
   status: string;
-  category?: string;
   period: { id: number; name: string } | null;
   participants: Participant[];
-  can_edit: boolean;
-  can_cancel: boolean;
-  is_registered?: boolean;
-  is_full?: boolean;
-  attendance_status?: string;
 }
 
 interface Props {

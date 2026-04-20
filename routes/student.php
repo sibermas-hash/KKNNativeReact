@@ -31,10 +31,15 @@ Route::middleware([
     Route::get('/', [Student\DashboardController::class, 'index'])->name('dashboard');
     Route::patch('{pesertaKkn}/notification-shown', [Student\DashboardController::class, 'markNotificationShown'])
         ->name('notification.shown');
-    
+
     // Daftar KKN - halaman utama pemilihan periode
     Route::get('daftar', [Student\KknDaftarController::class, 'index'])->name('daftar.index');
     Route::get('cek-pendaftaran', [Student\RegistrationController::class, 'status'])->name('registration.status');
+
+    // Pendaftaran KKN - store (POST)
+    Route::post('pendaftaran', [Student\RegistrationController::class, 'store'])
+        ->middleware('phase:registration')
+        ->name('registration.store');
 
     Route::get('posko', [Student\PoskoController::class, 'edit'])->name('posko.index');
     Route::post('posko', [Student\PoskoController::class, 'store'])->name('posko.store');

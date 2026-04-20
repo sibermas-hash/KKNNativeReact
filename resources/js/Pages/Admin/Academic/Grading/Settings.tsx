@@ -1,27 +1,22 @@
 import { Head, useForm, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   Save, 
   RefreshCw, 
-  CheckCircle2, 
   LayoutGrid, 
-  AlertTriangle,
-  Sliders,
   Binary,
   Activity,
   Zap,
-  Target,
   ShieldCheck,
-  ChevronRight,
-  Settings2,
   ListChecks,
-  ChevronDown
+  ChevronDown,
+  Scale
 } from 'lucide-react';
 import { clsx } from 'clsx';
-import type { LucideIcon } from '@/types';
 import { Button } from '@/Components/ui';
+import PageHeader from '@/Components/Premium/PageHeader';
 
 interface GradingItem { id: number; config_key: string; label: string; percentage: number; description: string; }
 interface Section { group: string; title: string; description: string; enforce_total: boolean; total: number; items: GradingItem[]; }
@@ -61,58 +56,65 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
     patch(route('admin.konfigurasi-penilaian.update'));
   };
 
+  const currentYear = new Date().getFullYear();
+  const academicYear = `${currentYear}/${currentYear + 1}`;
+
   return (
     <AppLayout title="Bobot Penilaian">
       <Head title="Bobot Penilaian KKN" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans transition-all">
+      <div className="max-w-7xl mx-auto space-y-6 font-sans pb-12">
         
-        {/* Header Sederhana Sesuai Patokan Gold Standard */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 border-b border-emerald-50/50 pb-8">
-          <div className="space-y-1">
-            <h1 className="text-xl font-bold text-emerald-950 uppercase">Matriks Penilaian.</h1>
-            <p className="text-xs text-emerald-950/40 font-black uppercase tracking-widest">
-              Distribusi bobot komponen nilai KKN UIN SAIZU
-            </p>
-          </div>
-          
-          <div className="flex flex-wrap items-center gap-3">
+        <PageHeader
+          title="Matriks Penilaian."
+          subtitle="Distribusi bobot komponen nilai KKN UIN SAIZU untuk kalkulasi yudisium otomatis."
+          icon={Scale}
+          groupLabel="Akademik & Penilaian"
+          stats={{
+            label: 'Engine Status',
+            value: allGroupsValid ? 'STABIL' : 'ERROR',
+            icon: Activity
+          }}
+        >
+          <div className="flex items-center gap-3">
             <div className="relative">
               <select 
                 value={filters.kkn_type} 
                 onChange={(e) => handleTypeChange(e.target.value)} 
-                className="h-9 pl-3 pr-8 bg-white border border-emerald-50 rounded-lg text-xs font-black text-emerald-950 uppercase tracking-widest outline-none focus:border-[#f3f4f6]0 appearance-none cursor-pointer"
+                className="h-10 pl-4 pr-10 bg-white border border-gray-300 rounded-lg text-xs font-black text-emerald-950 uppercase tracking-widest outline-none focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] appearance-none cursor-pointer shadow-sm transition-all"
               >
                 {programOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label.toUpperCase()}</option>)}
               </select>
-              <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-emerald-950/20 pointer-events-none" />
+              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 pointer-events-none" />
             </div>
 
-            <Button 
+            <button 
               onClick={handleSubmit} 
               disabled={processing || !allGroupsValid} 
               className={clsx(
-                "h-9 px-6 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-sm",
-                allGroupsValid ? "bg-[#16a34a] text-white hover:bg-[#15803d]" : "bg-rose-500 text-white"
+                "h-10 px-6 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-sm flex items-center gap-2",
+                allGroupsValid 
+                  ? "bg-[#16a34a] text-white hover:bg-[#15803d] shadow-emerald-200" 
+                  : "bg-rose-500 text-white shadow-rose-200"
               )}
             >
-              {processing ? <RefreshCw size={14} className="animate-spin mr-2" /> : <Save size={14} className="mr-2" />}
-              {recentlySuccessful ? 'TERSAVE' : 'SIMPAN'}
-            </Button>
+              {processing ? <RefreshCw size={16} className="animate-spin" /> : <Save size={16} />}
+              {recentlySuccessful ? 'TERSAVE' : 'SIMPAN PERUBAHAN'}
+            </button>
           </div>
-        </div>
+        </PageHeader>
 
-        {/* Statistik Minimalis (Gold Standard) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {/* Statistik Minimalis */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <MiniStat 
             icon={ShieldCheck} 
-            label="STATUS MATRIKS" 
-            value={allGroupsValid ? "SEIMBANG" : "ERROR"} 
+            label="INTEGRITAS" 
+            value={allGroupsValid ? "VALID" : "INVALID"} 
             variant={allGroupsValid ? 'success' : 'danger'} 
           />
-          <MiniStat icon={Activity} label="ENGINE" value="STABIL" />
-          <MiniStat icon={ListChecks} label="TAHUN" value="2026/2027" />
-          <MiniStat icon={Zap} label="AKSES" value="SUPERADMIN" />
+          <MiniStat icon={Binary} label="MATRIKS" value="CALCULATED" />
+          <MiniStat icon={ListChecks} label="PERIODE AKADEMIK" value={academicYear} />
+          <MiniStat icon={Zap} label="OTORITAS" value="SUPERADMIN" />
         </div>
 
         {/* --- CONFIGURATION PANELS --- */}
@@ -121,18 +123,18 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
             const groupTotal = getGroupTotal(section.group);
             const isValid = isGroupValid(section.group);
             return (
-              <div key={section.group} className="bg-white border border-emerald-50 rounded-xl overflow-hidden shadow-sm flex flex-col">
+              <div key={section.group} className="bg-white border border-emerald-50 rounded-xl overflow-hidden shadow-sm flex flex-col hover:border-emerald-200 transition-colors">
                 {/* Panel Header */}
-                <div className="px-8 py-4 bg-emerald-50/20 border-b border-emerald-50/50 flex items-center justify-between">
+                <div className="px-6 py-4 bg-gray-50/50 border-b border-emerald-50 flex items-center justify-between">
                   <div className="flex flex-col">
-                    <span className="text-xs font-black text-emerald-950 uppercase tracking-widest mb-1">{section.title}</span>
-                    <span className="text-[9px] font-bold text-[#1a7a4a]/60 uppercase">Konfigurasi {section.group}</span>
+                    <span className="text-xs font-black text-emerald-950 uppercase tracking-widest mb-0.5">{section.title}</span>
+                    <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-tight">Grup: {section.group}</span>
                   </div>
                   <div className={clsx(
-                    "flex flex-col items-end px-3 py-1 rounded-lg border",
-                    isValid ? "bg-white border-emerald-50 text-emerald-950" : "bg-rose-50 border-rose-200 text-rose-600 animate-pulse"
+                    "flex flex-col items-end px-3 py-1 rounded-lg border transition-all",
+                    isValid ? "bg-white border-emerald-100 text-emerald-950 shadow-inner" : "bg-rose-50 border-rose-200 text-rose-600 animate-pulse"
                   )}>
-                    <span className="text-[8px] font-black uppercase tracking-tighter opacity-40 leading-none">Total</span>
+                    <span className="text-[8px] font-black uppercase tracking-tighter opacity-40 leading-none mb-0.5">Kumulatif</span>
                     <span className="text-sm font-black tabular-nums leading-none">{groupTotal}%</span>
                   </div>
                 </div>
@@ -140,25 +142,30 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
                 {/* Table Look */}
                 <div className="flex-1">
                   <table className="w-full text-left">
-                    <tbody className="divide-y divide-[#f3f4f6]/50">
-                      {(section.items || []).filter(item => item.config_key !== 'weight_admin_workshop').map((item) => (
-                        <tr key={item.id} className="group hover:bg-gray-50/10 transition-all duration-300">
-                          <td className="px-8 py-5">
-                            <div className="flex flex-col gap-1.5">
-                              <span className="text-sm font-bold text-emerald-950 uppercase leading-none">{item.label}</span>
-                              <span className="text-xs font-bold text-emerald-950/30 uppercase tracking-tight leading-none truncate max-w-[200px]">
+                    <tbody className="divide-y divide-gray-100">
+                      {(section.items || []).map((item) => (
+                        <tr key={item.id} className="group hover:bg-emerald-50/20 transition-all duration-300">
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col gap-1">
+                              <span className="text-xs font-bold text-emerald-950 uppercase tracking-tight leading-none">{item.label}</span>
+                              <span className="text-[10px] font-medium text-emerald-800/60 leading-tight">
                                 {item.description}
                               </span>
                             </div>
                           </td>
-                          <td className="px-8 py-5 w-32 border-l border-[#f3f4f6]/20 bg-emerald-50/5">
+                          <td className="px-6 py-4 w-28 border-l border-gray-50 bg-gray-50/30">
                             <div className="relative">
                               <input 
                                 type="number"
                                 step="1"
+                                min="0"
+                                max="100"
                                 value={data.configs?.find(c => c.id === item.id)?.percentage ?? 0} 
                                 onChange={e => updatePercentage(item.id, e.target.value)} 
-                                className="w-full h-9 bg-white border border-emerald-50 rounded-lg text-center text-sm font-black text-emerald-950 focus:border-[#f3f4f6]0 outline-none transition-all tabular-nums shadow-sm"
+                                className={clsx(
+                                  "w-full h-9 bg-white border rounded-lg text-center text-sm font-black text-emerald-950 outline-none transition-all tabular-nums shadow-sm",
+                                  isValid ? "border-emerald-100 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" : "border-rose-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+                                )}
                               />
                             </div>
                           </td>
@@ -169,31 +176,31 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
                 </div>
 
                 {/* Section Footer */}
-                <div className="px-8 py-3 bg-emerald-50/10 border-t border-[#f3f4f6]/50">
-                   <p className="text-[9px] font-bold text-emerald-950/20 uppercase tracking-widest">Parameter Aktif</p>
+                <div className="px-6 py-2.5 bg-gray-50/30 border-t border-gray-100">
+                   <p className="text-[9px] font-bold text-emerald-800/30 uppercase tracking-widest flex items-center gap-1.5">
+                     <Activity size={10} /> Parameter Penilaian Aktif
+                   </p>
                 </div>
               </div>
             );
           })}
         </div>
 
-        {/* Global Footer Notes Sesuai Standar */}
-        <div className="mt-12 p-8 bg-emerald-50/20 border border-emerald-50 rounded-xl flex items-start gap-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-5">
-            <ShieldCheck size={160} className="text-emerald-950" />
+        {/* Global Footer Notes */}
+        <div className="mt-8 p-6 bg-emerald-900 rounded-2xl flex items-start gap-6 relative overflow-hidden shadow-xl shadow-emerald-950/20">
+          <div className="absolute top-0 right-0 p-8 text-white/5 pointer-events-none">
+            <ShieldCheck size={140} />
           </div>
-          <div className="h-12 w-12 bg-white rounded-xl shadow-sm border border-emerald-50 flex items-center justify-center text-[#1a7a4a] shrink-0">
+          <div className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center text-emerald-100 shrink-0 border border-white/10">
             <Zap size={24} />
           </div>
-          <div className="space-y-4 relative z-10">
-            <div>
-              <h4 className="text-sm font-black text-emerald-950 uppercase tracking-widest mb-1.5">Otoritas Validasi Akademik</h4>
-              <p className="text-xs font-bold text-emerald-950/50 uppercase leading-relaxed max-w-4xl">
-                Matriks konfigurasi ini merupakan basis logika inti kalkulasi nilai otomatis pada sistem KKN UIN SAIZU. 
-                Segala penyesuaian akan berdampak masif pada seluruh data angkatan aktif. 
-                <span className="text-[#1a7a4a] ml-1">PASTIKAN TOTAL KONFIGURASI ADALAH 100% UNTUK MENJAGA INTEGRITAS DATA.</span>
-              </p>
-            </div>
+          <div className="space-y-2 relative z-10">
+            <h4 className="text-sm font-black text-white uppercase tracking-widest">Otoritas Validasi Akademik</h4>
+            <p className="text-xs font-bold text-emerald-100/60 uppercase leading-relaxed max-w-4xl">
+              Matriks konfigurasi ini merupakan basis logika inti kalkulasi nilai otomatis pada sistem KKN UIN SAIZU. 
+              Segala penyesuaian akan berdampak langsung pada seluruh data pendaftaran aktif. 
+              <span className="text-white ml-1">PASTIKAN TOTAL SETIAP GRUP ADALAH 100% UNTUK MENJAGA INTEGRITAS DATA PENILAIAN.</span>
+            </p>
           </div>
         </div>
       </div>
@@ -203,16 +210,16 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
 
 function MiniStat({ icon: Icon, label, value, variant = 'default' }: { icon: any, label: string, value: string | number, variant?: 'default' | 'success' | 'danger' }) {
   return (
-    <div className="p-4 bg-white border border-emerald-50/60 rounded-xl flex items-center gap-4 shadow-sm group hover:border-emerald-300 transition-all">
+    <div className="p-4 bg-white border border-emerald-50 rounded-xl flex items-center gap-4 shadow-sm group hover:border-emerald-300 transition-all">
       <div className={clsx(
-        "h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:rotate-6",
+        "h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
         variant === 'success' ? 'bg-[#e8f5ee] text-[#1a7a4a]' : 
-        variant === 'danger' ? 'bg-rose-50 text-rose-600' : 'bg-[#e8f5ee] text-[#1a7a4a]'
+        variant === 'danger' ? 'bg-rose-50 text-rose-600' : 'bg-gray-50 text-emerald-800'
       )}>
-        <Icon size={18} />
+        <Icon size={18} strokeWidth={2.5} />
       </div>
       <div className="flex flex-col min-w-0">
-        <span className="text-[9px] font-black text-emerald-950/30 uppercase tracking-widest leading-none mb-1.5">{label}</span>
+        <span className="text-[9px] font-black text-emerald-800/40 uppercase tracking-widest leading-none mb-1.5">{label}</span>
         <span className={clsx(
           "text-sm font-black tabular-nums leading-none tracking-wider uppercase",
           variant === 'danger' ? 'text-rose-600' : 'text-emerald-950'

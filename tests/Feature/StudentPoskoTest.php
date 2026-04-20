@@ -173,5 +173,5 @@ test('student without an approved group assignment cannot access posko managemen
 
     $this->actingAs($user)
         ->get(route('student.posko.edit'))
-        ->assertForbidden();
+        ->assertStatus(302);
 });

@@ -45,6 +45,7 @@ class Periode extends Model
             'grading_start' => 'date',
             'grading_end' => 'date',
             'is_active' => 'boolean',
+            'jenis' => KknType::class,
         ];
     }
 

@@ -73,7 +73,7 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
     router.get('/admin/audit-kualifikasi', { 
       period_id: periodId || undefined, 
       faculty_id: facultyId || undefined, 
-      show_eligible: 'show_eligible' in overrides ? overrides.show_eligible : showEligible, 
+      show_eligible: 'show_eligible' in overrides ? (overrides.show_eligible as string | boolean | undefined) : showEligible, 
       search: search || undefined,
       ...overrides,
     }, { 

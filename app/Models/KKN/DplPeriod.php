@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DplPeriod extends Model
 {
-
     protected $table = 'dpl_periode';
 
     protected $fillable = [

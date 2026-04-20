@@ -114,7 +114,7 @@ class CertificateServiceTest extends TestCase
         ]);
 
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Data mahasiswa untuk nilai ini tidak ditemukan.');
+        $this->expectExceptionMessage('Data mahasiswa untuk nilai ini tidak ditemukan');
 
         $this->service->generateForStudent($score);
     }

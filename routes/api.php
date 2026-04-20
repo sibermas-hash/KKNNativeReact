@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AdminKeyController;
+use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PublicDataController;
 use App\Http\Controllers\Api\RegistrationController;
@@ -31,6 +32,13 @@ if (config('app.env') === 'local') {
     });
 }
 
+// Server Time for Timestamp Calibration
+Route::get('/server-time', function () {
+    return response()->json([
+        'server_unix_ms' => now()->getTimestampMs(),
+    ]);
+})->middleware('throttle:30,1');
+
 // Notifications & Devices
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->name('api.')->group(function () {
     Route::prefix('notifications')->name('notifications.')->group(function () {
@@ -41,6 +49,15 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->name('api.')->group(functi
 
     // Fix Poin 4: Device Tokens for Push Notifications
     Route::post('/device-tokens', [NotificationController::class, 'storeDeviceToken'])->name('device-tokens.store');
+
+    // ─── GEOLOCATION & ATTENDANCE ─────────────────────────────────
+    Route::prefix('attendance')->name('attendance.')->group(function () {
+        Route::post('/', [AttendanceController::class, 'store'])->name('store');
+        Route::get('/', [AttendanceController::class, 'index'])->name('index');
+        Route::get('/{attendance}', [AttendanceController::class, 'show'])->name('show');
+        Route::get('/sync-status', [AttendanceController::class, 'getSyncStatus'])->name('sync-status');
+        Route::post('/retry-sync', [AttendanceController::class, 'retrySync'])->name('retry-sync');
+    });
 });
 
 // Frontend Error Logging (no auth required - errors can happen before login)

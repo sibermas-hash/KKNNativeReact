@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MonitoringDpl extends Model
 {
-
     protected $table = 'monitoring_dpl';
 
     protected $fillable = [

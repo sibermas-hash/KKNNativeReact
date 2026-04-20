@@ -104,9 +104,8 @@ class DatabaseSyncMonitoringService
                 'error' => null,
             ];
         } catch (\Exception $e) {
-            Log::error('Redis health check failed', [
-                'error' => $e->getMessage(),
-            ]);
+            // Log as warning to prevent log pollution if Redis is optional/local
+            Log::warning('Redis connection monitoring failed: '.$e->getMessage());
 
             return [
                 'status' => 'disconnected',

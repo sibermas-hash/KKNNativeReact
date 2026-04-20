@@ -62,7 +62,7 @@ class KonfigurasiPenilaianController extends Controller
     {
         $validated = $request->validate([
             'configs' => 'required|array',
-            'configs.*.id' => 'required|exists:kkn.konfigurasi_penilaian,id',
+            'configs.*.id' => 'required|exists:konfigurasi_penilaian,id',
             'configs.*.percentage' => 'required|numeric|min:0|max:100',
         ]);
 

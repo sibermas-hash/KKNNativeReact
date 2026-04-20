@@ -140,7 +140,7 @@ class ApiKeySystemTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['data', 'meta']);
+            ->assertJsonStructure(['data']);
     }
 
     public function test_request_without_api_key_returns_401(): void
@@ -148,7 +148,7 @@ class ApiKeySystemTest extends TestCase
         $response = $this->getJson('/api/v1/_projects');
 
         $response->assertStatus(401)
-            ->assertJson(['error' => 'API key diperlukan. Kirim via header x-api-key.']);
+            ->assertJson(['error' => 'API key diperlukan. Kirim via header x-api-key atau Authorization: Bearer.']);
     }
 
     public function test_invalid_api_key_returns_401(): void

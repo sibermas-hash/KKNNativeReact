@@ -15,6 +15,7 @@ use App\Models\KKN\Periode;
 use App\Traits\HandlesPagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -242,6 +243,55 @@ class KelompokKknController extends Controller
             'group' => $kelompok,
             'members' => $kelompok->peserta->values(),
         ]);
+    }
+
+    public function syncFromLocations(Request $request): RedirectResponse
+    {
+        Gate::authorize('manage-groups');
+
+        $validated = $request->validate([
+            'periode_id' => ['required', 'exists:periode,id'],
+            'default_capacity' => ['nullable', 'integer', 'min:1', 'max:50'],
+            'default_status' => ['nullable', 'in:draft,active'],
+        ]);
+
+        $periodId = (int) $validated['periode_id'];
+        $capacity = (int) ($validated['default_capacity'] ?? 10);
+        $status = $validated['default_status'] ?? 'active';
+
+        // Ambil semua lokasi yang BELUM memiliki kelompok di periode ini
+        $locations = Lokasi::query()
+            ->whereNotNull('village_code')
+            ->whereNotExists(function ($query) use ($periodId) {
+                $query->select(DB::raw(1))
+                    ->from('kelompok_kkn')
+                    ->whereColumn('kelompok_kkn.location_id', 'lokasi.id')
+                    ->where('kelompok_kkn.periode_id', $periodId)
+                    ->whereNull('kelompok_kkn.deleted_at');
+            })
+            ->get();
+
+        if ($locations->isEmpty()) {
+            return back()->with('info', 'Semua lokasi valid sudah memiliki kelompok di periode ini.');
+        }
+
+        $createdCount = 0;
+        DB::transaction(function () use ($locations, $periodId, $capacity, $status, &$createdCount) {
+            foreach ($locations as $loc) {
+                KelompokKkn::create([
+                    'periode_id' => $periodId,
+                    'location_id' => $loc->id,
+                    'nama_kelompok' => "Unit {$loc->village_name}",
+                    'capacity' => $capacity,
+                    'status' => $status,
+                    'code' => 'KKN-'.strtoupper(Str::random(6)),
+                    'token' => strtoupper(Str::random(8)),
+                ]);
+                $createdCount++;
+            }
+        });
+
+        return back()->with('success', "Berhasil membuat {$createdCount} kelompok baru secara otomatis dari data wilayah.");
     }
 
     public function downloadTemplate()

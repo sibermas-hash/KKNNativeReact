@@ -83,6 +83,7 @@ return [
         'gemini' => [
             'driver' => 'gemini',
             'key' => env('GEMINI_API_KEY'),
+            'url' => env('GEMINI_URL', 'https://generativelanguage.googleapis.com/v1'),
             'models' => [
                 'text' => [
                     // Production: gemini-2.5-flash (optimal untuk speed + quality)

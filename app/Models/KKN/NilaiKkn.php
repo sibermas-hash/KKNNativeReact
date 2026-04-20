@@ -82,7 +82,6 @@ class NilaiKkn extends Model
 
     protected $table = 'nilai_kkn';
 
-
     use HasFactory;
 
     // FIXED: Remove confusing mahasiswa_id - only use user_id

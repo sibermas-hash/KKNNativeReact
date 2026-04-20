@@ -14,7 +14,6 @@ class Workshop extends Model
 {
     use HasFactory;
 
-
     protected $table = 'workshop';
 
     protected $fillable = [

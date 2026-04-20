@@ -1,16 +1,13 @@
 import { Head, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
-import { useMemo, useState, type ComponentType, type SVGProps } from 'react';
-import type { LucideIcon } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import {
-  Settings, ShieldCheck, Database, Cpu, Eye, EyeOff, Save, Layers, Globe, Server, Cloud, Info, Activity, Binary, RefreshCw, Zap, Fingerprint, CheckCircle2, XCircle, History
+  Settings, ShieldCheck, Database, Cpu, Eye, EyeOff, Save, Layers, Server, Cloud, Info, Activity, Binary, RefreshCw, Zap, Fingerprint, History
 } from 'lucide-react';
 import { clsx } from 'clsx';
-import ContentPanel from '@/Components/Premium/ContentPanel';
 import AiConfigPanel from '@/Components/Premium/AiConfigPanel';
-
-type IconType = ComponentType<SVGProps<SVGSVGElement>>;
+import PageHeader from '@/Components/Premium/PageHeader';
 
 interface Setting {
   id: number;
@@ -58,7 +55,7 @@ const GROUP_ICONS: Record<string, any> = {
   ai_settings: Cpu,
   storage_settings: Cloud,
   registration_rules: ShieldCheck,
-  content_settings: Globe,
+  content_settings: History,
 };
 
 const GROUP_DESCRIPTIONS: Record<string, string> = {
@@ -138,51 +135,38 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
     form.patch(route('admin.pengaturan.sistem.update'));
   };
 
-  const groupCount = Object.keys(settings || {}).length;
-
   return (
     <AppLayout title="Pengaturan Sistem">
       <Head title="Pengaturan & Monitor AI" />
 
-      <div className="max-w-7xl mx-auto space-y-6 sm:px-6 lg:px-8 font-sans pb-12">
-        {/* HEADER SECTION */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-emerald-50 pt-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Settings size={16} className="text-[#1a7a4a]" />
-              <span className="text-sm font-medium text-emerald-800">Manajemen Sistem</span>
-            </div>
-            <h1 className="text-2xl font-bold text-emerald-950 leading-tight">Pengaturan & Monitor AI</h1>
-            <p className="text-sm text-emerald-800 max-w-2xl mt-1">
-              Pusat kendali parameter operasional KKN dan pemantauan intelegensi buatan secara real-time.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-4 shrink-0">
-            <div className="px-4 py-2 bg-white border border-emerald-50 rounded-lg shadow-sm flex items-center gap-3">
-              <Database size={18} className="text-[#1a7a4a]" />
-              <div className="flex flex-col">
-                <span className="text-xs font-medium text-emerald-800">Konfigurasi</span>
-                <span className="text-sm font-semibold text-emerald-950">{flattened.length} Data</span>
-              </div>
-            </div>
-            <div className={clsx(
+      <div className="max-w-7xl mx-auto space-y-6 font-sans pb-12">
+        <PageHeader
+          title="Pengaturan & Monitor AI"
+          subtitle="Pusat kendali parameter operasional KKN dan pemantauan intelegensi buatan secara real-time."
+          icon={Settings}
+          groupLabel="Manajemen Sistem"
+          stats={{
+            label: 'Total Konfigurasi',
+            value: flattened.length,
+            icon: Database
+          }}
+        >
+           <div className={clsx(
               "px-4 py-2 bg-white border rounded-lg shadow-sm flex items-center gap-3 transition-colors",
               ai_status?.is_healthy ? "border-green-200" : "border-red-200"
             )}>
               <Cpu size={18} className={ai_status?.is_healthy ? "text-[#16a34a]" : "text-red-600"} />
               <div className="flex flex-col">
-                <span className="text-xs font-medium text-emerald-800">Status AI</span>
-                <span className={clsx("text-sm font-semibold", ai_status?.is_healthy ? "text-[#15803d]" : "text-red-700")}>
-                  {ai_status?.is_healthy ? 'Online' : 'Offline'}
+                <span className="text-xs font-medium text-emerald-800 leading-none mb-0.5">Status AI</span>
+                <span className={clsx("text-sm font-bold leading-none", ai_status?.is_healthy ? "text-[#15803d]" : "text-red-700")}>
+                  {ai_status?.is_healthy ? 'ONLINE' : 'OFFLINE'}
                 </span>
               </div>
             </div>
-          </div>
-        </div>
+        </PageHeader>
 
         {/* TABS */}
-        <div className="inline-flex items-center p-1 bg-gray-100 rounded-xl border border-emerald-50 mb-2">
+        <div className="inline-flex items-center p-1 bg-gray-100 rounded-xl border border-emerald-50">
           <button
             onClick={() => setActiveTab('settings')}
             className={clsx(
@@ -215,11 +199,11 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <MetricCard label="Integritas Sistem" value="Aman" icon={ShieldCheck} desc="Semua kebijakan aktif" />
               <MetricCard label="Status Kernel" value="Stabil" icon={Activity} desc="Parameter sesuai" />
-              <MetricCard label="Total Variabel" value={flattened.length.toString()} icon={Database} desc="Konfigurasi di sistem" />
               <MetricCard label="Engine Aturan" value="Berjalan" icon={Binary} desc="Validasi dipaksakan" />
+              <MetricCard label="Sync Database" value="Sesuai" icon={RefreshCw} desc="Schema terverifikasi" />
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8 mt-6">
+            <form onSubmit={handleSubmit} className="space-y-8">
               {Object.entries(settings || {}).filter(([g]) => g !== 'ai_settings').map(([group, items]) => {
                 const GroupIcon = GROUP_ICONS[group] || Layers;
                 return (
@@ -230,12 +214,12 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
                           <GroupIcon size={20} />
                         </div>
                         <div>
-                          <h3 className="text-base font-semibold text-emerald-950">{GROUP_TITLES[group] ?? group.toUpperCase()}</h3>
-                          <p className="text-xs text-emerald-800 hidden md:block mt-0.5">{items.length} pengaturan</p>
+                          <h3 className="text-base font-bold text-emerald-950">{GROUP_TITLES[group] ?? group.toUpperCase()}</h3>
+                          <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">{items.length} pengaturan</p>
                         </div>
                       </div>
                       <div>
-                        <p className="text-sm text-emerald-800">{GROUP_DESCRIPTIONS[group]}</p>
+                        <p className="text-sm font-medium text-emerald-800">{GROUP_DESCRIPTIONS[group]}</p>
                       </div>
                     </div>
 
@@ -247,8 +231,8 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
                         return (
                           <div key={setting.id} className={clsx('space-y-2', isLongText && 'md:col-span-2')}>
                             <div className="flex items-center justify-between">
-                              <label className="text-sm font-medium text-emerald-800">{LABEL_OVERRIDE[setting.config_key] || setting.label}</label>
-                              <code className="text-xs text-emerald-800 bg-gray-50 px-1.5 py-0.5 rounded border border-emerald-50">{setting.config_key}</code>
+                              <label className="text-sm font-bold text-emerald-900">{LABEL_OVERRIDE[setting.config_key] || setting.label}</label>
+                              <code className="text-[10px] font-bold text-emerald-700 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">{setting.config_key}</code>
                             </div>
 
                             <div className="relative">
@@ -257,7 +241,7 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
                                   value={getValue(setting.id)}
                                   onChange={(event) => updateValue(setting.id, event.target.value)}
                                   rows={4}
-                                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-[#1a7a4a] focus:ring-[#1a7a4a] sm:text-sm text-emerald-950"
+                                  className="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#1a7a4a] focus:ring-[#1a7a4a] sm:text-sm text-emerald-950 font-medium"
                                 />
                               ) : (
                                 <div className="relative">
@@ -266,13 +250,14 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
                                     value={getValue(setting.id)}
                                     onChange={(event) => updateValue(setting.id, event.target.value)}
                                     className={clsx(
-                                      'w-full rounded-md shadow-sm sm:text-sm',
+                                      'w-full rounded-lg shadow-sm sm:text-sm transition-all',
                                       getError(setting.id) ? 'border-rose-300 text-rose-900 focus:ring-rose-500 focus:border-rose-500' : 'border-gray-300 text-emerald-950 focus:ring-[#1a7a4a] focus:border-[#1a7a4a]',
-                                      isSecret && 'pr-10 font-mono '
+                                      isSecret && 'pr-10 font-mono ',
+                                      'font-medium'
                                     )}
                                   />
                                   {isSecret && (
-                                    <button type="button" onClick={() => setVisiblePasswords((prev) => ({ ...prev, [setting.id]: !prev[setting.id] }))} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-emerald-800 hover:text-emerald-800 rounded">
+                                    <button type="button" onClick={() => setVisiblePasswords((prev) => ({ ...prev, [setting.id]: !prev[setting.id] }))} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-emerald-500 hover:text-emerald-800 rounded transition-colors">
                                       {visiblePasswords[setting.id] ? <EyeOff size={16} /> : <Eye size={16} />}
                                     </button>
                                   )}
@@ -281,13 +266,13 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
                             </div>
 
                             {SETTING_HELPERS[setting.config_key] && (
-                              <div className="flex gap-1.5 items-start mt-1">
-                                <Info size={14} className="text-emerald-800 shrink-0 mt-0.5" />
-                                <p className="text-xs text-emerald-800">{SETTING_HELPERS[setting.config_key]}</p>
+                              <div className="flex gap-1.5 items-start mt-1 pl-1">
+                                <Info size={14} className="text-emerald-500 shrink-0 mt-0.5" />
+                                <p className="text-xs font-medium text-emerald-700/80">{SETTING_HELPERS[setting.config_key]}</p>
                               </div>
                             )}
 
-                            {getError(setting.id) && <p className="text-xs font-medium text-rose-500 mt-1">{getError(setting.id)}</p>}
+                            {getError(setting.id) && <p className="text-xs font-bold text-rose-600 mt-1 pl-1">{getError(setting.id)}</p>}
                           </div>
                         );
                       })}
@@ -296,14 +281,14 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
                 );
               })}
 
-              <div className="bg-gray-50 border-t border-emerald-50 px-6 py-4 flex items-center justify-between rounded-xl">
-                <div>
-                  <p className="text-sm font-medium text-emerald-950">Perhatikan Perubahan</p>
-                  <p className="text-xs text-emerald-800">Perubahan pengaturan dapat memengaruhi alur sistem yang sedang berjalan secara langsung.</p>
+              <div className="bg-white border border-emerald-100 px-6 py-5 flex items-center justify-between rounded-xl shadow-sm">
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-emerald-950 uppercase tracking-tight">Perhatian Perubahan</p>
+                  <p className="text-xs font-medium text-emerald-700 leading-none">Perubahan pengaturan dapat memengaruhi alur sistem secara langsung.</p>
                 </div>
-                <button type="submit" disabled={form.processing} className="inline-flex items-center gap-2 justify-center rounded-md border border-transparent bg-[#16a34a] px-6 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-[#15803d] focus:outline-none focus:ring-2 focus:ring-[#1a7a4a] focus:ring-offset-2 disabled:opacity-50 transition-colors">
-                  {form.processing ? <RefreshCw size={16} className="animate-spin" /> : <Save size={16} />}
-                  {form.processing ? 'Menyimpan...' : 'Simpan Pengaturan'}
+                <button type="submit" disabled={form.processing} className="inline-flex items-center gap-2 justify-center rounded-lg border border-transparent bg-[#16a34a] px-8 py-3 text-sm font-black uppercase tracking-widest text-white shadow-lg shadow-emerald-200 hover:bg-[#15803d] focus:outline-none focus:ring-2 focus:ring-[#1a7a4a] focus:ring-offset-2 disabled:opacity-50 transition-all active:scale-95">
+                  {form.processing ? <RefreshCw size={18} className="animate-spin" /> : <Save size={18} />}
+                  Simpan Perubahan
                 </button>
               </div>
             </form>
@@ -319,7 +304,6 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
               <MetricCore icon={History} label="Tindakan Bantuan" value={ai_usage?.successful_heals?.toLocaleString('id-ID') || '0'} desc="Bantuan Otomatis Berhasil" />
             </div>
 
-            {/* AI CONFIGURATION FORM (Injected via PRD) */}
             <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
               <div className="px-6 py-5 border-b border-emerald-50 bg-gray-50 flex flex-col md:flex-row md:items-center gap-4">
                 <div className="flex items-center gap-3 w-full md:w-1/3 shrink-0">
@@ -327,37 +311,30 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
                     <Cpu size={20} />
                   </div>
                   <div>
-                    <h3 className="text-base font-semibold text-emerald-950">Kecerdasan Buatan (AI)</h3>
-                    <p className="text-xs text-emerald-800 hidden md:block mt-0.5">Pengaturan Koneksi AI</p>
+                    <h3 className="text-base font-bold text-emerald-950">Kecerdasan Buatan (AI)</h3>
+                    <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Pengaturan Koneksi AI</p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm text-emerald-800">Atur sambungan ke sistem AI Google Gemini untuk membantu pengecekan dan memandu mahasiswa secara otomatis.</p>
+                  <p className="text-sm font-medium text-emerald-800">Atur sambungan ke sistem AI Google Gemini untuk membantu pengecekan dan memandu mahasiswa secara otomatis.</p>
                 </div>
               </div>
-              <div className="p-6 space-y-6">
-                 {/* This will be handled by a specialized React component logic we will inject manually */}
+              <div className="p-6">
                  <AiConfigPanel settings={settings?.ai_settings || []} />
               </div>
             </div>
 
-
-
-            {/* AI FOOTER */}
-            <div className="bg-[#111827] rounded-xl p-8 relative overflow-hidden shadow-lg">
-              <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-10 pointer-events-none" />
-              <div className="absolute -right-10 -top-10 opacity-5 pointer-events-none transform rotate-12">
-                <ShieldCheck size={250} strokeWidth={1} className="text-white" />
-              </div>
+            <div className="bg-[#111827] rounded-2xl p-8 relative overflow-hidden shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 to-transparent pointer-events-none" />
               
               <div className="flex items-center gap-6 relative z-10">
                 <div className="h-16 w-16 bg-[#1a7a4a] rounded-2xl flex shrink-0 items-center justify-center border border-[#16a34a] shadow-inner">
-                  <Cpu size={32} className="text-white" strokeWidth={2} />
+                  <Cpu size={32} className="text-white" strokeWidth={2.5} />
                 </div>
-                <div className="space-y-2">
-                  <h3 className="text-xl font-bold text-white tracking-tight">Asisten AI Siap Membantu</h3>
-                  <p className="text-[15px] font-medium text-gray-300 max-w-3xl leading-relaxed">
-                    Jika diaktifkan, sistem akan otomatis membaca pola laporan KKN, mendeteksi masalah, dan memberikan saran perbaikan untuk mempermudah tugas Anda.
+                <div className="space-y-1">
+                  <h3 className="text-xl font-black text-white tracking-tight uppercase tracking-widest">Asisten AI Siap Membantu</h3>
+                  <p className="text-sm font-medium text-gray-400 max-w-2xl leading-relaxed">
+                    Jika diaktifkan, sistem akan otomatis membaca pola laporan KKN, mendeteksi masalah, dan memberikan saran perbaikan untuk mempermudah tugas administrasi Anda.
                   </p>
                 </div>
               </div>
@@ -370,16 +347,16 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
   );
 }
 
-function MetricCard({ label, value, icon: Icon, desc }: { label: string; value: string; icon: LucideIcon; desc: string }) {
+function MetricCard({ label, value, icon: Icon, desc }: { label: string; value: string; icon: any; desc: string }) {
   return (
-    <div className="bg-white border border-emerald-50 rounded-xl p-5 shadow-sm flex items-start gap-4">
-      <div className="h-10 w-10 rounded-lg bg-gray-50 text-[#1a7a4a] flex items-center justify-center shrink-0">
+    <div className="bg-white border border-emerald-50 rounded-xl p-5 shadow-sm flex items-start gap-4 hover:border-emerald-200 transition-colors">
+      <div className="h-10 w-10 rounded-lg bg-[#f0f9f4] text-[#1a7a4a] flex items-center justify-center shrink-0">
         <Icon size={20} />
       </div>
       <div>
-        <p className="text-xs font-medium text-emerald-800 mb-0.5">{label}</p>
-        <p className="text-xl font-bold text-emerald-950">{value}</p>
-        <p className="text-xs text-emerald-800 mt-1">{desc}</p>
+        <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-0.5">{label}</p>
+        <p className="text-xl font-black text-emerald-950 leading-tight">{value}</p>
+        <p className="text-xs font-medium text-emerald-700/70 mt-1">{desc}</p>
       </div>
     </div>
   );
@@ -387,42 +364,18 @@ function MetricCard({ label, value, icon: Icon, desc }: { label: string; value: 
 
 function MetricCore({ icon: Icon, label, value, desc }: { icon: any, label: string, value: string | number, desc: string }) {
   return (
-    <div className="bg-white border border-emerald-50 rounded-xl p-6 flex flex-col justify-between hover:shadow-md transition-all group relative overflow-hidden">
+    <div className="bg-white border border-emerald-50 rounded-2xl p-6 flex flex-col justify-between hover:shadow-xl hover:border-emerald-100 transition-all group relative overflow-hidden">
       <div className="flex justify-between items-start relative z-10">
-        <div className="h-12 w-12 bg-[#e8f5ee] text-[#1a7a4a] rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 mb-4">
+        <div className="h-12 w-12 bg-[#e8f5ee] text-[#1a7a4a] rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 mb-5">
           <Icon size={24} strokeWidth={2.5} />
         </div>
       </div>
       <div className="space-y-1.5 relative z-10">
-        <p className="text-3xl font-extrabold text-emerald-950 truncate tracking-tight leading-none">{value}</p>
+        <p className="text-3xl font-black text-emerald-950 truncate tracking-tight leading-none">{value}</p>
         <div className="flex flex-col">
-          <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">{label}</span>
-          <span className="text-sm font-medium text-emerald-800 truncate mt-0.5">{desc}</span>
+          <span className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">{label}</span>
+          <span className="text-sm font-bold text-emerald-700/70 truncate mt-0.5">{desc}</span>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function ProtocolNode({ label, active }: { label: string, active: boolean }) {
-  return (
-    <div className="flex items-center justify-between p-3.5 bg-white rounded-lg border border-emerald-50 transition-colors hover:border-gray-300 hover:bg-gray-50 group">
-      <span className="text-[13px] font-bold text-emerald-800 truncate mr-3">{label}</span>
-      <div className="flex items-center gap-2 shrink-0 bg-gray-100 px-2 py-1 rounded-md">
-        {active ? (
-          <>
-            <div className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#16a34a] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#15803d]"></span>
-            </div>
-            <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Aman</span>
-          </>
-        ) : (
-          <>
-            <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
-            <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Offline</span>
-          </>
-        )}
       </div>
     </div>
   );

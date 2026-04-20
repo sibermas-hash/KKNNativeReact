@@ -66,7 +66,7 @@ class DplAssignmentService
         }
 
         if ($group->periode_id !== $dplPeriod->periode_id) {
-            throw new \Exception('Kelompok dan DPL berada pada periode yang berbeda.');
+            throw new DomainException('Kelompok dan DPL berada pada periode yang berbeda.');
         }
 
         $isCurrentAssignment = $group->dpl_periode_id === $dplPeriod->id;

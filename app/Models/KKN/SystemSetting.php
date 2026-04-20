@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Schema;
 
 class SystemSetting extends Model
 {
-
     protected $table = 'system_settings';
 
     protected $fillable = [

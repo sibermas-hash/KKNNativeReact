@@ -10,7 +10,6 @@ use Illuminate\Support\Str;
 
 class Announcement extends Model
 {
-
     protected $table = 'announcements';
 
     protected $fillable = [

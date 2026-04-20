@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\KKN\JenisKkn;
+use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
-use App\Models\KKN\Mahasiswa;
-use App\Models\KKN\JenisKkn;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Auth;
 
 class KknDaftarController extends Controller
 {
@@ -20,7 +19,7 @@ class KknDaftarController extends Controller
     {
         $user = $request->user();
         $mahasiswa = $user?->mahasiswa;
-        
+
         // Cek apakah mahasiswa sudah pernah mendaftar/mengikuti KKN (jenis apapun)
         $existingRegistration = null;
         $hasRegistered = false;
@@ -40,9 +39,9 @@ class KknDaftarController extends Controller
             ->map(function ($p) use ($mahasiswa, $hasRegistered) {
                 $jenis = $p->jenisKkn;
                 $canRegister = in_array($p->current_phase, ['registration', 'placement']);
-                
+
                 $eligibility = $this->checkEligibility($mahasiswa, $jenis);
-                
+
                 // Jika sudah pernah daftar KKN apapun, tidak boleh daftar lagi
                 if ($hasRegistered) {
                     $canRegister = false;
@@ -89,17 +88,17 @@ class KknDaftarController extends Controller
             ],
         ]);
     }
-    
+
     private function checkEligibility(?Mahasiswa $mahasiswa, ?JenisKkn $jenis): array
     {
-        if (!$mahasiswa) {
+        if (! $mahasiswa) {
             return [
                 'is_eligible' => false,
                 'reasons' => ['Data mahasiswa tidak ditemukan. Silakan hubungi administrator.'],
             ];
         }
 
-        if (!$jenis) {
+        if (! $jenis) {
             return [
                 'is_eligible' => false,
                 'reasons' => ['Konfigurasi jenis KKN belum tersedia.'],
@@ -115,12 +114,12 @@ class KknDaftarController extends Controller
         }
 
         if (($mahasiswa->gpa ?? 0) < $minGpa) {
-            $reasons[] = "IPK belum mencukupi (" . number_format($mahasiswa->gpa ?? 0, 2) . "/{$minGpa})";
+            $reasons[] = 'IPK belum mencukupi ('.number_format($mahasiswa->gpa ?? 0, 2)."/{$minGpa})";
         }
 
         $btaPassed = strtoupper(trim($mahasiswa->status_bta_ppi ?? ''));
-        if (!in_array($btaPassed, ['LULUS', 'PASSED', 'SUCCESS'])) {
-            $reasons[] = "Anda belum lulus BTA/PPI";
+        if (! in_array($btaPassed, ['LULUS', 'PASSED', 'SUCCESS'])) {
+            $reasons[] = 'Anda belum lulus BTA/PPI';
         }
 
         return [
@@ -128,10 +127,10 @@ class KknDaftarController extends Controller
             'reasons' => $reasons,
         ];
     }
-    
+
     private function getUserEligibility(?Mahasiswa $mahasiswa): array
     {
-        if (!$mahasiswa) {
+        if (! $mahasiswa) {
             return [
                 'sks_completed' => 0,
                 'gpa' => 0,
@@ -140,15 +139,15 @@ class KknDaftarController extends Controller
                 'has_parent_permission' => false,
             ];
         }
-        
+
         $btaPassed = strtoupper(trim($mahasiswa->status_bta_ppi ?? ''));
-        
+
         return [
             'sks_completed' => $mahasiswa->sks_completed,
             'gpa' => $mahasiswa->gpa,
             'bta_ppi_passed' => in_array($btaPassed, ['LULUS', 'PASSED', 'SUCCESS']),
-            'has_health_certificate' => !empty($mahasiswa->health_certificate_path),
-            'has_parent_permission' => !empty($mahasiswa->parent_permission_path),
+            'has_health_certificate' => ! empty($mahasiswa->health_certificate_path),
+            'has_parent_permission' => ! empty($mahasiswa->parent_permission_path),
         ];
     }
 }

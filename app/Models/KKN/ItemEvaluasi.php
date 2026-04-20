@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ItemEvaluasi extends Model
 {
-
     protected $table = 'item_evaluasi';
 
     protected $fillable = [

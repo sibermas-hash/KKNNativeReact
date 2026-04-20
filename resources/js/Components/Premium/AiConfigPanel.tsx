@@ -3,7 +3,7 @@ import { useForm, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import axios from 'axios';
 import { clsx } from 'clsx';
-import { Eye, EyeOff, Save, RefreshCw, CheckCircle2, XCircle, Info, Plug } from 'lucide-react';
+import { Eye, EyeOff, Save, RefreshCw, CheckCircle2, XCircle, Info, Plug, Zap } from 'lucide-react';
 import { useToast } from '@/Hooks/useToast';
 
 interface AiConfigPanelProps {
@@ -16,7 +16,7 @@ export default function AiConfigPanel({ settings }: AiConfigPanelProps) {
   const enabledSetting = settings.find((s) => s.config_key === 'ai_enabled');
 
   const [apiKey, setApiKey] = useState('');
-  const [aiEnabled, setAiEnabled] = useState(enabledSetting?.config_value === '1' || enabledSetting?.config_value === 'true');
+  const [aiEnabled, setAiEnabled] = useState(enabledSetting?.value === '1' || enabledSetting?.value === 'true');
   const [showKey, setShowKey] = useState(false);
   const [validationStatus, setValidationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
@@ -30,14 +30,14 @@ export default function AiConfigPanel({ settings }: AiConfigPanelProps) {
   }, [apiKey]);
 
   const testConnection = async () => {
-    if (!apiKey && !apiKeySetting?.config_value) return;
+    if (!apiKey && !apiKeySetting?.value) return;
     
     setValidationStatus('loading');
     setValidationMessage(null);
 
     try {
       const response = await axios.post(route('admin.pengaturan.sistem.ai.test'), {
-        gemini_api_key: apiKey || apiKeySetting?.config_value
+        gemini_api_key: apiKey || apiKeySetting?.value
       });
 
       if (response.data.success) {
@@ -122,7 +122,7 @@ export default function AiConfigPanel({ settings }: AiConfigPanelProps) {
               type={showKey ? 'text' : 'password'}
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder={apiKeySetting?.config_value ? '•••••••••••••••••••••••••••• (Tersimpan)' : 'Masukkan Kunci Akses (API Key) Gemini Anda...'}
+              placeholder={apiKeySetting?.value ? '•••••••••••••••••••••••••••• (Tersimpan)' : 'Masukkan Kunci Akses (API Key) Gemini Anda...'}
               className={clsx(
                 "block w-full rounded-lg sm:text-sm transition-all",
                 validationStatus === 'error' ? "border-red-300 text-red-900 focus:ring-red-500 focus:border-red-500" :
@@ -142,7 +142,7 @@ export default function AiConfigPanel({ settings }: AiConfigPanelProps) {
           <button
             type="button"
             onClick={testConnection}
-            disabled={validationStatus === 'loading' || (!apiKey && !apiKeySetting?.config_value)}
+            disabled={validationStatus === 'loading' || (!apiKey && !apiKeySetting?.value)}
             className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-emerald-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#1a7a4a] focus:ring-offset-2 disabled:opacity-50"
           >
             {validationStatus === 'loading' ? <RefreshCw className="h-4 w-4 animate-spin text-emerald-700" /> : <Plug className="h-4 w-4 text-emerald-600" />}
@@ -170,7 +170,7 @@ export default function AiConfigPanel({ settings }: AiConfigPanelProps) {
       </div>
 
       <div className="pt-4 flex items-center justify-between">
-        {apiKeySetting?.config_value ? (
+        {apiKeySetting?.value ? (
           <button
             type="button"
             onClick={() => {

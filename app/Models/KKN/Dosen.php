@@ -15,12 +15,15 @@ class Dosen extends Model
 {
     protected $table = 'dosen';
 
-
     protected $fillable = [
         'user_id',
         'nip',
         'nama',
         'jabatan',
+        'golongan',
+        'no_rekening',
+        'nama_bank',
+        'npwp',
         'birth_date',
         'gender',
         'is_cpns',

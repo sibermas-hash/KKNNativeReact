@@ -24,7 +24,8 @@ import {
  ArrowRight,
  CheckCircle,
  X,
- MapPinned
+ MapPinned,
+ Crown
 } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
 import { StatusBadge } from '@/Components/ui';
@@ -219,13 +220,18 @@ export default function GroupShow({ group, members = [] }: Props) {
  <td className="px-8 py-8 text-center">
  <div className={clsx(
 "h-10 px-6 rounded-xl flex items-center justify-center gap-3 text-xs font-semibold border shadow-sm inline-flex mx-auto",
- m.role === 'Ketua' ? 'bg-[#16a34a] border-[#1a7a4a] text-white' : 'bg-white border-emerald-50 text-emerald-800'
- )}>
- {m.role === 'Ketua' && <ShieldCheck size={14} strokeWidth={3} />}
- {m.role ? m.role.toUpperCase() : 'ANGGOTA'}
+  m.role === 'Ketua' ? 'bg-[#16a34a] border-[#1a7a4a] text-white'
+  : m.role === 'Korcam' ? 'bg-amber-500 border-amber-600 text-white'
+  : 'bg-white border-emerald-50 text-emerald-800'
+  )}>
+  {m.role === 'Ketua' && <ShieldCheck size={14} strokeWidth={3} />}
+  {m.role === 'Korcam' && <Crown size={14} strokeWidth={3} />}
+  {m.role === 'Ketua' ? 'KORDES'
+  : m.role === 'Korcam' ? 'KORCAM'
+  : 'ANGGOTA'}
  </div>
  </td>
- <td className="px-8 py-8 text-center text-center">
+ <td className="px-8 py-8 text-center">
  <div className="scale-110">
  <StatusBadge status={m.status} />
  </div>
@@ -243,9 +249,19 @@ export default function GroupShow({ group, members = [] }: Props) {
  href={`/admin/pendaftaran/${m.id}/jadikan-ketua`}
  method="post"
  className="h-10 w-10 bg-white border border-emerald-50 text-emerald-800 hover:bg-[#16a34a] hover:text-white rounded-xl flex items-center justify-center transition-all active:scale-90"
- title="Tetapkan Ketua"
+ title="Tetapkan sebagai Kordes (Ketua Kelompok)"
  >
- <ChevronRight size={18} strokeWidth={3} />
+ <ShieldCheck size={16} strokeWidth={2.5} />
+ </Link>
+ )}
+ {m.role !== 'Korcam' && m.status === 'approved' && (
+ <Link 
+ href={`/admin/pendaftaran/${m.id}/jadikan-korcam`}
+ method="post"
+ className="h-10 w-10 bg-white border border-emerald-50 text-amber-600 hover:bg-amber-500 hover:text-white rounded-xl flex items-center justify-center transition-all active:scale-90"
+ title="Tetapkan sebagai Korcam (Koordinator Kecamatan)"
+ >
+ <Crown size={16} strokeWidth={2.5} />
  </Link>
  )}
  </div>

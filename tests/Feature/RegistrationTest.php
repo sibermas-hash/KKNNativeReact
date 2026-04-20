@@ -2,13 +2,14 @@
 
 namespace Tests\Feature;
 
-use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\Lokasi;
+use App\Http\Middleware\EnsureProfileCompleted;
+use App\Models\KKN\JenisKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\User;
-use Database\Seeders\RoleSeeder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -16,11 +17,10 @@ class RegistrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->seed(RoleSeeder::class);
+        Storage::fake('public');
     }
 
-    public function test_student_can_open_registration_page_for_active_period(): void
+    private function createCompleteStudentUser(): User
     {
         $user = User::factory()->create([
             'phone' => '081111111111',
@@ -29,6 +29,7 @@ class RegistrationTest extends TestCase
             'domicile_district_name' => 'Kecamatan Asal',
             'domicile_regency_name' => 'Kabupaten Asal',
             'address_verified_at' => now(),
+            'avatar' => 'avatars/default.png',
         ]);
         $user->assignRole('student');
 
@@ -41,224 +42,144 @@ class RegistrationTest extends TestCase
             'gender' => 'L',
             'shirt_size' => 'L',
             'sks_completed' => 110,
-            'sks_completed' => 110,
-            'health_certificate_path' => 'files/health.pdf',
-            'parent_permission_path' => 'files/parent.pdf',
+            'gpa' => 3.5,
+            'status_bta_ppi' => 'LULUS',
         ]);
 
-        Periode::factory()->active()->create();
+        return $user;
+    }
+
+    private function getJenisReguler(): JenisKkn
+    {
+        return JenisKkn::where('code', 'REGULER')->first()
+            ?? JenisKkn::factory()->create(['code' => 'REGULER', 'min_sks' => 100]);
+    }
+
+    public function test_student_can_open_registration_listing_page(): void
+    {
+        $user = $this->createCompleteStudentUser();
+        $jenisKkn = $this->getJenisReguler();
+
+        Periode::factory()->active()->create([
+            'jenis_kkn_id' => $jenisKkn->id,
+            'current_phase' => 'registration',
+        ]);
 
         $response = $this->actingAs($user)
-            ->get(route('student.registration.create'));
+            ->get(route('student.daftar.index'));
 
         $response->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->component('Student/Register')
+                ->component('Student/KknDaftar')
                 ->has('periods')
-                ->where('domicile_profile.is_complete', true)
             );
     }
 
-    public function test_student_can_register_for_active_period(): void
+    public function test_student_can_register_by_uploading_documents(): void
     {
-        $user = User::factory()->create([
-            'phone' => '081222222222',
-            'address' => 'Jl. Pahlawan No. 2',
-            'domicile_village_name' => 'Desa Asal',
-            'domicile_district_name' => 'Kecamatan Asal',
-            'domicile_regency_name' => 'Kabupaten Asal',
-            'address_verified_at' => now(),
-        ]);
-        $user->assignRole('student');
+        $user = $this->createCompleteStudentUser();
+        $jenisKkn = $this->getJenisReguler();
 
-        $mahasiswa = Mahasiswa::factory()->create([
-            'user_id' => $user->id,
-            'nik' => '3301010101010012',
-            'mother_name' => 'Nur Hidayah',
-            'birth_place' => 'Cilacap',
-            'birth_date' => '2003-02-12',
-            'gender' => 'L',
-            'shirt_size' => 'L',
-            'sks_completed' => 110,
+        $period = Periode::factory()->active()->create([
+            'jenis_kkn_id' => $jenisKkn->id,
+            'current_phase' => 'registration',
         ]);
 
-        $period = Periode::factory()->active()->create();
-        $group = KelompokKkn::factory()->create([
-            'periode_id' => $period->id,
-            'status' => 'active',
-            'location_id' => Lokasi::factory()->create([
-                'village_name' => 'Desa Penempatan',
-                'district_name' => 'Kecamatan Penempatan',
-                'regency_name' => 'Kabupaten Penempatan',
-            ])->id,
-        ]);
-
-        // First visit the registration page to establish session
-        $this->actingAs($user)
-            ->get(route('student.registration.create'));
+        $healthCert = UploadedFile::fake()->create('health.pdf', 500);
+        $parentPerm = UploadedFile::fake()->create('parent.pdf', 500);
 
         $response = $this->actingAs($user)
-            ->from(route('student.registration.create'))
-            ->post(route('student.registration.store'), [
-                'periode_id' => $period->id,
+            ->post(route('student.registration.documents.store', ['periode' => $period->id]), [
+                'health_certificate' => $healthCert,
+                'parent_permission' => $parentPerm,
+                'notes' => 'Test registration',
             ]);
 
-        $response->assertRedirect();
+        $response->assertRedirect(route('student.dashboard'));
 
         $this->assertDatabaseHas('peserta_kkn', [
-            'mahasiswa_id' => $mahasiswa->id,
+            'mahasiswa_id' => $user->mahasiswa->id,
             'periode_id' => $period->id,
-            'status' => 'pending',
+            'status' => 'document_submitted',
         ]);
     }
 
-    public function test_student_cannot_register_twice_for_the_same_period(): void
+    public function test_student_cannot_register_if_ineligible_due_to_sks(): void
     {
-        $user = User::factory()->create([
-            'phone' => '081333333333',
-            'address' => 'Jl. Pahlawan No. 3',
-            'domicile_village_name' => 'Desa Asal',
-            'domicile_district_name' => 'Kecamatan Asal',
-            'domicile_regency_name' => 'Kabupaten Asal',
-            'address_verified_at' => now(),
-        ]);
-        $user->assignRole('student');
+        $user = $this->createCompleteStudentUser();
+        $user->mahasiswa->update(['sks_completed' => 50]);
 
-        $mahasiswa = Mahasiswa::factory()->create([
-            'user_id' => $user->id,
-            'nik' => '3301010101010013',
-            'mother_name' => 'Khadijah',
-            'birth_place' => 'Purbalingga',
-            'birth_date' => '2003-03-13',
-            'gender' => 'L',
-            'shirt_size' => 'L',
-            'sks_completed' => 110,
+        $jenisKkn = $this->getJenisReguler();
+        $jenisKkn->update(['min_sks' => 100]);
+
+        $period = Periode::factory()->active()->create([
+            'jenis_kkn_id' => $jenisKkn->id,
+            'current_phase' => 'registration',
         ]);
 
-        $period = Periode::factory()->active()->create();
-        $group = KelompokKkn::factory()->create([
-            'periode_id' => $period->id,
-            'status' => 'active',
-            'location_id' => Lokasi::factory()->create([
-                'village_name' => 'Desa Penempatan',
-                'district_name' => 'Kecamatan Penempatan',
-                'regency_name' => 'Kabupaten Penempatan',
-            ])->id,
-        ]);
-
-        // First registration
-        $this->actingAs($user)
-            ->get(route('student.registration.create'));
-
-        $this->actingAs($user)
-            ->post(route('student.registration.store'), [
-                'periode_id' => $period->id,
-            ]);
-
-        // Attempt duplicate registration
         $response = $this->actingAs($user)
-            ->from(route('student.registration.create'))
-            ->post(route('student.registration.store'), [
-                'periode_id' => $period->id,
-            ]);
+            ->get(route('student.daftar.index'));
 
-        // Should only have one registration record
-        $count = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
-            ->where('periode_id', $period->id)
-            ->count();
-
-        $this->assertSame(1, $count);
+        $response->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('periods.0', fn ($p) => $p
+                    ->where('can_register', false)
+                    ->etc()
+                )
+            );
     }
 
-    public function test_student_is_redirected_to_profile_when_bpjs_biodata_is_incomplete(): void
+    public function test_student_cannot_register_for_multiple_periods(): void
     {
-        $user = User::factory()->create([
-            'phone' => '081234567890',
-            'address' => null,
-        ]);
-        $user->assignRole('student');
+        $user = $this->createCompleteStudentUser();
+        $jenisKkn = $this->getJenisReguler();
 
-        Mahasiswa::factory()->create([
-            'user_id' => $user->id,
-            'nama' => 'Test Student',
-            'gender' => 'L',
-            'health_certificate_path' => 'files/health.pdf',
-            'parent_permission_path' => 'files/parent.pdf',
-            'nik' => null,
-            'mother_name' => null,
-            'birth_place' => null,
-            'birth_date' => null,
-            'sks_completed' => 110,
+        $period1 = Periode::factory()->active()->create([
+            'jenis_kkn_id' => $jenisKkn->id,
+            'current_phase' => 'registration',
         ]);
 
-        $period = Periode::factory()->active()->create();
+        $period2 = Periode::factory()->active()->create([
+            'jenis_kkn_id' => $jenisKkn->id,
+            'current_phase' => 'registration',
+        ]);
 
-        // Visit registration page first to establish session
-        $this->actingAs($user)
-            ->get(route('student.registration.create'));
+        // Registered in period 1
+        PesertaKkn::create([
+            'mahasiswa_id' => $user->mahasiswa->id,
+            'periode_id' => $period1->id,
+            'status' => 'document_submitted',
+        ]);
 
+        // Attempt to register in period 2
         $response = $this->actingAs($user)
-            ->post(route('student.registration.store'), [
-                'periode_id' => $period->id,
-            ]);
+            ->get(route('student.registration.documents', ['periode' => $period2->id]));
 
-        $response
-            ->assertRedirect(route('profile.show'))
+        $response->assertRedirect(route('student.daftar.index'))
             ->assertSessionHas('error');
     }
 
-    public function test_guest_cannot_access_registration_page(): void
+    public function test_student_is_redirected_to_profile_when_incomplete(): void
     {
-        Periode::factory()->active()->create();
+        $this->withMiddleware([EnsureProfileCompleted::class]);
 
-        $response = $this->get(route('student.registration.create'));
+        $user = User::factory()->create([
+            'phone' => null,
+        ]);
+        $user->assignRole('student');
+        Mahasiswa::factory()->create(['user_id' => $user->id]);
+
+        $response = $this->actingAs($user)
+            ->get(route('student.daftar.index'));
+
+        $response->assertRedirect(route('profile.show'))
+            ->assertSessionHas('warning');
+    }
+
+    public function test_guest_cannot_access_registration_listing(): void
+    {
+        $response = $this->get(route('student.daftar.index'));
 
         $response->assertRedirect(route('login'));
-    }
-
-    public function test_student_is_redirected_to_profile_when_domicile_is_not_verified(): void
-    {
-        $user = User::factory()->create([
-            'phone' => '081444444444',
-            'address' => 'Jl. Pahlawan No. 4',
-            'domicile_village_name' => 'Desa Asal',
-            'domicile_district_name' => 'Kecamatan Asal',
-            'domicile_regency_name' => 'Kabupaten Asal',
-            'address_verified_at' => null,
-        ]);
-        $user->assignRole('student');
-
-        Mahasiswa::factory()->create([
-            'user_id' => $user->id,
-            'nama' => 'Test Student',
-            'gender' => 'L',
-            'health_certificate_path' => 'files/health.pdf',
-            'parent_permission_path' => 'files/parent.pdf',
-            'nik' => '3301010101010014',
-            'mother_name' => 'Maryam',
-            'birth_place' => 'Banjarnegara',
-            'birth_date' => '2003-04-14',
-            'sks_completed' => 110,
-        ]);
-
-        $period = Periode::factory()->active()->create();
-        KelompokKkn::factory()->create([
-            'periode_id' => $period->id,
-            'status' => 'active',
-            'location_id' => Lokasi::factory()->create([
-                'village_name' => 'Desa Penempatan',
-                'district_name' => 'Kecamatan Penempatan',
-                'regency_name' => 'Kabupaten Penempatan',
-            ])->id,
-        ]);
-
-        $response = $this->actingAs($user)
-            ->post(route('student.registration.store'), [
-                'periode_id' => $period->id,
-            ]);
-
-        $response
-            ->assertRedirect(route('profile.show'))
-            ->assertSessionHas('error');
     }
 }

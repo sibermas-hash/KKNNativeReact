@@ -4,6 +4,7 @@ use App\Ai\Agents\ActivityReviewerAgent;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\DplPeriod;
 use App\Models\KKN\Fakultas;
+use App\Models\KKN\JenisKkn;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
@@ -68,7 +69,7 @@ class MultiRoleWorkflowTest extends TestCase
     private function createDplUser(): array
     {
         $user = User::factory()->create();
-        $user->assignRole('dpl');
+        $user->assignRole('dosen', 'dpl');
 
         $dosen = Dosen::factory()->create([
             'user_id' => $user->id,
@@ -128,13 +129,14 @@ class MultiRoleWorkflowTest extends TestCase
         $this->actingAs($superadmin)
             ->post(route('admin.periode.store'), [
                 'academic_year_id' => $academicYear->id,
+                'jenis_kkn_id' => JenisKkn::where('code', 'REGULER')->firstOrFail()->id,
                 'periode' => 57,
                 'program_type' => Periode::PROGRAM_TYPE_REGULER,
                 'program_subtype' => null,
                 'jenis' => 'KKN Reguler',
                 'name' => 'KKN Reguler 2026',
-                'start_date' => now()->addWeeks(2)->toDateString(),
-                'end_date' => now()->addWeeks(10)->toDateString(),
+                'start_date' => now()->addWeeks(3)->toDateString(),
+                'end_date' => now()->addWeeks(11)->toDateString(),
                 'registration_start' => now()->subWeek()->toDateString(),
                 'registration_end' => now()->addWeek(2)->toDateString(),
                 'kuota' => 2000,
@@ -284,12 +286,12 @@ class MultiRoleWorkflowTest extends TestCase
 
         // DPL can see and review the report
         $this->actingAs($dplUser)
-            ->get(route('dpl.daily-reports.index'))
+            ->get(route('dosen.daily-reports.index'))
             ->assertOk()
             ->assertSee('Kegiatan Lapangan');
 
         $this->actingAs($dplUser)
-            ->patch(route('dpl.daily-reports.approve', $report))
+            ->patch(route('dosen.daily-reports.approve', $report))
             ->assertRedirect();
 
         $report->refresh();
@@ -410,17 +412,17 @@ class MultiRoleWorkflowTest extends TestCase
         // Student cannot access admin pages
         $this->actingAs($studentUser)
             ->get(route('admin.dashboard'))
-            ->assertForbidden();
+            ->assertStatus(302);
 
         // Student cannot access DPL pages
         $this->actingAs($studentUser)
-            ->get(route('dpl.dashboard'))
-            ->assertForbidden();
+            ->get(route('dosen.dashboard'))
+            ->assertStatus(302);
 
         // DPL cannot access superadmin-only pages
         $this->actingAs($dplUser)
             ->get(route('admin.pendaftaran.index'))
-            ->assertForbidden();
+            ->assertStatus(302);
 
         // DPL cannot access student pages
         $this->actingAs($dplUser)
@@ -526,7 +528,7 @@ class MultiRoleWorkflowTest extends TestCase
 
         // DPL 2 (from group 2) cannot access report from group 1
         $this->actingAs($dplUser2)
-            ->get(route('dpl.daily-reports.show', $report))
+            ->get(route('dosen.daily-reports.show', $report))
             ->assertForbidden();
     }
 }

@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Lokasi extends Model
 {
-
     protected $table = 'lokasi';
 
     protected $fillable = [

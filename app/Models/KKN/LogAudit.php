@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LogAudit extends Model
 {
-
     protected $table = 'log_audit';
 
     protected $fillable = [

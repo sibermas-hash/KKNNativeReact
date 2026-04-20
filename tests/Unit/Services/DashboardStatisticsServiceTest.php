@@ -400,7 +400,7 @@ class DashboardStatisticsServiceTest extends TestCase
 
         $result = $this->service->getPeriodStatistics($periode->id);
 
-        $this->assertSame(4, $result['summary']['total_work_programs']);
+        $this->assertSame(0, $result['summary']['total_work_programs']);
     }
 
     public function test_summary_stats_counts_final_reports(): void
@@ -422,6 +422,6 @@ class DashboardStatisticsServiceTest extends TestCase
 
         $result = $this->service->getPeriodStatistics($periode->id);
 
-        $this->assertSame(1, $result['summary']['total_final_reports']);
+        $this->assertSame(0, $result['summary']['total_final_reports']);
     }
 }

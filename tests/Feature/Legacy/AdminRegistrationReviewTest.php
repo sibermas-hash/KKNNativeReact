@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\KknType;
 use App\Models\KKN\Fakultas;
+use App\Models\KKN\JenisKkn;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\Mahasiswa;
@@ -126,7 +127,18 @@ class AdminRegistrationReviewTest extends TestCase
             'parent_permission_path' => 'parent-permissions/izin-ortu.pdf',
         ]);
 
-        $period = Periode::factory()->active()->create();
+        $jenisKkn = JenisKkn::updateOrCreate([
+            'code' => 'REGULER',
+        ], [
+            'name' => 'KKN Reguler',
+            'registration_mode' => Periode::REGISTRATION_MODE_OPEN,
+            'placement_mode' => Periode::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL,
+            'is_active' => true,
+        ]);
+
+        $period = Periode::factory()->active()->create([
+            'jenis_kkn_id' => $jenisKkn->id,
+        ]);
 
         $registration = PesertaKkn::factory()->create([
             'mahasiswa_id' => $mahasiswa->id,
@@ -141,8 +153,8 @@ class AdminRegistrationReviewTest extends TestCase
                 ->component('Admin/Operational/Registrations/Show')
                 ->has('registration.dokumen', 2)
                 ->where('registration.periode.governance.program_type_label', 'KKN Reguler')
-                ->where('registration.dokumen.0.type', 'health_certificate')
-                ->where('registration.dokumen.1.type', 'parent_permission')
+                ->where('registration.dokumen.0.document_type', 'Surat Keterangan Sehat')
+                ->where('registration.dokumen.1.document_type', 'Surat Izin Orang Tua')
             );
     }
 
@@ -167,7 +179,17 @@ class AdminRegistrationReviewTest extends TestCase
             'parent_permission_path' => 'parent-permissions/izin-ortu.pdf',
         ]);
 
+        $jenisKkn = JenisKkn::updateOrCreate([
+            'code' => 'REGULER',
+        ], [
+            'name' => 'KKN Reguler',
+            'registration_mode' => Periode::REGISTRATION_MODE_OPEN,
+            'placement_mode' => Periode::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL,
+            'is_active' => true,
+        ]);
+
         $period = Periode::factory()->active()->create([
+            'jenis_kkn_id' => $jenisKkn->id,
             'jenis' => KknType::REGULER,
             'program_type' => Periode::PROGRAM_TYPE_REGULER,
             'registration_mode' => Periode::REGISTRATION_MODE_OPEN,

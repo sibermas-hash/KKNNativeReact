@@ -28,10 +28,10 @@ class AdminDashboardTest extends TestCase
     /** @test */
     public function non_admins_cannot_access_admin_dashboard(): void
     {
-        $student = User::factory()->create();
-        $student->assignRole('student');
+        $user = User::factory()->create();
+        // No role assigned, should hit 403 directly without student-specific redirect
 
-        $response = $this->actingAs($student)->get('/admin');
+        $response = $this->actingAs($user)->get('/admin');
 
         $response->assertForbidden();
     }

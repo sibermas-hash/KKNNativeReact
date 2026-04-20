@@ -12,6 +12,7 @@ use Spatie\Permission\Models\Role;
 class KKN57RegulerMahasiswaSeeder extends Seeder
 {
     private const DEFAULT_PASSWORD = 'Password#123';
+
     private const BATCH_SIZE = 50;
 
     private const FACULTY_MAP = [
@@ -101,6 +102,7 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
     ];
 
     private const STREET_PREFIXES = ['Jl.', 'Jl. '];
+
     private const STREET_NAMES = [
         ' Ahmad Yani', ' Suprayitno', ' MT Харьох', ' Diponegoro', 'Veteran',
         ' Sudirman', ' Thamrin', ' Hasanudin', ' P Sudirman', ' Gatot Subroto',
@@ -115,7 +117,7 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
     private function generateAddress(): array
     {
         return [
-            'address' => self::STREET_PREFIXES[array_rand(self::STREET_PREFIXES)] . self::STREET_NAMES[array_rand(self::STREET_NAMES)] . ' No.' . rand(1, 99),
+            'address' => self::STREET_PREFIXES[array_rand(self::STREET_PREFIXES)].self::STREET_NAMES[array_rand(self::STREET_NAMES)].' No.'.rand(1, 99),
             'domicile_village_name' => self::VILLAGE_NAMES[array_rand(self::VILLAGE_NAMES)],
             'domicile_district_name' => self::DISTRICT_NAMES[array_rand(self::DISTRICT_NAMES)],
             'domicile_regency_name' => self::REGENCY_NAMES[array_rand(self::REGENCY_NAMES)],
@@ -167,7 +169,9 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
         $headers = fgetcsv($handle);
         $rows = [];
         while (($row = fgetcsv($handle)) !== false) {
-            if (count($row) < 2 || empty($row[1])) continue;
+            if (count($row) < 2 || empty($row[1])) {
+                continue;
+            }
             $data = [];
             foreach ($headers as $i => $h) {
                 $data[trim($h)] = $row[$i] ?? '';
@@ -175,6 +179,7 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
             $rows[] = $data;
         }
         fclose($handle);
+
         return $rows;
     }
 
@@ -182,18 +187,21 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
     {
         if (! in_array(app()->environment(), ['local', 'testing'])) {
             $this->command->warn('KKN57RegulerMahasiswaSeeder hanya bisa dijalankan di environment local/testing.');
+
             return;
         }
 
         $csvPath = base_path('DataKKN_57-KKN Reguler-setuju.csv');
         if (! file_exists($csvPath)) {
-            $this->command->error('File CSV tidak ditemukan: ' . $csvPath);
+            $this->command->error('File CSV tidak ditemukan: '.$csvPath);
+
             return;
         }
 
         $studentRole = Role::where('name', 'student')->first();
-        if (!$studentRole) {
+        if (! $studentRole) {
             $this->command->error('Role "student" tidak ditemukan. Jalankan RoleSeeder terlebih dahulu.');
+
             return;
         }
 
@@ -208,15 +216,15 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
         foreach (Prodi::all() as $p) {
             $fid = $p->fakultas?->id;
             if ($fid) {
-                $pCache[$fid . '-' . $p->code] = $p->id;
+                $pCache[$fid.'-'.$p->code] = $p->id;
             }
         }
 
         $rows = $this->parseCSV($csvPath);
-        $this->command->info('Menemukan ' . count($rows) . ' mahasiswa dari CSV.');
+        $this->command->info('Menemukan '.count($rows).' mahasiswa dari CSV.');
 
-        $emails = array_map(fn($r) => strtolower(trim($r['NIM']) . '@student.uinsaizu.ac.id'), $rows);
-        $existingEmails = DB::table('users')->whereIn('email', $emails)->pluck('email')->map(fn($e) => strtolower($e))->toArray();
+        $emails = array_map(fn ($r) => strtolower(trim($r['NIM']).'@student.uinsaizu.ac.id'), $rows);
+        $existingEmails = DB::table('users')->whereIn('email', $emails)->pluck('email')->map(fn ($e) => strtolower($e))->toArray();
 
         $newUsers = [];
         $newMahasiswa = [];
@@ -227,19 +235,23 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
 
         foreach ($rows as $row) {
             $nim = trim($row['NIM']);
-            if (empty($nim)) { $skipped++; continue; }
+            if (empty($nim)) {
+                $skipped++;
 
-            $email = strtolower($nim . '@student.uinsaizu.ac.id');
+                continue;
+            }
+
+            $email = strtolower($nim.'@student.uinsaizu.ac.id');
             $fcode = self::FACULTY_MAP[$row['FAKULTAS']] ?? null;
             $fId = $fcode ? ($fCache[$fcode] ?? null) : null;
-            $pId = $fId ? ($pCache[$fId . '-' . trim($row['PRODI'])] ?? null) : null;
+            $pId = $fId ? ($pCache[$fId.'-'.trim($row['PRODI'])] ?? null) : null;
 
             if (in_array($email, $existingEmails)) {
                 $user = DB::table('users')->where('email', $email)->first();
                 if ($user) {
                     $address = $this->generateAddress();
                     DB::table('users')->where('id', $user->id)->update([
-                        'phone' => !empty($row['WA']) ? trim($row['WA']) : $user->phone,
+                        'phone' => ! empty($row['WA']) ? trim($row['WA']) : $user->phone,
                         'address' => $address['address'],
                         'domicile_village_name' => $address['domicile_village_name'],
                         'domicile_district_name' => $address['domicile_district_name'],
@@ -262,9 +274,9 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
                         DB::table('mahasiswa')->insert([
                             'user_id' => $user->id,
                             'nim' => $nim,
-                            'nik' => !empty($row['NIK']) ? trim($row['NIK']) : null,
+                            'nik' => ! empty($row['NIK']) ? trim($row['NIK']) : null,
                             'nama' => trim($row['NAMA']),
-                            'mother_name' => !empty($row['Nama Ibu']) && trim($row['Nama Ibu']) !== '' ? trim($row['Nama Ibu']) : $this->generateMotherName(),
+                            'mother_name' => ! empty($row['Nama Ibu']) && trim($row['Nama Ibu']) !== '' ? trim($row['Nama Ibu']) : $this->generateMotherName(),
                             'fakultas_id' => $fId,
                             'prodi_id' => $pId,
                             'batch_year' => 2025,
@@ -272,7 +284,7 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
                             'total_sks' => intval($row['SKS'] ?? 0),
                             'gpa' => floatval($row['IPKs'] ?? 0),
                             'gender' => strtoupper(trim($row['L/P'])) === 'P' ? 'P' : 'L',
-                            'shirt_size' => !empty($row['Kaos']) ? trim($row['Kaos']) : null,
+                            'shirt_size' => ! empty($row['Kaos']) ? trim($row['Kaos']) : null,
                             'birth_place' => self::BIRTH_PLACES[array_rand(self::BIRTH_PLACES)],
                             'birth_date' => $this->generateBirthDate(),
                             'semester' => $this->generateSemester(),
@@ -282,6 +294,7 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
                         ]);
                     }
                 }
+
                 continue;
             }
 
@@ -290,7 +303,7 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
                 'username' => $nim,
                 'name' => trim($row['NAMA']),
                 'email' => $email,
-                'phone' => !empty($row['WA']) ? trim($row['WA']) : null,
+                'phone' => ! empty($row['WA']) ? trim($row['WA']) : null,
                 'address' => $address['address'],
                 'domicile_village_name' => $address['domicile_village_name'],
                 'domicile_district_name' => $address['domicile_district_name'],
@@ -305,9 +318,9 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
 
             $newMahasiswa[] = [
                 'nim' => $nim,
-                'nik' => !empty($row['NIK']) ? trim($row['NIK']) : null,
+                'nik' => ! empty($row['NIK']) ? trim($row['NIK']) : null,
                 'nama' => trim($row['NAMA']),
-                'mother_name' => !empty($row['Nama Ibu']) && trim($row['Nama Ibu']) !== '' ? trim($row['Nama Ibu']) : $this->generateMotherName(),
+                'mother_name' => ! empty($row['Nama Ibu']) && trim($row['Nama Ibu']) !== '' ? trim($row['Nama Ibu']) : $this->generateMotherName(),
                 'fakultas_id' => $fId,
                 'prodi_id' => $pId,
                 'batch_year' => 2025,
@@ -315,7 +328,7 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
                 'total_sks' => intval($row['SKS'] ?? 0),
                 'gpa' => floatval($row['IPKs'] ?? 0),
                 'gender' => strtoupper(trim($row['L/P'])) === 'P' ? 'P' : 'L',
-                'shirt_size' => !empty($row['Kaos']) ? trim($row['Kaos']) : null,
+                'shirt_size' => ! empty($row['Kaos']) ? trim($row['Kaos']) : null,
                 'birth_place' => self::BIRTH_PLACES[array_rand(self::BIRTH_PLACES)],
                 'birth_date' => $this->generateBirthDate(),
                 'semester' => $this->generateSemester(),
@@ -327,41 +340,41 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
 
         $inserted = 0;
 
-        if (!empty($newUsers)) {
-            $this->command->info('Input ' . count($newUsers) . ' user baru (batch ' . self::BATCH_SIZE . ')...');
+        if (! empty($newUsers)) {
+            $this->command->info('Input '.count($newUsers).' user baru (batch '.self::BATCH_SIZE.')...');
             $userIdMap = [];
-            
+
             foreach (array_chunk($newUsers, self::BATCH_SIZE) as $i => $batch) {
                 DB::table('users')->insert($batch);
                 $emails = array_column($batch, 'email');
                 foreach (DB::table('users')->whereIn('email', $emails)->get(['id', 'email']) as $u) {
                     $userIdMap[str_replace('@student.uinsaizu.ac.id', '', $u->email)] = $u->id;
                 }
-                $this->command->info('  Batch ' . ($i + 1) . ': ' . count($batch));
+                $this->command->info('  Batch '.($i + 1).': '.count($batch));
             }
             $inserted = count($newUsers);
 
-            $this->command->info('Assign role student ke ' . count($userIdMap) . ' user...');
+            $this->command->info('Assign role student ke '.count($userIdMap).' user...');
             $rId = $studentRole->id;
             foreach (array_chunk(array_values($userIdMap), self::BATCH_SIZE) as $i => $batch) {
-                $vals = array_map(fn($id) => "('App\\Models\\User',$id,$rId)", $batch);
-                DB::statement('INSERT INTO model_has_roles (model_type,model_id,role_id) VALUES ' . implode(',', $vals));
-                $this->command->info('  Batch ' . ($i + 1) . ': ' . count($batch));
+                $vals = array_map(fn ($id) => "('App\\Models\\User',$id,$rId)", $batch);
+                DB::statement('INSERT INTO model_has_roles (model_type,model_id,role_id) VALUES '.implode(',', $vals));
+                $this->command->info('  Batch '.($i + 1).': '.count($batch));
             }
 
-            $this->command->info('Input ' . count($newMahasiswa) . ' mahasiswa...');
+            $this->command->info('Input '.count($newMahasiswa).' mahasiswa...');
             foreach (array_chunk($newMahasiswa, self::BATCH_SIZE) as $i => $batch) {
-                $batch = array_map(fn($m) => array_merge($m, ['user_id' => $userIdMap[$m['nim']] ?? null]), $batch);
-                $batch = array_filter($batch, fn($m) => $m['user_id'] !== null);
-                if (!empty($batch)) {
+                $batch = array_map(fn ($m) => array_merge($m, ['user_id' => $userIdMap[$m['nim']] ?? null]), $batch);
+                $batch = array_filter($batch, fn ($m) => $m['user_id'] !== null);
+                if (! empty($batch)) {
                     DB::table('mahasiswa')->insert($batch);
                 }
-                $this->command->info('  Batch ' . ($i + 1) . ': ' . count($batch));
+                $this->command->info('  Batch '.($i + 1).': '.count($batch));
             }
         }
 
         $this->command->newLine();
         $this->command->info("Selesai! Ditambahkan: {$inserted}, Diperbarui: {$updated}, Dilewati: {$skipped}");
-        $this->command->info('Password default: ' . self::DEFAULT_PASSWORD);
+        $this->command->info('Password default: '.self::DEFAULT_PASSWORD);
     }
 }

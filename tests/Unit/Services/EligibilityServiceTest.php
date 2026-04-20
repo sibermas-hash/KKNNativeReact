@@ -27,7 +27,7 @@ class EligibilityServiceTest extends TestCase
             'nama' => 'John Doe',
             'sks_completed' => 120,
             'gpa' => 3.50,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'certs/health.pdf',
             'parent_permission_path' => 'certs/permission.pdf',
         ]);
@@ -65,7 +65,7 @@ class EligibilityServiceTest extends TestCase
             'nama' => 'Jane Doe',
             'sks_completed' => 120,
             'gpa' => 3.50,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'certs/health.pdf',
             'parent_permission_path' => 'certs/permission.pdf',
         ]);
@@ -88,7 +88,7 @@ class EligibilityServiceTest extends TestCase
             'nama' => 'Low SKS Student',
             'sks_completed' => 80,
             'gpa' => 3.50,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'certs/health.pdf',
             'parent_permission_path' => 'certs/permission.pdf',
         ]);
@@ -111,7 +111,7 @@ class EligibilityServiceTest extends TestCase
             'nama' => 'No BTA Student',
             'sks_completed' => 120,
             'gpa' => 3.50,
-            'is_bta_ppi_passed' => false,
+            'status_bta_ppi' => 'BELUM_LULUS',
             'health_certificate_path' => 'certs/health.pdf',
             'parent_permission_path' => 'certs/permission.pdf',
         ]);
@@ -133,7 +133,7 @@ class EligibilityServiceTest extends TestCase
             'nama' => 'No Docs Student',
             'sks_completed' => 120,
             'gpa' => 3.50,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => null,
             'parent_permission_path' => null,
         ]);
@@ -157,7 +157,7 @@ class EligibilityServiceTest extends TestCase
             'nama' => 'No Period Student',
             'sks_completed' => 120,
             'gpa' => 3.50,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'certs/health.pdf',
             'parent_permission_path' => 'certs/permission.pdf',
         ]);
@@ -185,7 +185,7 @@ class EligibilityServiceTest extends TestCase
             'nama' => 'Late Student',
             'sks_completed' => 120,
             'gpa' => 3.50,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'certs/health.pdf',
             'parent_permission_path' => 'certs/permission.pdf',
         ]);
@@ -213,7 +213,7 @@ class EligibilityServiceTest extends TestCase
             'nama' => 'On Time Student',
             'sks_completed' => 120,
             'gpa' => 3.50,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'certs/health.pdf',
             'parent_permission_path' => 'certs/permission.pdf',
         ]);
@@ -231,7 +231,7 @@ class EligibilityServiceTest extends TestCase
         $mahasiswa = Mahasiswa::factory()->create([
             'sks_completed' => 120,
             'gpa' => 3.50,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'certs/health.pdf',
             'parent_permission_path' => 'certs/permission.pdf',
         ]);
@@ -255,7 +255,7 @@ class EligibilityServiceTest extends TestCase
         $mahasiswa = Mahasiswa::factory()->create([
             'sks_completed' => 120,
             'gpa' => 3.50,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'certs/health.pdf',
             'parent_permission_path' => 'certs/permission.pdf',
         ]);
@@ -282,7 +282,7 @@ class EligibilityServiceTest extends TestCase
             'nama' => 'Low GPA Student',
             'sks_completed' => 120,
             'gpa' => 1.50,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'certs/health.pdf',
             'parent_permission_path' => 'certs/permission.pdf',
         ]);
@@ -304,7 +304,7 @@ class EligibilityServiceTest extends TestCase
             'nama' => 'Low GPA Student',
             'sks_completed' => 120,
             'gpa' => 1.50,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'certs/health.pdf',
             'parent_permission_path' => 'certs/permission.pdf',
         ]);
@@ -327,7 +327,7 @@ class EligibilityServiceTest extends TestCase
             'nama' => 'Exact SKS Student',
             'sks_completed' => 100,
             'gpa' => 3.50,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'certs/health.pdf',
             'parent_permission_path' => 'certs/permission.pdf',
         ]);
@@ -348,7 +348,7 @@ class EligibilityServiceTest extends TestCase
             'nama' => 'Near SKS Student',
             'sks_completed' => 99,
             'gpa' => 3.50,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'certs/health.pdf',
             'parent_permission_path' => 'certs/permission.pdf',
         ]);
@@ -369,7 +369,7 @@ class EligibilityServiceTest extends TestCase
             'nama' => 'Null SKS Student',
             'sks_completed' => null,
             'gpa' => 3.50,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'certs/health.pdf',
             'parent_permission_path' => 'certs/permission.pdf',
         ]);
@@ -390,7 +390,7 @@ class EligibilityServiceTest extends TestCase
             'nama' => 'Null GPA Student',
             'sks_completed' => 120,
             'gpa' => null,
-            'is_bta_ppi_passed' => true,
+            'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => 'certs/health.pdf',
             'parent_permission_path' => 'certs/permission.pdf',
         ]);
@@ -402,6 +402,6 @@ class EligibilityServiceTest extends TestCase
         $result = $this->service->checkEligibility($mahasiswa, 1);
 
         $this->assertFalse($result['checks']['min_gpa']['passed']);
-        $this->assertSame(0, $result['checks']['min_gpa']['current_gpa']);
+        $this->assertSame(0.0, $result['checks']['min_gpa']['current_gpa']);
     }
 }

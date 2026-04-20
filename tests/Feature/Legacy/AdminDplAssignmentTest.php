@@ -78,14 +78,14 @@ class AdminDplAssignmentTest extends TestCase
             ->post(route('admin.dpl.tugaskan-periode'), [
                 'dosen_id' => $dosen->id,
                 'periode_id' => $period->id,
-                'max_groups' => 3,
+                'max_kelompok_kkn' => 3,
             ])
             ->assertRedirect(route('admin.dpl.penugasan'));
 
-        $this->assertDatabaseHas('dpl_periods', [
+        $this->assertDatabaseHas('dpl_periode', [
             'dosen_id' => $dosen->id,
             'periode_id' => $period->id,
-            'max_groups' => 3,
+            'max_kelompok_kkn' => 3,
             'is_active' => true,
         ]);
 
@@ -135,7 +135,7 @@ class AdminDplAssignmentTest extends TestCase
             ->post(route('admin.dpl.tugaskan-periode'), [
                 'dosen_id' => $dosen->id,
                 'periode_id' => $period->id,
-                'max_groups' => 3,
+                'max_kelompok_kkn' => 3,
             ])
             ->assertRedirect(route('admin.dpl.penugasan'));
 
@@ -163,7 +163,7 @@ class AdminDplAssignmentTest extends TestCase
                 'dosen_id' => $dosen->id,
                 'periode_id' => $period->id,
                 'district_id' => '3301010',
-                'max_groups' => 3,
+                'max_kelompok_kkn' => 3,
             ])
             ->assertRedirect(route('admin.dpl.penugasan'));
 
@@ -171,13 +171,13 @@ class AdminDplAssignmentTest extends TestCase
             'dpl_periode_id' => $dplPeriodId,
             'dosen_id' => $dosen->id,
             'periode_id' => $period->id,
-            'district_id' => '3301010',
+            'kecamatan_id' => '3301010',
             'district_name' => 'Kecamatan Demo',
             'is_active' => true,
         ]);
     }
 
-    public function test_admin_role_can_open_dpl_assignment_page(): void
+    public function test_admin_role_cannot_open_dpl_assignment_page_if_restricted(): void
     {
         $admin = User::factory()->create();
         $admin->assignRole('admin');
@@ -190,7 +190,7 @@ class AdminDplAssignmentTest extends TestCase
 
         $this->actingAs($admin)
             ->get(route('admin.dpl.penugasan'))
-            ->assertOk();
+            ->assertStatus(403);
     }
 
     public function test_workshop_pass_flag_is_scoped_to_selected_period(): void

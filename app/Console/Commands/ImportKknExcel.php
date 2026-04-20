@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\KKN\Dosen;
 use App\Models\KKN\Fakultas;
-use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\Lokasi;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
@@ -17,7 +14,6 @@ use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ImportKknExcel extends Command
@@ -78,7 +74,7 @@ class ImportKknExcel extends Command
 
             foreach ($rows as $row) {
                 // Check if row has numeric No
-                if (!isset($row[0]) || !is_numeric($row[0])) {
+                if (! isset($row[0]) || ! is_numeric($row[0])) {
                     continue;
                 }
 
@@ -86,7 +82,7 @@ class ImportKknExcel extends Command
                 if (empty($nim)) {
                     continue;
                 }
-                
+
                 $nama = $row[2];
                 $gender = ($row[3] === 'P') ? 'P' : 'L';
                 $facultyName = $row[4];
@@ -96,22 +92,22 @@ class ImportKknExcel extends Command
                 // 1. Faculty & Program
                 $facultyName = trim($facultyName);
                 $programCode = trim($programCode);
-                
+
                 $facultyCode = strtoupper(substr($facultyName, 0, 4));
                 // Try finding by name first, then by code
-                $faculty = Fakultas::where('nama', $facultyName)->first() 
+                $faculty = Fakultas::where('nama', $facultyName)->first()
                     ?? Fakultas::where('code', $facultyCode)->first();
-                
-                if (!$faculty) {
+
+                if (! $faculty) {
                     $faculty = Fakultas::create(['nama' => $facultyName, 'code' => $facultyCode]);
                 }
 
                 $program = Prodi::where('code', $programCode)->first();
-                if (!$program) {
+                if (! $program) {
                     $program = Prodi::create([
-                        'code' => $programCode, 
-                        'nama' => $programCode, 
-                        'fakultas_id' => $faculty->id
+                        'code' => $programCode,
+                        'nama' => $programCode,
+                        'fakultas_id' => $faculty->id,
                     ]);
                 }
 
@@ -198,7 +194,7 @@ class ImportKknExcel extends Command
         }
 
         // Delete users except those with admin roles
-        User::whereDoesntHave('roles', function($q) {
+        User::whereDoesntHave('roles', function ($q) {
             $q->whereIn('name', ['superadmin', 'admin', 'faculty_admin']);
         })->delete();
 

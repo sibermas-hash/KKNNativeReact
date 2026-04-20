@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models\KKN;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class JenisKkn extends Model
 {
-    protected $table = 'jenis_kkn';
+    use HasFactory;
 
+    protected $table = 'jenis_kkn';
 
     protected $fillable = [
         'code',

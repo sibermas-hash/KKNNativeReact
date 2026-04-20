@@ -28,11 +28,11 @@ return new class extends Migration
         $dplRole = Role::findByName('dpl', 'web');
         $dosenRole = Role::findByName('dosen', 'web');
 
-        \DB::table('model_has_roles')
+        DB::table('model_has_roles')
             ->where('role_id', $dplRole->id)
             ->get()
             ->each(function ($row) use ($dosenRole) {
-                \DB::table('model_has_roles')->insertOrIgnore([
+                DB::table('model_has_roles')->insertOrIgnore([
                     'role_id' => $dosenRole->id,
                     'model_type' => $row->model_type,
                     'model_id' => $row->model_id,
@@ -50,7 +50,7 @@ return new class extends Migration
         // Hapus role dosen dari semua user lalu hapus role
         $dosenRole = Role::findByName('dosen', 'web');
         if ($dosenRole) {
-            \DB::table('model_has_roles')->where('role_id', $dosenRole->id)->delete();
+            DB::table('model_has_roles')->where('role_id', $dosenRole->id)->delete();
             $dosenRole->delete();
         }
     }

@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DispensasiKkn extends Model
 {
-
     protected $table = 'dispensasi_kkn';
 
     protected $fillable = [

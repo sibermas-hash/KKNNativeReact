@@ -11,6 +11,8 @@ import {
   Database,
   RefreshCw,
   LibraryBig,
+  Info,
+  CalendarDays
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -19,6 +21,7 @@ import PageHeader from '@/Components/Premium/PageHeader';
 import ContentPanel from '@/Components/Premium/ContentPanel';
 import StatusTag from '@/Components/Premium/StatusTag';
 import SearchInput from '@/Components/Premium/SearchInput';
+import PremiumTable, { PremiumTableRow, PremiumTableCell } from '@/Components/Premium/PremiumTable';
 
 interface AcademicYear {
   id: number;
@@ -46,15 +49,15 @@ interface Props {
 
 function resolvePaginationMeta(payload: PaginationPayload<unknown>): PaginationMeta | null {
   if (payload.meta) return payload.meta;
-  if (typeof payload.last_page === 'number' && Array.isArray(payload.links)) {
+  if (payload.last_page && payload.links) {
     return {
       current_page: payload.current_page ?? 1,
-      last_page: payload.last_page,
-      per_page: payload.per_page ?? payload.data.length,
-      total: payload.total ?? payload.data.length,
+      last_page: payload.last_page as number,
+      per_page: payload.per_page ?? 15,
+      total: payload.total ?? 0,
       from: payload.from ?? null,
       to: payload.to ?? null,
-      links: payload.links,
+      links: payload.links as any,
       path: payload.path ?? '',
     };
   }
@@ -63,8 +66,6 @@ function resolvePaginationMeta(payload: PaginationPayload<unknown>): PaginationM
 
 export default function AcademicYearsIndex({ academicYears, filters }: Props) {
   const [search, setSearch] = useState(filters.search ?? '');
-  const [confirmId, setConfirmId] = useState<number | null>(null);
-  const [confirmAction, setConfirmAction] = useState<'toggle' | 'delete' | null>(null);
 
   const form = useForm({
     year: '',
@@ -77,10 +78,10 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
         router.get(
           '/admin/tahun-akademik',
           { search: search || undefined },
-          { preserveState: true, replace: true },
+          { preserveState: true, replace: true, preserveScroll: true },
         );
       }
-    }, 300);
+    }, 400);
     return () => window.clearTimeout(timer);
   }, [filters.search, search]);
 
@@ -117,8 +118,8 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
 
       <div className="max-w-7xl mx-auto space-y-8 font-sans pb-12">
         <PageHeader 
-          title="Manajemen Tahun Akademik"
-          subtitle="Daftar tahun ajaran aktif yang digunakan untuk mengelompokkan periode pelaksanaan KKN."
+          title="Tahun Ajaran."
+          subtitle="Daftar tahun akademik aktif yang digunakan untuk mengelompokkan periode pelaksanaan KKN."
           icon={LibraryBig}
           groupLabel="Data Master Sistem"
           stats={{
@@ -132,13 +133,14 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
           {/* FORM PANEL (Left 1/3) */}
           <div className="lg:col-span-1">
             <ContentPanel
-              title="Tambah Tahun Akademik"
+              title="Tambah Tahun"
               description="Daftarkan formasi tahun ajaran baru."
               icon={Plus}
+              padding={true}
             >
-              <form onSubmit={submit} className="space-y-5">
+              <form onSubmit={submit} className="space-y-6">
                 <div className="space-y-1.5">
-                  <label htmlFor="academic-year" className="block text-sm font-medium text-emerald-950">
+                  <label htmlFor="academic-year" className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
                     Tahun Akademik
                   </label>
                   <input
@@ -147,56 +149,68 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                     placeholder="Contoh: 2026/2027"
                     value={form.data.year}
                     onChange={(event) => form.setData('year', event.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 bg-white text-sm text-emerald-950 focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none transition-all placeholder:text-black"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all"
                   />
                   {form.errors.year && (
-                    <p className="text-xs text-red-500 mt-1">{form.errors.year}</p>
+                    <p className="text-[10px] font-bold text-rose-600 mt-1 uppercase tracking-tight">{form.errors.year}</p>
                   )}
                 </div>
 
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3 p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
                   <div className="flex items-center h-5 pt-0.5">
                     <input
                       id="is_active"
                       type="checkbox"
                       checked={form.data.is_active}
                       onChange={(e) => form.setData('is_active', e.target.checked)}
-                      className="w-4 h-4 text-[#16a34a] bg-white border-gray-300 rounded focus:ring-[#16a34a] cursor-pointer"
+                      className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500 cursor-pointer"
                     />
                   </div>
                   <div className="flex flex-col">
-                    <label htmlFor="is_active" className="text-sm font-semibold text-emerald-950 cursor-pointer">
+                    <label htmlFor="is_active" className="text-xs font-black text-emerald-950 cursor-pointer uppercase tracking-tight">
                       Jadikan Aktif
                     </label>
-                    <p className="text-xs text-emerald-800 mt-0.5">Otomatis diatur sebagai tahun ajaran berjalan.</p>
+                    <p className="text-[10px] font-bold text-emerald-800/60 mt-0.5 uppercase tracking-tighter">Otomatis diatur sebagai tahun ajaran berjalan.</p>
                   </div>
                 </div>
 
                 <button
                   type="submit"
                   disabled={form.processing}
-                  className="w-full py-2.5 bg-[#16a34a] text-white text-sm font-semibold rounded-lg hover:bg-[#15803d] transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full h-11 bg-emerald-600 text-white text-xs font-black rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-lg shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest disabled:opacity-50"
                 >
                   {form.processing ? (
-                    <RefreshCw size={16} className="animate-spin" />
+                    <RefreshCw size={14} className="animate-spin" />
                   ) : (
-                    <CheckCircle2 size={16} />
+                    <CheckCircle2 size={14} />
                   )}
                   Simpan Data
                 </button>
               </form>
             </ContentPanel>
+
+            <div className="bg-emerald-50/30 rounded-2xl p-6 border border-emerald-100/30 flex items-start gap-4 mt-6">
+               <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100 shrink-0">
+                  <Info size={20} />
+               </div>
+               <div className="space-y-1">
+                  <h4 className="text-xs font-black text-emerald-950 uppercase tracking-tight">Integritas Data</h4>
+                  <p className="text-[10px] font-bold text-emerald-800/60 uppercase tracking-tighter leading-relaxed">
+                    Hanya satu tahun akademik yang dapat aktif dalam satu waktu. Mengaktifkan tahun baru akan menonaktifkan tahun sebelumnya.
+                  </p>
+               </div>
+            </div>
           </div>
 
           {/* DATA LIST PANEL (Right 2/3) */}
           <div className="lg:col-span-2">
             <ContentPanel
-              title="Daftar Tahun Akademik"
-              icon={Calendar}
+              title="Arsip Tahun Akademik"
+              icon={CalendarDays}
               padding={false}
               headerAction={
                 <SearchInput 
-                  placeholder="Cari tahun..."
+                  placeholder="CARI TAHUN..."
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   className="w-56"
@@ -204,59 +218,46 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
               }
               footer={
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-emerald-800">
-                    Menampilkan {rows.length} baris
+                  <span className="text-xs font-bold text-emerald-950/40 uppercase tracking-widest tabular-nums">
+                    {paginationMeta?.total || rows.length} Data Terdaftar
                   </span>
                   {paginationMeta && <Pagination meta={paginationMeta} />}
                 </div>
               }
             >
-              <table className="min-w-full">
-                <thead>
-                  <tr className="border-b-2 border-emerald-50">
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-emerald-800 uppercase tracking-wider">Tahun Akademik</th>
-                    <th className="px-6 py-3 text-center text-xs font-semibold text-emerald-800 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-emerald-800 uppercase tracking-wider">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#f3f4f6]">
-                  {rows.length === 0 ? (
-                    <tr>
-                      <td colSpan={3} className="px-6 py-16 text-center text-sm text-emerald-800">
-                        Belum ada data tahun akademik.
-                      </td>
-                    </tr>
-                  ) : (
-                    rows.map((year) => (
-                      <tr key={year.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <span className="text-base font-semibold text-emerald-950">{year.year}</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <StatusTag status={year.is_active ? 'Aktif' : 'Nonaktif'} />
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => toggleStatus(year)}
-                              className="h-8 px-3.5 rounded-md text-sm font-medium border border-gray-300 text-emerald-950 bg-white hover:bg-gray-50 transition-colors"
-                            >
-                              {year.is_active ? 'Nonaktifkan' : 'Aktifkan'}
-                            </button>
-                            <button
-                              onClick={() => destroy(year)}
-                              className="h-8 w-8 flex items-center justify-center text-[#ef4444] hover:bg-red-50 rounded-md transition-colors"
-                              title="Hapus"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+              <PremiumTable
+                headers={['Tahun Akademik', 'Status', 'Aksi']}
+                isEmpty={rows.length === 0}
+                emptyText="Belum ada data tahun akademik."
+              >
+                {rows.map((year) => (
+                  <PremiumTableRow key={year.id} className="group">
+                    <PremiumTableCell>
+                      <span className="text-sm font-bold text-emerald-950 group-hover:text-emerald-700 transition-colors">{year.year}</span>
+                    </PremiumTableCell>
+                    <PremiumTableCell>
+                      <StatusTag status={year.is_active ? 'Aktif' : 'Nonaktif'} />
+                    </PremiumTableCell>
+                    <PremiumTableCell>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => toggleStatus(year)}
+                          className="h-8 px-3.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-gray-200 text-emerald-900 bg-white hover:bg-gray-50 transition-all active:scale-95"
+                        >
+                          {year.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+                        </button>
+                        <button
+                          onClick={() => destroy(year)}
+                          className="h-8 w-8 flex items-center justify-center text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-lg transition-all"
+                          title="Hapus"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </PremiumTableCell>
+                  </PremiumTableRow>
+                ))}
+              </PremiumTable>
             </ContentPanel>
           </div>
         </div>

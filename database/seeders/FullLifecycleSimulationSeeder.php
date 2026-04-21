@@ -53,7 +53,7 @@ class FullLifecycleSimulationSeeder extends Seeder
         foreach ($locations as $index => $loc) {
             $kelompokIds[] = DB::table('kelompok_kkn')->insertGetId([
                 'periode_id' => $periode->id,
-                'lokasi_id' => $loc->id,
+                'location_id' => $loc->id,
                 'dpl_id' => $dosens[$index]->id,
                 'code' => 'K56-0'.($index + 1),
                 'nama_kelompok' => 'Kelompok 0'.($index + 1).' - '.$loc->village_name,

@@ -20,8 +20,8 @@ interface User {
   email: string;
   is_active: boolean;
   dosen?: {
-    nip: string;
     fakultas?: { nama: string };
+    active_assignment?: { period_name: string };
   };
 }
 
@@ -136,7 +136,7 @@ export default function DosenIndex({ users, filters, stats }: Props) {
           }
         >
           <PremiumTable
-            headers={['Profil Dosen', 'NIP', 'Fakultas', 'Status Akses', 'Aksi']}
+            headers={['Profil Dosen', 'NIP', 'Fakultas', 'Status Penugasan', 'Aksi']}
             isEmpty={users.data.length === 0}
             emptyText="Tidak ada data dosen ditemukan."
           >
@@ -163,12 +163,17 @@ export default function DosenIndex({ users, filters, stats }: Props) {
                     {user.dosen?.fakultas?.nama || <span className="text-emerald-950/30 italic">Belum dipetakan</span>}
                   </span>
                 </PremiumTableCell>
-                <PremiumTableCell align="center">
-                  <StatusTag
-                    status={user.is_active ? 'success' : 'danger'}
-                    label={user.is_active ? 'AKTIF' : 'NONAKTIF'}
-                    size="sm"
-                  />
+                <PremiumTableCell>
+                  {user.dosen?.active_assignment ? (
+                    <div className="flex flex-col gap-1">
+                      <StatusTag status="success" label="DPL AKTIF" size="sm" />
+                      <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-tighter truncate max-w-[120px]">
+                        {user.dosen.active_assignment.period_name}
+                      </span>
+                    </div>
+                  ) : (
+                    <StatusTag status="info" label="DOSEN" size="sm" />
+                  )}
                 </PremiumTableCell>
                 <PremiumTableCell align="right">
                   <div className="flex items-center justify-end gap-2">

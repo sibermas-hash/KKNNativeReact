@@ -7,11 +7,11 @@
  */
 
 // Define path to log file
-$logFile = __DIR__ . '/../storage/logs/js_errors.log';
+$logFile = __DIR__.'/../storage/logs/js_errors.log';
 
 // Ensure the directory exists
 $logDir = dirname($logFile);
-if (!is_dir($logDir)) {
+if (! is_dir($logDir)) {
     mkdir($logDir, 0755, true);
 }
 

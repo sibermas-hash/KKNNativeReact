@@ -10,6 +10,7 @@ use App\Models\KKN\PesertaKkn;
 use App\Services\AuditService;
 use App\Services\AutomaticGroupPlacementService;
 use App\Services\GroupSelectionService;
+use App\Services\EligibilityService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -23,6 +24,7 @@ class RegistrationApprovalService
     public function __construct(
         private readonly GroupSelectionService $groupSelectionService,
         private readonly AutomaticGroupPlacementService $automaticGroupPlacementService,
+        private readonly EligibilityService $eligibilityService,
     ) {}
 
     /**
@@ -54,6 +56,15 @@ class RegistrationApprovalService
     {
         DB::transaction(function () use ($registration, $approvedBy) {
             $prepared = $this->prepareForApproval($registration);
+
+            // SECURITY GATE: Verify Academic Eligibility before final approval
+            $eligibility = $this->eligibilityService->checkEligibility($registration->mahasiswa, $registration->periode_id);
+            if (!$eligibility['is_eligible']) {
+                $reasons = collect($eligibility['issues'])->pluck('message')->implode(', ');
+                throw ValidationException::withMessages([
+                    'status' => "Pendaftaran tidak dapat disetujui karena mahasiswa tidak memenuhi syarat akademik: {$reasons}"
+                ]);
+            }
 
             $prepared->update([
                 'status' => 'approved',
@@ -114,6 +125,12 @@ class RegistrationApprovalService
                     ->get();
 
                 foreach ($registrations as $registration) {
+                    // SECURITY GATE: Verify Academic Eligibility before final approval
+                    $eligibility = $this->eligibilityService->checkEligibility($registration->mahasiswa, $registration->periode_id);
+                    if (!$eligibility['is_eligible']) {
+                        continue; // Skip ineligible students in bulk action
+                    }
+
                     // This handles auto-placement if enabled
                     $prepared = $this->prepareForApproval($registration);
 

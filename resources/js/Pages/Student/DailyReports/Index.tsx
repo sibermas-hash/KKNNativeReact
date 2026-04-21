@@ -340,7 +340,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                                   )}
                                 >
                                   <img
-                                    src={`/storage/${file.file_path}`}
+                                    src={file.preview_url}
                                     className="w-full h-full object-cover grayscale group-hover/img:grayscale-0 transition-all duration-700 scale-110 group-hover/img:scale-100"
                                     alt="Bukti"
                                   />

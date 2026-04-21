@@ -25,9 +25,7 @@ class DatabaseSeeder extends Seeder
 
         if (app()->environment('local')) {
             $seeders[] = AdminUserSeeder::class;
-            $seeders[] = SampleUserSeeder::class;
-            $seeders[] = KKN57RegulerMahasiswaSeeder::class;
-            $seeders[] = DosenCsvSeeder::class;
+            $seeders[] = RestoreFromBackupSeeder::class;
         }
 
         $this->call($seeders);

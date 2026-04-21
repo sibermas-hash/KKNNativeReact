@@ -1,13 +1,38 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import {
-  Building2, House, MapPin, MapPinned, Pencil, Plus, Search, Trash2, X, RefreshCw, Activity, Save, Download, Upload, FileSpreadsheet, Info
+  Building2, 
+  House, 
+  MapPin, 
+  MapPinned, 
+  Pencil, 
+  Plus, 
+  Search, 
+  Trash2, 
+  X, 
+  RefreshCw, 
+  Activity, 
+  Save, 
+  Download, 
+  Upload, 
+  FileSpreadsheet, 
+  Info,
+  ChevronRight,
+  Database,
+  Target
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import AppLayout from '@/Layouts/AppLayout';
-import { ConfirmDialog, Pagination, Modal, FormInput, Button } from '@/Components/ui';
+import { ConfirmDialog, Pagination, Modal } from '@/Components/ui';
+
+// Premium Components
 import PageHeader from '@/Components/Premium/PageHeader';
+import ContentPanel from '@/Components/Premium/ContentPanel';
+import StatCard from '@/Components/Premium/StatCard';
+import PremiumTable, { PremiumTableRow, PremiumTableCell } from '@/Components/Premium/PremiumTable';
 import SearchInput from '@/Components/Premium/SearchInput';
+import StatusTag from '@/Components/Premium/StatusTag';
+
 import type { PaginationMeta } from '@/Components/ui/Pagination';
 import type { PageProps } from '@/types';
 
@@ -109,16 +134,16 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
     <AppLayout title="Manajemen Wilayah KKN">
       <Head title="Manajemen Lokasi | KKN UIN SAIZU"/>
 
-      <div className="max-w-7xl mx-auto space-y-6 font-sans pb-12">
+      <div className="max-w-7xl mx-auto space-y-8 font-sans pb-12">
         
         {/* PAGE HEADER */}
         <PageHeader
-          title="Lokasi Penugasan"
-          subtitle="Data induk wilayah desa/kelurahan sebagai titik penempatan peserta KKN."
+          title="Lokasi Penugasan."
+          subtitle="Data induk wilayah desa/kelurahan sebagai titik penempatan strategis peserta KKN."
           icon={MapPin}
           groupLabel="Data Master Sistem"
           stats={{
-            label: 'Total Desa',
+            label: 'Titik Lokasi',
             value: summary.total_locations.toLocaleString(),
             icon: Building2,
           }}
@@ -126,22 +151,22 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowImportModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-emerald-800 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-emerald-900 rounded-xl hover:bg-gray-50 transition-all text-xs font-black uppercase tracking-widest"
             >
-              <Upload size={16} /> Impor Data
+              <Upload size={14} /> Impor Data
             </button>
             <button
               onClick={handleExport}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-emerald-800 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-emerald-900 rounded-xl hover:bg-gray-50 transition-all text-xs font-black uppercase tracking-widest"
             >
-              <Download size={16} /> Unduh Data
+              <Download size={14} /> Unduh Data
             </button>
             {workflow.primary_source === 'groups_import' && (
               <button
                 onClick={() => router.get(workflow.groups_import_url)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#16a34a] text-white rounded-lg hover:bg-[#15803d] transition-colors text-sm font-medium shadow-sm"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all text-xs font-black uppercase tracking-widest shadow-lg shadow-emerald-600/20"
               >
-                <Activity size={16} /> Sinkronisasi Kelompok
+                <Activity size={14} /> Sinkronisasi
               </button>
             )}
           </div>
@@ -151,112 +176,114 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
           
           {/* LEFT: FORM PANEL (1/3) */}
           <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white border border-emerald-50 rounded-xl overflow-hidden shadow-sm">
-              <div className="px-5 py-4 border-b border-emerald-50 flex items-center justify-between bg-gray-50/50">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 bg-[#e8f5ee] rounded-lg flex items-center justify-center text-[#1a7a4a]">
-                    {editingLocation ? <Pencil size={16} /> : <Plus size={16} />}
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-emerald-950">
-                      {editingLocation ? 'Edit Lokasi' : 'Tambah Lokasi'}
-                    </h3>
-                    <p className="text-xs text-emerald-800">
-                      {editingLocation ? 'Perbarui data wilayah yang ada' : 'Registrasi wilayah baru'}
-                    </p>
-                  </div>
-                </div>
-                {editingLocation && (
-                  <button onClick={cancelEdit} className="h-8 w-8 rounded-lg flex items-center justify-center text-emerald-800 hover:text-[#ef4444] hover:bg-red-50 transition-colors">
-                    <X size={16} />
-                  </button>
-                )}
-              </div>
-              
-              <form onSubmit={submitForm} className="p-5 space-y-5">
-                <FormInput
-                  label="Nama Desa/Kelurahan"
-                  id="village_name"
-                  value={form.data.village_name}
-                  onChange={(e) => form.setData('village_name', e.target.value)}
-                  error={form.errors.village_name}
-                  placeholder="Contoh: Karangklesem"
-                  required
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormInput
-                    label="Kecamatan"
-                    id="district_name"
-                    value={form.data.district_name}
-                    onChange={(e) => form.setData('district_name', e.target.value)}
-                    error={form.errors.district_name}
-                    placeholder="Nama Kec."
+            <ContentPanel
+              title={editingLocation ? 'Koreksi Wilayah' : 'Registrasi Wilayah'}
+              description={editingLocation ? 'Perbarui parameter koordinat administratif.' : 'Daftarkan titik lokasi penempatan baru.'}
+              icon={editingLocation ? Pencil : Plus}
+              padding={true}
+            >
+              <form onSubmit={submitForm} className="space-y-5">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Nama Desa/Kelurahan</label>
+                  <input
+                    type="text"
+                    value={form.data.village_name}
+                    onChange={(e) => form.setData('village_name', e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all placeholder:text-gray-300"
+                    placeholder="Contoh: Karangklesem"
                     required
                   />
-                  <FormInput
-                    label="Kab/Kota"
-                    id="regency_name"
-                    value={form.data.regency_name}
-                    onChange={(e) => form.setData('regency_name', e.target.value)}
-                    error={form.errors.regency_name}
-                    placeholder="Nama Kab."
-                    required
-                  />
+                  {form.errors.village_name && <p className="text-[10px] font-bold text-rose-600 mt-1 uppercase tracking-tight">{form.errors.village_name}</p>}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <FormInput
-                    label="Kode BPS"
-                    id="village_code"
-                    value={form.data.village_code}
-                    onChange={(e) => form.setData('village_code', e.target.value)}
-                    error={form.errors.village_code}
-                    placeholder="Misal: 33.02.XX"
-                    className="font-mono"
-                  />
-                  <FormInput
-                    label="Kapasitas"
-                    id="capacity"
-                    type="number"
-                    min="0"
-                    value={form.data.capacity}
-                    onChange={(e) => form.setData('capacity', e.target.value)}
-                    error={form.errors.capacity}
-                    required
-                    className="text-center tabular-nums"
-                  />
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Kecamatan</label>
+                    <input
+                      type="text"
+                      value={form.data.district_name}
+                      onChange={(e) => form.setData('district_name', e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all placeholder:text-gray-300"
+                      placeholder="Nama Kec."
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Kab/Kota</label>
+                    <input
+                      type="text"
+                      value={form.data.regency_name}
+                      onChange={(e) => form.setData('regency_name', e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all placeholder:text-gray-300"
+                      placeholder="Nama Kab."
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 bg-emerald-50/30 p-4 rounded-2xl border border-emerald-100/30">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-emerald-800 uppercase tracking-widest pl-1">Kode BPS</label>
+                    <input
+                      type="text"
+                      value={form.data.village_code}
+                      onChange={(e) => form.setData('village_code', e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-emerald-100 bg-white text-[11px] font-black text-emerald-950 focus:border-emerald-600 outline-none uppercase tracking-widest"
+                      placeholder="33.02.XX"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-emerald-800 uppercase tracking-widest pl-1">Kapasitas (Kel)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={form.data.capacity}
+                      onChange={(e) => form.setData('capacity', e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-emerald-100 bg-white text-[11px] font-black text-emerald-950 text-center tabular-nums focus:border-emerald-600 outline-none"
+                    />
+                  </div>
                 </div>
                 
-                <button 
-                  type="submit"
-                  disabled={form.processing} 
-                  className="w-full py-2.5 bg-[#16a34a] text-white text-sm font-semibold rounded-lg hover:bg-[#15803d] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 shadow-sm"
-                >
-                  {form.processing ? <RefreshCw size={16} className="animate-spin" /> : <Save size={16} />}
-                  {editingLocation ? 'Simpan Perubahan' : 'Tambahkan Lokasi'}
-                </button>
+                <div className="flex flex-col gap-3 pt-2">
+                  <button 
+                    type="submit"
+                    disabled={form.processing} 
+                    className="w-full h-11 bg-emerald-600 text-white text-xs font-black rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-lg shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest disabled:opacity-50"
+                  >
+                    {form.processing ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
+                    {editingLocation ? 'Simpan Perubahan' : 'Registrasi Lokasi'}
+                  </button>
+                  {editingLocation && (
+                    <button
+                      type="button"
+                      onClick={cancelEdit}
+                      className="w-full h-11 bg-white border border-gray-200 text-emerald-900 text-xs font-black rounded-xl hover:bg-gray-50 transition-all uppercase tracking-widest"
+                    >
+                      Batal Koreksi
+                    </button>
+                  )}
+                </div>
               </form>
-            </div>
+            </ContentPanel>
 
             {/* METRICS */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white border border-emerald-50 rounded-xl p-4 flex items-center gap-3 shadow-sm">
-                <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-[#e8f5ee] text-[#1a7a4a]">
+              <div className="bg-white border border-emerald-100/50 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+                <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-emerald-50 text-emerald-600 shrink-0">
                   <MapPinned size={18} />
                 </div>
                 <div>
-                  <p className="text-xl font-bold text-emerald-950 tabular-nums">{summary.assigned_groups}</p>
-                  <p className="text-[11px] font-medium text-emerald-800 uppercase tracking-wider">Unit Kelompok</p>
+                  <p className="text-lg font-black text-emerald-950 tabular-nums leading-none">{summary.assigned_groups}</p>
+                  <p className="text-[9px] font-black text-emerald-800/40 uppercase tracking-widest mt-1">Unit Kelompok</p>
                 </div>
               </div>
-              <div className="bg-white border border-emerald-50 rounded-xl p-4 flex items-center gap-3 shadow-sm">
-                <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-[#e8f5ee] text-[#1a7a4a]">
+              <div className="bg-white border border-emerald-100/50 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+                <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-emerald-50 text-emerald-600 shrink-0">
                   <House size={18} />
                 </div>
                 <div>
-                  <p className="text-xl font-bold text-emerald-950 tabular-nums">{summary.reported_posko}</p>
-                  <p className="text-[11px] font-medium text-emerald-800 uppercase tracking-wider">Posko Terlapor</p>
+                  <p className="text-lg font-black text-emerald-950 tabular-nums leading-none">{summary.reported_posko}</p>
+                  <p className="text-[9px] font-black text-emerald-800/40 uppercase tracking-widest mt-1">Posko Aktif</p>
                 </div>
               </div>
             </div>
@@ -264,106 +291,99 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
 
           {/* RIGHT: TABLE PANEL (2/3) */}
           <div className="lg:col-span-2">
-            <div className="bg-white border border-emerald-50 rounded-xl overflow-hidden shadow-sm">
-              
-              <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-sm font-bold text-emerald-950">Daftar Wilayah Penempatan</h3>
-                  <p className="text-[11px] text-emerald-800 uppercase font-semibold tracking-wider">Total: {locations.meta.total} Titik</p>
-                </div>
+            <ContentPanel
+              title="Direktori Wilayah Penempatan"
+              icon={MapPinned}
+              padding={false}
+              headerAction={
                 <SearchInput
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Cari desa atau kecamatan..."
-                  className="w-full sm:w-72"
+                  placeholder="CARI DESA / KECAMATAN..."
+                  className="w-64"
                 />
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="min-w-full">
-                  <thead>
-                    <tr className="border-b border-emerald-50 bg-gray-50/20">
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-emerald-800 uppercase tracking-wider">Desa/Kelurahan</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-emerald-800 uppercase tracking-wider">Kecamatan & Kabupaten</th>
-                      <th className="px-6 py-3 text-center text-xs font-semibold text-emerald-800 uppercase tracking-wider">Kode BPS</th>
-                      <th className="px-6 py-3 text-center text-xs font-semibold text-emerald-800 uppercase tracking-wider">Kapasitas</th>
-                      <th className="px-6 py-3 text-right text-xs font-semibold text-emerald-800 uppercase tracking-wider">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#f3f4f6]">
-                    {locations.data.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="px-6 py-16 text-center">
-                          <MapPin size={32} className="mx-auto text-[#d1d5db] mb-3" strokeWidth={1} />
-                          <p className="text-sm font-medium text-emerald-800">Data lokasi tidak ditemukan.</p>
-                        </td>
-                      </tr>
-                    ) : (
-                      locations.data.map((l) => (
-                        <tr key={l.id} className="hover:bg-gray-50 transition-colors group/row">
-                          <td className="px-6 py-4">
-                            <div className="flex flex-col">
-                              <span className="text-base font-semibold text-emerald-950">{l.village_name}</span>
-                              <span className="text-[11px] text-emerald-700 mt-0.5 truncate max-w-[180px]">{l.full_name || '-'}</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 align-top">
-                            <div className="flex flex-col">
-                              <span className="text-sm font-medium text-emerald-950">{l.district_name || '-'}</span>
-                              <span className="text-xs text-emerald-800 mt-0.5">{l.regency_name || '-'}</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 align-top text-center">
-                            <span className="text-[11px] font-mono bg-gray-100 text-emerald-800 px-1.5 py-0.5 rounded border border-gray-200">
-                              {l.village_code || 'NON-BPS'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 align-top">
-                            <div className="flex flex-col gap-1.5 w-24 mx-auto">
-                              <div className="flex justify-between text-[11px] font-bold">
-                                <span className={clsx(l.groups_count >= (l.capacity || 0) && (l.capacity || 0) > 0 ? 'text-amber-600' : 'text-emerald-950')}>
-                                  {l.groups_count} Kel.
-                                </span>
-                                <span className="text-emerald-800">/ {l.capacity ?? 0}</span>
-                              </div>
-                              <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden border border-gray-200/50">
-                                <div 
-                                  className={clsx("h-full transition-all rounded-full", ((l.capacity ?? 0) > 0 && l.groups_count >= (l.capacity as number)) ? 'bg-amber-500' : 'bg-[#16a34a]')} 
-                                  style={{ width: `${Math.min(100, (l.groups_count / (l.capacity || 1)) * 100)}%` }} 
-                                />
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-right align-top">
-                            <div className="flex items-center justify-end gap-2">
-                              <button onClick={() => openEditForm(l)} className="h-8 w-8 flex items-center justify-center text-emerald-800 hover:text-emerald-950 hover:bg-white border border-transparent hover:border-emerald-100 rounded-md transition-all shadow-sm" title="Edit">
-                                <Pencil size={15} />
-                              </button>
-                              <button 
-                                onClick={() => setDeleting(l)} 
-                                disabled={!l.can_delete}
-                                className="h-8 w-8 flex items-center justify-center text-[#ef4444] hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-md transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm" 
-                                title={l.can_delete ? 'Hapus' : l.delete_blocker ?? 'Tidak dapat dihapus'}
-                              >
-                                <Trash2 size={15} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {locations.meta && (locations.meta.last_page ?? 0) > 1 && (
-                <div className="px-5 py-4 border-t border-emerald-50 bg-gray-50/50 flex flex-col md:flex-row items-center justify-between gap-4">
-                  <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-widest">
-                    Menampilkan <strong>{locations.data.length}</strong> dari <strong>{locations.meta.total}</strong> data
+              }
+              footer={
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-emerald-950/40 uppercase tracking-widest tabular-nums">
+                    {locations.meta.total} Titik Terdata &middot; Kapasitas Terpantau
                   </span>
-                  <Pagination meta={locations.meta} />
+                  {locations.meta && (locations.meta.last_page ?? 0) > 1 && (
+                    <Pagination meta={locations.meta} />
+                  )}
                 </div>
-              )}
+              }
+            >
+              <PremiumTable
+                headers={['Desa/Kelurahan', 'Wilayah', 'Kode', 'Okupansi', 'Aksi']}
+                isEmpty={locations.data.length === 0}
+                emptyText="Data lokasi administratif tidak ditemukan."
+              >
+                {locations.data.map((l) => (
+                  <PremiumTableRow key={l.id} className="group">
+                    <PremiumTableCell>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-emerald-950 group-hover:text-emerald-700 transition-colors leading-tight">{l.village_name}</span>
+                        <span className="text-[10px] font-bold text-emerald-800/40 mt-1 uppercase tracking-tighter truncate max-w-[150px]">{l.full_name || '-'}</span>
+                      </div>
+                    </PremiumTableCell>
+                    <PremiumTableCell>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-emerald-900 uppercase tracking-tight leading-none">{l.district_name || '-'}</span>
+                        <span className="text-[9px] font-bold text-emerald-800/40 mt-1 uppercase tracking-widest">{l.regency_name || '-'}</span>
+                      </div>
+                    </PremiumTableCell>
+                    <PremiumTableCell>
+                      <span className="text-[9px] font-black bg-gray-50 text-emerald-800 px-2 py-0.5 rounded border border-gray-100 uppercase tracking-widest tabular-nums">
+                        {l.village_code || 'N/A'}
+                      </span>
+                    </PremiumTableCell>
+                    <PremiumTableCell>
+                      <div className="flex flex-col gap-1.5 w-20">
+                        <div className="flex justify-between text-[9px] font-black uppercase tracking-tighter tabular-nums leading-none">
+                          <span className={clsx(l.groups_count >= (l.capacity || 0) && (l.capacity || 0) > 0 ? 'text-amber-600' : 'text-emerald-950')}>
+                            {l.groups_count}
+                          </span>
+                          <span className="text-emerald-800/30">/ {l.capacity ?? 0}</span>
+                        </div>
+                        <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden border border-gray-50">
+                          <div 
+                            className={clsx("h-full transition-all rounded-full", ((l.capacity ?? 0) > 0 && l.groups_count >= (l.capacity as number)) ? 'bg-amber-500' : 'bg-emerald-500')} 
+                            style={{ width: `${Math.min(100, (l.groups_count / (l.capacity || 1)) * 100)}%` }} 
+                          />
+                        </div>
+                      </div>
+                    </PremiumTableCell>
+                    <PremiumTableCell>
+                      <div className="flex items-center justify-end gap-2">
+                        <button onClick={() => openEditForm(l)} className="h-8 w-8 flex items-center justify-center bg-white border border-gray-100 text-emerald-800 rounded-lg hover:bg-emerald-50 hover:border-emerald-100 transition-all shadow-sm" title="Edit">
+                          <Pencil size={14} />
+                        </button>
+                        <button 
+                          onClick={() => setDeleting(l)} 
+                          disabled={!l.can_delete}
+                          className="h-8 w-8 flex items-center justify-center bg-white border border-gray-100 text-rose-600 rounded-lg hover:bg-rose-50 hover:border-rose-100 transition-all shadow-sm disabled:opacity-30" 
+                          title={l.can_delete ? 'Hapus' : l.delete_blocker ?? 'Tidak dapat dihapus'}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </PremiumTableCell>
+                  </PremiumTableRow>
+                ))}
+              </PremiumTable>
+            </ContentPanel>
+
+            <div className="bg-emerald-50/30 rounded-2xl p-6 border border-emerald-100/30 flex items-center gap-6 mt-6">
+               <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100 shrink-0">
+                  <Info size={24} />
+               </div>
+               <div className="space-y-1">
+                  <h4 className="text-xs font-black text-emerald-950 uppercase tracking-tight">Kapasitas & Distribusi</h4>
+                  <p className="text-[10px] font-bold text-emerald-800/60 uppercase tracking-tighter leading-relaxed">
+                    Pengaturan kapasitas desa memengaruhi algoritma penempatan kelompok. Pastikan kapasitas mencerminkan ketersediaan posko fisik di lapangan.
+                  </p>
+               </div>
             </div>
           </div>
         </div>
@@ -376,72 +396,83 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
         title="Impor Master Wilayah"
         maxWidth="md"
       >
-        <form onSubmit={handleImport} className="space-y-6">
-          <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-lg flex items-start gap-3">
-            <Info size={18} className="text-[#1a7a4a] shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <p className="text-xs font-bold text-emerald-950 uppercase tracking-wider">Format Excel/CSV:</p>
-              <p className="text-[11px] text-emerald-800 leading-relaxed">
-                Wajib kolom: <strong className="text-emerald-950">desa, kecamatan, kabupaten</strong>. <br/>
-                Opsional: <strong>kode_desa</strong> (BPS). Baris header wajib ada.
-              </p>
-              <div className="pt-2">
-                <a 
-                  href={route('admin.lokasi.template')} 
-                  className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#16a34a] hover:text-[#15803d] uppercase tracking-wider bg-white px-2 py-1 rounded border border-emerald-100 shadow-sm transition-all"
-                >
-                  <FileSpreadsheet size={12} /> Unduh Template .XLSX
-                </a>
-              </div>
-            </div>
+        <div className="bg-white rounded-2xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-emerald-50 flex items-center justify-between">
+            <h3 className="text-sm font-black text-emerald-950 uppercase tracking-widest">Impor Master Wilayah</h3>
+            <button onClick={() => setShowImportModal(false)} className="text-emerald-800 hover:text-emerald-950"><X size={20} /></button>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-emerald-950 uppercase tracking-widest">Pilih File Wilayah</label>
-            <div className="relative group">
-              <input
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                onChange={(e) => importForm.setData('file', e.target.files?.[0] || null)}
-                className="w-full h-32 border-2 border-dashed border-emerald-100 rounded-xl flex flex-col items-center justify-center transition-all cursor-pointer p-4 bg-gray-50 group-hover:bg-emerald-50/50 group-hover:border-emerald-300"
-                required
-              />
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                {importForm.data.file ? (
-                  <>
-                    <FileSpreadsheet size={32} className="text-[#16a34a] mb-2" />
-                    <span className="text-xs font-bold text-emerald-950">{importForm.data.file.name}</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload size={32} className="text-emerald-300 mb-2 group-hover:text-emerald-500 transition-colors" />
-                    <span className="text-xs font-medium text-emerald-800">Klik atau tarik file ke sini</span>
-                    <span className="text-[10px] text-emerald-600 mt-1 uppercase tracking-tighter">Maksimal 10MB</span>
-                  </>
-                )}
+          <form onSubmit={handleImport} className="p-6 space-y-6">
+            <div className="p-4 bg-emerald-50/50 border border-emerald-100/50 rounded-2xl flex items-start gap-4">
+              <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center text-emerald-600 shrink-0 shadow-sm">
+                <Info size={16} />
+              </div>
+              <div className="space-y-2">
+                <p className="text-[10px] font-black text-emerald-950 uppercase tracking-widest">Standar Kolom Excel:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {['desa', 'kecamatan', 'kabupaten', 'kode_desa'].map(tag => (
+                    <span key={tag} className="px-1.5 py-0.5 bg-white border border-emerald-100 rounded text-[9px] font-black text-emerald-700 uppercase">{tag}</span>
+                  ))}
+                </div>
+                <div className="pt-2">
+                  <a 
+                    href={route('admin.lokasi.template')} 
+                    className="inline-flex items-center gap-2 text-[9px] font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-widest bg-white px-3 py-1.5 rounded-lg border border-emerald-100 shadow-sm transition-all active:scale-95"
+                  >
+                    <FileSpreadsheet size={12} /> Unduh Template
+                  </a>
+                </div>
               </div>
             </div>
-            {importForm.errors.file && <p className="text-xs font-medium text-[#ef4444] mt-1">{importForm.errors.file}</p>}
-          </div>
 
-          <div className="flex items-center gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => setShowImportModal(false)}
-              className="flex-1 py-2.5 border border-gray-300 text-sm font-medium rounded-lg text-emerald-950 bg-white hover:bg-gray-50 transition-colors shadow-sm"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              disabled={importForm.processing}
-              className="flex-1 py-2.5 bg-[#16a34a] text-white text-sm font-semibold rounded-lg hover:bg-[#15803d] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 shadow-sm"
-            >
-              {importForm.processing ? <RefreshCw size={16} className="animate-spin" /> : <Upload size={16} />}
-              Proses Impor
-            </button>
-          </div>
-        </form>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Arsip Wilayah (.xlsx, .csv)</label>
+              <div className="relative group">
+                <input
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={(e) => importForm.setData('file', e.target.files?.[0] || null)}
+                  className="w-full h-32 border-2 border-dashed border-emerald-100 rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer p-4 bg-gray-50 group-hover:bg-emerald-50/30 group-hover:border-emerald-300"
+                  required
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  {importForm.data.file ? (
+                    <>
+                      <div className="h-12 w-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 mb-2">
+                        <FileSpreadsheet size={24} />
+                      </div>
+                      <span className="text-[10px] font-black text-emerald-950 uppercase tracking-tight">{importForm.data.file.name}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload size={24} className="text-emerald-200 mb-2 group-hover:text-emerald-400 transition-colors" />
+                      <span className="text-[10px] font-black text-emerald-800/40 uppercase tracking-widest">Klik atau tarik file</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              {importForm.errors.file && <p className="text-[10px] font-bold text-rose-600 mt-1 uppercase">{importForm.errors.file}</p>}
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowImportModal(false)}
+                className="flex-1 h-11 border border-gray-200 text-emerald-950 text-xs font-black rounded-xl hover:bg-gray-50 transition-all uppercase tracking-widest"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                disabled={importForm.processing}
+                className="flex-1 h-11 bg-emerald-600 text-white text-xs font-black rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-lg shadow-emerald-600/20 active:scale-95 uppercase tracking-widest disabled:opacity-50"
+              >
+                {importForm.processing ? <RefreshCw size={14} className="animate-spin" /> : <Upload size={14} />}
+                Eksekusi Impor
+              </button>
+            </div>
+          </form>
+        </div>
       </Modal>
 
       {/* CONFIRM DELETE */}
@@ -455,7 +486,7 @@ export default function LocationsIndex({ locations, filters, summary, workflow }
             onSuccess: () => setDeleting(null),
           });
         }}
-        title="Hapus Lokasi?"
+        title="Hapus Wilayah?"
         message={
           deleting?.can_delete
             ? `Apakah Anda yakin ingin menghapus data wilayah Desa ${deleting?.village_name}? Tindakan ini tidak dapat dibatalkan.`

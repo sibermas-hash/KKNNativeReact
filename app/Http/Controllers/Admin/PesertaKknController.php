@@ -108,9 +108,11 @@ class PesertaKknController extends Controller
                         'resubmitted_at' => $reg->resubmitted_at?->toIso8601String(),
                         'is_eligible' => $isEligible,
                         'eligibility_issues' => $issues,
+                        'is_system_imported' => str_contains(strtolower($reg->notes ?? ''), 'setuju') || str_contains(strtolower($reg->notes ?? ''), 'konfirmasi'),
                         'student' => [
                             'nim' => $reg->mahasiswa?->nim,
                             'name' => $reg->mahasiswa?->nama ?? $reg->mahasiswa?->user?->name ?? '-',
+                            'is_bta_ppi_passed' => in_array(strtoupper(trim($mahasiswa?->status_bta_ppi ?? '')), ['LULUS', 'PASSED', 'SUCCESS']),
                             'phone' => $reg->mahasiswa?->user?->phone,
                             'wa_link' => $reg->mahasiswa?->user?->phone
                                 ? 'https://wa.me/'.preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $reg->mahasiswa->user->phone))

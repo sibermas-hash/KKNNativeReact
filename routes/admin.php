@@ -91,6 +91,9 @@ Route::middleware([
     Route::get('laporan/akhir/{report}', [Admin\LaporanAkhirController::class, 'show'])->name('laporan.akhir.show');
     Route::get('laporan/akhir/{report}/unduh', [Admin\LaporanAkhirController::class, 'download'])->name('laporan.akhir.unduh');
     Route::get('evaluasi', [Admin\EvaluasiController::class, 'index'])->name('evaluasi.index');
+    Route::get('evaluasi-dpl', [Admin\DplParticipantEvaluationController::class, 'index'])->name('evaluasi-dpl.index');
+    Route::get('evaluasi-dpl/ekspor', [Admin\DplParticipantEvaluationController::class, 'export'])->name('evaluasi-dpl.export');
+    Route::get('evaluasi-dpl/{dosen}', [Admin\DplParticipantEvaluationController::class, 'show'])->name('evaluasi-dpl.show');
 
     // Audit Kualifikasi (Cek Kelayakan)
     Route::get('audit-kualifikasi', [Admin\EligibilityController::class, 'index'])->name('cek-kelayakan.index');
@@ -155,6 +158,8 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
         Route::patch('/{workshop}', [WorkshopController::class, 'update'])->name('update');
         Route::patch('/{workshop}/cancel', [WorkshopController::class, 'cancel'])->name('cancel');
         Route::post('/{workshop}/mark-attendance', [WorkshopController::class, 'markAttendance'])->name('mark-attendance');
+        Route::get('/{workshop}/participants/export', [WorkshopController::class, 'exportParticipants'])->name('participants.export');
+        Route::get('/{workshop}/certificate-template', [WorkshopController::class, 'downloadCertificateTemplate'])->name('certificate-template');
     });
 
     // Participant Operations (accessible by admin)
@@ -162,7 +167,7 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
     Route::post('peserta/pindah', [Admin\StudentTransferController::class, 'transfer'])->name('peserta.pindah');
     Route::post('pendaftaran/setuju-massal', [Admin\PesertaKknController::class, 'bulkApprove'])->name('pendaftaran.setuju-massal');
     Route::post('pendaftaran/tolak-massal', [Admin\PesertaKknController::class, 'bulkReject'])->name('pendaftaran.tolak-massal');
-    Route::patch('pendaftaran/{pesertaKkn}/setuji', [Admin\PesertaKknController::class, 'approve'])->name('pendaftaran.setuji');
+    Route::patch('pendaftaran/{pesertaKkn}/setujui', [Admin\PesertaKknController::class, 'approve'])->name('pendaftaran.setujui');
     Route::patch('pendaftaran/{pesertaKkn}/tolak', [Admin\PesertaKknController::class, 'reject'])->name('pendaftaran.tolak');
     Route::patch('pendaftaran/{pesertaKkn}/tugaskan-kelompok', [Admin\PesertaKknController::class, 'assignGroup'])->name('pendaftaran.tugaskan-kelompok');
     Route::post('pendaftaran/{registration}/jadikan-ketua', [Admin\PesertaKknController::class, 'makeLeader'])->name('pendaftaran.jadikan-ketua');
@@ -181,6 +186,24 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
     Route::get('warta-utama', [Admin\AnnouncementController::class, 'index'])->name('warta-utama.index');
     Route::post('warta-utama', [Admin\AnnouncementController::class, 'store'])->name('warta-utama.store');
     Route::patch('warta-utama/{announcement}', [Admin\AnnouncementController::class, 'update'])->name('warta-utama.update');
+
+    // Settings
+    Route::prefix('pengaturan')->name('pengaturan.')->group(function () {
+        Route::get('sertifikat', [Admin\CertificateConfigController::class, 'index'])->name('sertifikat.index');
+        Route::patch('sertifikat', [Admin\CertificateConfigController::class, 'update'])->name('sertifikat.update');
+        Route::get('sistem', [Admin\SystemSettingController::class, 'index'])->name('sistem');
+        Route::patch('sistem', [Admin\SystemSettingController::class, 'update'])->name('sistem.update');
+        Route::get('sistem/ai/config', [Admin\SystemSettingController::class, 'getAiConfig'])->name('sistem.ai.config');
+        Route::post('sistem/ai/test', [Admin\SystemSettingController::class, 'testAiConnection'])->name('sistem.ai.test');
+        Route::patch('sistem/ai/update', [Admin\SystemSettingController::class, 'updateAiSettings'])->name('sistem.ai.update');
+        Route::delete('sistem/ai/key', [Admin\SystemSettingController::class, 'removeAiKey'])->name('sistem.ai.remove');
+    });
+
+    Route::get('konfigurasi-penilaian', [Admin\KonfigurasiPenilaianController::class, 'index'])->name('konfigurasi-penilaian.index');
+    Route::patch('konfigurasi-penilaian', [Admin\KonfigurasiPenilaianController::class, 'update'])->name('konfigurasi-penilaian.update');
+
+    Route::get('audit-log', [Admin\LogAuditController::class, 'index'])->name('audit-log.index');
+    Route::get('audit-log/{auditLog}', [Admin\LogAuditController::class, 'show'])->name('audit-log.show');
 });
 
 /*
@@ -270,23 +293,6 @@ Route::middleware(['role:superadmin'])->prefix('admin')->name('admin.')->group(f
 
     // Grading write operations
     Route::post('nilai', [Admin\GradeController::class, 'store'])->name('nilai.store');
-    Route::get('konfigurasi-penilaian', [Admin\KonfigurasiPenilaianController::class, 'index'])->name('konfigurasi-penilaian.index');
-    Route::patch('konfigurasi-penilaian', [Admin\KonfigurasiPenilaianController::class, 'update'])->name('konfigurasi-penilaian.update');
-
-    // Settings
-    Route::prefix('pengaturan')->name('pengaturan.')->group(function () {
-        Route::get('sertifikat', [Admin\CertificateConfigController::class, 'index'])->name('sertifikat.index');
-        Route::patch('sertifikat', [Admin\CertificateConfigController::class, 'update'])->name('sertifikat.update');
-        Route::get('sistem', [Admin\SystemSettingController::class, 'index'])->name('sistem');
-        Route::patch('sistem', [Admin\SystemSettingController::class, 'update'])->name('sistem.update');
-        Route::get('sistem/ai/config', [Admin\SystemSettingController::class, 'getAiConfig'])->name('sistem.ai.config');
-        Route::post('sistem/ai/test', [Admin\SystemSettingController::class, 'testAiConnection'])->name('sistem.ai.test');
-        Route::patch('sistem/ai/update', [Admin\SystemSettingController::class, 'updateAiSettings'])->name('sistem.ai.update');
-        Route::delete('sistem/ai/key', [Admin\SystemSettingController::class, 'removeAiKey'])->name('sistem.ai.remove');
-    });
-
-    Route::get('audit-log', [Admin\LogAuditController::class, 'index'])->name('audit-log.index');
-    Route::get('audit-log/{auditLog}', [Admin\LogAuditController::class, 'show'])->name('audit-log.show');
 
     Route::get('api/available-dpl', [Admin\DplAssignmentController::class, 'getAvailableDpl'])->name('api.available-dpl');
     Route::get('api/transfer-targets', [Admin\StudentTransferController::class, 'getTransferTargets'])->name('api.transfer-targets');

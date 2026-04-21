@@ -60,13 +60,17 @@ class UserController extends Controller
 
     public function dosenIndex(Request $request): Response
     {
-        $baseQuery = User::role('dosen')
-            ->with(['dosen.fakultas', 'roles']);
+        $baseQuery = User::whereHas('roles', function($q) {
+                $q->whereIn('name', ['dosen', 'dpl']);
+            })
+            ->with(['dosen.fakultas', 'roles', 'dosen.dplPeriods' => function($q) {
+                $q->where('is_active', true)->with('periode');
+            }]);
 
         // Stats dari seluruh data (bukan per halaman)
         $totalDosen = (clone $baseQuery)->count();
         $activeDosen = (clone $baseQuery)->where('is_active', true)->count();
-        $totalDpl = User::role('dpl')->count();
+        $totalDplOnly = User::role('dpl')->count();
 
         $users = $baseQuery
             ->when($request->input('search'), function ($q, $search) {
@@ -93,6 +97,9 @@ class UserController extends Controller
                     'fakultas' => $user->dosen->fakultas ? [
                         'nama' => $user->dosen->fakultas->nama,
                     ] : null,
+                    'active_assignment' => $user->dosen->dplPeriods->first() ? [
+                        'period_name' => $user->dosen->dplPeriods->first()->periode->name,
+                    ] : null,
                 ] : null,
             ]);
 
@@ -102,7 +109,7 @@ class UserController extends Controller
             'stats' => [
                 'total' => $totalDosen,
                 'active' => $activeDosen,
-                'dpl_active' => $totalDpl,
+                'dpl_only' => $totalDplOnly,
             ],
             'title' => 'Manajemen Data Dosen',
         ]);

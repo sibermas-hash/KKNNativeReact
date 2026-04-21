@@ -56,6 +56,8 @@ Route::middleware([
     Route::prefix('workshops')->name('workshops.')->group(function () {
         Route::get('/', [WorkshopController::class, 'index'])->name('index');
         Route::post('/{workshop}/register', [WorkshopController::class, 'register'])->name('register');
+        Route::get('/my-certificates', [WorkshopController::class, 'myCertificates'])->name('my-certificates');
+        Route::get('/{workshop}/certificate', [WorkshopController::class, 'downloadCertificate'])->name('certificate');
     });
 
     // ─── FASE: PENDAFTARAN ────────────────────────────────────────────
@@ -85,6 +87,7 @@ Route::middleware([
             Route::get('buat', [Student\DailyReportController::class, 'create'])->name('create');
             Route::post('/', [Student\DailyReportController::class, 'store'])->name('store');
             Route::get('{dailyReport}/edit', [Student\DailyReportController::class, 'edit'])->name('edit');
+            Route::get('file/{fileKegiatan}/preview', [Student\DailyReportController::class, 'previewFile'])->name('files.preview');
             Route::match(['put', 'patch'], '{dailyReport}', [Student\DailyReportController::class, 'update'])->name('update');
             Route::delete('{dailyReport}', [Student\DailyReportController::class, 'destroy'])->name('destroy');
         });
@@ -116,9 +119,9 @@ Route::middleware([
             Route::post('/', [Student\FinalReportController::class, 'store'])->name('store');
         });
 
-        // Evaluasi (Pending Implementation)
-        // Route::get('evaluasi', [Student\EvaluationController::class , 'index'])->name('evaluasi.index');
-        // Route::post('evaluasi', [Student\EvaluationController::class , 'store'])->name('evaluasi.store');
+        // Evaluasi DPL oleh Peserta
+        Route::get('evaluasi-dpl', [Student\DplParticipantEvaluationController::class, 'index'])->name('evaluasi-dpl.index');
+        Route::post('evaluasi-dpl', [Student\DplParticipantEvaluationController::class, 'store'])->name('evaluasi-dpl.store');
 
         // Sertifikat KKN
         Route::get('sertifikat', [Student\CertificateController::class, 'index'])->name('certificate.index');

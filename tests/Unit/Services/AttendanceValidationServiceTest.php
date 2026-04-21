@@ -4,6 +4,7 @@ namespace Tests\Unit\Services;
 
 use App\Models\KKN\Attendance;
 use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\PoskoKelompok;
@@ -39,8 +40,9 @@ class AttendanceValidationServiceTest extends TestCase
         ]);
 
         $user = User::factory()->create();
+        $mahasiswa = Mahasiswa::factory()->create(['user_id' => $user->id]);
         $pesertaKkn = PesertaKkn::factory()->create([
-            'user_id' => $user->id,
+            'mahasiswa_id' => $mahasiswa->id,
             'periode_id' => $periode->id,
             'kelompok_id' => $kelompok->id,
         ]);
@@ -108,18 +110,19 @@ class AttendanceValidationServiceTest extends TestCase
     }
 
     /**
-     * Test: Detect timestamp mismatch
+     * Test: Detect timestamp mismatch (GPS time differs significantly)
      */
     public function test_validate_timestamp_mismatch(): void
     {
-        $this->attendance->timestamp_client = now()->subMinutes(10);
-        $this->attendance->timestamp_gps = now(); // GPS time differs significantly
+        $this->attendance->timestamp_client = now();
+        $this->attendance->timestamp_gps = now()->subMinutes(10); 
         $this->attendance->save();
 
         $result = $this->service->validate($this->attendance);
 
-        // Should be flagged but not necessarily invalid (depends on threshold)
-        $this->assertNotEmpty($result['flags']);
+        $this->assertFalse($result['valid']);
+        $flags = collect($result['flags']);
+        $this->assertNotNull($flags->firstWhere('type', 'timestamp_mismatch'));
     }
 
     /**
@@ -159,9 +162,9 @@ class AttendanceValidationServiceTest extends TestCase
         $this->attendance->status = 'flagged_anomaly';
         $this->attendance->validation_flags = [
             [
-                'type' => 'speed_anomaly',
-                'severity' => 'critical',
-                'message' => 'Kecepatan tidak mungkin',
+                'type' => 'some_warning',
+                'severity' => 'warning',
+                'message' => 'Peringatan ringan',
             ],
         ];
         $this->attendance->save();
@@ -176,18 +179,15 @@ class AttendanceValidationServiceTest extends TestCase
      */
     public function test_haversine_distance_calculation(): void
     {
-        // Two known points: Yogyakarta
-        $lat1 = -7.2575;
-        $lon1 = 110.4268;
-
-        // About 1km away
-        $lat2 = -7.2678;
-        $lon2 = 110.4277;
+        // About 1.15km away from posko (-7.2575, 110.4268)
+        $this->attendance->latitude = -7.2678;
+        $this->attendance->longitude = 110.4277;
+        $this->attendance->save();
 
         $distance = $this->attendance->calculateDistanceFromPosko();
 
-        // Should be around 1000 meters (±100m tolerance for earth model differences)
-        $this->assertGreaterThan(900, $distance);
-        $this->assertLessThan(1100, $distance);
+        // Should be around 1150 meters (±100m tolerance)
+        $this->assertGreaterThan(1000, $distance);
+        $this->assertLessThan(1300, $distance);
     }
 }

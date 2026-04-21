@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\Workshop;
 use App\Services\DplEligibilityService;
 use App\Services\PeriodContextService;
@@ -191,5 +192,60 @@ class WorkshopController extends Controller
 
             return back()->with('error', 'Pendaftaran pembekalan gagal: '.$e->getMessage());
         }
+    }
+
+    /**
+     * Get user's workshop certificates
+     */
+    public function myCertificates(Request $request)
+    {
+        $user = $request->user();
+
+        $certificates = PesertaWorkshop::where('user_id', $user->id)
+            ->whereNotNull('certificate_issued_at')
+            ->where('certificate_generated', true)
+            ->with(['workshop:id,name,start_date,end_date'])
+            ->orderByDesc('certificate_issued_at')
+            ->get()
+            ->map(fn ($p) => [
+                'id' => $p->id,
+                'workshop_name' => $p->workshop?->name,
+                'workshop_start' => $p->workshop?->start_date?->format('d M Y'),
+                'workshop_end' => $p->workshop?->end_date?->format('d M Y'),
+                'certificate_issued_at' => $p->certificate_issued_at?->format('d M Y'),
+                'certificate_url' => $p->certificate_path
+                    ? route('student.workshops.certificate', $p->id)
+                    : null,
+            ]);
+
+        return Inertia::render('Student/Workshops/Certificates', [
+            'certificates' => $certificates,
+        ]);
+    }
+
+    /**
+     * Download workshop certificate
+     */
+    public function downloadCertificate(Request $request, PesertaWorkshop $participant)
+    {
+        $user = $request->user();
+
+        if ($participant->user_id !== $user->id) {
+            abort(403, 'Anda tidak memiliki akses ke sertifikat ini.');
+        }
+
+        if (! $participant->certificate_generated || ! $participant->certificate_path) {
+            abort(404, 'Sertifikat belum tersedia.');
+        }
+
+        $filePath = storage_path('app/'.$participant->certificate_path);
+
+        if (! file_exists($filePath)) {
+            abort(404, 'File sertifikat tidak ditemukan.');
+        }
+
+        return response()->download($filePath,
+            sprintf('sertifikat-workshop-%s.pdf', $participant->workshop?->slug ?? $participant->id)
+        );
     }
 }

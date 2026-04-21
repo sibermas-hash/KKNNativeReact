@@ -137,7 +137,7 @@ export default function RegistrationShow({ registration }: Props) {
              <StatusTag status={registration.status} />
              <Link
                 href="/admin/pendaftaran"
-                className="h-9 px-4 bg-white border border-gray-300 text-emerald-800 text-xs font-black uppercase tracking-widest rounded-lg transition-all active:scale-95 no-underline flex items-center gap-2 shadow-sm"
+                className="h-9 px-4 bg-white border border-gray-200 text-emerald-900 text-xs font-black uppercase tracking-widest rounded-lg transition-all active:scale-95 no-underline flex items-center gap-2 shadow-sm hover:border-emerald-600"
               >
                 <ArrowLeft size={14} strokeWidth={2.5} /> Kembali
               </Link>
@@ -208,7 +208,7 @@ export default function RegistrationShow({ registration }: Props) {
                         <StatusTag status={doc.status || 'pending'} />
                         <a 
                           href={`/admin/pendaftaran/berkas/unduh?path=${doc.file_path}`} target="_blank" rel="noopener noreferrer"
-                          className="h-8 px-3 bg-white border border-emerald-50 text-[#1a7a4a] text-xs font-black uppercase rounded-lg hover:bg-emerald-950 hover:text-white transition-all no-underline flex items-center gap-2 shadow-sm"
+                          className="h-8 px-3 bg-white border border-emerald-50 text-emerald-600 text-xs font-black uppercase rounded-lg hover:bg-emerald-950 hover:text-white transition-all no-underline flex items-center gap-2 shadow-sm"
                         >
                           Lihat <ExternalLink size={12} />
                         </a>
@@ -239,10 +239,10 @@ export default function RegistrationShow({ registration }: Props) {
                     {isPending ? (
                       !showRejectForm ? (
                         <div className="grid gap-3">
-                          <button
+                           <button
                             onClick={() => approveForm.patch(`/admin/pendaftaran/${registration.id}/setujui`)}
                             disabled={approveForm.processing}
-                            className="w-full h-11 bg-[#16a34a] hover:bg-[#15803d] text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-none disabled:opacity-50 flex items-center justify-center gap-3"
+                            className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-none disabled:opacity-50 flex items-center justify-center gap-3"
                           >
                              {approveForm.processing ? <RefreshCw className="animate-spin h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" strokeWidth={3} />}
                              Sahkan Pendaftaran

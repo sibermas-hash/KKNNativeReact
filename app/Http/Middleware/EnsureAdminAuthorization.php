@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\CertificateConfigController;
 use App\Http\Controllers\Admin\DatabaseSyncController;
 use App\Http\Controllers\Admin\DownloadController;
 use App\Http\Controllers\Admin\DplAssignmentController;
+use App\Http\Controllers\Admin\DplParticipantEvaluationController;
 use App\Http\Controllers\Admin\DplSyncController;
 use App\Http\Controllers\Admin\EligibilityController;
 use App\Http\Controllers\Admin\EvaluasiController;
@@ -153,6 +154,7 @@ class EnsureAdminAuthorization
      */
     protected array $kknOperationsControllers = [
         EvaluasiController::class,
+        DplParticipantEvaluationController::class,
         KegiatanKknController::class,
         ProgramKerjaController::class,
         LaporanAkhirController::class,

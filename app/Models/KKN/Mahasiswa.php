@@ -89,6 +89,11 @@ class Mahasiswa extends Model
         return $this->hasMany(Evaluasi::class, 'mahasiswa_id');
     }
 
+    public function evaluasiDplPeserta(): HasMany
+    {
+        return $this->hasMany(EvaluasiDplPeserta::class, 'mahasiswa_id');
+    }
+
     public function nilai(): HasMany
     {
         return $this->hasMany(NilaiKkn::class, 'user_id', 'user_id');

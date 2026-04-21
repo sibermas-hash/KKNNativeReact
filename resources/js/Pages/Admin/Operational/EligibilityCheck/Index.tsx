@@ -125,14 +125,14 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
         </PageHeader>
 
         {/* --- INFO BANNER --- */}
-        <div className="bg-gray-50 border border-emerald-50 rounded-xl p-5 flex gap-4 items-start shadow-sm mb-6">
-          <div className="h-10 w-10 bg-white rounded-xl border border-emerald-50 flex items-center justify-center shrink-0 text-[#1a7a4a] shadow-sm">
+        <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-5 flex gap-4 items-start shadow-sm mb-6">
+          <div className="h-10 w-10 bg-white rounded-xl border border-emerald-100 flex items-center justify-center shrink-0 text-emerald-600 shadow-sm">
             <Info size={20} strokeWidth={2.5} />
           </div>
           <div className="space-y-1">
-            <p className="text-xs font-bold text-emerald-950 leading-relaxed uppercase tracking-wide">Kebijakan Kelayakan</p>
-            <p className="text-xs font-semibold text-[#1a7a4a]/80 leading-relaxed">
-              Status <span className="font-bold">"LAYAK"</span> diberikan jika mahasiswa memenuhi persyaratan akademik (SKS, IPK) dan sertifikasi BTA-PPI sesuai ketentuan masing-masing jenis KKN. Audit ini hanya mencakup syarat <strong>non-berkas</strong> — kelengkapan dokumen diperiksa saat pendaftaran.
+            <p className="text-xs font-black text-emerald-950 leading-relaxed uppercase tracking-wide">Kebijakan Kelayakan</p>
+            <p className="text-[11px] font-bold text-emerald-800 leading-relaxed uppercase tracking-tight">
+              Status <span className="font-black text-emerald-950">"LAYAK"</span> diberikan jika mahasiswa memenuhi persyaratan akademik (SKS, IPK) dan sertifikasi BTA-PPI sesuai ketentuan masing-masing jenis KKN. Audit ini hanya mencakup syarat <strong>non-berkas</strong> — kelengkapan dokumen diperiksa saat pendaftaran.
             </p>
           </div>
         </div>

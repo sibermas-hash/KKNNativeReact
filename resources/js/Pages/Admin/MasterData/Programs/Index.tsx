@@ -2,303 +2,275 @@ import { useState, useEffect } from 'react';
 import { router, Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import {
- Search,
- Plus,
- Edit2,
- Trash2,
- Building2,
- Filter,
- Users,
- GraduationCap,
- Cpu,
- Target,
- Activity,
- Database,
- Binary,
- ShieldCheck,
- Zap,
- Flag,
- Fingerprint,
- ArrowRight,
- Layers,
- Globe,
- ChevronRight,
- ArrowLeft,
+  Search,
+  Plus,
+  Edit2,
+  Trash2,
+  Building2,
+  Filter,
+  Users,
+  GraduationCap,
+  Activity,
+  Database,
+  Binary,
+  ShieldCheck,
+  RefreshCw,
+  Globe,
+  Clock,
+  Info,
+  Layers,
+  ChevronDown,
+  Flag
 } from 'lucide-react';
-import { Pagination, Button } from '@/Components/ui';
+import { Pagination } from '@/Components/ui';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
 import { clsx } from 'clsx';
-import type { LucideIcon } from '@/types';
-import { motion, AnimatePresence } from 'framer-motion';
+
+// Premium Components
+import PageHeader from '@/Components/Premium/PageHeader';
+import ContentPanel from '@/Components/Premium/ContentPanel';
+import StatCard from '@/Components/Premium/StatCard';
+import PremiumTable, { PremiumTableRow, PremiumTableCell } from '@/Components/Premium/PremiumTable';
+import SearchInput from '@/Components/Premium/SearchInput';
 
 interface Faculty {
- id: number;
- name: string;
+  id: number;
+  name: string;
 }
 interface Program {
- id: number;
- name: string;
- code: string;
- faculty_id: number;
- faculty?: Faculty;
- students_count?: number;
+  id: number;
+  name: string;
+  code: string;
+  faculty_id: number;
+  faculty?: Faculty;
+  students_count?: number;
+}
+interface SyncInfo {
+  mode: string;
+  source: string;
+  last_synced_at: string | null;
 }
 interface Props {
- programs: { data: Program[]; meta: PaginationMeta };
- faculties: Faculty[];
- filters: { search?: string; faculty_id?: string };
+  programs: { data: Program[]; meta: PaginationMeta };
+  faculties: Faculty[];
+  filters: { search?: string; faculty_id?: string };
+  syncInfo: SyncInfo;
 }
 
-const containerVariants = {
- hidden: { opacity: 0 },
- visible: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.1 } },
-};
+export default function ProgramsIndex({ programs, faculties = [], filters = {}, syncInfo }: Props) {
+  const [search, setSearch] = useState(filters?.search || '');
+  const [facultyId, setFacultyId] = useState(filters?.faculty_id || '');
 
-const itemVariants = {
- hidden: { opacity: 0, y: 20 },
- visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } },
-};
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (search !== (filters.search || '') || facultyId !== (filters.faculty_id || '')) {
+        router.get(
+          '/admin/prodi',
+          {
+            search: search || undefined,
+            faculty_id: facultyId || undefined,
+          },
+          { preserveState: true, replace: true },
+        );
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search, facultyId]);
 
-export default function ProgramsIndex({ programs = { data: [], meta: { total: 0, current_page: 1 } }, faculties = [], filters = {} }: Props) {
- const [search, setSearch] = useState(filters?.search || '');
- const [facultyId, setFacultyId] = useState(filters?.faculty_id || '');
+  return (
+    <AppLayout title="Direktori Program Studi">
+      <Head title="Direktori Program Studi" />
 
- useEffect(() => {
- const timer = setTimeout(() => {
- if (search !== (filters.search || '') || facultyId !== (filters.faculty_id || '')) {
- router.get(
- '/admin/prodi',
- {
- search: search || undefined,
- faculty_id: facultyId || undefined,
- },
- { preserveState: true, replace: true },
- );
- }
- }, 300);
- return () => clearTimeout(timer);
- }, [search, facultyId]);
+      <div className="max-w-7xl mx-auto space-y-8 pb-24 font-sans">
+        
+        <PageHeader 
+          title="Matriks Program."
+          subtitle="Matriks pemetaan akademis dan basis distribusi peserta KKN institusional UIN SAIZU."
+          icon={Binary}
+          groupLabel="Data Master Institusi"
+          stats={{
+            label: 'Total Program',
+            value: `${(programs?.meta?.total ?? 0).toLocaleString()} Prodi`,
+            icon: Database
+          }}
+        >
+          <div className="flex items-center gap-3">
+             <div className="hidden sm:flex items-center bg-white border border-emerald-100 rounded-xl px-4 py-2">
+               <div className="flex flex-col">
+                  <span className="text-[8px] font-black text-emerald-800 uppercase tracking-widest leading-none mb-1">Status Sinkronisasi</span>
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-xs font-black text-emerald-950 uppercase tracking-tight flex items-center gap-1.5">
+                        <Globe size={10} className="text-emerald-600" />
+                        Pusat Data Terintegrasi
+                    </span>
+                  </div>
+               </div>
+            </div>
+          </div>
+        </PageHeader>
 
- const handleDelete = (id: number) => {
- if (confirm('Lanjutkan untuk menghapus program studi ini? Seluruh data terkait kemahasiswaan mungkin akan terpengaruh.')) {
- router.delete(`/admin/tahun-akademik/prodi/${id}`);
- }
- };
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          {/* --- LEFT COLUMN: Sync Info & Filters --- */}
+          <div className="lg:col-span-1 space-y-6">
+            <ContentPanel title="Status Integrasi" icon={RefreshCw} padding={true}>
+              <div className="space-y-6">
+                <div className="bg-emerald-50/50 rounded-2xl p-5 border border-emerald-100/50 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">Mode Operasi</span>
+                    <span className="px-2 py-0.5 bg-emerald-600 text-white text-[9px] font-black rounded-full uppercase">Sync Only</span>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-50">
+                        <Database size={14} />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-bold text-emerald-800/60 uppercase">Sumber Data</span>
+                        <span className="text-xs font-black text-emerald-950 uppercase">{syncInfo.source}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-50">
+                        <Clock size={14} />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-bold text-emerald-800/60 uppercase">Terakhir Update</span>
+                        <span className="text-xs font-black text-emerald-950 uppercase">{syncInfo.last_synced_at || 'Belum pernah'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
- return (
- <AppLayout title="Direktori Manajemen Program">
- <Head title="Direktori Manajemen Program - Panel Kontrol"/>
+                <div className="p-4 bg-amber-50 rounded-xl border border-amber-100 flex gap-3">
+                  <Info size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                  <p className="text-[10px] font-bold text-amber-800 leading-relaxed uppercase tracking-tight">
+                    Data program studi mengikuti sinkronisasi master mahasiswa. Perubahan manual dinonaktifkan untuk menjaga konsistensi pendaftaran.
+                  </p>
+                </div>
+              </div>
+            </ContentPanel>
 
- <div className="max-w-[1600px] mx-auto space-y-12 pb-24 font-sans px-4 sm:px-6 lg:px-8">
- {/* --- MODERN HEADER --- */}
- <div className="space-y-6 pt-12">
- <div className="flex items-center gap-4 text-[#1a7a4a]">
- <div className="h-2 w-2 rounded-full bg-gray-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"/>
- <span className="text-sm font-bold text-xs font-semibold leading-none">Akademis &middot; Pusat Data Terintegrasi</span>
- </div>
- <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
- <div className="space-y-4">
- <h1 className="text-2xl font-bold text-emerald-950 leading-tight pt-2">
- Matriks <span>Program.</span>
- </h1>
- <p className="text-lg font-bold text-emerald-800/40 leading-relaxed max-w-2xl mt-4">
- Matriks pemetaan akademis and basis distribusi peserta KKN institusional.
- </p>
- </div>
- <div className="flex items-center gap-6 shrink-0">
- <div className="h-10 px-6 bg-white border border-emerald-50 rounded-xl flex items-center gap-6 shadow-sm">
- <Activity size={24} className="text-[#1a7a4a]"strokeWidth={2.5} />
- <div className="flex flex-col">
- <span className="text-sm font-bold text-emerald-800/40 font-semibold text-xs leading-none mb-2">Total Program</span>
- <span className="text-xl font-bold text-emerald-950 tabular-nums leading-none">{(programs?.meta?.total ?? 0).toLocaleString()} DATA PRODI</span>
- </div>
- </div>
- <button 
- onClick={() => router.get('/admin/prodi/create')} 
- className="h-10 px-6 bg-[#16a34a] text-white rounded-xl font-bold shadow-sm flex items-center gap-6 text-sm transition-all active:scale-95 text-xs font-semibold hover:bg-[#16a34a] border-none"
- >
- <Plus size={24} strokeWidth={3} /> REGISTRASI DATA PRODI
- </button>
- </div>
- </div>
- </div>
+            <ContentPanel title="Filter Unit" icon={Filter} padding={true}>
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-emerald-950 uppercase tracking-widest pl-1">Basis Fakultas</label>
+                  <div className="relative group">
+                    <select 
+                      value={facultyId} 
+                      onChange={e => setFacultyId(e.target.value)} 
+                      className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none"
+                    >
+                      <option value="">SELURUH FAKULTAS</option>
+                      {faculties.map(f => <option key={f.id} value={f.id}>{f.name.toUpperCase()}</option>)}
+                    </select>
+                    <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform"/>
+                  </div>
+                </div>
+                
+                {facultyId && (
+                   <button 
+                    onClick={() => setFacultyId('')} 
+                    className="text-[10px] font-black text-rose-600 uppercase tracking-widest hover:text-rose-700 transition-colors"
+                  >
+                    Reset Filter Fakultas
+                  </button>
+                )}
+              </div>
+            </ContentPanel>
 
- {/* --- NAVIGATION CONTROL PANEL --- */}
- <div className="bg-white border border-emerald-50 rounded-xl p-6 shadow-sm flex flex-col lg:flex-row items-center gap-6">
- <div className="flex-1 w-full relative group">
- <Search size={20} className="absolute left-8 top-1/2 -translate-y-1/2 text-emerald-700 group-focus-within:text-[#1a7a4a] transition-colors"strokeWidth={3} />
- <input
- type="text"
- placeholder="CARI DATA PRODI / KODE..."
- value={search}
- onChange={(e) => setSearch(e.target.value)}
- className="w-full h-18 pl-20 pr-8 bg-gray-50 border border-emerald-50 rounded-xl text-sm font-bold text-emerald-950 focus:bg-white focus:border-[#1a7a4a] outline-none transition-all placeholder:text-emerald-50/50"
- />
- </div>
- <div className="h-12 w-px bg-gray-50 hidden lg:block"/>
- <div className="relative w-full lg:w-[450px] group">
- <Filter size={20} className="absolute left-8 top-1/2 -translate-y-1/2 text-[#1a7a4a]"strokeWidth={3} />
- <select
- value={facultyId}
- onChange={(e) => setFacultyId(e.target.value)}
- className="w-full h-18 pl-20 pr-12 bg-gray-50 border border-emerald-50 rounded-xl focus:bg-white focus:border-[#1a7a4a] transition-all outline-none text-sm font-bold text-emerald-950 appearance-none text-xs font-semibold cursor-pointer"
- >
- <option value="">SELURUH BASIS FAKULTAS</option>
- {(faculties || []).map((f) => (
- <option key={f.id} value={f.id}>
- {f.name?.toUpperCase() || 'UNTITLED'}
- </option>
- ))}
- </select>
- <ChevronRight size={16} className="absolute right-8 top-1/2 -translate-y-1/2 text-emerald-800 rotate-90 pointer-events-none"strokeWidth={3} />
- </div>
- </div>
+            <div className="space-y-3">
+              <StatCard label="Total Program" value={programs.meta.total} icon={Binary} variant="success" className="w-full" />
+            </div>
+          </div>
 
- {/* --- MAIN INDEX PANEL --- */}
- <section className="bg-white border border-emerald-50 rounded-xl overflow-hidden shadow-sm font-sans">
- <div className="px-6 py-6 bg-gray-50/50 border-b border-emerald-50/50 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
- <div className="flex items-center gap-8">
- <div className="h-16 w-16 bg-white border border-emerald-50 text-[#1a7a4a] rounded-xl flex items-center justify-center shadow-sm">
- <Binary size={28} strokeWidth={2.5} />
- </div>
- <div className="flex flex-col">
- <span className="text-xl font-bold text-emerald-950 font-bold text-center">Indeks Antrean Prodi</span>
- <span className="text-sm font-bold text-emerald-800/40 text-xs font-semibold mt-1">Parameter Distribusi Akademis</span>
- </div>
- </div>
- </div>
+          {/* --- RIGHT COLUMN: Program List --- */}
+          <div className="lg:col-span-2">
+            <ContentPanel 
+              title="Indeks Antrean Prodi" 
+              icon={Layers} 
+              padding={false}
+              headerAction={
+                <SearchInput 
+                  placeholder="CARI DATA PRODI / KODE..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="w-64"
+                />
+              }
+              footer={
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-emerald-950/40 uppercase tracking-widest tabular-nums">
+                    Data Sistem &middot; {programs.meta.total} Data Program
+                  </span>
+                  <Pagination meta={programs.meta} />
+                </div>
+              }
+            >
+              <PremiumTable
+                headers={['Identitas', 'Nomenklatur Program', 'Fakultas Terkait', 'Status']}
+                isEmpty={programs.data.length === 0}
+                emptyText="Data program studi tidak ditemukan."
+              >
+                {programs.data.map((program) => (
+                  <PremiumTableRow key={program.id} className="group">
+                    <PremiumTableCell>
+                      <div className="w-12 h-12 bg-emerald-600 text-white rounded-xl flex items-center justify-center font-bold text-[10px] shadow-sm tabular-nums">
+                        {program.code || 'NULL'}
+                      </div>
+                    </PremiumTableCell>
+                    <PremiumTableCell>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-emerald-950 leading-none group-hover:text-emerald-700 transition-colors uppercase">
+                          {program.name}
+                        </span>
+                        <span className="text-[9px] font-bold text-emerald-800/40 mt-1.5 uppercase tracking-widest">
+                          ID Sistem: #{program.id}
+                        </span>
+                      </div>
+                    </PremiumTableCell>
+                    <PremiumTableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="h-7 w-7 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600 border border-emerald-100">
+                          <Building2 size={12} />
+                        </div>
+                        <span className="text-[10px] font-black text-emerald-950 uppercase tracking-tight">
+                          {program.faculty?.name || 'BELUM TEROKUPASI'}
+                        </span>
+                      </div>
+                    </PremiumTableCell>
+                    <PremiumTableCell>
+                       <div className="flex items-center gap-2">
+                          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+                          <span className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">Validated</span>
+                       </div>
+                    </PremiumTableCell>
+                  </PremiumTableRow>
+                ))}
+              </PremiumTable>
+            </ContentPanel>
+          </div>
+        </div>
 
- <div className="overflow-x-auto min-h-[500px]">
- <table className="w-full text-left">
- <thead className="bg-white text-sm font-bold text-xs font-semibold text-emerald-800/40 border-b border-emerald-50/50">
- <tr>
- <th className="px-6 py-8">Identitas Unit</th>
- <th className="px-6 py-8">Nomenklatur Program</th>
- <th className="px-6 py-8 text-center">Manajemen Fakultas Terkait</th>
- <th className="px-6 py-8 text-center">Beban Unit Terdistribusi</th>
- <th className="px-6 py-8 text-right">Manajemen Kendali</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-[#f3f4f6]/50">
- {(programs?.data?.length ?? 0) > 0 ? (
- programs?.data?.map((program) => (
- <tr key={program.id} className="hover:bg-gray-50 transition-all duration-300 group">
- <td className="px-6 py-6">
- <div className="w-16 h-16 bg-[#16a34a] text-white border border-emerald-800 rounded-xl flex items-center justify-center font-bold text-xs group-hover:bg-gray-100 transition-all shadow-sm tabular-nums">
- {program.code || 'NULL'}
- </div>
- </td>
- <td className="px-6 py-6">
- <div className="flex flex-col">
- <span className="text-lg font-bold text-emerald-950 leading-none truncate max-w-[400px] group-hover:text-emerald-800 transition-colors">
- {program.name}
- </span>
- <span className="text-sm font-bold text-emerald-800/20 mt-3 font-semibold text-xs leading-none">
- Identitas Sistem &middot; #{program.id}
- </span>
- </div>
- </td>
- <td className="px-6 py-6 text-center">
- <div className="inline-flex items-center gap-4 px-6 py-2 bg-gray-50 text-emerald-800 border border-emerald-50 rounded-xl text-sm font-bold text-xs font-semibold shadow-sm leading-none tabular-nums">
- <Building2 size={12} strokeWidth={3} className="opacity-40"/>
- {program.faculty?.name || 'BELUM TEROKUPASI'}
- </div>
- </td>
- <td className="px-6 py-6 text-center">
- <div className="flex flex-col items-center gap-2">
- <span className="text-base font-bold text-emerald-950 tabular-nums group-hover:text-[#1a7a4a] transition-colors">
- {(program.students_count || 0).toLocaleString()} UNIT
- </span>
- </div>
- </td>
- <td className="px-6 py-6 text-right">
- <div className="flex justify-end gap-4 opacity-10 group-hover:opacity-100 transition-all duration-300 font-sans">
- <Link
- href={`/admin/prodi/${program.id}/edit`}
- className="h-12 px-8 bg-white border border-emerald-50 text-emerald-700 hover:text-[#1a7a4a] hover:border-gray-300 rounded-xl flex items-center gap-3 text-sm font-bold text-xs font-semibold shadow-sm active:scale-95 no-underline"
- >
- <Edit2 size={16} strokeWidth={2.5} className="opacity-60"/>
- KOREKSI
- </Link>
- <button
- onClick={() => handleDelete(program.id)}
- className="h-12 w-12 bg-white border border-emerald-50 text-emerald-800/50 hover:text-rose-600 hover:border-rose-100 hover:bg-rose-50 rounded-xl flex items-center justify-center transition-all shadow-sm active:scale-95 border-none"
- >
- <Trash2 size={24} strokeWidth={2.5} />
- </button>
- </div>
- </td>
- </tr>
- ))
- ) : (
- <tr>
- <td
- colSpan={5}
- className="px-6 py-64 text-center"
- >
- <div className="flex flex-col items-center gap-6 text-emerald-50">
- <Layers size={100} strokeWidth={0.5} className="opacity-40"/>
- <p className="text-xs font-bold leading-none opacity-30">Database Prodi Kosong</p>
- </div>
- </td>
- </tr>
- )}
- </tbody>
- </table>
- </div>
+        {/* --- STRATEGIC INFO --- */}
+        <div className="bg-emerald-900 rounded-2xl p-8 text-white relative overflow-hidden shadow-2xl border-b-4 border-emerald-950">
+          <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12 -mr-16 -mt-16 pointer-events-none"><Database size={350} strokeWidth={0.5} /></div>
+          <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
+            <div className="h-16 w-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 border border-white/10 shadow-inner shrink-0 backdrop-blur-sm">
+              <Flag size={32} strokeWidth={2.5} />
+            </div>
+            <div className="space-y-2 text-center md:text-left">
+              <h2 className="text-xl font-black uppercase tracking-tight">Aturan Skema Program</h2>
+              <p className="text-[11px] font-medium text-emerald-400/60 uppercase tracking-widest leading-relaxed max-w-3xl">
+                Parameter program menentukan validitas penugasan dan kriteria mahasiswa di lapangan. Pastikan konfigurasi skema sesuai dengan pedoman akademik LPPM untuk menjamin validitas pendaftaran KKN.
+              </p>
+            </div>
+          </div>
+        </div>
 
- <div className="px-6 py-6 border-t border-emerald-50 bg-gray-50 flex flex-col sm:flex-row items-center justify-between gap-6 font-sans">
- <span className="text-sm font-bold text-emerald-800/20 text-xs font-semibold leading-none">
- Data Sistem &middot; {programs?.meta?.total ?? 0} DATA PROGRAM
- </span>
- {programs?.meta && <Pagination meta={programs.meta} />}
- </div>
- </section>
-
- {/* --- STRATEGIC INFO --- */}
- <section className="bg-[#16a34a] rounded-xl p-12 text-white relative overflow-hidden shadow-sm border-none">
- <div className="absolute top-0 right-0 p-12 opacity-5 rotate-12 -mr-16 -mt-16"><Database size={450} strokeWidth={0.5} /></div>
- <div className="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
- <div className="flex items-center gap-6">
- <div className="h-12 w-24 bg-[#16a34a] text-emerald-950 rounded-xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-110">
- <Flag size={48} strokeWidth={2.5} />
- </div>
- <div className="space-y-4">
- <h4 className="text-3xl font-bold font-bold text-center leading-none">Aturan Skema Program.</h4>
- <p className="text-sm font-bold text-[#1a7a4a] text-xs font-semibold leading-relaxed max-w-2xl opacity-60">
- Parameter program menentukan validitas penugasan dan kriteria mahasiswa di lapangan. Pastikan konfigurasi skema sesuai dengan pedoman akademik LPPM untuk menjamin validitas pendaftaran.
- </p>
- </div>
- </div>
- </div>
- </section>
- </div>
- </AppLayout>
- );
-}
-
-function MetricStrip({
- label,
- value,
- icon: Icon,
-}: {
- label: string;
- value: string | number;
- icon: any;
-}) {
- return (
- <div className="bg-white border border-emerald-50 rounded-xl p-8 flex items-center gap-6 shadow-sm hover:shadow-emerald-950/10 transition-all group overflow-hidden relative font-sans">
- <div className="h-14 w-14 bg-gray-50 text-[#1a7a4a] rounded-xl flex items-center justify-center shrink-0 group-hover:rotate-6 transition-transform shadow-sm border-none">
- <Icon size={24} strokeWidth={2.5} />
- </div>
- <div className="flex flex-col z-10">
- <span className="text-sm font-bold text-emerald-800/40 text-xs font-semibold leading-none mb-2">
- {label}
- </span>
- <span className="text-3xl font-bold text-emerald-950 font-bold text-center tabular-nums leading-none group-hover:text-[#1a7a4a] transition-colors">
- {value}
- </span>
- </div>
- </div>
- );
+      </div>
+    </AppLayout>
+  );
 }

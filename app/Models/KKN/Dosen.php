@@ -81,6 +81,11 @@ class Dosen extends Model
         return $this->hasMany(DplKecamatanAssignment::class, 'dosen_id');
     }
 
+    public function feedbackPeserta(): HasMany
+    {
+        return $this->hasMany(EvaluasiDplPeserta::class, 'dosen_id');
+    }
+
     /**
      * Check if this DPL can take more groups in a specific period.
      */

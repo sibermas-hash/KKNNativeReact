@@ -86,6 +86,11 @@ class KelompokKkn extends Model
         return $this->hasMany(RekapitulasiKegiatan::class, 'kelompok_id');
     }
 
+    public function evaluasiDplPeserta(): HasMany
+    {
+        return $this->hasMany(EvaluasiDplPeserta::class, 'kelompok_id');
+    }
+
     public function slotTerkunci(): HasMany
     {
         return $this->hasMany(SlotTerkunci::class, 'kelompok_id');

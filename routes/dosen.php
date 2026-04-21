@@ -36,6 +36,7 @@ Route::middleware([
     Route::prefix('workshops')->name('workshops.')->group(function () {
         Route::get('/', [WorkshopController::class, 'index'])->name('index');
         Route::post('/{workshop}/register', [WorkshopController::class, 'register'])->name('register');
+        Route::get('/my-certificates', [WorkshopController::class, 'myCertificates'])->name('my-certificates');
     });
 
     // Pendaftaran DPL (dosen yang sudah lulus workshop)
@@ -88,6 +89,7 @@ Route::middleware([
             Route::get('laporan-akhir/{report}/unduh', [Dpl\FinalReportController::class, 'download'])->name('final-reports.download');
             Route::patch('laporan-akhir/{report}/setujui', [Dpl\FinalReportController::class, 'approve'])->name('final-reports.approve');
             Route::patch('laporan-akhir/{report}/revisi', [Dpl\FinalReportController::class, 'revision'])->name('final-reports.revision');
+            Route::get('umpan-balik-peserta', [Dpl\ParticipantFeedbackController::class, 'index'])->name('feedback-dpl.index');
         });
     });
 });

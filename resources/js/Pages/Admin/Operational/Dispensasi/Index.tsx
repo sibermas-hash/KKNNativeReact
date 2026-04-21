@@ -73,26 +73,26 @@ export default function DispensasiIndex({ dispensasi, izins, periods, filters }:
         {/* --- STANDARD HEADER STYLE --- */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pt-10">
           <div className="space-y-4">
-            <div className="h-10 w-10 bg-[#e8f5ee] text-[#1a7a4a] rounded-xl flex items-center justify-center border border-emerald-50 shadow-sm">
+            <div className="h-10 w-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center border border-emerald-100 shadow-sm">
               <ShieldAlert size={20} strokeWidth={2.5} />
             </div>
             <div className="space-y-1">
-              <h1 className="text-3xl font-bold text-emerald-950 tracking-tight">
-                Manajemen Dispensasi & Izin.
+              <h1 className="text-3xl font-black text-emerald-950 tracking-tight uppercase">
+                Otoritas Khusus.
               </h1>
-              <p className="text-sm font-medium text-emerald-800">
+              <p className="text-xs font-bold text-emerald-800 uppercase tracking-widest">
                 Pusat kendali otoritas jalur khusus dan monitoring perizinan mahasiswa KKN.
               </p>
             </div>
           </div>
           
-          <div className="bg-white border border-emerald-50 rounded-xl p-4 flex items-center gap-4 shadow-sm shadow-emerald-900/5">
-             <div className="h-12 w-12 rounded-xl bg-[#e8f5ee] flex items-center justify-center text-[#1a7a4a]">
+          <div className="bg-white border border-emerald-100 rounded-2xl p-5 flex items-center gap-5 shadow-sm">
+             <div className="h-12 w-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
                 <Files size={24} />
              </div>
              <div>
-                <p className="text-xs font-bold text-[#1a7a4a] uppercase tracking-wider">Total Otoritas</p>
-                <h4 className="text-xl font-bold text-emerald-950 tabular-nums">{dispensasi?.meta?.total} Kasus</h4>
+                <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest leading-none mb-1">Total Otoritas</p>
+                <h4 className="text-2xl font-black text-emerald-950 tabular-nums leading-none">{dispensasi?.meta?.total} Kasus</h4>
              </div>
           </div>
         </div>

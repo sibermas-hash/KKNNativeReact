@@ -80,6 +80,7 @@ export default function StudentDashboard({
   grade,
 }: Props) {
   const { auth } = usePage<PageProps>().props;
+  const activePhase = (auth as any)?.active_phase ?? 'upcoming';
   const normalizedStatus = normalizeStatus(registration?.status);
   const isApproved = normalizedStatus === 'approved';
   const isPending = normalizedStatus === 'pending';
@@ -90,6 +91,7 @@ export default function StudentDashboard({
   const notificationForm = useForm({});
 
   const shouldShowPopup = isApproved && registration && !registration.notification_shown;
+  const isGradingOrLater = ['grading', 'finished'].includes(activePhase);
   const hasGroup = Boolean(registration?.group);
   const groupName = registration?.group?.name || 'Menunggu penugasan';
   const groupLocation = registration?.group?.location?.name || '-';
@@ -469,6 +471,13 @@ export default function StudentDashboard({
                       icon={ScrollText}
                       label="Laporan"
                     />
+                    {isGradingOrLater && (
+                      <QuickLink
+                        href={route('student.evaluasi-dpl.index')}
+                        icon={UserCheck}
+                        label="Evaluasi DPL"
+                      />
+                    )}
                   </div>
                 </div>
 

@@ -27,6 +27,7 @@ import {
   Shield,
   Settings,
   UserCog,
+  MessageSquareQuote,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -51,28 +52,34 @@ const safeRoute = (name: string, params?: Record<string, unknown>) => {
 
 const getAdminNav = (): NavGroup[] => [
   {
-    title: 'DASBOR',
+    title: 'SENTRAL KENDALI',
     items: [{ label: 'Beranda', href: safeRoute('admin.dashboard'), icon: LayoutDashboard }],
   },
   {
-    title: 'PERSIAPAN & DATA MASTER',
+    title: 'STRUKTUR PROGRAM',
     items: [
       { label: 'Tahun Akademik', href: safeRoute('admin.tahun-akademik.index'), icon: Calendar },
-      { label: 'Periode Program', href: safeRoute('admin.periode.index'), icon: History },
       { label: 'Jenis KKN', href: safeRoute('admin.jenis-kkn.index'), icon: Layers },
-      { label: 'Wilayah Penugasan', href: safeRoute('admin.locations.index'), icon: MapPin },
-      { label: 'Direktori Mahasiswa', href: safeRoute('admin.mahasiswa.index'), icon: Users },
-      { label: 'Direktori Dosen', href: safeRoute('admin.dpl.index'), icon: UserCheck },
+      { label: 'Periode Pelaksanaan', href: safeRoute('admin.periode.index'), icon: History },
       { label: 'Workshop & Pembekalan', href: safeRoute('admin.workshops.index'), icon: GraduationCap },
     ],
   },
   {
-    title: 'SELEKSI & PENDAFTARAN',
+    title: 'INTEGRASI & INVENTORI',
+    items: [
+      { label: 'Sinkronisasi Master', href: safeRoute('admin.database-sync.index'), icon: RefreshCw },
+      { label: 'Wilayah Penugasan', href: safeRoute('admin.locations.index'), icon: MapPin },
+      { label: 'Direktori Mahasiswa', href: safeRoute('admin.mahasiswa.index'), icon: Users },
+      { label: 'Direktori Dosen', href: safeRoute('admin.dpl.index'), icon: UserCheck },
+    ],
+  },
+  {
+    title: 'REKRUTMEN & PENDAFTARAN',
     items: [
       { label: 'Audit Kelayakan', href: safeRoute('admin.cek-kelayakan.index'), icon: ShieldCheck },
       { label: 'Dispensasi & Izin', href: safeRoute('admin.dispensasi.index'), icon: Shield },
-      { label: 'Pendaftaran Mahasiswa', href: safeRoute('admin.pendaftaran.index'), icon: ClipboardList },
-      { label: 'Pendaftaran DPL', href: safeRoute('admin.dpl.pendaftaran'), icon: UserCheck },
+      { label: 'Registrasi Mahasiswa', href: safeRoute('admin.pendaftaran.index'), icon: ClipboardList },
+      { label: 'Seleksi DPL', href: safeRoute('admin.dpl.pendaftaran'), icon: UserCheck },
     ],
   },
   {
@@ -84,18 +91,19 @@ const getAdminNav = (): NavGroup[] => [
     ],
   },
   {
-    title: 'PELAKSANAAN & MONITORING',
+    title: 'MONITORING & PELAKSANAAN',
     items: [
       { label: 'Laporan Harian', href: safeRoute('admin.laporan.harian.index'), icon: Activity },
       { label: 'Program Kerja', href: safeRoute('admin.laporan.program-kerja.index'), icon: BookOpen },
     ],
   },
   {
-    title: 'PELAPORAN & PENILAIAN',
+    title: 'EVALUASI & PENILAIAN',
     items: [
       { label: 'Laporan Akhir', href: safeRoute('admin.laporan.akhir.index'), icon: FileCheck },
       { label: 'Evaluasi Kinerja', href: safeRoute('admin.evaluasi.index'), icon: Star },
-      { label: 'Nilai Peserta', href: safeRoute('admin.nilai.index'), icon: FileText },
+      { label: 'Evaluasi DPL Peserta', href: safeRoute('admin.evaluasi-dpl.index'), icon: MessageSquareQuote },
+      { label: 'Input Nilai', href: safeRoute('admin.nilai.index'), icon: FileText },
     ],
   },
   {
@@ -107,12 +115,12 @@ const getAdminNav = (): NavGroup[] => [
     ],
   },
   {
-    title: 'PENGATURAN & SINKRONISASI',
+    title: 'ADMINISTRASI SISTEM',
     items: [
       { label: 'Manajemen Pengguna', href: safeRoute('admin.pengguna.index'), icon: UserCog },
       { label: 'Konfigurasi Penilaian', href: safeRoute('admin.konfigurasi-penilaian.index'), icon: Settings },
-      { label: 'Sinkronisasi Data', href: safeRoute('admin.database-sync.index'), icon: RefreshCw },
-      { label: 'Pengaturan Sistem', href: safeRoute('admin.pengaturan.sistem'), icon: Cpu },
+      { label: 'Pengaturan Sertifikat', href: safeRoute('admin.pengaturan.sertifikat.index'), icon: Award },
+      { label: 'Pengaturan Global', href: safeRoute('admin.pengaturan.sistem'), icon: Cpu },
     ],
   },
 ];
@@ -123,6 +131,7 @@ function getDosenNav(hasDplRole: boolean): NavGroup[] {
     items: [
       { label: 'Beranda Dosen', href: safeRoute('dosen.dashboard'), icon: LayoutDashboard },
       { label: 'Workshop & Pembekalan', href: safeRoute('dosen.workshops.index'), icon: GraduationCap },
+      { label: 'Sertifikat Workshop', href: safeRoute('dosen.workshops.my-certificates'), icon: Award },
     ],
   };
 
@@ -136,6 +145,7 @@ function getDosenNav(hasDplRole: boolean): NavGroup[] {
         { label: 'Data Kelompok', href: safeRoute('dosen.kelompok.index'), icon: Users },
         { label: 'Monitoring Mahasiswa', href: safeRoute('dosen.monitoring.index'), icon: Activity },
         { label: 'Penilaian Akhir', href: safeRoute('dosen.evaluations.index'), icon: Star },
+        { label: 'Umpan Balik Peserta', href: safeRoute('dosen.feedback-dpl.index'), icon: MessageSquareQuote },
       ],
     },
   ];
@@ -174,9 +184,19 @@ function buildStudentNav(currentPhase: string, registrationStatus: string = 'non
         ...(isGradingOrLater
           ? [
             {
-              label: 'Unduh Sertifikat',
+              label: 'Evaluasi DPL',
+              href: safeRoute('student.evaluasi-dpl.index'),
+              icon: MessageSquareQuote,
+            },
+            {
+              label: 'Sertifikat KKN',
               href: safeRoute('student.certificate.index'),
               icon: Award,
+            },
+            {
+              label: 'Sertifikat Workshop',
+              href: safeRoute('student.workshops.my-certificates'),
+              icon: GraduationCap,
             },
           ]
           : []),

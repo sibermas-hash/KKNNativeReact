@@ -89,7 +89,12 @@ class DailyReportController extends Controller
                     'ai_summary' => $report->ai_summary,
                     'ai_analysis' => $report->ai_analysis,
                     'kelompok' => $report->kelompok,
-                    'file_kegiatan' => $report->fileKegiatan,
+                    'file_kegiatan' => $report->fileKegiatan->map(fn ($file) => [
+                        'id' => $file->id,
+                        'file_path' => $file->file_path,
+                        'file_name' => $file->file_name,
+                        'preview_url' => route('student.laporan-harian.files.preview', $file->id),
+                    ]),
                 ])
             : collect();
 
@@ -268,6 +273,51 @@ class DailyReportController extends Controller
 
         return redirect()->route('student.laporan-harian.index')
             ->with('success', 'Laporan harian berhasil dihapus.');
+    }
+
+    /**
+     * Serve file inline for student preview.
+     */
+    public function previewFile(FileKegiatanKkn $fileKegiatan): \Symfony\Component\HttpFoundation\Response
+    {
+        $mahasiswa = auth()->user()?->mahasiswa;
+        abort_if(! $mahasiswa, 403);
+
+        $fileKegiatan->loadMissing('kegiatan');
+
+        abort_if(
+            ! $fileKegiatan->kegiatan || $fileKegiatan->kegiatan->mahasiswa_id !== $mahasiswa->id,
+            403,
+            'Anda tidak memiliki akses ke lampiran ini.'
+        );
+
+        $defaultDisk = config('filesystems.default');
+        $foundDisk = null;
+
+        foreach (['local', 'public', $defaultDisk] as $diskName) {
+            if (Storage::disk($diskName)->exists($fileKegiatan->file_path)) {
+                $foundDisk = $diskName;
+                break;
+            }
+        }
+
+        abort_if($foundDisk === null, 404, 'File lampiran tidak ditemukan.');
+
+        $disk = Storage::disk($foundDisk);
+
+        $mimeType = $disk->mimeType($fileKegiatan->file_path);
+        $stream = $disk->readStream($fileKegiatan->file_path);
+
+        return response()->stream(function () use ($stream) {
+            fpassthru($stream);
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }, 200, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline',
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
     }
 
     private function buildGeoPolicy(KelompokKkn $group): array

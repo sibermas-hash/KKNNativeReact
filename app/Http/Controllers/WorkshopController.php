@@ -40,10 +40,12 @@ class WorkshopController extends Controller
 
         $activePeriodId = $request->input('period_id') ?? ($periodContextService->getActivePeriodId() ?? $periodContextService->getDefaultPeriodId());
 
+        $isAdmin = $user->hasAnyRole(['superadmin', 'admin', 'faculty_admin']);
+        
         $workshops = $this->workshopService->getUpcomingWorkshops(
             $user->hasRole('dpl') ? $user->id : null,
-            $user->hasAnyRole(['superadmin', 'admin']),
-            $user->hasAnyRole(['superadmin', 'admin']),
+            $isAdmin,
+            $isAdmin,
             (int) $activePeriodId
         );
 

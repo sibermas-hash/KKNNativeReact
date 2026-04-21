@@ -369,14 +369,16 @@ class WorkshopService
     ): array {
         $query = Workshop::query();
 
+        // Handle period context explicitly if provided, otherwise fallback to global scope
+        if ($periodId) {
+            $query->withoutGlobalScope('isolasi_periode')->where('periode_id', $periodId);
+        }
+
         if (! $includeAllStatuses) {
             $query->where('workshop_date', '>=', now()->toDateString());
         }
 
         $query->withCount('peserta');
-
-        // periode_id filter sudah ditangani otomatis oleh ScopedByPeriode trait
-        // Untuk admin yang memerlukan context lintas periode, gunakan withoutGlobalScope
 
         if (! $includeAllStatuses) {
             $query->where('status', 'scheduled');

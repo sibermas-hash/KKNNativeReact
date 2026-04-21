@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Head, router, usePage } from '@inertiajs/react';
-import { ClipboardList, UserCheck, Clock, XCircle, CheckCircle2, Users, AlertTriangle } from 'lucide-react';
+import { ClipboardList, UserCheck, Clock, XCircle, CheckCircle2, Users, AlertTriangle, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageHeader from '@/Components/Premium/PageHeader';
 import StatCard from '@/Components/Premium/StatCard';
@@ -43,7 +43,8 @@ interface Props {
   registrations: Registration[];
   pagination: { current_page: number; last_page: number; per_page: number; total: number };
   stats: { total: number; pending: number; approved: number; rejected: number };
-  filters: { search: string; status: string };
+  filters: { search: string; status: string; period_id?: string | number };
+  periods?: Array<{ id: number; name: string; periode: string }>;
 }
 
 const statusMap: Record<string, { tag: 'warning' | 'success' | 'danger'; label: string }> = {
@@ -52,22 +53,36 @@ const statusMap: Record<string, { tag: 'warning' | 'success' | 'danger'; label: 
   rejected: { tag: 'danger', label: 'Ditolak' },
 };
 
-export default function DplRegistration({ registrations, pagination, stats, filters }: Props) {
+export default function DplRegistration({ registrations, pagination, stats, filters, periods = [] }: Props) {
   const { flash } = usePage<PageProps>().props;
   const [search, setSearch] = useState(filters.search || '');
   const [statusFilter, setStatusFilter] = useState(filters.status || 'all');
+  const [selectedPeriodId, setSelectedPeriodId] = useState(filters.period_id || '');
   const [selected, setSelected] = useState<number[]>([]);
   const [rejectModal, setRejectModal] = useState<{ open: boolean; id: number | null; bulk: boolean }>({ open: false, id: null, bulk: false });
   const [rejectReason, setRejectReason] = useState('');
   const [maxGroups, setMaxGroups] = useState(5);
 
-  const handleSearch = () => {
-    router.get('/admin/dosen/pendaftaran-dpl', { search: search || undefined, status: statusFilter !== 'all' ? statusFilter : undefined }, { preserveState: true, replace: true });
+  const applyFilters = (overrides = {}) => {
+    const params = {
+      search: search || undefined,
+      status: statusFilter !== 'all' ? statusFilter : undefined,
+      period_id: selectedPeriodId || undefined,
+      ...overrides
+    };
+    router.get('/admin/dosen/pendaftaran-dpl', params, { preserveState: true, replace: true });
   };
+
+  const handleSearch = () => applyFilters();
 
   const handleStatusFilter = (s: string) => {
     setStatusFilter(s);
-    router.get('/admin/dosen/pendaftaran-dpl', { search: search || undefined, status: s !== 'all' ? s : undefined }, { preserveState: true, replace: true });
+    applyFilters({ status: s !== 'all' ? s : undefined });
+  };
+
+  const handlePeriodChange = (pid: string) => {
+    setSelectedPeriodId(pid);
+    applyFilters({ period_id: pid || undefined });
   };
 
   const approve = (id: number) => {
@@ -124,35 +139,22 @@ export default function DplRegistration({ registrations, pagination, stats, filt
           )}
         </AnimatePresence>
 
-        {/* STATS */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Total Pendaftaran" value={stats.total} icon={ClipboardList} />
-          <StatCard label="Menunggu Verifikasi" value={stats.pending} icon={Clock} variant="warning" />
-          <StatCard label="Disetujui" value={stats.approved} icon={UserCheck} variant="success" />
-          <StatCard label="Ditolak" value={stats.rejected} icon={XCircle} variant="danger" />
-        </div>
-
-        {/* BULK ACTIONS */}
-        <AnimatePresence>
-          {selected.length > 0 && (
-            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
-              <span className="text-xs font-bold text-emerald-950 uppercase tracking-wider">{selected.length} dipilih</span>
-              <div className="flex items-center gap-2 ml-auto">
-                <label className="text-xs font-bold text-emerald-800">Maks. Kelompok:</label>
-                <input type="number" min={1} max={20} value={maxGroups} onChange={(e) => setMaxGroups(Number(e.target.value))} className="w-16 h-8 text-xs font-bold text-center border border-emerald-200 rounded-lg" />
-              </div>
-              <button onClick={bulkApprove} className="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all active:scale-95">
-                Setujui Semua
-              </button>
-              <button onClick={() => setRejectModal({ open: true, id: null, bulk: true })} className="h-9 px-4 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all active:scale-95">
-                Tolak Semua
-              </button>
-              <button onClick={() => setSelected([])} className="h-9 px-4 bg-white border border-gray-200 text-emerald-950 rounded-lg text-xs font-bold uppercase tracking-wider transition-all active:scale-95">
-                Batal
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* PERIODE FILTER */}
+        {stats.total > 0 && (
+          <div className="flex items-center gap-4 bg-white border border-emerald-50 rounded-xl p-4 shadow-sm">
+            <div className="flex items-center gap-2">
+              <Calendar size={16} className="text-emerald-600" />
+              <span className="text-xs font-bold text-emerald-950 uppercase tracking-wider">Periode:</span>
+            </div>
+            <select value={selectedPeriodId} onChange={(e) => handlePeriodChange(e.target.value)}
+              className="h-9 px-3 text-sm border border-emerald-200 rounded-lg focus:ring-1 focus:ring-emerald-500 outline-none">
+              <option value="">SEMUA PERIODE</option>
+              {periods.map(p => (
+                <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* TABLE */}
         <ContentPanel
@@ -246,7 +248,7 @@ export default function DplRegistration({ registrations, pagination, stats, filt
                     {reg.status === 'pending' ? (
                       <div className="flex items-center justify-end gap-1.5">
                         <button onClick={() => approve(reg.id)}
-                          className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all active:scale-95 flex items-center gap-1.5">
+                          className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 active:scale-95">
                           <CheckCircle2 size={12} /> Setujui
                         </button>
                         <button onClick={() => { setRejectModal({ open: true, id: reg.id, bulk: false }); setRejectReason(''); }}

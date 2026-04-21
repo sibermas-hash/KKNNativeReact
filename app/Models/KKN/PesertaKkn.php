@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models\KKN;
 
 use App\Models\User;
+use App\Traits\ScopedByPeriode;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PesertaKkn extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, ScopedByPeriode, SoftDeletes;
 
     protected $table = 'peserta_kkn';
 

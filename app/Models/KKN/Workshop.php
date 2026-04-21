@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\KKN;
 
+use App\Traits\ScopedByPeriode;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +13,7 @@ use Illuminate\Support\Carbon;
 
 class Workshop extends Model
 {
-    use HasFactory;
+    use HasFactory, ScopedByPeriode;
 
     protected $table = 'workshop';
 

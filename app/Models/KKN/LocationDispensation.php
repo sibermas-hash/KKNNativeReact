@@ -3,13 +3,14 @@
 namespace App\Models\KKN;
 
 use App\Models\User;
+use App\Traits\ScopedByPeriode;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class LocationDispensation extends Model
 {
-    use SoftDeletes;
+    use ScopedByPeriode, SoftDeletes;
 
     protected $table = 'location_dispensations';
 

@@ -6,7 +6,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\DplPeriod;
+use App\Models\KKN\Periode;
 use App\Services\DplAssignmentService;
+use App\Services\PeriodContextService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -16,6 +18,7 @@ class DplRegistrationController extends Controller
 {
     public function __construct(
         private DplAssignmentService $assignmentService,
+        private PeriodContextService $periodContext,
     ) {}
 
     /**
@@ -28,6 +31,9 @@ class DplRegistrationController extends Controller
         $search = trim((string) $request->input('search', ''));
         $statusFilter = $request->input('status', 'all');
         $escapedSearch = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+        
+        // Contextual period filtering
+        $activePeriodId = $request->input('period_id') ?? $this->periodContext->getActivePeriodId();
 
         $query = DplPeriod::with([
             'dosen:id,nama,nip,is_cpns,is_tugas_belajar',
@@ -35,6 +41,9 @@ class DplRegistrationController extends Controller
             'periode:id,name,periode,jenis',
         ])
             ->withCount('kelompok')
+            ->when($activePeriodId, function ($q) use ($activePeriodId) {
+                $q->where('periode_id', $activePeriodId);
+            })
             ->when($statusFilter !== 'all', function ($q) use ($statusFilter) {
                 $q->where('status', $statusFilter);
             })
@@ -53,12 +62,12 @@ class DplRegistrationController extends Controller
 
         $registrations = $query->paginate(20)->withQueryString();
 
-        // Stats
+        // Stats filtered by context
         $stats = [
-            'total' => DplPeriod::count(),
-            'pending' => DplPeriod::where('status', 'pending')->count(),
-            'approved' => DplPeriod::where('status', 'approved')->count(),
-            'rejected' => DplPeriod::where('status', 'rejected')->count(),
+            'total' => DplPeriod::when($activePeriodId, fn($q) => $q->where('periode_id', $activePeriodId))->count(),
+            'pending' => DplPeriod::where('status', 'pending')->when($activePeriodId, fn($q) => $q->where('periode_id', $activePeriodId))->count(),
+            'approved' => DplPeriod::where('status', 'approved')->when($activePeriodId, fn($q) => $q->where('periode_id', $activePeriodId))->count(),
+            'rejected' => DplPeriod::where('status', 'rejected')->when($activePeriodId, fn($q) => $q->where('periode_id', $activePeriodId))->count(),
         ];
 
         return Inertia::render('Admin/Operational/Dpl/Registration', [
@@ -97,7 +106,9 @@ class DplRegistrationController extends Controller
             'filters' => [
                 'search' => $search,
                 'status' => $statusFilter,
+                'period_id' => $activePeriodId,
             ],
+            'periods' => Periode::orderByDesc('is_active')->orderByDesc('periode')->get(['id', 'name', 'periode']),
         ]);
     }
 

@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Models\KKN;
 
 use App\Models\User;
+use App\Traits\ScopedByPeriode;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SertifikatKkn extends Model
 {
+    use ScopedByPeriode;
+
     protected $table = 'sertifikat_kkn';
 
     protected $fillable = [

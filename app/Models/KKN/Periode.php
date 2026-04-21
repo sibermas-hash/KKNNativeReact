@@ -33,6 +33,9 @@ class Periode extends Model
         'grading_start',
         'grading_end',
         'current_phase',
+        'is_locked',
+        'locked_at',
+        'locked_by',
     ];
 
     protected function casts(): array
@@ -45,6 +48,8 @@ class Periode extends Model
             'grading_start' => 'date',
             'grading_end' => 'date',
             'is_active' => 'boolean',
+            'is_locked' => 'boolean',
+            'locked_at' => 'datetime',
             'jenis' => KknType::class,
         ];
     }

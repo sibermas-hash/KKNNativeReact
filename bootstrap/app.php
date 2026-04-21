@@ -91,6 +91,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'disable.debugbar' => DisableDebugbar::class,
             'restrict.debugbar' => RestrictDebugbarAccess::class,
             'phase' => EnsurePhase::class,
+            'not_locked' => \App\Http\Middleware\CheckPeriodLock::class,
         ]);
 
         $middleware->redirectGuestsTo('/login');

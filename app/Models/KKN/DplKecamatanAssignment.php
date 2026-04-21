@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Models\KKN;
 
 use App\Models\User;
+use App\Traits\ScopedByPeriode;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DplKecamatanAssignment extends Model
 {
+    use HasFactory, ScopedByPeriode;
+
     protected $table = 'dpl_kecamatan_assignments';
 
     protected $fillable = [
@@ -25,8 +28,6 @@ class DplKecamatanAssignment extends Model
     ];
 
     protected $casts = ['is_active' => 'boolean'];
-
-    use HasFactory;
 
     public function dplPeriod(): BelongsTo
     {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import type { PageProps } from '@/types';
@@ -14,6 +14,9 @@ import {
   Layers,
   FileDigit,
   Activity,
+  Filter,
+  ChevronDown,
+  X
 } from 'lucide-react';
 import { Modal, ConfirmDialog } from '@/Components/ui';
 
@@ -54,27 +57,29 @@ interface Workshop {
 
 interface Props {
   workshops: Workshop[];
+  periods?: Array<{ id: number; name: string; periode: string }>;
+  filters: { period_id?: string | number };
 }
 
-export default function WorkshopIndex({ workshops = [] }: Props) {
+export default function WorkshopIndex({ workshops = [], periods = [], filters }: Props) {
   const { auth } = usePage<PageProps>().props;
   const userRoles = Array.isArray(auth.user?.roles) 
     ? auth.user.roles.map(r => typeof r === 'string' ? r : (r as any).name)
     : [];
   
   const isAdmin = userRoles.includes('superadmin') || userRoles.includes('admin');
-  const isStudent = userRoles.includes('student');
-  const isDpl = userRoles.includes('dpl');
-  const isParticipant = isDpl; // Hanya DPL yang dianggap peserta workshop pendaftaran
+  const isParticipant = userRoles.includes('dpl');
 
   const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showParticipants, setShowParticipants] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedPeriodId, setSelectedPeriodId] = useState(filters.period_id || '');
   const [attendedIds, setAttendedIds] = useState<number[]>([]);
 
   const { data, setData, post, patch, processing, errors, reset } = useForm({
+    periode_id: '',
     title: '',
     description: '',
     workshop_date: '',
@@ -84,6 +89,10 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
     max_participants: '',
   });
 
+  const applyFilters = (pid: string) => {
+    router.get(route('admin.workshops.index'), { period_id: pid || undefined }, { preserveState: true, replace: true });
+  };
+
   const filteredWorkshops = workshops.filter(w => 
     w.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     w.location?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -92,6 +101,7 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
   const handleEdit = (workshop: Workshop) => {
     setSelectedWorkshop(workshop);
     setData({
+      periode_id: workshop.period?.id.toString() || '',
       title: workshop.title,
       description: workshop.description || '',
       workshop_date: workshop.workshop_date_value,
@@ -138,8 +148,7 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
 
   const handleOpenParticipants = (workshop: Workshop) => {
     setSelectedWorkshop(workshop);
-    // Ambil ID user yang sudah ditandai hadir sebelumnya
-    const initialAttended = workshop.participants
+    const initialAttended = (workshop.participants || [])
       .filter(p => p.attendance_status === 'attended')
       .map(p => p.user_id);
     setAttendedIds(initialAttended);
@@ -156,7 +165,6 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
 
   const saveAttendance = () => {
     if (!selectedWorkshop) return;
-    
     router.post(route('admin.workshops.mark-attendance', selectedWorkshop.id), {
       user_ids: attendedIds
     }, {
@@ -201,6 +209,29 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
           <StatCard label="Status Sistem" value="Online" icon={Activity} variant="success" />
         </div>
 
+        {/* PERIOD FILTER */}
+        <ContentPanel title="Filter Konteks Periode" icon={Filter} padding={true}>
+          <div className="flex items-center gap-4">
+             <div className="flex-1 max-w-sm space-y-1.5">
+                <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Pilih Periode KKN</label>
+                <div className="relative group">
+                  <select 
+                    value={selectedPeriodId} 
+                    onChange={e => { setSelectedPeriodId(e.target.value); applyFilters(e.target.value); }}
+                    className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none"
+                  >
+                    <option value="">SEMUA PERIODE</option>
+                    {periods.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>)}
+                  </select>
+                  <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform"/>
+                </div>
+             </div>
+             <div className="pt-5">
+                <button onClick={() => { setSelectedPeriodId(''); applyFilters(''); }} className="text-xs font-bold text-emerald-600 hover:text-rose-600 uppercase tracking-widest transition-all px-4 py-2 border border-emerald-100 rounded-lg">Reset Filter</button>
+             </div>
+          </div>
+        </ContentPanel>
+
         {/* SEARCH BAR PANEL */}
         <ContentPanel
           title="Daftar Agenda Pembekalan"
@@ -210,17 +241,11 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
           headerAction={
             <div className="flex items-center gap-3">
               <SearchInput 
-                placeholder="Cari agenda..."
+                placeholder="Cari judul atau lokasi..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 className="w-64"
               />
-              <button 
-                onClick={() => router.get(route('admin.workshops.index'), { search: searchTerm }, { preserveState: true, replace: true })} 
-                className="h-10 px-6 bg-[#16a34a] text-white rounded-lg text-sm font-bold shadow-sm active:scale-95 transition-all"
-              >
-                Terapkan
-              </button>
             </div>
           }
         >
@@ -228,18 +253,21 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
             {filteredWorkshops.length === 0 ? (
               <div className="md:col-span-2 xl:col-span-3 py-24 flex flex-col items-center justify-center bg-gray-50 border border-dashed border-emerald-50 rounded-xl">
                 <Layers size={48} className="text-emerald-700 mb-4" strokeWidth={1} />
-                <p className="text-sm font-semibold text-emerald-800">Tidak ada agenda aktif ditemukan.</p>
+                <p className="text-sm font-semibold text-emerald-800">Tidak ada agenda ditemukan untuk periode ini.</p>
               </div>
             ) : (
               filteredWorkshops.map((w) => (
                 <div key={w.id} className="bg-white rounded-xl border border-emerald-50 overflow-hidden shadow-sm flex flex-col hover:border-emerald-300 transition-colors">
                   <div className="p-6 flex-1 space-y-4">
                     <div className="flex justify-between items-start">
-                      {new Date(w.workshop_date_value) < new Date(new Date().setHours(0,0,0,0)) ? (
-                        <StatusTag status="gray" label="SELESAI" />
-                      ) : (
-                        <StatusTag status={w.status === 'scheduled' ? 'active' : 'inactive'} label={w.status === 'scheduled' ? 'AKTIF' : 'DRAFT'} />
-                      )}
+                      <div className="flex flex-col gap-1">
+                        {new Date(w.workshop_date_value) < new Date(new Date().setHours(0,0,0,0)) ? (
+                          <StatusTag status="gray" label="SELESAI" />
+                        ) : (
+                          <StatusTag status={w.status === 'scheduled' ? 'active' : 'inactive'} label={w.status === 'scheduled' ? 'AKTIF' : 'DRAFT'} />
+                        )}
+                        <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">{w.period?.name || 'UMUM'}</span>
+                      </div>
                       <div className="text-xs font-bold text-emerald-800 uppercase tabular-nums">ID: {w.id}</div>
                     </div>
 
@@ -328,21 +356,36 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
               </div>
               <h3 className="text-sm font-bold uppercase tracking-tight">Data Konfigurasi Agenda</h3>
             </div>
-            <button onClick={() => setShowForm(false)} className="text-emerald-800 hover:text-emerald-800"><Plus className="rotate-45" size={20} /></button>
+            <button onClick={() => setShowForm(false)} className="text-emerald-800 hover:text-emerald-800"><X size={20} /></button>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              <div className="space-y-1 col-span-full">
+                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">Target Periode KKN</label>
+                <select 
+                    value={data.periode_id} 
+                    onChange={e => setData('periode_id', e.target.value)}
+                    className="w-full h-11 px-4 rounded-xl border border-gray-300 bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all"
+                    required
+                  >
+                    <option value="">PILIH PERIODE...</option>
+                    {periods.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>)}
+                </select>
+                {errors.periode_id && <span className="text-rose-600 text-xs font-bold uppercase">{errors.periode_id}</span>}
+              </div>
+
               <div className="space-y-1 col-span-full">
                 <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">Judul Agenda</label>
-                <div className="relative">
-                  <SearchInput 
-                    placeholder="Contoh: Workshop Pembekalan Angkatan 57..." 
-                    value={data.title}
-                    onChange={(e) => setData('title', e.target.value)}
-                    className="w-full"
-                  />
-                </div>
+                <input 
+                  type="text"
+                  placeholder="Contoh: Workshop Pembekalan Angkatan 57..." 
+                  value={data.title}
+                  onChange={(e) => setData('title', e.target.value)}
+                  className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm font-medium text-emerald-950 focus:border-emerald-600 outline-none transition-all"
+                  required
+                />
                 {errors.title && <span className="text-rose-600 text-xs font-bold uppercase">{errors.title}</span>}
               </div>
 
@@ -352,7 +395,7 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
                   type="date"
                   value={data.workshop_date}
                   onChange={(e) => setData('workshop_date', e.target.value)}
-                  className="w-full h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-emerald-950 focus:border-[#f3f4f6]0 outline-none transition-all"
+                  className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm font-medium text-emerald-950 focus:border-emerald-600 outline-none transition-all"
                   required
                 />
               </div>
@@ -363,7 +406,7 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
                   type="number"
                   value={data.max_participants}
                   onChange={(e) => setData('max_participants', e.target.value)}
-                  className="w-full h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-emerald-950 focus:border-[#f3f4f6]0 outline-none transition-all"
+                  className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm font-medium text-emerald-950 focus:border-emerald-600 outline-none transition-all"
                   placeholder="0" required
                 />
               </div>
@@ -374,7 +417,7 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
                   type="time"
                   value={data.start_time}
                   onChange={(e) => setData('start_time', e.target.value)}
-                  className="w-full h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-emerald-950 focus:border-[#f3f4f6]0 outline-none transition-all"
+                  className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm font-medium text-emerald-950 focus:border-emerald-600 outline-none transition-all"
                   required
                 />
               </div>
@@ -385,7 +428,7 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
                   type="time"
                   value={data.end_time}
                   onChange={(e) => setData('end_time', e.target.value)}
-                  className="w-full h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-emerald-950 focus:border-[#f3f4f6]0 outline-none transition-all"
+                  className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm font-medium text-emerald-950 focus:border-emerald-600 outline-none transition-all"
                   required
                 />
               </div>
@@ -396,7 +439,7 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
                   type="text"
                   value={data.location}
                   onChange={(e) => setData('location', e.target.value)}
-                  className="w-full h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-emerald-950 focus:border-[#f3f4f6]0 outline-none transition-all"
+                  className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm font-medium text-emerald-950 focus:border-emerald-600 outline-none transition-all"
                   placeholder="Contoh: Auditorium Lt. 3..." required
                 />
               </div>
@@ -413,7 +456,7 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
               <button 
                 type="submit"
                 disabled={processing} 
-                className="h-10 px-6 bg-[#16a34a] hover:bg-[#15803d] text-white font-bold text-sm rounded-lg shadow-sm active:scale-95 transition-all disabled:opacity-50"
+                className="h-11 px-8 bg-[#16a34a] hover:bg-[#15803d] text-white font-bold text-sm rounded-xl shadow-sm active:scale-95 transition-all disabled:opacity-50"
               >
                 {selectedWorkshop ? 'Simpan Perbarui' : 'Tambah Agenda'}
               </button>
@@ -429,7 +472,7 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
               <p className="text-xs font-extrabold text-[#1a7a4a] uppercase tracking-widest">{selectedWorkshop?.title}</p>
             </div>
             <button onClick={() => setShowParticipants(false)} className="h-10 w-10 bg-white border-2 border-[#f3f4f6] text-emerald-950 hover:bg-rose-500 hover:text-white rounded-xl flex items-center justify-center transition-all active:scale-95">
-              <Plus className="rotate-45" size={24} />
+              <X size={24} />
             </button>
           </div>
 

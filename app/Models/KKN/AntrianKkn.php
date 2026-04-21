@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models\KKN;
 
+use App\Traits\ScopedByPeriode;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AntrianKkn extends Model
 {
+    use HasFactory, ScopedByPeriode;
+
     protected $table = 'antrian_kkn';
 
     protected $fillable = [
@@ -27,8 +30,6 @@ class AntrianKkn extends Model
         'joined_at' => 'datetime',
         'last_left_group_at' => 'datetime',
     ];
-
-    use HasFactory;
 
     public function mahasiswa(): BelongsTo
     {

@@ -103,6 +103,8 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
         <div className="lg:pl-60 flex flex-col min-h-screen transition-all duration-300 w-full overflow-x-hidden">
+
+
           {/* TOP HEADER BAR */}
           <header className="sticky top-0 z-40 h-14 bg-white border-b border-emerald-50 px-6 sm:px-8 flex items-center justify-between">
             <div className="flex items-center gap-4">

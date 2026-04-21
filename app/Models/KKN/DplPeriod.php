@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\KKN;
 
+use App\Traits\ScopedByPeriode;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DplPeriod extends Model
 {
+    use HasFactory, ScopedByPeriode;
+
     protected $table = 'dpl_periode';
 
     protected $fillable = [
@@ -29,8 +32,6 @@ class DplPeriod extends Model
         'is_active' => 'boolean',
         'approved_at' => 'datetime',
     ];
-
-    use HasFactory;
 
     public function dosen(): BelongsTo
     {

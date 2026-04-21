@@ -10,7 +10,9 @@ use App\Http\Controllers\Controller;
 use App\Imports\LokasiWilayahImport;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
+use App\Models\KKN\Periode;
 use App\Models\KKN\PoskoKelompok;
+use App\Services\PeriodContextService;
 use App\Traits\HandlesPagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,10 +28,18 @@ class LokasiController extends Controller
     public function index(Request $request): Response
     {
         Gate::authorize('manage-master-data');
+
+        $periodId = $request->query('period_id')
+            ? (int) $request->query('period_id')
+            : app(PeriodContextService::class)->getActivePeriodId();
+        $period = $periodId ? Periode::find($periodId) : null;
+
         $locations = Lokasi::query()
             ->withCount([
-                'kelompok',
-                'kelompok as posko_count' => fn ($query) => $query->has('posko'),
+                'kelompok' => fn ($query) => $query->when($periodId, fn ($q) => $q->where('periode_id', $periodId)),
+                'kelompok as posko_count' => fn ($query) => $query
+                    ->when($periodId, fn ($q) => $q->where('periode_id', $periodId))
+                    ->has('posko'),
             ])
             ->when($request->search, function ($query, $search) {
                 $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
@@ -57,22 +67,33 @@ class LokasiController extends Controller
             'full_name' => $location->full_name,
             'groups_count' => $location->kelompok_count,
             'posko_count' => $location->posko_count,
+            'is_used_in_period' => $periodId ? $location->kelompok_count > 0 : false,
             'can_delete' => $this->canDeleteLocation($location),
             'delete_blocker' => $this->getDeleteBlockerReason($location),
         ]);
 
+        $groupsQuery = KelompokKkn::query();
+        $poskoQuery = PoskoKelompok::query();
+        if ($periodId) {
+            $groupsQuery->where('periode_id', $periodId);
+            $poskoQuery->whereHas('kelompok', fn ($q) => $q->where('periode_id', $periodId));
+        }
+
         return Inertia::render('Admin/Operational/Locations/Index', [
             'locations' => $this->formatPaginator($locations),
-            'filters' => $request->only('search'),
+            'filters' => $request->only('search', 'period_id'),
             'summary' => [
                 'total_locations' => Lokasi::count(),
-                'assigned_groups' => KelompokKkn::count(),
-                'reported_posko' => PoskoKelompok::count(),
+                'assigned_groups' => $groupsQuery->count(),
+                'reported_posko' => $poskoQuery->count(),
             ],
             'workflow' => [
                 'primary_source' => 'groups_import',
                 'groups_import_url' => '/admin/kelompok',
             ],
+            'periods' => Inertia::defer(fn () => Periode::orderByDesc('is_active')->orderByDesc('periode')->get(['id', 'name', 'periode'])),
+            'active_periode_id' => $periodId,
+            'active_periode_name' => $period?->name,
         ]);
     }
 
@@ -80,10 +101,14 @@ class LokasiController extends Controller
     {
         Gate::authorize('manage-master-data');
 
+        $periodId = PeriodContextService::getPeriodId($request->query('period_id'));
+
         $query = Lokasi::query()
             ->withCount([
-                'kelompok',
-                'kelompok as posko_count' => fn ($query) => $query->has('posko'),
+                'kelompok' => fn ($query) => $query->when($periodId, fn ($q) => $q->where('periode_id', $periodId)),
+                'kelompok as posko_count' => fn ($query) => $query
+                    ->when($periodId, fn ($q) => $q->where('periode_id', $periodId))
+                    ->has('posko'),
             ])
             ->orderBy('regency_name')
             ->orderBy('district_name')

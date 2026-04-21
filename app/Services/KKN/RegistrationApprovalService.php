@@ -12,6 +12,7 @@ use App\Services\AutomaticGroupPlacementService;
 use App\Services\EligibilityService;
 use App\Services\GroupSelectionService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
@@ -29,6 +30,9 @@ class RegistrationApprovalService
 
     /**
      * Prepare group placement for approval with validation.
+     * Note: Group placement is now OPTIONAL during approval.
+     * If auto-placement is configured and groups exist, it will attempt placement.
+     * If no groups exist yet, approval proceeds without a group (plotting phase later).
      */
     public function prepareForApproval(PesertaKkn $registration): PesertaKkn
     {
@@ -40,31 +44,61 @@ class RegistrationApprovalService
             ]);
         }
 
-        if ($registration->periode?->usesAutomaticPlacementAfterApproval() && ! $registration->kelompok_id) {
-            return $this->autoPlaceGroup($registration);
+        // If student already has a group assigned, validate it
+        if ($registration->kelompok_id) {
+            $this->validateAssignedGroup($registration);
+
+            return $registration;
         }
 
-        $this->validateAssignedGroup($registration);
+        // If auto-placement is configured, TRY to place — but don't block approval if no groups exist
+        if ($registration->periode?->usesAutomaticPlacementAfterApproval()) {
+            try {
+                return $this->autoPlaceGroup($registration);
+            } catch (ValidationException) {
+                // No groups available yet — that's OK, plotting happens later
+                Log::info("Auto-placement skipped for registration #{$registration->id}: kelompok belum tersedia. Akan di-plot manual nanti.");
+            }
+        }
 
         return $registration;
     }
 
     /**
      * Approve a single registration.
+     *
+     * Approval is decoupled from group placement:
+     * - FASE VERIFIKASI: Admin validates academic eligibility → status becomes 'approved'
+     * - FASE PLOTTING: Admin assigns groups later (manual or bulk) → kelompok_id gets filled
      */
     public function approve(PesertaKkn $registration, int $approvedBy): void
     {
         DB::transaction(function () use ($registration, $approvedBy) {
-            $prepared = $this->prepareForApproval($registration);
+            $registration->loadMissing(['mahasiswa', 'periode']);
+
+            if (! $registration->mahasiswa) {
+                throw ValidationException::withMessages([
+                    'status' => 'Data mahasiswa pada pendaftaran ini tidak ditemukan.',
+                ]);
+            }
 
             // SECURITY GATE: Verify Academic Eligibility before final approval
-            $eligibility = $this->eligibilityService->checkEligibility($registration->mahasiswa, $registration->periode_id);
+            // Context 'approval' skips registration-window and active-registration checks
+            $eligibility = $this->eligibilityService->checkEligibility(
+                $registration->mahasiswa,
+                $registration->periode_id,
+                [],
+                'approval'
+            );
             if (! $eligibility['is_eligible']) {
                 $reasons = collect($eligibility['issues'])->pluck('message')->implode(', ');
                 throw ValidationException::withMessages([
                     'status' => "Pendaftaran tidak dapat disetujui karena mahasiswa tidak memenuhi syarat akademik: {$reasons}",
                 ]);
             }
+
+            // Try group placement (best-effort, non-blocking)
+            $prepared = $this->prepareForApproval($registration);
 
             $prepared->update([
                 'status' => 'approved',
@@ -79,7 +113,8 @@ class RegistrationApprovalService
 
             AuditService::log(
                 'REGISTRATION_APPROVAL',
-                "Pendaftaran disetujui untuk Mahasiswa ID {$registration->mahasiswa_id}",
+                "Pendaftaran disetujui untuk Mahasiswa ID {$registration->mahasiswa_id}"
+                    .($prepared->kelompok_id ? " (Auto-placed ke kelompok #{$prepared->kelompok_id})" : ' (Belum di-plot ke kelompok)'),
                 $registration
             );
         });
@@ -117,7 +152,7 @@ class RegistrationApprovalService
                 $registrations = PesertaKkn::query()
                     ->with(['mahasiswa', 'periode', 'dokumen'])
                     ->whereIn('id', $batchIds)
-                    ->where('status', 'pending')
+                    ->whereIn('status', ['pending', 'document_submitted'])
                     ->when($isFacultyAdmin, function ($query) use ($facultyId) {
                         $query->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
                     })
@@ -126,7 +161,7 @@ class RegistrationApprovalService
 
                 foreach ($registrations as $registration) {
                     // SECURITY GATE: Verify Academic Eligibility before final approval
-                    $eligibility = $this->eligibilityService->checkEligibility($registration->mahasiswa, $registration->periode_id);
+                    $eligibility = $this->eligibilityService->checkEligibility($registration->mahasiswa, $registration->periode_id, [], 'approval');
                     if (! $eligibility['is_eligible']) {
                         continue; // Skip ineligible students in bulk action
                     }

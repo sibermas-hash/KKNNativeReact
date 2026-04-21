@@ -12,6 +12,7 @@ use App\Services\KKN\FacultyScopeService;
 use App\Services\KKN\KknRequirementService;
 use App\Services\KKN\RegistrationApprovalService;
 use App\Services\KKN\RegistrationExportService;
+use App\Services\PeriodContextService;
 use App\Traits\HandlesPagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,19 +47,27 @@ class PesertaKknController extends Controller
     {
         $status = $approvedOnly ? 'approved' : $this->normalizeStatus($request->input('status'));
 
+        // Use period_id from query string, fallback to active period from session or database
+        $queryPeriodId = $request->input('period_id');
+        $periodId = $queryPeriodId
+            ? (int) $queryPeriodId
+            : (app(PeriodContextService::class)->getActivePeriodId()
+                ?? Periode::where('is_active', true)->value('id'));
+
         $query = PesertaKkn::with([
             'mahasiswa:id,user_id,nim,nama,fakultas_id,prodi_id,nik,mother_name,gpa,status_bta_ppi,sks_completed,health_certificate_path,parent_permission_path',
             'mahasiswa.user:id,name,email,address,phone',
             'mahasiswa.fakultas:id,code,nama',
             'mahasiswa.prodi:id,code,nama,fakultas_id',
             'mahasiswa.prodi.fakultas:id,code,nama',
-            'periode:id,periode,name,program_type,program_subtype,registration_mode,placement_mode,start_date,end_date',
+            'periode:id,periode,name,program_type,program_subtype,registration_mode,placement_mode,start_date,end_date,jenis_kkn_id',
+            'periode.jenisKkn:id,name',
             'kelompok:id,periode_id,nama_kelompok,code',
             'dokumen:id,peserta_kkn_id,document_type',
         ])
             ->when($request->input('search'), fn ($query, $search) => $query->search($search))
             ->when($status, fn ($query, $value) => $query->where('status', $value))
-            ->when($request->input('periode_id'), fn ($query, $periodId) => $query->where('periode_id', $periodId));
+            ->when($periodId, fn ($query, $pid) => $query->where('periode_id', $pid));
 
         // Use centralized Faculty Scoping service
         return FacultyScopeService::apply($query, 'mahasiswa.fakultas_id');
@@ -120,7 +129,12 @@ class PesertaKknController extends Controller
                             'faculty' => $reg->mahasiswa?->fakultas ? ['name' => $reg->mahasiswa->fakultas->nama] : null,
                             'program' => $reg->mahasiswa?->prodi ? ['name' => $reg->mahasiswa->prodi->nama] : null,
                         ],
-                        'period' => $reg->periode ? ['name' => $reg->periode->name, 'id' => $reg->periode->id] : ['name' => '-', 'id' => null],
+                        'period' => $reg->periode ? [
+                            'name' => $reg->periode->name,
+                            'id' => $reg->periode->id,
+                            'program_type' => $reg->periode->program_type,
+                            'jenis' => $reg->periode->jenisKkn?->name,
+                        ] : ['name' => '-', 'id' => null, 'program_type' => null, 'jenis' => null],
                         'group' => $reg->kelompok ? ['name' => $reg->kelompok->nama_kelompok] : null,
                         'documents' => [
                             'health_cert' => ! empty($mahasiswa?->health_certificate_path),
@@ -137,7 +151,7 @@ class PesertaKknController extends Controller
             'filters' => [
                 'search' => $request->input('search'),
                 'status' => $this->normalizeStatus($request->input('status')),
-                'periode_id' => $request->input('periode_id'),
+                'periode_id' => $request->input('period_id') ?? app(PeriodContextService::class)->getActivePeriodId(),
             ],
             'stats' => Inertia::defer(function () {
                 $statsQuery = FacultyScopeService::apply(
@@ -306,7 +320,7 @@ class PesertaKknController extends Controller
         $mahasiswa = $pesertaKkn->mahasiswa;
         if ($mahasiswa?->health_certificate_path) {
             $documents[] = [
-                'id' => 0,
+                'id' => -1,
                 'document_type' => 'Surat Keterangan Sehat',
                 'file_name' => basename($mahasiswa->health_certificate_path),
                 'file_path' => $mahasiswa->health_certificate_path,
@@ -315,7 +329,7 @@ class PesertaKknController extends Controller
         }
         if ($mahasiswa?->parent_permission_path) {
             $documents[] = [
-                'id' => 0,
+                'id' => -2,
                 'document_type' => 'Surat Izin Orang Tua',
                 'file_name' => basename($mahasiswa->parent_permission_path),
                 'file_path' => $mahasiswa->parent_permission_path,
@@ -358,7 +372,7 @@ class PesertaKknController extends Controller
     ): RedirectResponse {
         $this->registrationService->approve($pesertaKkn, auth()->id());
 
-        return redirect()->back()->with('success', 'Pendaftaran berhasil disetujui.');
+        return redirect()->route('admin.pendaftaran.index')->with('success', 'Pendaftaran berhasil disetujui.');
     }
 
     public function reject(
@@ -371,7 +385,7 @@ class PesertaKknController extends Controller
 
         $this->registrationService->reject($pesertaKkn, $validated['notes'], auth()->id());
 
-        return redirect()->back()->with('success', 'Pendaftaran ditolak.');
+        return redirect()->route('admin.pendaftaran.index')->with('success', 'Pendaftaran ditolak.');
     }
 
     public function assignGroup(

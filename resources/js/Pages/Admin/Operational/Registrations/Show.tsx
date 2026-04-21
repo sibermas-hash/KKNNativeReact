@@ -239,6 +239,11 @@ export default function RegistrationShow({ registration }: Props) {
                     {isPending ? (
                       !showRejectForm ? (
                         <div className="grid gap-3">
+                           {Object.keys(approveForm.errors).length > 0 && (
+                             <div className="p-3 bg-rose-50 text-rose-700 text-xs rounded-xl font-medium border border-rose-100">
+                               {Object.values(approveForm.errors).map((err, i) => <div key={i}>{err}</div>)}
+                             </div>
+                           )}
                            <button
                             onClick={() => approveForm.patch(`/admin/pendaftaran/${registration.id}/setujui`)}
                             disabled={approveForm.processing}
@@ -264,6 +269,11 @@ export default function RegistrationShow({ registration }: Props) {
                           }}
                           className="space-y-3"
                         >
+                          {Object.keys(rejectForm.errors).length > 0 && (
+                            <div className="p-3 bg-rose-50 text-rose-700 text-xs rounded-xl font-medium border border-rose-100">
+                              {Object.values(rejectForm.errors).map((err, i) => <div key={i}>{err}</div>)}
+                            </div>
+                          )}
                           <textarea
                             required placeholder="Tulis alasan penolakan..."
                             value={rejectForm.data.notes}

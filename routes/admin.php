@@ -152,7 +152,7 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
         ->only(['index', 'store', 'update', 'destroy']);
 
     // Workshop Management
-    Route::prefix('workshops')->name('workshops.')->group(function () {
+    Route::prefix('workshops')->name('workshops.')->middleware('not_locked')->group(function () {
         Route::get('/', [WorkshopController::class, 'index'])->name('index');
         Route::post('/', [WorkshopController::class, 'store'])->name('store');
         Route::patch('/{workshop}', [WorkshopController::class, 'update'])->name('update');
@@ -163,20 +163,22 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
     });
 
     // Participant Operations (accessible by admin)
-    Route::get('peserta/pindah', [Admin\StudentTransferController::class, 'index'])->name('peserta.pindah.index');
-    Route::post('peserta/pindah', [Admin\StudentTransferController::class, 'transfer'])->name('peserta.pindah');
-    Route::post('pendaftaran/setuju-massal', [Admin\PesertaKknController::class, 'bulkApprove'])->name('pendaftaran.setuju-massal');
-    Route::post('pendaftaran/tolak-massal', [Admin\PesertaKknController::class, 'bulkReject'])->name('pendaftaran.tolak-massal');
-    Route::patch('pendaftaran/{pesertaKkn}/setujui', [Admin\PesertaKknController::class, 'approve'])->name('pendaftaran.setujui');
-    Route::patch('pendaftaran/{pesertaKkn}/tolak', [Admin\PesertaKknController::class, 'reject'])->name('pendaftaran.tolak');
-    Route::patch('pendaftaran/{pesertaKkn}/tugaskan-kelompok', [Admin\PesertaKknController::class, 'assignGroup'])->name('pendaftaran.tugaskan-kelompok');
-    Route::post('pendaftaran/{registration}/jadikan-ketua', [Admin\PesertaKknController::class, 'makeLeader'])->name('pendaftaran.jadikan-ketua');
-    Route::post('pendaftaran/{registration}/jadikan-korcam', [Admin\PesertaKknController::class, 'makeKorcam'])->name('pendaftaran.jadikan-korcam');
+    Route::middleware('not_locked')->group(function () {
+        Route::get('peserta/pindah', [Admin\StudentTransferController::class, 'index'])->name('peserta.pindah.index');
+        Route::post('peserta/pindah', [Admin\StudentTransferController::class, 'transfer'])->name('peserta.pindah');
+        Route::post('pendaftaran/setuju-massal', [Admin\PesertaKknController::class, 'bulkApprove'])->name('pendaftaran.setuju-massal');
+        Route::post('pendaftaran/tolak-massal', [Admin\PesertaKknController::class, 'bulkReject'])->name('pendaftaran.tolak-massal');
+        Route::patch('pendaftaran/{pesertaKkn}/setujui', [Admin\PesertaKknController::class, 'approve'])->name('pendaftaran.setujui');
+        Route::patch('pendaftaran/{pesertaKkn}/tolak', [Admin\PesertaKknController::class, 'reject'])->name('pendaftaran.tolak');
+        Route::patch('pendaftaran/{pesertaKkn}/tugaskan-kelompok', [Admin\PesertaKknController::class, 'assignGroup'])->name('pendaftaran.tugaskan-kelompok');
+        Route::post('pendaftaran/{registration}/jadikan-ketua', [Admin\PesertaKknController::class, 'makeLeader'])->name('pendaftaran.jadikan-ketua');
+        Route::post('pendaftaran/{registration}/jadikan-korcam', [Admin\PesertaKknController::class, 'makeKorcam'])->name('pendaftaran.jadikan-korcam');
 
-    // Groups CRUD
-    Route::post('kelompok/impor', [Admin\KelompokKknController::class, 'import'])->name('kelompok.import');
-    Route::resource('kelompok', Admin\KelompokKknController::class)
-        ->only(['store', 'update', 'destroy']);
+        // Groups CRUD
+        Route::post('kelompok/impor', [Admin\KelompokKknController::class, 'import'])->name('kelompok.import');
+        Route::resource('kelompok', Admin\KelompokKknController::class)
+            ->only(['store', 'update', 'destroy']);
+    });
 
     Route::get('rekapitulasi', [Admin\RekapitulasiController::class, 'index'])->name('rekapitulasi.index');
 
@@ -221,45 +223,47 @@ Route::middleware(['role:superadmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('pengguna/{user}/reset-password-sementara', [Admin\UserController::class, 'resetTemporaryPassword'])->name('pengguna.reset-password');
 
     // Personel Sync & Assignment
-    Route::get('mahasiswa', [Admin\UserController::class, 'mahasiswaIndex'])->name('mahasiswa.index');
-    Route::get('mahasiswa/sinkron', [Admin\StudentSyncController::class, 'index'])->name('mahasiswa.sinkron');
-    Route::post('mahasiswa/sinkron', [Admin\StudentSyncController::class, 'sync'])->name('mahasiswa.sinkron.store');
-    Route::get('mahasiswa/{mahasiswa}', [Admin\UserController::class, 'mahasiswaShow'])->name('mahasiswa.show');
+    Route::middleware('not_locked')->group(function () {
+        Route::get('mahasiswa', [Admin\UserController::class, 'mahasiswaIndex'])->name('mahasiswa.index');
+        Route::get('mahasiswa/sinkron', [Admin\StudentSyncController::class, 'index'])->name('mahasiswa.sinkron');
+        Route::post('mahasiswa/sinkron', [Admin\StudentSyncController::class, 'sync'])->name('mahasiswa.sinkron.store');
+        Route::get('mahasiswa/{mahasiswa}', [Admin\UserController::class, 'mahasiswaShow'])->name('mahasiswa.show');
 
-    Route::get('dosen', [Admin\UserController::class, 'dosenIndex'])->name('dpl.index');
-    Route::get('dosen/sinkron', [Admin\DplSyncController::class, 'index'])->name('dpl.sinkron');
-    Route::post('dosen/sinkron', [Admin\DplSyncController::class, 'sync'])->name('dpl.sinkron.store');
-    Route::get('dpl/sync', [Admin\DplSyncController::class, 'index'])->name('dpl.sync');
-    Route::get('dosen/pendaftaran-dpl', [Admin\DplRegistrationController::class, 'index'])->name('dpl.pendaftaran');
-    Route::patch('dosen/pendaftaran-dpl/{registration}/setujui', [Admin\DplRegistrationController::class, 'approve'])->name('dpl.pendaftaran.setujui');
-    Route::patch('dosen/pendaftaran-dpl/{registration}/tolak', [Admin\DplRegistrationController::class, 'reject'])->name('dpl.pendaftaran.tolak');
-    Route::post('dosen/pendaftaran-dpl/setujui-massal', [Admin\DplRegistrationController::class, 'bulkApprove'])->name('dpl.pendaftaran.setujui-massal');
-    Route::post('dosen/pendaftaran-dpl/tolak-massal', [Admin\DplRegistrationController::class, 'bulkReject'])->name('dpl.pendaftaran.tolak-massal');
+        Route::get('dosen', [Admin\UserController::class, 'dosenIndex'])->name('dpl.index');
+        Route::get('dosen/sinkron', [Admin\DplSyncController::class, 'index'])->name('dpl.sinkron');
+        Route::post('dosen/sinkron', [Admin\DplSyncController::class, 'sync'])->name('dpl.sinkron.store');
+        Route::get('dpl/sync', [Admin\DplSyncController::class, 'index'])->name('dpl.sync');
+        Route::get('dosen/pendaftaran-dpl', [Admin\DplRegistrationController::class, 'index'])->name('dpl.pendaftaran');
+        Route::patch('dosen/pendaftaran-dpl/{registration}/setujui', [Admin\DplRegistrationController::class, 'approve'])->name('dpl.pendaftaran.setujui');
+        Route::patch('dosen/pendaftaran-dpl/{registration}/tolak', [Admin\DplRegistrationController::class, 'reject'])->name('dpl.pendaftaran.tolak');
+        Route::post('dosen/pendaftaran-dpl/setujui-massal', [Admin\DplRegistrationController::class, 'bulkApprove'])->name('dpl.pendaftaran.setujui-massal');
+        Route::post('dosen/pendaftaran-dpl/tolak-massal', [Admin\DplRegistrationController::class, 'bulkReject'])->name('dpl.pendaftaran.tolak-massal');
 
-    Route::get('dosen/penugasan', [Admin\DplAssignmentController::class, 'index'])->name('dpl.penugasan');
-    Route::redirect('dpl/assignment', 'admin/dosen/penugasan', 301)->name('dpl.assignment');
-    Route::post('dosen/tugaskan-periode', [Admin\DplAssignmentController::class, 'assignToPeriod'])->name('dpl.tugaskan-periode');
-    Route::post('dosen/tugaskan-kelompok/{group}', [Admin\DplAssignmentController::class, 'assignToGroup'])->name('dpl.tugaskan-kelompok');
-    Route::post('dosen/tugaskan-wilayah', [Admin\DplAssignmentController::class, 'assignDistrictCoordinator'])->name('dpl.tugaskan-wilayah');
-    Route::post('dosen/impor', [Admin\DplAssignmentController::class, 'import'])->name('dpl.impor');
-    Route::patch('dosen/lepas-periode/{dplPeriod}', [Admin\DplAssignmentController::class, 'removeDplFromPeriod'])->name('dpl.lepas-periode');
-    Route::patch('dosen/lepas-wilayah/{districtCoordinator}', [Admin\DplAssignmentController::class, 'removeDistrictCoordinator'])->name('dpl.lepas-wilayah');
+        Route::get('dosen/penugasan', [Admin\DplAssignmentController::class, 'index'])->name('dpl.penugasan');
+        Route::redirect('dpl/assignment', 'admin/dosen/penugasan', 301)->name('dpl.assignment');
+        Route::post('dosen/tugaskan-periode', [Admin\DplAssignmentController::class, 'assignToPeriod'])->name('dpl.tugaskan-periode');
+        Route::post('dosen/tugaskan-kelompok/{group}', [Admin\DplAssignmentController::class, 'assignToGroup'])->name('dpl.tugaskan-kelompok');
+        Route::post('dosen/tugaskan-wilayah', [Admin\DplAssignmentController::class, 'assignDistrictCoordinator'])->name('dpl.tugaskan-wilayah');
+        Route::post('dosen/impor', [Admin\DplAssignmentController::class, 'import'])->name('dpl.impor');
+        Route::patch('dosen/lepas-periode/{dplPeriod}', [Admin\DplAssignmentController::class, 'removeDplFromPeriod'])->name('dpl.lepas-periode');
+        Route::patch('dosen/lepas-wilayah/{districtCoordinator}', [Admin\DplAssignmentController::class, 'removeDistrictCoordinator'])->name('dpl.lepas-wilayah');
 
-    // Participant Operations
-    Route::get('peserta/pindah', [Admin\StudentTransferController::class, 'index'])->name('peserta.pindah.index');
-    Route::post('peserta/pindah', [Admin\StudentTransferController::class, 'transfer'])->name('peserta.pindah');
-    Route::post('pendaftaran/setuju-massal', [Admin\PesertaKknController::class, 'bulkApprove'])->name('pendaftaran.setuju-massal');
-    Route::post('pendaftaran/tolak-massal', [Admin\PesertaKknController::class, 'bulkReject'])->name('pendaftaran.tolak-massal');
-    Route::patch('pendaftaran/{pesertaKkn}/setujui', [Admin\PesertaKknController::class, 'approve'])->name('pendaftaran.setujui');
-    Route::patch('pendaftaran/{pesertaKkn}/tolak', [Admin\PesertaKknController::class, 'reject'])->name('pendaftaran.tolak');
-    Route::patch('pendaftaran/{pesertaKkn}/tugaskan-kelompok', [Admin\PesertaKknController::class, 'assignGroup'])->name('pendaftaran.tugaskan-kelompok');
-    Route::post('pendaftaran/{registration}/jadikan-ketua', [Admin\PesertaKknController::class, 'makeLeader'])->name('pendaftaran.jadikan-ketua');
-    Route::post('pendaftaran/{registration}/jadikan-korcam', [Admin\PesertaKknController::class, 'makeKorcam'])->name('pendaftaran.jadikan-korcam');
+        // Participant Operations
+        Route::get('peserta/pindah', [Admin\StudentTransferController::class, 'index'])->name('peserta.pindah.index');
+        Route::post('peserta/pindah', [Admin\StudentTransferController::class, 'transfer'])->name('peserta.pindah');
+        Route::post('pendaftaran/setuju-massal', [Admin\PesertaKknController::class, 'bulkApprove'])->name('pendaftaran.setuju-massal');
+        Route::post('pendaftaran/tolak-massal', [Admin\PesertaKknController::class, 'bulkReject'])->name('pendaftaran.tolak-massal');
+        Route::patch('pendaftaran/{pesertaKkn}/setujui', [Admin\PesertaKknController::class, 'approve'])->name('pendaftaran.setujui');
+        Route::patch('pendaftaran/{pesertaKkn}/tolak', [Admin\PesertaKknController::class, 'reject'])->name('pendaftaran.tolak');
+        Route::patch('pendaftaran/{pesertaKkn}/tugaskan-kelompok', [Admin\PesertaKknController::class, 'assignGroup'])->name('pendaftaran.tugaskan-kelompok');
+        Route::post('pendaftaran/{registration}/jadikan-ketua', [Admin\PesertaKknController::class, 'makeLeader'])->name('pendaftaran.jadikan-ketua');
+        Route::post('pendaftaran/{registration}/jadikan-korcam', [Admin\PesertaKknController::class, 'makeKorcam'])->name('pendaftaran.jadikan-korcam');
 
-    // Groups CRUD
-    Route::post('kelompok/impor', [Admin\KelompokKknController::class, 'import'])->name('kelompok.import');
-    Route::resource('kelompok', Admin\KelompokKknController::class)
-        ->only(['store', 'update', 'destroy']);
+        // Groups CRUD
+        Route::post('kelompok/impor', [Admin\KelompokKknController::class, 'import'])->name('kelompok.import');
+        Route::resource('kelompok', Admin\KelompokKknController::class)
+            ->only(['store', 'update', 'destroy']);
+    });
 
     Route::get('rekapitulasi', [Admin\RekapitulasiController::class, 'index'])->name('rekapitulasi.index');
 

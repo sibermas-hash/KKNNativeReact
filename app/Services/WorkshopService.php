@@ -8,6 +8,7 @@ use App\Models\KKN\KonfigurasiPenilaian;
 use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\Workshop;
 use App\Models\User;
+use App\Services\KKN\KonfigurasiSertifikatService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -294,9 +295,10 @@ class WorkshopService
         $workshop = $participant->workshop;
         $user = $participant->user;
 
-        $configs = DB::table('konfigurasi_sertifikat')
-            ->whereIn('config_key', ['workshop_cert_title', 'workshop_cert_signer_name', 'workshop_cert_signer_nip'])
-            ->pluck('value', 'config_key');
+        // Gunakan service yang support inheritance per-periode
+        $configService = app(KonfigurasiSertifikatService::class);
+        $periodeId = $workshop->periode_id;
+        $configs = $configService->getAllForPeriode($periodeId);
 
         $certificateData = [
             'participant_name' => $user->name,
@@ -373,13 +375,8 @@ class WorkshopService
 
         $query->withCount('peserta');
 
-        // Only filter by period if explicitly set and workshop has periode_id
-        if (Workshop::supportsPeriodAssignment() && $periodId) {
-            $query->where(function ($q) use ($periodId) {
-                $q->where('periode_id', $periodId)
-                    ->orWhereNull('periode_id');
-            });
-        }
+        // periode_id filter sudah ditangani otomatis oleh ScopedByPeriode trait
+        // Untuk admin yang memerlukan context lintas periode, gunakan withoutGlobalScope
 
         if (! $includeAllStatuses) {
             $query->where('status', 'scheduled');

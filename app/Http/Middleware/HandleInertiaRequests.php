@@ -127,6 +127,8 @@ class HandleInertiaRequests extends Middleware
                 'current_phase' => $activePhase,
                 'eligible' => true,
             ],
+            'activePeriod' => fn () => $periodContext->getActivePeriodData(),
+            'availablePeriods' => fn () => $periodContext->getAvailablePeriods(),
         ];
     }
 }

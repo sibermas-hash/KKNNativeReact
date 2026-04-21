@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\Workshop;
+use App\Models\KKN\Periode;
 use App\Services\DplEligibilityService;
 use App\Services\PeriodContextService;
 use App\Services\WorkshopService;
@@ -37,13 +38,13 @@ class WorkshopController extends Controller
             abort(403, 'Akses ditolak. Workshop hanya diperuntukkan bagi DPL.');
         }
 
-        $activePeriodId = $periodContextService->getActivePeriodId() ?? $periodContextService->getDefaultPeriodId();
+        $activePeriodId = $request->input('period_id') ?? ($periodContextService->getActivePeriodId() ?? $periodContextService->getDefaultPeriodId());
 
         $workshops = $this->workshopService->getUpcomingWorkshops(
             $user->hasRole('dpl') ? $user->id : null,
             $user->hasAnyRole(['superadmin', 'admin']),
             $user->hasAnyRole(['superadmin', 'admin']),
-            $activePeriodId
+            (int) $activePeriodId
         );
 
         // PRD FR-01: Eligibility for Lecturers
@@ -57,17 +58,22 @@ class WorkshopController extends Controller
 
         return Inertia::render('Admin/Workshops/Index', [
             'workshops' => $workshops,
+            'periods' => Periode::orderByDesc('is_active')->orderByDesc('periode')->get(['id', 'name', 'periode']),
+            'filters' => [
+                'period_id' => $activePeriodId,
+            ],
         ]);
     }
 
     /**
      * Store new workshop (Admin)
      */
-    public function store(Request $request)
+    public function store(Request $request, PeriodContextService $periodContextService)
     {
         abort_unless($request->user()->hasAnyRole(['superadmin', 'admin']), 403, 'Hanya superadmin dan admin yang dapat membuat pembekalan.');
 
         $validated = $request->validate([
+            'periode_id' => 'required|exists:periode,id',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'workshop_date' => 'required|date',
@@ -78,17 +84,26 @@ class WorkshopController extends Controller
             'max_participants' => 'nullable|integer|min:1',
         ]);
 
+        $periode = Periode::findOrFail($validated['periode_id']);
+        if ($periode->is_locked) {
+            return back()->with('error', 'Periode '.$periode->name.' sedang dikunci. Tidak dapat menambah agenda baru.');
+        }
+
         $this->workshopService->createWorkshop($validated);
 
-        return back()->with('success', 'Pembekalan berhasil dibuat.');
+        return back()->with('success', 'Pembekalan berhasil dibuat untuk periode '.$periode->name.'.');
     }
 
     /**
      * Update workshop details (Admin)
      */
-    public function update(Request $request, Workshop $workshop)
+    public function update(Request $request, Workshop $workshop, PeriodContextService $periodContextService)
     {
         abort_unless($request->user()->hasAnyRole(['superadmin', 'admin']), 403, 'Hanya superadmin dan admin yang dapat mengubah pembekalan.');
+
+        if ($periodContextService->getActivePeriod()?->is_locked) {
+            return back()->with('error', 'Periode sedang dikunci. Tidak dapat mengubah agenda.');
+        }
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',

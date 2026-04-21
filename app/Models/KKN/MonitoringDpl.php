@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models\KKN;
 
+use App\Traits\ScopedByPeriode;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MonitoringDpl extends Model
 {
+    use HasFactory, ScopedByPeriode;
+
     protected $table = 'monitoring_dpl';
 
     protected $fillable = [
@@ -22,6 +25,8 @@ class MonitoringDpl extends Model
         'catatan_tambahan',
     ];
 
+    protected $casts = ['tanggal_kunjungan' => 'date'];
+
     /**
      * Get count of monitorings for a group in a period.
      */
@@ -29,10 +34,6 @@ class MonitoringDpl extends Model
     {
         return self::where('kelompok_id', $groupId)->count();
     }
-
-    protected $casts = ['tanggal_kunjungan' => 'date'];
-
-    use HasFactory;
 
     public function dpl(): BelongsTo
     {

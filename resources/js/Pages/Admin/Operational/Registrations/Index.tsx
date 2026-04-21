@@ -34,7 +34,7 @@ interface Registration {
     faculty?: { name: string }; 
     program?: { name: string }; 
   };
-  period: { name: string; id: number | null };
+  period: { name: string; id: number | null; jenis?: string | null; program_type?: string | null; };
   group?: { name: string };
   documents?: {
     health_cert: boolean;
@@ -51,16 +51,6 @@ interface Props {
   stats?: { total: number; pending: number; approved: number; rejected: number; };
   periods?: Array<{ id: number; name: string }>;
   app?: { storage_disk: string };
-}
-
-function formatDateTime(value: string | null | undefined): string {
-  if (!value) return '—';
-  try { 
-    const d = new Date(value); 
-    if (isNaN(d.getTime())) return '—'; 
-    return new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(d); 
-  }
-  catch { return '—'; }
 }
 
 const DocIcon = ({ active, label, icon: Icon }: { active?: boolean; label: string; icon: any }) => (
@@ -80,7 +70,7 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
   const [status, setStatus] = useState(filters.status ?? '');
   const [periodId, setPeriodId] = useState(filters.period_id ?? '');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [showFilters, setShowFilters] = useState(true); // Always show in two-column layout
+  const [isFiltering, setIsFiltering] = useState(false);
 
   useEffect(() => { 
     setSearch(filters.search ?? ''); 
@@ -90,17 +80,31 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
 
   const allIds = useMemo(() => registrations?.data?.map(r => r.id) ?? [], [registrations?.data]);
 
-  const applyFilters = () => router.get('/admin/pendaftaran', { 
-    search: search || undefined, 
-    status: status || undefined, 
-    period_id: periodId || undefined 
-  }, { preserveState: true, preserveScroll: true, replace: true });
+  const applyFilters = () => {
+    setIsFiltering(true);
+    router.get('/admin/pendaftaran', { 
+      search: search || undefined, 
+      status: status || undefined, 
+      period_id: periodId || undefined 
+    }, { 
+      preserveState: true, 
+      preserveScroll: true, 
+      replace: true,
+      onFinish: () => setIsFiltering(false)
+    });
+  };
 
   const resetFilters = () => { 
+    setIsFiltering(true);
     setSearch(''); 
     setStatus(''); 
     setPeriodId(''); 
-    router.get('/admin/pendaftaran', {}, { preserveState: true, preserveScroll: true, replace: true }); 
+    router.get('/admin/pendaftaran', {}, { 
+      preserveState: true, 
+      preserveScroll: true, 
+      replace: true,
+      onFinish: () => setIsFiltering(false)
+    }); 
   };
 
   const handleBulkApprove = () => { 
@@ -132,18 +136,13 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
     <AppLayout title="Validasi Pendaftaran KKN">
       <Head title="Manajemen Pendaftaran" />
 
-      <div className="max-w-7xl mx-auto space-y-8 pb-24 font-sans">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pb-24 font-sans">
         
         <PageHeader 
           title="Validasi Pendaftaran."
           subtitle="Verifikasi berkas, validasi persyaratan, dan manajemen entri peserta KKN secara terpusat."
           icon={ClipboardList}
           groupLabel="Gerbang Masuk Operasional"
-          stats={{
-            label: 'Total Pendaftar',
-            value: `${(stats?.total ?? 0).toLocaleString()}`,
-            icon: Database
-          }}
         >
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center bg-white border border-emerald-100 rounded-xl px-4 py-2 mr-2">
@@ -167,209 +166,228 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
           </div>
         </PageHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* --- LEFT COLUMN (1/3): Stats & Filters --- */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Stats Summary Panel */}
-            <ContentPanel title="Statistik Entri" icon={Activity} padding={true}>
-              <div className="space-y-4">
-                <StatCard label="Total Masuk" value={stats?.total ?? 0} icon={Database} variant="gray" className="w-full" />
-                <StatCard label="Antrian Verifikasi" value={stats?.pending ?? 0} icon={Clock} variant={stats?.pending && stats.pending > 0 ? 'warning' : 'success'} className="w-full" />
-                <StatCard label="Terverifikasi" value={stats?.approved ?? 0} icon={ShieldCheck} variant="success" className="w-full" />
-                <StatCard label="Dibatalkan/Tolak" value={stats?.rejected ?? 0} icon={XCircle} variant="danger" className="w-full" />
+        {/* --- STATS GRID --- */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard label="Total Masuk" value={stats?.total ?? 0} icon={Database} variant="gray" />
+          <StatCard label="Menunggu" value={stats?.pending ?? 0} icon={Clock} variant={stats?.pending && stats.pending > 0 ? 'warning' : 'success'} />
+          <StatCard label="Disetujui" value={stats?.approved ?? 0} icon={ShieldCheck} variant="success" />
+          <StatCard label="Ditolak" value={stats?.rejected ?? 0} icon={XCircle} variant="danger" />
+        </div>
+
+        {/* --- FILTER SECTION (NOW HORIZONTAL AT TOP) --- */}
+        <ContentPanel title="Filter Validasi" icon={Filter} padding={true}>
+          <div className="flex flex-col lg:flex-row items-end gap-6">
+            <div className="flex-1 w-full space-y-1.5">
+              <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Periode KKN</label>
+              <div className="relative group">
+                <select value={periodId} onChange={e => setPeriodId(e.target.value)} className="w-full h-12 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none">
+                  <option value="">SEMUA PERIODE</option>
+                  {periods?.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>)}
+                </select>
+                <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform"/>
               </div>
-            </ContentPanel>
+            </div>
 
-            {/* Filter Panel */}
-            <ContentPanel title="Filter Validasi" icon={Filter} padding={true}>
-              <div className="space-y-5">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-emerald-950 uppercase tracking-widest pl-1">Periode KKN</label>
-                  <div className="relative group">
-                    <select value={periodId} onChange={e => setPeriodId(e.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none">
-                      <option value="">SEMUA PERIODE</option>
-                      {periods?.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>)}
-                    </select>
-                    <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform"/>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-emerald-950 uppercase tracking-widest pl-1">Status Verifikasi</label>
-                  <div className="relative group">
-                    <select value={status} onChange={e => setStatus(e.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none">
-                      <option value="">SEMUA STATUS</option>
-                      <option value="pending">MENUNGGU VERIFIKASI</option>
-                      <option value="approved">TELAH DISETUJUI</option>
-                      <option value="rejected">DITOLAK SISTEM</option>
-                    </select>
-                    <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform"/>
-                  </div>
-                </div>
-
-                <div className="pt-2 flex flex-col gap-3">
-                  <button onClick={applyFilters} className="w-full h-11 bg-emerald-900 hover:bg-emerald-950 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-emerald-900/10 active:scale-95 transition-all">Terapkan Filter</button>
-                  <button onClick={resetFilters} className="text-xs font-bold text-emerald-600 hover:text-rose-600 uppercase tracking-widest transition-colors py-2">Reset Semua Filter</button>
-                </div>
+            <div className="flex-1 w-full space-y-1.5">
+              <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Status Verifikasi</label>
+              <div className="relative group">
+                <select value={status} onChange={e => setStatus(e.target.value)} className="w-full h-12 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none">
+                  <option value="">SEMUA STATUS</option>
+                  <option value="pending">MENUNGGU VERIFIKASI</option>
+                  <option value="approved">TELAH DISETUJUI</option>
+                  <option value="rejected">DITOLAK SISTEM</option>
+                </select>
+                <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform"/>
               </div>
-            </ContentPanel>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={applyFilters} 
+                disabled={isFiltering}
+                className="h-12 px-8 bg-emerald-900 hover:bg-emerald-950 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-emerald-900/10 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-70"
+              >
+                {isFiltering ? <RefreshCw size={14} className="animate-spin" /> : <Filter size={14} />}
+                Terapkan Filter
+              </button>
+              <button 
+                onClick={resetFilters} 
+                disabled={isFiltering}
+                className="h-12 px-6 text-emerald-600 hover:text-rose-600 border border-emerald-100 hover:border-rose-100 rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 disabled:opacity-70"
+              >
+                {isFiltering ? <RefreshCw size={14} className="animate-spin" /> : <X size={14} />}
+                Reset
+              </button>
+            </div>
           </div>
+        </ContentPanel>
 
-          {/* --- RIGHT COLUMN (2/3): Data List --- */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Bulk Action Bar - Only shows when selections exist */}
-            {selectedIds.length > 0 && (
-              <div className="bg-emerald-950 rounded-xl p-5 flex items-center justify-between gap-6 border border-emerald-800 shadow-xl animate-in fade-in slide-in-from-right-4 duration-300">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 bg-emerald-500/20 border border-emerald-400/30 rounded-xl flex items-center justify-center text-emerald-400">
-                    <Zap size={20} strokeWidth={2.5} className="animate-pulse" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-black text-white uppercase tracking-wider tabular-nums">{selectedIds.length} Terpilih</span>
-                    <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Aksi Massal</span>
-                  </div>
+        {/* --- MAIN CONTENT: Data List --- */}
+        <div className="space-y-6">
+          {/* Bulk Action Bar */}
+          {selectedIds.length > 0 && (
+            <div className="bg-emerald-950 rounded-2xl p-4 flex items-center justify-between gap-6 border border-emerald-800 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="flex items-center gap-4 pl-2">
+                <div className="h-10 w-10 bg-emerald-500/20 border border-emerald-400/30 rounded-xl flex items-center justify-center text-emerald-400">
+                  <Zap size={20} strokeWidth={2.5} className="animate-pulse" />
                 </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={handleBulkApprove} className="h-9 px-4 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all active:scale-95 flex items-center gap-2">
-                    <CheckCheck size={14} /> Setujui
-                  </button>
-                  <button onClick={handleBulkReject} className="h-9 px-4 bg-rose-600 hover:bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all active:scale-95 flex items-center gap-2">
-                    <FileX size={14} /> Tolak
-                  </button>
-                  <button onClick={() => setSelectedIds([])} className="h-9 w-9 bg-white/10 text-white hover:bg-white/20 rounded-lg transition-all flex items-center justify-center active:scale-95"><X size={16} /></button>
+                <div className="flex flex-col">
+                  <span className="text-sm font-black text-white tabular-nums">{selectedIds.length} Data Terpilih</span>
+                  <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Aksi Massal Tersedia</span>
                 </div>
               </div>
-            )}
+              <div className="flex items-center gap-2">
+                <button onClick={handleBulkApprove} className="h-10 px-5 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 flex items-center gap-2">
+                  <CheckCheck size={14} /> Setujui Semua
+                </button>
+                <button onClick={handleBulkReject} className="h-10 px-5 bg-rose-600 hover:bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 flex items-center gap-2">
+                  <FileX size={14} /> Tolak Semua
+                </button>
+                <div className="w-px h-8 bg-white/10 mx-1" />
+                <button onClick={() => setSelectedIds([])} className="h-10 px-3 text-white/60 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-all">Batal</button>
+              </div>
+            </div>
+          )}
 
-            <ContentPanel
-              title="Log Validasi Masuk"
-              description="Daftar antrian dan riwayat registrasi mahasiswa."
-              icon={ClipboardList}
-              padding={false}
-              headerAction={
-                <SearchInput 
+          <ContentPanel
+            title="Log Validasi Masuk"
+            description="Daftar antrian dan riwayat registrasi mahasiswa."
+            icon={ClipboardList}
+            padding={false}
+            headerAction={
+              <div className="flex items-center gap-3">
+                 <SearchInput 
                   placeholder="CARI NAMA ATAU NIM..."
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   onSearch={applyFilters}
-                  className="w-64"
+                  className="w-80"
                 />
-              }
-              footer={
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-emerald-950/40 uppercase tracking-widest tabular-nums">
-                    Halaman {registrations?.meta?.current_page || 1} dari {registrations?.meta?.last_page || 1}
+              </div>
+            }
+            footer={
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[10px] font-black text-emerald-950/40 uppercase tracking-widest tabular-nums">
+                    Menampilkan {registrations?.data?.length || 0} entri • Halaman {registrations?.meta?.current_page || 1} dari {registrations?.meta?.last_page || 1}
                   </span>
-                  {registrations?.meta && <Pagination meta={registrations.meta} />}
                 </div>
-              }
+                {registrations?.meta && <Pagination meta={registrations.meta} />}
+              </div>
+            }
+          >
+            <PremiumTable
+              headers={[
+                 <div key="select-all" className="flex items-center justify-center w-full">
+                   <input 
+                     type="checkbox" 
+                     checked={allIds.length > 0 && selectedIds.length === allIds.length} 
+                     ref={input => { if(input) input.indeterminate = selectedIds.length > 0 && selectedIds.length < allIds.length; }}
+                     onChange={toggleSelectAll} 
+                     className="h-4 w-4 rounded text-emerald-600 border-gray-300 focus:ring-emerald-500 transition-all cursor-pointer"
+                   />
+                 </div>, 
+                 'Identitas Mahasiswa', 'Unit Akademik', 'Dokumen', 'Riwayat Entri', 'Status', 'Opsi'
+              ]}
+              isEmpty={!registrations?.data?.length}
+              emptyText="Tidak ada pendaftaran yang ditemukan."
             >
-              <PremiumTable
-                headers={[
-                   <div key="select-all" className="flex items-center justify-center w-full">
-                     <input 
-                       type="checkbox" 
-                       checked={allIds.length > 0 && selectedIds.length === allIds.length} 
-                       ref={input => { if(input) input.indeterminate = selectedIds.length > 0 && selectedIds.length < allIds.length; }}
-                       onChange={toggleSelectAll} 
-                       className="h-4 w-4 rounded text-emerald-600 border-gray-300 focus:ring-emerald-500 transition-all cursor-pointer"
-                     />
-                   </div>, 
-                   'Identitas & Syarat', 'Akademik', 'Berkas', 'Audit Registrasi', 'Status', 'Aksi'
-                ]}
-                isEmpty={!registrations?.data?.length}
-                emptyText="Tidak ada pendaftaran yang ditemukan."
-              >
-                {registrations?.data?.map(r => (
-                  <PremiumTableRow key={r.id} className={clsx(selectedIds.includes(r.id) && "bg-emerald-50/30")}>
-                    <PremiumTableCell align="center" className="w-10">
-                      <input type="checkbox" checked={selectedIds.includes(r.id)} onChange={() => toggleSelect(r.id)} className="h-4 w-4 rounded text-emerald-600 border-gray-300 focus:ring-emerald-500 transition-all cursor-pointer"/>
-                    </PremiumTableCell>
-                    <PremiumTableCell>
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex flex-col">
-                          <span className="text-xs font-bold text-emerald-950 uppercase leading-tight">{r.student.name}</span>
-                          <span className="text-[10px] font-bold text-emerald-600/70 font-mono tracking-tight">{r.student.nim}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          {r.student.is_bta_ppi_passed ? (
-                            <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[9px] font-black border border-emerald-200">BTA/PPI: LULUS</span>
-                          ) : (
-                            <span className="px-1.5 py-0.5 bg-rose-100 text-rose-700 rounded text-[9px] font-black border border-rose-200 animate-pulse">BTA/PPI: TIDAK LOLOS</span>
-                          )}
-                          {!r.is_eligible && (
-                            <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-[9px] font-black border border-amber-200" title={r.eligibility_issues?.join(', ')}>ISSUE AKADEMIK</span>
-                          )}
-                        </div>
-                      </div>
-                    </PremiumTableCell>
-                    <PremiumTableCell>
+              {registrations?.data?.map(r => (
+                <PremiumTableRow key={r.id} className={clsx(selectedIds.includes(r.id) && "bg-emerald-50/50")}>
+                  <PremiumTableCell align="center" className="w-10">
+                    <input type="checkbox" checked={selectedIds.includes(r.id)} onChange={() => toggleSelect(r.id)} className="h-4 w-4 rounded text-emerald-600 border-gray-300 focus:ring-emerald-500 transition-all cursor-pointer"/>
+                  </PremiumTableCell>
+                  <PremiumTableCell>
+                    <div className="flex flex-col gap-2 py-1">
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-bold text-emerald-900 uppercase truncate max-w-[120px]">{r.student.program?.name || 'UMUM'}</span>
-                         <span className="text-[9px] font-medium text-emerald-600 uppercase tracking-wider">{r.student.faculty?.name || 'UIN SAIZU'}</span>
+                        <span className="text-[13px] font-black text-emerald-950 uppercase leading-tight tracking-tight">{r.student.name}</span>
+                        <span className="text-[10px] font-bold text-emerald-600 font-mono tracking-wider">{r.student.nim}</span>
                       </div>
-                    </PremiumTableCell>
-                    <PremiumTableCell>
-                      <div className="flex items-center gap-1.5 bg-gray-50/50 p-1.5 rounded-lg border border-gray-100 w-fit">
-                        <DocIcon active={r.documents?.health_cert} label="Sehat" icon={Stethoscope} />
-                        <DocIcon active={r.documents?.parent_permit} label="Izin" icon={UserPlus} />
-                        <DocIcon active={r.documents?.krs} label="KRS" icon={FileCheck} />
-                        <DocIcon active={r.documents?.pembayaran} label="UKT" icon={CreditCard} />
-                        <div className="w-px h-3 bg-gray-200 mx-0.5" />
-                        <DocIcon active={r.documents?.asuransi} label="Asuransi" icon={ShieldPlus} />
+                      <div className="flex flex-wrap gap-1.5">
+                        {r.student.is_bta_ppi_passed ? (
+                          <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md text-[9px] font-black border border-emerald-100 uppercase">BTA/PPI OK</span>
+                        ) : (
+                          <span className="px-2 py-0.5 bg-rose-50 text-rose-700 rounded-md text-[9px] font-black border border-rose-100 uppercase animate-pulse">BTA/PPI FAIL</span>
+                        )}
+                        {!r.is_eligible && (
+                          <span className="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-md text-[9px] font-black border border-amber-100 uppercase" title={r.eligibility_issues?.join(', ')}>ISSUE</span>
+                        )}
                       </div>
-                    </PremiumTableCell>
-                    <PremiumTableCell>
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-1.5 text-emerald-950">
-                          <Clock size={10} className="text-emerald-600" />
-                          <span className="text-[10px] font-bold tabular-nums">
-                            {new Date(r.registration_date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                    </div>
+                  </PremiumTableCell>
+                  <PremiumTableCell>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10px] font-black text-emerald-900 uppercase truncate max-w-[150px]">{r.student.program?.name || 'UMUM'}</span>
+                       <span className="text-[9px] font-bold text-emerald-600/60 uppercase tracking-widest">{r.student.faculty?.name || 'UIN SAIZU'}</span>
+                    </div>
+                  </PremiumTableCell>
+                  <PremiumTableCell>
+                    <div className="flex items-center gap-1 bg-white p-1.5 rounded-xl border border-gray-100 w-fit shadow-sm">
+                      <DocIcon active={r.documents?.health_cert} label="Sehat" icon={Stethoscope} />
+                      <DocIcon active={r.documents?.parent_permit} label="Izin" icon={UserPlus} />
+                      <DocIcon active={r.documents?.krs} label="KRS" icon={FileCheck} />
+                      <DocIcon active={r.documents?.pembayaran} label="UKT" icon={CreditCard} />
+                      <div className="w-px h-3 bg-gray-200 mx-1" />
+                      <DocIcon active={r.documents?.asuransi} label="Asuransi" icon={ShieldPlus} />
+                    </div>
+                  </PremiumTableCell>
+                  <PremiumTableCell>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2 text-emerald-950">
+                        <div className="p-1 bg-emerald-50 rounded-md">
+                          <Clock size={12} className="text-emerald-600 shrink-0" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-black tabular-nums leading-none">
+                            {new Date(r.registration_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
                           </span>
-                          <span className="text-[10px] font-black bg-gray-100 px-1 rounded text-gray-600">
+                          <span className="text-[9px] font-bold text-emerald-600/60 tabular-nums">
                             {new Date(r.registration_date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1 text-[9px] font-bold text-emerald-800/60 uppercase">
-                          <UserPlus size={10} /> 
-                          <span>Pendaftar: </span>
-                          <span className={clsx("px-1 rounded", r.is_system_imported ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-700")}>
-                            {r.is_system_imported ? 'RESTORE SYSTEM' : 'MAHASISWA (Self)'}
-                          </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[9px] font-black text-emerald-800/40 uppercase tracking-tighter">
+                        <span className={clsx("px-1.5 py-0.5 rounded border", r.is_system_imported ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-emerald-50 text-emerald-600 border-emerald-100")}>
+                          {r.is_system_imported ? 'RESTORED' : 'SELF-REG'}
+                        </span>
+                        <span className="truncate max-w-[80px]" title={r.period.name}>{r.period.jenis || 'Reguler'}</span>
+                      </div>
+                    </div>
+                  </PremiumTableCell>
+                  <PremiumTableCell>
+                    <div className="flex flex-col gap-1.5">
+                      <StatusTag status={r.status} />
+                      {r.group && (
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 bg-gray-50 rounded border border-gray-100 w-fit">
+                          <Users size={10} className="text-gray-400" />
+                          <span className="text-[9px] font-black text-gray-500 uppercase tracking-tighter truncate max-w-[100px]">{r.group.name}</span>
                         </div>
-                      </div>
-                    </PremiumTableCell>
-                    <PremiumTableCell>
-                      <div className="flex flex-col gap-1">
-                        <StatusTag status={r.status} />
-                        {r.group && (
-                          <span className="text-[9px] font-bold text-emerald-900/60 uppercase tracking-tighter truncate max-w-[80px]">{r.group.name}</span>
-                        )}
-                      </div>
-                    </PremiumTableCell>
-                    <PremiumTableCell align="right">
-                       <Link href={`/admin/pendaftaran/${r.id}`} className="h-8 px-3 bg-white text-emerald-950 hover:bg-emerald-900 hover:text-white border border-gray-200 rounded-lg flex items-center justify-center gap-2 text-[10px] font-black transition-all active:scale-95 uppercase tracking-widest shadow-sm">
-                        Audit <ArrowRight size={12} strokeWidth={3} className="text-emerald-600" />
-                      </Link>
-                    </PremiumTableCell>
-                  </PremiumTableRow>
-                ))}
-              </PremiumTable>
-            </ContentPanel>
-          </div>
+                      )}
+                    </div>
+                  </PremiumTableCell>
+                  <PremiumTableCell align="right">
+                     <Link href={`/admin/pendaftaran/${r.id}`} className="h-9 px-4 bg-emerald-900 text-white hover:bg-emerald-800 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black transition-all active:scale-95 uppercase tracking-widest shadow-md">
+                      Audit <ArrowRight size={14} strokeWidth={3} className="text-emerald-400" />
+                    </Link>
+                  </PremiumTableCell>
+                </PremiumTableRow>
+              ))}
+            </PremiumTable>
+          </ContentPanel>
         </div>
 
         {/* --- GOVERNANCE FOOTER --- */}
-        <div className="bg-emerald-950 rounded-xl p-8 text-white relative overflow-hidden shadow-2xl border-b-4 border-emerald-900">
-          <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12 -mr-16 -mt-16 pointer-events-none"><ShieldCheck size={250} /></div>
-          <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
-            <div className="h-16 w-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 border border-white/10 shadow-inner shrink-0 backdrop-blur-sm">
-              <Activity size={32} strokeWidth={2.5} />
+        <div className="bg-emerald-950 rounded-3xl p-10 text-white relative overflow-hidden shadow-2xl border-b-[6px] border-emerald-900">
+          <div className="absolute top-0 right-0 p-8 opacity-5 rotate-12 -mr-16 -mt-16 pointer-events-none"><ShieldCheck size={320} /></div>
+          <div className="flex flex-col md:flex-row items-center gap-10 relative z-10">
+            <div className="h-20 w-20 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 border border-white/10 shadow-inner shrink-0 backdrop-blur-sm">
+              <Activity size={40} strokeWidth={2.5} />
             </div>
-            <div className="space-y-2 text-center md:text-left">
-              <h2 className="text-xl font-black uppercase tracking-tight">Otoritas Validasi Registrasi KKN</h2>
-              <p className="text-[11px] font-medium text-emerald-400/60 uppercase tracking-widest leading-relaxed max-w-3xl">
-                Proses audit menentukan kelayakan akademik mahasiswa. Harap verifikasi berkas secara teliti sesuai parameter KKN 2026/2027. Kesalahan validasi berdampak pada integritas data penempatan kelompok secara massal.
+            <div className="space-y-3 text-center md:text-left">
+              <h2 className="text-2xl font-black uppercase tracking-tight">Protokol Audit Registrasi KKN</h2>
+              <p className="text-xs font-medium text-emerald-400/60 uppercase tracking-widest leading-relaxed max-w-4xl">
+                Setiap entri yang masuk telah melewati validasi awal sistem. Sebagai administrator, tugas Anda adalah memastikan integritas dokumen fisik dan persyaratan khusus. Kesalahan dalam validasi akan berdampak langsung pada proses plotting kelompok dan beban kerja DPL.
               </p>
             </div>
           </div>

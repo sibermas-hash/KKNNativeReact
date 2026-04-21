@@ -162,6 +162,8 @@ class PeriodContextService
             'name' => $period->name,
             'academic_year' => $period->tahunAkademik?->year ?? null,
             'is_active' => $period->is_active,
+            'is_locked' => (bool) $period->is_locked,
+            'locked_at' => $period->locked_at?->toIso8601String(),
             'current_phase' => $period->current_phase ?? 'upcoming',
         ];
     }

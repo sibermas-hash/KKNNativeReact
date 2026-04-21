@@ -6,6 +6,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\KonfigurasiSertifikat;
+use App\Services\KKN\KonfigurasiSertifikatService;
+use App\Services\PeriodContextService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -14,42 +16,73 @@ use Inertia\Response;
 
 class CertificateConfigController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request, KonfigurasiSertifikatService $service): Response
     {
         Gate::authorize('manage-settings');
-        $configs = KonfigurasiSertifikat::orderBy('id')->get();
+
+        $periodId = app(PeriodContextService::class)->getActivePeriodId();
+
+        // Dapatkan kombinasi config (periode + global fallback)
+        $configs = $service->getAllForPeriode($periodId);
+
+        // Ubah array key-value kembali ke format array objek untuk frontend
+        $formattedConfigs = collect($configs)->map(function ($value, $key) {
+            $baseConfig = KonfigurasiSertifikat::global()->where('config_key', $key)->first();
+
+            return [
+                'id' => $baseConfig ? $baseConfig->id : null, // ID global untuk reference update
+                'config_key' => $key,
+                'label' => $baseConfig ? $baseConfig->label : ucwords(str_replace('_', ' ', $key)),
+                'value' => $value,
+                'type' => $baseConfig ? $baseConfig->type : 'text',
+            ];
+        })->values();
 
         return Inertia::render('Admin/System/Settings/Certificate', [
-            'configs' => $configs,
+            'configs' => $formattedConfigs,
+            'isPeriodLocked' => app(PeriodContextService::class)->getActivePeriod()?->is_locked ?? false,
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(Request $request, KonfigurasiSertifikatService $service): RedirectResponse
     {
         Gate::authorize('manage-settings');
 
-        // Laravel handles multipart/form-data for POST requests.
-        // If we use PATCH, we'd need to spoof it, but here we'll just handle the request data.
+        $periodId = app(PeriodContextService::class)->getActivePeriodId();
+
+        if (! $periodId) {
+            return redirect()->back()->with('error', 'Silakan pilih periode aktif terlebih dahulu.');
+        }
+
+        if (app(PeriodContextService::class)->getActivePeriod()?->is_locked) {
+            return redirect()->back()->with('error', 'Kamar periode sedang dikunci. Perubahan konfigurasi diblokir.');
+        }
+
         $configs = $request->input('configs', []);
         $files = $request->file('configs', []);
 
         foreach ($configs as $index => $configData) {
-            $id = $configData['id'];
-            $value = $configData['value'];
+            // Kita butuh config_key, frontend saat ini mengirim 'id'.
+            // Mari cari config_key dari global master berdasarkan ID tersebut.
+            $masterConfig = KonfigurasiSertifikat::global()->find($configData['id']);
+            if (! $masterConfig) {
+                continue;
+            }
 
-            // Check if there is an uploaded file for this config index
+            $key = $masterConfig->config_key;
+            $value = $configData['value'] ?? null;
+
             if (isset($files[$index]['value'])) {
                 $file = $files[$index]['value'];
-                // Store the file in public/certificates/assets
-                $path = $file->store('certificates/assets', 'public');
+                $path = $file->store('certificates/assets/'.$periodId, 'public');
                 $value = $path;
             }
 
-            KonfigurasiSertifikat::where('id', $id)->update([
-                'value' => $value,
-            ]);
+            if ($value !== null) {
+                $service->setForPeriode($periodId, $key, $value);
+            }
         }
 
-        return redirect()->back()->with('success', 'Konfigurasi sertifikat berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Konfigurasi sertifikat untuk periode aktif berhasil diperbarui.');
     }
 }

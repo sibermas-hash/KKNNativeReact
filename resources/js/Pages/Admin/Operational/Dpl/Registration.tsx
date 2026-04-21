@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Head, router, usePage } from '@inertiajs/react';
-import { ClipboardList, UserCheck, Clock, XCircle, CheckCircle2, Users, AlertTriangle, Calendar } from 'lucide-react';
+import { ClipboardList, UserCheck, Clock, XCircle, CheckCircle2, Users, AlertTriangle, Calendar, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageHeader from '@/Components/Premium/PageHeader';
 import StatCard from '@/Components/Premium/StatCard';
@@ -163,7 +163,7 @@ export default function DplRegistration({ registrations, pagination, stats, filt
           icon={ClipboardList}
           padding={false}
           headerAction={
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <div className="flex bg-gray-100 rounded-lg p-0.5">
                 {statusTabs.map((t) => (
                   <button key={t.key} onClick={() => handleStatusFilter(t.key)} className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all uppercase tracking-wider ${statusFilter === t.key ? 'bg-white text-emerald-950 shadow-sm' : 'text-emerald-800 hover:text-emerald-950'}`}>
@@ -171,6 +171,19 @@ export default function DplRegistration({ registrations, pagination, stats, filt
                   </button>
                 ))}
               </div>
+
+              <div className="relative group min-w-[200px]">
+                <select 
+                  value={selectedPeriodId} 
+                  onChange={(e) => handlePeriodChange(e.target.value)}
+                  className="w-full h-10 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none"
+                >
+                  <option value="">SEMUA PERIODE</option>
+                  {periods.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>)}
+                </select>
+                <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform"/>
+              </div>
+
               <SearchInput placeholder="Cari nama atau NIP..." value={search} onChange={(e) => setSearch(e.target.value)} onSearch={handleSearch} className="w-64" />
             </div>
           }

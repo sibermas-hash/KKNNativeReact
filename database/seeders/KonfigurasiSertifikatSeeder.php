@@ -48,9 +48,28 @@ class KonfigurasiSertifikatSeeder extends Seeder
             ],
             [
                 'config_key' => 'cert_background',
-                'label' => 'Background Sertifikat',
+                'label' => 'Background Sertifikat KKN',
                 'value' => null,
                 'type' => 'image',
+            ],
+            // Workshop Certificate Configurations
+            [
+                'config_key' => 'workshop_cert_title',
+                'label' => 'Judul Sertifikat Workshop',
+                'value' => 'SERTIFIKAT PEMBEKALAN',
+                'type' => 'text',
+            ],
+            [
+                'config_key' => 'workshop_cert_signer_name',
+                'label' => 'Nama Penandatangan Workshop',
+                'value' => 'Dr. H. Ansori, M.Ag.',
+                'type' => 'text',
+            ],
+            [
+                'config_key' => 'workshop_cert_signer_nip',
+                'label' => 'NIP Penandatangan Workshop',
+                'value' => '197004121996031002',
+                'type' => 'text',
             ],
         ];
 

@@ -67,6 +67,12 @@ function resolvePaginationMeta(payload: PaginationPayload<unknown>): PaginationM
 export default function AcademicYearsIndex({ academicYears, filters }: Props) {
   const [search, setSearch] = useState(filters.search ?? '');
 
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 6 }, (_, i) => {
+    const startYear = currentYear - 1 + i;
+    return `${startYear}/${startYear + 1}`;
+  });
+
   const form = useForm({
     year: '',
     is_active: false,
@@ -140,17 +146,22 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
             >
               <form onSubmit={submit} className="space-y-6">
                 <div className="space-y-1.5">
-                  <label htmlFor="academic-year" className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
+                  <label htmlFor="academic-year" className="text-xs font-bold text-emerald-950 uppercase tracking-wider pl-1">
                     Tahun Akademik
                   </label>
-                  <input
+                  <select
                     id="academic-year"
-                    type="text"
-                    placeholder="Contoh: 2026/2027"
                     value={form.data.year}
                     onChange={(event) => form.setData('year', event.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all"
-                  />
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-emerald-950 focus:border-emerald-600 outline-none transition-all bg-white"
+                  >
+                    <option value="" disabled>Pilih Tahun Akademik</option>
+                    {yearOptions.map((yearOption) => (
+                      <option key={yearOption} value={yearOption}>
+                        {yearOption}
+                      </option>
+                    ))}
+                  </select>
                   {form.errors.year && (
                     <p className="text-[10px] font-bold text-rose-600 mt-1 uppercase tracking-tight">{form.errors.year}</p>
                   )}
@@ -167,17 +178,17 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                     />
                   </div>
                   <div className="flex flex-col">
-                    <label htmlFor="is_active" className="text-xs font-black text-emerald-950 cursor-pointer uppercase tracking-tight">
+                    <label htmlFor="is_active" className="text-sm font-bold text-emerald-950 cursor-pointer uppercase tracking-wider">
                       Jadikan Aktif
                     </label>
-                    <p className="text-[10px] font-bold text-emerald-800/60 mt-0.5 uppercase tracking-tighter">Otomatis diatur sebagai tahun ajaran berjalan.</p>
+                    <p className="text-xs font-medium text-emerald-800 mt-0.5">Otomatis diatur sebagai tahun ajaran berjalan.</p>
                   </div>
                 </div>
 
                 <button
                   type="submit"
                   disabled={form.processing}
-                  className="w-full h-11 bg-emerald-600 text-white text-xs font-black rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-lg shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest disabled:opacity-50"
+                  className="w-full h-11 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-sm active:scale-[0.98] uppercase tracking-wider disabled:opacity-50"
                 >
                   {form.processing ? (
                     <RefreshCw size={14} className="animate-spin" />
@@ -194,8 +205,8 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                   <Info size={20} />
                </div>
                <div className="space-y-1">
-                  <h4 className="text-xs font-black text-emerald-950 uppercase tracking-tight">Integritas Data</h4>
-                  <p className="text-[10px] font-bold text-emerald-800/60 uppercase tracking-tighter leading-relaxed">
+                  <h4 className="text-sm font-bold text-emerald-950 uppercase tracking-wider">Integritas Data</h4>
+                  <p className="text-xs font-medium text-emerald-800 leading-relaxed">
                     Hanya satu tahun akademik yang dapat aktif dalam satu waktu. Mengaktifkan tahun baru akan menonaktifkan tahun sebelumnya.
                   </p>
                </div>

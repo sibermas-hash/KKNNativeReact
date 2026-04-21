@@ -193,13 +193,20 @@ export default function ProfileShow() {
     const file = e.target.files?.[0];
     if (!file) return;
     setPreviewUrl(URL.createObjectURL(file));
-    avatarForm.setData('avatar', file);
-    avatarForm.post(route('profile.avatar'), {
-      preserveScroll: true,
-      forceFormData: true,
-      onSuccess: () => {
-        router.reload({ only: ['user'] });
+    
+    const formData = new FormData();
+    formData.append('avatar', file);
+    
+    fetch(route('profile.avatar'), {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
       },
+    }).then(() => {
+      router.reload({ only: ['user'] });
+    }).catch(() => {
+      setPreviewUrl(null);
     });
   };
 

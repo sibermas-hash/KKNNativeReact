@@ -65,8 +65,10 @@ class PeriodeController extends Controller
                     $existingActive = Periode::where('jenis_kkn_id', $jenisKknId)
                         ->where('is_active', true);
 
-                    if ($request->route('periode.update')) {
-                        $existingActive->where('id', '!=', $request->route('periode.update')->id);
+                    $periode = $request->route('periode');
+                    $periodeId = $periode instanceof Periode ? $periode->id : $periode;
+                    if ($periodeId) {
+                        $existingActive->where('id', '!=', $periodeId);
                     }
 
                     if ($existingActive->exists()) {

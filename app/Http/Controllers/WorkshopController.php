@@ -31,10 +31,16 @@ class WorkshopController extends Controller
     public function index(Request $request, PeriodContextService $periodContextService)
     {
         $user = $request->user();
+
+        // Workshop hanya untuk dosen/admin, mahasiswa tidak boleh akses index workshop
+        if ($user->hasRole('student')) {
+            abort(403, 'Akses ditolak. Workshop hanya diperuntukkan bagi DPL.');
+        }
+
         $activePeriodId = $periodContextService->getActivePeriodId() ?? $periodContextService->getDefaultPeriodId();
 
         $workshops = $this->workshopService->getUpcomingWorkshops(
-            $user->hasRole('student') ? $user->id : null,
+            $user->hasRole('dpl') ? $user->id : null,
             $user->hasAnyRole(['superadmin', 'admin']),
             $user->hasAnyRole(['superadmin', 'admin']),
             $activePeriodId
@@ -167,17 +173,18 @@ class WorkshopController extends Controller
     {
         $user = $request->user();
 
-        // PRD FR-01: Validation for Lecturers (DPL)
-        if ($user->hasRole('dpl')) {
-            $dosen = $user->dosen;
-            if (! $dosen) {
-                return back()->with('error', 'Profil dosen tidak ditemukan.');
-            }
+        if (! $user->hasRole('dpl')) {
+            return back()->with('error', 'Hanya Dosen (DPL) yang dapat mendaftar workshop ini.');
+        }
 
-            $check = $this->eligibilityService->canAttendWorkshop($dosen);
-            if (! $check['eligible']) {
-                return back()->with('error', $check['reason']);
-            }
+        $dosen = $user->dosen;
+        if (! $dosen) {
+            return back()->with('error', 'Profil dosen tidak ditemukan.');
+        }
+
+        $check = $this->eligibilityService->canAttendWorkshop($dosen);
+        if (! $check['eligible']) {
+            return back()->with('error', $check['reason']);
         }
 
         try {
@@ -204,17 +211,16 @@ class WorkshopController extends Controller
         $certificates = PesertaWorkshop::where('user_id', $user->id)
             ->whereNotNull('certificate_issued_at')
             ->where('certificate_generated', true)
-            ->with(['workshop:id,name,start_date,end_date'])
+            ->with(['workshop:id,title,workshop_date'])
             ->orderByDesc('certificate_issued_at')
             ->get()
             ->map(fn ($p) => [
                 'id' => $p->id,
-                'workshop_name' => $p->workshop?->name,
-                'workshop_start' => $p->workshop?->start_date?->format('d M Y'),
-                'workshop_end' => $p->workshop?->end_date?->format('d M Y'),
+                'workshop_name' => $p->workshop?->title,
+                'workshop_date' => $p->workshop?->workshop_date?->format('d M Y'),
                 'certificate_issued_at' => $p->certificate_issued_at?->format('d M Y'),
                 'certificate_url' => $p->certificate_path
-                    ? route('student.workshops.certificate', $p->id)
+                    ? route($user->hasRole('student') ? 'student.workshops.certificate' : 'dosen.workshops.certificate', $p->id)
                     : null,
             ]);
 
@@ -230,7 +236,7 @@ class WorkshopController extends Controller
     {
         $user = $request->user();
 
-        if ($participant->user_id !== $user->id) {
+        if ($participant->user_id !== $user->id && ! $user->hasAnyRole(['superadmin', 'admin'])) {
             abort(403, 'Anda tidak memiliki akses ke sertifikat ini.');
         }
 
@@ -238,7 +244,7 @@ class WorkshopController extends Controller
             abort(404, 'Sertifikat belum tersedia.');
         }
 
-        $filePath = storage_path('app/'.$participant->certificate_path);
+        $filePath = storage_path('app/public/'.$participant->certificate_path);
 
         if (! file_exists($filePath)) {
             abort(404, 'File sertifikat tidak ditemukan.');

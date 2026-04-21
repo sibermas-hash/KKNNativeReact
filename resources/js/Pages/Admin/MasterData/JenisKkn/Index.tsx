@@ -145,7 +145,7 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
               <form onSubmit={submit} className="space-y-5">
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Nama Jenis KKN</label>
+                    <label className="text-xs font-bold text-emerald-950 uppercase tracking-wider pl-1">Nama Jenis KKN</label>
                     <input
                       type="text"
                       value={form.data.name}
@@ -153,11 +153,11 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
                       className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all placeholder:text-gray-300"
                       placeholder="Misal: KKN Reguler"
                     />
-                    {form.errors.name && <p className="text-[10px] font-bold text-rose-600 mt-1 uppercase tracking-tight">{form.errors.name}</p>}
+                    {form.errors.name && <p className="text-xs font-medium text-rose-600 mt-1">{form.errors.name}</p>}
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Kode Skema</label>
+                    <label className="text-xs font-bold text-emerald-950 uppercase tracking-wider pl-1">Kode Skema</label>
                     <input
                       type="text"
                       value={form.data.code}
@@ -166,32 +166,32 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
                       className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all placeholder:text-gray-300 disabled:bg-gray-50 disabled:text-emerald-800/40"
                       placeholder="Misal: REGULER"
                     />
-                    {form.errors.code && <p className="text-[10px] font-bold text-rose-600 mt-1 uppercase tracking-tight">{form.errors.code}</p>}
+                    {form.errors.code && <p className="text-xs font-medium text-rose-600 mt-1">{form.errors.code}</p>}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100/50">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-emerald-800 uppercase tracking-widest pl-1">Min. SKS</label>
+                      <label className="text-xs font-bold text-emerald-800 uppercase tracking-wider pl-1">Min. SKS</label>
                       <input
                         type="number"
                         value={form.data.min_sks}
                         onChange={(e) => form.setData('min_sks', parseInt(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg border border-emerald-100 bg-white text-xs font-black text-emerald-950 focus:border-emerald-600 outline-none"
+                        className="w-full px-3 py-2 rounded-lg border border-emerald-100 bg-white text-sm font-semibold text-emerald-950 focus:border-emerald-600 outline-none"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-emerald-800 uppercase tracking-widest pl-1">Min. IPK</label>
+                      <label className="text-xs font-bold text-emerald-800 uppercase tracking-wider pl-1">Min. IPK</label>
                       <input
                         type="text"
                         value={form.data.min_gpa}
                         onChange={(e) => form.setData('min_gpa', e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-emerald-100 bg-white text-xs font-black text-emerald-950 focus:border-emerald-600 outline-none"
+                        className="w-full px-3 py-2 rounded-lg border border-emerald-100 bg-white text-sm font-semibold text-emerald-950 focus:border-emerald-600 outline-none"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Mode Pendaftaran</label>
+                    <label className="text-xs font-bold text-emerald-950 uppercase tracking-wider pl-1">Mode Pendaftaran</label>
                     <select
                       value={form.data.registration_mode}
                       onChange={(e) => form.setData('registration_mode', e.target.value)}
@@ -212,8 +212,8 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
                       />
                     </div>
                     <div className="flex flex-col">
-                      <label htmlFor="is_active" className="text-xs font-black text-emerald-950 cursor-pointer uppercase tracking-tight">Aktifkan Skema</label>
-                      <p className="text-[10px] font-bold text-emerald-800/60 mt-0.5 uppercase tracking-tighter">Skema akan tersedia untuk pembuatan periode.</p>
+                      <label htmlFor="is_active" className="text-sm font-bold text-emerald-950 cursor-pointer uppercase tracking-wider">Aktifkan Skema</label>
+                      <p className="text-xs font-medium text-emerald-800 mt-0.5">Skema akan tersedia untuk pembuatan periode.</p>
                     </div>
                   </div>
                 </div>
@@ -222,7 +222,7 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
                   <button
                     type="submit"
                     disabled={form.processing}
-                    className="w-full h-11 bg-emerald-600 text-white text-xs font-black rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-lg shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest disabled:opacity-50"
+                    className="w-full h-11 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-sm active:scale-[0.98] uppercase tracking-wider disabled:opacity-50"
                   >
                     {form.processing ? <RefreshCw size={14} className="animate-spin" /> : editingJenis ? <CheckCircle2 size={14} /> : <Plus size={14} />}
                     {editingJenis ? 'Simpan Perubahan' : 'Daftarkan Skema'}
@@ -231,7 +231,7 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
                     <button
                       type="button"
                       onClick={cancelEdit}
-                      className="w-full h-11 bg-white border border-gray-200 text-emerald-900 text-xs font-black rounded-xl hover:bg-gray-50 transition-all uppercase tracking-widest"
+                      className="w-full h-11 bg-white border border-gray-200 text-emerald-900 text-sm font-bold rounded-xl hover:bg-gray-50 transition-all uppercase tracking-wider"
                     >
                       Batal Koreksi
                     </button>
@@ -275,25 +275,25 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
                     <PremiumTableCell>
                       <div className="flex flex-col">
                         <span className="text-sm font-bold text-emerald-950 group-hover:text-emerald-700 transition-colors">{jenis.name}</span>
-                        <span className="text-[10px] font-black text-emerald-800/40 mt-1 uppercase tracking-widest">KODE: {jenis.code}</span>
+                        <span className="text-xs font-medium text-emerald-800/60 mt-0.5">KODE: {jenis.code}</span>
                       </div>
                     </PremiumTableCell>
                     <PremiumTableCell>
                       <div className="flex flex-col gap-1">
-                        <span className="text-[10px] font-black text-emerald-900 uppercase tracking-tighter tabular-nums flex items-center gap-1.5">
-                           <div className="h-1 w-1 rounded-full bg-emerald-400" />
+                        <span className="text-xs font-semibold text-emerald-900 flex items-center gap-1.5">
+                           <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                            Min. {jenis.min_sks} SKS
                         </span>
-                        <span className="text-[10px] font-black text-emerald-900 uppercase tracking-tighter tabular-nums flex items-center gap-1.5">
-                           <div className="h-1 w-1 rounded-full bg-emerald-400" />
+                        <span className="text-xs font-semibold text-emerald-900 flex items-center gap-1.5">
+                           <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                            IPK Min: {jenis.min_gpa}
                         </span>
                       </div>
                     </PremiumTableCell>
                     <PremiumTableCell>
-                      <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-emerald-950 uppercase tracking-tight leading-none">{jenis.registration_mode_label}</span>
-                        <span className="text-[9px] font-bold text-emerald-800/40 mt-1 uppercase tracking-tighter leading-tight">{jenis.placement_mode_label}</span>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-xs font-semibold text-emerald-950 leading-tight">{jenis.registration_mode_label}</span>
+                        <span className="text-xs font-medium text-emerald-800/60 leading-tight">{jenis.placement_mode_label}</span>
                       </div>
                     </PremiumTableCell>
                     <PremiumTableCell>
@@ -335,8 +335,8 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
                   <Info size={24} />
                </div>
                <div className="space-y-1">
-                  <h4 className="text-xs font-black text-emerald-950 uppercase tracking-tight">Kemandirian Skema</h4>
-                  <p className="text-[10px] font-bold text-emerald-800/60 uppercase tracking-tighter leading-relaxed">
+                  <h4 className="text-sm font-bold text-emerald-950 uppercase tracking-wider">Kemandirian Skema</h4>
+                  <p className="text-xs font-medium text-emerald-800 leading-relaxed">
                     Setiap skema memiliki kriteria validasi unik. Pastikan ambang batas SKS dan IPK telah sesuai dengan standar akademik untuk menjamin objektivitas pendaftaran.
                   </p>
                </div>

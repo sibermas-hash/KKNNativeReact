@@ -1,5 +1,5 @@
 import { Head, router, useForm, Link } from '@inertiajs/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Calendar, 
   Copy, 
@@ -134,10 +134,7 @@ export default function PeriodsIndex({
 
  const form = useForm(initialFormData);
 
- const selectedJenisKkn = useMemo(
- () => programOptions?.types?.find((option) => option.value === form.data.jenis_kkn_id) ?? null,
- [form.data.jenis_kkn_id, programOptions?.types],
- );
+ const selectedJenisKkn = programOptions?.types?.find((option) => option.value === form.data.jenis_kkn_id) ?? null;
 
  useEffect(() => {
    const timer = window.setTimeout(() => {
@@ -238,11 +235,11 @@ export default function PeriodsIndex({
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Tahun Akademik</label>
+                  <label className="text-xs font-bold text-emerald-950 uppercase tracking-wider pl-1">Tahun Akademik</label>
                   <select
                     value={form.data.academic_year_id}
                     onChange={(e) => form.setData('academic_year_id', e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-emerald-950 focus:border-emerald-600 outline-none bg-white"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-emerald-950 focus:border-emerald-600 outline-none bg-white"
                   >
                     {academicYears.map((y) => <option key={y.id} value={String(y.id)}>{y.year}</option>)}
                   </select>
@@ -250,7 +247,7 @@ export default function PeriodsIndex({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Periode Ke</label>
+                    <label className="text-xs font-bold text-emerald-950 uppercase tracking-wider pl-1">Periode Ke</label>
                     <input
                       type="number"
                       value={form.data.periode}
@@ -260,7 +257,7 @@ export default function PeriodsIndex({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Kuota Max</label>
+                    <label className="text-xs font-bold text-emerald-950 uppercase tracking-wider pl-1">Kuota Max</label>
                     <input
                       type="number"
                       value={form.data.kuota}
@@ -271,7 +268,7 @@ export default function PeriodsIndex({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Skema Program</label>
+                  <label className="text-xs font-bold text-emerald-950 uppercase tracking-wider pl-1">Skema Program</label>
                   <select
                     value={form.data.jenis_kkn_id}
                     onChange={(e) => form.setData('jenis_kkn_id', e.target.value)}
@@ -280,37 +277,37 @@ export default function PeriodsIndex({
                     <option value="">Pilih Skema...</option>
                     {programOptions.types.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
-                  {form.errors.jenis_kkn_id && <p className="text-[10px] font-bold text-rose-600 mt-1 uppercase">{form.errors.jenis_kkn_id}</p>}
+                  {form.errors.jenis_kkn_id && <p className="text-xs font-medium text-rose-600 mt-1">{form.errors.jenis_kkn_id}</p>}
                 </div>
 
                 <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100/50 space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-emerald-800 uppercase tracking-widest pl-1">Jadwal Pendaftaran</label>
+                    <label className="text-xs font-bold text-emerald-800 uppercase tracking-wider pl-1">Jadwal Pendaftaran</label>
                     <div className="grid grid-cols-2 gap-3">
                       <input
                         type="date"
                         value={form.data.registration_start}
                         onChange={(e) => form.setData('registration_start', e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-emerald-100 bg-white text-[11px] font-black text-emerald-950 focus:border-emerald-600 outline-none"
+                        className="w-full px-3 py-2 rounded-lg border border-emerald-100 bg-white text-sm font-semibold text-emerald-950 focus:border-emerald-600 outline-none"
                       />
                       <input
                         type="date"
                         value={form.data.registration_end}
                         onChange={(e) => form.setData('registration_end', e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-emerald-100 bg-white text-[11px] font-black text-emerald-950 focus:border-emerald-600 outline-none"
+                        className="w-full px-3 py-2 rounded-lg border border-emerald-100 bg-white text-sm font-semibold text-emerald-950 focus:border-emerald-600 outline-none"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-emerald-800 uppercase tracking-widest pl-1">Jadwal Pelaksanaan</label>
+                    <label className="text-xs font-bold text-emerald-800 uppercase tracking-wider pl-1">Jadwal Pelaksanaan</label>
                     <div className="grid grid-cols-2 gap-3">
                       <input
                         type="date"
                         value={form.data.start_date}
                         onChange={(e) => form.setData('start_date', e.target.value)}
                         className={clsx(
-                          "w-full px-3 py-2 rounded-lg border bg-white text-[11px] font-black text-emerald-950 focus:border-emerald-600 outline-none",
+                          "w-full px-3 py-2 rounded-lg border bg-white text-sm font-semibold text-emerald-950 focus:border-emerald-600 outline-none",
                           isGapInsufficient ? 'border-rose-300' : 'border-emerald-100'
                         )}
                       />
@@ -318,20 +315,20 @@ export default function PeriodsIndex({
                         type="date"
                         value={form.data.end_date}
                         onChange={(e) => form.setData('end_date', e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-emerald-100 bg-white text-[11px] font-black text-emerald-950 focus:border-emerald-600 outline-none"
+                        className="w-full px-3 py-2 rounded-lg border border-emerald-100 bg-white text-sm font-semibold text-emerald-950 focus:border-emerald-600 outline-none"
                       />
                     </div>
                     {isGapInsufficient && (
                       <div className="flex items-center gap-1.5 mt-2 px-2 py-1 bg-rose-50 rounded border border-rose-100">
-                        <AlertTriangle size={10} className="text-rose-600" />
-                        <span className="text-[9px] font-bold text-rose-600 uppercase">Jarak min. {MIN_GAP_DAYS} hari (Sekarang: {gapDays} hari)</span>
+                        <AlertTriangle size={12} className="text-rose-600" />
+                        <span className="text-xs font-medium text-rose-600">Jarak min. {MIN_GAP_DAYS} hari (Sekarang: {gapDays} hari)</span>
                       </div>
                     )}
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Fase Aktif</label>
+                  <label className="text-xs font-bold text-emerald-950 uppercase tracking-wider pl-1">Fase Aktif</label>
                   <select
                     value={form.data.current_phase}
                     onChange={(e) => form.setData('current_phase', e.target.value)}
@@ -357,8 +354,8 @@ export default function PeriodsIndex({
                     />
                   </div>
                   <div className="flex flex-col">
-                    <label htmlFor="is_active" className="text-xs font-black text-emerald-950 cursor-pointer uppercase tracking-tight">Publikasikan Periode</label>
-                    <p className="text-[10px] font-bold text-emerald-800/60 mt-0.5 uppercase tracking-tighter">Draft hanya dapat dilihat oleh administrator.</p>
+                    <label htmlFor="is_active" className="text-sm font-bold text-emerald-950 cursor-pointer uppercase tracking-wider">Publikasikan Periode</label>
+                    <p className="text-xs font-medium text-emerald-800 mt-0.5">Draft hanya dapat dilihat oleh administrator.</p>
                   </div>
                 </div>
               </div>
@@ -367,7 +364,7 @@ export default function PeriodsIndex({
                 <button
                   type="submit"
                   disabled={form.processing || !!isGapInsufficient}
-                  className="w-full h-11 bg-emerald-600 text-white text-xs font-black rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-lg shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest disabled:opacity-50"
+                  className="w-full h-11 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-sm active:scale-[0.98] uppercase tracking-wider disabled:opacity-50"
                 >
                   {form.processing ? <RefreshCw size={14} className="animate-spin" /> : editing ? <CheckCircle2 size={14} /> : <Plus size={14} />}
                   {editing ? 'Simpan Perubahan' : 'Daftarkan Siklus'}
@@ -376,7 +373,7 @@ export default function PeriodsIndex({
                   <button
                     type="button"
                     onClick={cancelForm}
-                    className="w-full h-11 bg-white border border-gray-200 text-emerald-900 text-xs font-black rounded-xl hover:bg-gray-50 transition-all uppercase tracking-widest"
+                    className="w-full h-11 bg-white border border-gray-200 text-emerald-900 text-sm font-bold rounded-xl hover:bg-gray-50 transition-all uppercase tracking-wider"
                   >
                     Batal Koreksi
                   </button>
@@ -397,7 +394,7 @@ export default function PeriodsIndex({
                 <select
                   value={filterJenisId}
                   onChange={(e) => setFilterJenisId(e.target.value)}
-                  className="h-9 px-3 bg-white border border-gray-200 rounded-lg text-[10px] font-black text-emerald-900 uppercase tracking-tight focus:border-emerald-600 outline-none"
+                  className="h-9 px-3 bg-white border border-gray-200 rounded-lg text-xs font-bold text-emerald-900 uppercase tracking-tight focus:border-emerald-600 outline-none"
                 >
                   <option value="">SEMUA SKEMA</option>
                   {jenisKkn.map((j) => <option key={j.id} value={String(j.id)}>{j.name.toUpperCase()}</option>)}
@@ -430,33 +427,33 @@ export default function PeriodsIndex({
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-emerald-950 group-hover:text-emerald-700 transition-colors leading-tight">{period.name}</span>
                       <div className="flex items-center gap-2 mt-1.5">
-                        <span className="text-[9px] font-black bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-100 uppercase tracking-tighter">
+                        <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-100 uppercase tracking-wide">
                           {period.program_type_label || 'Reguler'}
                         </span>
-                        <span className="text-[9px] font-bold text-emerald-800/40 uppercase tracking-widest leading-none">
+                        <span className="text-xs font-medium text-emerald-800/60 leading-none">
                           {period.jenis || 'Umum'}
                         </span>
                       </div>
                     </div>
                   </PremiumTableCell>
                   <PremiumTableCell>
-                    <span className="text-xs font-black text-emerald-950 tabular-nums">{period.academic_year?.year || '-'}</span>
+                    <span className="text-sm font-bold text-emerald-950 tabular-nums">{period.academic_year?.year || '-'}</span>
                   </PremiumTableCell>
                   <PremiumTableCell>
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2">
-                        <Calendar size={10} className="text-emerald-400" />
-                        <span className="text-[10px] font-bold text-emerald-950 tabular-nums">{formatDate(period.registration_start)}</span>
+                        <Calendar size={12} className="text-emerald-400" />
+                        <span className="text-xs font-medium text-emerald-950 tabular-nums">{formatDate(period.registration_start)}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="w-[10px]" />
-                        <span className="text-[9px] font-black text-emerald-800/30 uppercase tracking-tighter">s/d {formatDate(period.registration_end)}</span>
+                        <div className="w-[12px]" />
+                        <span className="text-[10px] font-bold text-emerald-800/60 uppercase">s/d {formatDate(period.registration_end)}</span>
                       </div>
                     </div>
                   </PremiumTableCell>
                   <PremiumTableCell>
                     <div className="flex flex-col items-center gap-1.5">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-50 text-emerald-700 border border-emerald-100 uppercase tracking-tighter">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 uppercase tracking-wide">
                         {period.current_phase}
                       </span>
                       <StatusTag status={period.is_active ? 'Aktif' : 'Draft'} />
@@ -501,13 +498,13 @@ export default function PeriodsIndex({
           </ContentPanel>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-emerald-50/30 rounded-2xl p-6 border border-emerald-100/30 flex items-start gap-4">
+             <div className="bg-emerald-50/30 rounded-2xl p-6 border border-emerald-100/30 flex items-start gap-4">
                <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100 shrink-0">
                   <Info size={20} />
                </div>
                <div className="space-y-1">
-                  <h4 className="text-xs font-black text-emerald-950 uppercase tracking-tight">Integritas Linimasa</h4>
-                  <p className="text-[10px] font-bold text-emerald-800/60 uppercase tracking-tighter leading-relaxed">
+                  <h4 className="text-sm font-bold text-emerald-950 uppercase tracking-wider">Integritas Linimasa</h4>
+                  <p className="text-xs font-medium text-emerald-800 leading-relaxed">
                     Setiap transisi fase memicu perubahan akses fitur bagi mahasiswa dan DPL secara otomatis. Pastikan jadwal pendaftaran dan pelaksanaan tidak tumpang tindih.
                   </p>
                </div>
@@ -517,8 +514,8 @@ export default function PeriodsIndex({
                   <Settings2 size={20} />
                </div>
                <div className="space-y-1">
-                  <h4 className="text-xs font-black text-emerald-950 uppercase tracking-tight">Otomasi Alur</h4>
-                  <p className="text-[10px] font-bold text-emerald-800/60 uppercase tracking-tighter leading-relaxed">
+                  <h4 className="text-sm font-bold text-emerald-950 uppercase tracking-wider">Otomasi Alur</h4>
+                  <p className="text-xs font-medium text-emerald-800 leading-relaxed">
                     Gunakan fitur Duplikasi untuk mempercepat pembuatan periode baru dengan parameter yang sama dari tahun sebelumnya.
                   </p>
                </div>

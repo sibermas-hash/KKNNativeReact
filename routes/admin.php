@@ -190,7 +190,7 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
     // Settings
     Route::prefix('pengaturan')->name('pengaturan.')->group(function () {
         Route::get('sertifikat', [Admin\CertificateConfigController::class, 'index'])->name('sertifikat.index');
-        Route::patch('sertifikat', [Admin\CertificateConfigController::class, 'update'])->name('sertifikat.update');
+        Route::post('sertifikat', [Admin\CertificateConfigController::class, 'update'])->name('sertifikat.update');
         Route::get('sistem', [Admin\SystemSettingController::class, 'index'])->name('sistem');
         Route::patch('sistem', [Admin\SystemSettingController::class, 'update'])->name('sistem.update');
         Route::get('sistem/ai/config', [Admin\SystemSettingController::class, 'getAiConfig'])->name('sistem.ai.config');

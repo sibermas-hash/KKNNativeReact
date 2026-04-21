@@ -118,11 +118,32 @@ Thumbs.db
 /coverage/
 .phpunit.cache/
 
-# Data files - CSV/Excel with student data
-/DataKKN*.csv
-/data-*.csv
+# Data files - CSV/Excel/PDF with student/lecturer data (PII)
+*.csv
+*.sql
+/DataKKN*
+/data-*
 data/
 exports/
 imports/
 uploads/
-*.sql
+
+# Documentation files (non-code) at root
+*.docx
+*.pdf
+!README.md
+!AGENTS.md
+
+# Storage: private uploads (user documents, certificates, etc.)
+/storage/app/private/*
+!/storage/app/private/.gitignore
+
+# AI agent residue folders
+.claude/
+.cline/
+.qwen/
+.codex-psysh/
+.venv_pdf/
+
+# Test results & reports (regeneratable)
+/docs/

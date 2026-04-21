@@ -16,7 +16,7 @@ class DummyKKN56Seeder extends Seeder
     {
         $this->command->info('Starting DummyKKN56Seeder...');
         $this->seedData();
-        $this->command->info('DummyKKN56Seeder done at ' . date('H:i:s'));
+        $this->command->info('DummyKKN56Seeder done at '.date('H:i:s'));
     }
 
     private function seedData(): void
@@ -29,7 +29,7 @@ class DummyKKN56Seeder extends Seeder
             'year' => '2024/2025', 'is_active' => true,
             'created_at' => now(), 'updated_at' => now(),
         ]);
-        $this->command->info('TA ID: ' . $taId);
+        $this->command->info('TA ID: '.$taId);
 
         // Periode - use existing or create
         $periode = DB::table('periode')->where('name', 'KKN Reguler 56')->first();
@@ -51,11 +51,11 @@ class DummyKKN56Seeder extends Seeder
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-        $this->command->info('Periode ID: ' . $periodeId);
+        $this->command->info('Periode ID: '.$periodeId);
 
         // Insert fakultas if none exist
         $existingFak = DB::table('fakultas')->count();
-        $this->command->info('Existing fakultas: ' . $existingFak);
+        $this->command->info('Existing fakultas: '.$existingFak);
         if ($existingFak === 0) {
             $fakList = [
                 ['nama' => 'Fakultas Tarbiyah dan Ilmu Keguruan', 'code' => 'FTIK'],
@@ -68,7 +68,7 @@ class DummyKKN56Seeder extends Seeder
                 ]));
             }
         }
-        $this->command->info('Fakultas now: ' . DB::table('fakultas')->count());
+        $this->command->info('Fakultas now: '.DB::table('fakultas')->count());
 
         // Insert prodi if not exist
         $existingProdi = DB::table('prodi')->count();
@@ -84,9 +84,9 @@ class DummyKKN56Seeder extends Seeder
                 ]));
             }
         }
-        $this->command->info('Prodi: ' . DB::table('prodi')->count());
+        $this->command->info('Prodi: '.DB::table('prodi')->count());
 
-        $this->command->info('DONE at ' . date('H:i:s'));
+        $this->command->info('DONE at '.date('H:i:s'));
 
         // ═══════════════════════════════════════════════════
         // STEP 0: TOTAL CLEANUP
@@ -109,7 +109,7 @@ class DummyKKN56Seeder extends Seeder
             'year' => '2024/2025', 'is_active' => true,
             'created_at' => now(), 'updated_at' => now(),
         ]);
-        $this->command->info('Academic year ID: ' . $taId);
+        $this->command->info('Academic year ID: '.$taId);
 
         $periods = [
             [
@@ -128,9 +128,9 @@ class DummyKKN56Seeder extends Seeder
             DB::table('periode')->insert(array_merge($p, [
                 'created_at' => now(), 'updated_at' => now(),
             ]));
-            $this->command->info('Inserted periode: ' . $p['name']);
+            $this->command->info('Inserted periode: '.$p['name']);
         }
-        $this->command->info('Periode count: ' . DB::table('periode')->count());
+        $this->command->info('Periode count: '.DB::table('periode')->count());
         $this->command->info('Inserting fakultas...');
 
         // ═══════════════════════════════════════════════════
@@ -149,7 +149,7 @@ class DummyKKN56Seeder extends Seeder
                 'created_at' => now(), 'updated_at' => now(),
             ]);
         }
-        $this->command->info('Fakultas count: ' . DB::table('fakultas')->count());
+        $this->command->info('Fakultas count: '.DB::table('fakultas')->count());
         $this->command->info('Creating prodi...');
 
         // ═══════════════════════════════════════════════════

@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Public\CertificateVerificationController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Request;
@@ -49,7 +50,7 @@ Route::get('/skema-kkn', [HomeController::class, 'schemes'])->name('public.schem
 Route::get('/warta', [HomeController::class, 'announcements'])->name('public.announcements');
 Route::get('/repositori', [HomeController::class, 'downloads'])->name('public.downloads');
 Route::get('/cari-lokasi', [HomeController::class, 'locations'])->name('public.locations');
-
+Route::get('/verify-certificate/{token}', [CertificateVerificationController::class, 'verify'])->name('certificate.verify');
 // Health Check Endpoint
 Route::get('/health', [HealthController::class, 'check'])->name('health');
 Route::get('/health/detailed', [HealthController::class, 'detailed'])->name('health.detailed');

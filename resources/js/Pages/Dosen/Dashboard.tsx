@@ -1,5 +1,7 @@
-import { Head, usePage, useForm } from '@inertiajs/react';
+import { Head, usePage, useForm, router } from '@inertiajs/react';
+import { useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
+import Modal from '@/Components/ui/Modal';
 import {
   GraduationCap,
   ClipboardCheck,
@@ -76,6 +78,9 @@ export default function DosenDashboard({
 }: Props) {
   const { auth } = usePage<PageProps>().props;
   const firstName = dosen?.nama?.split(' ')?.[0] ?? auth?.user?.name?.split(' ')?.[0] ?? 'Dosen';
+
+  const [selectedWorkshop, setSelectedWorkshop] = useState<AvailableWorkshop | null>(null);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const phases = [
     {
@@ -264,26 +269,36 @@ export default function DosenDashboard({
                     {available_workshops.map((w) => (
                       <div
                         key={w.id}
-                        className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl border border-emerald-100"
+                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 bg-emerald-50 rounded-xl border border-emerald-100 gap-3"
                       >
-                        <div className="text-left">
+                        <div className="text-left flex-1">
                           <p className="text-sm font-bold text-emerald-950">{w.title}</p>
-                          <div className="flex items-center gap-2 text-xs text-emerald-700">
+                          <div className="flex flex-wrap items-center gap-3 text-xs text-emerald-700 mt-1.5">
                             {w.date && (
-                              <span className="flex items-center gap-1">
-                                <Calendar size={10} /> {w.date}
+                              <span className="flex items-center gap-1 font-medium">
+                                <Calendar size={12} /> {w.date}
                               </span>
                             )}
                             {w.location && (
-                              <span className="flex items-center gap-1">
-                                <MapPin size={10} /> {w.location}
+                              <span className="flex items-center gap-1 font-medium">
+                                <MapPin size={12} /> {w.location}
                               </span>
                             )}
                           </div>
                         </div>
-                        <span className="text-xs font-bold text-emerald-600">
-                          {w.slots_left} slot
-                        </span>
+                        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t border-emerald-100/50 pt-3 sm:pt-0 sm:border-0">
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/70 px-2 py-1 rounded-md uppercase tracking-wider shrink-0">
+                            Sisa {w.slots_left}
+                          </span>
+                          <button
+                            onClick={() => setSelectedWorkshop(w)}
+                            disabled={w.slots_left <= 0}
+                            className="bg-[#1a7a4a] text-white px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#135c37] transition-all shadow-sm shadow-emerald-600/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 active:scale-95 shrink-0"
+                          >
+                            Daftar
+                            <ArrowRight size={14} />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -399,6 +414,63 @@ export default function DosenDashboard({
           </motion.div>
         </div>
       </motion.div>
+
+      {/* Registration Modal */}
+      <Modal 
+        show={!!selectedWorkshop} 
+        onClose={() => !isRegistering && setSelectedWorkshop(null)}
+        title="Konfirmasi Pendaftaran"
+        maxWidth="md"
+      >
+        {selectedWorkshop && (
+          <div className="space-y-6">
+            <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
+              <h4 className="text-sm font-bold text-emerald-950 mb-3 leading-snug">{selectedWorkshop.title}</h4>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-xs font-medium text-emerald-800">
+                  <Calendar size={14} className="text-emerald-600" />
+                  <span>{selectedWorkshop.date ?? '-'}</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs font-medium text-emerald-800">
+                  <MapPin size={14} className="text-emerald-600" />
+                  <span>{selectedWorkshop.location ?? '-'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-sm font-medium text-emerald-950 leading-relaxed">
+              Apakah Anda yakin ingin mendaftar ke workshop ini? Sisa kuota peserta saat ini adalah <span className="font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">{selectedWorkshop.slots_left} slot</span>.
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+              <button
+                onClick={() => setSelectedWorkshop(null)}
+                disabled={isRegistering}
+                className="px-4 py-2.5 rounded-xl text-xs font-bold text-emerald-900 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50 uppercase tracking-wider"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  setIsRegistering(true);
+                  router.post(`/dosen/workshops/${selectedWorkshop.id}/register`, {}, {
+                    preserveScroll: true,
+                    onFinish: () => {
+                      setIsRegistering(false);
+                      setSelectedWorkshop(null);
+                    }
+                  });
+                }}
+                disabled={isRegistering}
+                className="px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-[#1a7a4a] hover:bg-[#135c37] transition-colors flex items-center gap-2 disabled:opacity-50 shadow-lg shadow-emerald-600/20 uppercase tracking-wider active:scale-95"
+              >
+                {isRegistering ? 'Memproses...' : 'Ya, Daftar Sekarang'}
+                {!isRegistering && <CheckCircle2 size={16} />}
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </AppLayout>
   );
 }

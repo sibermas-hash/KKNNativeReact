@@ -60,10 +60,10 @@ class UserController extends Controller
 
     public function dosenIndex(Request $request): Response
     {
-        $baseQuery = User::whereHas('roles', function($q) {
-                $q->whereIn('name', ['dosen', 'dpl']);
-            })
-            ->with(['dosen.fakultas', 'roles', 'dosen.dplPeriods' => function($q) {
+        $baseQuery = User::whereHas('roles', function ($q) {
+            $q->whereIn('name', ['dosen', 'dpl']);
+        })
+            ->with(['dosen.fakultas', 'roles', 'dosen.dplPeriods' => function ($q) {
                 $q->where('is_active', true)->with('periode');
             }]);
 
@@ -94,6 +94,7 @@ class UserController extends Controller
                 'roles' => $user->roles->pluck('name')->toArray(),
                 'dosen' => $user->dosen ? [
                     'nip' => $user->dosen->nip,
+                    'nama' => $user->dosen->nama,
                     'fakultas' => $user->dosen->fakultas ? [
                         'nama' => $user->dosen->fakultas->nama,
                     ] : null,

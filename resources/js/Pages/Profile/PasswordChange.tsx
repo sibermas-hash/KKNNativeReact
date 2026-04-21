@@ -38,7 +38,7 @@ export default function PasswordChange() {
     e.preventDefault();
     
     if (passwordForm.data.password.length < 8) {
-      passwordForm.setError('password', 'Kata sandi minimal 8 karakter');
+      passwordForm.setError('password', 'Kata sandi minimal 8 karakter dengan kombinasi huruf besar, kecil, angka, dan simbol');
       return;
     }
 
@@ -105,7 +105,7 @@ export default function PasswordChange() {
                     value={passwordForm.data.password}
                     onChange={e => passwordForm.setData('password', e.target.value)}
                     error={passwordForm.errors.password}
-                    placeholder="Minimal 8 karakter"
+                    placeholder="Min. 8 karakter, huruf besar & kecil, angka, simbol"
                     className="h-11 pl-10 pr-10"
                     autoFocus
                   />

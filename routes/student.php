@@ -57,7 +57,7 @@ Route::middleware([
         Route::get('/', [WorkshopController::class, 'index'])->name('index');
         Route::post('/{workshop}/register', [WorkshopController::class, 'register'])->name('register');
         Route::get('/my-certificates', [WorkshopController::class, 'myCertificates'])->name('my-certificates');
-        Route::get('/{workshop}/certificate', [WorkshopController::class, 'downloadCertificate'])->name('certificate');
+        Route::get('/{participant}/certificate', [WorkshopController::class, 'downloadCertificate'])->name('certificate');
     });
 
     // ─── FASE: PENDAFTARAN ────────────────────────────────────────────

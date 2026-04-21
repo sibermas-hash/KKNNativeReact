@@ -11,13 +11,13 @@
             background-color: #f8fafc;
         }
         .border {
-            border: 15px solid #1e40af;
+            border: 15px solid #059669;
             padding: 40px;
             height: 100%;
             position: relative;
         }
         .inner-border {
-            border: 2px solid #1e40af;
+            border: 2px solid #059669;
             padding: 20px;
             height: 100%;
         }
@@ -30,13 +30,13 @@
         .univ-name {
             font-size: 24px;
             font-weight: bold;
-            color: #1e40af;
+            color: #059669;
             text-transform: uppercase;
         }
         .title {
             font-size: 48px;
             font-weight: bold;
-            color: #1e3a8a;
+            color: #064e3b;
             margin: 20px 0;
         }
         .number {
@@ -70,7 +70,7 @@
         .workshop-title {
             font-size: 22px;
             font-weight: bold;
-            color: #1e40af;
+            color: #059669;
         }
         .footer {
             margin-top: 50px;
@@ -95,16 +95,16 @@
         <div class="inner-border">
             <div class="certificate">
                 <div class="header">
-                    <div class="univ-name">Universitas Islam Negeri KH Achmad Siddiq Jember</div>
+                    <div class="univ-name">UIN Profesor Kiai Haji Saifuddin Zuhri Purwokerto</div>
                     <div class="units">Lembaga Penelitian dan Pengabdian kepada Masyarakat (LPPM)</div>
                 </div>
 
-                <div class="title">SERTIFIKAT</div>
+                <div class="title">{{ $cert_title }}</div>
                 <div class="number">Nomor: {{ $certificate_number }}</div>
 
                 <div class="given-to">Diberikan kepada:</div>
                 <div class="participant-name">{{ $participant_name }}</div>
-                <div class="nim">NIM: {{ $nim }}</div>
+                <div class="nim">{{ str_contains($nim, '-') ? 'IDENTITAS' : (strlen($nim) > 10 ? 'NIP' : 'NIM') }}: {{ $nim }}</div>
 
                 <div class="as-participant">
                     Dinyatakan telah mengikuti Workshop Pembekalan KKN dengan tema:<br>
@@ -120,8 +120,8 @@
                     <div style="text-align: right; padding-right: 50px;">
                         <p class="date">Ketua LPPM,</p>
                         <br><br>
-                        <p class="sign-name">Dr. H. Ahmad Sahlan, M.Ag.</p>
-                        <p>NIP. 197205121998031002</p>
+                        <p class="sign-name">{{ $signer_name }}</p>
+                        <p>NIP. {{ $signer_nip }}</p>
                     </div>
                 </div>
             </div>

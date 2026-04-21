@@ -15,6 +15,7 @@ use App\Models\Master\Dosen as MasterLecturer;
 use App\Models\Master\Mahasiswa as MasterStudent;
 use App\Models\User;
 use App\Services\MasterApiService;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;

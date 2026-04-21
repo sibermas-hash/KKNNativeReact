@@ -61,9 +61,12 @@ return Application::configure(basePath: dirname(__DIR__))
             '131.0.72.0/22',
         ]);
 
-        $middleware->prepend([
-            TestAutoLogin::class,
-        ]);
+        // TestAutoLogin: HANYA aktif di environment lokal untuk keperluan testing
+        if (env('APP_ENV') === 'local') {
+            $middleware->prepend([
+                TestAutoLogin::class,
+            ]);
+        }
 
         $middleware->web(append: [
             HandleInertiaRequests::class,
@@ -93,7 +96,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo('/login');
         $middleware->redirectUsersTo('/');
 
-        $middleware->validateCsrfTokens(except: ['*']);
+        // CSRF Protection: Aktif untuk semua rute web, kecuali endpoint API & webhook
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
+            'webhooks/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         /* AI Self-Healing Disabled

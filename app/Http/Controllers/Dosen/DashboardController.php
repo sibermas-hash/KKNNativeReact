@@ -43,7 +43,7 @@ class DashboardController extends Controller
             ->get();
 
         // Workshop yang tersedia
-        $availableWorkshops = Workshop::where('status', 'open')
+        $availableWorkshops = Workshop::whereIn('status', ['scheduled', 'open', 'ongoing'])
             ->select('id', 'title', 'workshop_date', 'location', 'max_participants')
             ->withCount('peserta')
             ->get();

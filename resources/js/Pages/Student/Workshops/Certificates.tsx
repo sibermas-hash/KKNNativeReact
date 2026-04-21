@@ -15,8 +15,7 @@ import { clsx } from 'clsx';
 interface WorkshopCertificate {
   id: number;
   workshop_name: string;
-  workshop_start: string;
-  workshop_end: string;
+  workshop_date: string;
   certificate_issued_at: string;
   certificate_url: string | null;
 }
@@ -63,7 +62,7 @@ export default function WorkshopCertificates({ certificates }: Props) {
               Anda belum memiliki sertifikat Workshop. Ikuti Workshop untuk mendapatkan sertifikat.
             </p>
             <a
-              href="/mahasiswa/workshops"
+              href={certificates.length > 0 ? '#' : (window.location.pathname.startsWith('/dosen') ? '/dosen/workshops' : '/mahasiswa/workshops')}
               className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors"
             >
               Lihat Workshop
@@ -94,7 +93,7 @@ export default function WorkshopCertificates({ certificates }: Props) {
                       <div className="flex items-center gap-4 mt-1 text-sm text-emerald-600">
                         <span className="flex items-center gap-1">
                           <Calendar size={14} />
-                          {cert.workshop_start} - {cert.workshop_end}
+                          {cert.workshop_date}
                         </span>
                         <span className="flex items-center gap-1">
                           <FileCheck size={14} />

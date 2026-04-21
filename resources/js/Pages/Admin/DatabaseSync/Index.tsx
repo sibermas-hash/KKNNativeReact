@@ -151,7 +151,7 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
               icon={Terminal}
             >
               <div className="space-y-4">
-                <p className="text-[11px] text-emerald-800 leading-relaxed font-medium bg-emerald-50/50 p-3.5 rounded-xl border border-emerald-100">
+                <p className="text-xs text-emerald-800 leading-relaxed font-medium bg-emerald-50/50 p-3.5 rounded-xl border border-emerald-100">
                   Gunakan kontrol di bawah untuk memaksa pembaruan data jika terjadi keterlambatan sinkronisasi otomatis dari SIKAD.
                 </p>
                 
@@ -170,7 +170,7 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
                         <span className="text-xs font-bold uppercase tracking-wider">Data {translateEntityType(type)}</span>
                       </div>
                       {isSyncing === type.toLowerCase() ? (
-                        <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest animate-pulse">Proses...</span>
+                        <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest animate-pulse">Proses...</span>
                       ) : (
                         <ChevronRight size={16} className="text-emerald-300 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
                       )}
@@ -189,20 +189,20 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
                   <Activity size={20} className="text-[#1a7a4a]" />
                </div>
                 <div>
-                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-emerald-800 mb-1">Efisiensi Hari Ini</h4>
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-emerald-800 mb-1">Efisiensi Hari Ini</h4>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-black tabular-nums leading-none tracking-tight text-emerald-950">{dashboard.summary.success_rate_today}%</span>
-                    <span className="text-[10px] font-bold text-[#1a7a4a] uppercase tracking-widest">Berhasil</span>
+                    <span className="text-4xl font-bold tabular-nums leading-none tracking-tight text-emerald-950">{dashboard.summary.success_rate_today}%</span>
+                    <span className="text-xs font-bold text-[#1a7a4a] uppercase tracking-widest">Berhasil</span>
                   </div>
                 </div>
                 
                 <div className="pt-5 border-t border-emerald-50 grid grid-cols-2 gap-4">
                   <div>
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-800/60 block mb-1">Total Sesi</span>
+                    <span className="text-xs font-bold uppercase tracking-widest text-emerald-800/60 block mb-1">Total Sesi</span>
                     <span className="text-sm font-bold tabular-nums text-emerald-950">{dashboard.summary.total_today} Kali</span>
                   </div>
                   <div>
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-800/60 block mb-1">Gagal</span>
+                    <span className="text-xs font-bold uppercase tracking-widest text-emerald-800/60 block mb-1">Gagal</span>
                     <span className={clsx("text-sm font-bold tabular-nums", dashboard.summary.failed_today > 0 ? "text-rose-600" : "text-emerald-950")}>
                       {dashboard.summary.failed_today} Sesi
                     </span>
@@ -241,7 +241,7 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
               }
               footer={
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-emerald-800 uppercase tracking-wider">
+                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
                     Total <strong className="text-emerald-950">{logs.meta.total}</strong> Catatan
                   </span>
                   <Pagination meta={logs.meta} />
@@ -258,12 +258,12 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
                     <PremiumTableCell>
                       <div className="flex flex-col">
                         <span className="font-bold text-emerald-950 uppercase text-xs mb-0.5 tracking-tight">{translateEntityType(log.entity_type)}</span>
-                        <span className="text-[10px] text-emerald-700 font-mono tracking-wider">ID: {log.entity_id || 'Global'}</span>
+                        <span className="text-xs text-emerald-700 font-mono tracking-wider">ID: {log.entity_id || 'Global'}</span>
                       </div>
                     </PremiumTableCell>
                     <PremiumTableCell align="center">
                       <span className={clsx(
-                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest border",
+                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-widest border",
                         log.status === 'success' ? "bg-emerald-50 text-[#1a7a4a] border-emerald-200" : 
                         log.status === 'failed' ? "bg-rose-50 text-rose-700 border-rose-200" : 
                         "bg-amber-50 text-amber-700 border-amber-200"
@@ -277,12 +277,12 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
                         <span className="text-xs text-emerald-900 font-medium line-clamp-1 leading-normal mb-1">
                           {log.error_message || 'Sinkronisasi berhasil diselesaikan tanpa kendala.'}
                         </span>
-                        <span className="text-[9px] text-emerald-700 font-bold uppercase tabular-nums tracking-wider">{new Date(log.created_at).toLocaleString('id-ID')}</span>
+                        <span className="text-xs text-emerald-700 font-medium tabular-nums">{new Date(log.created_at).toLocaleString('id-ID')}</span>
                       </div>
                     </PremiumTableCell>
                     <PremiumTableCell align="right">
                       <Link 
-                        href={route('admin.database-sync.show', log.id)} 
+                        href={route('admin.database-sync.logs.show', log.id)} 
                         className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-100 text-emerald-700 bg-white hover:bg-[#1a7a4a] hover:text-white hover:border-[#1a7a4a] transition-all shadow-sm opacity-0 group-hover:opacity-100"
                         title="Lihat Detail Log"
                       >

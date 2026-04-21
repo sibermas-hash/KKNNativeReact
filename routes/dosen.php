@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Route;
 // ═══════════════════════════════════════════════════════════
 Route::middleware([
     'auth',
-    'role:dosen',
+    'role:dosen|superadmin',
     EnsurePasswordChanged::class,
 ])->prefix('dosen')->name('dosen.')->group(function () {
 
@@ -37,6 +37,7 @@ Route::middleware([
         Route::get('/', [WorkshopController::class, 'index'])->name('index');
         Route::post('/{workshop}/register', [WorkshopController::class, 'register'])->name('register');
         Route::get('/my-certificates', [WorkshopController::class, 'myCertificates'])->name('my-certificates');
+        Route::get('/{participant}/certificate', [WorkshopController::class, 'downloadCertificate'])->name('certificate');
     });
 
     // Pendaftaran DPL (dosen yang sudah lulus workshop)

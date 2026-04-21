@@ -115,7 +115,7 @@ class AttendanceValidationServiceTest extends TestCase
     public function test_validate_timestamp_mismatch(): void
     {
         $this->attendance->timestamp_client = now();
-        $this->attendance->timestamp_gps = now()->subMinutes(10); 
+        $this->attendance->timestamp_gps = now()->subMinutes(10);
         $this->attendance->save();
 
         $result = $this->service->validate($this->attendance);

@@ -105,7 +105,9 @@ class DatabaseSyncMonitoringService
             ];
         } catch (\Exception $e) {
             // Log as warning to prevent log pollution if Redis is optional/local
-            Log::warning('Redis connection monitoring failed: '.$e->getMessage());
+            if (! app()->isLocal()) {
+                Log::warning('Redis connection monitoring failed: '.$e->getMessage());
+            }
 
             return [
                 'status' => 'disconnected',
@@ -285,7 +287,7 @@ class DatabaseSyncMonitoringService
     /**
      * Process retry for a failed sync
      */
-    protected function processRetry(DatabaseSyncLog $failedSync): void
+    public function processRetry(DatabaseSyncLog $failedSync): void
     {
         // This should dispatch a job or call the appropriate sync service
         // For now, log the retry attempt

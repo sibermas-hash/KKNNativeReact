@@ -27,15 +27,26 @@ class CertificateConfigController extends Controller
     public function update(Request $request): RedirectResponse
     {
         Gate::authorize('manage-settings');
-        $validated = $request->validate([
-            'configs' => ['required', 'array'],
-            'configs.*.id' => ['required', 'exists:kkn.konfigurasi_sertifikat,id'],
-            'configs.*.value' => ['nullable', 'string'],
-        ]);
 
-        foreach ($validated['configs'] as $configData) {
-            KonfigurasiSertifikat::where('id', $configData['id'])->update([
-                'value' => $configData['value'],
+        // Laravel handles multipart/form-data for POST requests.
+        // If we use PATCH, we'd need to spoof it, but here we'll just handle the request data.
+        $configs = $request->input('configs', []);
+        $files = $request->file('configs', []);
+
+        foreach ($configs as $index => $configData) {
+            $id = $configData['id'];
+            $value = $configData['value'];
+
+            // Check if there is an uploaded file for this config index
+            if (isset($files[$index]['value'])) {
+                $file = $files[$index]['value'];
+                // Store the file in public/certificates/assets
+                $path = $file->store('certificates/assets', 'public');
+                $value = $path;
+            }
+
+            KonfigurasiSertifikat::where('id', $id)->update([
+                'value' => $value,
             ]);
         }
 

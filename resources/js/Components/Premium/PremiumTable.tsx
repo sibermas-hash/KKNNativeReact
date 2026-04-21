@@ -40,7 +40,7 @@ const PremiumTable: React.FC<TableProps> = ({
               <td colSpan={headers.length} className="px-6 py-20 text-center">
                 <div className="flex flex-col items-center justify-center gap-3">
                   <Layers size={40} className="text-[#e5e7eb] mb-2" strokeWidth={1} />
-                  <span className="text-sm font-semibold text-emerald-800">Data Kosong</span>
+                  <span className="text-sm italic font-medium text-emerald-950/40">Data Kosong</span>
                   <p className="text-xs text-emerald-800">{emptyText}</p>
                 </div>
               </td>

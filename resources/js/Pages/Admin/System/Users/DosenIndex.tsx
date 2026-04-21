@@ -20,6 +20,8 @@ interface User {
   email: string;
   is_active: boolean;
   dosen?: {
+    nip?: string;
+    nama?: string;
     fakultas?: { nama: string };
     active_assignment?: { period_name: string };
   };
@@ -113,8 +115,8 @@ export default function DosenIndex({ users, filters, stats }: Props) {
 
         {/* TABLE */}
         <ContentPanel
-          title="Daftar Akun DPL"
-          description="Dosen Pembimbing Lapangan Terdaftar"
+          title="Daftar Akun Dosen"
+          description="Seluruh Dosen Terdaftar"
           icon={Users}
           padding={false}
           headerAction={
@@ -148,7 +150,9 @@ export default function DosenIndex({ users, filters, stats }: Props) {
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-xs font-bold text-emerald-950 uppercase tracking-tight">{user.name}</span>
+                      <span className="text-xs font-bold text-emerald-950 uppercase tracking-tight">
+                        {user.dosen?.nama || user.name}
+                      </span>
                       <span className="text-[11px] font-semibold text-emerald-950/30">{user.email || '-'}</span>
                     </div>
                   </div>
@@ -160,7 +164,7 @@ export default function DosenIndex({ users, filters, stats }: Props) {
                 </PremiumTableCell>
                 <PremiumTableCell>
                   <span className="text-xs font-semibold text-emerald-950">
-                    {user.dosen?.fakultas?.nama || <span className="text-emerald-950/30 italic">Belum dipetakan</span>}
+                    {user.dosen?.fakultas?.nama || <span className="font-medium italic text-emerald-950/40">Belum dipetakan</span>}
                   </span>
                 </PremiumTableCell>
                 <PremiumTableCell>

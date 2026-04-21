@@ -294,15 +294,22 @@ class WorkshopService
         $workshop = $participant->workshop;
         $user = $participant->user;
 
+        $configs = DB::table('konfigurasi_sertifikat')
+            ->whereIn('config_key', ['workshop_cert_title', 'workshop_cert_signer_name', 'workshop_cert_signer_nip'])
+            ->pluck('value', 'config_key');
+
         $certificateData = [
             'participant_name' => $user->name,
-            'nim' => $user->mahasiswa?->nim ?? '-',
+            'nim' => $user->mahasiswa?->nim ?? $user->dosen?->nip ?? '-',
             'workshop_title' => $workshop->title,
             'workshop_date' => $workshop->workshop_date->format('d F Y'),
             'methodology' => $workshop->methodology,
             'location' => $workshop->location,
             'certificate_number' => $this->generateCertificateNumber($participant),
-            'issue_date' => now()->format('d F Y'),
+            'issue_date' => now()->translatedFormat('d F Y'),
+            'cert_title' => $configs['workshop_cert_title'] ?? 'SERTIFIKAT PEMBEKALAN',
+            'signer_name' => $configs['workshop_cert_signer_name'] ?? 'Dr. H. Ansori, M.Ag.',
+            'signer_nip' => $configs['workshop_cert_signer_nip'] ?? '197004121996031002',
         ];
 
         // Generate PDF using DomPDF
@@ -358,8 +365,13 @@ class WorkshopService
         bool $includeAllStatuses = false,
         ?int $periodId = null
     ): array {
-        $query = Workshop::where('workshop_date', '>=', now()->toDateString())
-            ->withCount('peserta');
+        $query = Workshop::query();
+
+        if (! $includeAllStatuses) {
+            $query->where('workshop_date', '>=', now()->toDateString());
+        }
+
+        $query->withCount('peserta');
 
         // Only filter by period if explicitly set and workshop has periode_id
         if (Workshop::supportsPeriodAssignment() && $periodId) {
@@ -380,7 +392,7 @@ class WorkshopService
         if ($includeParticipants) {
             $query->with([
                 'peserta' => fn ($participantQuery) => $participantQuery
-                    ->with('user:id,name,email')
+                    ->with(['user' => fn ($q) => $q->select('id', 'name', 'email')->with(['mahasiswa:id,user_id,nim', 'dosen:id,user_id,nip'])])
                     ->orderBy('created_at'),
             ]);
         } elseif ($userId) {
@@ -392,7 +404,7 @@ class WorkshopService
         }
 
         $workshops = $query
-            ->orderBy('workshop_date')
+            ->orderBy('workshop_date', $includeAllStatuses ? 'desc' : 'asc')
             ->get();
 
         return $workshops->map(function ($workshop) use ($userId, $includeParticipants) {
@@ -437,6 +449,9 @@ class WorkshopService
                         'user_id' => $participant->user_id,
                         'name' => $participant->user?->name ?? 'Peserta Pembekalan',
                         'email' => $participant->user?->email,
+                        'identity_number' => $participant->user?->mahasiswa?->nim
+                                            ?? $participant->user?->dosen?->nip
+                                            ?? '-',
                         'attendance_status' => $participant->attendance_status,
                         'certificate_generated' => (bool) $participant->certificate_generated,
                         'checked_in_at' => $participant->checked_in_at?->toDateTimeString(),

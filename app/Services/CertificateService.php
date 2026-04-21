@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\KKN\KonfigurasiSertifikat;
 use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\SertifikatKkn;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
 use RuntimeException;
@@ -73,7 +74,33 @@ class CertificateService
         $body = str_replace('[PERIODE]', "<strong>{$periodName}</strong>", $body);
 
         $verificationToken = self::generateVerificationToken($score);
+        $certificateNo = 'KKN/'.($periode->id ?? 0).'/'.$verificationToken;
         $verificationUrl = url("/verify-certificate/{$verificationToken}");
+
+        // Simpan riwayat sertifikat ke database
+        $sertifikat = SertifikatKkn::updateOrCreate(
+            [
+                'user_id' => $mahasiswaModel->user_id,
+                'periode_id' => $periode->id,
+            ],
+            [
+                'nilai_kkn_id' => $score->id,
+                'kelompok_id' => $kelompok->id,
+                'certificate_number' => $certificateNo,
+                'verification_token' => $verificationToken,
+                'nama_mahasiswa' => $name,
+                'nim' => $mahasiswaModel->nim ?? '-',
+                'nama_prodi' => $mahasiswaModel->prodi?->nama,
+                'nama_fakultas' => $mahasiswaModel->fakultas?->nama,
+                'lokasi_kkn' => $locationStr,
+                'total_score' => $score->total_score,
+                'letter_grade' => $score->letter_grade,
+                'issued_at' => now(),
+                'issued_by' => auth()->id(),
+                'revoked_at' => null,
+                'revoke_reason' => null,
+            ]
+        );
 
         $data = [
             'title' => $configs['cert_title'] ?? 'SERTIFIKAT PENGHARGAAN',
@@ -85,7 +112,7 @@ class CertificateService
             'score' => $score->total_score,
             'grade' => $score->letter_grade,
             'date' => now()->translatedFormat('d F Y'),
-            'certificate_no' => 'KKN/'.($periode->id ?? 0).'/'.$verificationToken,
+            'certificate_no' => $certificateNo,
             'signer1_name' => $configs['cert_signer_left_name'] ?? '-',
             'signer1_title' => $configs['cert_signer_left_title'] ?? '-',
             'signer2_name' => $configs['cert_signer_right_name'] ?? '-',
@@ -140,5 +167,45 @@ class CertificateService
         $payload = "CERT-{$score->id}-{$score->user_id}";
 
         return strtoupper(substr(hash_hmac('sha256', $payload, $secret), 0, 16));
+    }
+
+    /**
+     * Cari sertifikat berdasarkan token verifikasi (untuk halaman verifikasi publik).
+     */
+    public function findByToken(string $token): ?SertifikatKkn
+    {
+        return SertifikatKkn::where('verification_token', $token)->first();
+    }
+
+    /**
+     * Cabut/batalkan sertifikat.
+     */
+    public function revoke(SertifikatKkn $sertifikat, string $reason): SertifikatKkn
+    {
+        $sertifikat->update([
+            'revoked_at' => now(),
+            'revoke_reason' => $reason,
+            'revoked_by' => auth()->id(),
+        ]);
+
+        return $sertifikat->fresh();
+    }
+
+    /**
+     * Statistik sertifikat per periode.
+     */
+    public function getStats(?int $periodeId = null): array
+    {
+        $query = SertifikatKkn::query();
+
+        if ($periodeId) {
+            $query->forPeriode($periodeId);
+        }
+
+        return [
+            'total_terbit' => (clone $query)->count(),
+            'aktif' => (clone $query)->valid()->count(),
+            'dicabut' => (clone $query)->whereNotNull('revoked_at')->count(),
+        ];
     }
 }

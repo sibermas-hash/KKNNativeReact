@@ -30,6 +30,7 @@ interface Participant {
   user_id: number;
   name: string;
   email: string;
+  identity_number: string;
   attendance_status: string;
   certificate_generated: boolean;
   checked_in_at: string | null;
@@ -64,13 +65,14 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
   const isAdmin = userRoles.includes('superadmin') || userRoles.includes('admin');
   const isStudent = userRoles.includes('student');
   const isDpl = userRoles.includes('dpl');
-  const isParticipant = isStudent || isDpl;
+  const isParticipant = isDpl; // Hanya DPL yang dianggap peserta workshop pendaftaran
 
   const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showParticipants, setShowParticipants] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [attendedIds, setAttendedIds] = useState<number[]>([]);
 
   const { data, setData, post, patch, processing, errors, reset } = useForm({
     title: '',
@@ -129,9 +131,38 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
   };
 
   const handleRegister = (workshopId: number) => {
-    const rolePrefix = isStudent ? 'student' : 'dpl';
-    router.post(route(`${rolePrefix}.workshops.register`, workshopId), {}, {
+    router.post(route('dosen.workshops.register', workshopId), {}, {
       onFinish: () => reset(),
+    });
+  };
+
+  const handleOpenParticipants = (workshop: Workshop) => {
+    setSelectedWorkshop(workshop);
+    // Ambil ID user yang sudah ditandai hadir sebelumnya
+    const initialAttended = workshop.participants
+      .filter(p => p.attendance_status === 'attended')
+      .map(p => p.user_id);
+    setAttendedIds(initialAttended);
+    setShowParticipants(true);
+  };
+
+  const toggleAttendance = (userId: number) => {
+    setAttendedIds(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId) 
+        : [...prev, userId]
+    );
+  };
+
+  const saveAttendance = () => {
+    if (!selectedWorkshop) return;
+    
+    router.post(route('admin.workshops.mark-attendance', selectedWorkshop.id), {
+      user_ids: attendedIds
+    }, {
+      onSuccess: () => {
+        setShowParticipants(false);
+      }
     });
   };
 
@@ -173,7 +204,7 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
         {/* SEARCH BAR PANEL */}
         <ContentPanel
           title="Daftar Agenda Pembekalan"
-          description="Manajemen Jadwal & Manifest"
+          description="Manajemen Jadwal & Daftar Peserta"
           icon={Calendar}
           padding={false}
           headerAction={
@@ -204,7 +235,11 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
                 <div key={w.id} className="bg-white rounded-xl border border-emerald-50 overflow-hidden shadow-sm flex flex-col hover:border-emerald-300 transition-colors">
                   <div className="p-6 flex-1 space-y-4">
                     <div className="flex justify-between items-start">
-                      <StatusTag status={w.status === 'scheduled' ? 'active' : 'inactive'} label={w.status === 'scheduled' ? 'AKTIF' : 'DRAFT'} />
+                      {new Date(w.workshop_date_value) < new Date(new Date().setHours(0,0,0,0)) ? (
+                        <StatusTag status="gray" label="SELESAI" />
+                      ) : (
+                        <StatusTag status={w.status === 'scheduled' ? 'active' : 'inactive'} label={w.status === 'scheduled' ? 'AKTIF' : 'DRAFT'} />
+                      )}
                       <div className="text-xs font-bold text-emerald-800 uppercase tabular-nums">ID: {w.id}</div>
                     </div>
 
@@ -254,10 +289,10 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
                           <Trash2 size={14} />
                         </button>
                         <button 
-                          onClick={() => { setSelectedWorkshop(w); setShowParticipants(true); }}
+                          onClick={() => handleOpenParticipants(w)}
                           className="h-8 px-4 bg-white border border-emerald-50 text-[#1a7a4a] rounded-lg text-xs font-bold hover:bg-gray-50"
                         >
-                          Manifes
+                          Daftar Peserta
                         </button>
                       </>
                     ) : isParticipant && (
@@ -386,7 +421,7 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
           </form>
         </div>
       </Modal>      {/* PARTICIPANTS MODAL */}
-      <Modal show={showParticipants} onClose={() => setShowParticipants(false)} title="Manifes Kehadiran Peserta" maxWidth="5xl">
+      <Modal show={showParticipants} onClose={() => setShowParticipants(false)} title="Daftar Kehadiran Peserta" maxWidth="5xl">
         <div className="max-h-[85vh] flex flex-col font-sans bg-white text-emerald-950">
           <div className="p-8 border-b-2 border-[#f3f4f6] bg-gray-50 flex items-center justify-between">
             <div className="space-y-1">
@@ -412,21 +447,29 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
                         {p.name.charAt(0)}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-bold text-emerald-950 group-hover:text-[#1a7a4a] transition-colors uppercase tracking-tight">{p.name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-emerald-950 group-hover:text-[#1a7a4a] transition-colors uppercase tracking-tight">{p.name}</span>
+                          <span className="text-[10px] font-black bg-emerald-50 text-[#1a7a4a] px-1.5 py-0.5 rounded border border-emerald-100 tabular-nums">{p.identity_number}</span>
+                        </div>
                         <span className="text-xs font-bold text-[#1a7a4a]/40 tabular-nums lowercase">{p.email || 'system@uinsaizu.ac.id'}</span>
                       </div>
                     </div>
                   </PremiumTableCell>
                   <PremiumTableCell align="center">
-                    <StatusTag status={p.attendance_status === 'attended' ? 'success' : 'gray'} label={p.attendance_status === 'attended' ? 'HADIR' : 'ABSEN'} size="sm" />
+                    <input 
+                      type="checkbox"
+                      checked={attendedIds.includes(p.user_id)}
+                      onChange={() => toggleAttendance(p.user_id)}
+                      className="w-5 h-5 rounded border-gray-300 text-[#16a34a] focus:ring-[#16a34a] transition-all cursor-pointer"
+                    />
                   </PremiumTableCell>
                   <PremiumTableCell align="right">
                     {p.certificate_generated ? (
-                      <span className="inline-flex items-center gap-2 text-xs font-black text-[#1a7a4a] bg-[#e8f5ee] px-3 py-1.5 rounded-lg border-2 border-emerald-50 shadow-sm tracking-widest uppercase">
-                        <CheckCircle2 size={12} strokeWidth={3} /> TERBIT
+                      <span className="inline-flex items-center gap-2 text-[10px] font-black text-[#1a7a4a] bg-[#e8f5ee] px-2 py-1 rounded border border-emerald-100 tracking-widest uppercase">
+                        <CheckCircle2 size={10} strokeWidth={3} /> TERBIT
                       </span>
                     ) : (
-                      <span className="text-xs font-black text-emerald-950/20 uppercase tracking-widest">BELUM</span>
+                      <span className="text-[10px] font-black text-emerald-950/20 uppercase tracking-widest">BELUM</span>
                     )}
                   </PremiumTableCell>
                 </PremiumTableRow>
@@ -436,7 +479,16 @@ export default function WorkshopIndex({ workshops = [] }: Props) {
 
           <div className="p-6 bg-emerald-50/10 border-t-2 border-[#f3f4f6] flex items-center justify-between">
             <span className="text-xs font-black text-emerald-950/20 uppercase tracking-widest">{selectedWorkshop?.participants?.length || 0} DATA TEREKAM</span>
-            <button onClick={() => setShowParticipants(false)} className="h-11 px-8 bg-white border-2 border-[#f3f4f6] text-emerald-950 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-gray-50 transition-all active:scale-95 shadow-sm">Tutup Manifes</button>
+            <div className="flex gap-3">
+              <button onClick={() => setShowParticipants(false)} className="h-11 px-6 bg-white border-2 border-[#f3f4f6] text-emerald-950 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-gray-50 transition-all active:scale-95 shadow-sm">Tutup</button>
+              <button 
+                onClick={saveAttendance}
+                disabled={processing}
+                className="h-11 px-8 bg-[#16a34a] text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-[#15803d] transition-all active:scale-95 shadow-md shadow-emerald-600/20 disabled:opacity-50"
+              >
+                {processing ? 'Menyimpan...' : 'Simpan Presensi'}
+              </button>
+            </div>
           </div>
         </div>
       </Modal>

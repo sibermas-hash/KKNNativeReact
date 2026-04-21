@@ -9,8 +9,8 @@ use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use App\Services\AuditService;
 use App\Services\AutomaticGroupPlacementService;
-use App\Services\GroupSelectionService;
 use App\Services\EligibilityService;
+use App\Services\GroupSelectionService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -59,10 +59,10 @@ class RegistrationApprovalService
 
             // SECURITY GATE: Verify Academic Eligibility before final approval
             $eligibility = $this->eligibilityService->checkEligibility($registration->mahasiswa, $registration->periode_id);
-            if (!$eligibility['is_eligible']) {
+            if (! $eligibility['is_eligible']) {
                 $reasons = collect($eligibility['issues'])->pluck('message')->implode(', ');
                 throw ValidationException::withMessages([
-                    'status' => "Pendaftaran tidak dapat disetujui karena mahasiswa tidak memenuhi syarat akademik: {$reasons}"
+                    'status' => "Pendaftaran tidak dapat disetujui karena mahasiswa tidak memenuhi syarat akademik: {$reasons}",
                 ]);
             }
 
@@ -127,7 +127,7 @@ class RegistrationApprovalService
                 foreach ($registrations as $registration) {
                     // SECURITY GATE: Verify Academic Eligibility before final approval
                     $eligibility = $this->eligibilityService->checkEligibility($registration->mahasiswa, $registration->periode_id);
-                    if (!$eligibility['is_eligible']) {
+                    if (! $eligibility['is_eligible']) {
                         continue; // Skip ineligible students in bulk action
                     }
 

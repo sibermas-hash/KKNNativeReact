@@ -43,6 +43,9 @@ Route::middleware([
 
         Route::prefix('{score}')->group(function () {
             Route::patch('finalisasi', [Admin\RekapNilaiController::class, 'finalize'])->name('finalisasi');
+            Route::get('sertifikat', [Admin\RekapNilaiController::class, 'downloadCertificate'])->name('sertifikat');
+            Route::get('sertifikat-word', [Admin\RekapNilaiController::class, 'downloadWordCertificate'])->name('sertifikat-word');
+            Route::get('preview-sertifikat', [Admin\RekapNilaiController::class, 'previewCertificate'])->name('preview-sertifikat');
         });
 
         Route::post('finalisasi-massal', [Admin\RekapNilaiController::class, 'finalizeMass'])

@@ -102,7 +102,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
 
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        <div className="lg:pl-60 flex flex-col min-h-screen transition-all duration-300 w-full overflow-x-hidden">
+        <div className="lg:pl-64 flex flex-col min-h-screen transition-all duration-300 w-full overflow-x-hidden">
 
 
           {/* TOP HEADER BAR */}

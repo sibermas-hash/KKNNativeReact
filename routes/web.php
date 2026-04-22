@@ -8,7 +8,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Public\CertificateVerificationController;
 use App\Http\Controllers\ReportController;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Route;
 if (config('app.env') === 'local') {
     Route::post('/auth/login', function (Request $request) {
         return response()->json(['access_token' => 'student_test_token']);
-    })->withoutMiddleware([VerifyCsrfToken::class]);
+    })->withoutMiddleware([PreventRequestForgery::class]);
 }
 Route::middleware(['guest', 'kkn.throttle', 'disable.debugbar'])->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
@@ -47,9 +47,9 @@ Route::middleware(['guest', 'kkn.throttle', 'disable.debugbar'])->group(function
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/profil-lppm', [HomeController::class, 'about'])->name('public.about');
 Route::get('/skema-kkn', [HomeController::class, 'schemes'])->name('public.schemes');
-Route::get('/warta', [HomeController::class, 'announcements'])->name('public.announcements');
-Route::get('/repositori', [HomeController::class, 'downloads'])->name('public.downloads');
-Route::get('/cari-lokasi', [HomeController::class, 'locations'])->name('public.locations');
+Route::get('/pengumuman', [HomeController::class, 'announcements'])->name('public.announcements');
+Route::get('/unduhan', [HomeController::class, 'downloads'])->name('public.downloads');
+Route::get('/lokasi', [HomeController::class, 'map'])->name('public.locations');
 Route::get('/verify-certificate/{token}', [CertificateVerificationController::class, 'verify'])->name('certificate.verify');
 // Health Check Endpoint
 Route::get('/health', [HealthController::class, 'check'])->name('health');

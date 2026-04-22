@@ -63,7 +63,7 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
     <AppLayout title="Bobot Penilaian">
       <Head title="Bobot Penilaian KKN" />
 
-      <div className="max-w-7xl mx-auto space-y-6 font-sans pb-12">
+      <div className="space-y-6 font-sans pb-12">
         
         <PageHeader
           title="Matriks Penilaian."

@@ -71,7 +71,7 @@ export default function YudisiumIndex({ periodes, rekap, selectedPeriodeId }: Pr
  <AppLayout title="Sidang Yudisium & Kelulusan">
  <Head title="Yudisium KKN"/>
 
- <div className="max-w-7xl mx-auto space-y-8 pb-24 text-emerald-950 font-sans">
+ <div className="space-y-8 pb-24 text-emerald-950 font-sans">
  {/* --- PREMIUM HEADER --- */}
  <div className="space-y-4">
  <div className="flex items-center gap-3 text-[#1a7a4a]">

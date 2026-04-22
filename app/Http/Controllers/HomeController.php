@@ -174,4 +174,41 @@ class HomeController extends Controller
             'filters' => request()->all('search'),
         ]);
     }
+
+    /**
+     * Display interactive map of KKN locations.
+     */
+    public function map()
+    {
+        $locations = Lokasi::whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->with(['kelompok' => function ($q) {
+                $q->withCount('mahasiswa');
+            }])
+            ->get();
+
+        return Inertia::render('Public/LocationsMap', [
+            'locations' => $locations->map(fn ($loc) => [
+                'id' => $loc->id,
+                'name' => $loc->village_name,
+                'district' => $loc->district_name,
+                'regency' => $loc->regency_name,
+                'latitude' => (float) $loc->latitude,
+                'longitude' => (float) $loc->longitude,
+                'address' => $loc->address,
+                'groups' => $loc->kelompok->map(fn ($k) => [
+                    'id' => $k->id,
+                    'nama' => $k->nama,
+                    'students_count' => $k->mahasiswa_count,
+                ]),
+            ]),
+            'config' => [
+                'center' => [
+                    (float) SystemSetting::get('map_center_lat', -7.4243),
+                    (float) SystemSetting::get('map_center_lng', 109.2302),
+                ],
+                'zoom' => (int) SystemSetting::get('map_default_zoom', 11),
+            ],
+        ]);
+    }
 }

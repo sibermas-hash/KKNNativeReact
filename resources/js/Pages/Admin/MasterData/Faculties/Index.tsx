@@ -61,7 +61,7 @@ export default function FacultiesIndex({ faculties, filters, syncInfo }: Props) 
     <AppLayout title="Direktori Fakultas">
       <Head title="Direktori Fakultas" />
 
-      <div className="max-w-7xl mx-auto space-y-8 pb-24 font-sans">
+      <div className="space-y-8 pb-24 text-emerald-950 font-sans">
         
         <PageHeader 
           title="Basis Struktural."

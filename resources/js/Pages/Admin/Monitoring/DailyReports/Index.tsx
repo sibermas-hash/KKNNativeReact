@@ -51,7 +51,7 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
  <AppLayout title="Audit Logbook Harian Mahasiswa">
  <Head title="Logbook Harian"/>
 
- <div className="max-w-7xl mx-auto space-y-6 pb-12 font-sans px-4 sm:px-6 lg:px-8 text-emerald-950">
+ <div className="space-y-6 pb-12 font-sans text-emerald-950">
  
  {/* --- PREMIUM HEADER --- */}
  <div className="space-y-4 pt-6">

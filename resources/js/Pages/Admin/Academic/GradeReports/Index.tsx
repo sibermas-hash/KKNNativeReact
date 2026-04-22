@@ -101,6 +101,29 @@ export default function RekapNilaiIndex({
     window.location.href = `${path === 'ekspor' ? route('admin.grade-reports.ekspor') : route('admin.grade-reports.ekspor-ledger')}?${params.toString()}`;
   };
 
+  const [previewData, setPreviewData] = useState<{ open: boolean; loading: boolean; base64: string | null; filename: string | null }>({ open: false, loading: false, base64: null, filename: null });
+
+  const handlePreview = async (scoreId: number) => {
+    setPreviewData({ open: true, loading: true, base64: null, filename: null });
+    try {
+      const response = await fetch(route('admin.grade-reports.preview-sertifikat', scoreId));
+      const data = await response.json();
+      if (data.success) {
+        setPreviewData({ open: true, loading: false, base64: data.preview, filename: data.filename });
+      } else {
+        alert('Gagal memuat pratinjau: ' + data.message);
+        setPreviewData(prev => ({ ...prev, open: false, loading: false }));
+      }
+    } catch (e) {
+      alert('Terjadi kesalahan saat memuat pratinjau.');
+      setPreviewData(prev => ({ ...prev, open: false, loading: false }));
+    }
+  };
+
+  const handleDownloadWord = (scoreId: number) => {
+    window.location.href = route('admin.grade-reports.sertifikat-word', scoreId);
+  };
+
   const handleBulkCertificates = () => {
     if (!periodId) return;
     if (confirm('Mulai proses pembuatan sertifikat massal?')) {
@@ -112,7 +135,7 @@ export default function RekapNilaiIndex({
   return (
     <AppLayout title="Rekap Nilai">
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans transition-all">
+      <div className="py-8 font-sans transition-all">
         {/* Header Sederhana Sesuai Patokan Gold Standard */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 border-b border-emerald-50/50 pb-8">
           <div className="space-y-1">
@@ -224,15 +247,36 @@ export default function RekapNilaiIndex({
                       )}>{grade.is_locked ? 'DIKUNCI' : 'DRAF'}</span>
                     </td>
                     <td className="px-8 py-5 text-right">
-                      <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                        {grade.can_finalize && !grade.is_locked ? (
+                      <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity gap-2">
+                        {grade.is_locked && (
+                          <>
+                            <button 
+                              onClick={() => handlePreview(grade.score_id!)}
+                              className="h-9 w-9 bg-white text-emerald-600 hover:bg-emerald-50 border border-emerald-100 flex items-center justify-center rounded-xl shadow-sm transition-all"
+                              title="Pratinjau Sertifikat"
+                            >
+                              <FileText size={16} />
+                            </button>
+                            <button 
+                              onClick={() => handleDownloadWord(grade.score_id!)}
+                              className="h-9 w-9 bg-white text-[#1a7a4a] hover:bg-emerald-50 border border-emerald-100 flex items-center justify-center rounded-xl shadow-sm transition-all"
+                              title="Unduh format Word (.docx)"
+                            >
+                              <Download size={16} />
+                            </button>
+                            <a 
+                              href={route('admin.grade-reports.sertifikat', grade.score_id!)}
+                              className="h-9 w-9 bg-emerald-600 text-white hover:bg-emerald-800 flex items-center justify-center rounded-xl shadow-sm transition-all"
+                              title="Unduh format PDF"
+                            >
+                              <ShieldCheck size={16} />
+                            </a>
+                          </>
+                        )}
+                        {grade.can_finalize && !grade.is_locked && (
                           <button onClick={() => handleFinalize(grade.score_id!)} className="h-9 px-5 bg-[#e8f5ee] text-[#1a7a4a] hover:bg-[#16a34a] hover:text-white border border-emerald-50 text-xs font-black uppercase tracking-widest rounded-xl shadow-sm transition-all">
                             Validasi
                           </button>
-                        ) : grade.is_locked ? (
-                          <ShieldCheck size={18} className="text-[#1a7a4a] opacity-30" />
-                        ) : (
-                          <Activity size={16} className="text-emerald-950/10" />
                         )}
                       </div>
                     </td>
@@ -243,13 +287,65 @@ export default function RekapNilaiIndex({
           </div>
           
           {/* Footer Info (Gold Standard) */}
-          <div className="px-8 py-4 bg-emerald-50/10 border-t border-[#f3f4f6]/50 flex items-center justify-between">
+<div className="px-8 py-4 bg-emerald-50/10 border-t border-[#f3f4f6]/50 flex items-center justify-between">
             <span className="text-xs font-black text-emerald-950/20 uppercase tracking-widest leading-none">
               Repositori Nilai | Total {scores?.length || 0} Mahasiswa Terdaftar
             </span>
           </div>
         </div>
-      </div>
+
+      {/* --- PREVIEW MODAL --- */}
+      <AnimatePresence>
+        {previewData.open && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-emerald-950/20 backdrop-blur-md">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden border border-emerald-50"
+            >
+              <div className="px-8 py-6 border-b border-emerald-50 flex items-center justify-between bg-white">
+                <div className="flex flex-col">
+                  <h3 className="text-lg font-bold text-emerald-950 leading-none mb-1">Pratinjau Otoritas Sertifikat.</h3>
+                  <span className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">{previewData.filename}</span>
+                </div>
+                <button 
+                  onClick={() => setPreviewData({ open: false, loading: false, base64: null, filename: null })}
+                  className="h-10 w-10 flex items-center justify-center rounded-xl bg-gray-50 text-emerald-950 hover:bg-rose-50 hover:text-rose-600 transition-all"
+                >
+                  <RefreshCw size={20} className={previewData.loading ? 'animate-spin' : ''} />
+                </button>
+              </div>
+              
+              <div className="flex-1 bg-gray-100 p-8 flex items-center justify-center relative">
+                {previewData.loading ? (
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="h-12 w-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-xs font-black text-emerald-800 uppercase tracking-widest">Menyiapkan Visual...</span>
+                  </div>
+                ) : (
+                  <iframe 
+                    src={`data:application/pdf;base64,${previewData.base64}`} 
+                    className="w-full h-full rounded-lg shadow-inner border border-emerald-100 bg-white"
+                    title="Certificate Preview"
+                  />
+                )}
+              </div>
+              
+              <div className="px-8 py-6 bg-emerald-50/10 border-t border-emerald-50 flex justify-end gap-3">
+                <Button 
+                  onClick={() => setPreviewData({ open: false, loading: false, base64: null, filename: null })}
+                  variant="outline"
+                  className="h-11 px-8 text-xs font-black uppercase tracking-widest border-emerald-100 text-emerald-950"
+                >
+                  Tutup Audit
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+        </div>
     </AppLayout>
   );
 }

@@ -122,7 +122,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
     <AppLayout title="Data Tahun Akademik">
       <Head title="Data Tahun Akademik" />
 
-      <div className="max-w-7xl mx-auto space-y-8 font-sans pb-12">
+      <div className="space-y-8 pb-24 font-sans text-emerald-950">
         <PageHeader 
           title="Tahun Ajaran."
           subtitle="Daftar tahun akademik aktif yang digunakan untuk mengelompokkan periode pelaksanaan KKN."

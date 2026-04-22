@@ -113,7 +113,7 @@ export default function GroupShow({ group, members = [] }: Props) {
  <AppLayout title={`Spesifikasi Unit: ${group.code || ''}`}>
  <Head title={`Audit Unit ${group.nama_kelompok || ''}`} />
 
- <div className="max-w-[1600px] mx-auto space-y-12 pb-24 font-sans px-4 sm:px-6 lg:px-8 text-emerald-950">
+ <div className="space-y-12 pb-24 font-sans text-emerald-950">
  
  {/* --- PREMIUM HEADER --- */}
  <div className="space-y-8 pt-12">

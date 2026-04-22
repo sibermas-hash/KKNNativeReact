@@ -38,7 +38,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
   return (
     <AppLayout title="Monitoring Evaluasi">
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans transition-all">
+      <div className="py-8 font-sans transition-all">
         {/* Header Sederhana Sesuai Patokan Gold Standard */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 border-b border-emerald-50/50 pb-8">
           <div className="space-y-1">

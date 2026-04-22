@@ -17,7 +17,56 @@ class CertificateService
     /**
      * Generate PDF certificate for a specific student score
      */
-    public function generateForStudent(NilaiKkn $score, array $signers = [])
+    public function generateForStudent(NilaiKkn $score)
+    {
+        $data = $this->prepareCertificateData($score);
+        
+        return Pdf::loadView('reports.certificate', $data)
+            ->setPaper('a4', 'landscape');
+    }
+
+    /**
+     * Generate Word certificate for a specific student score
+     */
+    public function generateWordForStudent(NilaiKkn $score)
+    {
+        $data = $this->prepareCertificateData($score);
+        
+        // Path to Word template
+        $templatePath = storage_path('app/templates/certificate_template.docx');
+        
+        if (!file_exists($templatePath)) {
+            throw new RuntimeException('Template Word (.docx) tidak ditemukan di storage/app/templates/certificate_template.docx');
+        }
+
+        $templateProcessor = new \PhpOffice\PhpWord\TemplateProcessor($templatePath);
+        
+        // Map data to template placeholders
+        $templateProcessor->setValue('TITLE', $data['title']);
+        $templateProcessor->setValue('NAME', $data['name']);
+        $templateProcessor->setValue('NIM', $data['nim']);
+        $templateProcessor->setValue('BODY', strip_tags($data['body']));
+        $templateProcessor->setValue('GRADE', $data['grade']);
+        $templateProcessor->setValue('DATE', $data['date']);
+        $templateProcessor->setValue('CERT_NO', $data['certificate_no']);
+        $templateProcessor->setValue('SIGNER1_NAME', $data['signer1_name']);
+        $templateProcessor->setValue('SIGNER1_TITLE', $data['signer1_title']);
+        $templateProcessor->setValue('SIGNER2_NAME', $data['signer2_name']);
+        $templateProcessor->setValue('SIGNER2_TITLE', $data['signer2_title']);
+
+        // QR Code handling in Word would require more complex image injection
+        // For now, we provide the core text data
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'cert_');
+        $templateProcessor->saveAs($tempFile);
+        
+        return $tempFile;
+    }
+
+    /**
+     * Centralized data preparation to ensure consistency between PDF and Word
+     */
+    protected function prepareCertificateData(NilaiKkn $score): array
     {
         $score->loadMissing([
             'mahasiswa.user',
@@ -56,10 +105,8 @@ class CertificateService
             throw new RuntimeException('Laporan akhir belum disetujui untuk kelompok ini');
         }
 
-        // Load Dynamic Configs using optimized Service
-        $configService = app(KKN\KonfigurasiSertifikatService::class);
+        $configService = app(\App\Services\KKN\KonfigurasiSertifikatService::class);
         $periodeId = (int) $periode->id;
-        
         $configs = $configService->getAllForPeriode($periodeId);
 
         $lokasi = $kelompok->lokasi;
@@ -74,33 +121,30 @@ class CertificateService
         $fakultasName = $mahasiswaModel->fakultas?->nama ?? '-';
         $prodiName = $mahasiswaModel->prodi?->nama ?? '-';
 
-        // Process Body Text Placeholders (Harmonized with UI + Legacy Support)
         $body = $configs['cert_body'] ?? 'Telah mengikuti Kuliah Kerja Nyata (KKN) periode [Periode] di lokasi [Lokasi].';
         
-        // New Standard
-        $body = str_replace('[Nama]', $name, $body);
-        $body = str_replace('[NIM]', $mahasiswaModel->nim ?? '', $body);
-        $body = str_replace('[Fakultas]', $fakultasName, $body);
-        $body = str_replace('[Prodi]', $prodiName, $body);
-        $body = str_replace('[Kelompok]', $kelompok->nama ?? '-', $body);
-        $body = str_replace('[Lokasi]', $locationStr, $body);
-        $body = str_replace('[Periode]', $periodName, $body);
+        $replacements = [
+            '[Nama]' => $name,
+            '[NIM]' => $mahasiswaModel->nim ?? '',
+            '[Fakultas]' => $fakultasName,
+            '[Prodi]' => $prodiName,
+            '[Kelompok]' => $kelompok->nama ?? '-',
+            '[Lokasi]' => $locationStr,
+            '[Periode]' => $periodName,
+            '[StudentName]' => $name,
+            '[LOKASI]' => $locationStr,
+            '[PERIODE]' => $periodName,
+        ];
 
-        // Legacy Support (Case-insensitive where possible)
-        $body = str_replace('[StudentName]', $name, $body);
-        $body = str_replace('[LOKASI]', $locationStr, $body);
-        $body = str_replace('[PERIODE]', $periodName, $body);
+        $body = str_replace(array_keys($replacements), array_values($replacements), $body);
 
         $verificationToken = self::generateVerificationToken($score);
         $certificateNo = 'KKN/'.($periode->id ?? 0).'/'.$verificationToken;
         $verificationUrl = url("/verify-certificate/{$verificationToken}");
 
-        // Simpan riwayat sertifikat ke database
+        // Save history
         SertifikatKkn::updateOrCreate(
-            [
-                'user_id' => $mahasiswaModel->user_id,
-                'periode_id' => $periode->id,
-            ],
+            ['user_id' => $mahasiswaModel->user_id, 'periode_id' => $periode->id],
             [
                 'nilai_kkn_id' => $score->id,
                 'kelompok_id' => $kelompok->id,
@@ -120,12 +164,29 @@ class CertificateService
 
         $bgPath = $configs['cert_background'] ?? null;
         if ($bgPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($bgPath)) {
-            $bgImage = storage_path('app/public/'.$bgPath);
+            $bgFile = storage_path('app/public/'.$bgPath);
         } else {
-            $bgImage = public_path('images/cert-bg-default.png');
+            $bgFile = public_path('images/cert-bg-default.png');
         }
 
-        $data = [
+        // Convert background to base64 for reliable PDF rendering
+        $bgBase64 = '';
+        if (file_exists($bgFile)) {
+            $bgData = file_get_contents($bgFile);
+            $bgType = pathinfo($bgFile, PATHINFO_EXTENSION);
+            $bgBase64 = 'data:image/' . $bgType . ';base64,' . base64_encode($bgData);
+        }
+
+        // Convert QR URL to base64 to avoid remote fetch issues in DomPDF
+        $qrRawUrl = 'https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl='.urlencode($verificationUrl).'&choe=UTF-8';
+        try {
+            $qrData = file_get_contents($qrRawUrl);
+            $qrBase64 = 'data:image/png;base64,' . base64_encode($qrData);
+        } catch (\Exception $e) {
+            $qrBase64 = $qrRawUrl; // Fallback
+        }
+
+        return [
             'title' => $configs['cert_title'] ?? 'SERTIFIKAT PENGHARGAAN',
             'body' => $body,
             'name' => $name,
@@ -140,12 +201,18 @@ class CertificateService
             'signer1_title' => $configs['cert_signer_left_title'] ?? '-',
             'signer2_name' => $configs['cert_signer_right_name'] ?? '-',
             'signer2_title' => $configs['cert_signer_right_title'] ?? '-',
-            'bg_image' => $bgImage,
-            'qr_url' => 'https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl='.urlencode($verificationUrl).'&choe=UTF-8',
+            'bg_image' => $bgBase64,
+            'qr_url' => $qrBase64,
         ];
+    }
 
-        return Pdf::loadView('reports.certificate', $data)
-            ->setPaper('a4', 'landscape');
+    /**
+     * Generate a fast preview (base64) for the admin dashboard
+     */
+    public function preview(NilaiKkn $score): string
+    {
+        $pdf = $this->generateForStudent($score);
+        return base64_encode($pdf->output());
     }
 
     /**
@@ -165,11 +232,9 @@ class CertificateService
             try {
                 $pdf = $this->generateForStudent($score);
                 $fileName = "Sertifikat_{$score->mahasiswa->nim}_{$score->mahasiswa->nama}.pdf";
-                // Sanitize filename
                 $fileName = preg_replace('/[^A-Za-z0-9_\-\.]/', '_', $fileName);
                 $zip->addFromString($fileName, $pdf->output());
             } catch (\Exception $e) {
-                // Skip failed ones but log them if needed
                 continue;
             }
         }

@@ -39,7 +39,7 @@ export default function RekapitulasiList({ kelompokList }: Props) {
  <AppLayout title="Rekapitulasi Finansial">
  <Head title="Rekapitulasi Anggaran"/>
 
- <div className="max-w-7xl mx-auto space-y-6 sm:px-6 lg:px-8 font-sans pb-12">
+ <div className="space-y-6 font-sans pb-12">
  {/* HEADER SECTION */}
  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-emerald-50 pt-6">
  <div className="space-y-1">

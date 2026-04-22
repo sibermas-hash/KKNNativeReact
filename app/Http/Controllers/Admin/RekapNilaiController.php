@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\GradesExport;
 use App\Exports\RekapNilaiExport;
 use App\Http\Controllers\Controller;
 use App\Jobs\GenerateMassCertificatesJob;
@@ -205,6 +206,47 @@ class RekapNilaiController extends Controller
         return $pdf->download($filename);
     }
 
+    /**
+     * Download certificate in Word format (.docx)
+     */
+    public function downloadWordCertificate(NilaiKkn $score)
+    {
+        $this->authorize('view', $score);
+
+        if (! $score->is_finalized) {
+            return back()->with('error', 'Sertifikat hanya tersedia untuk nilai yang sudah difinalisasi.');
+        }
+
+        try {
+            $filePath = $this->certificate->generateWordForStudent($score);
+            $nim = $score->mahasiswa->nim ?? '';
+            $filename = "Sertifikat_KKN_{$score->mahasiswa->nama}_{$nim}.docx";
+
+            return response()->download($filePath, $filename)->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Fast preview for the dashboard (Base64 PDF)
+     */
+    public function previewCertificate(NilaiKkn $score)
+    {
+        $this->authorize('view', $score);
+        
+        try {
+            $base64 = $this->certificate->preview($score);
+            return response()->json([
+                'success' => true,
+                'preview' => $base64,
+                'filename' => "Preview_Sertifikat_{$score->mahasiswa->nim}.pdf"
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
     public function bulkCertificates(Request $request)
     {
         $this->authorize('export', NilaiKkn::class);
@@ -371,107 +413,22 @@ class RekapNilaiController extends Controller
     {
         $this->authorize('export', NilaiKkn::class);
 
-        $validated = $request->validate([
-            'fakultas_id' => 'nullable|exists:fakultas,id',
-        ]);
-
         $periodeId = $this->resolveRequestedPeriodId($request);
 
         if (! $periodeId) {
             return back()->with('error', 'Pilih periode terlebih dahulu sebelum mengekspor ledger nilai.');
         }
 
-        $rows = $this->repo->getRekapNilai($periodeId, [
-            'fakultas_id' => $validated['fakultas_id'] ?? null,
-            'search' => $request->input('search'),
-            'huruf' => $request->input('huruf'),
-        ]);
-
         $periode = Periode::find($periodeId);
 
         if (! $periode) {
             return back()->with('error', 'Periode rekap nilai tidak ditemukan.');
         }
-        $spreadsheet = new Spreadsheet;
-        $sheet = $spreadsheet->getActiveSheet();
 
-        // Headers
-        $headers = ['No', 'NIM', 'Nama', 'Prodi', 'Fakultas', 'Kelompok', 'Nilai DPL', 'Nilai Mitra', 'Nilai Admin', 'Nilai Akhir', 'Grade', 'Status'];
-        $col = 'A';
-        foreach ($headers as $header) {
-            $sheet->setCellValue("{$col}1", $header);
-            $col++;
-        }
-
-        // Styling header
-        $headerStyle = [
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => '1E40AF']],
-        ];
-        $sheet->getStyle('A1:L1')->applyFromArray($headerStyle);
-
-        // Data
-        $row = 2;
-        foreach ($rows as $index => $r) {
-            $sheet->setCellValue("A{$row}", $index + 1);
-            $sheet->setCellValue("B{$row}", $r->nim ?? '-');
-            $sheet->setCellValue("C{$row}", $r->nama ?? '-');
-            $sheet->setCellValue("D{$row}", $r->prodi ?? '-');
-            $sheet->setCellValue("E{$row}", $r->fakultas ?? '-');
-            $sheet->setCellValue("F{$row}", $r->group_name ?? '-');
-            $sheet->setCellValue("G{$row}", $r->n_dpl ?? '-');
-            $sheet->setCellValue("H{$row}", $r->n_mitra ?? '-');
-            $sheet->setCellValue("I{$row}", $r->n_admin ?? '-');
-            $sheet->setCellValue("J{$row}", $r->nilai_akhir ?? '-');
-            $sheet->setCellValue("K{$row}", $r->huruf ?? '-');
-            $sheet->setCellValue("L{$row}", $r->is_finalized ? 'Final' : 'Draft');
-
-            // Color code grade
-            $gradeColor = match ($r->huruf) {
-                'A' => '22C55E',
-                'A-' => '4ADE80',
-                'B+' => '60A5FA',
-                'B' => '3B82F6',
-                'B-' => '93C5FD',
-                'C+' => 'FBBF24',
-                'C' => 'F59E0B',
-                'D' => 'F97316',
-                'E' => 'EF4444',
-                default => '9CA3AF',
-            };
-            $sheet->getStyle("K{$row}")->getFont()->getColor()->setRGB($gradeColor);
-
-            $row++;
-        }
-
-        // Auto-size columns
-        foreach (range('A', 'L') as $col) {
-            $sheet->getColumnDimension($col)->setAutoSize(true);
-        }
-
-        $facultyId = $validated['fakultas_id'] ?? null;
-        $facultyName = $facultyId ? Fakultas::find($facultyId)?->nama : 'Semua';
-        $filename = "Ledger_Nilai_KKN_{$periode->name}_{$facultyName}_".date('Y-m-d_His').'.xlsx';
-        $writer = new Xlsx($spreadsheet);
-
-        // SECURITY: Use Laravel's storage path instead of system temp directory
-        $exportDir = storage_path('framework/cache/exports');
-        if (! is_dir($exportDir)) {
-            mkdir($exportDir, 0750, true);
-        }
-
-        $tempFile = $exportDir.'/'.Str::uuid().'.xlsx';
-        try {
-            $writer->save($tempFile);
-
-            return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
-        } catch (\Throwable $e) {
-            if (file_exists($tempFile)) {
-                unlink($tempFile);
-            }
-            Log::error('Ledger export failed', ['exception' => $e]);
-            abort(500, 'Gagal mengekspor ledger nilai.');
-        }
+        return Excel::download(
+            new GradesExport($periodeId),
+            "Ledger_Nilai_KKN_{$periode->name}_".now()->format('Ymd_His').'.xlsx'
+        );
     }
 
     private function resolveRequestedPeriodId(Request $request): ?int

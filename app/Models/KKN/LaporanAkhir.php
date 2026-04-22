@@ -9,9 +9,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
+
 
 class LaporanAkhir extends Model
 {
+    use HasFactory, SoftDeletes;
+
     protected $table = 'laporan_akhir';
 
     protected $fillable = [
@@ -42,7 +46,31 @@ class LaporanAkhir extends Model
         'score' => 'decimal:2',
     ];
 
-    use HasFactory, SoftDeletes;
+    /**
+     * PHP 8.4 Property Hooks (Demonstration)
+     * Replacing old-style getAttribute methods with direct property hooks.
+     */
+    public string $status_label {
+        get => match($this->status) {
+            'submitted' => 'Menunggu Review',
+            'reviewed' => 'Sudah Direview',
+            'rejected' => 'Perlu Revisi',
+            default => 'Draft',
+        };
+    }
+
+    public string $status_color {
+        get => match($this->status) {
+            'submitted' => 'yellow',
+            'reviewed' => 'green',
+            'rejected' => 'red',
+            default => 'gray',
+        };
+    }
+
+    public ?string $download_url {
+        get => $this->file_path ? Storage::disk('local')->url($this->file_path) : null;
+    }
 
     public function mahasiswa(): BelongsTo
     {

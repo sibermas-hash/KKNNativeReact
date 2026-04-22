@@ -68,7 +68,7 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
       <AppLayout title={`Detail Mahasiswa: ${mahasiswa.nama}`}>
         <Head title={`Detail — ${mahasiswa.nama}`} />
 
-        <div className="max-w-7xl mx-auto space-y-6 sm:px-6 lg:px-8 font-sans pb-12">
+        <div className="space-y-6 font-sans pb-12">
           {/* TEMPORARY PASSWORD BANNER */}
           {tempPasswordData && (
             <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-4 shadow-sm animate-pulse">

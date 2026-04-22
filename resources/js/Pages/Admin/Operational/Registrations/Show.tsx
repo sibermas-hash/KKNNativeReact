@@ -121,7 +121,7 @@ export default function RegistrationShow({ registration }: Props) {
     <AppLayout title="Detail Pendaftaran">
       <Head title={`Pendaftaran: ${registration.mahasiswa?.nama || '-'}`} />
 
-      <div className="max-w-7xl mx-auto space-y-6 sm:px-6 lg:px-8 font-sans pb-12 text-emerald-950">
+      <div className="space-y-6 font-sans pb-12 text-emerald-950">
         
         {/* BREADCRUMB HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-emerald-50 pt-6">

@@ -103,7 +103,7 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
     <AppLayout title="Audit Kualifikasi Akademik">
       <Head title="Audit Kualifikasi KKN" />
 
-      <div className="max-w-7xl mx-auto space-y-8 pb-24 text-emerald-950">
+      <div className="space-y-8 pb-24 text-emerald-950">
         
         <PageHeader 
           title="Audit Kualifikasi."

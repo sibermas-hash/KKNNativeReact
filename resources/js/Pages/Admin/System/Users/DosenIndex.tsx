@@ -50,7 +50,7 @@ export default function DosenIndex({ users, filters, stats }: Props) {
     <AppLayout title="Direktori Dosen">
       <Head title="Manajemen Data Dosen" />
 
-      <div className="max-w-7xl mx-auto space-y-8 pb-24 text-emerald-950">
+      <div className="space-y-8 pb-24 text-emerald-950">
 
         <PageHeader
           title="Direktori Dosen."

@@ -95,7 +95,7 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
     <AppLayout title="Monitoring Database">
       <Head title="Monitoring Database" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans transition-all text-emerald-950">
+      <div className="py-8 font-sans transition-all text-emerald-950">
         
         {/* HEADER SECTION */}
         <PageHeader

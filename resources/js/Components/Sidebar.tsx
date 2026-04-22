@@ -262,17 +262,17 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
       <aside
         className={clsx(
-          'fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 shadow-sm flex flex-col transition-transform duration-300 lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 w-64 bg-[#F8FAF9] border-r border-emerald-100/50 shadow-sm flex flex-col transition-transform duration-300 lg:translate-x-0',
           open ? 'translate-x-0 shadow-xl' : '-translate-x-full',
         )}
       >
         {/* LOGO AREA - Brand Identity */}
-        <div className="h-28 px-6 flex flex-col justify-center border-b border-slate-100 bg-white sticky top-0 z-10">
+        <div className="h-28 px-6 flex flex-col justify-center sticky top-0 z-10">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 flex items-center justify-center bg-white rounded-xl border border-slate-200 p-1.5 shadow-sm shrink-0">
+            <div className="h-12 w-12 flex items-center justify-center bg-white rounded-2xl border border-emerald-100 p-1.5 shadow-sm shrink-0">
               <img src="/images/logo_uin_saizu.png" alt="Logo UIN SAIZU" className="h-full w-full object-contain" />
             </div>
-            <div className="h-12 w-12 flex items-center justify-center bg-white rounded-xl border border-slate-200 p-1 shadow-sm shrink-0">
+            <div className="h-12 w-12 flex items-center justify-center bg-white rounded-2xl border border-emerald-100 p-1 shadow-sm shrink-0">
               <img src="/images/logo_siberdaya.png" alt="Logo Siberdaya" className="h-full w-full object-contain" />
             </div>
           </div>
@@ -280,7 +280,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             <h1 className="text-sm font-black text-emerald-950 leading-none tracking-tight flex items-center gap-1.5">
               SIBERDAYA <span className="h-1 w-1 rounded-full bg-emerald-500" />
             </h1>
-            <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-[0.15em] truncate">
+            <p className="text-[9px] font-black text-emerald-600/60 mt-1 uppercase tracking-[0.15em] truncate">
                {roles.some(r => ['admin', 'superadmin'].includes(r))
                 ? 'Sistem Manajemen KKN'
                 : 'Portal Layanan KKN'}
@@ -296,7 +296,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         >
           {navGroups.map((group, groupIdx) => (
             <div key={group.title} className="space-y-1.5">
-              <h3 className="px-3 text-[11px] font-black text-slate-600 uppercase tracking-widest">
+              <h3 className="px-3 text-[10px] font-black text-emerald-900/40 uppercase tracking-widest">
                 {group.title}
               </h3>
               
@@ -334,13 +334,10 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                       className={clsx(
                         'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 group relative',
                         isActive
-                          ? 'bg-emerald-50 text-emerald-700 font-bold'
-                          : 'text-slate-600 hover:bg-slate-50 hover:text-emerald-900',
+                          ? 'bg-white text-emerald-700 font-bold shadow-sm border border-emerald-100'
+                          : 'text-slate-500 hover:text-emerald-900',
                       )}
                     >
-                      {isActive && (
-                        <div className="absolute left-0 w-1 h-5 bg-emerald-600 rounded-r-full shadow-[0_0_8px_rgba(5,150,105,0.4)]" />
-                      )}
                       <item.icon
                         className={clsx(
                           'h-5 w-5 shrink-0 transition-colors',
@@ -361,21 +358,22 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           ))}
         </nav>
 
-        {/* BOTTOM PROFILE */}
-        <div className="p-4 bg-slate-50/50 border-t border-slate-100">
+        {/* BOTTOM PROFILE - Premium Style */}
+        <div className="p-4 mt-auto">
           <Link
             href={safeRoute('profile.show')}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white hover:shadow-sm transition-all group"
+            className="flex items-center gap-3 p-3 rounded-2xl bg-white border border-emerald-100 shadow-sm hover:shadow-md transition-all group"
           >
-            <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-emerald-600 shrink-0 shadow-sm">
-              <UserCog size={20} strokeWidth={2} />
+            <div className="h-10 w-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shrink-0 shadow-inner">
+               <span className="text-xs font-black uppercase">{auth.user.name.substring(0, 2)}</span>
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-sm font-bold text-slate-700 truncate group-hover:text-emerald-950">
-                Pengaturan
+              <span className="text-xs font-black text-emerald-950 truncate leading-none mb-1">
+                {auth.user.name}
               </span>
-              <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
-                Akun & Sistem
+              <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-1">
+                <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                {roles[0] || 'User'}
               </span>
             </div>
           </Link>

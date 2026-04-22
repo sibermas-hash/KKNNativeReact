@@ -136,7 +136,7 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
     <AppLayout title="Pengaturan Sistem">
       <Head title="Pengaturan & Monitor AI" />
 
-      <div className="max-w-7xl mx-auto space-y-6 font-sans pb-12">
+      <div className="space-y-6 font-sans pb-12">
         <PageHeader
           title="Pengaturan & Monitor AI"
           subtitle="Pusat kendali parameter operasional KKN dan pemantauan intelegensi buatan secara real-time."

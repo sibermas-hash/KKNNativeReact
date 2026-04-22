@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             KonfigurasiPenilaianSeeder::class,
             KonfigurasiSertifikatSeeder::class,
             JenisKknSeeder::class,
+            SystemSettingSeeder::class,
         ];
 
         if (app()->environment('local')) {

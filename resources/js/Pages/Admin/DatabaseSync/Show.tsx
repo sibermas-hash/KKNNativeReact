@@ -62,7 +62,7 @@ export default function DatabaseSyncShow({ log }: Props) {
     <AppLayout title={`Detail Log Sync #${log.id}`}>
       <Head title={`Audit Log: ${log.entity_type}`} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans transition-all">
+      <div className="py-8 font-sans transition-all">
         
         <div className="mb-6">
           <Link 

@@ -2,7 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "laravel/laravel",
     "type": "project",
-    "description": "SIBERDAYA - Laravel 13 AI-Native Refactored",
+    "description": "SIBERDAYA - Laravel 13 Ultimate AI-Native Stack",
     "keywords": [
         "laravel",
         "framework"
@@ -10,22 +10,24 @@
     "license": "MIT",
     "require": {
         "php": "^8.4",
-        "barryvdh/laravel-debugbar": "*",
-        "barryvdh/laravel-dompdf": "^3.1",
-        "inertiajs/inertia-laravel": "^2.0",
+        "barryvdh/laravel-debugbar": "^4.0",
+        "barryvdh/laravel-dompdf": "^3.1.2",
+        "inertiajs/inertia-laravel": "^3.0.6",
         "intervention/image": "^3.11",
         "laravel/ai": "^0.5.1",
         "laravel/boost": "^2.4",
-        "laravel/framework": "^12.56",
+        "laravel/framework": "^13.0",
         "laravel/mcp": "^0.6.5",
+        "laravel/pint": "^1.21",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^2.9",
+        "laravel/tinker": "^3.0",
         "league/flysystem-aws-s3-v3": "^3.32",
-        "maatwebsite/excel": "^3.1",
+        "maatwebsite/excel": "^3.1.68",
+        "phpoffice/phpword": "^1.4.0",
         "predis/predis": "^2.3",
         "prism-php/prism": "^0.100",
-        "spatie/laravel-backup": "^9.2",
-        "spatie/laravel-permission": "^6.10",
+        "spatie/laravel-backup": "^10.0",
+        "spatie/laravel-permission": "^7.3.0",
         "tightenco/ziggy": "^2.4"
     },
     "require-dev": {
@@ -35,8 +37,8 @@
         "laravel/sail": "^1.26",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.1",
-        "pestphp/pest": "^3.0",
-        "pestphp/pest-plugin-laravel": "^3.0"
+        "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-laravel": "^4.1"
     },
     "autoload": {
         "psr-4": {

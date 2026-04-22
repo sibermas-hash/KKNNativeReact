@@ -81,7 +81,7 @@ export default function ProgramsIndex({ programs, faculties = [], filters = {}, 
     <AppLayout title="Direktori Program Studi">
       <Head title="Direktori Program Studi" />
 
-      <div className="max-w-7xl mx-auto space-y-8 pb-24 font-sans">
+      <div className="space-y-8 pb-24 font-sans">
         
         <PageHeader 
           title="Matriks Program."

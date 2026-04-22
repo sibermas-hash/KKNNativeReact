@@ -121,7 +121,7 @@ export default function DplRegistration({ registrations, pagination, stats, filt
   return (
     <AppLayout title="Pendaftaran DPL">
       <Head title="Pendaftaran DPL" />
-      <div className="max-w-7xl mx-auto space-y-8 pb-24 text-emerald-950">
+      <div className="space-y-8 pb-24 text-emerald-950">
         <PageHeader
           title="Pendaftaran DPL."
           subtitle="Kelola permohonan dosen yang mendaftar sebagai Dosen Pembimbing Lapangan (DPL)."

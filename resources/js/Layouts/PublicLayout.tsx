@@ -24,7 +24,6 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         { label: 'Warta', href: safeRoute('public.announcements') },
         { label: 'Unduhan', href: safeRoute('public.downloads') },
         { label: 'Lokasi', href: safeRoute('public.locations') },
-        { label: 'Sertifikat', href: '/#verifikasi-sertifikat', native: true },
     ];
 
     // Logic to determine dashboard route based on user role
@@ -44,10 +43,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
     const dashboardHref = getDashboardRoute();
 
     return (
-        <div className="min-h-screen bg-white text-emerald-950 font-sans selection:bg-emerald-100">
-            {/* NAVIGATION SIMPLE */}
-            <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-emerald-50 h-16">
-                <div className="max-w-7xl mx-auto px-6 lg:px-8 h-full flex items-center justify-between">
+        <div className="min-h-screen bg-[linear-gradient(180deg,#f9fffb_0%,#ffffff_30%,#f8fcfa_100%)] text-emerald-950 font-sans selection:bg-emerald-100">
+            <nav className="sticky top-0 z-50 px-4 py-3 sm:px-6 lg:px-8">
+                <div className="mx-auto flex h-16 max-w-7xl items-center justify-between rounded-[1.75rem] border border-white/70 bg-white/65 px-6 shadow-[0_18px_60px_rgba(6,78,59,0.10)] backdrop-blur-2xl">
                     <Link href="/" className="flex items-center gap-3 no-underline group">
                         <div className="flex items-center gap-2">
                             <img src="/images/logo_uin_saizu.png" alt="Logo UIN" className="h-7 w-7 object-contain" />
@@ -58,25 +56,15 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
                     {/* Desktop Nav */}
                     <div className="hidden lg:flex items-center gap-8">
-                        {navItems.map((item) =>
-                            item.native ? (
-                                <a
-                                    key={item.label}
-                                    href={item.href}
-                                    className="text-xs font-bold text-emerald-950 hover:text-emerald-600 uppercase no-underline transition-colors"
-                                >
-                                    {item.label}
-                                </a>
-                            ) : (
-                                <Link
-                                    key={item.label}
-                                    href={item.href}
-                                    className="text-xs font-bold text-emerald-950 hover:text-emerald-600 uppercase no-underline transition-colors"
-                                >
-                                    {item.label}
-                                </Link>
-                            ),
-                        )}
+                        {navItems.map((item) => (
+                            <Link
+                                key={item.label}
+                                href={item.href}
+                                className="text-xs font-bold text-emerald-950 hover:text-emerald-600 uppercase no-underline transition-colors"
+                            >
+                                {item.label}
+                            </Link>
+                        ))}
                         <Link 
                             href={dashboardHref} 
                             className="px-5 py-2 bg-emerald-950 text-white rounded-lg text-xs font-bold uppercase tracking-wider no-underline hover:bg-emerald-800 transition-all shadow-md"
@@ -86,7 +74,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                     </div>
 
                     {/* Mobile Toggle */}
-                    <button className="lg:hidden text-emerald-950 p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                    <button className="rounded-xl border border-emerald-100 bg-white/80 p-2 text-emerald-950 shadow-sm lg:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
                         {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
                 </div>
@@ -106,19 +94,10 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                                 initial={{ opacity: 0, y: -10 }} 
                                 animate={{ opacity: 1, y: 0 }} 
                                 exit={{ opacity: 0, y: -10 }}
-                                className="absolute top-16 left-0 w-full bg-white border-b border-emerald-50 p-6 flex flex-col gap-4 lg:hidden shadow-xl z-50"
+                                className="absolute left-4 right-4 top-[5.25rem] rounded-[1.75rem] border border-white/80 bg-white/88 p-6 shadow-[0_26px_70px_rgba(6,78,59,0.14)] backdrop-blur-2xl lg:hidden z-50"
                             >
-                                {navItems.map((item) =>
-                                    item.native ? (
-                                        <a
-                                            key={item.label}
-                                            href={item.href}
-                                            className="text-sm font-bold text-emerald-950 uppercase no-underline"
-                                            onClick={() => setIsMenuOpen(false)}
-                                        >
-                                            {item.label}
-                                        </a>
-                                    ) : (
+                                <div className="flex flex-col gap-4">
+                                    {navItems.map((item) => (
                                         <Link
                                             key={item.label}
                                             href={item.href}
@@ -127,11 +106,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                                         >
                                             {item.label}
                                         </Link>
-                                    ),
-                                )}
+                                    ))}
+                                </div>
                                 <Link 
                                     href={dashboardHref} 
-                                    className="px-5 py-3 bg-emerald-950 text-white rounded-lg text-sm font-bold text-center no-underline"
+                                    className="mt-5 px-5 py-3 bg-emerald-950 text-white rounded-xl text-sm font-bold text-center no-underline shadow-md"
                                     onClick={() => setIsMenuOpen(false)}
                                 >
                                     {auth.user ? 'Ke Portal' : 'Login Portal'}

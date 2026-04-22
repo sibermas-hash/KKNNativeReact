@@ -53,7 +53,7 @@ function handleSwitchPhase(target: string) {
  <AppLayout title="Dasbor Utama Administrasi">
  <Head title="Dasbor Utama"/>
 
- <div className="max-w-7xl mx-auto space-y-8 pb-24 text-emerald-950 font-sans">
+ <div className="space-y-8 pb-24 text-emerald-950 font-sans">
  
  {/* --- PREMIUM HEADER --- */}
  <div className="space-y-4">

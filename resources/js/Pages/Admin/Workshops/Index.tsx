@@ -178,7 +178,7 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
     <AppLayout title="Workshop & Pembekalan">
       <Head title="Workshop & Pembekalan" />
       
-      <div className="max-w-7xl mx-auto space-y-8 pb-24 font-sans text-emerald-950">
+    <div className="space-y-8 pb-24 font-sans text-emerald-950">
         
         <PageHeader 
           title="Workshop & Pembekalan"

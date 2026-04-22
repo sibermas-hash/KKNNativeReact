@@ -77,15 +77,15 @@ class RekapNilaiExport implements FromCollection, ShouldAutoSize, WithHeadings, 
     public function styles(Worksheet $sheet): array
     {
         return [
-            // Header row — bold, biru gelap
+            // Header row — bold, emerald gelap
             1 => [
                 'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
-                'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['argb' => 'FF1E40AF']],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['argb' => 'FF103B29']],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
             ],
             // Kolom nilai akhir — bold
             'P' => ['font' => ['bold' => true]],
-            'Q' => ['font' => ['bold' => true, 'color' => ['argb' => 'FF1E40AF']]],
+            'Q' => ['font' => ['bold' => true, 'color' => ['argb' => 'FF103B29']]],
         ];
     }
 }

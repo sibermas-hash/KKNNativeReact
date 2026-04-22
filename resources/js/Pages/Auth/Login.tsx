@@ -149,7 +149,7 @@ export default function Login() {
             <div className="flex items-center gap-5">
               <img src="/images/logo_uin_saizu.png" alt="Logo UIN SAIZU" className="h-14 w-auto object-contain" />
               <div className="w-px h-8 bg-emerald-100" />
-              <img src="/images/logo_kkn.png" alt="Logo Siberdaya" className="h-11 w-auto object-contain opacity-90" />
+              <img src="/images/logo_siberdaya.png" alt="Logo Siberdaya" className="h-12 w-auto object-contain" />
             </div>
             <div className="text-center">
               <p className="text-[10px] font-black text-emerald-800 uppercase tracking-[0.2em] mb-1">LPPM UIN SAIZU PURWOKERTO</p>

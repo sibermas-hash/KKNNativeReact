@@ -266,26 +266,24 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           open ? 'translate-x-0 shadow-xl' : '-translate-x-full',
         )}
       >
-        {/* LOGO AREA - Clean & Trustworthy */}
-        <div className="h-24 px-6 flex items-center gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="h-11 w-11 flex items-center justify-center bg-slate-50 rounded-xl border border-slate-100 p-1.5 shadow-sm">
+        {/* LOGO AREA - Brand Identity */}
+        <div className="h-28 px-6 flex flex-col justify-center border-b border-slate-100 bg-white sticky top-0 z-10">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 flex items-center justify-center bg-white rounded-xl border border-slate-200 p-1.5 shadow-sm shrink-0">
               <img src="/images/logo_uin_saizu.png" alt="Logo UIN SAIZU" className="h-full w-full object-contain" />
             </div>
-            <div className="h-8 w-8 flex items-center justify-center">
-              <img src="/images/logo_kkn.png" alt="Logo Siberdaya" className="h-full w-full object-contain" />
+            <div className="h-12 w-12 flex items-center justify-center bg-white rounded-xl border border-slate-200 p-1 shadow-sm shrink-0">
+              <img src="/images/logo_siberdaya.png" alt="Logo Siberdaya" className="h-full w-full object-contain" />
             </div>
           </div>
-          <div className="min-w-0">
-            <h1 className="text-base font-black text-emerald-950 leading-none tracking-tight">SIBERDAYA</h1>
-            <p className="text-[11px] font-bold text-emerald-600 mt-1 uppercase tracking-wider">
-              {roles.some(r => ['admin', 'superadmin'].includes(r))
-                ? 'Administrator'
-                : roles.includes('dpl')
-                  ? 'DPL Portal'
-                  : roles.includes('dosen')
-                    ? 'Dosen Portal'
-                    : 'Mahasiswa'}
+          <div className="mt-3">
+            <h1 className="text-sm font-black text-emerald-950 leading-none tracking-tight flex items-center gap-1.5">
+              SIBERDAYA <span className="h-1 w-1 rounded-full bg-emerald-500" />
+            </h1>
+            <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-[0.15em] truncate">
+               {roles.some(r => ['admin', 'superadmin'].includes(r))
+                ? 'Sistem Manajemen KKN'
+                : 'Portal Layanan KKN'}
             </p>
           </div>
         </div>
@@ -298,7 +296,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         >
           {navGroups.map((group, groupIdx) => (
             <div key={group.title} className="space-y-1.5">
-              <h3 className="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+              <h3 className="px-3 text-[11px] font-black text-slate-600 uppercase tracking-widest">
                 {group.title}
               </h3>
               

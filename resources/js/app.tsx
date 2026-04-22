@@ -33,7 +33,7 @@ if (token) {
 axios.defaults.withCredentials = true;
 axios.defaults.withXSRFToken = true;
 
-const appName = import.meta.env.VITE_APP_NAME || 'KKN UIN SAIZU';
+const appName = import.meta.env.VITE_APP_NAME || 'SIBERDAYA';
 
 // Initialize theme before rendering
 initializeTheme();

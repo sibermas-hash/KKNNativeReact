@@ -57,7 +57,10 @@ class DplRegistrationController extends Controller
                     });
                 });
             })
-            ->orderByRaw("FIELD(status, 'pending', 'approved', 'rejected')")
+            ->orderByRaw(
+                'CASE status WHEN ? THEN 1 WHEN ? THEN 2 WHEN ? THEN 3 ELSE 4 END',
+                ['pending', 'approved', 'rejected']
+            )
             ->orderByDesc('created_at');
 
         $registrations = $query->paginate(20)->withQueryString();

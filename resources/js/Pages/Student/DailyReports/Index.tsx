@@ -108,7 +108,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
 
   return (
     <AppLayout title="Tactical Logbook">
-      <Head title="Logbook Harian | SIM-KKN Mahasiswa" />
+      <Head title="Logbook Harian | SIBERDAYA" />
 
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-16 font-sans">
         {/* --- OPERATIONAL HEADER --- */}

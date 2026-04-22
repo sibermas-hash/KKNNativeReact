@@ -2,12 +2,14 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import {
   Building2,
+  Users,
   House,
   MapPin,
   MapPinned,
   Pencil,
   Plus,
   Search,
+  Filter,
   Trash2,
   X,
   RefreshCw,
@@ -147,7 +149,7 @@ export default function LocationsIndex({ locations, filters, summary, workflow, 
 
   return (
     <AppLayout title="Manajemen Wilayah KKN">
-      <Head title="Manajemen Lokasi | KKN UIN SAIZU"/>
+      <Head title="Manajemen Lokasi | SIBERDAYA"/>
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pb-24 font-sans">
         
@@ -428,116 +430,6 @@ export default function LocationsIndex({ locations, filters, summary, workflow, 
           </div>
         </div>
       </div>
-
-      {/* IMPORT MODAL */}
-      <Modal
-        show={showImportModal}
-        onClose={() => setShowImportModal(false)}
-        title="Impor Master Wilayah"
-        maxWidth="md"
-      >
-        <div className="bg-white rounded-2xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-emerald-50 flex items-center justify-between">
-            <h3 className="text-sm font-black text-emerald-950 uppercase tracking-widest">Impor Master Wilayah</h3>
-            <button onClick={() => setShowImportModal(false)} className="text-emerald-800 hover:text-emerald-950"><X size={20} /></button>
-          </div>
-
-          <form onSubmit={handleImport} className="p-6 space-y-6">
-            <div className="p-4 bg-emerald-50/50 border border-emerald-100/50 rounded-2xl flex items-start gap-4">
-              <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center text-emerald-600 shrink-0 shadow-sm">
-                <Info size={16} />
-              </div>
-              <div className="space-y-2">
-                <p className="text-[10px] font-black text-emerald-950 uppercase tracking-widest">Standar Kolom Excel:</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {['desa', 'kecamatan', 'kabupaten', 'kode_desa'].map(tag => (
-                    <span key={tag} className="px-1.5 py-0.5 bg-white border border-emerald-100 rounded text-[9px] font-black text-emerald-700 uppercase">{tag}</span>
-                  ))}
-                </div>
-                <div className="pt-2">
-                  <a 
-                    href={route('admin.lokasi.template')} 
-                    className="inline-flex items-center gap-2 text-[9px] font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-widest bg-white px-3 py-1.5 rounded-lg border border-emerald-100 shadow-sm transition-all active:scale-95"
-                  >
-                    <FileSpreadsheet size={12} /> Unduh Template
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Arsip Wilayah (.xlsx, .csv)</label>
-              <div className="relative group">
-                <input
-                  type="file"
-                  accept=".xlsx,.xls,.csv"
-                  onChange={(e) => importForm.setData('file', e.target.files?.[0] || null)}
-                  className="w-full h-32 border-2 border-dashed border-emerald-100 rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer p-4 bg-gray-50 group-hover:bg-emerald-50/30 group-hover:border-emerald-300"
-                  required
-                />
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  {importForm.data.file ? (
-                    <>
-                      <div className="h-12 w-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 mb-2">
-                        <FileSpreadsheet size={24} />
-                      </div>
-                      <span className="text-[10px] font-black text-emerald-950 uppercase tracking-tight">{importForm.data.file.name}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Upload size={24} className="text-emerald-200 mb-2 group-hover:text-emerald-400 transition-colors" />
-                      <span className="text-[10px] font-black text-emerald-800/40 uppercase tracking-widest">Klik atau tarik file</span>
-                    </>
-                  )}
-                </div>
-              </div>
-              {importForm.errors.file && <p className="text-[10px] font-bold text-rose-600 mt-1 uppercase">{importForm.errors.file}</p>}
-            </div>
-
-            <div className="flex items-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowImportModal(false)}
-                className="flex-1 h-11 border border-gray-200 text-emerald-950 text-xs font-black rounded-xl hover:bg-gray-50 transition-all uppercase tracking-widest"
-              >
-                Batal
-              </button>
-              <button
-                type="submit"
-                disabled={importForm.processing}
-                className="flex-1 h-11 bg-emerald-600 text-white text-xs font-black rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-lg shadow-emerald-600/20 active:scale-95 uppercase tracking-widest disabled:opacity-50"
-              >
-                {importForm.processing ? <RefreshCw size={14} className="animate-spin" /> : <Upload size={14} />}
-                Eksekusi Impor
-              </button>
-            </div>
-          </form>
-        </div>
-      </Modal>
-
-      {/* CONFIRM DELETE */}
-      <ConfirmDialog
-        open={!!deleting}
-        onClose={() => setDeleting(null)}
-        onConfirm={() => {
-          if (!deleting) return;
-          deleteForm.delete(`/admin/locations/${deleting.id}`, {
-            preserveScroll: true,
-            onSuccess: () => setDeleting(null),
-          });
-        }}
-        title="Hapus Wilayah?"
-        message={
-          deleting?.can_delete
-            ? `Apakah Anda yakin ingin menghapus data wilayah Desa ${deleting?.village_name}? Tindakan ini tidak dapat dibatalkan.`
-            : deleting?.delete_blocker ?? 'Wilayah ini tidak bisa dihapus.'
-        }
-        confirmLabel="Hapus"
-        confirmVariant="danger"
-      />
-    </AppLayout>
-  );
-}
 
       {/* IMPORT MODAL */}
       <Modal

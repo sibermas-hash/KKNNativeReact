@@ -75,7 +75,7 @@ export default function ErrorPage({ status, message }: Props) {
                 <div className="mt-16 flex items-center justify-center gap-2 opacity-50">
                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
                     <span className="text-xs font-bold uppercase tracking-widest text-bg-emerald-100">
-                        SIM-KKN UIN SAIZU
+                        SIBERDAYA
                     </span>
                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
                 </div>

@@ -52,7 +52,7 @@ export default function CertificateVerify({ sertifikat, token }: Props) {
               <Award size={24} className="text-[#1a7a4a]" />
             </div>
             <div>
-              <h1 className="text-white font-bold tracking-wide">KKN UIN SAIZU</h1>
+              <h1 className="text-white font-bold tracking-wide">SIBERDAYA</h1>
               <p className="text-emerald-200 text-[10px] uppercase tracking-widest font-bold">Verifikasi Elektronik</p>
             </div>
           </div>

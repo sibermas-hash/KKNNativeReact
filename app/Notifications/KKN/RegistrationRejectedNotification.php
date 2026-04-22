@@ -29,11 +29,11 @@ class RegistrationRejectedNotification extends Notification implements ShouldQue
     {
         return (new MailMessage)
             ->error()
-            ->subject('Pendaftaran KKN Ditolak — SIM-KKN UIN SAIZU')
+            ->subject('Pendaftaran KKN Ditolak — SIBERDAYA')
             ->greeting("Assalamu'alaikum, {$notifiable->name}")
             ->line("Pendaftaran Anda untuk **{$this->periodName}** belum dapat disetujui.")
             ->line("**Alasan:** {$this->reason}")
-            ->line('Anda dapat memperbaiki data atau dokumen yang diminta, lalu mengajukan ulang melalui portal SIM-KKN.')
+            ->line('Anda dapat memperbaiki data atau dokumen yang diminta, lalu mengajukan ulang melalui portal SIBERDAYA.')
             ->action('Perbaiki & Ajukan Ulang', url('/student/registration'))
             ->line('Jika ada pertanyaan, silakan hubungi kantor LPPM.');
     }

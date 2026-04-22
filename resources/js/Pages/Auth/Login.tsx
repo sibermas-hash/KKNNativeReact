@@ -131,13 +131,15 @@ export default function Login() {
         {/* --- HEADER --- */}
         <motion.div variants={itemVariants} className="space-y-6 flex flex-col items-center">
           <div className="flex flex-col items-center gap-4">
-            <div className="h-16 w-16 bg-white rounded-2xl flex items-center justify-center p-3 shadow-xl shadow-primary-900/5 overflow-hidden border border-slate-50">
-              <img src="/images/logo_kkn.png" alt="Logo KKN" className="h-full w-full object-contain" />
+            <div className="flex items-center gap-5">
+              <img src="/images/logo_uin_saizu.png" alt="Logo UIN SAIZU" className="h-14 w-auto object-contain" />
+              <div className="w-px h-8 bg-emerald-100" />
+              <img src="/images/logo_kkn.png" alt="Logo Siberdaya" className="h-11 w-auto object-contain opacity-90" />
             </div>
             <div className="text-center">
-              <p className="text-xs font-bold text-primary-600 uppercase tracking-widest mb-1">LPPM UIN SAIZU</p>
-              <h1 className="text-2xl font-bold text-emerald-950 tracking-tight">
-                Masuk ke Sistem
+              <p className="text-[10px] font-black text-emerald-800 uppercase tracking-[0.2em] mb-1">LPPM UIN SAIZU PURWOKERTO</p>
+              <h1 className="text-2xl font-black text-emerald-950 tracking-tight uppercase italic">
+                Siberdaya <span className="text-emerald-600">Portal.</span>
               </h1>
             </div>
           </div>

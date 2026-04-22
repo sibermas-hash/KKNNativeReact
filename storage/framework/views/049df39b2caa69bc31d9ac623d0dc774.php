@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>" />
     <link rel="icon" type="image/png" href="/favicon_kkn.png" />
 
-    <title inertia><?php echo e(config('app.name', 'KKN UIN SAIZU')); ?></title>
+    <title inertia><?php echo e(config('app.name', 'SIBERDAYA')); ?></title>
 
     <!-- Scripts -->
     <?php echo app('Tighten\Ziggy\BladeRouteGenerator')->generate(); ?>

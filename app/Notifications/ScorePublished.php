@@ -35,7 +35,7 @@ class ScorePublished extends Notification implements ShouldQueue
         $totalScore = $this->score->total_score ?? 0;
 
         return (new MailMessage)
-            ->subject('Nilai KKN Telah Dirilis - SIM-KKN UIN SAIZU')
+            ->subject('Nilai KKN Telah Dirilis - SIBERDAYA')
             ->greeting("Assalamu'alaikum ".$notifiable->name)
             ->line('Nilai KKN Anda telah dirilis dan difinalisasi.')
             ->line('Silakan login untuk melihat detail nilai Anda.')

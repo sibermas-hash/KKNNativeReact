@@ -20,7 +20,8 @@ class CertificateConfigController extends Controller
     {
         Gate::authorize('manage-settings');
 
-        $periodId = app(PeriodContextService::class)->getActivePeriodId();
+        $periodContext = app(PeriodContextService::class);
+        $periodId = $request->integer('period_id', $periodContext->getActivePeriodId() ?: 0);
 
         // Dapatkan kombinasi config (periode + global fallback)
         $configs = $service->getAllForPeriode($periodId);
@@ -40,7 +41,8 @@ class CertificateConfigController extends Controller
 
         return Inertia::render('Admin/System/Settings/Certificate', [
             'configs' => $formattedConfigs,
-            'isPeriodLocked' => app(PeriodContextService::class)->getActivePeriod()?->is_locked ?? false,
+            'currentPeriodId' => $periodId,
+            'isPeriodLocked' => $periodContext->getActivePeriod()?->is_locked ?? false,
         ]);
     }
 
@@ -48,14 +50,18 @@ class CertificateConfigController extends Controller
     {
         Gate::authorize('manage-settings');
 
-        $periodId = app(PeriodContextService::class)->getActivePeriodId();
+        $periodId = $request->integer('period_id', app(PeriodContextService::class)->getActivePeriodId() ?: 0);
 
         if (! $periodId) {
-            return redirect()->back()->with('error', 'Silakan pilih periode aktif terlebih dahulu.');
+            return redirect()->back()->with('error', 'Silakan pilih periode terlebih dahulu.');
         }
 
-        if (app(PeriodContextService::class)->getActivePeriod()?->is_locked) {
-            return redirect()->back()->with('error', 'Kamar periode sedang dikunci. Perubahan konfigurasi diblokir.');
+        // Cek apakah periode yang dipilih sedang dikunci (jika bukan global config 0)
+        if ($periodId > 0) {
+            $period = \App\Models\KKN\Periode::find($periodId);
+            if ($period?->is_locked) {
+                return redirect()->back()->with('error', 'Kamar periode sedang dikunci. Perubahan konfigurasi diblokir.');
+            }
         }
 
         $configs = $request->input('configs', []);
@@ -63,7 +69,6 @@ class CertificateConfigController extends Controller
 
         foreach ($configs as $index => $configData) {
             // Kita butuh config_key, frontend saat ini mengirim 'id'.
-            // Mari cari config_key dari global master berdasarkan ID tersebut.
             $masterConfig = KonfigurasiSertifikat::global()->find($configData['id']);
             if (! $masterConfig) {
                 continue;
@@ -79,10 +84,10 @@ class CertificateConfigController extends Controller
             }
 
             if ($value !== null) {
-                $service->setForPeriode($periodId, $key, $value);
+                $service->setForPeriode($key, (string) $value, $periodId);
             }
         }
 
-        return redirect()->back()->with('success', 'Konfigurasi sertifikat untuk periode aktif berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Konfigurasi sertifikat berhasil diperbarui.');
     }
 }

@@ -67,7 +67,7 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
         
         <PageHeader
           title="Matriks Penilaian."
-          subtitle="Distribusi bobot komponen nilai KKN UIN SAIZU untuk kalkulasi yudisium otomatis."
+          subtitle="Distribusi bobot komponen nilai SIBERDAYA untuk kalkulasi yudisium otomatis."
           icon={Scale}
           groupLabel="Akademik & Penilaian"
           stats={{
@@ -197,7 +197,7 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
           <div className="space-y-2 relative z-10">
             <h4 className="text-sm font-black text-white uppercase tracking-widest">Otoritas Validasi Akademik</h4>
             <p className="text-xs font-bold text-emerald-100/60 uppercase leading-relaxed max-w-4xl">
-              Matriks konfigurasi ini merupakan basis logika inti kalkulasi nilai otomatis pada sistem KKN UIN SAIZU. 
+              Matriks konfigurasi ini merupakan basis logika inti kalkulasi nilai otomatis pada sistem SIBERDAYA. 
               Segala penyesuaian akan berdampak langsung pada seluruh data pendaftaran aktif. 
               <span className="text-white ml-1">PASTIKAN TOTAL SETIAP GRUP ADALAH 100% UNTUK MENJAGA INTEGRITAS DATA PENILAIAN.</span>
             </p>

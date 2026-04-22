@@ -167,7 +167,7 @@ export default function AdminGradesIndex({ groups }: Props) {
 
  return (
  <AppLayout title="Pusat Penilaian Akademik">
- <Head title="Koreksi Nilai - KKN UIN SAIZU"/>
+ <Head title="Koreksi Nilai - SIBERDAYA"/>
 
  <div className="max-w-full mx-auto space-y-6 pb-24 font-sans px-6 lg:px-12 bg-white">
  {/* --- DYNAMIC ANALYTICS HEADER --- */}
@@ -349,7 +349,7 @@ export default function AdminGradesIndex({ groups }: Props) {
  <ShieldCheck className="text-[#1a7a4a]"size={24} />
  <p className="text-xs font-semibold text-emerald-950">Protokol Kepatuhan Aktif • Sesuai Panduan Penilaian</p>
  </div>
- <p className="text-xs font-semibold text-emerald-800">Sistem Informasi KKN UIN SAIZU</p>
+ <p className="text-xs font-semibold text-emerald-800">Sistem Informasi SIBERDAYA</p>
  </div>
  </div>
  </AppLayout>

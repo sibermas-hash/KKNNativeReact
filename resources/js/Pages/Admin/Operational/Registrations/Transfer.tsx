@@ -83,7 +83,7 @@ export default function StudentTransfer({ students, targetPeriods, filters }: Pr
 
   return (
     <AppLayout title="Transfer Peserta">
-      <Head title="Manajemen Mutasi Peserta | KKN UIN SAIZU" />
+      <Head title="Manajemen Mutasi Peserta | SIBERDAYA" />
 
       <div className="max-w-[1600px] mx-auto space-y-8 pb-24 font-sans px-4 sm:px-6 lg:px-8">
         

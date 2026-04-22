@@ -38,7 +38,7 @@ class StudentLeaveRequestedNotification extends Notification implements ShouldQu
             ->line("- **Durasi:** {$this->izin->durasi_hari} hari")
             ->line("- **Alasan:** {$this->izin->alasan}")
             ->action('Review Permohonan Izin', url('/dpl/permintaan-izin'))
-            ->line('Silakan tinjau alasan dan bukti pendukung (jika ada) melalui portal SIM-KKN.');
+            ->line('Silakan tinjau alasan dan bukti pendukung (jika ada) melalui portal SIBERDAYA.');
     }
 
     public function toArray(object $notifiable): array

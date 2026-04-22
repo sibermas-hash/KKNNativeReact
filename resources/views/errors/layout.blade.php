@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title') - System Alert | KKN UIN SAIZU</title>
+    <title>@yield('title') - System Alert | SIBERDAYA</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
@@ -68,7 +68,7 @@
             <div class="mt-20 flex flex-col items-center gap-4">
                 <div class="flex items-center gap-3 opacity-30">
                     <div class="h-px w-8 bg-slate-300"></div>
-                    <span class="text-[10px] font-black tracking-[0.4em] uppercase text-slate-400">SIM-KKN UIN SAIZU</span>
+                    <span class="text-[10px] font-black tracking-[0.4em] uppercase text-slate-400">SIBERDAYA</span>
                     <div class="h-px w-8 bg-slate-300"></div>
                 </div>
             </div>

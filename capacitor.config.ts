@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'ac.id.uinsaizu.kkn',
-  appName: 'KKN UIN SAIZU',
+  appName: 'SIBERDAYA',
   webDir: 'public',
   server: {
     url: process.env.CAPACITOR_SERVER_URL || 'https://kkn.uinsaizu.ac.id',

@@ -344,7 +344,7 @@ class ProfileController extends Controller
                 return redirect('/mahasiswa/daftar')->with('success', 'Profil lengkap! Silakan pilih periode KKN untuk mendaftar.');
             }
 
-            return redirect('/dpl/dashboard')->with('success', 'Profil lengkap! Selamat datang di SIM-KKN.');
+            return redirect('/dpl/dashboard')->with('success', 'Profil lengkap! Selamat datang di SIBERDAYA.');
         }
 
         return redirect()->back()->with('success', 'Foto profil berhasil diperbarui.');
@@ -382,10 +382,10 @@ class ProfileController extends Controller
             if ($this->isProfileComplete($user)) {
                 // Redirect based on role
                 if ($user->hasRole('student')) {
-                    return redirect('/mahasiswa/daftar')->with('success', 'Profil lengkap! Selamat datang di SIM-KKN.');
+                    return redirect('/mahasiswa/daftar')->with('success', 'Profil lengkap! Selamat datang di SIBERDAYA.');
                 }
 
-                return redirect('/dpl/dashboard')->with('success', 'Profil lengkap! Selamat datang di SIM-KKN.');
+return redirect('/dpl/dashboard')->with('success', 'Profil lengkap! Selamat datang di SIBERDAYA.');
             }
 
             // Profile still incomplete → redirect to profile page to fill remaining data

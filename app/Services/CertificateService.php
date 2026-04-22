@@ -21,13 +21,14 @@ class CertificateService
     {
         $score->loadMissing([
             'mahasiswa.user',
+            'mahasiswa.prodi',
+            'mahasiswa.fakultas',
             'kelompok.periode',
             'kelompok.lokasi',
             'kelompok.dosen.user',
         ]);
 
         $mahasiswaModel = $score->mahasiswa;
-
         if (! $mahasiswaModel) {
             throw new RuntimeException('Data mahasiswa untuk nilai ini tidak ditemukan');
         }
@@ -46,6 +47,7 @@ class CertificateService
             throw new RuntimeException('Sertifikat hanya diterbitkan untuk nilai minimal B (70)');
         }
 
+        // Cek Laporan Akhir
         $laporanApproved = LaporanAkhir::where('kelompok_id', $kelompok->id)
             ->where('status', 'approved')
             ->exists();
@@ -54,8 +56,11 @@ class CertificateService
             throw new RuntimeException('Laporan akhir belum disetujui untuk kelompok ini');
         }
 
-        // Load Dynamic Configs
-        $configs = KonfigurasiSertifikat::all()->pluck('value', 'config_key');
+        // Load Dynamic Configs using optimized Service
+        $configService = app(KKN\KonfigurasiSertifikatService::class);
+        $periodeId = (int) $periode->id;
+        
+        $configs = $configService->getAllForPeriode($periodeId);
 
         $lokasi = $kelompok->lokasi;
         $locationStr = $lokasi ? trim(implode(', ', array_filter([
@@ -63,22 +68,35 @@ class CertificateService
             $lokasi->district_name ?? null,
             $lokasi->regency_name ?? null,
         ]))) : '-';
+        
         $name = $mahasiswaModel->nama ?? $mahasiswaModel->user?->name ?? '-';
         $periodName = $periode->name ?? '-';
+        $fakultasName = $mahasiswaModel->fakultas?->nama ?? '-';
+        $prodiName = $mahasiswaModel->prodi?->nama ?? '-';
 
-        // Process Body Text Placeholders
-        $body = $configs['cert_body'] ?? '';
-        $body = str_replace('[StudentName]', "<strong>{$name}</strong>", $body);
-        $body = str_replace('[NIM]', "<strong>{$mahasiswaModel->nim}</strong>", $body);
-        $body = str_replace('[LOKASI]', "<strong>{$locationStr}</strong>", $body);
-        $body = str_replace('[PERIODE]', "<strong>{$periodName}</strong>", $body);
+        // Process Body Text Placeholders (Harmonized with UI + Legacy Support)
+        $body = $configs['cert_body'] ?? 'Telah mengikuti Kuliah Kerja Nyata (KKN) periode [Periode] di lokasi [Lokasi].';
+        
+        // New Standard
+        $body = str_replace('[Nama]', $name, $body);
+        $body = str_replace('[NIM]', $mahasiswaModel->nim ?? '', $body);
+        $body = str_replace('[Fakultas]', $fakultasName, $body);
+        $body = str_replace('[Prodi]', $prodiName, $body);
+        $body = str_replace('[Kelompok]', $kelompok->nama ?? '-', $body);
+        $body = str_replace('[Lokasi]', $locationStr, $body);
+        $body = str_replace('[Periode]', $periodName, $body);
+
+        // Legacy Support (Case-insensitive where possible)
+        $body = str_replace('[StudentName]', $name, $body);
+        $body = str_replace('[LOKASI]', $locationStr, $body);
+        $body = str_replace('[PERIODE]', $periodName, $body);
 
         $verificationToken = self::generateVerificationToken($score);
         $certificateNo = 'KKN/'.($periode->id ?? 0).'/'.$verificationToken;
         $verificationUrl = url("/verify-certificate/{$verificationToken}");
 
         // Simpan riwayat sertifikat ke database
-        $sertifikat = SertifikatKkn::updateOrCreate(
+        SertifikatKkn::updateOrCreate(
             [
                 'user_id' => $mahasiswaModel->user_id,
                 'periode_id' => $periode->id,
@@ -90,17 +108,22 @@ class CertificateService
                 'verification_token' => $verificationToken,
                 'nama_mahasiswa' => $name,
                 'nim' => $mahasiswaModel->nim ?? '-',
-                'nama_prodi' => $mahasiswaModel->prodi?->nama,
-                'nama_fakultas' => $mahasiswaModel->fakultas?->nama,
+                'nama_prodi' => $prodiName,
+                'nama_fakultas' => $fakultasName,
                 'lokasi_kkn' => $locationStr,
                 'total_score' => $score->total_score,
                 'letter_grade' => $score->letter_grade,
                 'issued_at' => now(),
                 'issued_by' => auth()->id(),
-                'revoked_at' => null,
-                'revoke_reason' => null,
             ]
         );
+
+        $bgPath = $configs['cert_background'] ?? null;
+        if ($bgPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($bgPath)) {
+            $bgImage = storage_path('app/public/'.$bgPath);
+        } else {
+            $bgImage = public_path('images/cert-bg-default.png');
+        }
 
         $data = [
             'title' => $configs['cert_title'] ?? 'SERTIFIKAT PENGHARGAAN',
@@ -117,7 +140,7 @@ class CertificateService
             'signer1_title' => $configs['cert_signer_left_title'] ?? '-',
             'signer2_name' => $configs['cert_signer_right_name'] ?? '-',
             'signer2_title' => $configs['cert_signer_right_title'] ?? '-',
-            'bg_image' => $configs['cert_background'] ?? public_path('images/cert-bg-default.png'),
+            'bg_image' => $bgImage,
             'qr_url' => 'https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl='.urlencode($verificationUrl).'&choe=UTF-8',
         ];
 

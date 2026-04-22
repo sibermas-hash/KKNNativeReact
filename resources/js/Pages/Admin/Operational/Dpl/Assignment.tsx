@@ -197,69 +197,79 @@ export default function Assignment({
 
   return (
     <AppLayout title="Penugasan DPL">
-      <Head title="Penugasan DPL | KKN UIN SAIZU"/>
+      <Head title="Penugasan DPL | SIBERDAYA"/>
 
       <div className="max-w-[1600px] mx-auto space-y-8 pb-24 font-sans px-4 sm:px-6 lg:px-8">
         
         {/* --- PREMIUM HEADER --- */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pt-10">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pt-10 pb-2 border-b border-emerald-50/50">
           <div className="space-y-4">
-            <div className="h-10 w-10 bg-[#e8f5ee] text-[#1a7a4a] rounded-xl flex items-center justify-center border border-emerald-50 shadow-sm">
-              <Briefcase size={20} strokeWidth={2.5} />
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 bg-[#e8f5ee] text-[#1a7a4a] rounded-2xl flex items-center justify-center border border-emerald-100 shadow-sm transition-transform hover:scale-105">
+                <Briefcase size={24} strokeWidth={2.5} />
+              </div>
+              <div className="space-y-0.5">
+                <h1 className="text-3xl font-black text-emerald-950 tracking-tight leading-none">
+                  Penugasan DPL.
+                </h1>
+                <p className="text-xs font-bold text-emerald-700 uppercase tracking-widest flex items-center gap-2">
+                  <Activity size={12} strokeWidth={3} /> Manajemen Otoritas & Plotting
+                </p>
+              </div>
             </div>
-            <div className="space-y-1">
-              <h1 className="text-3xl font-bold text-emerald-950 tracking-tight">
-                Penugasan DPL.
-              </h1>
-              <p className="text-sm font-medium text-emerald-800 max-w-2xl">
-                Kelola aktivasi Dosen Pembimbing Lapangan, plotting unit kelompok KKN, dan penetapan Koordinator Wilayah (Korwil).
-              </p>
-            </div>
+            <p className="text-sm font-medium text-emerald-800 max-w-2xl leading-relaxed">
+              Pusat kendali untuk aktivasi Dosen Pembimbing Lapangan, orkestrasi plotting unit kelompok, serta penetapan yurisdiksi Koordinator Wilayah (Korwil).
+            </p>
           </div>
           
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <button
+          <div className="flex items-center gap-3 shrink-0">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setActiveFormMode(activeFormMode === 'import' ? 'default' : 'import')}
               className={clsx(
-                "h-12 px-6 rounded-xl font-bold transition-all flex items-center gap-2 text-sm shadow-sm",
+                "h-12 px-6 rounded-xl font-black transition-all flex items-center gap-3 text-xs shadow-sm uppercase tracking-wider",
                 activeFormMode === 'import' 
-                  ? "bg-[#16a34a] text-white border border-emerald-700 hover:bg-[#15803d]" 
-                  : "bg-white border border-emerald-50 text-[#1a7a4a] hover:bg-gray-50"
+                  ? "bg-[#16a34a] text-white border border-emerald-700" 
+                  : "bg-white border border-emerald-100 text-[#1a7a4a] hover:bg-emerald-50/50"
               )}
             >
-              <FileSpreadsheet size={16} /> DATA IMPOR MASSAL
-            </button>
+              <FileSpreadsheet size={16} strokeWidth={2.5} /> Data Impor Massal
+            </motion.button>
           </div>
         </div>
 
         {/* TWO-COLUMN MASTER DATA LAYOUT */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mt-6">
           
-          {/* --- LEFT COLUMN: DYNAMIC FORM --- */}
-          <div className="lg:col-span-4 space-y-6">
-            <div className="bg-white border border-emerald-50 rounded-xl overflow-hidden shadow-sm">
-              <div className="p-6 border-b border-[#f3f4f6] bg-gray-50 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center text-[#1a7a4a] border border-emerald-50">
+          {/* --- LEFT COLUMN: INTELLIGENCE HUB (FORM & STATS) --- */}
+          <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
+            <div className="bg-white border border-emerald-100 rounded-2xl overflow-hidden shadow-sm">
+              <div className="p-5 border-b border-emerald-50 bg-gray-50/50 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-[#1a7a4a] border border-emerald-100 shadow-sm">
                     {activeFormMode === 'import' ? <Upload size={20} strokeWidth={3} /> :
                      activeTab === 'assignments' ? <UserPlus size={20} strokeWidth={3} /> :
                      activeTab === 'groups' ? <Target size={20} strokeWidth={3} /> :
                      <ShieldCheck size={20} strokeWidth={3} />}
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-emerald-950 uppercase tracking-wider">
-                      {activeFormMode === 'import' ? 'Transmisi Data Massal' :
-                       activeTab === 'assignments' ? 'Aktivasi Otoritas DPL' :
-                       activeTab === 'groups' ? 'Validasi Otoritas Unit' :
+                    <h3 className="text-xs font-black text-emerald-950 uppercase tracking-widest">
+                      {activeFormMode === 'import' ? 'Transmisi Massal' :
+                       activeTab === 'assignments' ? 'Aktivasi Otoritas' :
+                       activeTab === 'groups' ? 'Validasi Unit' :
                        'Penunjukan Korwil'}
                     </h3>
-                    <p className="text-xs font-bold text-emerald-800 uppercase tracking-widest">
-                      {activeFormMode === 'import' ? 'MODE: IMPOR DATA' : `MODE: ${activeTab.toUpperCase()}`}
-                    </p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
+                      <p className="text-[10px] font-black text-emerald-700 uppercase tracking-tighter">
+                        Mode: {activeFormMode === 'import' ? 'Impor Data' : activeTab}
+                      </p>
+                    </div>
                   </div>
                 </div>
                 {activeFormMode === 'import' && (
-                  <button onClick={() => setActiveFormMode('default')} className="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center text-emerald-800 hover:text-rose-500 hover:bg-rose-50 transition-colors">
+                  <button onClick={() => setActiveFormMode('default')} className="h-8 w-8 rounded-lg bg-white border border-emerald-100 flex items-center justify-center text-emerald-800 hover:text-rose-500 hover:border-rose-100 transition-colors shadow-sm">
                     <X size={16} strokeWidth={3} />
                   </button>
                 )}
@@ -348,19 +358,37 @@ export default function Assignment({
 
               {/* FORM: PLOTTING KELOMPOK (groups tab) */}
               {activeFormMode === 'default' && activeTab === 'groups' && (
-                <form onSubmit={submitGroupAssignment} className="p-8 space-y-6">
+                <form onSubmit={submitGroupAssignment} className="p-6 space-y-6">
                   {selectedGroup ? (
-                    <div className="bg-[#e8f5ee] p-5 rounded-xl border border-emerald-50 flex items-center justify-between shadow-sm">
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-[#1a7a4a] uppercase tracking-widest leading-none mb-2">UNIT TERPILIH</span>
-                        <span className="text-sm font-bold text-emerald-950">{selectedGroup.name}</span>
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100 flex items-center justify-between shadow-sm"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center text-emerald-700 border border-emerald-100 shadow-sm font-black text-xs">
+                          {selectedGroup.code}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-black text-[#1a7a4a] uppercase tracking-widest leading-none mb-1">Unit Terseleksi</span>
+                          <span className="text-sm font-bold text-emerald-950 leading-tight">{selectedGroup.name}</span>
+                        </div>
                       </div>
-                      <span className="text-xs font-bold text-emerald-950 bg-white px-2 py-1 rounded border border-emerald-50 shadow-sm font-mono">{selectedGroup.code}</span>
-                    </div>
+                      <button type="button" onClick={() => groupForm.reset()} className="h-8 w-8 rounded-lg hover:bg-rose-50 text-emerald-800 hover:text-rose-500 transition-colors flex items-center justify-center">
+                        <X size={14} strokeWidth={3} />
+                      </button>
+                    </motion.div>
                   ) : (
-                    <div className="bg-gray-50 bg-dashed border-2 border-dashed border-emerald-50 p-6 rounded-xl flex flex-col items-center justify-center gap-3 text-center">
-                       <Target size={24} className="text-emerald-800" />
-                       <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Silakan Pilih Unit Anda<br/>Dari Tabel di Sebelah Kanan</span>
+                    <div className="bg-gray-50/50 border-2 border-dashed border-emerald-100 p-8 rounded-2xl flex flex-col items-center justify-center gap-4 text-center group/select">
+                       <div className="h-14 w-14 rounded-2xl bg-white border border-emerald-100 flex items-center justify-center text-emerald-300 group-hover/select:text-emerald-500 group-hover/select:scale-110 transition-all shadow-sm">
+                        <Target size={28} strokeWidth={2} />
+                       </div>
+                       <div className="space-y-1">
+                        <span className="text-xs font-black text-emerald-900 uppercase tracking-widest block">Inisiasi Pemilihan Unit</span>
+                        <p className="text-[10px] font-bold text-emerald-600 uppercase leading-relaxed max-w-[200px]">
+                          Klik pada baris tabel kelompok di sebelah kanan untuk memulai plotting.
+                        </p>
+                       </div>
                     </div>
                   )}
 
@@ -418,49 +446,58 @@ export default function Assignment({
               )}
             </div>
 
-            {/* INLINE METRICS (Master Data Pattern) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-white border border-emerald-50 rounded-xl p-5 flex items-center gap-4 shadow-sm">
-                <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-[#e8f5ee] text-[#1a7a4a]">
-                  <UserCheck size={20} strokeWidth={2.5} />
+            {/* QUICK METRICS (High Contrast Layout) */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-white border border-emerald-100 rounded-2xl p-4 flex flex-col gap-3 shadow-sm hover:border-emerald-200 transition-colors">
+                <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-[#e8f5ee] text-[#1a7a4a] border border-emerald-50 shadow-sm">
+                  <UserCheck size={18} strokeWidth={2.5} />
                 </div>
                 <div>
-                  <p className="text-2xl font-black text-emerald-950 leading-none tabular-nums mt-1">{summary?.active_assignments}</p>
-                  <p className="text-xs font-bold text-[#1a7a4a] mt-1 uppercase tracking-wider">Aktivasi DPL</p>
+                  <p className="text-xs font-black text-[#1a7a4a] uppercase tracking-wider">Aktivasi DPL</p>
+                  <p className="text-2xl font-black text-emerald-950 leading-none tabular-nums mt-0.5">{summary?.active_assignments}</p>
                 </div>
               </div>
-              <div className="bg-white border border-emerald-50 rounded-xl p-5 flex items-center gap-4 shadow-sm">
-                <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-[#e8f5ee] text-[#1a7a4a]">
-                  <Briefcase size={20} strokeWidth={2.5} />
+              <div className="bg-white border border-emerald-100 rounded-2xl p-4 flex flex-col gap-3 shadow-sm hover:border-emerald-200 transition-colors">
+                <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-[#e8f5ee] text-[#1a7a4a] border border-emerald-50 shadow-sm">
+                  <Briefcase size={18} strokeWidth={2.5} />
                 </div>
                 <div>
-                  <p className="text-2xl font-black text-emerald-950 leading-none tabular-nums mt-1">{summary?.groups_total}</p>
-                  <p className="text-xs font-bold text-[#1a7a4a] mt-1 uppercase tracking-wider">Total Kelompok</p>
+                  <p className="text-xs font-black text-[#1a7a4a] uppercase tracking-wider">Total Unit</p>
+                  <p className="text-2xl font-black text-emerald-950 leading-none tabular-nums mt-0.5">{summary?.groups_total}</p>
                 </div>
               </div>
             </div>
+
             {(summary?.active_groups_without_dpl ?? 0) > 0 && (
-              <div className="bg-white border border-rose-100 rounded-xl p-5 flex items-center justify-between shadow-sm">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-rose-50 text-rose-500">
-                    <AlertTriangle size={20} strokeWidth={2.5} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-rose-600 mt-1 uppercase tracking-wider">Kritis: Butuh Plotting</p>
-                    <p className="text-2xl font-black text-rose-950 leading-none tabular-nums mt-1">{summary?.active_groups_without_dpl} Unit</p>
-                  </div>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white border border-rose-100 rounded-2xl p-4 flex items-center gap-4 shadow-sm relative overflow-hidden group/alert"
+              >
+                <div className="absolute top-0 right-0 h-16 w-16 bg-rose-50/30 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover/alert:scale-110" />
+                <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-rose-50 text-rose-500 border border-rose-100 shadow-sm z-10">
+                  <AlertTriangle size={22} strokeWidth={2.5} className="animate-pulse" />
                 </div>
-              </div>
+                <div className="z-10">
+                  <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest leading-none mb-1">Kritis: Butuh Plotting</p>
+                  <p className="text-2xl font-black text-rose-950 leading-none tabular-nums">{summary?.active_groups_without_dpl} <span className="text-xs">UNIT</span></p>
+                </div>
+              </motion.div>
             )}
-            <div className="bg-white border border-emerald-50 rounded-xl p-5 flex items-center justify-between shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-[#e8f5ee] text-[#1a7a4a]">
-                  <MapPinned size={20} strokeWidth={2.5} />
+
+            <div className="bg-emerald-950 rounded-2xl p-5 flex items-center justify-between shadow-lg shadow-emerald-950/10 relative overflow-hidden group/korwil">
+              <div className="absolute top-0 right-0 h-24 w-24 bg-white/5 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover/korwil:scale-110" />
+              <div className="flex items-center gap-4 z-10">
+                <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-white/10 text-emerald-200 border border-white/10 shadow-inner">
+                  <MapPinned size={22} strokeWidth={2.5} />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-[#1a7a4a] mt-1 uppercase tracking-wider">Otoritas Lintas Wilayah</p>
-                  <p className="text-2xl font-black text-emerald-950 leading-none tabular-nums mt-1">{summary?.district_coordinators} Korwil Terdata</p>
+                  <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest leading-none mb-1">Otoritas Wilayah</p>
+                  <p className="text-xl font-black text-white leading-none tabular-nums">{summary?.district_coordinators} Korwil</p>
                 </div>
+              </div>
+              <div className="h-8 w-8 bg-white/10 rounded-lg flex items-center justify-center text-emerald-400 z-10">
+                <Target size={16} strokeWidth={2.5} />
               </div>
             </div>
           </div>
@@ -470,22 +507,29 @@ export default function Assignment({
             <div className="bg-white border border-emerald-50 rounded-xl shadow-sm flex flex-col h-full overflow-hidden">
               
               {/* TABS & SEARCH */}
-              <div className="p-6 border-b border-[#f3f4f6] bg-gray-50 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-                <div className="flex items-center p-1.5 bg-white border border-emerald-50 rounded-xl overflow-x-auto shadow-sm shadow-emerald-900/5">
+              <div className="p-6 border-b border-emerald-50 bg-gray-50/50 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+                <div className="flex items-center p-1.5 bg-white border border-emerald-100 rounded-2xl overflow-x-auto shadow-sm">
                   <TabButton active={activeTab === 'assignments'} onClick={() => { setActiveTab('assignments'); setActiveFormMode('default'); }} label="DPL AKTIF" icon={ShieldCheck} />
-                  <TabButton active={activeTab === 'groups'} onClick={() => { setActiveTab('groups'); setActiveFormMode('default'); }} label="PLOTTING KELOMPOK" icon={Users} />
+                  <TabButton active={activeTab === 'groups'} onClick={() => { setActiveTab('groups'); setActiveFormMode('default'); }} label="PLOTTING" icon={Users} />
                   <TabButton active={activeTab === 'regions'} onClick={() => { setActiveTab('regions'); setActiveFormMode('default'); }} label="KORWIL" icon={Target} />
                 </div>
 
-                <form onSubmit={(e) => { e.preventDefault(); handleApplyFilters(); }} className="relative w-full xl:w-72 shrink-0">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-800" />
+                <form onSubmit={(e) => { e.preventDefault(); handleApplyFilters(); }} className="relative w-full xl:w-80 shrink-0 group/search">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400 group-focus-within/search:text-emerald-600 transition-colors">
+                    <Search size={16} strokeWidth={3} />
+                  </div>
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full h-10 pl-9 pr-3 bg-white border border-emerald-50 rounded-lg text-xs font-bold text-emerald-950 placeholder:text-black focus:border-[#f3f4f6]0 outline-none transition-all shadow-sm"
-                    placeholder="CARI NIP, NAMA, WILAYAH..."
+                    className="w-full h-11 pl-10 pr-4 bg-white border border-emerald-100 rounded-xl text-xs font-black text-emerald-950 placeholder:text-emerald-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all shadow-sm uppercase tracking-wider"
+                    placeholder="CARI NIP, NAMA, ATAU WILAYAH..."
                   />
+                  {search && (
+                    <button type="button" onClick={() => { setSearch(''); router.get(route('admin.dpl.penugasan'), {}, { replace: true }); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400 hover:text-rose-500 transition-colors">
+                      <X size={16} strokeWidth={3} />
+                    </button>
+                  )}
                 </form>
               </div>
 
@@ -517,15 +561,19 @@ export default function Assignment({
                               <span className="inline-flex px-2 py-0.5 text-xs font-bold rounded bg-[#e8f5ee] text-[#1a7a4a] uppercase">{a.period?.name || 'UMUM'}</span>
                             </td>
                             <td className="px-6 py-4 align-top">
-                              <div className="flex flex-col items-center gap-1.5 w-24 mx-auto">
-                                <div className="flex justify-between text-xs font-bold w-full uppercase">
-                                  <span className="text-emerald-950 tabular-nums">{a.current_groups || 0}</span>
-                                  <span className="text-emerald-800 tabular-nums">/ {a.max_groups || 0} MAX</span>
+                              <div className="flex flex-col items-center gap-2 w-32 mx-auto">
+                                <div className="flex justify-between text-[10px] font-black w-full uppercase tracking-tighter">
+                                  <span className="text-emerald-950 tabular-nums">{a.current_groups || 0} Terisi</span>
+                                  <span className="text-emerald-500 tabular-nums">{a.max_groups || 0} Kuota</span>
                                 </div>
-                                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                  <div 
-                                    className="h-full bg-emerald-500 rounded-full"
-                                    style={{ width: `${Math.min(100, ((a.current_groups || 0) / (a.max_groups || 1)) * 100)}%` }}
+                                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden border border-emerald-50/50 p-0.5">
+                                  <motion.div 
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${Math.min(100, ((a.current_groups || 0) / (a.max_groups || 1)) * 100)}%` }}
+                                    className={clsx(
+                                      "h-full rounded-full transition-all duration-1000",
+                                      ((a.current_groups || 0) / (a.max_groups || 1)) >= 1 ? "bg-rose-500" : "bg-emerald-500"
+                                    )}
                                   />
                                 </div>
                               </div>
@@ -590,16 +638,28 @@ export default function Assignment({
                               )}
                             </td>
                             <td className="px-6 py-4 text-right align-top">
-                              <div className="flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
+                              <div className="flex items-center justify-end">
+                                <motion.button
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
                                   onClick={() => { groupForm.setData('group_id', String(g.id)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                                   className={clsx(
-                                    "h-8 px-4 text-xs font-bold rounded-lg border flex items-center justify-center gap-2 transition-all uppercase tracking-wide",
-                                    g.dpl ? "bg-[#e8f5ee] text-[#1a7a4a] border-emerald-50 hover:bg-[#e8f5ee]" : "bg-white text-[#1a7a4a] border-emerald-50 hover:bg-gray-50 shadow-sm"
+                                    "h-9 px-4 text-[10px] font-black rounded-xl border flex items-center justify-center gap-2 transition-all uppercase tracking-widest shadow-sm",
+                                    g.dpl 
+                                      ? "bg-[#e8f5ee] text-[#1a7a4a] border-emerald-100 hover:bg-emerald-100" 
+                                      : "bg-emerald-600 text-white border-emerald-700 hover:bg-emerald-700 shadow-emerald-600/10"
                                   )}
                                 >
-                                  {g.dpl ? 'Ganti DPL' : 'Pilih Unit'}
-                                </button>
+                                  {g.dpl ? (
+                                    <>
+                                      <Zap size={12} strokeWidth={3} /> Re-Plotting
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Target size={12} strokeWidth={3} /> Plot Unit
+                                    </>
+                                  )}
+                                </motion.button>
                               </div>
                             </td>
                           </tr>
@@ -637,13 +697,13 @@ export default function Assignment({
                               </div>
                             </td>
                             <td className="px-6 py-4 text-right align-top">
-                              <div className="flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="flex items-center justify-end">
                                 <button
                                   onClick={() => setDeletingId({ type: 'region', id: c.id })}
-                                  className="h-8 w-8 flex items-center justify-center text-rose-500 bg-white hover:bg-rose-50 border border-rose-100 rounded-lg transition-all active:scale-90"
+                                  className="h-9 w-9 flex items-center justify-center text-rose-500 bg-white hover:bg-rose-50 border border-emerald-100 hover:border-rose-200 rounded-xl transition-all active:scale-90 shadow-sm"
                                   title="Copot Korwil"
                                 >
-                                  <Trash2 size={14} />
+                                  <Trash2 size={16} strokeWidth={2.5} />
                                 </button>
                               </div>
                             </td>
@@ -689,11 +749,21 @@ function TabButton({ active, onClick, label, icon: Icon }: { active: boolean; on
       type="button"
       onClick={onClick}
       className={clsx(
-        'flex items-center gap-2 px-6 h-10 rounded-lg text-xs font-bold transition-all whitespace-nowrap outline-none uppercase tracking-widest',
-        active ? 'bg-[#16a34a] text-white shadow-sm' : 'text-emerald-800 hover:text-[#1a7a4a] hover:bg-gray-50'
+        'flex items-center gap-2.5 px-6 h-10 rounded-xl text-[10px] font-black transition-all whitespace-nowrap outline-none uppercase tracking-widest relative overflow-hidden',
+        active 
+          ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20' 
+          : 'text-emerald-800 hover:text-emerald-950 hover:bg-emerald-50'
       )}
     >
-      <Icon size={14} strokeWidth={2.5} /> {label}
+      <Icon size={14} strokeWidth={active ? 3 : 2.5} /> {label}
+      {active && (
+        <motion.div 
+          layoutId="activeTab"
+          className="absolute inset-0 bg-emerald-500 -z-10"
+          initial={false}
+          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+        />
+      )}
     </button>
   );
 }
@@ -701,13 +771,15 @@ function TabButton({ active, onClick, label, icon: Icon }: { active: boolean; on
 function EmptyState({ icon: Icon, label, desc }: { icon: any; label: string; desc: string }) {
   return (
     <tr>
-      <td colSpan={10} className="px-6 py-20 text-center">
-        <div className="flex flex-col items-center justify-center gap-2">
-          <div className="text-emerald-700 mb-2">
-            <Icon size={32} strokeWidth={1.5} />
+      <td colSpan={10} className="px-6 py-32 text-center bg-gray-50/20">
+        <div className="flex flex-col items-center justify-center gap-4">
+          <div className="h-20 w-20 rounded-3xl bg-white border border-emerald-100 shadow-sm flex items-center justify-center text-emerald-200">
+            <Icon size={40} strokeWidth={1} />
           </div>
-          <span className="text-xs font-bold text-emerald-950 uppercase tracking-widest">{label}</span>
-          <p className="text-xs font-bold text-emerald-800">{desc}</p>
+          <div className="space-y-1">
+            <span className="text-xs font-black text-emerald-950 uppercase tracking-[0.2em]">{label}</span>
+            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider max-w-xs mx-auto">{desc}</p>
+          </div>
         </div>
       </td>
     </tr>

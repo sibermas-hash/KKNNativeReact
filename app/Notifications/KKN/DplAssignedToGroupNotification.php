@@ -27,7 +27,7 @@ class DplAssignedToGroupNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $mail = (new MailMessage)
-            ->subject("Penugasan DPL: Kelompok {$this->groupName} — SIM-KKN UIN SAIZU")
+            ->subject("Penugasan DPL: Kelompok {$this->groupName} — SIBERDAYA")
             ->greeting("Assalamu'alaikum, {$notifiable->name}")
             ->line("Anda telah ditugaskan sebagai Dosen Pembimbing Lapangan (DPL) untuk kelompok **{$this->groupName}** pada periode **{$this->periodName}**.");
 

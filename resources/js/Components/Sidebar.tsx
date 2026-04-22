@@ -267,12 +267,17 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         )}
       >
         {/* LOGO AREA */}
-        <div className="h-16 px-4 flex items-center gap-3 border-b border-emerald-50">
-          <div className="h-10 w-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden">
-            <img src="/images/logo_kkn.png" alt="Logo UIN SAIZU" className="h-10 w-10 object-contain" />
+        <div className="h-20 px-4 flex items-center gap-3 border-b border-emerald-50 bg-white">
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="h-10 w-10 flex items-center justify-center overflow-hidden">
+              <img src="/images/logo_uin_saizu.png" alt="Logo UIN SAIZU" className="h-full w-full object-contain" />
+            </div>
+            <div className="h-8 w-8 flex items-center justify-center overflow-hidden">
+              <img src="/images/logo_kkn.png" alt="Logo Siberdaya" className="h-full w-full object-contain opacity-90" />
+            </div>
           </div>
           <div>
-            <h1 className="text-sm font-bold text-emerald-950 leading-tight">KKN UIN SAIZU</h1>
+            <h1 className="text-sm font-bold text-emerald-950 leading-tight">SIBERDAYA</h1>
             <p className="text-xs font-semibold text-[#1a7a4a] mt-0.5">
               {roles.some(r => ['admin', 'superadmin'].includes(r))
                 ? 'Portal Admin'

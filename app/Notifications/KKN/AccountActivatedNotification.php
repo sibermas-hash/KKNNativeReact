@@ -28,9 +28,9 @@ class AccountActivatedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $mail = (new MailMessage)
-            ->subject('Akses SIM-KKN UIN SAIZU Anda Telah Aktif')
+            ->subject('Akses SIBERDAYA Anda Telah Aktif')
             ->greeting("Assalamu'alaikum, {$this->name}")
-            ->line("Akun Anda sebagai **{$this->roleLabel}** pada portal SIM-KKN UIN SAIZU telah diaktifkan oleh Administrator.")
+            ->line("Akun Anda sebagai **{$this->roleLabel}** pada portal SIBERDAYA telah diaktifkan oleh Administrator.")
             ->line('Berikut adalah detail login Anda:')
             ->line("- **Username:** {$this->username}")
             ->line('- **URL Login:** '.url('/login'));
@@ -43,7 +43,7 @@ class AccountActivatedNotification extends Notification implements ShouldQueue
         }
 
         return $mail
-            ->action('Login ke SIM-KKN', url('/login'))
+            ->action('Login ke SIBERDAYA', url('/login'))
             ->line('Jika Anda mengalami kesulitan saat login, silakan hubungi tim dukungan LPPM UIN SAIZU.');
     }
 
@@ -51,7 +51,7 @@ class AccountActivatedNotification extends Notification implements ShouldQueue
     {
         return [
             'type' => 'account_activated',
-            'message' => "Akun SIM-KKN Anda sebagai {$this->roleLabel} telah aktif.",
+            'message' => "Akun SIBERDAYA Anda sebagai {$this->roleLabel} telah aktif.",
             'username' => $this->username,
         ];
     }

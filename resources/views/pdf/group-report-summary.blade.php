@@ -67,7 +67,7 @@
     </table>
 
     <div class="footer">
-        Dokumen ini digenerate otomatis oleh SIM-KKN UIN SAIZU pada {{ $generatedAt }}.
+        Dokumen ini digenerate otomatis oleh SIBERDAYA pada {{ $generatedAt }}.
     </div>
 </body>
 </html>

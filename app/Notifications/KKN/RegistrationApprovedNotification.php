@@ -28,7 +28,7 @@ class RegistrationApprovedNotification extends Notification implements ShouldQue
     public function toMail(object $notifiable): MailMessage
     {
         $mail = (new MailMessage)
-            ->subject('✅ Pendaftaran KKN Disetujui — SIM-KKN UIN SAIZU')
+            ->subject('✅ Pendaftaran KKN Disetujui — SIBERDAYA')
             ->greeting("Assalamu'alaikum, {$notifiable->name}")
             ->line("Selamat! Pendaftaran Anda untuk **{$this->periodName}** telah **disetujui**.");
 
@@ -40,7 +40,7 @@ class RegistrationApprovedNotification extends Notification implements ShouldQue
 
         return $mail
             ->action('Lihat Detail Pendaftaran', url('/student/dashboard'))
-            ->line('Silakan pantau informasi selanjutnya melalui portal SIM-KKN.');
+            ->line('Silakan pantau informasi selanjutnya melalui portal SIBERDAYA.');
     }
 
     public function toArray(object $notifiable): array

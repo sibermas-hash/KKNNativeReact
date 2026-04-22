@@ -1,7 +1,8 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { clsx } from 'clsx';
 import { 
   Award, 
   Image as ImageIcon, 
@@ -16,25 +17,62 @@ import {
   UserCheck,
   BookOpen,
   CloudUpload,
-  Sparkles
+  Sparkles,
+  CalendarDays,
+  ChevronDown,
+  Activity,
+  Zap
 } from 'lucide-react';
-import { clsx } from 'clsx';
+
+// Premium Components
 import PageHeader from '@/Components/Premium/PageHeader';
+import ContentPanel from '@/Components/Premium/ContentPanel';
+import StatCard from '@/Components/Premium/StatCard';
+
 
 interface ConfigItem { id: number; config_key: string; label: string; value: string | null; type: 'text' | 'longtext' | 'image'; }
-interface Props { configs: ConfigItem[]; }
+interface Props { 
+  configs: ConfigItem[]; 
+  currentPeriodId: number;
+}
 
-export default function CertificateSettings({ configs = [] }: Props) {
+export default function CertificateSettings({ configs = [], currentPeriodId }: Props) {
+  const { availablePeriods = {} } = usePage().props as any;
+  
+  // Flatten periods since they come grouped by period number from the service
+  const flatPeriods = useMemo(() => {
+    if (Array.isArray(availablePeriods)) return availablePeriods;
+    return Object.values(availablePeriods).flat() as any[];
+  }, [availablePeriods]);
+
   const [activeTab, setActiveTab] = useState<'kkn' | 'workshop'>('kkn');
+  const [selectedPeriodId, setSelectedPeriodId] = useState(currentPeriodId);
   
   const form = useForm({ 
+    period_id: currentPeriodId,
     configs: (configs || []).map((c) => ({ id: c.id, value: c.value ?? '' })) 
   });
+
+  const currentPeriodName = flatPeriods.find((p: any) => p.id === selectedPeriodId)?.name || 'Global Settings';
+
+  useEffect(() => {
+    form.setData('period_id', currentPeriodId);
+    setSelectedPeriodId(currentPeriodId);
+  }, [currentPeriodId]);
   
   const updateValue = (id: number, value: string | File) => { 
     form.setData('configs', (form.data.configs || []).map((item) => (item.id === id ? { ...item, value } : item))); 
   };
   
+  const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newId = parseInt(e.target.value);
+    setSelectedPeriodId(newId);
+    router.get('/admin/pengaturan/sertifikat', { period_id: newId }, { 
+      preserveState: true,
+      preserveScroll: true 
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => { 
     e.preventDefault(); 
     form.post('/admin/pengaturan/sertifikat', { preserveScroll: true }); 
@@ -50,48 +88,36 @@ export default function CertificateSettings({ configs = [] }: Props) {
     const imageConfigs = groupConfigs.filter((c) => c.type === 'image');
 
     return (
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
-      >
-        {/* --- LEFT COLUMN: NARRATIVE CONFIG --- */}
-        <div className="lg:col-span-7 space-y-8">
-          <div className="bg-white/80 backdrop-blur-xl border border-white rounded-[2rem] overflow-hidden shadow-2xl shadow-emerald-900/5 relative">
-            <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500" />
-            <div className="p-8 border-b border-emerald-50 bg-gradient-to-r from-emerald-50/50 to-transparent flex items-center gap-5">
-              <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-50">
-                <PenTool size={22} strokeWidth={2.5} />
-              </div>
-              <div>
-                <h3 className="text-lg font-black text-emerald-900 uppercase tracking-tighter">Isi & Teks Sertifikat</h3>
-                <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] opacity-80">Official Narrative & Signatories</p>
-              </div>
-            </div>
-            
-            <div className="p-10 space-y-8">
+      <div className="flex flex-col gap-8">
+        {/* --- TOP: TEXT CONTENT --- */}
+        <div className="w-full">
+          <ContentPanel
+            title="Narasi & Otoritas"
+            description="Konfigurasi teks isi sertifikat dan nama pejabat penandatangan."
+            icon={PenTool}
+            padding={true}
+          >
+            <div className="space-y-8">
               <AnimatePresence mode="wait">
                 {activeTab === 'kkn' && (
                   <motion.div 
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-emerald-900 border border-emerald-500/20 rounded-2xl p-6 mb-6 relative overflow-hidden group shadow-lg shadow-emerald-900/20"
+                    className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-6 relative overflow-hidden group shadow-sm"
                   >
-                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700">
-                      <Sparkles size={120} />
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700 text-emerald-600">
+                      <Sparkles size={100} />
                     </div>
                     <div className="relative z-10">
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="h-8 w-8 bg-emerald-500/20 rounded-lg flex items-center justify-center text-emerald-400 border border-emerald-500/30">
+                        <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center text-emerald-600 border border-emerald-100 shadow-sm">
                           <Binary size={16} />
                         </div>
-                        <h4 className="text-[11px] font-black text-emerald-100 uppercase tracking-[0.3em]">Kata Kunci Otomatis</h4>
+                        <h4 className="text-[10px] font-black text-emerald-800 uppercase tracking-[0.3em]">Placeholder Otomatis</h4>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {(['[Nama]', '[NIM]', '[Fakultas]', '[Kelompok]', '[Lokasi]']).map((tag) => (
-                          <span key={tag} className="px-3 py-1.5 bg-emerald-900/50 border border-emerald-800 text-emerald-300 rounded-lg text-[10px] font-bold shadow-inner hover:bg-emerald-800 transition-colors cursor-default">{tag}</span>
+                        {(['[Nama]', '[NIM]', '[Fakultas]', '[Prodi]', '[Kelompok]', '[Lokasi]', '[Periode]']).map((tag) => (
+                          <span key={tag} className="px-3 py-1.5 bg-white border border-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold shadow-sm hover:border-emerald-500 transition-colors cursor-default">{tag}</span>
                         ))}
                       </div>
                     </div>
@@ -99,14 +125,14 @@ export default function CertificateSettings({ configs = [] }: Props) {
                 )}
               </AnimatePresence>
 
-              <div className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
                 {textConfigs.map((config) => (
-                  <div key={config.id} className="group space-y-3">
+                  <div key={config.id} className={clsx("group space-y-2.5", config.type === 'longtext' && "md:col-span-2")}>
                     <div className="flex items-center justify-between pl-1">
-                      <label htmlFor={`cert-config-${config.id}`} className="text-[11px] font-black text-emerald-900 uppercase tracking-widest group-focus-within:text-emerald-600 transition-colors">
+                      <label htmlFor={`cert-config-${config.id}`} className="text-[10px] font-black text-emerald-900 uppercase tracking-widest group-focus-within:text-emerald-600 transition-colors">
                         {config.label}
                       </label>
-                      <span className="text-[9px] font-bold text-emerald-700/40 tabular-nums">NODE_ID: {config.id}</span>
+                      <span className="text-[9px] font-bold text-emerald-800/30 tabular-nums uppercase">KEY: {config.config_key}</span>
                     </div>
                     {config.type === 'longtext' ? (
                       <textarea
@@ -114,8 +140,8 @@ export default function CertificateSettings({ configs = [] }: Props) {
                         rows={5}
                         value={getValue(config.id)}
                         onChange={(e) => updateValue(config.id, e.target.value)}
-                        className="w-full px-6 py-5 bg-gray-50/50 border border-emerald-100 rounded-2xl text-sm font-bold text-emerald-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all placeholder:text-gray-300 shadow-inner resize-none leading-relaxed"
-                        placeholder="Ketikkan isi teks sertifikat di sini..."
+                        className="w-full px-5 py-4 bg-gray-50/50 border border-gray-200 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all placeholder:text-gray-300 shadow-sm resize-none leading-relaxed"
+                        placeholder="Ketikkan isi teks sertifikat..."
                       />
                     ) : (
                       <input 
@@ -123,7 +149,7 @@ export default function CertificateSettings({ configs = [] }: Props) {
                         type="text"
                         value={getValue(config.id)} 
                         onChange={(e) => updateValue(config.id, e.target.value)} 
-                        className="w-full h-14 px-6 bg-gray-50/50 border border-emerald-100 rounded-2xl text-sm font-bold text-emerald-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all placeholder:text-gray-300 shadow-inner"
+                        className="w-full h-11 px-5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs font-bold text-emerald-950 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all placeholder:text-gray-300 shadow-sm"
                         placeholder="Masukkan teks..."
                       />
                     )}
@@ -131,45 +157,39 @@ export default function CertificateSettings({ configs = [] }: Props) {
                 ))}
               </div>
             </div>
-          </div>
+          </ContentPanel>
         </div>
 
-        {/* --- RIGHT COLUMN: VISUAL IDENTITY --- */}
-        <div className="lg:col-span-5 space-y-8">
-          <div className="bg-white/80 backdrop-blur-xl border border-white rounded-[2rem] overflow-hidden shadow-2xl shadow-emerald-900/5 flex flex-col min-h-[600px] relative">
-            <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500" />
-            <div className="p-8 border-b border-emerald-50 bg-gradient-to-r from-emerald-50/50 to-transparent flex items-center gap-5">
-              <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-50">
-                <Palette size={22} strokeWidth={2.5} />
-              </div>
-              <div>
-                <h3 className="text-lg font-black text-emerald-900 uppercase tracking-tighter">Logo & Gambar</h3>
-                <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] opacity-80">Aset Visual & Resource</p>
-              </div>
-            </div>
-
-            <div className="p-10 space-y-10 flex-1 flex flex-col">
+        {/* --- BOTTOM: ASSETS & PREVIEW --- */}
+        <div className="w-full">
+          <ContentPanel
+            title="Visual & Aset"
+            description="Manajemen gambar latar belakang dan logo sertifikat."
+            icon={Palette}
+            padding={true}
+          >
+            <div className="space-y-8">
               {imageConfigs.length > 0 ? (
-                <div className="space-y-8">
+                <div className="space-y-6">
                   {imageConfigs.map((config) => (
-                    <div key={config.id} className="space-y-4">
-                      <label className="text-[11px] font-black text-emerald-900 uppercase tracking-widest pl-1">
+                    <div key={config.id} className="space-y-3">
+                      <label className="text-[10px] font-black text-emerald-900 uppercase tracking-widest pl-1">
                         {config.label}
                       </label>
                       <div className="flex flex-col gap-3">
                         <div className="relative group">
-                          <ImageIcon size={20} className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-800 transition-transform group-focus-within:scale-110"/>
+                          <ImageIcon size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-800/40 transition-transform group-focus-within:scale-110"/>
                           <input
                             type="text"
                             value={typeof getValue(config.id) === 'string' ? getValue(config.id) : (getValue(config.id) as File).name}
                             readOnly
-                            placeholder="Belum ada gambar terpilih"
-                            className="w-full h-14 pl-14 pr-6 bg-gray-50/50 border border-emerald-100 rounded-2xl text-sm font-bold text-emerald-900 outline-none cursor-default shadow-inner"
+                            placeholder="Belum ada aset terpilih"
+                            className="w-full h-11 pl-12 pr-6 bg-gray-50/50 border border-gray-200 rounded-xl text-[11px] font-bold text-emerald-950 outline-none cursor-default shadow-sm overflow-hidden text-ellipsis"
                           />
                         </div>
-                        <label className="group h-16 w-full bg-emerald-50 border-2 border-dashed border-emerald-200 rounded-2xl flex items-center justify-center gap-3 text-emerald-700 text-[11px] font-black uppercase tracking-widest hover:border-emerald-500 hover:bg-emerald-100/50 hover:text-emerald-900 transition-all cursor-pointer shadow-sm active:scale-[0.98]">
-                          <CloudUpload size={20} className="group-hover:-translate-y-1 transition-transform duration-300" />
-                          UNGGAH GAMBAR BARU
+                        <label className="group h-12 w-full bg-emerald-50/50 border-2 border-dashed border-emerald-200 rounded-xl flex items-center justify-center gap-3 text-emerald-700 text-[10px] font-black uppercase tracking-widest hover:border-emerald-600 hover:bg-emerald-100/50 hover:text-emerald-900 transition-all cursor-pointer shadow-sm active:scale-[0.98]">
+                          <CloudUpload size={18} className="group-hover:-translate-y-0.5 transition-transform duration-300" />
+                          UNGGAH ASSET BARU
                           <input 
                             type="file" 
                             className="hidden" 
@@ -185,113 +205,152 @@ export default function CertificateSettings({ configs = [] }: Props) {
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-20 text-center space-y-6 flex-1">
-                  <div className="h-24 w-24 bg-emerald-50 rounded-[2rem] flex items-center justify-center text-emerald-600 shadow-inner border border-emerald-100 rotate-3">
-                    <ShieldCheck size={48} strokeWidth={1.5} />
+                <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+                  <div className="h-16 w-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 border border-emerald-100 shadow-inner">
+                    <ShieldCheck size={32} strokeWidth={1.5} />
                   </div>
-                  <div className="space-y-2">
-                    <p className="text-base font-black text-emerald-900 uppercase tracking-tight">Visual Standar</p>
-                    <p className="text-xs font-bold text-emerald-800/60 max-w-[240px] leading-relaxed italic">"Template ini menggunakan identitas grafis resmi universitas yang dikunci oleh sistem."</p>
+                  <div className="space-y-1">
+                    <p className="text-xs font-black text-emerald-900 uppercase tracking-tight">Visual Standar Sistem</p>
+                    <p className="text-[10px] font-bold text-emerald-800/60 max-w-[200px] leading-relaxed italic">Template ini menggunakan identitas grafis resmi yang dikunci sistem.</p>
                   </div>
                 </div>
               )}
 
-              <div className="pt-10 flex justify-center mt-auto">
-                 <div className="w-full aspect-[16/9] bg-gradient-to-br from-gray-50 to-emerald-50/30 rounded-[2rem] border-2 border-dashed border-emerald-200 flex flex-col items-center justify-center text-center gap-5 relative overflow-hidden group">
-                   <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                   <Target size={48} className="text-emerald-300 group-hover:scale-110 group-hover:text-emerald-500 transition-all duration-700" strokeWidth={1} />
-                   <div className="space-y-2 relative z-10">
-                      <p className="text-xs font-black text-emerald-900 uppercase tracking-[0.3em]">Preview Mode</p>
-                      <p className="text-[10px] font-bold text-emerald-700/60 max-w-[220px] leading-relaxed">Asset grafis akan dikomposisikan secara instan saat dokumen diterbitkan.</p>
-                   </div>
+              <div className="pt-6 border-t border-gray-100">
+                 <div className="w-full aspect-[16/9] bg-gradient-to-br from-gray-50 to-emerald-50/30 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-center gap-4 relative overflow-hidden group">
+                    <Target size={32} className="text-emerald-200 group-hover:scale-110 group-hover:text-emerald-500 transition-all duration-700" strokeWidth={1.5} />
+                    <div className="space-y-1 relative z-10 px-6">
+                       <p className="text-[10px] font-black text-emerald-900 uppercase tracking-[0.2em]">Live Preview</p>
+                       <p className="text-[9px] font-bold text-emerald-800/40 leading-relaxed uppercase">Asset grafis akan dikomposisikan secara instan saat dokumen diterbitkan.</p>
+                    </div>
                  </div>
               </div>
             </div>
-          </div>
+          </ContentPanel>
         </div>
-      </motion.div>
+      </div>
     );
   };
 
   return (
     <AppLayout title="Pengaturan Sertifikat">
-      <Head title="Pengaturan Sertifikat | KKN UIN SAIZU"/>
+      <Head title="Pengaturan Sertifikat | SIBERDAYA"/>
 
-      <div className="max-w-[1400px] mx-auto space-y-10 font-sans pb-24 px-4 sm:px-6">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pb-24 font-sans">
         
         <PageHeader
-          title="Pengaturan Sertifikat"
+          title="Konfigurasi Sertifikat."
           subtitle="Modifikasi narasi, tanda tangan pejabat, dan aset visual untuk sertifikasi akademik KKN & Workshop."
           icon={Award}
           groupLabel="Sistem & Otorisasi"
-          stats={{
-            label: 'Total Atribut',
-            value: configs?.length,
-            icon: FileText
-          }}
-        />
+        >
+          <div className="flex items-center gap-3">
+             <div className="px-5 py-2.5 bg-emerald-50 rounded-xl border border-emerald-100 flex flex-col shadow-sm">
+                <span className="text-[8px] font-black text-emerald-800/60 uppercase tracking-[0.3em] leading-none mb-1">Target Konfigurasi</span>
+                <div className="flex items-center gap-2">
+                   <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                   <span className="text-[11px] font-black text-emerald-900 uppercase tracking-tight truncate max-w-[150px]">
+                      {selectedPeriodId === 0 ? 'GLOBAL SYSTEM' : currentPeriodName}
+                   </span>
+                </div>
+             </div>
+          </div>
+        </PageHeader>
 
-        {/* --- PREMIUM TABS --- */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="p-1.5 bg-gray-100/50 backdrop-blur-md rounded-2xl border border-gray-200/50 flex gap-1">
+        {/* --- STATS GRID (DASHBOARD STYLE) --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+           <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex items-center gap-4 group hover:border-emerald-200 transition-all">
+              <div className="h-12 w-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                 <CalendarDays size={24} />
+              </div>
+              <div className="flex-1 space-y-1">
+                 <p className="text-[9px] font-black text-emerald-800/40 uppercase tracking-widest leading-none">Periode Terpilih</p>
+                 <div className="relative group/select">
+                    <select 
+                      value={selectedPeriodId}
+                      onChange={handlePeriodChange}
+                      className="w-full bg-transparent text-xs font-black text-emerald-950 appearance-none outline-none cursor-pointer uppercase pr-6"
+                    >
+                      <option value={0}>GLOBAL SYSTEM</option>
+                      {flatPeriods.map((p: any) => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={14} className="absolute right-0 top-1/2 -translate-y-1/2 text-emerald-400 group-hover/select:text-emerald-600 pointer-events-none" />
+                 </div>
+              </div>
+           </div>
+
+           <StatCard label="Total Atribut" value={configs?.length} icon={FileText} variant="gray" />
+           <StatCard label="Otoritas" value={activeTab === 'kkn' ? 'Mahasiswa' : 'Dosen'} icon={activeTab === 'kkn' ? UserCheck : BookOpen} variant="info" />
+           <StatCard label="Status Enkripsi" value="SSL Aktif" icon={ShieldCheck} variant="success" />
+        </div>
+
+        {/* --- TABS SELECTOR --- */}
+        <div className="flex items-center justify-between gap-6 border-b border-gray-100 pb-2">
+          <div className="flex gap-8">
             <button
               onClick={() => setActiveTab('kkn')}
               className={clsx(
-                "relative px-8 py-3.5 text-xs font-black rounded-xl transition-all flex items-center gap-3 overflow-hidden",
-                activeTab === 'kkn' 
-                  ? "bg-white text-emerald-900 shadow-xl shadow-emerald-900/5 ring-1 ring-emerald-500/10" 
-                  : "text-emerald-800/60 hover:text-emerald-900 hover:bg-white/50"
+                "relative py-3 text-xs font-black transition-all flex items-center gap-2.5 uppercase tracking-widest",
+                activeTab === 'kkn' ? "text-emerald-900" : "text-gray-400 hover:text-emerald-600"
               )}
             >
-              <UserCheck size={16} strokeWidth={activeTab === 'kkn' ? 3 : 2} />
-              SERTIFIKAT MAHASISWA
-              {activeTab === 'kkn' && <motion.div layoutId="tab-glow" className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500" />}
+              <UserCheck size={16} />
+              Sertifikat Mahasiswa
+              {activeTab === 'kkn' && <motion.div layoutId="tab-underline" className="absolute bottom-[-2px] left-0 right-0 h-0.5 bg-emerald-600" />}
             </button>
             <button
               onClick={() => setActiveTab('workshop')}
               className={clsx(
-                "relative px-8 py-3.5 text-xs font-black rounded-xl transition-all flex items-center gap-3 overflow-hidden",
-                activeTab === 'workshop' 
-                  ? "bg-white text-emerald-900 shadow-xl shadow-emerald-900/5 ring-1 ring-emerald-500/10" 
-                  : "text-emerald-800/60 hover:text-emerald-900 hover:bg-white/50"
+                "relative py-3 text-xs font-black transition-all flex items-center gap-2.5 uppercase tracking-widest",
+                activeTab === 'workshop' ? "text-emerald-900" : "text-gray-400 hover:text-emerald-600"
               )}
             >
-              <BookOpen size={16} strokeWidth={activeTab === 'workshop' ? 3 : 2} />
-              SERTIFIKAT DOSEN
-              {activeTab === 'workshop' && <motion.div layoutId="tab-glow" className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500" />}
+              <BookOpen size={16} />
+              Sertifikat Dosen
+              {activeTab === 'workshop' && <motion.div layoutId="tab-underline" className="absolute bottom-[-2px] left-0 right-0 h-0.5 bg-emerald-600" />}
             </button>
           </div>
-
-          <div className="flex items-center gap-3 text-[10px] font-black text-emerald-800 uppercase tracking-widest bg-emerald-50/50 px-5 py-3 rounded-full border border-emerald-100">
-            <ShieldCheck size={14} className="text-emerald-600" />
-            Terproteksi Enkripsi SSL
+          
+          <div className="hidden md:flex items-center gap-2 text-[10px] font-black text-emerald-800/40 uppercase tracking-widest">
+             <Activity size={12} className="animate-pulse" />
+             Sinkronisasi Real-time
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-12">
+        <form onSubmit={handleSubmit} className="space-y-10">
           <AnimatePresence mode="wait">
             {activeTab === 'kkn' ? (
-              <div key="kkn">{renderConfigGroup(kknConfigs)}</div>
+              <motion.div key="kkn" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>
+                {renderConfigGroup(kknConfigs)}
+              </motion.div>
             ) : (
-              <div key="workshop">{renderConfigGroup(workshopConfigs)}</div>
+              <motion.div key="workshop" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>
+                {renderConfigGroup(workshopConfigs)}
+              </motion.div>
             )}
           </AnimatePresence>
 
-          {/* --- FLOATING ACTION BAR --- */}
+          {/* --- FLOATING ACTION BAR (SOFT VERSION) --- */}
           <motion.div 
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             className="sticky bottom-8 z-40"
           >
-            <div className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-900 backdrop-blur-2xl border border-emerald-700/50 px-8 py-6 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="bg-white/80 backdrop-blur-xl border border-emerald-100 px-8 py-5 rounded-[2rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 ring-1 ring-emerald-500/5">
               <div className="flex items-center gap-5">
-                <div className="h-14 w-14 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
-                  <RefreshCw size={24} className={clsx(form.processing && "animate-spin")} />
+                <div className="h-12 w-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100">
+                  <RefreshCw size={20} className={clsx(form.processing && "animate-spin")} />
                 </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-black text-white uppercase tracking-tighter">Konfirmasi Perubahan</p>
-                  <p className="text-[11px] font-medium text-emerald-400/80 max-w-sm leading-snug">
-                    Pembaruan template akan berlaku seketika untuk semua dokumen yang dicetak setelah ini.
+                <div className="space-y-0.5">
+                  <p className="text-sm font-black text-emerald-950 uppercase tracking-tighter">
+                    {selectedPeriodId === 0 ? 'Update Konfigurasi Global' : `Update Periode #${selectedPeriodId}`}
+                  </p>
+                  <p className="text-[10px] font-medium text-emerald-700/60 uppercase tracking-widest max-w-sm">
+                    {selectedPeriodId === 0 
+                      ? 'Nilai ini akan menjadi standar bagi kloter yang belum disesuaikan.' 
+                      : 'Perubahan hanya akan berdampak pada kloter yang sedang dipilih.'}
                   </p>
                 </div>
               </div>
@@ -299,10 +358,10 @@ export default function CertificateSettings({ configs = [] }: Props) {
               <button 
                 type="submit" 
                 disabled={form.processing} 
-                className="w-full md:w-auto h-16 px-12 bg-emerald-500 hover:bg-emerald-400 text-emerald-900 font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-emerald-500/10 transition-all flex items-center justify-center gap-4 active:scale-95 disabled:opacity-50 group"
+                className="w-full md:w-auto h-12 px-10 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-widest text-[10px] rounded-xl shadow-xl shadow-emerald-600/10 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 group"
               >
-                {form.processing ? <RefreshCw size={18} className="animate-spin" /> : <Save size={18} className="group-hover:scale-110 transition-transform" />}
-                {form.processing ? 'PROSES DATA...' : 'TERAPKAN PERUBAHAN'}
+                {form.processing ? <RefreshCw size={14} className="animate-spin" /> : <Zap size={14} className="group-hover:scale-110 transition-transform" />}
+                {form.processing ? 'MEMPROSES...' : 'TERAPKAN PERUBAHAN'}
               </button>
             </div>
           </motion.div>

@@ -277,7 +277,7 @@ export default function UserForm({ faculties, programs }: Props) {
 
  <footer className="text-center pt-20 border-t border-emerald-50/60">
  <p className="text-sm font-bold text-slate-300 font-semibold text-xs">
- SIM-KKN &bull; UIN SAIFUDDIN ZUHRI &copy; 2026
+ SIBERDAYA &bull; UIN SAIFUDDIN ZUHRI &copy; 2026
  </p>
  </footer>
  </div>

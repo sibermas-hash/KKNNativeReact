@@ -26,7 +26,7 @@ class DplRemovedFromPeriodNotification extends Notification implements ShouldQue
     public function toMail(object $notifiable): MailMessage
     {
         $mail = (new MailMessage)
-            ->subject('Pencabutan Penugasan DPL — SIM-KKN UIN SAIZU')
+            ->subject('Pencabutan Penugasan DPL — SIBERDAYA')
             ->greeting("Assalamu'alaikum, {$notifiable->name}")
             ->line("Penugasan Anda sebagai Dosen Pembimbing Lapangan (DPL) pada periode **{$this->periodName}** telah dicabut.");
 
@@ -36,7 +36,7 @@ class DplRemovedFromPeriodNotification extends Notification implements ShouldQue
 
         return $mail
             ->line('Jika Anda memiliki pertanyaan, silakan hubungi LPPM.')
-            ->action('Buka Portal SIM-KKN', url('/'))
+            ->action('Buka Portal SIBERDAYA', url('/'))
             ->line('Terima kasih atas kontribusi Anda.');
     }
 

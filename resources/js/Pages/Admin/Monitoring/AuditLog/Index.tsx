@@ -220,7 +220,7 @@ export default function AuditLogIndex({ logs, filters, stats }: Props) {
  </div>
  </div>
  <p className="text-sm font-bold text-emerald-800 leading-relaxed max-w-4xl">
- Seluruh aktivitas dalam infrastruktur SIKKKN UIN SAIZU dicatat secara immutable melalui arsitektur audit log ini. Sistem ini menjamin transparansi operasional, akuntabilitas personil, dan integritas metadata KKN dari awal pendaftaran hingga yudisium akhir. Intervensi tanpa otorisasi akan memicu sinyal risiko tinggi secara otomatis.
+ Seluruh aktivitas dalam infrastruktur SIBERDAYA dicatat secara immutable melalui arsitektur audit log ini. Sistem ini menjamin transparansi operasional, akuntabilitas personil, dan integritas metadata KKN dari awal pendaftaran hingga yudisium akhir. Intervensi tanpa otorisasi akan memicu sinyal risiko tinggi secara otomatis.
  </p>
  </div>
  </div>

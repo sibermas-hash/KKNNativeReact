@@ -31,6 +31,6 @@ class EnsurePasswordChanged
 
         return redirect()
             ->route('profile.password-change')
-            ->with('warning', 'Demi keamanan, Anda wajib mengganti kata sandi default sebelum dapat mengakses portal SIM-KKN.');
+            ->with('warning', 'Demi keamanan, Anda wajib mengganti kata sandi default sebelum dapat mengakses portal SIBERDAYA.');
     }
 }

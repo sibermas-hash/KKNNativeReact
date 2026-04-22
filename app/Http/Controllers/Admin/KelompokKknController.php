@@ -187,6 +187,19 @@ class KelompokKknController extends Controller
 
         $groupCollection = collect($groups->items());
 
+        // DEBUG: Check what's being returned
+        if ($groups->total() > 0) {
+            \Illuminate\Support\Facades\Log::info('Groups found', [
+                'total' => $groups->total(),
+                'count' => $groups->count(),
+                'first_item' => $groupCollection->first() ? ['id' => $groupCollection->first()['id'], 'name' => $groupCollection->first()['name']] : null,
+            ]);
+        } else {
+            \Illuminate\Support\Facades\Log::warning('No groups found', [
+                'filters' => $request->only('search', 'periode_id', 'jenis_kkn_id', 'status'),
+            ]);
+        }
+
         return Inertia::render('Admin/Operational/Groups/Index', [
             'groups' => $this->formatPaginator($groups),
             'periods' => $periods,

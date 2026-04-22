@@ -28,7 +28,7 @@ class NewRegistrationForAdminNotification extends Notification implements Should
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("Pendaftaran Baru: {$this->studentName} — SIM-KKN UIN SAIZU")
+            ->subject("Pendaftaran Baru: {$this->studentName} — SIBERDAYA")
             ->greeting("Halo, {$notifiable->name}")
             ->line('Ada pendaftaran KKN baru yang menunggu verifikasi Anda.')
             ->line("**Mahasiswa:** {$this->studentName}")

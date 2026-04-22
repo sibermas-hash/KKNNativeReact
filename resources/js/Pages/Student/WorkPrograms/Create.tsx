@@ -21,7 +21,7 @@ export default function StudentWorkProgramCreate() {
 
   return (
     <AppLayout title="Ajukan Program Kerja">
-      <Head title="Ajukan Proker | SIM-KKN" />
+      <Head title="Ajukan Proker | SIBERDAYA" />
 
       <div className="mx-auto max-w-4xl space-y-10 pb-20">
         {/* --- HEADER --- */}

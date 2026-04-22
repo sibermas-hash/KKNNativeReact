@@ -223,7 +223,7 @@ export default function StudentDailyReportCreate({ group, geoPolicy }: Props) {
 
   return (
     <AppLayout title="Tulis Logbook">
-      <Head title="Tulis Logbook | SIM-KKN" />
+      <Head title="Tulis Logbook | SIBERDAYA" />
 
       <div className="mx-auto max-w-5xl space-y-10 pb-20">
         {/* --- TOP BAR --- */}

@@ -97,7 +97,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
     <LayoutContext.Provider value={layoutContextValue}>
       <div className="min-h-screen bg-white font-sans">
         <Head>
-          <title>{displayTitle ? `${displayTitle} | KKN UIN SAIZU` : 'SIM-KKN UIN SAIZU'}</title>
+          <title>{displayTitle ? `${displayTitle} | SIBERDAYA` : 'SIBERDAYA'}</title>
         </Head>
 
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />

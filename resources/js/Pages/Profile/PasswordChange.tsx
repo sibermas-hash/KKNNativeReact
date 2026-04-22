@@ -91,7 +91,7 @@ export default function PasswordChange() {
                   <div className="space-y-1">
                     <p className="text-sm font-semibold text-rose-900">Akses Diblokir</p>
                     <p className="text-sm text-rose-700">
-                      Anda wajib mengganti kata sandi default sebelum dapat mengakses portal SIM-KKN.
+                      Anda wajib mengganti kata sandi default sebelum dapat mengakses portal SIBERDAYA.
                     </p>
                   </div>
                 </div>

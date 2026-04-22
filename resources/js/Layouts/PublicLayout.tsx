@@ -56,10 +56,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-emerald-50 h-16">
                 <div className="max-w-7xl mx-auto px-6 lg:px-8 h-full flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-3 no-underline group">
-                        <div className="h-8 w-8 bg-emerald-50 rounded-lg flex items-center justify-center">
-                            <img src="/images/logo_kkn.png" alt="Logo" className="h-6 w-6 object-contain" />
+                        <div className="flex items-center gap-2">
+                            <img src="/images/logo_uin_saizu.png" alt="Logo UIN" className="h-7 w-7 object-contain" />
+                            <img src="/images/logo_kkn.png" alt="Logo KKN" className="h-6 w-6 object-contain opacity-90" />
                         </div>
-                        <span className="text-sm font-bold text-emerald-950 uppercase tracking-tight">KKN UIN SAIZU</span>
+                        <span className="text-sm font-bold text-emerald-950 uppercase tracking-tight">SIBERDAYA</span>
                     </Link>
 
                     {/* Desktop Nav */}
@@ -137,10 +138,15 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                 <div className="max-w-7xl mx-auto px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-6">
                         <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center">
-                                <img src="/images/logo_kkn.png" alt="Logo" className="h-7 w-7" />
+                            <div className="flex items-center gap-2">
+                                <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center p-1.5">
+                                    <img src="/images/logo_uin_saizu.png" alt="Logo UIN" className="h-full w-full object-contain" />
+                                </div>
+                                <div className="h-8 w-8 bg-white/10 rounded-lg flex items-center justify-center p-1">
+                                    <img src="/images/logo_kkn.png" alt="Logo KKN" className="h-full w-full object-contain" />
+                                </div>
                             </div>
-                            <span className="font-bold text-white text-lg uppercase tracking-tight">KKN UIN SAIZU</span>
+                            <span className="font-bold text-white text-lg uppercase tracking-tight">SIBERDAYA</span>
                         </div>
                         <p className="text-xs text-emerald-400 leading-relaxed uppercase tracking-wider">
                             Inovasi pengabdian masyarakat untuk akselerasi kesejahteraan umat dan pembangunan bangsa berkelanjutan.

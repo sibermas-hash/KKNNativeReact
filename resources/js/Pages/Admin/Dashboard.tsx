@@ -67,7 +67,7 @@ function handleSwitchPhase(target: string) {
  Dashboard <span className="text-[#1a7a4a]">Utama.</span>
  </h1>
  <p className="font-semibold text-xs text-emerald-800 mt-2 leading-relaxed max-w-2xl">
- Selamat datang kembali. Berikut adalah ringkasan eksekutif dan monitoring status pelaksanaan KKN UIN SAIZU secara real-time.
+ Selamat datang kembali. Berikut adalah ringkasan eksekutif dan monitoring status pelaksanaan SIBERDAYA secara real-time.
  </p>
  </div>
  

@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <link rel="icon" type="image/png" href="/favicon_kkn.png" />
 
-    <title inertia>{{ config('app.name', 'KKN UIN SAIZU') }}</title>
+    <title inertia>{{ config('app.name', 'SIBERDAYA') }}</title>
 
     <!-- Scripts -->
     @routes

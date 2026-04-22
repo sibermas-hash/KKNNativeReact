@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Sertifikat KKN UIN SAIZU</title>
+    <title>Sertifikat KKN SIBERDAYA</title>
     <style>
         body { font-family: 'Helvetica', sans-serif; margin: 0; padding: 0; color: #1a4731; }
         .border { border: 20px solid #10b981; padding: 50px; height: 90%; }
@@ -45,7 +45,7 @@
             </div>
 
             <div class="legal">
-                Sertifikat ini diterbitkan secara elektronik oleh Portal KKN UIN SAIZU.<br>
+                Sertifikat ini diterbitkan secara elektronik oleh Portal SIBERDAYA.<br>
                 ID Sertifikat: {{ strtoupper(substr(md5($score->id), 0, 8)) }}
             </div>
         </div>

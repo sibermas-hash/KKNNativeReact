@@ -46,7 +46,7 @@ export default function Locations({ locations, filters }: Props) {
 
     return (
         <PublicLayout>
-            <Head title="Cari Lokasi Penempatan | KKN UIN SAIZU" />
+            <Head title="Cari Lokasi Penempatan | SIBERDAYA" />
 
             {/* --- MAJESTIC HERO HEADER --- */}
             <div className="relative pt-40 pb-24 overflow-hidden">

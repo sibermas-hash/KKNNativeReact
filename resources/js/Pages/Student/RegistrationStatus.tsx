@@ -219,7 +219,7 @@ export default function RegistrationStatus({ registration, student }: Props) {
         {/* Footer Info */}
         <div className="text-center opacity-40">
            <p className="text-[10px] font-black text-emerald-950 uppercase tracking-widest">
-             Sistem Informasi Manajemen KKN UIN SAIZU
+             Sistem Informasi Manajemen SIBERDAYA
            </p>
         </div>
       </div>

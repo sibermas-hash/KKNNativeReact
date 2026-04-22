@@ -256,7 +256,7 @@
 
                 <div class="footer-info">
                     ID Sertifikat: {{ $certificate_no }}<br>
-                    Dokumen ini sah dan diterbitkan secara elektronik melalui SIM-KKN UIN Saizu Purwokerto.
+                    Dokumen ini sah dan diterbitkan secara elektronik melalui SIBERDAYA UIN Saizu Purwokerto.
                 </div>
             </div>
         </div>
